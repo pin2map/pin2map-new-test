@@ -1057,11 +1057,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die automatische Kartenverschiebung beim Öffnen/Wechseln einer Pin-Ansicht nach Grundentscheidung 91 bleibt bestehen, löst beim Schließen jedoch keine automatische Rückkehr aus.
 - Bei erneutem Öffnen einer Pin-Ansicht darf die Karte wiederum nur dann angepasst werden, wenn das Bedienfeld den ausgewählten Pin sonst verdecken würde.
 
-## Offen – Grundentscheidung 93: Zugriff auf den ausgewählten Pin außerhalb des Kartenausschnitts
+## Grundentscheidung 93 – Aktion „Pin auf Karte zeigen“
 
-Ein Pin bleibt auch beim Verschieben oder Zoomen der Karte ausgewählt (Grundentscheidungen 85 und 86), selbst wenn er anschließend außerhalb des sichtbaren Kartenausschnitts liegt. Soll die geöffnete Pin-Ansicht einen direkten Weg anbieten, ihn wieder auf der Karte zu finden?
+**Beschlossen (Variante A):** Das untere Pin-Detail-/Bearbeitungsfeld bietet für den aktuell ausgewählten Pin die bewusst auslösbare Aktion **„Pin auf Karte zeigen“**. Nach Betätigung wird der Kartenausschnitt bei Bedarf so verschoben, dass das Pin-Symbol wieder **im sichtbaren Kartenbereich oberhalb des geöffneten Bedienfelds** erscheint.
 
-- **Variante A (Empfehlung):** Das untere Pin-Bedienfeld bietet eine Aktion **„Pin auf Karte zeigen“**. Sie verschiebt den Kartenausschnitt bei Bedarf so, dass der aktuell ausgewählte Pin im sichtbaren Bereich oberhalb des Bedienfelds erscheint; die Zoomstufe und Pin-Koordinaten bleiben unverändert. Die Aktion wird ausschließlich bewusst ausgelöst.
-- **Variante B:** Es gibt **keine zusätzliche Aktion**. Wer den ausgewählten Pin nach einer Kartenbewegung nicht mehr sieht, findet ihn durch manuelles Zurückbewegen oder Zoomen der Karte wieder.
+**Konsequenzen:**
+- Die Aktion wird nur durch ausdrückliches Antippen/Anklicken ausgelöst; es erfolgt kein automatisches Zurückspringen bei normalem Verschieben oder Zoomen (Grundentscheidungen 85, 86 und 92).
+- Die Zoomstufe bleibt unverändert; lediglich die Kartenansicht wird bei Bedarf verschoben.
+- Die gespeicherten Koordinaten und die Ebenenzugehörigkeit des Pins bleiben unverändert.
+- Ist der ausgewählte Pin bereits ausreichend sichtbar, wird die Karte nicht unnötig verschoben.
+- Die Pin-Auswahl und das Bedienfeld bleiben während und nach der Aktion geöffnet.
+- Die Positionierung berücksichtigt die tatsächlich sichtbare Kartenfläche oberhalb des mitwachsenden Pin-Bedienfelds (Grundentscheidungen 89–91).
 
-**Status:** Grundentscheidung 93 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 94: Bedienbarkeit der Aktion „Pin auf Karte zeigen“
+
+Wie soll die neue Aktion im unteren Pin-Bedienfeld angeboten werden?
+
+- **Variante A (Empfehlung):** Als **direkt sichtbarer Button mit eindeutigem Symbol und Kurzbeschriftung „Pin zeigen“**. Der Button ist ohne weiteres Menü erreichbar und funktioniert auch, wenn der ausgewählte Pin derzeit außerhalb des Kartenausschnitts liegt.
+- **Variante B:** Als **Eintrag in einem zusätzlichen Aktionsmenü** des Pin-Bedienfelds. Das spart Platz im Bedienfeld, erfordert aber einen zusätzlichen Bedienschritt.
+
+**Status:** Grundentscheidung 94 ist offen und noch nicht beschlossen.
