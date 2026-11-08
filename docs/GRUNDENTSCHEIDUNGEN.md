@@ -628,11 +628,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Für die Kartenansichten gelten weiterhin die Offline-Grundentscheidungen 50 und 51: Offline-Start der PWA, aber zunächst kein gezielter Download von Offline-Kartenbereichen.
 - Die Auswahl erfolgt über eine einfach bedienbare Kartenhintergrund-Steuerung. Eine konkrete Position dieser Steuerung ist mit dieser Grundentscheidung noch nicht festgelegt.
 
-## Offen – Grundentscheidung 55: Kartenhintergrund-Auswahl beim Neustart
+## Grundentscheidung 55 – Letzten Kartenhintergrund beim Neustart wiederherstellen
 
-Soll pin2map die zuletzt verwendete Kartenansicht beim nächsten Öffnen automatisch wiederherstellen?
+**Beschlossen (Variante A):** pin2map speichert den **zuletzt ausgewählten Kartenhintergrund lokal** und stellt ihn beim nächsten Start der Anwendung automatisch wieder her, sofern dieser Hintergrund weiterhin verfügbar ist.
 
-- **Variante A (Empfehlung):** Die **zuletzt ausgewählte Kartenansicht wird lokal gespeichert** und bei jedem Neustart wiederhergestellt, sofern sie weiterhin verfügbar ist. Ist sie nicht mehr verfügbar, wird auf eine definierte Standardkarte gewechselt, ohne Pins oder Ebenen zu beeinflussen.
-- **Variante B:** Bei jedem Neustart wird unabhängig von der vorherigen Auswahl wieder die **festgelegte Standardkarte** angezeigt. Der Nutzer muss einen anderen Hintergrund jeweils erneut wählen.
+**Konsequenzen:**
+- Die Kartenhintergrund-Auswahl aus Grundentscheidung 54 wird als lokale Nutzereinstellung gespeichert.
+- Beim Neustart wird die zuletzt gewählte Karte verwendet; Kartenmittelpunkt und Zoomstufe werden weiterhin separat gemäß Grundentscheidung 22 wiederhergestellt.
+- Ist der zuletzt gewählte Hintergrund nicht mehr verfügbar oder in der aktuellen App-Version nicht mehr konfiguriert, verwendet pin2map einen definierten Standard-Kartenhintergrund. Pins, Ebenen und gespeicherte Koordinaten bleiben davon unbeeinflusst.
+- Eine fehlende Internetverbindung kann Kartenkacheln vorübergehend verhindern, ohne dass die gespeicherte Kartenauswahl deshalb automatisch überschrieben werden muss (Grundentscheidungen 50–51).
+- Die Auswahl bleibt bei normalem Neustart erhalten, bis der Benutzer bewusst eine andere Karte auswählt oder ein nicht mehr unterstützter Kartentyp ersetzt werden muss.
 
-**Status:** Grundentscheidung 55 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 56: Platzierung der Kartenhintergrund-Auswahl
+
+Wo soll die Steuerung für die Auswahl des Kartenhintergrunds in der ersten Basisversion liegen?
+
+- **Variante A (Empfehlung):** Ein **direkt sichtbarer Kartenwahl-Button am unteren Kartenrand** öffnet ein kleines Auswahlmenü. Damit kann der Benutzer ohne Umweg über Einstellungen zwischen den Kartenhintergründen wechseln; die Karte bleibt dabei sichtbar.
+- **Variante B:** Die Auswahl wird **ausschließlich im allgemeinen Menü** angeboten. Die Kartenansicht enthält keinen eigenen Kartenwahl-Button.
+
+**Status:** Grundentscheidung 56 ist offen und noch nicht beschlossen.
