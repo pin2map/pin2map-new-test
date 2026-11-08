@@ -1103,11 +1103,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die zusätzlichen Angaben werden im nach oben mitwachsenden unteren Bedienfeld untergebracht (Grundentscheidungen 89 und 90).
 - Das genaue Zahlenformat wird in Grundentscheidung 97 festgelegt.
 
-## Offen – Grundentscheidung 97: Zahlenformat der Pin-Koordinaten
+## Grundentscheidung 97 – Koordinaten als Dezimalgrad anzeigen
 
-In welchem Format sollen die im Pin-Bedienfeld angezeigten geografischen Koordinaten dargestellt werden?
+**Beschlossen (Variante A):** Die geografischen Koordinaten des ausgewählten Pins werden im unteren Pin-Detail-/Bearbeitungsfeld als **Dezimalgrad im Bezugssystem WGS 84** dargestellt. Breiten- und Längengrad sind eindeutig beschriftet; die Anzeige verwendet **beispielsweise sechs Nachkommastellen**.
 
-- **Variante A (Empfehlung):** Als **Dezimalgrad (WGS 84)** mit beispielsweise sechs Nachkommastellen und eindeutiger Kennzeichnung von Breiten- und Längengrad (z. B. 48,775846° und 9,182932°). Das Format ist kompakt, gängig bei digitalen Karten und eignet sich zur Überprüfung.
-- **Variante B:** Als **Grad, Minuten und Sekunden (GMS)** mit Himmelsrichtung (z. B. 48° 46′ 33,05″ N und 9° 10′ 58,56″ E). Dieses traditionelle Format ist gut lesbar, aber länger und auf kleinen Bildschirmen platzintensiver.
+**Konsequenzen:**
+- Die Darstellung ist kompakt und für digitale Karten geeignet. Beispiele: Breitengrad `48,775846°`, Längengrad `9,182932°`.
+- Für die deutsche Benutzeroberfläche kann ein Dezimalkomma angezeigt werden; intern gespeicherte numerische Koordinaten dürfen nicht durch eine gerundete Anzeigefassung ersetzt werden.
+- Die Koordinaten bleiben im Bedienfeld reine, nicht direkt editierbare Informationen (Grundentscheidung 96).
+- Nach bestätigter Pin-Verschiebung werden die dargestellten Werte aktualisiert, ohne zusätzliche Rundung der dauerhaft gespeicherten Koordinaten.
+- Das genaue Verhalten beim Kopieren von Koordinaten wird in Grundentscheidung 98 festgelegt.
 
-**Status:** Grundentscheidung 97 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 98: Koordinaten kopieren
+
+Sollen die im Pin-Bedienfeld angezeigten Breiten- und Längengrade bereits in der ersten Basisversion unkompliziert in die Zwischenablage übernommen werden können?
+
+- **Variante A (Empfehlung):** Ein **direkt erreichbarer Button „Koordinaten kopieren“** kopiert beide Koordinaten des ausgewählten Pins gemeinsam als klar getrenntes Dezimalgrad-Paar in die Zwischenablage. Eine kurze Bestätigung zeigt den Erfolg an; die gespeicherten Koordinaten bleiben unverändert.
+- **Variante B:** **Kein eigener Kopierbutton** in der ersten Basisversion. Die Werte können angezeigt und gegebenenfalls durch normale Textauswahl manuell kopiert werden.
+
+**Status:** Grundentscheidung 98 ist offen und noch nicht beschlossen.
