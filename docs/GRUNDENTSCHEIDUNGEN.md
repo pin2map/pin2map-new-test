@@ -1386,11 +1386,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das bisher beschlossene automatische Springen der Karte zum neu angelegten Such-Pin und das geöffnete Pin-Bedienfeld bleiben bestehen (Grundentscheidung 117).
 - Ist die Ebene „Privat“ ausgeblendet, muss die Anwendung ihre Sichtbarkeit respektieren. Die genaue Führung bei der Suche und Erstellung in dieser Situation wird in Grundentscheidung 120 geklärt.
 
-## Offen – Grundentscheidung 120: Ortsnamensuche bei ausgeblendeter privater Ebene
+## Grundentscheidung 120 – Ortssuch-Pin auch bei ausgeblendeter Ebene „Privat“ speichern
 
-Ein Ortssuchtreffer soll gemäß Grundentscheidung 119 immer als Pin in der Ebene **„Privat“** gespeichert werden. Was soll geschehen, wenn „Privat“ zum Zeitpunkt der Suche ausgeblendet ist?
+**Beschlossen (Variante A):** Ein über die geografische Ortsnamensuche erzeugter Pin wird **immer sofort in der Ebene „Privat“ gespeichert**, auch wenn diese Ebene gerade **ausgeblendet** ist. Die Sichtbarkeit von „Privat“ wird dabei **nicht automatisch verändert**.
 
-- **Variante A (Empfehlung):** Die Trefferwahl bzw. eindeutige Ortssuche speichert den Pin weiterhin **in „Privat“**, ohne deren Sichtbarkeit eigenmächtig zu ändern. pin2map zeigt einen deutlichen Hinweis „Der Pin wurde in der ausgeblendeten Ebene Privat gespeichert“ sowie eine **bewusst auslösbare Aktion „Ebene einblenden“**. Der Pin bleibt im geöffneten Bearbeitungsfeld ausgewählt; das beschlossene automatische Zentrieren der Karte auf den Suchort kann erfolgen, obwohl das Pin-Symbol wegen der ausgeblendeten Ebene nicht sichtbar ist.
-- **Variante B:** Vor der Speicherung erscheint ein Hinweis, dass „Privat“ ausgeblendet ist. Erst nach **bewusstem Einblenden der Ebene** wird der Orts-Pin angelegt. Ein Abbruch lässt die Ebene ausgeblendet und erzeugt keinen Pin.
+**Konsequenzen:**
+- Ein eindeutiger Treffer bzw. eine bewusst getroffene Auswahl aus mehreren Suchtreffern führt wie vorgesehen zur lokalen Erstellung eines Pins in „Privat“ (Grundentscheidungen 116 und 119).
+- Ist „Privat“ ausgeblendet, erscheint das Pin-Symbol nicht auf der Karte. Ein verständlicher Hinweis nennt den Grund und bietet die **bewusst auszulösende Aktion „Ebene einblenden“** an (Grundentscheidung 102).
+- Der neue Pin bleibt ausgewählt; das untere Pin-Bedienfeld ist geöffnet und erlaubt beispielsweise eine direkte Änderung der Ebenenzugehörigkeit (Grundentscheidungen 99 und 101).
+- Die Karte darf wie in Grundentscheidung 117 beschlossen zum gefundenen Ort springen, auch wenn wegen der ausgeblendeten Ebene dort kein Pin-Symbol dargestellt wird.
+- Die aktive Ebene bleibt unverändert; andere Ebenensichtbarkeiten werden nicht beeinflusst.
+- Die **Ortsnamensuche bleibt ausdrücklich verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 120 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 121: Wann wird die Ortsnamensuche ausgelöst?
+
+Die Ortsnamensuche gehört verbindlich zur ersten Basisversion. Wie soll die Suche nach Eingabe eines Ortsnamens gestartet werden?
+
+- **Variante A (Empfehlung):** Die Suche wird **erst durch eine bewusste Aktion** gestartet, etwa durch Antippen eines Suchbuttons oder Drücken der Eingabetaste. Während des Tippens werden keine Geocoding-Anfragen verschickt. Das spart externe Anfragen und sorgt für einen klaren Ablauf.
+- **Variante B:** pin2map fragt **während des Tippens nach kurzer Eingabepause** automatisch den Geocoding-Dienst ab und aktualisiert passende Vorschläge laufend. Ein einzelner geeigneter Treffer darf jedoch erst nach ausdrücklich ausgelöster Suche bzw. Auswahl zu einem Pin führen, um unbeabsichtigte Pin-Erstellungen zu vermeiden.
+
+**Status:** Grundentscheidung 121 ist offen und noch nicht beschlossen.
