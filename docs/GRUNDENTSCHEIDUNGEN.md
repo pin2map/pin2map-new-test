@@ -319,13 +319,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein neu angelegter Pin ist deutlich als ausgewählt erkennbar.
 - Der konkrete Speichervorgang für nachträgliche Änderungen in der Bearbeitungsansicht wird mit Grundentscheidung 29 festgelegt.
 
-## Offen – Grundentscheidung 29: Speichern von Änderungen an einem Pin
+## Grundentscheidung 29 – Automatisches Speichern nachträglicher Pin-Änderungen
 
-Nach dem Anlegen können Pins bearbeitet werden, beispielsweise durch Ändern ihrer optionalen Bezeichnung. Wie sollen solche Bearbeitungen gespeichert werden?
+**Beschlossen (Variante B):** Änderungen an Eingabefeldern bestehender Pins werden **automatisch lokal in IndexedDB gespeichert**, beispielsweise nach dem Verlassen des jeweiligen Feldes. Ein gesonderter „Speichern“-Button ist nicht erforderlich.
 
-- **Variante A (Empfehlung):** Änderungen in der Bearbeitungsansicht werden erst durch bewusstes Antippen von „Speichern“ übernommen. „Abbrechen“ verwirft ungespeicherte Eingaben; der bereits existierende Pin bleibt erhalten.
-- **Variante B:** Änderungen an Eingabefeldern werden automatisch lokal gespeichert, beispielsweise nach Verlassen des Feldes. Ein eigener Speichern-Button ist nicht erforderlich.
+**Konsequenzen:**
+- In der Pin-Bearbeitungsansicht ist keine ausdrückliche Speicherbestätigung für Änderungen an Eingabefeldern notwendig.
+- Die Benutzeroberfläche muss einen fehlgeschlagenen Speichervorgang erkennbar melden; Änderungen dürfen nicht fälschlich als dauerhaft gesichert erscheinen.
+- Beim Schließen der Bearbeitungsansicht müssen noch ausstehende Eingaben verlässlich übernommen beziehungsweise ein Speicherproblem deutlich gemacht werden.
+- Die automatische Speicherung gilt für die nachträgliche Eingabefeld-Bearbeitung; das erstmalige sofortige Anlegen aus Grundentscheidung 27 bleibt unverändert.
+- Das Verschieben von Pins auf der Karte wird gesondert festgelegt.
+- **Entscheidungsverlauf:** Die zuvor im Chat erklärte Wahl von Variante A wurde ausdrücklich durch die spätere Wahl von Variante B ersetzt; verbindlich ist ausschließlich Variante B.
 
-**Abgrenzung:** Das unmittelbare erstmalige Anlegen eines Pins aus Grundentscheidung 27 bleibt in beiden Varianten unverändert. Das Verschieben auf der Karte kann später gesondert spezifiziert werden.
+## Offen – Grundentscheidung 30: Wie wird das Verschieben eines Pins gestartet?
 
-**Status:** Grundentscheidung 29 ist offen und noch nicht beschlossen.
+Da Kartennavigation und Pin-Bearbeitung nebeneinander stattfinden, muss die beabsichtigte Positionsänderung sicher von normaler Kartenbewegung unterschieden werden.
+
+- **Variante A (Empfehlung):** Ein Pin kann erst nach dem bewussten Auslösen von **„Pin verschieben“** in seiner Bearbeitungsansicht versetzt werden. Anschließend wird eine neue Position auf der Karte gewählt. Die genaue Übernahme der Position wird gesondert geklärt.
+- **Variante B:** Ein vorhandener Pin kann direkt durch Ziehen seines Symbols auf der Karte verschoben werden, ohne zuvor einen gesonderten Verschiebemodus aufzurufen.
+
+**Status:** Grundentscheidung 30 ist offen und noch nicht beschlossen.
