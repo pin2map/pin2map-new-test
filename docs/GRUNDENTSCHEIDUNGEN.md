@@ -853,11 +853,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Anordnung übernimmt das zuletzt im PoC abgestimmte Bedienprinzip und muss auf unterschiedlichen Bildschirmgrößen, mit Touch und Maus, ohne gegenseitige Überdeckung funktionieren.
 - Der Kartenwahl-Button bleibt unten horizontal zentriert und auf Höhe des Zoom-Minus-Buttons (Grundentscheidung 57).
 
-## Offen – Grundentscheidung 75: Überlappende Pin-Beschriftungen
+## Grundentscheidung 75 – Überlappende Pin-Beschriftungen dynamisch reduzieren
 
-Wie soll sich die Karte verhalten, wenn bei vielen nahe beieinanderliegenden Pins die eingeblendeten Bezeichnungen einander überdecken?
+**Beschlossen (Variante A):** Sind Pin-Bezeichnungen eingeblendet, reduziert pin2map **Überlagerungen von Beschriftungen bei dicht beieinanderliegenden Pins automatisch**. Dafür dürfen einzelne Beschriftungen abhängig von Zoomstufe und Kartenausschnitt vorübergehend ausgeblendet werden.
 
-- **Variante A (Empfehlung):** Die Anzeige **reduziert überlappende Beschriftungen dynamisch**; nicht alle Namen müssen bei dichtem Ausschnitt gleichzeitig sichtbar sein. Pin-Symbole bleiben immer sichtbar und auswählbar; beim Heranzoomen oder Auswählen kann die relevante Beschriftung wieder erscheinen.
-- **Variante B:** **Alle vorhandenen Pin-Beschriftungen werden stets vollständig angezeigt**, sobald der Beschriftungsmodus eingeschaltet ist. Überschneidungen werden in Kauf genommen; kein Name wird wegen Überlappung ausgeblendet.
+**Konsequenzen:**
+- Pin-Symbole bleiben unabhängig von ausgeblendeten Beschriftungen sichtbar und anwählbar, sofern ihre Ebene sichtbar ist.
+- Bei größerem Kartenmaßstab bzw. mehr Platz erscheinen zuvor wegen Überlappung unterdrückte Bezeichnungen nach Möglichkeit wieder.
+- Die Bezeichnung eines bewusst ausgewählten Pins muss auch in dicht belegten Bereichen zugänglich bleiben; die konkrete Hervorhebungsregel wird gesondert festgelegt.
+- Dynamisches Ausblenden verändert weder gespeicherte Pin-Namen noch die globale Einstellung des Beschriftungsbuttons (Grundentscheidungen 72–74).
+- Die Berechnung reagiert auf Kartenbewegung, Zoom und geänderte Pin-Bezeichnungen, ohne Pins zu verschieben.
+- Die Umsetzung soll auch auf Geräten mit geringerer Rechenleistung eine flüssige Kartenbedienung erlauben.
 
-**Status:** Grundentscheidung 75 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 76: Beschriftung eines ausgewählten Pins
+
+Wenn sich die Beschriftungen wegen Überlagerung automatisch reduzieren oder über den Beschriftungsbutton ausgeblendet sind: Wie wird der Name eines **ausgewählten Pins** angezeigt?
+
+- **Variante A (Empfehlung):** Die Bezeichnung des ausgewählten Pins wird **immer in der Pin-Detail-/Bearbeitungsansicht angezeigt**, unabhängig von der Kartenbeschriftungs-Einstellung. Eine ausgeblendete Kartenbeschriftung wird nicht erzwungen eingeblendet; damit bleibt der globale Schalter verlässlich.
+- **Variante B:** Die Bezeichnung des ausgewählten Pins wird zusätzlich **direkt an seiner Kartenmarkierung hervorgehoben**, selbst wenn sonstige Beschriftungen ausgeschaltet oder wegen Überlagerung unterdrückt sind. Sie verschwindet wieder beim Abwählen des Pins.
+
+**Status:** Grundentscheidung 76 ist offen und noch nicht beschlossen.
