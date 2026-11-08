@@ -240,11 +240,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Architektur darf die spätere Ergänzung einer Pin-Liste nicht unnötig erschweren.
 - Die Entscheidung betrifft nur den Umfang der Basisversion und verbietet eine spätere Pin-Liste nicht.
 
-## Offen – Grundentscheidung 22: Kartenausschnitt beim erneuten Öffnen
+## Grundentscheidung 22 – Kartenausschnitt beim erneuten Öffnen
 
-Was soll die Kartenansicht beim Neustart der PWA anzeigen?
+**Beschlossen (Variante A):** pin2map speichert den zuletzt verwendeten **Kartenausschnitt einschließlich Zoomstufe** lokal und stellt ihn beim erneuten Öffnen der PWA wieder her.
 
-- **Variante A (Empfehlung):** Der zuletzt verwendete Kartenausschnitt einschließlich Zoomstufe wird lokal gespeichert und beim erneuten Öffnen wiederhergestellt. Beim allerersten Start wird ein sinnvoller initialer Kartenausschnitt verwendet; dessen genaue Lage wird separat festgelegt.
-- **Variante B:** Bei jedem Start wird die Karte auf einen festgelegten Startausschnitt zurückgesetzt. Die vorherige Position und Zoomstufe werden nicht wiederhergestellt.
+**Konsequenzen:**
+- Kartenzentrum und Zoomstufe werden lokal als Anzeigeeinstellungen gespeichert.
+- Neuladen und erneutes Öffnen der Anwendung stellen die letzte gültige Kartenposition und Vergrößerung wieder her.
+- Die Speicherung der Kartenansicht ist von der Speicherung der Pins und Ebenen getrennt; eine Änderung der Ansicht verändert keine Pin-Koordinaten.
+- Beim erstmaligen Start ohne gespeicherte Kartenansicht wird ein festzulegender initialer Kartenausschnitt verwendet.
+- Sollte ein gespeicherter Kartenausschnitt ungültig sein, wird ein gültiger Startausschnitt verwendet; bestehende Pins bleiben unberührt.
+- Ob Kartenansichtseinstellungen zwischen Geräten synchronisiert werden, wird später getrennt entschieden.
 
-**Status:** Grundentscheidung 22 ist noch offen und nicht beschlossen.
+## Offen – Grundentscheidung 23: Kartenausschnitt beim allerersten Start
+
+Für einen frischen Start ohne gespeicherte Kartenposition ist der Startausschnitt festzulegen:
+
+- **Variante A (Empfehlung):** Die Karte startet mit einem festen, neutralen Ausgangsausschnitt, der ohne Standortberechtigung funktioniert. Die konkrete Kartenposition und Zoomstufe werden bei der Umsetzung definiert; die Standortermittlung kann als separate Funktion ergänzt werden.
+- **Variante B:** Die Anwendung versucht beim ersten Start, den Gerätestandort zu ermitteln und die Karte darauf zu zentrieren. Dafür muss gegebenenfalls eine Standortberechtigung angefragt werden; bei Ablehnung wird auf einen festen Startausschnitt zurückgegriffen.
+
+**Status:** Grundentscheidung 23 ist noch offen und nicht beschlossen.
