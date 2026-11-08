@@ -274,11 +274,21 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der zuletzt eingestellte Kartenausschnitt einschließlich Zoomstufe wird gemäß Grundentscheidung 22 lokal gespeichert.
 - Die genaue Positionierung und Darstellung der Zoomtasten ist Sache der späteren UI-Umsetzung; der bestehende PoC kann als Gestaltungsreferenz dienen, ohne dessen Programmcode zu übernehmen.
 
-## Offen – Grundentscheidung 25: Karte und Pin-Anlegen voneinander unterscheiden
+## Grundentscheidung 25 – Bewusstes Anlegen von Pins auf der Karte
 
-Wie verhindert die Basisversion, dass beim normalen Navigieren auf der Karte versehentlich neue Pins entstehen?
+**Beschlossen (Variante A):** Ein neuer Pin wird ausschließlich nach bewusster Aktivierung des Modus **„Pin hinzufügen“** durch anschließendes Antippen einer Kartenposition angelegt. Ein normales Antippen einer freien Kartenstelle außerhalb dieses Modus legt keinen Pin an.
 
-- **Variante A (Empfehlung):** Ein neuer Pin wird nur nach bewusster Aktivierung eines **„Pin hinzufügen“-Modus** durch anschließendes Antippen einer Kartenposition angelegt. Verschieben und Zoomen bleiben unabhängig davon reguläre Kartenaktionen.
-- **Variante B:** Ein einfaches Antippen einer freien Kartenstelle startet unmittelbar das Anlegen eines Pins; das Ziehen der Karte wird als Bewegung erkannt und legt keinen Pin an.
+**Konsequenzen:**
+- Die Benutzeroberfläche bietet eine erkennbare Funktion zum Aktivieren des Modus „Pin hinzufügen“.
+- Der aktive Modus ist visuell erkennbar, und es gibt eine Möglichkeit, das Anlegen abzubrechen.
+- Erst nach bewusster Aktivierung kann das Antippen einer Kartenposition den Anlagevorgang auslösen.
+- Kartennavigation (Verschieben, Zoomen) bleibt von der Anlage eines Pins unterscheidbar; das Ziehen der Karte löst keine Pin-Erstellung aus.
+- Die Zuordnung erfolgt zur aktiven Ebene gemäß Grundentscheidung 7. Ist keine Ebene ausgewählt oder die aktive Ebene ausgeblendet, gelten die zuvor festgelegten Schutzregeln aus Grundentscheidungen 7 und 11.
+- Wann der Modus nach einer Pin-Erstellung endet oder fortgesetzt wird, wird in Grundentscheidung 26 festgelegt.
 
-**Status:** Grundentscheidung 25 ist noch offen und nicht beschlossen.
+## Offen – Grundentscheidung 26: Verhalten des Modus „Pin hinzufügen“ nach einer Erstellung
+
+- **Variante A (Empfehlung):** Nach erfolgreichem Anlegen eines Pins wird der Modus automatisch beendet. Für den nächsten Pin muss „Pin hinzufügen“ erneut aktiviert werden. Dies verringert die Gefahr unbeabsichtigter weiterer Pins.
+- **Variante B:** Der Modus bleibt nach dem Anlegen eines Pins aktiv. Es können mehrere Pins hintereinander gesetzt werden, bis der Benutzer den Modus ausdrücklich beendet. Dies erleichtert das Erfassen vieler Pins.
+
+**Status:** Grundentscheidung 26 ist offen und noch nicht beschlossen.
