@@ -887,11 +887,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Für sehr lange Pin-Namen bzw. geringe verfügbare Breite wird eine gesonderte Überlaufregel festgelegt.
 - Die Hervorhebung gilt weiterhin auch bei ausgeschalteten oder automatisch reduzierten normalen Kartenbeschriftungen (Grundentscheidung 76).
 
-## Offen – Grundentscheidung 78: Lange Namen in seitlichen Pin-Beschriftungen
+## Grundentscheidung 78 – Lange Pin-Beschriftungen einzeilig kürzen
 
-Was geschieht, wenn die hervorgehobene Bezeichnung eines ausgewählten Pins selbst links oder rechts nicht vollständig in den verfügbaren Platz passt?
+**Beschlossen (Variante A):** Die hervorgehobene Beschriftung eines ausgewählten Pins bleibt **einzeilig und ausschließlich seitlich** neben dem Pin. Reicht der verfügbare Platz für den vollständigen Namen nicht aus, wird der sichtbare Text **mit Auslassungspunkten („…“) gekürzt**.
 
-- **Variante A (Empfehlung):** Die Beschriftung bleibt **einzeilig und seitlich**, wird bei Bedarf mit **Auslassungspunkten („…“) gekürzt**. Der komplette Name ist weiterhin jederzeit in der Pin-Detail-/Bearbeitungsansicht lesbar.
-- **Variante B:** Die Beschriftung bleibt **seitlich neben dem Pin**, darf aber **mehrzeilig umbrechen**, um den vollständigen Namen möglichst anzuzeigen. Sie darf sich dabei nicht ober- oder unterhalb des Pins positionieren; bei sehr langen Namen oder kleinen Displays kann das Textfeld groß werden.
+**Konsequenzen:**
+- Die dynamische Anordnung erfolgt ausschließlich links oder rechts des Pins, niemals oberhalb oder unterhalb (Grundentscheidung 77).
+- Die verfügbare Breite wird abhängig von Kartenausschnitt, Bildschirmgröße und seitlicher Position begrenzt; der Text darf den Kartenrand möglichst nicht überschreiten.
+- Es wird ausschließlich die **Darstellung** gekürzt, niemals der gespeicherte Pin-Name.
+- Der vollständige Name bleibt in der Pin-Detail-/Bearbeitungsansicht zugänglich.
+- Die Regel gilt auch, wenn allgemeine Pin-Beschriftungen ausgeblendet sind und die Beschriftung eines ausgewählten Pins dennoch eingeblendet wird (Grundentscheidung 76).
 
-**Status:** Grundentscheidung 78 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 79: Darstellungsform der regulären Pin-Beschriftungen
+
+Sollen die **normalen, nicht hervorgehobenen** Bezeichnungen sichtbarer Pins wie die des ausgewählten Pins einzeilig dargestellt werden?
+
+- **Variante A (Empfehlung):** Auch normale Pin-Beschriftungen sind **immer einzeilig** und werden bei Bedarf mit **„…“ gekürzt**. Sie bleiben seitlich neben dem Pin und können bei Überschneidungen gemäß Grundentscheidung 75 zeitweise ausgeblendet werden. Dadurch bleibt die Karte einheitlich und platzsparend.
+- **Variante B:** Normale Pin-Beschriftungen dürfen **mehrzeilig** dargestellt werden, um möglichst viel vom Namen zu zeigen. Nur die hervorgehobene Beschriftung des ausgewählten Pins bleibt gemäß Grundentscheidung 78 zwingend einzeilig.
+
+**Status:** Grundentscheidung 79 ist offen und noch nicht beschlossen.
