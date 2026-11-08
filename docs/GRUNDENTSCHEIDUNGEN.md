@@ -819,11 +819,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die konkrete Sonderfarbe wird bei der visuellen Umsetzung festgelegt und dokumentiert. Sie muss auf der Straßenkarte und der topografischen Karte gut erkennbar sein.
 - Die Farbgestaltung ändert nichts an IDs, Ebenenzugehörigkeit oder Datenhaltung.
 
-## Offen – Grundentscheidung 72: Pin-Bezeichnungen direkt auf der Karte
+## Grundentscheidung 72 – Pin-Beschriftungen standardmäßig sichtbar und per Button umschaltbar
 
-Sollen die optionalen Bezeichnungen von Pins bereits in der ersten Basisversion direkt neben den Markierungen auf der Karte erscheinen?
+**Beschlossen (Variante A mit verbindlicher Ergänzung):** Vorhandene optionale **Pin-Bezeichnungen werden standardmäßig direkt neben den Pins auf der Karte angezeigt**. Ein **gut erreichbarer, direkt aus der Kartenansicht bedienbarer Button** schaltet die Beschriftungen jederzeit zwischen **sichtbar** und **ausgeblendet** um.
 
-- **Variante A (Empfehlung):** Pin-Bezeichnungen werden **standardmäßig direkt an den Pins angezeigt**, sofern eine Bezeichnung vorhanden ist. Unbenannte Pins bleiben ohne Beschriftung; bei vielen Pins müssen Überlagerungen möglichst reduziert werden.
-- **Variante B:** Die Karte zeigt **zunächst nur Pin-Symbole ohne dauerhafte Beschriftungen**. Die optionale Bezeichnung wird erst beim Antippen/Auswählen eines Pins in der Pin-Ansicht angezeigt.
+**Konsequenzen:**
+- Nur Pins mit hinterlegter Bezeichnung erhalten eine Kartenbeschriftung; unbenannte Pins bleiben ohne Text.
+- Der Umschaltbutton ist in der ersten Basisversion fest vorgesehen, ohne einen Umweg über das allgemeine Einstellungsmenü. Die genaue Position und Gestalt des Buttons werden separat festgelegt.
+- Das Umschalten wirkt auf die Kartenbeschriftungen aller sichtbaren Pins, verändert aber keine gespeicherten Pin-Namen, Ebenen, Koordinaten oder anderen Daten.
+- Pins bleiben bei ausgeblendeten Beschriftungen weiterhin als Symbole sichtbar und durch Antippen auswählbar.
+- Die Darstellung soll überlappende Beschriftungen möglichst reduzieren. Die im PoC vorhandene Bedienung über ein Label-Steuerelement kann als Orientierung dienen.
+- Ob der zuletzt gewählte Sichtbarkeitszustand über Neustarts erhalten bleibt, wird in Grundentscheidung 73 entschieden.
 
-**Status:** Grundentscheidung 72 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 73: Beschriftungssichtbarkeit nach Neustart
+
+Soll pin2map die letzte Einstellung des Beschriftungsbuttons über einen Neustart hinweg beibehalten?
+
+- **Variante A (Empfehlung):** Die zuletzt gewählte Einstellung **„Beschriftungen anzeigen/ausblenden“ wird lokal gespeichert** und beim nächsten Start wiederhergestellt. Beim allerersten Start sind Beschriftungen sichtbar (Grundentscheidung 72).
+- **Variante B:** Nach **jedem Neustart** sind die Beschriftungen wieder sichtbar, auch wenn sie in der vorherigen Sitzung ausgeblendet waren.
+
+**Status:** Grundentscheidung 73 ist offen und noch nicht beschlossen.
