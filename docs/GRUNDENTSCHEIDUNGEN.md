@@ -1253,11 +1253,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Auch die Kartenbeschriftungen bleiben wie beschlossen einzeilig und werden bei Platzmangel mit „…“ gekürzt (Grundentscheidungen 78 und 79).
 - Eine spätere ausführliche Beschreibung wäre fachlich von dem kurzen Pin-Namen getrennt.
 
-## Offen – Grundentscheidung 110: Gleiche Namen bei verschiedenen Pins
+## Grundentscheidung 110 – Gleiche Pin-Namen innerhalb einer Ebene zulassen
 
-Dürfen mehrere Pins innerhalb derselben Ebene **denselben Namen** besitzen?
+**Beschlossen (Variante A):** Mehrere unterschiedliche Pins dürfen **denselben Namen** tragen, auch wenn sie **derselben Ebene** angehören. Pin-Namen müssen nicht eindeutig sein.
 
-- **Variante A (Empfehlung):** **Ja.** Pin-Namen müssen nicht eindeutig sein. Mehrere Pins können in derselben Ebene dieselbe Bezeichnung tragen; unterschieden werden sie durch ihre stabilen Pin-IDs und Koordinaten.
-- **Variante B:** **Nein.** Innerhalb einer Ebene muss jeder nichtleere Pin-Name eindeutig sein. Bei einer Dopplung wird die Eingabe zurückgewiesen oder eine bewusste Umbenennung verlangt.
+**Konsequenzen:**
+- Die eindeutige Identität eines Pins ergibt sich ausschließlich aus seiner stabilen Pin-ID, nicht aus seinem Namen oder seinen Koordinaten (Grundentscheidung 6).
+- Das Anlegen, Bearbeiten, Importieren und Verschieben von Pins darf einen bereits verwendeten Pin-Namen nicht als Fehler behandeln.
+- Pins mit identischem Namen bleiben eigenständige Objekte; Änderungen oder Löschungen betreffen immer den anhand seiner ID gewählten Pin.
+- Die für Ebenennamen beschlossene Eindeutigkeitsregel (Grundentscheidung 13) bleibt davon unberührt.
+- Die bestehenden Regeln für optionale, einzeilige und maximal 120 Zeichen lange Pin-Namen gelten weiterhin (Grundentscheidungen 107–109).
 
-**Status:** Grundentscheidung 110 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 111: Zusätzliche Beschreibung eines Pins in der Basisversion
+
+Neben dem optionalen, kurzen Pin-Namen könnte ein Pin ein eigenes, längeres Textfeld für Erläuterungen oder Notizen erhalten. Gehört dieses Feld bereits zur ersten Basisversion?
+
+- **Variante A (Empfehlung):** **Nein.** Die erste Basisversion bleibt bei **Pin-Name, Koordinaten und genau einer Ebenenzugehörigkeit**. Eine separate Beschreibung oder Notiz wird erst für einen späteren Ausbauschritt vorgesehen. So bleibt die frühe Pin-Verwaltung klein und gut testbar.
+- **Variante B:** **Ja.** Jeder Pin erhält bereits in der Basisversion ein **optionales mehrzeiliges Beschreibungsfeld**, direkt im unteren Pin-Bedienfeld bearbeitbar und automatisch lokal gespeichert. Dafür werden Datenmodell und Bedienfeld entsprechend erweitert.
+
+**Status:** Grundentscheidung 111 ist offen und noch nicht beschlossen.
