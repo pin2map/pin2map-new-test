@@ -1185,11 +1185,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Anzeige soll durch eindeutige Gestaltung bzw. zugängliche Beschriftung auch ohne Interpretation allein der Symbolform verständlich sein.
 - Die Sichtbarkeit eines Pins auf der Karte hängt weiterhin von der Sichtbarkeit seiner Ebene ab; das Symbol verändert keine gespeicherten Daten.
 
-## Offen – Grundentscheidung 104: Ebenensichtbarkeit direkt aus dem Pin-Bedienfeld umschalten
+## Grundentscheidung 104 – Augensymbol bleibt reine Sichtbarkeitsanzeige
 
-Soll das Sichtbarkeitssymbol im unteren Pin-Bedienfeld zukünftig auch ein **direkt bedienbarer Schalter** sein?
+**Beschlossen (Variante A):** Das Augensymbol neben dem Ebenenauswahlfeld im unteren Pin-Detail-/Bearbeitungsfeld dient **ausschließlich als Anzeige** der aktuellen Ebenensichtbarkeit. Es ist **kein antippbarer oder anklickbarer Schalter** zum Ein- oder Ausblenden der Ebene.
 
-- **Variante A (Empfehlung):** **Nein.** Das Augen-Symbol bleibt eine reine Zustandsanzeige. Zum gezielten Einblenden einer ausgeblendeten Ebene gibt es die bereits beschlossene separate Aktion „Ebene einblenden“; das allgemeine Ein- und Ausblenden erfolgt in der Ebenenverwaltung. So werden versehentliche Änderungen an der Sichtbarkeit einer ganzen Ebene vermieden.
-- **Variante B:** **Ja.** Antippen des Augen-Symbols schaltet die Sichtbarkeit der gesamten zugeordneten Ebene direkt ein oder aus. Das ist schneller, kann aber den ausgewählten Pin sowie sämtliche anderen Pins dieser Ebene unerwartet ausblenden.
+**Konsequenzen:**
+- Der Benutzer kann die Sichtbarkeit von Ebenen weiterhin in der Ebenenverwaltung ändern.
+- Ist die Ebene des ausgewählten Pins ausgeblendet, steht die ausdrücklich beschlossene separate Aktion „Ebene einblenden“ zur Verfügung (Grundentscheidung 102).
+- Die Anzeige aktualisiert sich, wenn sich die Sichtbarkeit oder Ebenenzugehörigkeit ändert (Grundentscheidungen 99 und 103).
+- Antippen des Symbols darf keine Sichtbarkeitsänderung und keine andere Aktion auslösen.
+- Dadurch wird das versehentliche Ausblenden einer gesamten Ebene aus der Pin-Bearbeitung heraus vermieden.
 
-**Status:** Grundentscheidung 104 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 105: Pin-Namen im Bedienfeld bearbeiten
+
+Wie soll der optionale Name eines ausgewählten Pins im unteren Pin-Bedienfeld geändert werden?
+
+- **Variante A (Empfehlung):** Der Name steht **direkt in einem jederzeit bearbeitbaren Textfeld**. Änderungen werden wie beschlossen automatisch gespeichert, ohne gesonderten Speichern-Button (Grundentscheidung 29).
+- **Variante B:** Der Name wird zunächst **als reiner Text** angezeigt. Erst nach Antippen einer separaten Aktion **„Name bearbeiten“** öffnet sich ein Eingabefeld zur Änderung; anschließend greift ebenfalls die automatische Speicherung.
+
+**Status:** Grundentscheidung 105 ist offen und noch nicht beschlossen.
