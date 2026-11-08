@@ -1264,11 +1264,21 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die für Ebenennamen beschlossene Eindeutigkeitsregel (Grundentscheidung 13) bleibt davon unberührt.
 - Die bestehenden Regeln für optionale, einzeilige und maximal 120 Zeichen lange Pin-Namen gelten weiterhin (Grundentscheidungen 107–109).
 
-## Offen – Grundentscheidung 111: Zusätzliche Beschreibung eines Pins in der Basisversion
+## Grundentscheidung 111 – Kein Beschreibungsfeld für Pins in der Basisversion
 
-Neben dem optionalen, kurzen Pin-Namen könnte ein Pin ein eigenes, längeres Textfeld für Erläuterungen oder Notizen erhalten. Gehört dieses Feld bereits zur ersten Basisversion?
+**Beschlossen (Variante A):** Die erste Basisversion enthält **kein separates Beschreibungs- oder Notizfeld** für Pins. Ein Pin besitzt weiterhin seinen optionalen Namen, geografische Koordinaten, seine stabile ID und genau eine Ebenenzugehörigkeit. Ein ergänzendes Beschreibungsfeld bleibt einem späteren Ausbauschritt vorbehalten.
 
-- **Variante A (Empfehlung):** **Nein.** Die erste Basisversion bleibt bei **Pin-Name, Koordinaten und genau einer Ebenenzugehörigkeit**. Eine separate Beschreibung oder Notiz wird erst für einen späteren Ausbauschritt vorgesehen. So bleibt die frühe Pin-Verwaltung klein und gut testbar.
-- **Variante B:** **Ja.** Jeder Pin erhält bereits in der Basisversion ein **optionales mehrzeiliges Beschreibungsfeld**, direkt im unteren Pin-Bedienfeld bearbeitbar und automatisch lokal gespeichert. Dafür werden Datenmodell und Bedienfeld entsprechend erweitert.
+**Konsequenzen:**
+- Das untere Pin-Bedienfeld bleibt auf die beschlossenen Basisfunktionen fokussiert: Namen bearbeiten, Ebenenzugehörigkeit ändern, Koordinaten anzeigen/kopieren sowie explizite Aktionen wie Verschieben und Löschen.
+- Datenmodell, Speicherung, Validierung sowie Export/Import der ersten Basisversion benötigen kein fachliches Beschreibungsfeld.
+- Die Namenslänge von maximal 120 Zeichen wird nicht zur Behelfslösung für längere Notizen aufgeweicht (Grundentscheidung 107).
+- Es wird kein Foto- oder sonstiges Medienfeld aus dieser Entscheidung abgeleitet.
 
-**Status:** Grundentscheidung 111 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 112: Auffindbarkeit der Aktion „Pin löschen“
+
+Die Löschung einzelner Pins erfordert bereits eine ausdrückliche Bestätigung (Grundentscheidung 36). Wo soll die Löschaktion im unteren Pin-Bedienfeld erreichbar sein?
+
+- **Variante A (Empfehlung):** Ein klar beschrifteter Button **„Pin löschen“** wird im Pin-Bedienfeld direkt sichtbar angeboten, optisch von gewöhnlichen Bearbeitungsfunktionen getrennt. Antippen öffnet stets die bereits beschlossene Löschbestätigung; es wird niemals direkt gelöscht.
+- **Variante B:** Die Löschaktion befindet sich in einem separaten **„Weitere Aktionen“**-Menü des Pin-Bedienfelds. Dadurch bleibt die Oberfläche kompakter, die Löschung erfordert aber einen zusätzlichen Schritt vor der Bestätigung.
+
+**Status:** Grundentscheidung 112 ist offen und noch nicht beschlossen.
