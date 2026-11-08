@@ -1220,11 +1220,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nach erfolgreichem Speichern wird die Kartenbeschriftung aktualisiert; Speicherfehler sind verständlich erkennbar zu machen.
 - Die konkrete Länge der kurzen Eingabepause wird bei der Umsetzung einheitlich festgelegt und getestet.
 
-## Offen – Grundentscheidung 107: Maximale Länge von Pin-Namen
+## Grundentscheidung 107 – Pin-Namen auf maximal 120 Zeichen begrenzen
 
-Soll die erste Basisversion für die optionalen Namen der Pins eine feste maximale Zeichenlänge vorsehen?
+**Beschlossen (Variante A):** Optionale Pin-Namen haben in der ersten Basisversion eine **feste maximale Länge von 120 Zeichen**. Das direkt bearbeitbare Namensfeld setzt diese Grenze verständlich durch und weist beim Erreichen darauf hin.
 
-- **Variante A (Empfehlung):** **Ja.** Pin-Namen werden auf eine großzügige, klar definierte Länge (beispielsweise **120 Zeichen**) begrenzt. Das Eingabefeld informiert bei Erreichen der Grenze. Lange Namen werden auf der Karte ohnehin einzeilig gekürzt (Grundentscheidungen 78 und 79).
-- **Variante B:** **Nein, keine fachliche feste Zeichenbegrenzung** in der Basisversion. Beliebig lange Pin-Namen werden angenommen, soweit sie technisch speicherbar sind; auf der Karte wird ihre Anzeige weiterhin gekürzt.
+**Konsequenzen:**
+- Ein Pin darf weiterhin einen leeren bzw. fehlenden Namen haben (Grundentscheidungen 6 und 105).
+- Ein Name mit mehr als 120 Zeichen wird bei manueller Eingabe nicht ungefragt abgeschnitten und gespeichert; das Eingabefeld begrenzt die Eingabe bzw. zeigt eine verständliche Validierung.
+- Die Begrenzung ist auch bei Import und Datenvalidierung zu beachten; ungültige Eingaben werden nicht stillschweigend verändert.
+- Auch innerhalb des Limits werden längere Kartenbeschriftungen weiterhin einzeilig mit „…“ verkürzt (Grundentscheidungen 78 und 79). Der vollständig gespeicherte Name bleibt im Pin-Bedienfeld zugänglich.
+- Die automatische Speicherung nach kurzer Eingabepause bleibt bestehen (Grundentscheidung 106).
 
-**Status:** Grundentscheidung 107 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 108: Leerzeichen am Anfang und Ende eines Pin-Namens
+
+Wie soll pin2map mit führenden und abschließenden Leerzeichen umgehen, wenn ein Pin-Name eingegeben wird?
+
+- **Variante A (Empfehlung):** **Führende und abschließende Leerzeichen werden beim Speichern automatisch entfernt**. Enthält der eingegebene Text anschließend keine Zeichen mehr, bleibt der Pin unbenannt. Leerzeichen zwischen Wörtern bleiben erhalten.
+- **Variante B:** **Der Name wird exakt so gespeichert, wie er eingegeben wurde**, einschließlich führender und abschließender Leerzeichen. Auch Namen, die ausschließlich aus Leerzeichen bestehen, wären damit technisch möglich.
+
+**Status:** Grundentscheidung 108 ist offen und noch nicht beschlossen.
