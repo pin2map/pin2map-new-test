@@ -521,11 +521,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Bei abgebrochenem oder fehlgeschlagenem Import bleibt die bisherige aktive Ebene unverändert.
 - Der Importmodus „Hinzufügen“ ist hiervon nicht betroffen; dort bleibt die zuvor aktive Ebene unverändert (Grundentscheidung 44).
 
-## Offen – Grundentscheidung 46: Kartenausschnitt nach dem Ersetzen aller Daten
+## Grundentscheidung 46 – Alle importierten Pins nach „Ersetzen“ automatisch anzeigen
 
-Welche Kartenansicht soll pin2map nach einem erfolgreichen Import im Modus **„Ersetzen“** anzeigen?
+**Beschlossen (Variante A):** Nach einem **erfolgreichen Import mit „Ersetzen“** stellt pin2map den Kartenausschnitt automatisch so ein, dass **alle importierten Pins sichtbar sind**.
 
-- **Variante A (Empfehlung):** Die Karte wird automatisch so eingestellt, dass **alle importierten Pins** sichtbar sind, soweit mindestens ein Pin vorhanden ist. Bei einer Sicherung ohne Pins bleibt der vorherige Kartenausschnitt erhalten.
-- **Variante B:** Die **bisherige lokale Kartenansicht bleibt unverändert**, auch wenn die importierten Pins außerhalb des sichtbaren Ausschnitts liegen. Der Nutzer navigiert anschließend selbst zu ihnen.
+**Konsequenzen:**
+- Kartenmittelpunkt und Zoom werden anhand der geografischen Ausdehnung aller importierten Pins angepasst; ein angemessener Rand sorgt für sichtbare Markierungen.
+- Enthält die gültige Sicherungsdatei **keine Pins**, bleibt der bisherige Kartenausschnitt erhalten.
+- Bei einem fehlgeschlagenen oder abgebrochenen Import erfolgt keine automatische Kartenanpassung.
+- Die nach erfolgreichem Import eingestellte Kartenansicht wird gemäß Grundentscheidung 22 als letzte Ansicht lokal gespeichert.
+- Nach dem Ersetzen bleibt unabhängig vom Kartenausschnitt zunächst **keine Ebene aktiv** (Grundentscheidung 45).
+- Für „Hinzufügen“ gilt weiterhin die automatische Kartenanpassung ausschließlich auf die neu hinzugefügten Pins (Grundentscheidung 43).
 
-**Status:** Grundentscheidung 46 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 47: Sichtbarkeit der Ebenen nach dem Ersetzen
+
+Nach dem Import mit **„Ersetzen“** sollen die importierten Pins auf der Karte sichtbar sein (Grundentscheidung 46). Wie wird die Ebenensichtbarkeit dafür behandelt?
+
+- **Variante A (Empfehlung):** Nach erfolgreichem „Ersetzen“ werden **alle importierten Ebenen zunächst sichtbar geschaltet**. Dadurch kann die Karte wirklich alle importierten Pins anzeigen, auch wenn einzelne Ebenen in der Sicherungsdatei zuvor ausgeblendet waren. Die neue Sichtbarkeit wird lokal gespeichert.
+- **Variante B:** Die **Sichtbarkeit der Ebenen aus der Sicherungsdatei wird wiederhergestellt**. Der Kartenausschnitt umfasst zwar die Koordinaten aller importierten Pins, Pins ausgeblendeter Ebenen bleiben jedoch weiterhin unsichtbar.
+
+**Status:** Grundentscheidung 47 ist offen und noch nicht beschlossen.
