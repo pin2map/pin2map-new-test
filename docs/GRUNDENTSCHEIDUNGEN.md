@@ -474,11 +474,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Übernahme der neuen Ebene und aller importierten Pins erfolgt konsistent: Bei einem Fehler bleiben die bisherigen Daten unverändert und es entsteht kein unvollständiger Import.
 - Für „Ersetzen“ bleibt die Struktur des gültigen Sicherungsbestands maßgeblich (Grundentscheidungen 39 und 40).
 
-## Offen – Grundentscheidung 42: Benennung der automatisch angelegten Importebene
+## Grundentscheidung 42 – Dateiname als automatisch vergebener Name der Importebene
 
-Wie erhält die neue reguläre Ebene beim Importmodus „Hinzufügen“ ihren Namen?
+**Beschlossen (Variante B, ausdrücklich angepasst):** Beim Importmodus **„Hinzufügen“** wird die genau eine neue reguläre Ebene **ohne vorherige Namenseingabe automatisch nach der zu importierenden Datei benannt**. Maßgeblich ist der Dateiname ohne die Dateiendung (z. B. `Ausflug.json` → „Ausflug“), nicht das zuvor vorgeschlagene Schema „Import 1“.
 
-- **Variante A (Empfehlung):** pin2map schlägt automatisch einen freien Namen wie **„Import 1“**, **„Import 2“** usw. vor. Vor dem Bestätigen kann der Benutzer diesen Namen ändern; es gelten die bestehenden Regeln für eindeutige Ebenennamen.
-- **Variante B:** pin2map erstellt die neue Ebene sofort mit einem automatisch vergebenen freien Namen wie **„Import 1“**. Eine Änderung ist erst nach abgeschlossenem Import über die normale Funktion „Ebene umbenennen“ möglich.
+**Konsequenzen:**
+- Der Dateiname wird als lesbarer Ebenenname übernommen; die Dateiendung wird entfernt, um Dateiformat und Ebenenbezeichnung zu trennen.
+- Die Regeln für reguläre Ebenennamen gelten weiterhin: kein leerer Name, keine Dopplung nach trim- und groß-/kleinschreibungsunabhängigem Vergleich und kein reserviertes „Privat“ (Grundentscheidungen 12, 13 und 16).
+- Um die automatische Anlage ohne zusätzliche Namensabfrage zu gewährleisten, wird bei Konflikten ein **eindeutiger nummerierter Zusatz** angehängt (z. B. „Ausflug (2)“); ist der Dateiname leer oder unbrauchbar, wird ein eindeutiger Ersatzname wie „Import 1“ gewählt.
+- Die Ebene kann nach dem Import über die normale Ebenenverwaltung umbenannt werden.
+- Alle importierten Pins werden dieser einzigen neuen Ebene zugeordnet, bestehende Pins und Ebenen bleiben unverändert (Grundentscheidung 41).
+- Der Import selbst bleibt vor der Datenübernahme bewusst zu bestätigen (Grundentscheidung 40).
 
-**Status:** Grundentscheidung 42 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 43: Kartenausschnitt nach dem Hinzufügen importierter Pins
+
+Wie soll sich die Karte nach einem erfolgreichen Import mit „Hinzufügen“ verhalten?
+
+- **Variante A (Empfehlung):** pin2map stellt den **Kartenausschnitt automatisch so ein, dass alle hinzugefügten Pins sichtbar sind**, sofern die Importdatei Pins enthält. Dies erleichtert eine unmittelbare Sichtprüfung; die neu angelegte Ebene ist entsprechend der Regel für neue Ebenen sichtbar.
+- **Variante B:** Der bisherige Kartenausschnitt **bleibt unverändert**. Importierte Pins erscheinen nur, soweit sie im aktuellen Ausschnitt liegen. Die neu angelegte Ebene ist sichtbar, kann aber wie jede reguläre Ebene später ein-/ausgeblendet werden.
+
+**Status:** Grundentscheidung 43 ist offen und noch nicht beschlossen.
