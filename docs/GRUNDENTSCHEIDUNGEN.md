@@ -354,11 +354,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die automatische Speicherung von Eingabefeldern gemäß Grundentscheidung 29 gilt weiterhin, führt jedoch nicht zur automatischen Übernahme von Positionsänderungen.
 - Die Darstellung der bisherigen und der neuen Position während der Vorschau ist Gegenstand von Grundentscheidung 32.
 
-## Offen – Grundentscheidung 32: Darstellung der bisherigen Position beim Verschieben
+## Grundentscheidung 32 – Alte und neue Pin-Position gleichzeitig anzeigen
 
-Wie sollen die bisherige und die vorgeschlagene neue Position während der Verschiebevorschau auf der Karte kenntlich gemacht werden?
+**Beschlossen (Variante A):** Während der Vorschau einer Pin-Verschiebung werden **die bisherige und die neu vorgeschlagene Position gleichzeitig auf der Karte angezeigt**. Beide Markierungen sind visuell eindeutig unterscheidbar.
 
-- **Variante A (Empfehlung):** **Beide Positionen** werden gleichzeitig angezeigt: die bisherige Position als deutlich unterscheidbare Markierung und die neue als Vorschau-Pin. Dadurch ist die beabsichtigte Verschiebung räumlich nachvollziehbar. Nach Übernahme erscheint nur die neue reguläre Position, bei Abbruch wieder nur die alte.
-- **Variante B:** Während der Vorschau wird **nur die neue Position** angezeigt. Die alte Position ist erst nach einem Abbruch wieder sichtbar.
+**Konsequenzen:**
+- Die bisherige Position bleibt während des Verschiebevorgangs als eigene Markierung erkennbar.
+- Die neue Position wird als Vorschau-Pin gezeigt; vor der ausdrücklichen Übernahme werden keine gespeicherten Koordinaten geändert (Grundentscheidung 31).
+- Nach erfolgreicher Übernahme erscheint nur die neue reguläre Pin-Position; nach Abbruch nur die unveränderte bisherige Position.
+- Die beiden Markierungen sind lediglich Ansichten desselben Pins; es wird niemals ein zweiter dauerhafter Pin erzeugt.
+- Die konkrete visuelle Kennzeichnung der beiden Positionen wird in der UI-Umsetzung gestaltet.
 
-**Status:** Grundentscheidung 32 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 33: Visuelle Verbindung zwischen alter und neuer Position
+
+Soll zusätzlich zu den zwei Positionsmarkierungen eine Verbindung auf der Karte sichtbar sein?
+
+- **Variante A (Empfehlung):** Eine gut erkennbare **Linie** verbindet die alte und die neue Position während der Vorschau. Sie verdeutlicht die Richtung und das Ausmaß der Verschiebung und verschwindet bei Übernahme oder Abbruch.
+- **Variante B:** Es werden ausschließlich die zwei unterscheidbaren Positionsmarkierungen angezeigt. Eine Verbindungslinie ist nicht erforderlich.
+
+**Status:** Grundentscheidung 33 ist offen und noch nicht beschlossen.
