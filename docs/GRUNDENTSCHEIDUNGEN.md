@@ -650,11 +650,21 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Kartenwahl-Bedienung funktioniert mit Touch und Maus, ohne die normale Kartenbewegung unnötig zu behindern.
 - Die genaue Position und Ausrichtung des Buttons innerhalb des unteren Kartenrands werden in einer folgenden Entscheidung präzisiert.
 
-## Offen – Grundentscheidung 57: Genaue Position des Kartenwahl-Buttons
+## Grundentscheidung 57 – Kartenwahl-Button unten mittig auf Höhe des Zoom-Minus-Buttons
 
-Wo soll der direkt sichtbare Kartenwahl-Button am unteren Kartenrand positioniert werden?
+**Beschlossen (Variante A):** Der direkt sichtbare Kartenwahl-Button wird **horizontal zentriert am unteren Kartenrand** positioniert, und zwar **auf derselben Höhe wie der untere Zoom-Button „−“**. Die Anordnung übernimmt die zuletzt im PoC abgestimmte Position.
 
-- **Variante A (Empfehlung):** **Horizontal zentriert am unteren Kartenrand**, auf derselben Höhe wie der untere Zoom-Button („−“). Dies entspricht der im PoC erprobten Anordnung und hält den Kartenwechsel gut erreichbar.
-- **Variante B:** **In der unteren rechten Kartenecke**, in der Nähe der Zoom-Steuerung. Die Kartenmitte bleibt so frei von Bedienelementen.
+**Konsequenzen:**
+- Die Kartenwahl bleibt als eigenständige Steuerung direkt in der Kartenansicht erreichbar (Grundentscheidung 56).
+- Die vertikale Position orientiert sich am Zoom-Minus-Button und ausdrücklich nicht am Zoom-Plus-Button.
+- Die horizontale Platzierung ist mittig; die Umsetzung muss auch bei unterschiedlichen Bildschirmgrößen, Geräte-Aussparungen und Touch-Bedienung ohne Überschneidungen funktionieren.
+- Ein Wechsel des Kartenhintergrunds verändert Pins, Ebenen, Kartenmittelpunkt und Zoomstufe nicht (Grundentscheidung 54); die Auswahl bleibt gemäß Grundentscheidung 55 gespeichert.
 
-**Status:** Grundentscheidung 57 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 58: Darstellung der Kartenhintergrund-Auswahl
+
+Wie soll die Kartenhintergrund-Auswahl nach Antippen des unteren Kartenwahl-Buttons erscheinen?
+
+- **Variante A (Empfehlung):** Ein **kompaktes Auswahlmenü direkt oberhalb des Kartenwahl-Buttons** zeigt die verfügbaren Kartenhintergründe und kennzeichnet die aktuell ausgewählte Karte. Die Kartenansicht bleibt sichtbar; die Auswahl schließt das Menü.
+- **Variante B:** Ein **zentraler Auswahldialog** über der Karte zeigt die Kartenhintergründe. Er kann mehr Platz für Informationen oder Vorschaubilder bieten, verdeckt aber mehr von der Karte.
+
+**Status:** Grundentscheidung 58 ist offen und noch nicht beschlossen.
