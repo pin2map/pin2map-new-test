@@ -1046,11 +1046,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die automatische Anpassung beim Öffnen oder Wechseln der Pin-Ansicht ist von der bewussten manuellen Kartenbewegung zu unterscheiden: Manuelles Verschieben der Karte darf die Auswahl weiterhin erhalten (Grundentscheidung 85).
 - Wie sich die Kartenansicht beim späteren Schließen des Bedienfelds verhält, wird gesondert festgelegt.
 
-## Offen – Grundentscheidung 92: Kartenposition beim Schließen des Pin-Bedienfelds
+## Grundentscheidung 92 – Kartenposition beim Schließen des Pin-Bedienfelds beibehalten
 
-Wenn pin2map die Karte wegen des geöffneten Pin-Bedienfelds automatisch verschoben hat: Soll der ursprüngliche Kartenausschnitt beim Schließen des Bedienfelds wiederhergestellt werden?
+**Beschlossen (Variante A):** Beim Schließen des unteren Pin-Detail-/Bearbeitungsfelds **bleibt die Karte in der zuletzt angezeigten Position**. Es erfolgt **keine automatische Rückbewegung** zum Kartenausschnitt vor dem Öffnen des Bedienfelds, auch wenn die Karte zum Sichtbarhalten eines Pins automatisch verschoben wurde.
 
-- **Variante A (Empfehlung):** Die Karte **bleibt beim Schließen in der zuletzt angezeigten Position**. Sie springt nicht automatisch zurück. Das vermeidet unerwartete Kartenbewegungen und erhält zwischenzeitlich vorgenommene manuelle Anpassungen.
-- **Variante B:** Die Karte **kehrt beim Schließen automatisch zum Kartenausschnitt vor dem Öffnen des Bedienfelds zurück**, sofern pin2map sie für die Pin-Sichtbarkeit verschoben hatte. Dadurch entsteht eine Rückkehr zum vorherigen Blickpunkt, kann aber zwischenzeitliche Navigation überschreiben.
+**Konsequenzen:**
+- Zwischenzeitliche bewusste Kartenverschiebungen des Benutzers bleiben vollständig erhalten.
+- Die Zoomstufe wird durch das Schließen des Bedienfelds nicht verändert.
+- Bereits gespeicherte Pin-Koordinaten bleiben unverändert.
+- Die automatische Kartenverschiebung beim Öffnen/Wechseln einer Pin-Ansicht nach Grundentscheidung 91 bleibt bestehen, löst beim Schließen jedoch keine automatische Rückkehr aus.
+- Bei erneutem Öffnen einer Pin-Ansicht darf die Karte wiederum nur dann angepasst werden, wenn das Bedienfeld den ausgewählten Pin sonst verdecken würde.
 
-**Status:** Grundentscheidung 92 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 93: Zugriff auf den ausgewählten Pin außerhalb des Kartenausschnitts
+
+Ein Pin bleibt auch beim Verschieben oder Zoomen der Karte ausgewählt (Grundentscheidungen 85 und 86), selbst wenn er anschließend außerhalb des sichtbaren Kartenausschnitts liegt. Soll die geöffnete Pin-Ansicht einen direkten Weg anbieten, ihn wieder auf der Karte zu finden?
+
+- **Variante A (Empfehlung):** Das untere Pin-Bedienfeld bietet eine Aktion **„Pin auf Karte zeigen“**. Sie verschiebt den Kartenausschnitt bei Bedarf so, dass der aktuell ausgewählte Pin im sichtbaren Bereich oberhalb des Bedienfelds erscheint; die Zoomstufe und Pin-Koordinaten bleiben unverändert. Die Aktion wird ausschließlich bewusst ausgelöst.
+- **Variante B:** Es gibt **keine zusätzliche Aktion**. Wer den ausgewählten Pin nach einer Kartenbewegung nicht mehr sieht, findet ihn durch manuelles Zurückbewegen oder Zoomen der Karte wieder.
+
+**Status:** Grundentscheidung 93 ist offen und noch nicht beschlossen.
