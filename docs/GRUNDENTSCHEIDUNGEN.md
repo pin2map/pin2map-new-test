@@ -1069,11 +1069,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Pin-Auswahl und das Bedienfeld bleiben während und nach der Aktion geöffnet.
 - Die Positionierung berücksichtigt die tatsächlich sichtbare Kartenfläche oberhalb des mitwachsenden Pin-Bedienfelds (Grundentscheidungen 89–91).
 
-## Offen – Grundentscheidung 94: Bedienbarkeit der Aktion „Pin auf Karte zeigen“
+## Grundentscheidung 94 – Button „Pin zeigen“ nur bei nicht sichtbarem Pin
 
-Wie soll die neue Aktion im unteren Pin-Bedienfeld angeboten werden?
+**Beschlossen (Variante A mit verbindlicher Ergänzung):** Das untere Pin-Bedienfeld zeigt einen **direkt erreichbaren Button mit Symbol und Beschriftung „Pin zeigen“ ausschließlich dann**, wenn der aktuell ausgewählte Pin **im tatsächlich sichtbaren Kartenbereich nicht sichtbar** ist. Solange der Pin sichtbar ist, bleibt der Button ausgeblendet.
 
-- **Variante A (Empfehlung):** Als **direkt sichtbarer Button mit eindeutigem Symbol und Kurzbeschriftung „Pin zeigen“**. Der Button ist ohne weiteres Menü erreichbar und funktioniert auch, wenn der ausgewählte Pin derzeit außerhalb des Kartenausschnitts liegt.
-- **Variante B:** Als **Eintrag in einem zusätzlichen Aktionsmenü** des Pin-Bedienfelds. Das spart Platz im Bedienfeld, erfordert aber einen zusätzlichen Bedienschritt.
+**Konsequenzen:**
+- Der Button ist bei Bedarf mit einem einzigen Antippen ohne weiteres Menü nutzbar.
+- Der durch das untere Bedienfeld verdeckte Kartenbereich zählt bei der Sichtbarkeitsprüfung nicht als sichtbar.
+- Kartenbewegungen, Zoom, Pin-Wechsel und Änderungen der Bedienfeldhöhe aktualisieren den Button-Zustand.
+- Die Aktion verschiebt bei Bedarf den Kartenausschnitt zum ausgewählten Pin, ohne Zoomstufe oder gespeicherte Pin-Koordinaten zu ändern (Grundentscheidung 93).
+- Sobald der Pin sichtbar ist, verschwindet der Button wieder. Die Pin-Auswahl bleibt bestehen.
+- Das Ein- und Ausblenden darf keine störenden Layoutsprünge oder Rückkopplung mit der automatischen Bedienfeldhöhe auslösen (Grundentscheidung 90).
 
-**Status:** Grundentscheidung 94 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 95: Animation automatischer Kartenverschiebungen
+
+Wenn pin2map die Karte automatisch verschiebt, um den ausgewählten Pin sichtbar zu halten oder ihn über „Pin zeigen“ wiederzufinden (Grundentscheidungen 91 und 93), wie soll diese Bewegung erscheinen?
+
+- **Variante A (Empfehlung):** Die Karte verschiebt sich **kurz und sanft animiert**. Das macht die Richtungsänderung nachvollziehbar. Einstellungen für reduzierte Bewegung werden berücksichtigt.
+- **Variante B:** Die Karte **springt sofort ohne Animation** an die Zielposition. Das ist unmittelbar, kann aber den räumlichen Zusammenhang weniger deutlich machen.
+
+**Status:** Grundentscheidung 95 ist offen und noch nicht beschlossen.
