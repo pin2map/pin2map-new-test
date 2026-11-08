@@ -682,11 +682,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein Wechsel ist jederzeit durch erneute Auswahl eines anderen Kartenhintergrunds korrigierbar.
 - Falls die Darstellung des gewählten Kartenhintergrunds fehlschlägt, bleiben lokale Pins und Ebenen sowie ihre Daten erhalten; die Kartenoberfläche zeigt den Fehler nachvollziehbar an.
 
-## Offen – Grundentscheidung 60: Kartenarten in der ersten Basisversion
+## Grundentscheidung 60 – Straßenkarte und topografische Karte in der Basisversion
 
-Welche Arten von Kartenhintergründen sollen die mindestens zwei auswählbaren Ansichten der ersten Basisversion umfassen?
+**Beschlossen (Variante A):** Die erste stabile lokale Basisversion bietet **mindestens zwei kartografische Kartenhintergründe**: eine **klassische Straßenkarte** und eine **topografische Karte**. Eine Satelliten- bzw. Luftbildansicht ist für diese Basisversion nicht erforderlich.
 
-- **Variante A (Empfehlung für eine schlanke Basisversion):** Zunächst **mindestens zwei kartografische Darstellungen**, zum Beispiel eine Standard-Straßenkarte und eine topografische Karte. Satelliten- bzw. Luftbilder sind in der ersten Basisversion noch nicht erforderlich.
-- **Variante B:** Bereits die erste Basisversion bietet **eine Standard-Straßenkarte und eine Satelliten-/Luftbildansicht**. Das setzt einen geeigneten Bildkartenanbieter mit passenden Zugangs- und Nutzungsbedingungen voraus.
+**Konsequenzen:**
+- Beide Kartentypen sind über die bereits beschlossene Kartenhintergrund-Auswahl unmittelbar zugänglich (Grundentscheidungen 54, 56–59).
+- Der Kartenwechsel erfolgt sofort, ohne Bestätigung, und verändert weder Pins, Ebenen noch Kartenmittelpunkt oder Zoomstufe.
+- Die zuletzt gewählte Kartenart bleibt beim Neustart erhalten (Grundentscheidung 55).
+- Die konkreten Kartenanbieter werden vor der technischen Umsetzung anhand Eignung, Verfügbarkeit, Lizenz, Quellenangaben und Nutzungsbedingungen ausgewählt; aus dieser Entscheidung folgt keine Freigabe eines bestimmten Kacheldienstes.
+- Ein gesonderter Offline-Kartendownload ist in der Basisversion nicht vorgesehen (Grundentscheidung 51).
+- Satelliten- und Luftbilder bleiben eine mögliche spätere Erweiterung.
 
-**Status:** Grundentscheidung 60 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 61: Standardkartenhintergrund beim ersten Start
+
+Welche der beiden beschlossenen Kartenarten soll pin2map beim **allerersten Start** als Standard verwenden, solange noch keine persönliche Kartenwahl gespeichert ist?
+
+- **Variante A (Empfehlung):** Die **klassische Straßenkarte** ist die Standardansicht. Sie bietet eine vertraute Orientierung über Straßen, Orte und Wege; die topografische Karte kann jederzeit gewählt werden.
+- **Variante B:** Die **topografische Karte** ist die Standardansicht. Geländedarstellung und Höhenlinien stehen damit von Anfang an im Mittelpunkt; die Straßenkarte kann jederzeit gewählt werden.
+
+**Status:** Grundentscheidung 61 ist offen und noch nicht beschlossen. Die Wiederherstellung der zuletzt gewählten Kartenansicht bei späteren Starts bleibt unabhängig davon gültig (Grundentscheidung 55).
