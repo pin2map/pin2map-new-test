@@ -1433,11 +1433,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das Suchfeld muss auf kleinen Touch-Bildschirmen mit weiteren Bedienelementen der Kopfzeile vereinbar und ohne Überdeckung wichtiger Funktionen nutzbar sein.
 - Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 124: Darstellung der Trefferliste bei Ortsnamensuchen
+## Grundentscheidung 124 – Kompakte Trefferliste direkt unter dem Ortssuchfeld
 
-Wenn eine bewusst gestartete Ortsnamensuche mehrere plausible Ergebnisse liefert: Wie wird die Trefferliste auf der Karte dargestellt?
+**Beschlossen (Variante A):** Wenn die ausdrücklich gestartete geografische Ortsnamensuche mehrere plausible Suchergebnisse liefert, werden diese in einer **kompakten Trefferliste direkt unter dem dauerhaft sichtbaren Suchfeld** angezeigt. Bei vielen Treffern ist die Liste **vertikal scrollbar**; die Karte bleibt als Hauptansicht dahinter sichtbar.
 
-- **Variante A (Empfehlung):** Ein **kompaktes, bei Bedarf vertikal scrollbareres Auswahlfeld direkt unter dem Suchfeld** zeigt die Treffer mit Ort, Region und Land. Die Karte bleibt sichtbar und bedienbar, soweit die Liste sie nicht überdeckt. Nach Auswahl oder bewusstem Schließen verschwindet die Liste.
-- **Variante B:** Die Treffer erscheinen in einer **größeren, separaten Auswahlansicht**, die einen wesentlichen Teil der Karte überdeckt, um mehr Platz für lange Ortsnamen und Zusatzinformationen zu bieten. Nach Auswahl oder Abbruch wird die normale Kartenansicht wiederhergestellt.
+**Konsequenzen:**
+- Jeder Listeneintrag enthält eine ausreichend unterscheidbare Ortsangabe, insbesondere **Ortsname sowie Region und Land**, soweit vom Geocoding-Dienst verfügbar.
+- Erst die bewusste Auswahl eines konkreten Treffers führt zur Erstellung eines Pins; bei genau einem geeigneten Treffer gilt weiterhin die automatische Erstellung ohne Liste (Grundentscheidung 116).
+- Die Trefferliste verschwindet nach Auswahl oder bewusstem Schließen. Der Suchtext bleibt nach erfolgreicher Pin-Erstellung erhalten (Grundentscheidung 122).
+- Die Liste wird auf schmalen Touch-Geräten so positioniert und begrenzt, dass sie ohne unbedienbare oder abgeschnittene Einträge nutzbar bleibt.
+- Die Trefferliste darf nicht fälschlich die Sichtbarkeit der Karte, die Koordinaten bereits vorhandener Pins oder die aktive Ebene ändern.
+- Ein durch die Ortsnamensuche angelegter Pin wird weiterhin **immer in der Ebene „Privat“** gespeichert (Grundentscheidung 119), auch wenn „Privat“ ausgeblendet ist (Grundentscheidung 120).
+- **Die Ortsnamensuche ist und bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-**Status:** Grundentscheidung 124 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 125: Trefferliste ohne Pin-Erstellung schließen
+
+Wie soll sich die unter dem Suchfeld geöffnete Trefferliste schließen lassen, **ohne einen Ort auszuwählen und ohne einen Pin zu erstellen**?
+
+- **Variante A (Empfehlung):** Die Trefferliste schließt sich sowohl durch **Antippen außerhalb der Liste** als auch über eine **kleine, eindeutig zugängliche Schließen-Schaltfläche**. Der eingegebene Suchtext bleibt erhalten, und die Karte wird nicht verändert.
+- **Variante B:** Die Trefferliste lässt sich **nur über eine eigene Schließen-Schaltfläche** schließen. Ein Antippen der Karte außerhalb der Trefferliste schließt sie nicht.
+
+**Status:** Grundentscheidung 125 ist offen und noch nicht beschlossen.
