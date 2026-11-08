@@ -1468,11 +1468,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Regel betrifft ausschließlich leere bzw. nur aus Leerzeichen bestehende Suchtexte; für gültige Suchanfragen und etwaige Geocoding-Fehler gelten die übrigen beschlossenen Regeln.
 - Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 127: Rückmeldung während einer laufenden Ortsnamensuche
+## Grundentscheidung 127 – Ladeanzeige während der laufenden Ortsnamensuche
 
-Was soll die Anwendung anzeigen, nachdem eine **gültige Ortsnamensuche bewusst gestartet** wurde, während der Geocoding-Dienst noch auf die Anfrage antwortet?
+**Beschlossen (Variante A):** Nach bewusstem Start einer gültigen geografischen Ortsnamensuche zeigt pin2map **im Suchbereich einen kompakten Ladeindikator** an, solange die Anfrage an den Geocoding-Dienst läuft. Der **Suchbutton wird während der laufenden Anfrage vorübergehend deaktiviert**, damit dieselbe Suche nicht versehentlich mehrfach gestartet wird.
 
-- **Variante A (Empfehlung):** Im Suchbereich erscheint **ein kompakter Ladeindikator** (beispielsweise ein drehendes Symbol) und der Suchbutton ist bis zur Antwort vorübergehend deaktiviert. Der eingegebene Suchtext bleibt sichtbar und die Karte normal benutzbar. So sind Bearbeitungsstand und Wartezeit erkennbar und doppelte identische Anfragen werden vermieden.
-- **Variante B:** Während der Anfrage erscheint **keine besondere Ladeanzeige** und der Suchbutton bleibt normal benutzbar. Die Oberfläche ändert sich erst, wenn Ergebnisse oder ein Fehler eintreffen.
+**Konsequenzen:**
+- Der bereits eingegebene Suchtext bleibt während der Suche sichtbar.
+- Die Karte bleibt während der Anfrage grundsätzlich weiter bedienbar.
+- Nach Ergebnis, Fehler oder Abbruch endet der Ladezustand und die Suchaktion ist wieder verfügbar.
+- Die Ladeanzeige selbst erzeugt weder einen Pin noch zusätzliche Suchanfragen.
+- Für die Ergebnisverarbeitung gelten weiterhin die Grundentscheidungen 116–125, einschließlich der Speicherung aller aus der Ortsnamensuche erstellten Pins in **„Privat“**.
+- **Die Ortsnamensuche ist und bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 127 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 128: Neue Suche während einer bereits laufenden Ortssuchanfrage
+
+Was soll geschehen, wenn während einer noch laufenden Ortsnamensuche der eingegebene Suchtext geändert wird und der Benutzer anschließend eine andere Suche starten möchte?
+
+- **Variante A (Empfehlung):** **Nur die zuletzt ausdrücklich gestartete Suche darf Ergebnisse anzeigen oder Pins erzeugen.** Eine neue Suche ersetzt die vorherige: Eine bestehende Anfrage wird soweit technisch möglich abgebrochen; verspätete Ergebnisse der alten Anfrage werden grundsätzlich ignoriert. Der Benutzer darf den Suchtext weiter bearbeiten.
+- **Variante B:** **Während der laufenden Anfrage ist keine neue Suche möglich.** Zuerst muss die bisherige Suche beendet sein. Der Benutzer kann erst danach einen anderen Ortsnamen suchen; so werden parallele Anfragen vermieden, aber die Bedienung ist weniger flexibel.
+
+**Status:** Grundentscheidung 128 ist offen und noch nicht beschlossen.
