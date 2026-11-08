@@ -1336,11 +1336,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Eine spätere Server-/Synchronisationsintegration folgt erst nach einer stabilen lokalen Basis (Grundentscheidung 3).
 - Ungeklärte Einzelheiten des Geocodings werden gesondert entschieden; sie ändern nicht den verpflichtenden Umfang der Ortssuche.
 
-## Offen – Grundentscheidung 116: Wann gilt ein Orts-Suchergebnis als eindeutig?
+## Grundentscheidung 116 – Direkte Pin-Erstellung nur bei genau einem geeigneten Ortssuchtreffer
 
-Die verbindliche Ortsnamensuche soll bei eindeutigem Treffer sofort einen Pin erzeugen, bei mehreren möglichen Treffern dagegen eine Auswahlliste zeigen. Welche Regel schützt vor falschen automatisch gesetzten Pins?
+**Beschlossen (Variante A):** Die verbindlich zur ersten Basisversion gehörende **Ortsnamensuche** erstellt einen Pin **nur dann ohne Treffer-Auswahlliste**, wenn der Geocoding-Dienst **genau einen geeigneten geografischen Treffer** liefert. Sobald mehrere plausible Orte gefunden werden, zeigt pin2map **immer eine Auswahlliste**, aus der der Benutzer bewusst den gewünschten Ort auswählt. Der vermeintlich relevanteste Treffer darf nicht automatisch vorgezogen werden.
 
-- **Variante A (Empfehlung):** **Direkte Pin-Erstellung nur bei genau einem geeigneten Suchtreffer.** Sobald der Geocoding-Dienst mehrere plausible Orte liefert, wird **immer eine Auswahlliste** angezeigt; die App wählt nicht eigenmächtig den bestbewerteten Treffer. Sind Ergebnisse unzureichend oder fehlen sie, entsteht kein Pin.
-- **Variante B:** **Direkte Pin-Erstellung auch bei mehreren Treffern**, wenn der Geocoding-Dienst einen Treffer mit deutlich höherer Relevanz bewertet als alle anderen. Nur bei enger beieinanderliegenden Bewertungen erscheint die Auswahlliste.
+**Konsequenzen:**
+- Genau ein geeigneter Treffer: Pin an den zugehörigen Koordinaten direkt erstellen und gemäß den bestehenden Pin-Regeln lokal speichern.
+- Mehrere plausible Treffer: geeignete Treffer unterscheidbar mit Zusatzinformationen (insbesondere Ort, Region, Land) anzeigen; erst nach bewusster Auswahl einen Pin erstellen.
+- Kein geeigneter Treffer, fehlerhafte oder unklare Ergebnisse: **keinen Pin erstellen** und eine verständliche Meldung anzeigen.
+- Eine Rangfolge oder ein Relevanzwert des Geocoding-Anbieters ersetzt niemals die bewusste Auswahl, sobald mehrere plausible Treffer vorhanden sind.
+- Diese Regel gilt unabhängig vom später ausgewählten Geocoding-Anbieter und schützt vor versehentlich falsch gesetzten Pins.
+- Die bereits beschlossene **Ortsnamensuche bleibt obligatorischer Bestandteil der ersten testbaren Basisversion** (Basisanforderung Ortsnamensuche und Grundentscheidung 115).
 
-**Status:** Grundentscheidung 116 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 117: Kartenansicht nach Ortsnamensuche und Pin-Erstellung
+
+Was soll mit der Kartenansicht geschehen, wenn über die Ortsnamensuche ein Pin angelegt wurde – unabhängig davon, ob der Treffer eindeutig war oder aus einer Liste gewählt wurde?
+
+- **Variante A (Empfehlung):** Die Karte **springt unmittelbar zum neu erstellten Pin** und zeigt ihn gut sichtbar in einem geeigneten Zoom, sodass der Benutzer sofort prüfen kann, ob der richtige Ort gewählt wurde. Der Pin bleibt ausgewählt und sein unteres Bearbeitungsfeld ist geöffnet, entsprechend der bestehenden Pin-Erstellungsregel.
+- **Variante B:** Die Karte **behält den bisherigen Kartenausschnitt und Zoom** bei. Der Pin wird zwar gespeichert und ausgewählt, kann aber außerhalb der gerade angezeigten Karte liegen; zum Auffinden wäre anschließend „Pin zeigen“ nötig.
+
+**Status:** Grundentscheidung 117 ist offen und noch nicht beschlossen.
