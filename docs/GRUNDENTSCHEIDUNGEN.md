@@ -461,11 +461,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das lokale Importieren darf keine Serververbindung voraussetzen und muss nach erfolgreicher Prüfung und Bestätigung konsistent erfolgen.
 - Bei „Ersetzen“ muss vorab auf einen möglichen Export des bisherigen Bestands hingewiesen werden.
 
-## Offen – Grundentscheidung 41: Ebenenzuordnung beim Hinzufügen einer Sicherungsdatei
+## Grundentscheidung 41 – Beim Hinzufügen alle importierten Pins einer neuen Ebene zuordnen
 
-Die neue Importart „Hinzufügen“ legt automatisch **eine neue reguläre Ebene** an. Wie gehen wir damit um, wenn die Sicherungsdatei Pins aus mehreren ursprünglichen Ebenen enthält?
+**Beschlossen (Variante A):** Wird beim Import die Option **„Hinzufügen“** ausgewählt, legt pin2map automatisch **genau eine neue reguläre Ebene** an und ordnet **alle importierten Pins** dieser neuen Ebene zu – unabhängig davon, zu welchen Ebenen die Pins innerhalb der Sicherungsdatei ursprünglich gehörten.
 
-- **Variante A (Empfehlung für einfache Basisversion):** Alle importierten Pins werden gemeinsam der **einen neu angelegten Ebene** zugeordnet. Ihre ursprünglichen Ebenennamen werden nicht als eigenständige Ebenen übernommen; die Pin-IDs werden bei Bedarf konfliktfrei neu vergeben. Vor dem Import wird diese Zusammenfassung deutlich angekündigt.
-- **Variante B:** Die neue Ebene dient als **Sammel-/Importebene**, aber die ursprüngliche Ebenenstruktur soll zusätzlich erhalten bleiben. Dafür wäre eine erweiterte Ebenenhierarchie oder andere neue Struktur nötig, die über das bisher beschlossene flache Modell hinausgeht.
+**Konsequenzen:**
+- Alle schon vorhandenen Pins und Ebenen bleiben unverändert; die Systemebene „Privat“ wird weder verändert noch dupliziert.
+- Die ursprüngliche Ebenenstruktur der Importdatei wird bei „Hinzufügen“ nicht als neue Ebenenstruktur übernommen. Die ursprünglichen Ebenennamen werden nicht als eigenständige Ebenen angelegt.
+- Jeder hinzugefügte Pin gehört genau der einen neu angelegten regulären Ebene an (Grundentscheidung 1).
+- IDs importierter Pins werden bei Bedarf kollisionsfrei neu vergeben, ohne bestehende Pins zu überschreiben.
+- Vor der Bestätigung weist die Anwendung verständlich darauf hin, dass alle importierten Pins in einer gemeinsamen neuen Ebene landen.
+- Die Übernahme der neuen Ebene und aller importierten Pins erfolgt konsistent: Bei einem Fehler bleiben die bisherigen Daten unverändert und es entsteht kein unvollständiger Import.
+- Für „Ersetzen“ bleibt die Struktur des gültigen Sicherungsbestands maßgeblich (Grundentscheidungen 39 und 40).
 
-**Status:** Grundentscheidung 41 ist offen und noch nicht beschlossen. Das ausdrücklich gewünschte automatische Anlegen einer neuen Ebene bei „Hinzufügen“ ist bereits Bestandteil von Grundentscheidung 40.
+## Offen – Grundentscheidung 42: Benennung der automatisch angelegten Importebene
+
+Wie erhält die neue reguläre Ebene beim Importmodus „Hinzufügen“ ihren Namen?
+
+- **Variante A (Empfehlung):** pin2map schlägt automatisch einen freien Namen wie **„Import 1“**, **„Import 2“** usw. vor. Vor dem Bestätigen kann der Benutzer diesen Namen ändern; es gelten die bestehenden Regeln für eindeutige Ebenennamen.
+- **Variante B:** pin2map erstellt die neue Ebene sofort mit einem automatisch vergebenen freien Namen wie **„Import 1“**. Eine Änderung ist erst nach abgeschlossenem Import über die normale Funktion „Ebene umbenennen“ möglich.
+
+**Status:** Grundentscheidung 42 ist offen und noch nicht beschlossen.
