@@ -1174,11 +1174,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das Einblenden der Ebene führt nicht automatisch zu einer Kartenverschiebung. Die Zoomstufe und die gespeicherten Pin-Koordinaten bleiben unverändert.
 - Die vom Benutzer bewusst festgelegte Sichtbarkeit anderer Ebenen bleibt unberührt.
 
-## Offen – Grundentscheidung 103: Anzeige der Ebenensichtbarkeit im Pin-Bedienfeld
+## Grundentscheidung 103 – Sichtbarkeitssymbol der zugeordneten Ebene im Pin-Bedienfeld
 
-Soll das untere Pin-Bedienfeld **neben dem Ebenenauswahlfeld** anzeigen, ob die aktuell zugeordnete Ebene sichtbar oder ausgeblendet ist?
+**Beschlossen (Variante A):** Im unteren Pin-Detail-/Bearbeitungsfeld wird **neben oder unter dem Ebenenauswahlfeld ein gut verständliches Sichtbarkeitssymbol** für die aktuell zugeordnete Ebene angezeigt: beispielsweise **Auge** bei sichtbarer Ebene und **durchgestrichenes Auge** bei ausgeblendeter Ebene.
 
-- **Variante A (Empfehlung):** **Ja.** Neben oder unter dem Ebenennamen ist ein kleines, eindeutig verständliches Sichtbarkeitssymbol (z. B. Auge/Auge durchgestrichen) zu sehen. Es zeigt ausschließlich den aktuellen Zustand; bei ausgeblendeter Ebene wird die bereits beschlossene Aktion „Ebene einblenden“ separat angeboten.
-- **Variante B:** **Nein.** Im normalen Pin-Bedienfeld wird nur der Ebenenname dargestellt. Der Sichtbarkeitszustand wird dort erst dann durch einen Hinweis deutlich, wenn die Ebene ausgeblendet und der ausgewählte Pin deshalb unsichtbar ist.
+**Konsequenzen:**
+- Das Symbol zeigt ausschließlich den **aktuellen Sichtbarkeitszustand der Ebene** an; es ist kein zusätzlicher Schalter.
+- Auch nach dem Wechsel der Ebenenzugehörigkeit eines Pins oder nach Änderungen in der Ebenenverwaltung wird der Zustand unmittelbar aktualisiert (Grundentscheidung 99).
+- Ist die Ebene ausgeblendet, bleibt die bewusst auszulösende Aktion **„Ebene einblenden“** separat verfügbar (Grundentscheidung 102); der normale Button „Pin zeigen“ wird in diesem Zustand nicht angeboten.
+- Die Anzeige soll durch eindeutige Gestaltung bzw. zugängliche Beschriftung auch ohne Interpretation allein der Symbolform verständlich sein.
+- Die Sichtbarkeit eines Pins auf der Karte hängt weiterhin von der Sichtbarkeit seiner Ebene ab; das Symbol verändert keine gespeicherten Daten.
 
-**Status:** Grundentscheidung 103 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 104: Ebenensichtbarkeit direkt aus dem Pin-Bedienfeld umschalten
+
+Soll das Sichtbarkeitssymbol im unteren Pin-Bedienfeld zukünftig auch ein **direkt bedienbarer Schalter** sein?
+
+- **Variante A (Empfehlung):** **Nein.** Das Augen-Symbol bleibt eine reine Zustandsanzeige. Zum gezielten Einblenden einer ausgeblendeten Ebene gibt es die bereits beschlossene separate Aktion „Ebene einblenden“; das allgemeine Ein- und Ausblenden erfolgt in der Ebenenverwaltung. So werden versehentliche Änderungen an der Sichtbarkeit einer ganzen Ebene vermieden.
+- **Variante B:** **Ja.** Antippen des Augen-Symbols schaltet die Sichtbarkeit der gesamten zugeordneten Ebene direkt ein oder aus. Das ist schneller, kann aber den ausgewählten Pin sowie sämtliche anderen Pins dieser Ebene unerwartet ausblenden.
+
+**Status:** Grundentscheidung 104 ist offen und noch nicht beschlossen.
