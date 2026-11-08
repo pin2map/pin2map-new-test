@@ -1492,11 +1492,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Kartenansicht bleibt bedienbar. Alle Ortssuch-Pins gehören weiterhin zur Ebene **„Privat“**, unabhängig von der aktiven Ebene (Grundentscheidung 119).
 - Die **Ortsnamensuche ist verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 129: Räumlicher Suchbereich der Ortsnamensuche
+## Grundentscheidung 129 – Weltweite Ortsnamensuche unabhängig vom Kartenausschnitt
 
-Soll die Ortsnamensuche ausschließlich nach Orten im gerade sichtbaren Kartenausschnitt suchen oder unabhängig davon auch weiter entfernte Orte finden können?
+**Beschlossen (Variante A):** Die geografische Ortsnamensuche in der ersten Basisversion ist **weltweit nutzbar und nicht auf den aktuell sichtbaren Kartenausschnitt beschränkt**. Orte außerhalb des sichtbaren Bereichs dürfen nicht allein aufgrund ihrer Entfernung ausgeschlossen werden.
 
-- **Variante A (Empfehlung):** **Weltweite Ortssuche unabhängig vom aktuellen Kartenausschnitt.** Der aktuelle Ausschnitt kann für die Sortierung geeigneter Treffer als unverbindlicher Kontext dienen, aber Orte außerhalb des Ausschnitts werden nicht ausgeschlossen. So kann man etwa von einer Karte in Deutschland nach „Oxford“ suchen.
-- **Variante B:** **Suche zunächst nur im aktuellen Kartenausschnitt.** Es werden nur Orte innerhalb des sichtbaren Kartengebiets angeboten. Für weiter entfernte Orte müsste die Karte zuerst entsprechend verschoben oder herausgezoomt werden.
+**Konsequenzen:**
+- Beispielsweise kann aus einer aktuell auf Stuttgart zentrierten Kartenansicht nach „Oxford“, „Paris“ oder „Tokio“ gesucht werden.
+- Der aktuelle Kartenausschnitt darf, soweit der Geocoding-Anbieter dies unterstützt, allenfalls als **unverbindlicher Sortier- oder Relevanzkontext** verwendet werden, nicht als harter räumlicher Suchfilter.
+- Bei mehreren plausiblen Treffern ist weiterhin die bewusste Auswahl aus der Trefferliste erforderlich (Grundentscheidung 116); ein örtlich naher Treffer wird nicht automatisch gewählt.
+- Nach erfolgreicher Erstellung des Ortssuch-Pins springt die Karte an dessen Standort (Grundentscheidung 117). Der Pin wird unabhängig von der aktiven Ebene in **„Privat“** gespeichert (Grundentscheidung 119).
+- Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 129 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 130: Einbindung des Geocoding-Dienstes
+
+Wie soll der externe Dienst zur weltweiten Ortsnamensuche in der ersten Basisversion technisch eingebunden werden?
+
+- **Variante A (Empfehlung):** Über eine **zentrale Geocoding-Schnittstelle (Adapter)**, die Suchanfragen, Trefferaufbereitung und Fehlerbehandlung von der übrigen Anwendung trennt. Für die erste Version wird ein geeigneter Anbieter angebunden; ein späterer Anbieterwechsel ist möglich, ohne die Karten- oder Pin-Logik umzubauen. Nutzungsbedingungen und Anfragebeschränkungen des konkreten Anbieters sind einzuhalten.
+- **Variante B:** Die Anwendung spricht den zunächst gewählten Geocoding-Dienst **direkt aus der Suchoberfläche** an. Das ist kurzfristig einfacher, koppelt aber Suchfeld, Trefferliste und Pin-Erstellung eng an das Antwortformat dieses Dienstes.
+
+**Status:** Grundentscheidung 130 ist offen und noch nicht beschlossen.
