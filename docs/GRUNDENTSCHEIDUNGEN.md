@@ -286,9 +286,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Zuordnung erfolgt zur aktiven Ebene gemäß Grundentscheidung 7. Ist keine Ebene ausgewählt oder die aktive Ebene ausgeblendet, gelten die zuvor festgelegten Schutzregeln aus Grundentscheidungen 7 und 11.
 - Wann der Modus nach einer Pin-Erstellung endet oder fortgesetzt wird, wird in Grundentscheidung 26 festgelegt.
 
-## Offen – Grundentscheidung 26: Verhalten des Modus „Pin hinzufügen“ nach einer Erstellung
+## Grundentscheidung 26 – Beenden des Pin-hinzufügen-Modus
 
-- **Variante A (Empfehlung):** Nach erfolgreichem Anlegen eines Pins wird der Modus automatisch beendet. Für den nächsten Pin muss „Pin hinzufügen“ erneut aktiviert werden. Dies verringert die Gefahr unbeabsichtigter weiterer Pins.
-- **Variante B:** Der Modus bleibt nach dem Anlegen eines Pins aktiv. Es können mehrere Pins hintereinander gesetzt werden, bis der Benutzer den Modus ausdrücklich beendet. Dies erleichtert das Erfassen vieler Pins.
+**Beschlossen (Variante A):** Nach dem **erfolgreichen Anlegen eines Pins** wird der Modus „Pin hinzufügen“ **automatisch beendet**. Die Anwendung kehrt zur normalen Kartenbedienung zurück.
 
-**Status:** Grundentscheidung 26 ist offen und noch nicht beschlossen.
+**Konsequenzen:**
+- Für jeden weiteren neuen Pin muss der Benutzer den Modus „Pin hinzufügen“ erneut bewusst aktivieren.
+- Das Ende des Modus ist in der Oberfläche erkennbar; normales Antippen freier Kartenstellen erzeugt anschließend keine Pins.
+- Eine unterbrochene oder abgebrochene Anlage zählt nicht als erfolgreiche Erstellung und darf keinen unvollständigen Pin speichern.
+- Die Regeln für aktive bzw. ausgeblendete Ebenen (Grundentscheidungen 7 und 11) gelten weiter.
+- Ein späterer optionaler Mehrfacherfassungsmodus ist durch diese Entscheidung nicht Bestandteil der ersten Basisversion.
+
+## Offen – Grundentscheidung 27: Speichern beim Anlegen eines Pins
+
+Ein Pin kann ohne Bezeichnung angelegt werden (Grundentscheidung 6). Wie erfolgt das Speichern nach Auswahl einer Kartenposition im aktivierten Modus „Pin hinzufügen“?
+
+- **Variante A (Empfehlung):** Der Pin wird mit Koordinaten und aktiver Ebene sofort lokal gespeichert. Eine optionale Bezeichnung kann danach durch Bearbeiten ergänzt werden. Erst nach erfolgreichem Speichern endet der Modus gemäß Grundentscheidung 26.
+- **Variante B:** Nach dem Antippen der Karte öffnet sich zunächst ein kleiner Bearbeitungsdialog mit optionalem Namensfeld. Erst durch bewusstes Bestätigen wird der Pin gespeichert; bei Abbruch entsteht kein Pin.
+
+**Status:** Grundentscheidung 27 ist offen und noch nicht beschlossen.
