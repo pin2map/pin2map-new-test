@@ -671,11 +671,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Wechsel des Kartenhintergrunds verändert weder Pins und Ebenen noch Kartenmittelpunkt und Zoomstufe.
 - Die Positionierung berücksichtigt kleine Displays und sichere Bedienbereiche, damit Menüeinträge nicht außerhalb des sichtbaren Bereichs liegen.
 
-## Offen – Grundentscheidung 59: Anwendung der Kartenwahl
+## Grundentscheidung 59 – Kartenhintergrund sofort beim Auswählen wechseln
 
-Wie soll pin2map einen im Kartenwahl-Menü ausgewählten Kartenhintergrund übernehmen?
+**Beschlossen (Variante A):** Wird im kompakten Kartenwahl-Menü ein Kartenhintergrund angetippt, wird dieser **unmittelbar aktiviert**, das Menü schließt sich und die Auswahl wird lokal gespeichert. Eine zusätzliche Bestätigung oder Vorschauphase ist nicht erforderlich.
 
-- **Variante A (Empfehlung):** **Sofortiger Wechsel:** Sobald eine Kartenansicht angetippt wird, schließt sich das Menü und der neue Kartenhintergrund wird direkt angezeigt und gespeichert. Es gibt keinen zusätzlichen Bestätigungsdialog.
-- **Variante B:** **Vorschau mit Bestätigung:** Das Antippen zeigt zunächst die ausgewählte Karte als Vorschau. Erst durch „Übernehmen“ wird die Auswahl gespeichert; „Abbrechen“ stellt die vorherige Kartenansicht wieder her.
+**Konsequenzen:**
+- Der Kartenwechsel erfolgt direkt nach der Auswahl; ein „Übernehmen“-Button und ein gesonderter Bestätigungsdialog entfallen.
+- Die neue Kartenwahl wird als zuletzt verwendeter Hintergrund lokal gespeichert und gemäß Grundentscheidung 55 beim nächsten Start wiederhergestellt.
+- Beim Wechsel bleiben Pins, Ebenen, Kartenmittelpunkt und Zoomstufe unverändert (Grundentscheidungen 54 und 58).
+- Ein Wechsel ist jederzeit durch erneute Auswahl eines anderen Kartenhintergrunds korrigierbar.
+- Falls die Darstellung des gewählten Kartenhintergrunds fehlschlägt, bleiben lokale Pins und Ebenen sowie ihre Daten erhalten; die Kartenoberfläche zeigt den Fehler nachvollziehbar an.
 
-**Status:** Grundentscheidung 59 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 60: Kartenarten in der ersten Basisversion
+
+Welche Arten von Kartenhintergründen sollen die mindestens zwei auswählbaren Ansichten der ersten Basisversion umfassen?
+
+- **Variante A (Empfehlung für eine schlanke Basisversion):** Zunächst **mindestens zwei kartografische Darstellungen**, zum Beispiel eine Standard-Straßenkarte und eine topografische Karte. Satelliten- bzw. Luftbilder sind in der ersten Basisversion noch nicht erforderlich.
+- **Variante B:** Bereits die erste Basisversion bietet **eine Standard-Straßenkarte und eine Satelliten-/Luftbildansicht**. Das setzt einen geeigneten Bildkartenanbieter mit passenden Zugangs- und Nutzungsbedingungen voraus.
+
+**Status:** Grundentscheidung 60 ist offen und noch nicht beschlossen.
