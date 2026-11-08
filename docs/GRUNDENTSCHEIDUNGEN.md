@@ -446,11 +446,26 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Wie gültige Importdaten mit bereits vorhandenen Daten zusammengeführt oder an deren Stelle übernommen werden, wird ausdrücklich in Grundentscheidung 40 festgelegt. Bis dahin ist **kein automatisches Überschreiben oder Zusammenführen** beschlossen.
 - Die Datenübernahme muss nach Festlegung der Importstrategie konsistent erfolgen und auch bei Fehlern den vorhandenen Datenbestand schützen.
 
-## Offen – Grundentscheidung 40: Umgang mit vorhandenen Daten beim Import
+## Grundentscheidung 40 – Importmodus auswählen; beim Hinzufügen neue Ebene anlegen
 
-Wenn bereits Pins und Ebenen in der lokalen Datenbank vorhanden sind, wie soll eine gültige Sicherungsdatei importiert werden?
+**Beschlossen (Variante C mit Ergänzung):** Bei jedem manuellen Import einer gültigen pin2map-Sicherungsdatei wählt der Benutzer ausdrücklich zwischen **„Ersetzen“** und **„Hinzufügen“**.
 
-- **Variante A (Empfehlung für eine überschaubare erste Basisversion):** Der Import **ersetzt den bisherigen lokalen Bestand vollständig**, aber nur nach einer deutlichen Vorschau und ausdrücklicher Bestätigung. Die Datei wird vollständig geprüft, bevor bestehende Daten verändert werden; die Übernahme muss atomar erfolgen. Der Benutzer wird davor auf die Möglichkeit hingewiesen, den bisherigen Bestand zuerst zu exportieren.
-- **Variante B:** Die Importdaten werden mit dem bestehenden lokalen Bestand **zusammengeführt**. Bestehende Pins und Ebenen bleiben erhalten; gleiche IDs, doppelte Ebenennamen und die feste private Ebene müssen regelbasiert aufgelöst werden. Das ist flexibler, aber deutlich komplexer.
+- **Ersetzen:** Nach Vorschau und ausdrücklicher Bestätigung wird der bestehende lokale Datenbestand durch die gültigen Importdaten ersetzt. Die Übernahme erfolgt konsistent; bei Fehlern darf kein teilweiser Ersatz entstehen.
+- **Hinzufügen:** Die bereits vorhandenen Pins und Ebenen bleiben unverändert bestehen. Für die hinzugefügten Daten wird **automatisch eine neue reguläre Ebene** angelegt. Importierte Objekte dürfen keine bestehenden Objekte stillschweigend überschreiben.
 
-**Status:** Grundentscheidung 40 ist offen und noch nicht beschlossen.
+**Verbindliche Konsequenzen:**
+- Vor dem Import werden Datei, Formatversion und Daten auf Gültigkeit geprüft. Vor der eigentlichen Übernahme wird die gewählte Methode und deren Auswirkung angezeigt und bewusst bestätigt.
+- „Hinzufügen“ legt eine **neue Ebene** an, statt importierte Pins ungefragt einer bereits vorhandenen Ebene zuzuordnen. Die Zuordnung jedes Pins zu genau einer Ebene bleibt gewahrt.
+- Der Name der neuen Ebene muss die Regel der eindeutigen regulären Ebenennamen erfüllen. Die feste Systemebene „Privat“ darf weder dupliziert noch überschrieben oder in ihrem Systemstatus verändert werden.
+- ID-Kollisionen und die Behandlung von gegebenenfalls mehreren Ebenen in der Importdatei müssen ohne Datenverlust und ohne stillschweigende Überschreibung gelöst werden; die genaue Abbildung der importierten Ebenen auf die neue Ebene wird in Grundentscheidung 41 entschieden.
+- Das lokale Importieren darf keine Serververbindung voraussetzen und muss nach erfolgreicher Prüfung und Bestätigung konsistent erfolgen.
+- Bei „Ersetzen“ muss vorab auf einen möglichen Export des bisherigen Bestands hingewiesen werden.
+
+## Offen – Grundentscheidung 41: Ebenenzuordnung beim Hinzufügen einer Sicherungsdatei
+
+Die neue Importart „Hinzufügen“ legt automatisch **eine neue reguläre Ebene** an. Wie gehen wir damit um, wenn die Sicherungsdatei Pins aus mehreren ursprünglichen Ebenen enthält?
+
+- **Variante A (Empfehlung für einfache Basisversion):** Alle importierten Pins werden gemeinsam der **einen neu angelegten Ebene** zugeordnet. Ihre ursprünglichen Ebenennamen werden nicht als eigenständige Ebenen übernommen; die Pin-IDs werden bei Bedarf konfliktfrei neu vergeben. Vor dem Import wird diese Zusammenfassung deutlich angekündigt.
+- **Variante B:** Die neue Ebene dient als **Sammel-/Importebene**, aber die ursprüngliche Ebenenstruktur soll zusätzlich erhalten bleiben. Dafür wäre eine erweiterte Ebenenhierarchie oder andere neue Struktur nötig, die über das bisher beschlossene flache Modell hinausgeht.
+
+**Status:** Grundentscheidung 41 ist offen und noch nicht beschlossen. Das ausdrücklich gewünschte automatische Anlegen einer neuen Ebene bei „Hinzufügen“ ist bereits Bestandteil von Grundentscheidung 40.
