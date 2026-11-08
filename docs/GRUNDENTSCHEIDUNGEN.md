@@ -1528,11 +1528,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Eine spätere eigene Server- und Synchronisationskomponente folgt dem beschlossenen stufenweisen Ausbau (Grundentscheidungen 3 und 115).
 - **Die Ortsnamensuche bleibt ausdrücklich verbindlicher Bestandteil der ersten Basisversion.**
 
-## Offen – Grundentscheidung 132: Rückmeldung bei nicht verfügbarer Ortsnamensuche
+## Grundentscheidung 132 – Hinweis bei nicht verfügbarer Ortsnamensuche
 
-Wie soll pin2map reagieren, wenn eine gültige Ortssuche bewusst gestartet wird, aber wegen fehlender Internetverbindung oder Nichterreichbarkeit des Geocoding-Dienstes nicht durchgeführt werden kann?
+**Beschlossen (Variante A):** Wenn eine gültige geografische Ortssuche bewusst gestartet wird, aber aufgrund fehlender Internetverbindung oder Nichterreichbarkeit des Geocoding-Dienstes nicht ausgeführt werden kann, zeigt pin2map **im Suchbereich eine kurze, verständliche Meldung** an, beispielsweise **„Ortssuche derzeit nicht verfügbar“**, gegebenenfalls mit dem Hinweis, die Verbindung zu prüfen und es erneut zu versuchen.
 
-- **Variante A (Empfehlung):** Die Kartenansicht bleibt verfügbar; der Suchbereich zeigt **einen kurzen, verständlichen Hinweis** wie „Ortssuche derzeit nicht verfügbar“. Es wird **kein Pin angelegt** und der eingegebene Suchtext bleibt für einen späteren erneuten Suchversuch erhalten. Die bereits lokal gespeicherten Pins bleiben unverändert.
-- **Variante B:** Eine nicht durchführbare Ortssuche wird **ohne besondere Rückmeldung beendet**. Der Suchtext bleibt erhalten, aber der Benutzer erhält keine Erklärung, weshalb keine Ergebnisse erscheinen.
+**Konsequenzen:**
+- Bei Nichterreichbarkeit des Suchdienstes wird **kein Pin angelegt**. Die bereits gespeicherten Pins und ihre Daten bleiben unverändert.
+- Der eingegebene Suchtext bleibt erhalten und kann später für eine neue, ausdrücklich gestartete Suche wiederverwendet werden.
+- Die Kartenansicht und alle offline verfügbaren lokalen Pin- und Ebenenfunktionen bleiben weiterhin nutzbar.
+- Die Ladeanzeige endet mit dem Fehler, sodass eine erneute Suche möglich ist (Grundentscheidung 127).
+- Die Fehlermeldung unterscheidet sich ausdrücklich vom **stillschweigenden Ignorieren einer leeren Suchanfrage** (Grundentscheidung 126).
+- **Die Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**, auch wenn der externe Dienst vorübergehend nicht verfügbar ist.
 
-**Status:** Grundentscheidung 132 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 133: Meldung bei einer erfolgreichen Ortssuche ohne Treffer
+
+Wie soll pin2map reagieren, wenn der Geocoding-Dienst erreichbar ist und die bewusst gestartete Ortsnamensuche technisch erfolgreich bearbeitet, aber **keinen geeigneten Ort** gefunden hat?
+
+- **Variante A (Empfehlung):** Im Suchbereich erscheint eine kurze Meldung **„Kein Ort gefunden“**. Der eingegebene Suchtext bleibt erhalten, die Karte unverändert, und es wird **kein Pin erstellt**. Der Benutzer kann die Suchanfrage direkt korrigieren und erneut starten.
+- **Variante B:** Die Suche endet **ohne Meldung**; es erscheint weder eine Trefferliste noch ein Pin. Der Suchtext bleibt erhalten, die Karte unverändert.
+
+**Status:** Grundentscheidung 133 ist offen und noch nicht beschlossen.
