@@ -12,8 +12,8 @@
 </head>
 <body>
 <div id="app">
-  <header class="topbar"><strong class="brand">pin<span>2</span>map <small>NEW</small></strong>
-    <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen, z. B. Oxford" aria-label="Ort weltweit suchen"><button type="submit" id="searchButton" title="Ort suchen">⌕</button></form>
+  <header class="topbar">
+    <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen" aria-label="Ort weltweit suchen"><button type="submit" id="searchButton" title="Ort suchen">⌕</button></form>
     <button id="layersButton" class="topbtn" title="Ebenen verwalten" aria-label="Ebenen verwalten">☷</button>
     <button id="settingsButton" class="topbtn" title="Einstellungen" aria-label="Einstellungen">⚙</button>
   </header>
@@ -22,7 +22,7 @@
   <aside id="layersPanel" class="panel layers-panel hidden" aria-label="Ebenen"><div class="panel-head"><h2>Ebenen</h2><button class="close" data-close="layersPanel" aria-label="Schließen">×</button></div><div id="layersList"></div><button id="addLayer" class="secondary full">+ Neue Ebene</button></aside>
   <aside id="settingsPanel" class="panel settings-panel hidden" aria-label="Einstellungen"><div class="panel-head"><h2>Einstellungen</h2><button class="close" data-close="settingsPanel" aria-label="Schließen">×</button></div><label>Kartendarstellung<select id="basemapSelect"><option value="street">Straßenkarte</option><option value="topo">Topografische Karte</option></select></label><hr><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Nominatim-Ortssuche für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Die öffentliche Nominatim-API ist kein uneingeschränkter Produktionsdienst. Keine automatischen Suchen; maximal eine Anfrage pro Sekunde in diesem Browser. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a></p><hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></aside>
   <section id="pinPanel" class="pin-panel hidden" aria-label="Pin bearbeiten"><div class="panel-head"><h2>Pin bearbeiten</h2><button class="close" data-close="pinPanel" aria-label="Schließen">×</button></div><label>Name<input id="pinName" type="text" maxlength="120" placeholder="Name (optional)"></label><label>Ebene<select id="pinLayer"></select></label><p id="pinCoords" class="muted small"></p><p id="pinHiddenInfo" class="muted small hidden">Dieser Pin liegt in einer ausgeblendeten Ebene. <button id="showPinLayer" class="inline-button">Ebene einblenden</button></p><div class="pin-actions"><button id="movePin" class="secondary">Pin verschieben</button><button id="deletePin" class="danger">Pin löschen</button></div></section>
-  <div class="map-controls"><button id="addPin" title="Pin hinzufügen">＋ Pin</button><button id="fitPins" class="secondary" title="Alle sichtbaren Pins anzeigen">◎ Alle Pins</button><button id="cancelAdd" class="secondary hidden">Abbrechen</button></div>
+  
   <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
   <dialog id="deleteDialog"><form method="dialog"><h2>Pin wirklich löschen?</h2><div class="dialog-actions"><button value="cancel" class="secondary">Abbrechen</button><button value="confirm" class="danger">Löschen</button></div></form></dialog>
 </div>
