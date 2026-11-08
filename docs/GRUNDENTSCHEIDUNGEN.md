@@ -761,11 +761,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Auswahl-, Verschiebe- und Vorschauzustände müssen trotz Ebenenfarben eindeutig erkennbar sein (Grundentscheidungen 31–35 und 65).
 - Der Sonderstatus der festen privaten Ebene „Privat“ bleibt unberührt (Grundentscheidungen 15–17).
 
-## Offen – Grundentscheidung 67: Farben der Ebenen ändern
+## Grundentscheidung 67 – Ebenenfarben individuell über Farbpalette auswählen
 
-Sollen Benutzer die automatisch vergebenen Farben regulärer Ebenen bereits in der ersten Basisversion selbst ändern können?
+**Beschlossen (Variante A):** Benutzer können bereits in der ersten stabilen Basisversion **die Pin-Farbe jeder regulären Ebene in der Ebenenverwaltung aus einer vorgegebenen, gut unterscheidbaren Farbpalette auswählen**. Die geschützte Systemebene „Privat“ behält ihre festgelegte, nicht veränderbare Farbe.
 
-- **Variante A (Empfehlung):** Für jede **reguläre Ebene** kann in der Ebenenverwaltung aus einer kleinen, gut unterscheidbaren **Farbpalette** eine Farbe ausgewählt werden. Die Änderung wird lokal gespeichert und wirkt sich sofort auf alle Pins dieser Ebene aus. Die Farbe der Systemebene „Privat“ bleibt fest.
-- **Variante B:** Die Farben werden beim Anlegen regulärer Ebenen **automatisch vergeben und bleiben in der Basisversion unveränderbar**. Eine manuelle Farbauswahl kann später ergänzt werden; auch „Privat“ behält ihre feste Farbe.
+**Konsequenzen:**
+- Eine Änderung der Ebenenfarbe wird lokal gespeichert und sofort für alle Pins dieser Ebene auf der Karte sichtbar (Grundentscheidung 66).
+- Die Farbinformation gehört zur Ebene, nicht zu einem einzelnen Pin, und ist beim versionierten Export und Import zu berücksichtigen (Grundentscheidungen 38–49).
+- Auswahl- und Verschiebezustände müssen auch bei wechselnden Ebenenfarben unterscheidbar bleiben (Grundentscheidungen 31–35 und 65).
+- Die Farben regulärer Ebenen werden beim Anlegen zunächst automatisch zugewiesen; eine abweichende Farbe kann anschließend bewusst über die Ebenenverwaltung gewählt werden.
+- Welche Palette verwendet wird und ob identische Farben für mehrere Ebenen zugelassen werden, wird gesondert festgelegt.
 
-**Status:** Grundentscheidung 67 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 68: Gleiche Pin-Farbe für mehrere Ebenen
+
+Soll es erlaubt sein, dass zwei oder mehr reguläre Ebenen **dieselbe** Pin-Farbe verwenden?
+
+- **Variante A (Empfehlung):** **Ja.** Farben können mehrfach verwendet werden. Die Farbpalette dient zur visuellen Organisation, ist aber kein eindeutiger Identifikator; Ebenen werden weiterhin durch ihre IDs und Namen unterschieden. Dadurch bleibt die Farbauswahl auch bei vielen Ebenen unkompliziert.
+- **Variante B:** **Nein.** Jede Ebene muss eine andere Farbe erhalten. Bereits vergebene Farben sind in der Palette gesperrt oder werden nicht angeboten. Die Zahl gleichzeitig möglicher Ebenenfarben wäre dadurch von der Größe der Palette abhängig.
+
+**Status:** Grundentscheidung 68 ist offen und noch nicht beschlossen.
