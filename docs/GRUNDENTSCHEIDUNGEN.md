@@ -1707,3 +1707,17 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 6. **Die weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.** Sie erzeugt Pins wie beschlossen in „Privat“ und ist von diesen Karteninteraktionen getrennt.
 
 **Status:** Codeänderungen in GitHub eingecheckt; die tatsächliche Bedienung auf iPhone und Desktop bleibt im veröffentlichten Teststand zu überprüfen.
+
+
+## Umsetzungspräzisierung – Korrekturen für Ebenennamen, Privat-Löschung und Pin-Langdruck (2026-11-08)
+
+**Auf ausdrückliche Nutzerkorrektur nach Test verbindlich festgelegt:**
+
+1. Beim Anlegen einer regulären Ebene ist das Eingabefeld **mit dem ersten noch freien Namen „Ebene N“ vorbelegt**. Der Vorschlag kann geändert werden. Doppelte Ebenennamen (ohne Unterscheidung von Groß-/Kleinschreibung oder umgebenden Leerzeichen) und der reservierte Name „Privat“ werden nicht akzeptiert (Grundentscheidungen 12, 13 und 19).
+2. Das Sammellöschen der Pins aus der Systemebene **„Privat“ wird ausschließlich über eine Löschschaltfläche rechts innerhalb der Zeile „Privat“** ausgelöst, nicht über einen breiten Button unterhalb der Liste. Vor der Löschung werden Anzahl und Folgen bestätigt. **Die Ebene „Privat“ selbst wird nie gelöscht** (Grundentscheidungen 14–16).
+3. **Langes Drücken auf einen bestehenden Pin für etwa eine Sekunde aktiviert den Pin-Verschiebemodus** und ermöglicht direkt im selben Finger-/Mauszug das Positionieren der Vorschau. Das Öffnen bzw. Fokussieren der Namensbearbeitung durch diesen Langdruck war eine Fehlinterpretation und wird ausdrücklich verworfen.
+4. Nach dem Langdruck wird der überlagernde Pin-Editor ausgeblendet. Die ursprüngliche Position bleibt bestehen, und der Vorschau-Pin lässt sich bewegen. Die Änderungen werden erst nach bewusster Aktion **„Position übernehmen“** gespeichert, **„Abbrechen“** verwirft sie. Dies erhält die Sicherheitsregeln der Grundentscheidungen 30–35. Ein normaler kurzer Klick auf einen Pin öffnet weiterhin die Bearbeitung.
+5. Langes Drücken auf eine **freie Kartenstelle** erzeugt dagegen wie zuvor einen **neuen Pin**; dies ist ausdrücklich vom Verschieben eines vorhandenen Pins zu unterscheiden. Es funktioniert auf Desktop und iPhone.
+6. **Die weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
+
+**Stand:** Die Änderungen wurden in den Quellcode im GitHub-Repository übernommen. Ihre Bedienung im tatsächlichen Browser/iPhone bleibt zu prüfen.
