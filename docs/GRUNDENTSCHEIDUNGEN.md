@@ -144,13 +144,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Identität der Ebene beruht weiterhin auf ihrer stabilen internen ID, nicht auf ihrem Namen. Pin-Zuordnungen bleiben beim Umbenennen unverändert.
 - Die bereits vorhandene private Ebene und etwaige reservierte Namen werden im Rahmen ihrer Sonderregeln gesondert behandelt.
 
-## Offen – Grundentscheidung 14: Löschen einer Ebene mit vorhandenen Pins
+## Grundentscheidung 14 – Löschen einer Ebene mit vorhandenen Pins
 
-Wie soll die einfache Ebenenverwaltung reagieren, wenn eine Ebene gelöscht werden soll, die noch Pins enthält?
+**Beschlossen (Variante B):** Eine reguläre Ebene kann einschließlich aller ihr zugeordneten Pins gelöscht werden, **aber nur nach ausdrücklicher Bestätigung**. Vor der Bestätigung wird die **Anzahl der betroffenen Pins** verständlich angezeigt.
 
-- **Variante A (Empfehlung):** Die Ebene kann erst gelöscht werden, nachdem alle enthaltenen Pins ausdrücklich in andere Ebenen verschoben oder einzeln gelöscht wurden. Keine automatische Löschung oder Verschiebung von Pins.
-- **Variante B:** Beim Löschen einer Ebene kann der Benutzer ausdrücklich bestätigen, dass die Ebene **einschließlich aller enthaltenen Pins** gelöscht wird. Die Anzahl der betroffenen Pins wird vorher angezeigt.
+**Konsequenzen:**
+- Beim Löschen einer regulären Ebene werden deren zugeordnete Pins mit erfasst; ein vorheriges Leeren der Ebene ist nicht erforderlich.
+- Der Bestätigungsdialog benennt die Ebene, die Anzahl betroffener Pins und die Konsequenz der Löschung deutlich.
+- Ein Abbrechen des Dialogs verändert weder Ebene noch Pins.
+- Erst nach Bestätigung werden die Ebene und ihre Pins zusammen als eine konsistente lokale Operation in IndexedDB gelöscht; bei einem Fehler darf kein inkonsistenter Teilzustand zurückbleiben.
+- Eine unbeabsichtigte Löschung durch bloßes Antippen der Löschfunktion ist ausgeschlossen.
+- Löschung, mögliche Wiederherstellung und spätere Synchronisation werden bei der Serverintegration weiter spezifiziert; hier wird noch keine Undo- oder Papierkorb-Funktion beschlossen.
+- Die fest vorgesehene private Ebene ist von dieser Entscheidung ausdrücklich ausgenommen; ihre Löschbarkeit wird separat festgelegt.
 
-**Abgrenzung:** Ob und unter welchen Bedingungen die fest vorgesehene private Ebene gelöscht werden kann, wird gesondert entschieden. Die beiden Varianten betreffen reguläre Ebenen.
+## Offen – Grundentscheidung 15: Darf die private Ebene gelöscht werden?
 
-**Status:** Grundentscheidung 14 ist noch offen.
+- **Variante A (Empfehlung):** Die private Ebene ist eine feste Systemebene und kann nicht gelöscht werden. Ihre Pins können normal bearbeitet und einzeln gelöscht werden. Die private Ebene bleibt immer verfügbar.
+- **Variante B:** Die private Ebene kann ebenso wie reguläre Ebenen gelöscht werden (mit Bestätigung und Angabe der Zahl betroffener Pins); bei Bedarf muss sie später neu erstellt werden können.
+
+**Status:** Grundentscheidung 15 ist offen und noch nicht beschlossen.
