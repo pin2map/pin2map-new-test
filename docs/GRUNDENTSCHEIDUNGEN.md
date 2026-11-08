@@ -694,11 +694,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein gesonderter Offline-Kartendownload ist in der Basisversion nicht vorgesehen (Grundentscheidung 51).
 - Satelliten- und Luftbilder bleiben eine mögliche spätere Erweiterung.
 
-## Offen – Grundentscheidung 61: Standardkartenhintergrund beim ersten Start
+## Grundentscheidung 61 – Straßenkarte als Standard beim ersten Start
 
-Welche der beiden beschlossenen Kartenarten soll pin2map beim **allerersten Start** als Standard verwenden, solange noch keine persönliche Kartenwahl gespeichert ist?
+**Beschlossen (Variante A):** Beim **allerersten Start** von pin2map wird die **klassische Straßenkarte** als Standard-Kartenhintergrund angezeigt, solange noch keine persönliche Auswahl gespeichert ist.
 
-- **Variante A (Empfehlung):** Die **klassische Straßenkarte** ist die Standardansicht. Sie bietet eine vertraute Orientierung über Straßen, Orte und Wege; die topografische Karte kann jederzeit gewählt werden.
-- **Variante B:** Die **topografische Karte** ist die Standardansicht. Geländedarstellung und Höhenlinien stehen damit von Anfang an im Mittelpunkt; die Straßenkarte kann jederzeit gewählt werden.
+**Konsequenzen:**
+- Die Straßenkarte ist die festgelegte Ausgangsansicht für die erste lokale Basisversion.
+- Die topografische Karte bleibt unmittelbar über die Kartenwahl zugänglich (Grundentscheidungen 54 und 60).
+- Nach einer bewussten Änderung wird die zuletzt ausgewählte Kartenansicht gespeichert und bei folgenden Starts wiederhergestellt (Grundentscheidung 55). Die Straßenkarte wird nicht bei jedem Neustart erzwungen.
+- Falls der gespeicherte Kartentyp dauerhaft nicht mehr verfügbar oder konfiguriert ist, gilt die definierte Standardkarte als Rückfalloption (Grundentscheidung 55).
+- Die Karte startet beim erstmaligen Öffnen mit dem bereits beschlossenen neutralen Kartenausschnitt ohne automatische Standortabfrage (Grundentscheidung 23).
 
-**Status:** Grundentscheidung 61 ist offen und noch nicht beschlossen. Die Wiederherstellung der zuletzt gewählten Kartenansicht bei späteren Starts bleibt unabhängig davon gültig (Grundentscheidung 55).
+## Offen – Grundentscheidung 62: Austauschbarkeit der Kartenanbieter
+
+Wie sollen die konkreten Quellen für Straßenkarte und topografische Karte technisch eingebunden werden?
+
+- **Variante A (Empfehlung):** Kartenquellen werden **über eine zentrale Konfiguration bzw. einen klaren Kartenquellen-Adapter** eingebunden. Anbieter, Kacheladressen und erforderliche Quellenangaben können so bei Bedarf geändert werden, ohne die Pin- und Ebenenlogik anzupassen. Die Auswahl geeigneter Anbieter erfolgt gesondert unter Beachtung ihrer Nutzungsbedingungen.
+- **Variante B:** Die Kartenquellen werden **direkt in der Kartenansicht fest verdrahtet**. Das reduziert anfängliche Abstraktion, macht spätere Anbieterwechsel und Wartung jedoch aufwendiger.
+
+**Status:** Grundentscheidung 62 ist offen und noch nicht beschlossen.
