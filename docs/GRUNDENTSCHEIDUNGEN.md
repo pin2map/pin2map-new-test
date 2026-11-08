@@ -594,11 +594,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Spätere Offline-Kartenfunktionen müssen Speicherbedarf und die Nutzungsbedingungen des jeweiligen Kartenanbieters berücksichtigen.
 - Lokale Anwendungsdateien bleiben gemäß Grundentscheidung 50 für einen Offline-Neustart zwischengespeichert.
 
-## Offen – Grundentscheidung 52: Anzeige des Verbindungszustands
+## Grundentscheidung 52 – Dauerhafter Verbindungsindikator in der Kopfzeile
 
-Soll die erste stabile Basisversion einen **dauerhaft sichtbaren Hinweis auf den aktuellen Online-/Offline-Zustand** der Anwendung bieten?
+**Beschlossen (Variante A):** Schon die erste lokale Basisversion zeigt in der Kopfzeile einen **kleinen, dauerhaft sichtbaren Verbindungsindikator**, der den vom Browser gemeldeten Online-/Offline-Zustand kenntlich macht.
 
-- **Variante A (Empfehlung):** Ein **kleiner Verbindungsindikator in der Kopfzeile** zeigt an, ob das Gerät nach dem vom Browser gemeldeten Netzwerkzustand online oder offline ist. Er ist zurückhaltend gestaltet und darf nicht mit einer garantierten Server-Erreichbarkeit gleichgesetzt werden. Bei Offline-Betrieb bleibt ein verständlicher Hinweis zugänglich.
-- **Variante B:** In der Basisversion gibt es **keinen dauerhaften Verbindungsindikator**. Der Offline-Zustand wird nur dann erklärt, wenn eine konkrete Aktion oder Kartenkachel wegen fehlender Verbindung nicht funktioniert.
+**Konsequenzen:**
+- Der Indikator bleibt auch während der Offline-Nutzung der lokal startfähigen PWA sichtbar (Grundentscheidungen 50 und 51).
+- Der Status ist als Hinweis auf den browserseitig erkannten Netzwerkzustand zu verstehen, **nicht** als Nachweis der tatsächlichen Erreichbarkeit eines Servers oder der erfolgreichen Synchronisation.
+- Der Indikator muss die Zustände online und offline verständlich unterscheiden können und sich bei Zustandsänderungen aktualisieren.
+- Fehlende Kartenkacheln werden weiterhin angemessen erklärt; ein vermeintlicher Online-Zustand garantiert keine verfügbare Kartenverbindung.
+- Die spätere Serversynchronisation kann eigene zusätzliche Zustände erhalten, ohne die Bedeutung dieses Basisindikators rückwirkend zu verfälschen.
 
-**Status:** Grundentscheidung 52 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 53: Detailanzeige zum Verbindungsindikator
+
+Wie soll der kleine Verbindungsindikator in der Kopfzeile bedient werden?
+
+- **Variante A (Empfehlung):** Der Indikator ist **antippbar**. Ein Antippen öffnet einen kleinen Hinweis mit dem aktuellen Verbindungszustand und seiner Bedeutung; erneutes Antippen oder Antippen außerhalb schließt den Hinweis. Dies löst keinen Verbindungsversuch aus und beeinflusst weder Daten noch Synchronisation.
+- **Variante B:** Der Indikator ist **rein informativ und nicht antippbar**. Seine Bedeutung wird nur über einen allgemein zugänglichen Hilfetext erläutert.
+
+**Status:** Grundentscheidung 53 ist offen und noch nicht beschlossen.
