@@ -1515,11 +1515,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die beschlossenen fachlichen Regeln bleiben unverändert: weltweite Suche (129), Auswahlliste bei mehreren plausiblen Treffern (116), direkte Pin-Erstellung bei genau einem geeigneten Treffer, und Speicherung aller Such-Pins in **„Privat“** (119).
 - **Die Ortsnamensuche bleibt ausdrücklich und verbindlich Bestandteil der ersten Basisversion.**
 
-## Offen – Grundentscheidung 131: Geocoding-Anbindung ohne eigenen Server in der Basisversion
+## Grundentscheidung 131 – Ortsnamensuche in der Basisversion ohne eigenen Server
 
-Soll die erste testbare Basisversion der Ortsnamensuche bereits einen eigenen pin2map-Server für die Weiterleitung von Suchanfragen voraussetzen?
+**Beschlossen (Variante A):** Die **verbindlich zur ersten Basisversion gehörende geografische Ortsnamensuche** nutzt zunächst über den beschlossenen zentralen Geocoding-Adapter (Grundentscheidung 130) einen geeigneten externen Dienst, der **direkte Browser-Anfragen ausdrücklich erlaubt** und dessen Nutzungsbedingungen die vorgesehene Nutzung in der testbaren PWA gestatten. Ein eigener pin2map-Server ist **keine Voraussetzung** für die Ortssuche der ersten Basisversion.
 
-- **Variante A (Empfehlung):** **Nein.** Die erste Basisversion nutzt über den Geocoding-Adapter zunächst einen geeigneten Dienst, der **direkte Browser-Anfragen ausdrücklich zulässt** und dessen Nutzungsbedingungen dies im vorgesehenen Testbetrieb erlauben. Die Ortssuche ist damit schon in der lokalen PWA ohne eigenen pin2map-Server testbar. Anbieterwahl, Anfragegrenzen, Herkunftsangaben und gegebenenfalls Schlüsselverwaltung müssen dazu passen.
-- **Variante B:** **Ja.** Die Ortsnamensuche wird von Beginn an ausschließlich über einen **eigenen pin2map-Server** ausgeführt, der die Anfragen an den Geocoding-Anbieter weiterleitet. Das ermöglicht serverseitige Schlüsselverwaltung und zentrale Kontrolle, macht die erste Ortssuchfunktion aber von einer zusätzlich betriebenen Serverkomponente abhängig.
+**Konsequenzen:**
+- Der Suchdienst muss so ausgewählt und integriert werden, dass Browser-Zugriff, CORS, Nutzungs- und Anfragelimits sowie erforderliche Anbieterkennzeichnungen eingehalten werden.
+- Geheim zu haltende API-Schlüssel dürfen nicht im ausgelieferten PWA-Quelltext oder in öffentlich zugänglicher Browserkonfiguration hinterlegt werden. Falls der gewählte Anbieter einen geheimen Schlüssel oder Server-Proxy zwingend voraussetzt, ist er für diese erste direkte Browser-Anbindung ungeeignet.
+- Die weltweite Suche, Trefferliste, direkte Pin-Erstellung bei genau einem geeigneten Treffer und Speicherung der neuen Pins in „Privat“ bleiben fachlich unverändert (Grundentscheidungen 116–129).
+- Die Suche selbst benötigt eine Internetverbindung; lokale Karten-/Pin-Funktionen und die Speicherung in IndexedDB funktionieren weiterhin unabhängig von der Erreichbarkeit des Geocoding-Dienstes.
+- Die Adapterarchitektur erlaubt später einen Anbieterwechsel oder eine serverseitige Weiterleitung ohne Umbau der Pin-Verwaltung.
+- Eine spätere eigene Server- und Synchronisationskomponente folgt dem beschlossenen stufenweisen Ausbau (Grundentscheidungen 3 und 115).
+- **Die Ortsnamensuche bleibt ausdrücklich verbindlicher Bestandteil der ersten Basisversion.**
 
-**Status:** Grundentscheidung 131 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 132: Rückmeldung bei nicht verfügbarer Ortsnamensuche
+
+Wie soll pin2map reagieren, wenn eine gültige Ortssuche bewusst gestartet wird, aber wegen fehlender Internetverbindung oder Nichterreichbarkeit des Geocoding-Dienstes nicht durchgeführt werden kann?
+
+- **Variante A (Empfehlung):** Die Kartenansicht bleibt verfügbar; der Suchbereich zeigt **einen kurzen, verständlichen Hinweis** wie „Ortssuche derzeit nicht verfügbar“. Es wird **kein Pin angelegt** und der eingegebene Suchtext bleibt für einen späteren erneuten Suchversuch erhalten. Die bereits lokal gespeicherten Pins bleiben unverändert.
+- **Variante B:** Eine nicht durchführbare Ortssuche wird **ohne besondere Rückmeldung beendet**. Der Suchtext bleibt erhalten, aber der Benutzer erhält keine Erklärung, weshalb keine Ergebnisse erscheinen.
+
+**Status:** Grundentscheidung 132 ist offen und noch nicht beschlossen.
