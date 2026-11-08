@@ -1296,11 +1296,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Aktion bleibt ohne Papierkorb oder Rückgängig-Funktion (Grundentscheidungen 36 und 37).
 - Es erfolgt kein automatisches Verschieben oder Zoomen der Karte.
 
-## Offen – Grundentscheidung 114: Inhalt der Löschbestätigung für einen Pin
+## Grundentscheidung 114 – Einfache allgemeine Löschbestätigung
 
-Wie ausführlich soll die Bestätigungsabfrage sein, bevor ein ausgewählter Pin endgültig gelöscht wird?
+**Beschlossen (Variante B):** Die Bestätigungsabfrage vor dem Löschen eines einzelnen Pins bleibt **kurz und allgemein**. Sie zeigt die Frage **„Pin wirklich löschen?“** sowie die beiden eindeutigen Aktionen **„Abbrechen“** und **„Löschen“**. Der Name des ausgewählten Pins wird in der Sicherheitsabfrage **nicht erneut genannt**.
 
-- **Variante A (Empfehlung):** Die Bestätigung nennt den **Pin-Namen, falls vorhanden**, andernfalls eine neutrale Bezeichnung wie **„Unbenannter Pin“**, und weist klar darauf hin, dass der Pin **dauerhaft gelöscht** wird. Es gibt zwei eindeutige Schaltflächen: **„Abbrechen“** und **„Pin endgültig löschen“**.
-- **Variante B:** Die Bestätigung zeigt nur die allgemeine Frage **„Pin wirklich löschen?“** mit den Schaltflächen **„Abbrechen“** und **„Löschen“**, ohne den ausgewählten Pin nochmals zu benennen.
+**Konsequenzen:**
+- Die bereits beschlossene ausdrückliche Bestätigung vor jeder Pin-Löschung bleibt verpflichtend (Grundentscheidung 36).
+- Der Löschdialog bezieht sich auf den beim Öffnen ausgewählten Pin und löscht bei Bestätigung ausschließlich diesen anhand seiner stabilen ID.
+- **„Abbrechen“** schließt den Dialog ohne Änderung an den Daten.
+- **„Löschen“** führt nach Bestätigung die lokale Löschung aus. Erst nach Erfolg werden Auswahl und Pin-Bedienfeld geschlossen und die Meldung „Pin gelöscht“ angezeigt (Grundentscheidung 113).
+- Die Löschaktion ist weiterhin im Pin-Bedienfeld direkt sichtbar (Grundentscheidung 112); in der Basisversion gibt es keinen Papierkorb (Grundentscheidung 37).
 
-**Status:** Grundentscheidung 114 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 115: Start der Umsetzung der Basisversion
+
+Nach den zahlreichen Grundentscheidungen über Pins, Ebenen, Karte, Bedienfeld, lokale Speicherung und Import/Export: Wie sollen die beschlossenen Basisfunktionen nun technisch umgesetzt und getestet werden?
+
+- **Variante A (Empfehlung):** **Schrittweise lauffähige Umsetzung im bestehenden Test-Repository.** Zuerst ein durchgängiger lokaler Kern aus Kartenansicht, Ebenen, Pins und IndexedDB, mit frühzeitigem Test über die bereitgestellte PWA. Anschließend werden Bedienungsdetails und weitere beschlossene Basisfunktionen in kleinen, überprüfbaren Schritten ergänzt. Jede Etappe bleibt start- und testbar; der Server folgt erst nach stabiler lokaler Basis entsprechend Grundentscheidung 3.
+- **Variante B:** **Zunächst alle beschlossenen Basisfunktionen in einem größeren Entwicklungsschritt implementieren** und erst anschließend die vollständige Anwendung als Ganzes testen. Das reduziert Zwischenversionen, verzögert jedoch frühe Rückmeldungen und erschwert die Fehlersuche.
+
+**Status:** Grundentscheidung 115 ist offen und noch nicht beschlossen.
