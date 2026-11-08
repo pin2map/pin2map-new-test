@@ -1324,11 +1324,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 
 **Einordnung:** Diese explizit vom Auftraggeber ergänzte Basisanforderung gilt unabhängig davon, ob für die Umsetzungsstrategie der noch offenen Grundentscheidung 115 Variante A oder B gewählt wird.
 
-## Offen – Grundentscheidung 115: Start der Umsetzung der Basisversion
+## Grundentscheidung 115 – Schrittweise lauffähige Umsetzung einschließlich Ortsnamensuche
 
-Nach den zahlreichen Grundentscheidungen über Pins, Ebenen, Karte, Bedienfeld, lokale Speicherung, Import/Export **und der verbindlich ergänzten Ortsnamensuche mit Pin-Erstellung**: Wie sollen die beschlossenen Basisfunktionen nun technisch umgesetzt und getestet werden?
+**Beschlossen (Variante A):** pin2map wird im bestehenden GitHub-Test-Repository **schrittweise als jederzeit lauffähige und testbare PWA** umgesetzt. Die erste durchgängige Entwicklungsstufe umfasst Kartenansicht, Ebenen, Pins, lokale Speicherung über IndexedDB **und die verbindlich zur Basisversion gehörende geografische Ortsnamensuche mit Pin-Erstellung**. Danach werden weitere bereits beschlossene Basisfunktionen und Bedienungsdetails in überschaubaren, prüfbaren Schritten ergänzt.
 
-- **Variante A (Empfehlung):** **Schrittweise lauffähige Umsetzung im bestehenden Test-Repository.** Zuerst ein durchgängiger lokaler Kern aus Kartenansicht, Ebenen, Pins und IndexedDB **einschließlich der Ortsnamensuche mit Trefferwahl bzw. direkter Pin-Erstellung bei Eindeutigkeit**, mit frühzeitigem Test über die bereitgestellte PWA. Anschließend werden Bedienungsdetails und weitere beschlossene Basisfunktionen in kleinen, überprüfbaren Schritten ergänzt. Jede Etappe bleibt start- und testbar; der Server folgt erst nach stabiler lokaler Basis entsprechend Grundentscheidung 3.
-- **Variante B:** **Zunächst alle beschlossenen Basisfunktionen einschließlich Ortsnamensuche in einem größeren Entwicklungsschritt implementieren** und erst anschließend die vollständige Anwendung als Ganzes testen. Das reduziert Zwischenversionen, verzögert jedoch frühe Rückmeldungen und erschwert die Fehlersuche.
+**Konsequenzen:**
+- Die in der vorangehenden verbindlichen Basisanforderung festgelegte **Ortsnamensuche** ist ausdrücklich Teil der frühen testbaren Anwendung und wird nicht auf eine spätere Ausbaustufe verschoben.
+- Ein eingegebener Ortsname kann über Geocoding zu einer Liste mehrerer plausibler Treffer führen; aus dieser Liste kann ein Ort ausgewählt und dort ein Pin erstellt werden. Bei **hinreichend eindeutigem** Ergebnis ist direkte Pin-Erstellung vorgesehen.
+- Neue Pins aus Suchergebnissen folgen den bereits beschlossenen Regeln zu stabiler ID, genau einer Ebene, lokaler Speicherung und anschließender Bearbeitung.
+- Jede Entwicklungsstufe soll eigenständig start- und testbar bleiben. Die weiteren bereits beschlossenen Basisfunktionen werden iterativ ergänzt, nicht aufgegeben.
+- Eine spätere Server-/Synchronisationsintegration folgt erst nach einer stabilen lokalen Basis (Grundentscheidung 3).
+- Ungeklärte Einzelheiten des Geocodings werden gesondert entschieden; sie ändern nicht den verpflichtenden Umfang der Ortssuche.
 
-**Status:** Grundentscheidung 115 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 116: Wann gilt ein Orts-Suchergebnis als eindeutig?
+
+Die verbindliche Ortsnamensuche soll bei eindeutigem Treffer sofort einen Pin erzeugen, bei mehreren möglichen Treffern dagegen eine Auswahlliste zeigen. Welche Regel schützt vor falschen automatisch gesetzten Pins?
+
+- **Variante A (Empfehlung):** **Direkte Pin-Erstellung nur bei genau einem geeigneten Suchtreffer.** Sobald der Geocoding-Dienst mehrere plausible Orte liefert, wird **immer eine Auswahlliste** angezeigt; die App wählt nicht eigenmächtig den bestbewerteten Treffer. Sind Ergebnisse unzureichend oder fehlen sie, entsteht kein Pin.
+- **Variante B:** **Direkte Pin-Erstellung auch bei mehreren Treffern**, wenn der Geocoding-Dienst einen Treffer mit deutlich höherer Relevanz bewertet als alle anderen. Nur bei enger beieinanderliegenden Bewertungen erscheint die Auswahlliste.
+
+**Status:** Grundentscheidung 116 ist offen und noch nicht beschlossen.
