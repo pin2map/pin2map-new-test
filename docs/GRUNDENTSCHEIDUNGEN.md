@@ -331,11 +331,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das Verschieben von Pins auf der Karte wird gesondert festgelegt.
 - **Entscheidungsverlauf:** Die zuvor im Chat erklärte Wahl von Variante A wurde ausdrücklich durch die spätere Wahl von Variante B ersetzt; verbindlich ist ausschließlich Variante B.
 
-## Offen – Grundentscheidung 30: Wie wird das Verschieben eines Pins gestartet?
+## Grundentscheidung 30 – Bewusster Verschiebemodus für Pins
 
-Da Kartennavigation und Pin-Bearbeitung nebeneinander stattfinden, muss die beabsichtigte Positionsänderung sicher von normaler Kartenbewegung unterschieden werden.
+**Beschlossen (Variante A):** Das Verschieben eines vorhandenen Pins beginnt ausschließlich durch bewusstes Aktivieren der Funktion **„Pin verschieben“** in seiner Bearbeitungsansicht. Anschließend kann eine neue Position auf der Karte gewählt werden. Das normale Ziehen oder Antippen der Karte darf ohne diesen Modus keine Pin-Koordinaten verändern.
 
-- **Variante A (Empfehlung):** Ein Pin kann erst nach dem bewussten Auslösen von **„Pin verschieben“** in seiner Bearbeitungsansicht versetzt werden. Anschließend wird eine neue Position auf der Karte gewählt. Die genaue Übernahme der Position wird gesondert geklärt.
-- **Variante B:** Ein vorhandener Pin kann direkt durch Ziehen seines Symbols auf der Karte verschoben werden, ohne zuvor einen gesonderten Verschiebemodus aufzurufen.
+**Konsequenzen:**
+- Die Verschiebefunktion ist eindeutig dem ausgewählten Pin zugeordnet.
+- Während des Verschiebens ist der Zustand visuell erkennbar; der Vorgang kann abgebrochen werden.
+- Die übliche Kartennavigation darf nicht versehentlich einen Pin verschieben.
+- Die interne Pin-ID und seine Zuordnung zu genau einer Ebene bleiben beim Verschieben unverändert.
+- Wie eine neu gewählte Position verbindlich übernommen wird, ist Gegenstand von Grundentscheidung 31.
 
-**Status:** Grundentscheidung 30 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 31: Übernahme einer neuen Pin-Position
+
+Nach Aktivieren von „Pin verschieben“ und Auswahl einer neuen Kartenposition stellt sich die Frage, wann die neuen Koordinaten gespeichert werden:
+
+- **Variante A (Empfehlung):** Die neue Position wird zunächst als **Vorschau** angezeigt. Erst mit „Position übernehmen“ werden die Koordinaten in IndexedDB gespeichert; „Abbrechen“ belässt den Pin an seiner alten Position.
+- **Variante B:** Die neue Position wird unmittelbar nach ihrer Auswahl automatisch in IndexedDB gespeichert, ohne weiteren Bestätigungsschritt. Ein Abbruch ist nur möglich, bevor eine neue Position gewählt wurde.
+
+**Status:** Grundentscheidung 31 ist offen und noch nicht beschlossen.
