@@ -122,13 +122,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Regel wahrt die Trennung von aktiver Ebene und sichtbaren Ebenen (Grundentscheidungen 7–10).
 - Der genaue Ablauf weiterer Optionen im Hinweis kann bei der UI-Spezifikation präzisiert werden, ohne die bewusste Entscheidung zu unterlaufen.
 
-## Offen – Grundentscheidung 12: Bezeichnung neu angelegter Ebenen
+## Grundentscheidung 12 – Bezeichnung neuer Ebenen
 
-Die Basisversion enthält eine einfache Ebenenverwaltung. Wie wird eine neue reguläre Ebene bezeichnet?
+**Beschlossen (Variante A):** Beim Anlegen einer neuen regulären Ebene muss eine **nichtleere Bezeichnung** eingegeben werden. Die Bezeichnung kann später geändert werden.
 
-- **Variante A (Empfehlung):** Beim Anlegen einer neuen Ebene muss eine nichtleere Bezeichnung eingegeben werden. Diese kann später geändert werden. Das vermeidet schwer unterscheidbare Ebenen.
-- **Variante B:** Neue Ebenen erhalten zunächst einen automatisch erzeugten Namen (z. B. „Ebene 1“). Eine Umbenennung ist optional und auch später möglich.
+**Konsequenzen:**
+- Ohne einen Namen kann keine neue reguläre Ebene gespeichert werden; reine Leerzeichen gelten nicht als Name.
+- Die Bezeichnung wird gemeinsam mit einer stabilen internen Ebenen-ID in IndexedDB gespeichert.
+- Ein späteres Umbenennen verändert weder die Identität der Ebene noch die Zuordnung ihrer Pins.
+- Die bereits beschlossene private Ebene wird unabhängig von der Benennung neu angelegter regulärer Ebenen bereitgestellt.
+- Ob identische Namen verschiedener Ebenen erlaubt sind, wird in Grundentscheidung 13 geklärt.
 
-**Abgrenzung:** Es geht um regulär vom Benutzer angelegte Ebenen. Die bereits beschlossene private Ebene ist davon unabhängig.
+## Offen – Grundentscheidung 13: Dürfen mehrere Ebenen gleich heißen?
 
-**Status:** Grundentscheidung 12 ist noch offen.
+- **Variante A (Empfehlung):** Innerhalb derselben Ebenenverwaltung müssen die Namen regulärer Ebenen eindeutig sein (bei der Prüfung werden führende/nachfolgende Leerzeichen und Groß-/Kleinschreibung nicht als Unterschied gewertet). So lassen sich Ebenen in Auswahlmenüs eindeutig unterscheiden.
+- **Variante B:** Mehrere Ebenen dürfen dieselbe Bezeichnung haben. Intern bleiben sie anhand ihrer stabilen IDs unterscheidbar.
+
+**Hinweis:** Die private Ebene wird bei der späteren Festlegung ihrer festen Bezeichnung und ihres Sonderstatus gesondert berücksichtigt.
+
+**Status:** Grundentscheidung 13 ist noch offen.
