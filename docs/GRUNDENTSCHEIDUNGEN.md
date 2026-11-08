@@ -365,11 +365,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die beiden Markierungen sind lediglich Ansichten desselben Pins; es wird niemals ein zweiter dauerhafter Pin erzeugt.
 - Die konkrete visuelle Kennzeichnung der beiden Positionen wird in der UI-Umsetzung gestaltet.
 
-## Offen – Grundentscheidung 33: Visuelle Verbindung zwischen alter und neuer Position
+## Grundentscheidung 33 – Verbindungslinie zwischen bisheriger und neuer Pin-Position
 
-Soll zusätzlich zu den zwei Positionsmarkierungen eine Verbindung auf der Karte sichtbar sein?
+**Beschlossen (Variante A):** Während der Vorschau einer Pin-Verschiebung verbindet eine **gut erkennbare Linie** die bisherige mit der vorgeschlagenen neuen Position auf der Karte.
 
-- **Variante A (Empfehlung):** Eine gut erkennbare **Linie** verbindet die alte und die neue Position während der Vorschau. Sie verdeutlicht die Richtung und das Ausmaß der Verschiebung und verschwindet bei Übernahme oder Abbruch.
-- **Variante B:** Es werden ausschließlich die zwei unterscheidbaren Positionsmarkierungen angezeigt. Eine Verbindungslinie ist nicht erforderlich.
+**Konsequenzen:**
+- Beide Positionen bleiben gleichzeitig und eindeutig unterscheidbar sichtbar (Grundentscheidung 32).
+- Die Verbindungslinie verdeutlicht Richtung und Ausmaß der geplanten Verschiebung und wird beim Ändern der Vorschauposition entsprechend aktualisiert.
+- Die Linie ist ausschließlich eine temporäre Darstellung, kein dauerhaft gespeichertes Kartenobjekt.
+- Nach erfolgreichem „Position übernehmen“ oder nach „Abbrechen“ verschwindet die Linie zusammen mit der temporären Vorschau.
+- Die bisherigen Koordinaten werden erst nach ausdrücklicher Übernahme geändert (Grundentscheidung 31).
 
-**Status:** Grundentscheidung 33 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 34: Verschiebevorschau mehrfach korrigieren
+
+Wie soll sich die Vorschau verhalten, wenn die neue Position beim ersten Versuch noch nicht genau passt?
+
+- **Variante A (Empfehlung):** Solange der Verschiebemodus aktiv ist, kann durch erneutes Antippen einer Kartenposition die **vorgeschlagene Position beliebig oft angepasst** werden. Beide Positionsmarkierungen und die Verbindungslinie aktualisieren sich. Erst „Position übernehmen“ speichert die zuletzt gewählte Position.
+- **Variante B:** Nach der ersten Auswahl einer neuen Position bleibt die Vorschau fixiert. Um eine andere Position zu wählen, muss die Vorschau abgebrochen und „Pin verschieben“ erneut gestartet werden.
+
+**Status:** Grundentscheidung 34 ist offen und noch nicht beschlossen.
