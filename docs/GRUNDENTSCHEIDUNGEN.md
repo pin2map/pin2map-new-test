@@ -999,11 +999,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Bereits automatisch gespeicherte Pin-Änderungen bleiben erhalten (Grundentscheidung 29).
 - Die ausdrücklich aktivierten Modi zum Hinzufügen und Verschieben von Pins behalten ihre besonderen Bedien- und Bestätigungsregeln (Grundentscheidungen 25–27 und 30–35).
 
-## Offen – Grundentscheidung 88: Auswahl eines anderen Pins bei geöffneter Pin-Ansicht
+## Grundentscheidung 88 – Direkter Wechsel zwischen ausgewählten Pins
 
-Wenn bereits ein Pin ausgewählt ist und der Benutzer **einen anderen sichtbaren Pin** antippt: Soll die Pin-Ansicht unmittelbar auf den anderen Pin wechseln?
+**Beschlossen (Variante A):** Wird bei bereits geöffneter Pin-Detail-/Bearbeitungsansicht **ein anderes sichtbares Pin-Symbol angetippt oder angeklickt**, wird der bisherige Pin unmittelbar abgewählt und der neue Pin ausgewählt. Die bestehende Pin-Ansicht zeigt **sofort die Daten des neu ausgewählten Pins** an.
 
-- **Variante A (Empfehlung):** **Direkter Wechsel.** Der bisherige Pin wird abgewählt, der neu angetippte Pin wird ausgewählt, und dieselbe Pin-Ansicht zeigt sofort dessen Daten. Automatisch gespeicherte Änderungen des vorherigen Pins bleiben erhalten; die Karte muss dafür nicht neu zentriert werden.
-- **Variante B:** **Zuerst abwählen.** Solange die aktuelle Pin-Ansicht offen ist, kann kein anderer Pin direkt ausgewählt werden. Der Benutzer muss erst durch Antippen der freien Karte oder des bereits ausgewählten Pins die Auswahl schließen.
+**Konsequenzen:**
+- Es ist nicht erforderlich, zunächst die bisherige Pin-Ansicht zu schließen oder die Auswahl über eine freie Kartenfläche aufzuheben.
+- Auswahlring und gegebenenfalls hervorgehobene Beschriftung wechseln zum neuen Pin (Grundentscheidungen 76 und 83).
+- Der aktuelle Kartenausschnitt und die Zoomstufe bleiben unverändert; ein automatisches Zentrieren erfolgt beim Pin-Wechsel nicht.
+- Vor dem Wechsel automatisch gespeicherte Änderungen des bisherigen Pins bleiben erhalten (Grundentscheidung 29). Offene asynchrone Speichervorgänge dürfen nicht versehentlich Daten des neu ausgewählten Pins überschreiben.
+- Antippen desselben bereits ausgewählten Pins hebt dagegen weiterhin dessen Auswahl auf (Grundentscheidung 87).
+- Für explizite Pin-Hinzufüge- und Verschiebemodi gelten deren gesonderte Regeln.
 
-**Status:** Grundentscheidung 88 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 89: Anordnung der Pin-Bearbeitungsansicht
+
+Wie soll die Pin-Detail-/Bearbeitungsansicht in der ersten Basisversion angezeigt werden, damit die Karte gleichzeitig nutzbar bleibt?
+
+- **Variante A (Empfehlung):** Als **kompaktes, am unteren Bildschirmrand eingeblendetes Bedienfeld**, das den ausgewählten Pin-Namen und die Bearbeitungsaktionen zeigt. Die Karte bleibt im übrigen Bereich sichtbar und bedienbar; auf kleinen Displays berücksichtigt das Feld die verfügbare Höhe.
+- **Variante B:** Als **seitliches Bedienfeld** am rechten Bildschirmrand. Die Karte bleibt daneben sichtbar; auf schmalen Smartphones kann das Feld einen großen Teil der Kartenbreite belegen.
+
+**Status:** Grundentscheidung 89 ist offen und noch nicht beschlossen.
