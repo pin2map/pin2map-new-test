@@ -133,11 +133,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die bereits beschlossene private Ebene wird unabhängig von der Benennung neu angelegter regulärer Ebenen bereitgestellt.
 - Ob identische Namen verschiedener Ebenen erlaubt sind, wird in Grundentscheidung 13 geklärt.
 
-## Offen – Grundentscheidung 13: Dürfen mehrere Ebenen gleich heißen?
+## Grundentscheidung 13 – Eindeutigkeit von Ebenennamen
 
-- **Variante A (Empfehlung):** Innerhalb derselben Ebenenverwaltung müssen die Namen regulärer Ebenen eindeutig sein (bei der Prüfung werden führende/nachfolgende Leerzeichen und Groß-/Kleinschreibung nicht als Unterschied gewertet). So lassen sich Ebenen in Auswahlmenüs eindeutig unterscheiden.
-- **Variante B:** Mehrere Ebenen dürfen dieselbe Bezeichnung haben. Intern bleiben sie anhand ihrer stabilen IDs unterscheidbar.
+**Beschlossen (Variante A):** Jede reguläre Ebene muss innerhalb derselben Ebenenverwaltung eine **eindeutige Bezeichnung** besitzen.
 
-**Hinweis:** Die private Ebene wird bei der späteren Festlegung ihrer festen Bezeichnung und ihres Sonderstatus gesondert berücksichtigt.
+**Konsequenzen:**
+- Beim Anlegen und Umbenennen regulärer Ebenen wird geprüft, ob der Name bereits vergeben ist.
+- Bei dieser Prüfung gelten Groß-/Kleinschreibung und führende bzw. nachfolgende Leerzeichen nicht als Unterscheidungsmerkmal (beispielsweise „Restaurants“ und „ restaurants “ sind gleichwertig).
+- Ein Namenskonflikt wird verständlich angezeigt; das Anlegen oder Umbenennen wird erst mit einem eindeutigen Namen abgeschlossen.
+- Die Identität der Ebene beruht weiterhin auf ihrer stabilen internen ID, nicht auf ihrem Namen. Pin-Zuordnungen bleiben beim Umbenennen unverändert.
+- Die bereits vorhandene private Ebene und etwaige reservierte Namen werden im Rahmen ihrer Sonderregeln gesondert behandelt.
 
-**Status:** Grundentscheidung 13 ist noch offen.
+## Offen – Grundentscheidung 14: Löschen einer Ebene mit vorhandenen Pins
+
+Wie soll die einfache Ebenenverwaltung reagieren, wenn eine Ebene gelöscht werden soll, die noch Pins enthält?
+
+- **Variante A (Empfehlung):** Die Ebene kann erst gelöscht werden, nachdem alle enthaltenen Pins ausdrücklich in andere Ebenen verschoben oder einzeln gelöscht wurden. Keine automatische Löschung oder Verschiebung von Pins.
+- **Variante B:** Beim Löschen einer Ebene kann der Benutzer ausdrücklich bestätigen, dass die Ebene **einschließlich aller enthaltenen Pins** gelöscht wird. Die Anzahl der betroffenen Pins wird vorher angezeigt.
+
+**Abgrenzung:** Ob und unter welchen Bedingungen die fest vorgesehene private Ebene gelöscht werden kann, wird gesondert entschieden. Die beiden Varianten betreffen reguläre Ebenen.
+
+**Status:** Grundentscheidung 14 ist noch offen.
