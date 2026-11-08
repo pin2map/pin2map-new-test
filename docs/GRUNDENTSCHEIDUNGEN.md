@@ -1694,3 +1694,16 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 5. Ein kurzer Tipp auf freie Kartenfläche schließt offene nichtmodale Dialoge und wählt Pins ab. Treffer aus der Ortsnamensuche werden weiterhin wie beschlossen in „Privat“ gespeichert; die Ortssuche einschließlich Suchtrefferliste, Nominatim-Adapter und 24-Stunden-Cache bleibt **verbindlicher Bestandteil der ersten Basisversion**.
 
 **Umsetzungsstand:** Quellcodeänderungen im Test-Repository eingecheckt; tatsächliche Bedienung auf iPhone und Desktop ist weiterhin anhand des veröffentlichten Tests zu überprüfen.
+
+## Umsetzungspräzisierung – Ebenenlöschung, langes Drücken und Pin-Verschiebung (2026-11-08)
+
+**Auf ausdrücklichen Wunsch nach praktischem Test verbindlich aktualisiert:**
+
+1. **Langes Drücken auf freie Karte erzeugt Pins sowohl auf Touchscreens als auch am Desktop** (ca. 650 ms), sofern keine Verschiebegeste erkannt wird. Der Rechtsklick auf eine freie Kartenposition bleibt als zusätzliche Desktop-Bedienung bestehen. Die Karte wird durch diese Aktion nicht automatisch gezoomt oder verschoben.
+2. **Reguläre Ebenen besitzen eine direkt erreichbare Löschschaltfläche.** Vor dem Löschen werden Ebenenname, Zahl der zugeordneten Pins und die gemeinsame Löschfolge angezeigt. Die Löschung erfordert eine ausdrückliche Bestätigung und betrifft die Ebene samt Pins (Grundentscheidung 14).
+3. **Die Systemebene „Privat“ bleibt unantastbar, ihre Pins können jedoch gesammelt gelöscht werden** – über „Alle Pins in Privat löschen“ mit Bestätigungsdialog und Anzahl betroffener Pins. Die Systemebene selbst und andere Ebenen bleiben bestehen (Grundentscheidungen 15–16).
+4. **Langes Drücken direkt auf ein Pin-Symbol für ca. eine Sekunde öffnet die Namensbearbeitung und fokussiert das Eingabefeld**, also einen unmittelbar nutzbaren Umbenennungsmodus. Kurzes Antippen wählt den Pin wie bisher aus.
+5. **Pin-Verschiebung ohne überlagernden Editor:** Die weiterhin ausdrücklich ausgelöste Aktion „Pin verschieben“ blendet den schwebenden Bearbeitungsdialog aus. Eine neue Kartenposition erzeugt eine verschiebbare Vorschau mit sichtbarer bisheriger Position und Verbindungslinie. „Position übernehmen“ speichert erst die Vorschau; „Abbrechen“ verwirft sie (Grundentscheidungen 30–35). Das verhindert, dass der Editor kurze Verschiebungen blockiert.
+6. **Die weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.** Sie erzeugt Pins wie beschlossen in „Privat“ und ist von diesen Karteninteraktionen getrennt.
+
+**Status:** Codeänderungen in GitHub eingecheckt; die tatsächliche Bedienung auf iPhone und Desktop bleibt im veröffentlichten Teststand zu überprüfen.
