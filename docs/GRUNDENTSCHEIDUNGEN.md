@@ -398,11 +398,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Erst nach ausdrücklichem „Position übernehmen“ werden die zuletzt gewählten Koordinaten dauerhaft in IndexedDB gespeichert (Grundentscheidung 31). „Abbrechen“ verwirft die Vorschau.
 - Die stabile Pin-ID sowie die Zuordnung zu genau einer Ebene bleiben unverändert.
 
-## Offen – Grundentscheidung 36: Löschen eines einzelnen Pins
+## Grundentscheidung 36 – Einzelne Pins nur nach Bestätigung löschen
 
-Wie soll das Löschen eines einzelnen Pins in der ersten stabilen Basisversion abgesichert werden?
+**Beschlossen (Variante A):** Nach dem Auslösen von **„Pin löschen“** erscheint eine ausdrückliche **Bestätigungsabfrage**. Erst nach bewusster Bestätigung wird der einzelne Pin aus der lokalen IndexedDB gelöscht.
 
-- **Variante A (Empfehlung):** Nach „Pin löschen“ erscheint eine **Bestätigungsabfrage**, die den betroffenen Pin benennt bzw. bei fehlender Bezeichnung kenntlich macht. Erst nach ausdrücklicher Bestätigung wird der Pin aus IndexedDB gelöscht.
-- **Variante B:** Das Antippen von „Pin löschen“ entfernt den Pin **sofort ohne zusätzliche Bestätigung**. Ein Papierkorb oder „Rückgängig“ wird damit nicht automatisch zugesichert.
+**Konsequenzen:**
+- Der Dialog macht klar, welcher Pin gelöscht wird. Ist keine Bezeichnung vorhanden, wird der Pin anderweitig eindeutig erkennbar gemacht.
+- Ein Abbrechen lässt Pin, Koordinaten, Bezeichnung und Ebenenzuordnung unverändert.
+- Vor der Bestätigung wird kein Pin gelöscht; die Löschung wird konsistent lokal durchgeführt und ein Fehler sichtbar gemeldet.
+- Die Regel gilt auch für Pins der festen privaten Ebene „Privat“; die Ebene selbst bleibt erhalten.
+- Die Löschung ganzer regulärer Ebenen samt Pins folgt weiterhin Grundentscheidung 14.
+- Eine spätere Papierkorb-, Wiederherstellungs- oder Synchronisationsregel ist hiermit noch nicht beschlossen.
 
-**Status:** Grundentscheidung 36 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 37: Rückgängig-Funktion nach dem Löschen eines Pins
+
+Soll die erste lokale Basisversion bereits eine Möglichkeit zur Wiederherstellung eines bestätigten, gelöschten Pins bieten?
+
+- **Variante A:** Ein bestätigtes Löschen verschiebt den Pin zunächst in einen lokalen **Papierkorb**, aus dem er wiederhergestellt werden kann. Das erfordert zusätzliche Datenhaltung und eine einfache Papierkorb-Bedienung.
+- **Variante B (Empfehlung für die schlanke Basisversion):** Nach Bestätigung wird der Pin lokal gelöscht; in der ersten Basisversion gibt es **noch keinen Papierkorb und keine Rückgängig-Funktion**. Wiederherstellung und spätere Synchronisationsbehandlung werden vor der Serveranbindung gesondert geprüft.
+
+**Status:** Grundentscheidung 37 ist offen und noch nicht beschlossen.
