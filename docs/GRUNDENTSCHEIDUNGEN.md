@@ -876,11 +876,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Pins ohne Bezeichnung erhalten keine künstlich erzeugte Beschriftung.
 - Die Position und Darstellung der hervorgehobenen Bezeichnung müssen auf kleinen Bildschirmen und bei dicht belegten Kartenflächen lesbar bleiben.
 
-## Offen – Grundentscheidung 77: Position der hervorgehobenen Pin-Beschriftung
+## Grundentscheidung 77 – Ausgewählte Pin-Beschriftung ausschließlich seitlich platzieren
 
-Wie soll pin2map die zusätzliche Beschriftung eines ausgewählten Pins auf der Karte platzieren, insbesondere in Randnähe?
+**Beschlossen (Variante A mit verbindlicher Einschränkung):** pin2map positioniert die hervorgehobene Bezeichnung eines ausgewählten Pins **automatisch entweder links oder rechts neben dem Pin**. Eine Platzierung **oberhalb oder unterhalb des Pins ist ausdrücklich ausgeschlossen**.
 
-- **Variante A (Empfehlung):** Die hervorgehobene Beschriftung wird **automatisch auf einer passenden Seite des Pins angeordnet** (z. B. rechts, links oder oberhalb), sodass sie möglichst vollständig im sichtbaren Kartenbereich bleibt und andere Bedienelemente nicht verdeckt.
-- **Variante B:** Die hervorgehobene Beschriftung erscheint **immer an derselben festen Position relativ zum Pin**, auch wenn sie dadurch am Kartenrand abgeschnitten werden kann. Die Umsetzung ist einfacher und die Platzierung vorhersehbar.
+**Konsequenzen:**
+- Die Seite wird abhängig vom verfügbaren horizontalen Platz so gewählt, dass die Beschriftung möglichst vollständig innerhalb des Kartenbereichs sichtbar bleibt.
+- Oben oder unten am Pin darf die Beschriftung niemals als Ausweichposition erscheinen; die seitliche Zuordnung bleibt auch an Kartenrändern erhalten.
+- Kartenbedienelemente sollen möglichst nicht verdeckt werden. Die Beschriftung wird nicht zum Anlass genommen, die gespeicherten Pin-Koordinaten zu verändern.
+- Für sehr lange Pin-Namen bzw. geringe verfügbare Breite wird eine gesonderte Überlaufregel festgelegt.
+- Die Hervorhebung gilt weiterhin auch bei ausgeschalteten oder automatisch reduzierten normalen Kartenbeschriftungen (Grundentscheidung 76).
 
-**Status:** Grundentscheidung 77 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 78: Lange Namen in seitlichen Pin-Beschriftungen
+
+Was geschieht, wenn die hervorgehobene Bezeichnung eines ausgewählten Pins selbst links oder rechts nicht vollständig in den verfügbaren Platz passt?
+
+- **Variante A (Empfehlung):** Die Beschriftung bleibt **einzeilig und seitlich**, wird bei Bedarf mit **Auslassungspunkten („…“) gekürzt**. Der komplette Name ist weiterhin jederzeit in der Pin-Detail-/Bearbeitungsansicht lesbar.
+- **Variante B:** Die Beschriftung bleibt **seitlich neben dem Pin**, darf aber **mehrzeilig umbrechen**, um den vollständigen Namen möglichst anzuzeigen. Sie darf sich dabei nicht ober- oder unterhalb des Pins positionieren; bei sehr langen Namen oder kleinen Displays kann das Textfeld groß werden.
+
+**Status:** Grundentscheidung 78 ist offen und noch nicht beschlossen.
