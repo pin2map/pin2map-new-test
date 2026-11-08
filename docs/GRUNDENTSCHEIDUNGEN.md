@@ -1348,11 +1348,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Diese Regel gilt unabhängig vom später ausgewählten Geocoding-Anbieter und schützt vor versehentlich falsch gesetzten Pins.
 - Die bereits beschlossene **Ortsnamensuche bleibt obligatorischer Bestandteil der ersten testbaren Basisversion** (Basisanforderung Ortsnamensuche und Grundentscheidung 115).
 
-## Offen – Grundentscheidung 117: Kartenansicht nach Ortsnamensuche und Pin-Erstellung
+## Grundentscheidung 117 – Nach Ortsnamensuche zum neuen Pin springen
 
-Was soll mit der Kartenansicht geschehen, wenn über die Ortsnamensuche ein Pin angelegt wurde – unabhängig davon, ob der Treffer eindeutig war oder aus einer Liste gewählt wurde?
+**Beschlossen (Variante A):** Wird ein Pin über die verbindlich zur Basisversion gehörende **geografische Ortsnamensuche** erstellt – sowohl nach genau einem geeigneten Suchtreffer als auch nach Auswahl aus mehreren Treffern –, **springt die Kartenansicht unmittelbar zum neu angelegten Pin** und stellt ihn mit **einer geeigneten Zoomstufe gut sichtbar** dar.
 
-- **Variante A (Empfehlung):** Die Karte **springt unmittelbar zum neu erstellten Pin** und zeigt ihn gut sichtbar in einem geeigneten Zoom, sodass der Benutzer sofort prüfen kann, ob der richtige Ort gewählt wurde. Der Pin bleibt ausgewählt und sein unteres Bearbeitungsfeld ist geöffnet, entsprechend der bestehenden Pin-Erstellungsregel.
-- **Variante B:** Die Karte **behält den bisherigen Kartenausschnitt und Zoom** bei. Der Pin wird zwar gespeichert und ausgewählt, kann aber außerhalb der gerade angezeigten Karte liegen; zum Auffinden wäre anschließend „Pin zeigen“ nötig.
+**Konsequenzen:**
+- Der aus dem Suchergebnis angelegte Pin wird nach erfolgreicher lokaler Speicherung ausgewählt; das untere Pin-Bedienfeld öffnet sich entsprechend dem allgemeinen Erstellungsverhalten (Grundentscheidung 28).
+- Die Karte wird zum tatsächlichen Standort des neuen Pins bewegt, damit die Auswahl überprüfbar ist. Die gespeicherten Pin-Koordinaten werden dadurch nicht verändert.
+- Der Zielausschnitt berücksichtigt den Platzbedarf des geöffneten unteren Bedienfelds: der ausgewählte Pin soll im unbedeckten Kartenbereich sichtbar sein (Grundentscheidungen 89–94).
+- Die zuvor eingestellte Kartenposition und Zoomstufe müssen für diesen Suchvorgang nicht beibehalten werden; die neue Kartenansicht wird gemäß den allgemeinen Regeln lokal gespeichert (Grundentscheidung 22).
+- Unklare Suchergebnisse oder Fehler legen weiterhin keinen Pin an (Grundentscheidung 116).
+- Die **Ortsnamensuche bleibt verpflichtender Bestandteil der ersten Basisversion** (verbindliche Basisanforderung und Grundentscheidung 115).
 
-**Status:** Grundentscheidung 117 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 118: Name eines Pins aus der Ortsnamensuche
+
+Welchen Namen erhält ein Pin, der aus einem eindeutig gefundenen oder bewusst aus der Trefferliste ausgewählten Ort erstellt wird?
+
+- **Variante A (Empfehlung):** Das Namensfeld wird **automatisch mit dem kurzen Ortsnamen des gewählten Suchergebnisses vorbelegt** (beispielsweise „Oxford“). Der Name bleibt optional und kann im geöffneten Pin-Bedienfeld direkt geändert oder gelöscht werden. Für die Vorbelegung gelten die beschlossenen Regeln zu maximal 120 Zeichen und einzeiligem Text; eine ungültige Anbieterbezeichnung wird nicht ungeprüft übernommen.
+- **Variante B:** Der neue Pin wird **ohne Namen** erstellt, auch wenn der Suchdienst einen Ortsnamen liefert. Der Benutzer trägt einen Namen anschließend bei Bedarf selbst ein.
+
+**Status:** Grundentscheidung 118 ist offen und noch nicht beschlossen.
