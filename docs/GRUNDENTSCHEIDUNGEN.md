@@ -919,11 +919,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Beschriftungsflächen dürfen die Bedienung des darunterliegenden Kartenausschnitts nicht unnötig blockieren; insbesondere darf die normale Kartenverschiebung nicht durch Beschriftungen verhindert werden.
 - Die Pin-Symbole müssen auf Touchscreens hinreichend gut bedienbar sein; ihre konkrete Trefferfläche wird gesondert entschieden.
 
-## Offen – Grundentscheidung 81: Antippfläche der Pin-Symbole
+## Grundentscheidung 81 – Unsichtbar vergrößerte Antippfläche für Pin-Symbole
 
-Wie groß soll die interaktive Trefferfläche eines Pins auf Touchscreens sein, wenn nur das Pin-Symbol auswählbar ist?
+**Beschlossen (Variante A):** Das sichtbare Pin-Symbol behält seine vorgesehene Größe, erhält aber **eine unsichtbar vergrößerte Antipp- bzw. Klickfläche** rund um das Symbol. Damit lassen sich Pins besonders auf Touchscreens leichter auswählen.
 
-- **Variante A (Empfehlung):** Das sichtbare Pin-Symbol erhält eine **unsichtbar vergrößerte Antippfläche** rund um das Symbol. Dadurch bleibt der Pin auch auf Smartphones leichter auswählbar, ohne ihn grafisch größer machen zu müssen. Beschriftungen selbst bleiben nicht antippbar.
-- **Variante B:** Die Antippfläche entspricht **genau der sichtbaren Form des Pin-Symbols**, ohne zusätzliche Vergrößerung. Das ist geometrisch präziser, erfordert aber bei kleinen Pins genaueres Treffen.
+**Konsequenzen:**
+- Die vergrößerte Trefferfläche gehört nur zum Pin-Symbol; die Pin-Beschriftung bleibt kein Auswahlziel (Grundentscheidung 80).
+- Die Trefferfläche darf die optische Darstellung, Position und gespeicherten Koordinaten eines Pins nicht verändern.
+- Auswahl durch Antippen oder Klicken der Trefferfläche öffnet dieselbe Pin-Ansicht wie eine Auswahl direkt am sichtbaren Symbol.
+- Die konkrete Größe der Trefferfläche wird bei der Umsetzung für Touch- und Mausbedienung getestet; nahe benachbarte Pins und normales Verschieben/Zoomen der Karte müssen bedienbar bleiben.
+- Bei überlappenden Trefferflächen mehrerer Pins ist ein eindeutiges, nachvollziehbares Auswahlverhalten erforderlich, das gesondert festgelegt wird.
 
-**Status:** Grundentscheidung 81 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 82: Auswahl bei überlappenden Pin-Trefferflächen
+
+Wenn mehrere Pins eng beieinanderliegen und sich ihre unsichtbar vergrößerten Antippflächen überschneiden: Wie soll pin2map auf ein Antippen im gemeinsamen Bereich reagieren?
+
+- **Variante A (Empfehlung):** pin2map wählt **direkt den Pin, dessen sichtbares Symbol dem Berührungspunkt am nächsten liegt**. Bei exakt gleichem Abstand erfolgt die Auswahl nach einer stabilen Regel. So bleibt die Bedienung ohne zusätzliches Auswahlmenü schnell.
+- **Variante B:** pin2map öffnet bei mehreren möglichen Pins **ein kleines Auswahlmenü**, in dem der Benutzer den gewünschten Pin bewusst auswählt. Das vermeidet Mehrdeutigkeiten, erfordert aber zusätzliche Schritte.
+
+**Status:** Grundentscheidung 82 ist offen und noch nicht beschlossen.
