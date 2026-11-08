@@ -421,11 +421,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die besonderen Anforderungen an spätere Server-Synchronisation, Datensicherung und Wiederherstellung bleiben gesondert zu entscheiden, bevor der Zwei-Geräte-Test beginnt.
 - Die Löschung einer regulären Ebene einschließlich ihrer Pins folgt weiterhin Grundentscheidung 14.
 
-## Offen – Grundentscheidung 38: Lokale Datensicherung vor der Serveranbindung
+## Grundentscheidung 38 – Manueller Datenexport in der lokalen Basisversion
 
-Die Basisversion speichert Pins und Ebenen in IndexedDB. Browser- beziehungsweise App-Daten können jedoch auch unabhängig von der Anwendung verloren gehen. Soll die erste stabile lokale Basisversion deshalb schon eine manuelle Exportfunktion bieten?
+**Beschlossen (Variante A):** Bereits die erste stabile lokale Basisversion bietet einen **manuell auslösbaren Export der Pins und Ebenen in eine Datei**. Damit lassen sich die lokalen Daten außerhalb des Browsers sichern, noch bevor die Serveranbindung umgesetzt wird.
 
-- **Variante A (Empfehlung):** Bereits die lokale Basisversion erhält einen **manuellen Export** der Pins und Ebenen in eine Datei. Damit können Daten außerhalb des Browsers gesichert werden. Der spätere Import beziehungsweise die Wiederherstellung wird separat entschieden.
-- **Variante B:** In der ersten lokalen Basisversion gibt es **noch keinen Export**. Die Datensicherung wird erst im Zuge der frühen Serveranbindung angegangen.
+**Konsequenzen:**
+- Der Export umfasst den aktuellen gespeicherten Bestand der Pins samt Koordinaten, optionalen Bezeichnungen, internen IDs und Ebenenzuordnungen sowie die für die Interpretation nötigen Ebenendaten einschließlich der Systemebene „Privat“.
+- Der Export wird ausschließlich nach bewusster Nutzeraktion gestartet; er löscht oder verändert keine lokalen Daten.
+- Die Datei muss ein dokumentiertes, versioniertes Datenformat verwenden, damit sie später verlässlich eingelesen werden kann. Das konkrete Exportformat wird gesondert festgelegt.
+- Die Exportfunktion benötigt keine Serververbindung.
+- Der Benutzer muss die exportierte Datei selbst außerhalb der Browserdaten aufbewahren; ein Export allein ist noch keine automatische Datensicherung.
+- Ein Import bzw. eine Wiederherstellung aus der Datei ist durch diesen Beschluss noch **nicht** zugesichert und wird in Grundentscheidung 39 entschieden.
+- Löschbestätigungen und der Verzicht auf einen Papierkorb aus Grundentscheidungen 36 und 37 bleiben unverändert.
 
-**Status:** Grundentscheidung 38 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 39: Import der gesicherten Daten in der Basisversion
+
+Soll die erste stabile lokale Basisversion den zuvor beschlossenen Datenexport auch wieder einlesen können?
+
+- **Variante A (Empfehlung):** Die Basisversion enthält neben dem Export eine **manuelle Importfunktion** für gültige pin2map-Sicherungsdateien. Vor jeglicher Datenübernahme werden Datei und Datenstruktur geprüft; der konkrete Umgang mit bereits vorhandenen Daten (Ersetzen oder Zusammenführen) wird anschließend gesondert entschieden.
+- **Variante B:** Die Basisversion bietet zunächst **nur den Export**. Ein Import wird erst vor oder bei der frühen Serveranbindung ergänzt. Exportdateien sind bis dahin nicht unmittelbar über die App wiederherstellbar.
+
+**Status:** Grundentscheidung 39 ist offen und noch nicht beschlossen.
