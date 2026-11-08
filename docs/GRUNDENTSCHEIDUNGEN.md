@@ -1636,11 +1636,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Cache ersetzt keine anwendungsweit verlässliche Begrenzung der API-Anfragerate. Der öffentliche Nominatim-Dienst bleibt ausschließlich für den bereits beschlossenen richtlinienkonformen kontrollierten Testbetrieb vorgesehen (Grundentscheidungen 138 und 139).
 - Die **weltweite Ortsnamensuche mit Speicherung neu angelegter Pins in „Privat“ bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 141: Lebensdauer zwischengespeicherter Ortssuchergebnisse
+## Grundentscheidung 141 – Ortsnamensuchergebnisse 24 Stunden zwischenspeichern
 
-Wie lange sollen die erfolgreichen Ergebnisse einer identischen Ortssuche im lokalen Cache als aktuell gelten?
+**Beschlossen (Variante A):** Erfolgreiche Ergebnisse einer bewusst ausgelösten geografischen Ortsnamensuche werden im lokalen Cache **24 Stunden ab dem erfolgreichen Abruf** als gültig behandelt. Eine identische erneut bewusst ausgelöste Suche kann innerhalb dieses Zeitraums die gespeicherten Ergebnisse verwenden, ohne Nominatim nochmals anzufragen. **Nach Ablauf der 24 Stunden** erfolgt bei einer erneuten Suche eine neue Anfrage an den Geocoding-Dienst.
 
-- **Variante A (Empfehlung):** **24 Stunden.** Erfolgreiche Ergebnisse einer identischen Suchanfrage werden bis zu 24 Stunden wiederverwendet. Danach fragt eine erneut bewusst ausgelöste Suche den Geocoding-Dienst wieder an. Fehlerhafte Antworten werden nicht als erfolgreiche Treffer gespeichert.
-- **Variante B:** **Nur während der laufenden Sitzung.** Der Cache wird spätestens beim vollständigen Schließen bzw. Neustart der Anwendung verworfen, auch wenn die Ergebnisse erst vor kurzer Zeit abgefragt wurden. Das ist kurzlebiger, erzeugt aber bei wiederholter Nutzung häufiger externe Anfragen.
+**Konsequenzen:**
+- Der Cache bleibt **über einen Neustart der PWA hinweg** erhalten, soweit lokale Daten verfügbar sind. Die technische Speicherung kann in die lokale Datenhaltung integriert werden.
+- Die Ablaufzeit wird für jeden Cacheeintrag anhand seines Abrufzeitpunkts bestimmt; nach Ablauf werden die betreffenden Ergebnisse nicht mehr als aktuell benutzt.
+- Fehlgeschlagene Antworten oder technische Fehler werden nicht als erfolgreiche Treffer zwischengespeichert.
+- Die fachlichen Regeln für einzelne und mehrere plausible Ortsnamensuchergebnisse, bewusste Auswahl und Pin-Erstellung gelten auch für Cachetreffer.
+- Der Cache darf die geltenden Nutzungsbedingungen des gewählten Dienstes nicht verletzen. Er ersetzt **keine anwendungsweite Durchsetzung des Nominatim-Anfragelimits** (Grundentscheidungen 138 und 139).
+- **Die weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-**Status:** Grundentscheidung 141 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 142: Beginn der Umsetzung der ersten lauffähigen Basisversion
+
+Die wesentlichen Grundlagen für Karte, Ebenen, Pins, lokale Speicherung und die verbindliche weltweite Ortsnamensuche sind nun beschlossen. Wie soll die nächste Projektphase aussehen?
+
+- **Variante A (Empfehlung):** **Jetzt die erste tatsächlich lauffähige PWA im bestehenden GitHub-Repository umsetzen.** Der erste durchgehende Teststand umfasst Kartenansicht, eine einfache Ebenenverwaltung, Pins mit genau einer Ebene, lokale Speicherung und eine von Beginn an nutzbare weltweite Ortsnamensuche über den Geocoding-Adapter. Noch offene technische Detailfragen werden bei der Implementierung pragmatisch entschieden und dokumentiert; der öffentliche Nominatim-Dienst wird nur unter den beschlossenen Test- und Nutzungsbedingungen angesprochen.
+- **Variante B:** **Vor der Umsetzung weitere Detailentscheidungen einzeln festlegen.** Die Implementierung der PWA beginnt erst, wenn zusätzliche technische und gestalterische Einzelfragen in eigenen Grundentscheidungen geklärt wurden.
+
+**Status:** Grundentscheidung 142 ist offen und noch nicht beschlossen.
