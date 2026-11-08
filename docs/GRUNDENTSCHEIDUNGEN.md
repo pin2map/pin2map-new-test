@@ -1551,11 +1551,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Dieser Hinweis unterscheidet sich von der Fehlermeldung bei technischen bzw. Verbindungsproblemen (Grundentscheidung 132) sowie vom bewusst stillen Ignorieren leerer Suchanfragen (Grundentscheidung 126).
 - **Die Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-## Offen – Grundentscheidung 134: Höchstzahl der Treffer in der Ortssuchliste
+## Grundentscheidung 134 – Alle vom Geocoding-Dienst gelieferten Suchtreffer anzeigen
 
-Wie viele plausible Ergebnisse einer mehrdeutigen Ortsnamensuche soll pin2map in der kompakten Trefferliste maximal anzeigen?
+**Beschlossen (Variante B):** Die geografische Ortsnamensuche zeigt **alle vom Geocoding-Dienst gelieferten plausiblen Treffer** in der kompakten, vertikal scrollbaren Trefferliste an. pin2map setzt **keine eigene feste Höchstzahl**, beispielsweise zehn Treffer, für die Anzeige.
 
-- **Variante A (Empfehlung):** Zunächst **bis zu zehn Treffer** anzeigen. Die Liste ist bei Bedarf scrollbar und bleibt kompakt. Gibt es weitere Ergebnisse, weist die Oberfläche auf die Möglichkeit hin, die Suchanfrage durch zusätzliche Angaben (z. B. Land oder Region) zu präzisieren. Das beschränkt den Platzbedarf und die Auswahllast.
-- **Variante B:** **Alle vom Geocoding-Dienst gelieferten Treffer** ohne eigene Höchstzahl in einer entsprechend langen, scrollbaren Liste anzeigen. Das ermöglicht mehr Auswahl unmittelbar, kann aber unübersichtlich werden; dienstseitige Ergebnislimits bleiben bestehen.
+**Konsequenzen:**
+- Es wird keine zusätzliche clientseitige Begrenzung der angezeigten Trefferzahl eingeführt. **Anbieterseitige Ergebnislimits bleiben bestehen**; „alle“ bedeutet sämtliche tatsächlich vom Dienst gelieferten Ergebnisse, nicht zwingend alle weltweit existierenden passenden Orte.
+- Die Trefferliste bleibt direkt unter dem Suchfeld platziert, auf kleinen Bildschirmen in ihrer Höhe begrenzt und innerhalb der Liste scrollbar (Grundentscheidung 124).
+- Alle angezeigten Treffer erhalten soweit verfügbar unterscheidbare Ortsangaben (Ort, Region, Land).
+- Bei mehreren plausiblen Treffern wird **niemals automatisch ein Pin gesetzt**, sondern erst nach bewusster Auswahl (Grundentscheidung 116).
+- Die Sichtbarkeit und Bedienbarkeit der Karte sowie das bewusste Schließen der Liste bleiben gewährleistet (Grundentscheidung 125).
+- Aus der Suche erstellte Pins werden weiterhin in **„Privat“** gespeichert, auch bei ausgeblendeter privater Ebene (Grundentscheidungen 119 und 120).
+- **Die Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-**Status:** Grundentscheidung 134 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 135: Reihenfolge der Treffer in der Ortssuchliste
+
+In welcher Reihenfolge sollen die vom Geocoding-Dienst gelieferten Suchtreffer dargestellt werden?
+
+- **Variante A (Empfehlung):** Die Treffer bleiben in der **vom Geocoding-Dienst gelieferten Relevanzreihenfolge**. pin2map sortiert sie nicht eigenmächtig nach Entfernung oder alphabetisch um. Die bewusste Trefferauswahl und das Verbot der automatischen Auswahl aus mehreren Treffern bleiben unverändert.
+- **Variante B:** pin2map sortiert die Ergebnisse **alphabetisch nach Ortsname und ergänzender Ortsangabe**. Dadurch ist die Liste unabhängig von der Relevanzbewertung des Anbieters geordnet, aber wahrscheinlich passende Treffer können weiter unten stehen.
+
+**Status:** Grundentscheidung 135 ist offen und noch nicht beschlossen.
