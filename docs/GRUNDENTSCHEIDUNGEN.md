@@ -1611,11 +1611,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Vor tatsächlicher Nutzung im Browser sind CORS, Kennzeichnung und die **anwendungsweiten** Nutzungsgrenzen technisch zu überprüfen. Soweit diese ohne eigenen Server nicht zuverlässig eingehalten werden können, darf die öffentliche API nicht regelwidrig eingesetzt werden; stattdessen ist eine neue Hosting-/Anbieterentscheidung erforderlich.
 - **Die weltweite Ortsnamensuche bleibt unabhängig von dieser Anbieterwahl verbindlicher Bestandteil der ersten Basisversion**, ebenso die Erzeugung von Pins in „Privat“ (Grundentscheidung 119).
 
-## Offen – Grundentscheidung 139: Einsatzbereich der öffentlichen Nominatim-API
+## Grundentscheidung 139 – Öffentliche Nominatim-API zunächst nur im kontrollierten Testbetrieb
 
-Die öffentliche Nominatim-API ist nun als erster Anbieter beschlossen, setzt aber enge Nutzungsgrenzen für **die gesamte Anwendung**. Welche Freigabestrategie gilt?
+**Beschlossen (Variante A):** Für die erste testbare Basisversion wird die öffentliche **OpenStreetMap-Nominatim-API zunächst ausschließlich in einem begrenzten, kontrollierten Testbetrieb mit wenigen bekannten Testern** verwendet, **sofern vor dem ersten tatsächlichen API-Aufruf die Einhaltung der geltenden Nutzungsrichtlinie nachgewiesen ist**. Die Ortsnamensuche bleibt Bestandteil der ersten lauffähigen PWA und erfordert zunächst keinen eigenen pin2map-Server.
 
-- **Variante A (Empfehlung):** **Zunächst ausschließlich begrenzter, kontrollierter Testbetrieb** mit wenigen bekannten Testern und bewusst ausgelösten Suchanfragen; vor dem ersten realen API-Aufruf sind Kennzeichnung, Zugriff und Einhaltung der aktuellen Richtlinie nachzuweisen. **Vor einer breiten öffentlichen Freigabe** wird eine tragfähige Lösung mit anwendungsweitem Anfragelimit bereitgestellt oder auf einen dafür geeigneten Geocoding-Dienst gewechselt. Die Ortsnamensuche bleibt fester Bestandteil der Basisversion.
-- **Variante B:** **Bereits für die erste allgemein zugängliche Basisversion einen belastbaren Hosting-/Proxy- oder Alternativdienst vorsehen**, der die erforderlichen Nutzungs- und Anfragelimits technisch durchsetzen kann. Die öffentliche Nominatim-API bleibt der bevorzugte Testanbieter, wird aber ohne nachgewiesene Richtlinienkonformität nicht öffentlich angebunden. Dies kann den initialen Umfang über die zuvor beschlossene rein browserbasierte Lösung hinaus erhöhen.
+**Verbindliche Konsequenzen:**
+- Es erfolgt **keine breite öffentliche Freigabe** der auf der öffentlichen Nominatim-API beruhenden Ortsnamensuche ohne zuvor nachgewiesene, für die tatsächliche Nutzerzahl tragfähige Einhaltung der geltenden Anbieterbedingungen.
+- Insbesondere muss die **anwendungsweite** Grenze der öffentlichen Nominatim-API eingehalten werden (derzeit maximal eine Anfrage pro Sekunde für die gesamte Anwendung, nicht pro Nutzer). Bei mehreren parallel aktiven Browsern reicht ein bloßes clientseitiges Limit nicht als verlässliche Durchsetzung aus.
+- Vor API-Einsatz sind Kennzeichnung/Attribution, Identifizierbarkeit der Anwendung, Browser-Kompatibilität, Anfragefrequenz und zulässige Nutzungsart zu prüfen.
+- Falls diese Voraussetzungen selbst im vorgesehenen Testbetrieb nicht verlässlich erfüllt werden können, wird der öffentliche Dienst **nicht regelwidrig eingesetzt**; die Testanbindung braucht dann einen anderen konformen Geocoding-Endpunkt bzw. eine erneute Hosting-/Anbieterentscheidung.
+- Vor einer späteren allgemeinen Freigabe wird ein für die tatsächliche Nutzung geeigneter Geocoding-Dienst oder eine belastbare Infrastruktur mit anwendungsweiter Durchsetzung der Bedingungen bereitgestellt.
+- Der zentrale Geocoding-Adapter ermöglicht den späteren Wechsel des Dienstes (Grundentscheidung 130).
+- Die **weltweite Ortsnamensuche mit Pin-Erstellung in „Privat“ bleibt verbindlicher Bestandteil der ersten Basisversion** (Grundentscheidungen 115–120).
 
-**Status:** Grundentscheidung 139 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 140: Wiederholte identische Ortsnamensuchen
+
+Soll pin2map im kontrollierten Testbetrieb bei einer **erneut bewusst gestarteten identischen Ortsnamensuche** ein zuvor erhaltenes gültiges Ergebnis wiederverwenden, um die öffentliche Nominatim-API weniger zu belasten?
+
+- **Variante A (Empfehlung):** **Ja, kurzer lokaler Suchergebnis-Cache.** Für begrenzte Zeit werden erfolgreiche Suchergebnisse lokal zwischengespeichert. Eine bewusst erneut gestartete identische Suche kann diese Ergebnisse verwenden, ohne erneut den externen Dienst anzufragen. Die bestehenden Regeln für Trefferliste, eindeutigen Treffer und Pin-Erstellung gelten unverändert. Der Cache muss zeitlich begrenzt sein, darf keine fragwürdigen bzw. veralteten Suchergebnisse dauerhaft festschreiben und muss die Vorgaben des gewählten Anbieters einhalten.
+- **Variante B:** **Nein, kein Suchergebnis-Cache in der ersten Basisversion.** Jede bewusst erneut gestartete gültige Ortssuche fragt den Geocoding-Dienst erneut an. Das ist einfacher umzusetzen, erhöht aber die Anfragezahl und die Gefahr, Nutzungsgrenzen zu erreichen.
+
+**Status:** Grundentscheidung 140 ist offen und noch nicht beschlossen.
