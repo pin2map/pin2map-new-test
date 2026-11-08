@@ -1360,11 +1360,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Unklare Suchergebnisse oder Fehler legen weiterhin keinen Pin an (Grundentscheidung 116).
 - Die **Ortsnamensuche bleibt verpflichtender Bestandteil der ersten Basisversion** (verbindliche Basisanforderung und Grundentscheidung 115).
 
-## Offen – Grundentscheidung 118: Name eines Pins aus der Ortsnamensuche
+## Grundentscheidung 118 – Ortsnamen bei der Pin-Erstellung aus Suchergebnissen übernehmen
 
-Welchen Namen erhält ein Pin, der aus einem eindeutig gefundenen oder bewusst aus der Trefferliste ausgewählten Ort erstellt wird?
+**Beschlossen (Variante A):** Wenn ein Pin durch die **verbindlich zur Basisversion gehörende geografische Ortsnamensuche** angelegt wird, wird sein Namensfeld **automatisch mit dem kurzen Ortsnamen des gewählten bzw. eindeutig gefundenen Suchergebnisses vorbelegt** (beispielsweise „Oxford“).
 
-- **Variante A (Empfehlung):** Das Namensfeld wird **automatisch mit dem kurzen Ortsnamen des gewählten Suchergebnisses vorbelegt** (beispielsweise „Oxford“). Der Name bleibt optional und kann im geöffneten Pin-Bedienfeld direkt geändert oder gelöscht werden. Für die Vorbelegung gelten die beschlossenen Regeln zu maximal 120 Zeichen und einzeiligem Text; eine ungültige Anbieterbezeichnung wird nicht ungeprüft übernommen.
-- **Variante B:** Der neue Pin wird **ohne Namen** erstellt, auch wenn der Suchdienst einen Ortsnamen liefert. Der Benutzer trägt einen Namen anschließend bei Bedarf selbst ein.
+**Konsequenzen:**
+- Die automatische Vorbelegung gilt sowohl bei genau einem geeigneten Treffer als auch nach der bewussten Auswahl aus mehreren Treffern (Grundentscheidung 116).
+- Der Name ist weiterhin **optional** und kann im nach der Erstellung geöffneten Pin-Bedienfeld direkt geändert oder vollständig gelöscht werden (Grundentscheidungen 6, 28 und 105).
+- Für die Übernahme gelten die bestehenden Namensregeln: höchstens 120 Zeichen, keine Zeilenumbrüche sowie Entfernung führender und abschließender Leerzeichen (Grundentscheidungen 107–109).
+- Unzulässige, fehlende oder zu lange Anbieterbezeichnungen dürfen nicht unbemerkt abgeschnitten oder ungeprüft als Pin-Name gespeichert werden; eine gültige kurze Bezeichnung kann übernommen werden, sonst bleibt das Namensfeld leer und bearbeitbar.
+- Der Pin wird wie beschlossen lokal gespeichert, auf der Karte angezeigt und ausgewählt; die Karte springt zum Standort des gefundenen Orts (Grundentscheidungen 115–117).
+- Die Ortsnamensuche mit Pin-Erstellung ist und bleibt **verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 118 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 119: Ebene für einen Pin aus der Ortsnamensuche
+
+Welcher Ebene soll ein Pin zugeordnet werden, der durch die Ortsnamensuche erstellt wird?
+
+- **Variante A (Empfehlung):** Es gelten **dieselben Regeln wie bei einem manuell erstellten Pin**: Der Pin wird der aktuell aktiven Ebene zugeordnet. Ist keine gültige Ebene aktiv, wird vor der Erstellung ausdrücklich eine Ebene ausgewählt. Die Suche legt keine eigene Ebene an und ändert die aktive Ebene nicht automatisch (Grundentscheidungen 1 und 7).
+- **Variante B:** Für jeden Pin aus der Ortsnamensuche wird **grundsätzlich eine Ebene separat abgefragt**, selbst wenn bereits eine gültige aktive Ebene ausgewählt ist. So muss die Ebene für jeden Suchtreffer erneut bewusst festgelegt werden.
+
+**Status:** Grundentscheidung 119 ist offen und noch nicht beschlossen.
