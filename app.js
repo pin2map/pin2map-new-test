@@ -14,7 +14,8 @@
     basemap: "street", allowGeocode: false, geoCache: {}
   });
   let db, state = defaults(), map, tileLayer, markers = new Map();
-  let selected = null, addMode = false, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
+  let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
+  let longPressTimer = null, longPressStart = null, suppressMapClick = false, activePointers = new Set();
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -170,14 +171,13 @@
     updatePanelLayout();
   }
   function selectPin(id) {
-    selected = id; moveMode = false; addMode = false; updateModeUI();
+    if (selected === id) { closeMapOverlays(); return; }
+    selected = id; moveMode = false; updateModeUI();
     renderMarkers(); renderLayers(); renderPinPanel();
     requestAnimationFrame(keepSelectedAbovePanel);
   }
   function updateModeUI() {
-    $("cancelAdd").classList.toggle("hidden", !addMode && !moveMode);
-    $("addPin").textContent = addMode ? "Karte antippen …" : "＋ Pin";
-    map.getContainer().style.cursor = (addMode || moveMode) ? "crosshair" : "";
+    map.getContainer().style.cursor = moveMode ? "crosshair" : "";
   }
   function addPin(lat, lng, name, layerId) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
@@ -187,6 +187,61 @@
     const layer = layerById(layerId);
     if (!layer.visible) showNotice("Pin in ausgeblendeter Ebene „" + layer.name + "“ gespeichert");
     return pin;
+  }
+  function closeMapOverlays() {
+    hideResults();
+    $("layersPanel").classList.add("hidden");
+    $("settingsPanel").classList.add("hidden");
+    $("notice").classList.add("hidden");
+    const dlg = $("deleteDialog");
+    if (dlg.open) dlg.close("cancel");
+    if (selected !== null || moveMode) {
+      selected = null; moveMode = false;
+      renderMarkers(); renderPinPanel(); updateModeUI();
+    }
+    if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
+  }
+  function cancelLongPress() {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+    longPressStart = null;
+  }
+  function attachLongPress() {
+    const container = map.getContainer();
+    const isMapSurface = target => !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, button, input");
+    container.addEventListener("pointerdown", e => {
+      activePointers.add(e.pointerId);
+      cancelLongPress();
+      if (moveMode || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
+      longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      // Mouse users can also long-press; normal clicks remain navigation/dismissal only.
+      longPressTimer = setTimeout(() => {
+        if (!longPressStart || activePointers.size !== 1) return;
+        const start = longPressStart;
+        cancelLongPress();
+        suppressMapClick = true;
+        const rect = container.getBoundingClientRect();
+        const point = L.point(start.x - rect.left, start.y - rect.top);
+        const where = map.containerPointToLatLng(point);
+        const pin = addPin(where.lat, where.lng, "", state.activeLayer);
+        if (pin) {
+          if (navigator.vibrate) navigator.vibrate(15);
+          requestAnimationFrame(fitAllPins);
+        }
+      }, 650);
+    }, { passive: true });
+    container.addEventListener("pointermove", e => {
+      if (longPressStart && e.pointerId === longPressStart.id && Math.hypot(e.clientX - longPressStart.x, e.clientY - longPressStart.y) > 10) cancelLongPress();
+    }, { passive: true });
+    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
+      container.addEventListener(type, e => {
+        activePointers.delete(e.pointerId);
+        if (!longPressStart || e.pointerId === longPressStart.id) cancelLongPress();
+      }, { passive: true });
+    }
+    map.on("dragstart zoomstart", cancelLongPress);
+    // Do not expose iOS callout on map long press; retain the native behavior for buttons/inputs.
+    container.addEventListener("contextmenu", e => { if (isMapSurface(e.target)) e.preventDefault(); });
   }
   function togglePanel(id) {
     const panel = $(id), wasHidden = panel.classList.contains("hidden");
@@ -308,9 +363,7 @@
       state.layers.push({ id, name: trimmed, color: COLORS[state.layers.length%COLORS.length], visible: true });
       state.activeLayer = id; renderLayers(); save();
     });
-    $("fitPins").addEventListener("click", fitAllPins);
-    $("addPin").addEventListener("click", () => { addMode = !addMode; moveMode = false; updateModeUI(); if(addMode) showNotice("Auf die Karte tippen, um einen Pin anzulegen"); });
-    $("cancelAdd").addEventListener("click", () => { addMode = false; moveMode = false; updateModeUI(); renderPinPanel(); });
+
     $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){p.name=cleanText(e.target.value);save();renderMarkers();} });
     $("pinName").addEventListener("blur", e => {e.target.value=cleanText(e.target.value);});
     $("pinLayer").addEventListener("change", e => {
@@ -323,7 +376,7 @@
       save();renderLayers();renderMarkers();renderPinPanel();
     });
     $("movePin").addEventListener("click", () => {
-      if(!selectedPin())return;moveMode=!moveMode;addMode=false;updateModeUI();renderPinPanel();
+      if(!selectedPin())return;moveMode=!moveMode;updateModeUI();renderPinPanel();
       if(moveMode)showNotice("Neue Pin-Position auf der Karte antippen");
     });
     $("deletePin").addEventListener("click", () => { if(selectedPin())$("deleteDialog").showModal(); });
@@ -336,14 +389,15 @@
       if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
     });
     map.on("click", e => {
-      if(moveMode && selectedPin()){
-        const p=selectedPin();p.lat=e.latlng.lat;p.lng=e.latlng.lng;
-        moveMode=false;save();updateModeUI();renderMarkers();renderPinPanel();showNotice("Pin verschoben");return;
+      if (suppressMapClick) { suppressMapClick = false; return; }
+      if (moveMode && selectedPin()) {
+        const p = selectedPin(); p.lat = e.latlng.lat; p.lng = e.latlng.lng;
+        save(); closeMapOverlays(); showNotice("Pin verschoben"); return;
       }
-      if(!addMode)return;
-      addMode=false;updateModeUI();const pin=addPin(e.latlng.lat,e.latlng.lng,"",state.activeLayer);
-      if (pin) requestAnimationFrame(fitAllPins);
+      closeMapOverlays();
     });
+    map.on("contextmenu", () => { suppressMapClick = true; });
+    attachLongPress();
     map.on("moveend", persistViewport);
     window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
@@ -355,7 +409,24 @@
     if(!layerById(PRIVATE_ID))state.layers.unshift(defaults().layers[0]);
     if(!layerById(state.activeLayer))state.activeLayer=state.layers[0].id;
     cleanupCache();
-    map=L.map("map",{zoomControl:true}).setView([state.viewport.lat,state.viewport.lng],state.viewport.zoom);
+    map=L.map("map",{zoomControl:false}).setView([state.viewport.lat,state.viewport.lng],state.viewport.zoom);
+    const zoomButtons = L.control({position:"topleft"});
+    zoomButtons.onAdd = () => {
+      const holder = L.DomUtil.create("div","pin-zoom-buttons leaflet-bar");
+      const add = (symbol, title, action) => {
+        const button = L.DomUtil.create("button","pin-zoom-button",holder);
+        button.type = "button"; button.textContent = symbol; button.title = title;
+        button.setAttribute("aria-label",title);
+        L.DomEvent.on(button,"click",e => {L.DomEvent.stop(e);action();});
+      };
+      add("+","Vergrößern",() => map.zoomIn());
+      add("−","Verkleinern",() => map.zoomOut());
+      add("◎","Alle sichtbaren Pins anzeigen",fitAllPins);
+      L.DomEvent.disableClickPropagation(holder);
+      L.DomEvent.disableScrollPropagation(holder);
+      return holder;
+    };
+    zoomButtons.addTo(map);
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();
     if("serviceWorker" in navigator && location.protocol==="https:")navigator.serviceWorker.register("./sw.js").catch(()=>{});
   }
