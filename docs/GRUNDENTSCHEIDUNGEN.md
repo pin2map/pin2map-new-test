@@ -1126,11 +1126,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Aktion ändert weder Pin-Koordinaten noch sonstige gespeicherte Daten.
 - Die Anzeige der Koordinaten als WGS-84-Dezimalgrad und die Bearbeitung nur durch den expliziten Verschiebemodus bleiben unverändert (Grundentscheidungen 96 und 97).
 
-## Offen – Grundentscheidung 99: Bedienung der Ebenenzugehörigkeit eines Pins
+## Grundentscheidung 99 – Ebenenzugehörigkeit direkt im Pin-Bedienfeld ändern
 
-Ein Pin gehört immer genau einer Ebene an. Wie soll die zugehörige Ebene im unteren Pin-Bedienfeld angezeigt und gewechselt werden?
+**Beschlossen (Variante A):** Die aktuelle Ebene eines ausgewählten Pins wird im unteren Pin-Detail-/Bearbeitungsfeld **direkt in einem Auswahlfeld** angezeigt. Darüber kann der Benutzer eine andere bereits vorhandene Ebene auswählen, einschließlich der Systemebene **„Privat“**.
 
-- **Variante A (Empfehlung):** Im Pin-Bedienfeld wird die aktuelle Ebene **direkt als Auswahlfeld** angezeigt. Beim Antippen öffnet sich eine Liste der vorhandenen Ebenen einschließlich „Privat“. Die bewusste Auswahl einer anderen Ebene wird sofort lokal gespeichert; der Pin erhält unmittelbar deren Farbe.
-- **Variante B:** Das Pin-Bedienfeld zeigt zunächst **nur den Ebenennamen als Text**. Eine Änderung der Zugehörigkeit ist erst über eine separate Aktion **„Ebene ändern“** und einen weiteren Auswahldialog möglich.
+**Konsequenzen:**
+- Jeder Pin gehört weiterhin zu jedem Zeitpunkt **genau einer Ebene**. Eine Mehrfachzuordnung ist ausgeschlossen (Grundentscheidung 1).
+- Die Änderung der Ebenenzugehörigkeit wird nach bewusster Auswahl **sofort lokal gespeichert**, entsprechend dem Prinzip automatischer Speicherung (Grundentscheidung 29).
+- Nach erfolgreicher Änderung erhält der Pin unmittelbar die Farbe seiner neuen Ebene (Grundentscheidungen 66–71).
+- Die Änderung betrifft die Ebenenzugehörigkeit des Pins, nicht die aktive Ebene für das Hinzufügen neuer Pins.
+- Die aktuelle Ebenenzugehörigkeit ist ohne zusätzlichen Dialog oder Menü sichtbar.
+- Das Verhalten beim Wechsel eines Pins zu einer derzeit ausgeblendeten Ebene wird gesondert festgelegt.
 
-**Status:** Grundentscheidung 99 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 100: Pin in eine ausgeblendete Ebene verschieben
+
+Wenn im direkten Auswahlfeld des Pin-Bedienfelds eine **derzeit unsichtbare Ebene** als neue Zugehörigkeit gewählt wird: Wie soll pin2map reagieren?
+
+- **Variante A (Empfehlung):** Die neue Ebenenzugehörigkeit wird **sofort gespeichert**, aber die Ebene bleibt **ausgeblendet**. Der Pin verschwindet folgerichtig von der Karte; das Bedienfeld zeigt eine kurze verständliche Information, warum dies passiert ist. Die übrigen Ebeneneinstellungen bleiben unverändert.
+- **Variante B:** pin2map **blendet die gewählte Ebene automatisch ein**, bevor der Pin ihr zugeordnet wird. Der Pin bleibt dadurch sichtbar, allerdings wird eine zuvor bewusst eingestellte Ebenensichtbarkeit verändert.
+
+**Status:** Grundentscheidung 100 ist offen und noch nicht beschlossen.
