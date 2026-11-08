@@ -1138,11 +1138,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die aktuelle Ebenenzugehörigkeit ist ohne zusätzlichen Dialog oder Menü sichtbar.
 - Das Verhalten beim Wechsel eines Pins zu einer derzeit ausgeblendeten Ebene wird gesondert festgelegt.
 
-## Offen – Grundentscheidung 100: Pin in eine ausgeblendete Ebene verschieben
+## Grundentscheidung 100 – Zuordnung zu ausgeblendeter Ebene ohne automatisches Einblenden
 
-Wenn im direkten Auswahlfeld des Pin-Bedienfelds eine **derzeit unsichtbare Ebene** als neue Zugehörigkeit gewählt wird: Wie soll pin2map reagieren?
+**Beschlossen (Variante A):** Wird einem ausgewählten Pin im unteren Pin-Bedienfeld eine **derzeit ausgeblendete Ebene** zugeordnet, wird die neue Ebenenzugehörigkeit **sofort lokal gespeichert**, die gewählte Ebene **bleibt jedoch ausgeblendet**. Der Pin verschwindet deshalb von der Karte. pin2map zeigt einen kurzen, verständlichen Hinweis auf diesen Zusammenhang.
 
-- **Variante A (Empfehlung):** Die neue Ebenenzugehörigkeit wird **sofort gespeichert**, aber die Ebene bleibt **ausgeblendet**. Der Pin verschwindet folgerichtig von der Karte; das Bedienfeld zeigt eine kurze verständliche Information, warum dies passiert ist. Die übrigen Ebeneneinstellungen bleiben unverändert.
-- **Variante B:** pin2map **blendet die gewählte Ebene automatisch ein**, bevor der Pin ihr zugeordnet wird. Der Pin bleibt dadurch sichtbar, allerdings wird eine zuvor bewusst eingestellte Ebenensichtbarkeit verändert.
+**Konsequenzen:**
+- Die bewusste Einstellung zur Sichtbarkeit einer Ebene wird durch das Umordnen eines Pins nicht geändert.
+- Die Ebenenzugehörigkeit bleibt eindeutig: Jeder Pin gehört weiterhin genau einer Ebene an (Grundentscheidung 1).
+- Die Änderung wird gemäß Grundentscheidung 99 ohne zusätzliches Bestätigungsfenster gespeichert.
+- Der Hinweis informiert, dass der Pin wegen der ausgeblendeten Zielebene nicht mehr auf der Karte zu sehen ist. Andere Ebenen und Pins bleiben unverändert.
+- Der Pin bleibt mit seinen Daten lokal erhalten und erscheint wieder, sobald seine Ebene bewusst eingeblendet wird.
+- Wie das bereits geöffnete Pin-Bedienfeld unmittelbar nach dem Verschwinden des ausgewählten Pins reagieren soll, wird in Grundentscheidung 101 entschieden.
 
-**Status:** Grundentscheidung 100 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 101: Pin-Bedienfeld nach Zuordnung zu ausgeblendeter Ebene
+
+Ein ausgewählter Pin wird einer ausgeblendeten Ebene zugeordnet und verschwindet dadurch wie beschlossen von der Karte. Was geschieht mit seiner bereits geöffneten Detail-/Bearbeitungsansicht?
+
+- **Variante A (Empfehlung):** Das **Pin-Bedienfeld bleibt geöffnet**, der Pin bleibt vorerst ausgewählt und seine neue Ebenenzugehörigkeit wird angezeigt. So kann die Zuordnung bei Bedarf sofort korrigiert werden. Der Pin selbst wird trotz Auswahl nicht entgegen der ausgeblendeten Ebene auf der Karte dargestellt.
+- **Variante B:** Die **Pin-Auswahl wird aufgehoben und das Bedienfeld geschlossen**, sobald die Änderung gespeichert ist. Damit ist der Zustand konsequent zur ausgeblendeten Ebene, die Zuordnung kann aber nicht direkt über das geöffnete Bedienfeld rückgängig gemacht werden.
+
+**Status:** Grundentscheidung 101 ist offen und noch nicht beschlossen.
