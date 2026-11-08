@@ -716,11 +716,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein Austausch der Kartenquelle darf bestehende Pins, Koordinaten, Ebenen und gespeicherten Kartenausschnitt nicht verändern.
 - Die Standard-Straßenkarte, die Topografiekarte und die Speicherung der letzten Kartenwahl bleiben gemäß Grundentscheidungen 54–61 bestehen.
 
-## Offen – Grundentscheidung 63: Kartentechnik in der ersten Basisversion
+## Grundentscheidung 63 – Rasterkacheln als Kartentechnik der Basisversion
 
-Auf welche grundlegende Technik sollen wir die ersten zwei Kartenhintergründe ausrichten?
+**Beschlossen (Variante A):** Die erste stabile lokale Basisversion von pin2map verwendet **klassische Rasterkacheln** zur Darstellung der Straßenkarte und der topografischen Karte. Die Einführung einer clientseitigen Vektorkarten-Engine ist für diese Basisversion nicht erforderlich.
 
-- **Variante A (Empfehlung):** Zunächst **klassische Rasterkacheln** für Straßen- und topografische Karte verwenden. Die austauschbare Kartenquellen-Konfiguration aus Grundentscheidung 62 bleibt erhalten; Unterstützung für Vektorkarten kann bei konkretem Bedarf später ergänzt werden. Damit bleiben Umfang und Testbarkeit der Basisversion überschaubar.
-- **Variante B:** Bereits die erste Basisversion auf **Vektorkarten mit clientseitigem Rendering** ausrichten. Das eröffnet zusätzliche Darstellungs- und Stiloptionen, erfordert aber eine entsprechend geeignete Karten-Engine, Datenquellen und höhere anfängliche Komplexität.
+**Konsequenzen:**
+- Straßenkarte und topografische Karte werden als zusammengesetzte Kartenbild-Kacheln dargestellt.
+- Die Kartenquellen bleiben über eine zentrale Konfiguration austauschbar (Grundentscheidung 62).
+- Der Wechsel des Kartenhintergrunds beeinflusst Pins, Ebenen, Koordinaten, Kartenmittelpunkt und Zoomstufe nicht (Grundentscheidungen 54–59).
+- Die Auswahl geeigneter Kacheldienste berücksichtigt Nutzungsbedingungen, Zuschreibung, Verfügbarkeit und Cache-Regeln; ein gezielter Offline-Kartendownload ist nicht Teil der Basisversion (Grundentscheidung 51).
+- Vektorkarten bleiben eine mögliche spätere Erweiterung. Die Basisversion muss jedoch keine Vektordaten verarbeiten oder eigene Vektorkartenstile rendern.
 
-**Status:** Grundentscheidung 63 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 64: Kartenbibliothek für die Basisversion
+
+Welche JavaScript-Kartenbibliothek soll die Rasterkarten, Zoom-/Schwenkbedienung und die Pin-Interaktion in der ersten Basisversion übernehmen?
+
+- **Variante A (Empfehlung):** **Leaflet** als schlanke, etablierte Bibliothek für Rasterkarten und interaktive Marker. Die Anwendung kapselt die Bibliothek hinter einer eigenen Kartenkomponente, sodass Pin-Daten und Ebenenverwaltung unabhängig bleiben.
+- **Variante B:** **OpenLayers** als umfangreichere Kartenbibliothek mit zusätzlichen Möglichkeiten für Kartenprojektionen und komplexe GIS-Funktionen. Das bietet mehr Reserven, bedeutet für den beschlossenen Basisumfang aber tendenziell mehr Einarbeitung und Implementierungsaufwand.
+
+**Status:** Grundentscheidung 64 ist offen und noch nicht beschlossen.
