@@ -509,11 +509,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die gespeicherte aktive Ebene wird durch den Import im Modus „Hinzufügen“ nicht geändert (Grundentscheidung 8).
 - Diese Entscheidung betrifft ausschließlich „Hinzufügen“; die Behandlung eines Ersetzen-Imports bleibt davon unberührt.
 
-## Offen – Grundentscheidung 45: Aktive Ebene beim Importmodus „Ersetzen“
+## Grundentscheidung 45 – Nach Ersetzen zunächst keine Ebene aktiv
 
-Beim Import mit **„Ersetzen“** wird der bisherige Bestand vollständig durch die gültige Sicherungsdatei ersetzt. Was geschieht mit der zuvor aktiven Ebene?
+**Beschlossen (Variante A):** Nach einem erfolgreichen Import mit dem Modus **„Ersetzen“** ist **zunächst keine Ebene aktiv**. Es wird weder die bisher lokal aktive Ebene beibehalten noch eine aktive Ebene aus der Sicherungsdatei automatisch übernommen.
 
-- **Variante A (Empfehlung):** Nach erfolgreichem Ersetzen ist **zunächst keine Ebene aktiv**. So wird nicht versehentlich in einer anderen Ebene weitergearbeitet. Eine aktive Ebene muss anschließend bewusst ausgewählt werden.
-- **Variante B:** Falls die Sicherungsdatei eine zuletzt aktive Ebene als Einstellung enthält und diese im importierten Bestand existiert, wird **diese Ebene automatisch aktiv**. Andernfalls bleibt keine Ebene aktiv.
+**Konsequenzen:**
+- Der vollständige lokale Bestand an Pins und Ebenen wird nach gültiger Importprüfung und bewusster Bestätigung ersetzt (Grundentscheidungen 39 und 40).
+- Die Auswahl der aktiven Ebene wird nach erfolgreicher Übernahme ausdrücklich auf **„keine aktive Ebene“** gesetzt und so lokal gespeichert (Grundentscheidung 8).
+- Bevor nach dem Import ein neuer Pin erstellt werden kann, muss eine Ebene bewusst als aktiv ausgewählt werden (Grundentscheidung 7).
+- Alle importierten Ebenen und Pins bleiben erhalten; diese Entscheidung ändert allein die Auswahl der aktiven Ebene.
+- Bei abgebrochenem oder fehlgeschlagenem Import bleibt die bisherige aktive Ebene unverändert.
+- Der Importmodus „Hinzufügen“ ist hiervon nicht betroffen; dort bleibt die zuvor aktive Ebene unverändert (Grundentscheidung 44).
 
-**Status:** Grundentscheidung 45 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 46: Kartenausschnitt nach dem Ersetzen aller Daten
+
+Welche Kartenansicht soll pin2map nach einem erfolgreichen Import im Modus **„Ersetzen“** anzeigen?
+
+- **Variante A (Empfehlung):** Die Karte wird automatisch so eingestellt, dass **alle importierten Pins** sichtbar sind, soweit mindestens ein Pin vorhanden ist. Bei einer Sicherung ohne Pins bleibt der vorherige Kartenausschnitt erhalten.
+- **Variante B:** Die **bisherige lokale Kartenansicht bleibt unverändert**, auch wenn die importierten Pins außerhalb des sichtbaren Ausschnitts liegen. Der Nutzer navigiert anschließend selbst zu ihnen.
+
+**Status:** Grundentscheidung 46 ist offen und noch nicht beschlossen.
