@@ -987,11 +987,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein bewusster Tipp auf eine freie Kartenfläche hebt die Auswahl weiterhin auf (Grundentscheidung 84); normale Kartenverschiebung hebt sie ebenfalls nicht auf (Grundentscheidung 85).
 - Die Sonderregeln für explizites Hinzufügen und Verschieben von Pins bleiben unverändert.
 
-## Offen – Grundentscheidung 87: Ausgewählten Pin erneut antippen
+## Grundentscheidung 87 – Erneutes Antippen des ausgewählten Pins hebt Auswahl auf
 
-Was soll passieren, wenn ein bereits ausgewählter Pin **erneut direkt an seinem Pin-Symbol** angetippt oder angeklickt wird?
+**Beschlossen (Variante A):** Wird das Symbol eines bereits ausgewählten Pins erneut angetippt oder angeklickt, **wird die Auswahl aufgehoben und die Pin-Detail-/Bearbeitungsansicht geschlossen**. Die Auswahlkontur und die hervorgehobene Beschriftung verschwinden.
 
-- **Variante A (Empfehlung):** Ein erneutes Antippen des bereits ausgewählten Pins **hebt dessen Auswahl auf und schließt die Pin-Ansicht**. Damit lässt sich die Auswahl alternativ zu einem Tipp auf die freie Kartenfläche direkt am Pin ein- und ausschalten.
-- **Variante B:** Ein erneutes Antippen des bereits ausgewählten Pins **belässt die Auswahl und die Pin-Ansicht unverändert**. Zum Abwählen dient weiterhin ein Tipp auf eine freie Kartenfläche (Grundentscheidung 84).
+**Konsequenzen:**
+- Erstes Antippen eines nicht ausgewählten Pins wählt ihn aus und öffnet seine Ansicht, erneutes Antippen desselben Pin-Symbols hebt die Auswahl wieder auf.
+- Ein Antippen einer freien Kartenfläche hebt die Auswahl ebenso auf (Grundentscheidung 84).
+- Kartenschwenken und Zoomen allein lassen die Auswahl unverändert (Grundentscheidungen 85 und 86).
+- Der Wechsel auf das Symbol eines anderen Pins wählt diesen anderen Pin aus; es ist kein zusätzliches Schließen erforderlich.
+- Bereits automatisch gespeicherte Pin-Änderungen bleiben erhalten (Grundentscheidung 29).
+- Die ausdrücklich aktivierten Modi zum Hinzufügen und Verschieben von Pins behalten ihre besonderen Bedien- und Bestätigungsregeln (Grundentscheidungen 25–27 und 30–35).
 
-**Status:** Grundentscheidung 87 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 88: Auswahl eines anderen Pins bei geöffneter Pin-Ansicht
+
+Wenn bereits ein Pin ausgewählt ist und der Benutzer **einen anderen sichtbaren Pin** antippt: Soll die Pin-Ansicht unmittelbar auf den anderen Pin wechseln?
+
+- **Variante A (Empfehlung):** **Direkter Wechsel.** Der bisherige Pin wird abgewählt, der neu angetippte Pin wird ausgewählt, und dieselbe Pin-Ansicht zeigt sofort dessen Daten. Automatisch gespeicherte Änderungen des vorherigen Pins bleiben erhalten; die Karte muss dafür nicht neu zentriert werden.
+- **Variante B:** **Zuerst abwählen.** Solange die aktuelle Pin-Ansicht offen ist, kann kein anderer Pin direkt ausgewählt werden. Der Benutzer muss erst durch Antippen der freien Karte oder des bereits ausgewählten Pins die Auswahl schließen.
+
+**Status:** Grundentscheidung 88 ist offen und noch nicht beschlossen.
