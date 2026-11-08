@@ -570,11 +570,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Für die erste Formatversion ist keine künstliche Migrationsimplementierung nötig, solange noch keine ältere Version existiert.
 - Für das anschließende „Ersetzen“ bzw. „Hinzufügen“ gelten die bereits beschlossenen Regeln (Grundentscheidungen 40–47).
 
-## Offen – Grundentscheidung 50: Offline-Startfähigkeit der lokalen Basisversion
+## Grundentscheidung 50 – Offline-Neustart der lokalen PWA
 
-Soll die erste stabile lokale PWA nach einem erfolgreichen ersten Laden **auch ohne Internetverbindung neu gestartet und bedient** werden können?
+**Beschlossen (Variante A):** Die erste stabile lokale Basisversion von pin2map lässt sich **nach einem erfolgreichen ersten Laden auch ohne Internetverbindung erneut starten**. Die für den Betrieb notwendigen Anwendungsdateien werden dafür lokal über einen Service Worker zwischengespeichert. Pins und Ebenen bleiben offline in IndexedDB nutzbar und bearbeitbar.
 
-- **Variante A (Empfehlung):** Die PWA speichert die nötigen **Anwendungsdateien mittels Service Worker lokal zwischen**. Nach dem ersten erfolgreichen Laden lässt sie sich offline erneut öffnen; Pins und Ebenen aus IndexedDB bleiben lokal bearbeitbar. Online-Kartenkacheln sind davon ausdrücklich zu unterscheiden: Ohne zuvor verfügbare Kartenkacheln kann der Kartenhintergrund offline eingeschränkt sein, während die Daten erhalten bleiben.
-- **Variante B:** Die Anwendungsdateien werden zunächst **nicht für einen Offline-Neustart bereitgehalten**. Ein bestehender geöffneter Tab kann lokal weiterarbeiten; zum erneuten Starten ist jedoch eine Internetverbindung erforderlich. Eine voll offline-startfähige PWA folgt später.
+**Konsequenzen:**
+- Nach dem ersten vollständigen Online-Laden ist die eigentliche PWA bei fehlender Netzverbindung startfähig; ein reiner Online-Start reicht für die Basisversion nicht aus.
+- Die für den Programmstart benötigten Ressourcen (z. B. App-Shell, JavaScript, Styles und lokale Assets) müssen durch eine geeignete Cache-Strategie offline verfügbar sein.
+- Pins und Ebenen werden weiterhin lokal über IndexedDB gespeichert. Anlegen, Bearbeiten, Verschieben und Löschen der lokalen Datensätze dürfen keine Serververbindung voraussetzen.
+- Eine zuverlässige Offline-Verfügbarkeit der **Kartenkacheln bzw. des Kartenhintergrunds** ist hiermit ausdrücklich **noch nicht beschlossen**. Ohne verfügbare Kartendaten kann die Kartenansicht eingeschränkt sein; gespeicherte Pins und Ebenen dürfen dadurch nicht verloren gehen.
+- Aktualisierungen des App-Caches müssen so erfolgen, dass die lokale Datenbank nicht unbemerkt gelöscht oder durch eine unvollständige Aktualisierung beschädigt wird.
+- Der Offline-Neustart muss vor Freigabe der ersten Basisversion praktisch geprüft werden.
 
-**Status:** Grundentscheidung 50 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 51: Kartenhintergrund ohne Internet
+
+Die Anwendung selbst startet nun verbindlich offline. Wie soll die **Kartenansicht** in der ersten Basisversion reagieren, wenn keine Kartenkacheln über das Internet geladen werden können?
+
+- **Variante A (Empfehlung für die schlanke Basisversion):** **Keine systematische Offline-Kartenversorgung** in der ersten Version. Bereits im Browser-Cache vorhandene Kartenkacheln dürfen weiter angezeigt werden; fehlende Kacheln bleiben mit verständlichem Offline-Hinweis leer. Die lokal gespeicherten Pins und Ebenen bleiben erhalten und bearbeitbar, soweit die Bedienung ohne Kartenhintergrund möglich ist.
+- **Variante B:** Bereits die erste Basisversion bietet einen **bewusst herunterladbaren Offline-Kartenbereich**, der nach dem Download auch ohne Internetverbindung angezeigt werden kann. Dafür sind zusätzlicher Speicher, Downloadverwaltung sowie die Nutzungsbedingungen des Kartenanbieters zu berücksichtigen.
+
+**Status:** Grundentscheidung 51 ist offen und noch nicht beschlossen.
