@@ -1398,11 +1398,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die aktive Ebene bleibt unverändert; andere Ebenensichtbarkeiten werden nicht beeinflusst.
 - Die **Ortsnamensuche bleibt ausdrücklich verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 121: Wann wird die Ortsnamensuche ausgelöst?
+## Grundentscheidung 121 – Ortsnamensuche wird bewusst gestartet
 
-Die Ortsnamensuche gehört verbindlich zur ersten Basisversion. Wie soll die Suche nach Eingabe eines Ortsnamens gestartet werden?
+**Beschlossen (Variante A):** Die geografische Ortsnamensuche der ersten Basisversion wird **erst durch eine ausdrückliche Benutzeraktion gestartet**, beispielsweise durch Betätigen eines Suchbuttons oder durch Drücken der Eingabetaste im Suchfeld. **Während des bloßen Tippens werden keine Geocoding-Anfragen verschickt.**
 
-- **Variante A (Empfehlung):** Die Suche wird **erst durch eine bewusste Aktion** gestartet, etwa durch Antippen eines Suchbuttons oder Drücken der Eingabetaste. Während des Tippens werden keine Geocoding-Anfragen verschickt. Das spart externe Anfragen und sorgt für einen klaren Ablauf.
-- **Variante B:** pin2map fragt **während des Tippens nach kurzer Eingabepause** automatisch den Geocoding-Dienst ab und aktualisiert passende Vorschläge laufend. Ein einzelner geeigneter Treffer darf jedoch erst nach ausdrücklich ausgelöster Suche bzw. Auswahl zu einem Pin führen, um unbeabsichtigte Pin-Erstellungen zu vermeiden.
+**Konsequenzen:**
+- Es gibt eine klar erkennbare Möglichkeit, einen Ortsnamen einzugeben und die Suche bewusst auszulösen.
+- Suchbutton und Eingabetaste starten denselben Suchvorgang; die Ergebnisverarbeitung folgt den Grundentscheidungen 116–120.
+- Eine laufende Eingabe löst weder Anfragen noch eine automatische Pin-Erstellung aus.
+- Bei einem geeigneten eindeutigen Treffer wird gemäß Grundentscheidung 116 ein Pin erstellt; bei mehreren plausiblen Treffern erscheint zunächst eine Auswahlliste.
+- Nicht verfügbare Suche bzw. Verbindungsfehler müssen verständlich angezeigt werden, ohne versehentlich einen Pin zu erzeugen.
+- Die Ortsnamensuche und die daraus mögliche Pin-Erstellung bleiben **verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 121 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 122: Eingabe im Suchfeld nach erfolgreicher Ortsnamensuche
+
+Wie soll sich das Suchfeld nach erfolgreich erstelltem Pin verhalten?
+
+- **Variante A (Empfehlung):** Der eingegebene Suchtext **bleibt im Suchfeld stehen**. So ist der zuletzt gesuchte Ort weiterhin nachvollziehbar und kann bei Bedarf direkt geändert oder erneut gesucht werden. Die Liste möglicher Treffer wird nach der Pin-Erstellung geschlossen.
+- **Variante B:** Nach erfolgreicher Pin-Erstellung wird das Suchfeld **automatisch geleert** und die gegebenenfalls geöffnete Trefferliste geschlossen. Für die nächste Suche beginnt der Benutzer mit einem leeren Feld.
+
+**Status:** Grundentscheidung 122 ist offen und noch nicht beschlossen.
