@@ -808,11 +808,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die für Ebenen gespeicherten Farben bleiben Bestandteil des versionierten Sicherungsformats; eine spätere Erweiterung der Palette darf vorhandene Ebenenfarben nicht unbemerkt verändern.
 - Die Systemebene „Privat“ behält ihre feste Farbe.
 
-## Offen – Grundentscheidung 71: Farbe der privaten Ebene
+## Grundentscheidung 71 – Exklusive Sonderfarbe für die private Ebene
 
-Wie soll die feste Pin-Farbe der Systemebene **„Privat“** festgelegt werden?
+**Beschlossen (Variante A):** Die feste Systemebene **„Privat“ erhält eine eigene, nicht veränderbare Sonderfarbe, die nicht Teil der regulären Farbpalette ist**.
 
-- **Variante A (Empfehlung):** Die Ebene **„Privat“ erhält eine feste, deutlich erkennbare Sonderfarbe**, die nicht Teil der regulären, automatisch durchlaufenen Farbpalette ist. Dadurch hebt sich die private Ebene auf der Karte visuell ab; ihre Funktion bleibt aber unabhängig von der Farbe.
-- **Variante B:** Die Ebene **„Privat“ erhält eine fest definierte Farbe aus derselben Palette** wie reguläre Ebenen. Andere Ebenen dürfen dieselbe Farbe verwenden; der Sonderstatus von „Privat“ ist nur über Ebenenname und Ebenenverwaltung erkennbar.
+**Konsequenzen:**
+- Pins der privaten Ebene verwenden diese festgelegte Sonderfarbe und sind dadurch im Kartenbild visuell von den regulären Ebenen unterscheidbar (Grundentscheidungen 65 und 66).
+- Die Sonderfarbe wird regulären Ebenen weder automatisch zugewiesen noch in deren manueller Farbpalette angeboten (Grundentscheidungen 67–70).
+- Die Systemebene „Privat“ bleibt nicht umbenennbar und nicht löschbar; ihre Pins können weiterhin bearbeitet und gelöscht werden (Grundentscheidungen 15 und 16).
+- Die konkrete Sonderfarbe wird bei der visuellen Umsetzung festgelegt und dokumentiert. Sie muss auf der Straßenkarte und der topografischen Karte gut erkennbar sein.
+- Die Farbgestaltung ändert nichts an IDs, Ebenenzugehörigkeit oder Datenhaltung.
 
-**Status:** Grundentscheidung 71 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 72: Pin-Bezeichnungen direkt auf der Karte
+
+Sollen die optionalen Bezeichnungen von Pins bereits in der ersten Basisversion direkt neben den Markierungen auf der Karte erscheinen?
+
+- **Variante A (Empfehlung):** Pin-Bezeichnungen werden **standardmäßig direkt an den Pins angezeigt**, sofern eine Bezeichnung vorhanden ist. Unbenannte Pins bleiben ohne Beschriftung; bei vielen Pins müssen Überlagerungen möglichst reduziert werden.
+- **Variante B:** Die Karte zeigt **zunächst nur Pin-Symbole ohne dauerhafte Beschriftungen**. Die optionale Bezeichnung wird erst beim Antippen/Auswählen eines Pins in der Pin-Ansicht angezeigt.
+
+**Status:** Grundentscheidung 72 ist offen und noch nicht beschlossen.
