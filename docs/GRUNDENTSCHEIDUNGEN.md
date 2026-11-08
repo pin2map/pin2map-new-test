@@ -975,11 +975,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das Auswählen eines anderen Pins wechselt die Auswahl zu diesem Pin.
 - Die gesondert festgelegten Abläufe zum expliziten Verschieben von Pins bleiben unberührt (Grundentscheidungen 30–35).
 
-## Offen – Grundentscheidung 86: Pin-Auswahl beim Zoomen der Karte
+## Grundentscheidung 86 – Pin-Auswahl bleibt beim Zoomen erhalten
 
-Was soll mit einem ausgewählten Pin und seiner geöffneten Pin-Ansicht passieren, wenn die Karte **durch Pinch-Geste, Mausrad oder Zoomtasten vergrößert oder verkleinert** wird?
+**Beschlossen (Variante A):** Die Auswahl eines Pins **bleibt beim Vergrößern oder Verkleinern der Karte bestehen**, unabhängig davon, ob die Zoomänderung per Zwei-Finger-Geste, Mausrad oder Zoomtasten erfolgt.
 
-- **Variante A (Empfehlung):** **Die Pin-Auswahl bleibt auch beim Zoomen bestehen.** Auswahlring, hervorgehobene Beschriftung und Pin-Ansicht bleiben erhalten, selbst wenn der Pin nach dem Zoom außerhalb des sichtbaren Kartenausschnitts liegt.
-- **Variante B:** **Ein Zoomvorgang beendet die Pin-Auswahl** und schließt die Pin-Ansicht. So wird beim Ändern des Maßstabs der Bildschirm für die Kartennavigation freigemacht.
+**Konsequenzen:**
+- Die Pin-Detail-/Bearbeitungsansicht bleibt beim Zoomen geöffnet.
+- Der ausgewählte Pin behält seine Auswahlkontur bzw. seinen Hervorhebungsring und – sofern benannt – seine hervorgehobene Beschriftung (Grundentscheidungen 76 und 83).
+- Die Auswahl bleibt auch erhalten, wenn der Pin durch das Zoomen außerhalb des sichtbaren Kartenausschnitts liegt.
+- Die Zoomaktion verändert weder die gespeicherten Pin-Koordinaten noch die Pin-Zugehörigkeit zu seiner Ebene.
+- Ein bewusster Tipp auf eine freie Kartenfläche hebt die Auswahl weiterhin auf (Grundentscheidung 84); normale Kartenverschiebung hebt sie ebenfalls nicht auf (Grundentscheidung 85).
+- Die Sonderregeln für explizites Hinzufügen und Verschieben von Pins bleiben unverändert.
 
-**Status:** Grundentscheidung 86 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 87: Ausgewählten Pin erneut antippen
+
+Was soll passieren, wenn ein bereits ausgewählter Pin **erneut direkt an seinem Pin-Symbol** angetippt oder angeklickt wird?
+
+- **Variante A (Empfehlung):** Ein erneutes Antippen des bereits ausgewählten Pins **hebt dessen Auswahl auf und schließt die Pin-Ansicht**. Damit lässt sich die Auswahl alternativ zu einem Tipp auf die freie Kartenfläche direkt am Pin ein- und ausschalten.
+- **Variante B:** Ein erneutes Antippen des bereits ausgewählten Pins **belässt die Auswahl und die Pin-Ansicht unverändert**. Zum Abwählen dient weiterhin ein Tipp auf eine freie Kartenfläche (Grundentscheidung 84).
+
+**Status:** Grundentscheidung 87 ist offen und noch nicht beschlossen.
