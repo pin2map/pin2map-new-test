@@ -1446,11 +1446,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein durch die Ortsnamensuche angelegter Pin wird weiterhin **immer in der Ebene „Privat“** gespeichert (Grundentscheidung 119), auch wenn „Privat“ ausgeblendet ist (Grundentscheidung 120).
 - **Die Ortsnamensuche ist und bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-## Offen – Grundentscheidung 125: Trefferliste ohne Pin-Erstellung schließen
+## Grundentscheidung 125 – Ortssuch-Trefferliste auch durch Antippen außerhalb schließen
 
-Wie soll sich die unter dem Suchfeld geöffnete Trefferliste schließen lassen, **ohne einen Ort auszuwählen und ohne einen Pin zu erstellen**?
+**Beschlossen (Variante A):** Eine geöffnete Trefferliste der geografischen Ortsnamensuche lässt sich **sowohl durch Antippen bzw. Anklicken außerhalb der Liste als auch über eine eigene, gut erreichbare Schließen-Schaltfläche** schließen. Dabei wird **kein Pin angelegt**.
 
-- **Variante A (Empfehlung):** Die Trefferliste schließt sich sowohl durch **Antippen außerhalb der Liste** als auch über eine **kleine, eindeutig zugängliche Schließen-Schaltfläche**. Der eingegebene Suchtext bleibt erhalten, und die Karte wird nicht verändert.
-- **Variante B:** Die Trefferliste lässt sich **nur über eine eigene Schließen-Schaltfläche** schließen. Ein Antippen der Karte außerhalb der Trefferliste schließt sie nicht.
+**Konsequenzen:**
+- Das Schließen der Liste verändert weder Kartenausschnitt noch Zoomstufe, vorhandene Pins oder die gerade aktive Ebene.
+- Der eingegebene Suchtext bleibt erhalten und kann ohne Neueingabe geändert oder mit einer weiteren bewussten Suche erneut verwendet werden (Grundentscheidungen 121 und 122).
+- Die Trefferliste erscheint weiterhin kompakt direkt unter dem dauerhaft sichtbaren Suchfeld (Grundentscheidungen 123 und 124).
+- Ein Antippen auf einen Treffer gilt als bewusste Auswahl und erstellt den entsprechenden Pin; es darf nicht zugleich als „außerhalb antippen“ behandelt werden.
+- Das Schließen der Liste unterbricht nur die Ergebnisdarstellung, nicht die allgemeine Verfügbarkeit der **verbindlich zur ersten Basisversion gehörenden Ortsnamensuche**.
 
-**Status:** Grundentscheidung 125 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 126: Leere Suchanfrage
+
+Wie soll die Ortsnamensuche reagieren, wenn der Benutzer den Suchbutton betätigt oder die Eingabetaste drückt, obwohl das Suchfeld **leer ist oder nur Leerzeichen enthält**?
+
+- **Variante A (Empfehlung):** Es wird **keine Geocoding-Anfrage** gestartet. pin2map zeigt eine kurze, verständliche Aufforderung wie **„Bitte einen Ort eingeben“** direkt beim Suchfeld an. Es entsteht kein Pin.
+- **Variante B:** Es wird ebenfalls keine Anfrage gestartet, aber pin2map gibt **keinen zusätzlichen Hinweis** aus; die leere Suche bleibt ohne sichtbare Reaktion.
+
+**Status:** Grundentscheidung 126 ist offen und noch nicht beschlossen.
