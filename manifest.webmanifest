@@ -1,0 +1,11 @@
+{
+  "name": "pin2map NEW",
+  "short_name": "pin2map",
+  "description": "Kartenpins und Ebenen – lokale Testversion",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#172b49",
+  "icons": []
+}
