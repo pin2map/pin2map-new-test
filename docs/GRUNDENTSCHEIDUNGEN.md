@@ -252,11 +252,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Sollte ein gespeicherter Kartenausschnitt ungültig sein, wird ein gültiger Startausschnitt verwendet; bestehende Pins bleiben unberührt.
 - Ob Kartenansichtseinstellungen zwischen Geräten synchronisiert werden, wird später getrennt entschieden.
 
-## Offen – Grundentscheidung 23: Kartenausschnitt beim allerersten Start
+## Grundentscheidung 23 – Kartenausschnitt beim allerersten Start
 
-Für einen frischen Start ohne gespeicherte Kartenposition ist der Startausschnitt festzulegen:
+**Beschlossen (Variante A):** Wenn noch keine Kartenansicht gespeichert ist, startet pin2map mit einem **festen, neutralen Kartenausschnitt und einer voreingestellten Zoomstufe**. Es wird beim ersten Start **keine Standortberechtigung angefragt**.
 
-- **Variante A (Empfehlung):** Die Karte startet mit einem festen, neutralen Ausgangsausschnitt, der ohne Standortberechtigung funktioniert. Die konkrete Kartenposition und Zoomstufe werden bei der Umsetzung definiert; die Standortermittlung kann als separate Funktion ergänzt werden.
-- **Variante B:** Die Anwendung versucht beim ersten Start, den Gerätestandort zu ermitteln und die Karte darauf zu zentrieren. Dafür muss gegebenenfalls eine Standortberechtigung angefragt werden; bei Ablehnung wird auf einen festen Startausschnitt zurückgegriffen.
+**Konsequenzen:**
+- Die Anwendung ist beim ersten Start ohne Standortfreigabe nutzbar.
+- Die konkreten Startkoordinaten und die Zoomstufe werden bei der Umsetzung festgelegt; sie sind mit dieser Entscheidung noch nicht beschlossen.
+- Sobald der Benutzer die Kartenansicht verändert, wird der zuletzt verwendete Ausschnitt gemäß Grundentscheidung 22 lokal gespeichert und beim Neustart wiederhergestellt.
+- Ein späteres optionales Zentrieren auf den Gerätestandort bleibt möglich, bedarf aber einer gesonderten Entscheidung.
+- Ist eine gespeicherte Kartenansicht unbrauchbar, kann der feste Startausschnitt als sicherer Rückfall dienen.
 
-**Status:** Grundentscheidung 23 ist noch offen und nicht beschlossen.
+## Offen – Grundentscheidung 24: Karten-Grundbedienung in der Basisversion
+
+Welche Karteninteraktionen sollen bereits in der ersten stabilen Basisversion unterstützt werden?
+
+- **Variante A (Empfehlung):** Die Karte lässt sich per Ziehen verschieben und per Touch-Geste bzw. Mausrad zoomen; zusätzlich gibt es sichtbare **Plus- und Minus-Zoomtasten**. Damit funktioniert die grundlegende Navigation auch ohne präzise Gesten.
+- **Variante B:** Die Basisversion bietet zunächst nur Verschieben und Zoomen über Gesten beziehungsweise Mausrad. Separate Zoomtasten werden erst später ergänzt.
+
+**Status:** Grundentscheidung 24 ist offen und noch nicht beschlossen.
