@@ -1597,13 +1597,25 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Falls ein festgelegter Anbieter die zwingenden Bedingungen nicht erfüllt, darf er nicht regelwidrig eingebunden werden; die Anbieterwahl ist dann erneut zu entscheiden.
 - Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 138: Konkreten Geocoding-Anbieter für die erste Basisversion festlegen
+## Grundentscheidung 138 – Öffentlichen OpenStreetMap-Nominatim-Dienst auswählen
 
-Welcher konkrete Dienst soll als erste Anbindung des Geocoding-Adapters verwendet werden?
+**Beschlossen (Variante B):** Als **erster Geocoding-Anbieter für die Ortsnamensuche der Basisversion** wird die **öffentliche Nominatim-API der OpenStreetMap Foundation** (`https://nominatim.openstreetmap.org`) festgelegt. Die Anbindung erfolgt über den bereits beschlossenen zentralen Geocoding-Adapter (Grundentscheidung 130).
 
-- **Variante A (Empfehlung für einen begrenzten Testbetrieb): Photon, öffentlicher Demo-Dienst von komoot (`photon.komoot.io`).** Photon bietet weltweite Suche auf OpenStreetMap-Basis und eine JSON-API. Laut Projektdokumentation darf der öffentliche Demo-Dienst für Projekte mit **angemessen begrenzter Anfragezahl** genutzt werden; umfangreiche Nutzung kann gedrosselt oder gesperrt werden, und Verfügbarkeit wird nicht garantiert. Vor dem Einbau sind Browserzugriff/CORS und Attribution zu prüfen; für produktiven Mehrnutzerbetrieb kann später ein anderer Hosting-Anbieter nötig sein. Quelle: https://github.com/komoot/photon .
-- **Variante B: Öffentliche OpenStreetMap-Nominatim-API (`nominatim.openstreetmap.org`).** Die API erlaubt grundsätzlich vom Benutzer bewusst ausgelöste Suchen bei moderater Gesamtnutzung, verlangt aber strikte Einhaltung der veröffentlichten Richtlinie, insbesondere **höchstens eine Anfrage pro Sekunde über die gesamte Anwendung**, geeignete Kennzeichnung der Anwendung und Attribution; Autocomplete ist verboten. Ob der öffentliche Dienst zum geplanten pin2map-Einsatz passt, muss vor Verwendung verifiziert werden. Richtlinie: https://operations.osmfoundation.org/policies/nominatim/ .
+**Verbindliche Rahmenbedingungen und Umsetzungsvorbehalt:**
+- Der öffentliche Dienst wird **nicht** als unbegrenzt verfügbarer Produktionsdienst eingeplant. Seine aktuelle [Nominatim Usage Policy](https://operations.osmfoundation.org/policies/nominatim/) ist vor jeder Inbetriebnahme einzuhalten.
+- Der Anbieter nennt ein **absolutes Maximum von einer Anfrage pro Sekunde für die gesamte Website/Anwendung über alle Benutzer zusammen**, nicht pro Browser, sowie **moderate Nutzerzahlen**. Eine clientseitige Drosselung pro Gerät allein kann eine anwendungsweite Grenze nicht gewährleisten.
+- Erforderlich sind ein **gültiger, die Anwendung erkennbar kennzeichnender HTTP-Referer oder User-Agent** und eine korrekte OpenStreetMap-Attribution. Eine ausschließlich zentrale Quellenkennzeichnung ist nur möglich, soweit sie die tatsächlichen Pflichten erfüllt (Grundentscheidung 136).
+- **Kein Autocomplete und keine Suchanfragen während des Tippens**: Die Suche wird nur bewusst gestartet (Grundentscheidung 121). Kein systematisches bzw. periodisches Abfragen, kein Bulk-Geocoding.
+- Die Richtlinie verlangt, dass Apps den Dienst **bei Aufforderung ohne Software-Update wechseln können**; dies ist bei der Adapter-/Konfigurationsarchitektur zu berücksichtigen.
+- Die Richtlinie untersagt es, die öffentliche API über No-Code-/Low-Code-/Vibe-Coding-Plattformen als generischen Geocoding-Dienst anzubieten. Hier liegt eine konkrete, bewusst vom Projektverantwortlichen ausgewählte Integration vor; der Projektverantwortliche bleibt für die Einhaltung der Richtlinie verantwortlich.
+- Vor tatsächlicher Nutzung im Browser sind CORS, Kennzeichnung und die **anwendungsweiten** Nutzungsgrenzen technisch zu überprüfen. Soweit diese ohne eigenen Server nicht zuverlässig eingehalten werden können, darf die öffentliche API nicht regelwidrig eingesetzt werden; stattdessen ist eine neue Hosting-/Anbieterentscheidung erforderlich.
+- **Die weltweite Ortsnamensuche bleibt unabhängig von dieser Anbieterwahl verbindlicher Bestandteil der ersten Basisversion**, ebenso die Erzeugung von Pins in „Privat“ (Grundentscheidung 119).
 
-**Unabhängig von der Wahl:** Anbieterbedingungen und Browser-Kompatibilität bleiben zwingende Implementierungsvoraussetzungen. Die weltweite Ortsnamensuche und das Speichern der Such-Pins in „Privat“ bleiben unverändert.
+## Offen – Grundentscheidung 139: Einsatzbereich der öffentlichen Nominatim-API
 
-**Status:** Grundentscheidung 138 ist offen und noch nicht beschlossen.
+Die öffentliche Nominatim-API ist nun als erster Anbieter beschlossen, setzt aber enge Nutzungsgrenzen für **die gesamte Anwendung**. Welche Freigabestrategie gilt?
+
+- **Variante A (Empfehlung):** **Zunächst ausschließlich begrenzter, kontrollierter Testbetrieb** mit wenigen bekannten Testern und bewusst ausgelösten Suchanfragen; vor dem ersten realen API-Aufruf sind Kennzeichnung, Zugriff und Einhaltung der aktuellen Richtlinie nachzuweisen. **Vor einer breiten öffentlichen Freigabe** wird eine tragfähige Lösung mit anwendungsweitem Anfragelimit bereitgestellt oder auf einen dafür geeigneten Geocoding-Dienst gewechselt. Die Ortsnamensuche bleibt fester Bestandteil der Basisversion.
+- **Variante B:** **Bereits für die erste allgemein zugängliche Basisversion einen belastbaren Hosting-/Proxy- oder Alternativdienst vorsehen**, der die erforderlichen Nutzungs- und Anfragelimits technisch durchsetzen kann. Die öffentliche Nominatim-API bleibt der bevorzugte Testanbieter, wird aber ohne nachgewiesene Richtlinienkonformität nicht öffentlich angebunden. Dies kann den initialen Umfang über die zuvor beschlossene rein browserbasierte Lösung hinaus erhöhen.
+
+**Status:** Grundentscheidung 139 ist offen und noch nicht beschlossen.
