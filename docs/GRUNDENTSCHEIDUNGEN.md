@@ -229,11 +229,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Eine manuelle Umsortierung gehört zunächst nicht zum beschlossenen Funktionsumfang und kann später gesondert entschieden werden.
 - Das Löschen einer Ebene verändert nicht die relative Reihenfolge der verbleibenden regulären Ebenen.
 
-## Offen – Grundentscheidung 21: Anzeige der Pins in der lokalen Basisversion
+## Grundentscheidung 21 – Pin-Liste in der Basisversion
 
-Die grundlegenden Pin-Funktionen und die Ebenenverwaltung stehen fest. Soll die erste Basisversion neben der Kartenansicht schon eine zusätzliche Pin-Liste besitzen?
+**Beschlossen (Variante A):** Die erste stabile lokale Basisversion zeigt Pins **auf der Karte** an; Pins werden durch Antippen auf der Karte ausgewählt und bearbeitet. **Eine zusätzliche Pin-Liste ist nicht Bestandteil der Basisversion** und kann später ergänzt werden.
 
-- **Variante A (Empfehlung):** Pins werden zunächst auf der Karte angezeigt und durch Antippen dort ausgewählt und bearbeitet. Eine zusätzliche Pin-Liste wird erst später ergänzt. So bleibt die erste Basisversion klein und konzentriert sich auf stabile Karten- und Speicherfunktionen.
-- **Variante B:** Bereits die erste Basisversion bietet zusätzlich eine einfache Liste der Pins, über die Pins ausgewählt und auf der Karte gefunden werden können.
+**Konsequenzen:**
+- Die Kartenansicht ist der zentrale Zugang zu Pins.
+- Die bereits beschlossenen Grundfunktionen (Anlegen, Anzeigen, Bearbeiten, Verschieben und Löschen) bleiben vollständig erhalten.
+- Für die erste Basisversion ist keine separate Auflistung aller Pins und keine Navigation über eine Pin-Liste erforderlich.
+- Die Architektur darf die spätere Ergänzung einer Pin-Liste nicht unnötig erschweren.
+- Die Entscheidung betrifft nur den Umfang der Basisversion und verbietet eine spätere Pin-Liste nicht.
 
-**Status:** Grundentscheidung 21 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 22: Kartenausschnitt beim erneuten Öffnen
+
+Was soll die Kartenansicht beim Neustart der PWA anzeigen?
+
+- **Variante A (Empfehlung):** Der zuletzt verwendete Kartenausschnitt einschließlich Zoomstufe wird lokal gespeichert und beim erneuten Öffnen wiederhergestellt. Beim allerersten Start wird ein sinnvoller initialer Kartenausschnitt verwendet; dessen genaue Lage wird separat festgelegt.
+- **Variante B:** Bei jedem Start wird die Karte auf einen festgelegten Startausschnitt zurückgesetzt. Die vorherige Position und Zoomstufe werden nicht wiederhergestellt.
+
+**Status:** Grundentscheidung 22 ist noch offen und nicht beschlossen.
