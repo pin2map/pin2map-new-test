@@ -11,7 +11,7 @@
       { id: "layer-1", name: "Ebene 1", color: "#e07c2b", visible: true }],
     pins: [], activeLayer: "layer-1",
     viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
-    basemap: "street", allowGeocode: false, geoCache: {}
+    basemap: "street", labelsVisible: true, allowGeocode: false, geoCache: {}
   });
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
@@ -69,38 +69,47 @@
       }).addTo(map);
     $("basemapSelect").value = state.basemap;
   }
-  function markerIcon(pin, isSelected) {
-    const layer = layerById(pin.layerId);
-    const color = layer ? layer.color : COLORS[0];
-    return L.divIcon({ html: '<div class="pin-marker' + (isSelected ? ' selected' : '') + '" style="background:' + color + '"></div>',
-      iconSize: isSelected ? [30,30] : [24,24], iconAnchor: isSelected ? [15,28] : [12,23], className: "pin-icon" });
+  function markerIcon(pin,highlighted,label,side) {
+    const layer=layerById(pin.layerId);
+    const color=layer?layer.color:COLORS[0];
+    const labelHtml=label?'<span class="pin-side-label '+side+(highlighted?' highlighted':'')+'">'+esc(label)+'</span>':'';
+    return L.divIcon({html:'<div class="pin-marker'+(highlighted?' selected':'')+'" style="background:'+color+'"></div>'+labelHtml,
+      iconSize:[30,32],iconAnchor:[15,29],className:"pin-icon"});
   }
   function renderMarkers() {
-    const visible = new Set();
-    for (const pin of state.pins) {
-      const layer = layerById(pin.layerId);
-      if (!layer || !layer.visible) continue;
-      visible.add(pin.id);
-      let marker = markers.get(pin.id);
-      if (!marker) {
-        marker = L.marker([pin.lat, pin.lng], { draggable: true, autoPan: true }).addTo(map);
-        marker.on("click", () => selectPin(pin.id));
-        marker.on("dragend", () => {
-          const latest = state.pins.find(p => p.id === pin.id);
-          if (!latest) return;
-          const pos = marker.getLatLng();
-          latest.lat = pos.lat; latest.lng = pos.lng;
-          save(); renderMarkers(); renderPinPanel(); showNotice("Position gespeichert");
+    if(!map)return;
+    const shown=new Set(),occupied=[];
+    const sorted=[...state.pins].sort((a,b)=>Number(b.id===selected)-Number(a.id===selected));
+    for(const pin of sorted){
+      if(!layerById(pin.layerId)?.visible)continue;
+      shown.add(pin.id);
+      let marker=markers.get(pin.id);
+      if(!marker){
+        marker=L.marker([pin.lat,pin.lng],{draggable:true,autoPan:false}).addTo(map);
+        marker.on("click",e=>{L.DomEvent.stopPropagation(e);selectPin(pin.id);});
+        marker.on("dragend",()=>{
+          const p=state.pins.find(x=>x.id===pin.id);if(!p)return;
+          const pos=marker.getLatLng();p.lat=pos.lat;p.lng=pos.lng;
+          save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");
         });
-        markers.set(pin.id, marker);
+        markers.set(pin.id,marker);
       }
-      marker.setLatLng([pin.lat, pin.lng]);
-      marker.setIcon(markerIcon(pin, pin.id === selected));
-      marker.bindTooltip(esc(pin.name || "Pin"), { direction: "top" });
+      marker.setLatLng([pin.lat,pin.lng]);
+      const chosen=pin.id===selected,point=map.latLngToContainerPoint([pin.lat,pin.lng]);
+      const side=point.x>map.getSize().x*0.55?"left":"right";
+      let label=cleanText(pin.name);
+      if(!chosen&&!state.labelsVisible)label="";
+      if(label){
+        const width=Math.min(175,Math.max(80,map.getSize().x*0.40));
+        const left=side==="right"?point.x+20:point.x-20-width;
+        const box={left,right:left+width,top:point.y-40,bottom:point.y-10};
+        if(!chosen&&occupied.some(r=>!(r.right<box.left||r.left>box.right||r.bottom<box.top||r.top>box.bottom)))label="";
+        else occupied.push(box);
+      }
+      marker.setIcon(markerIcon(pin,chosen,label,side));
+      marker.options.title=pin.name||"Pin";
     }
-    for (const [id, marker] of markers) {
-      if (!visible.has(id)) { map.removeLayer(marker); markers.delete(id); }
-    }
+    for(const [id,marker] of markers)if(!shown.has(id)){map.removeLayer(marker);markers.delete(id);}
   }
   function renderLayers() {
     const list = $("layersList");
