@@ -342,11 +342,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die interne Pin-ID und seine Zuordnung zu genau einer Ebene bleiben beim Verschieben unverändert.
 - Wie eine neu gewählte Position verbindlich übernommen wird, ist Gegenstand von Grundentscheidung 31.
 
-## Offen – Grundentscheidung 31: Übernahme einer neuen Pin-Position
+## Grundentscheidung 31 – Neue Pin-Position bewusst übernehmen
 
-Nach Aktivieren von „Pin verschieben“ und Auswahl einer neuen Kartenposition stellt sich die Frage, wann die neuen Koordinaten gespeichert werden:
+**Beschlossen (Variante A):** Nach dem Auswählen einer neuen Kartenposition im bewusst aktivierten Verschiebemodus wird die neue Position zunächst **nur als Vorschau** angezeigt. Die neuen Koordinaten werden erst nach ausdrücklichem Antippen von **„Position übernehmen“** dauerhaft in IndexedDB gespeichert. **„Abbrechen“** verwirft die Vorschau und belässt den Pin an seiner ursprünglichen Position.
 
-- **Variante A (Empfehlung):** Die neue Position wird zunächst als **Vorschau** angezeigt. Erst mit „Position übernehmen“ werden die Koordinaten in IndexedDB gespeichert; „Abbrechen“ belässt den Pin an seiner alten Position.
-- **Variante B:** Die neue Position wird unmittelbar nach ihrer Auswahl automatisch in IndexedDB gespeichert, ohne weiteren Bestätigungsschritt. Ein Abbruch ist nur möglich, bevor eine neue Position gewählt wurde.
+**Konsequenzen:**
+- Eine Positionsvorschau verändert keine dauerhaft gespeicherten Pin-Koordinaten.
+- Erst die erfolgreiche Übernahme aktualisiert die Koordinaten in IndexedDB; danach endet der Verschiebevorgang.
+- Bei Abbruch oder fehlgeschlagenem Speichern bleibt die bislang gespeicherte Position gültig. Ein Speicherfehler wird sichtbar angezeigt.
+- Die stabile Pin-ID und die Ebenenzugehörigkeit bleiben unverändert.
+- Die automatische Speicherung von Eingabefeldern gemäß Grundentscheidung 29 gilt weiterhin, führt jedoch nicht zur automatischen Übernahme von Positionsänderungen.
+- Die Darstellung der bisherigen und der neuen Position während der Vorschau ist Gegenstand von Grundentscheidung 32.
 
-**Status:** Grundentscheidung 31 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 32: Darstellung der bisherigen Position beim Verschieben
+
+Wie sollen die bisherige und die vorgeschlagene neue Position während der Verschiebevorschau auf der Karte kenntlich gemacht werden?
+
+- **Variante A (Empfehlung):** **Beide Positionen** werden gleichzeitig angezeigt: die bisherige Position als deutlich unterscheidbare Markierung und die neue als Vorschau-Pin. Dadurch ist die beabsichtigte Verschiebung räumlich nachvollziehbar. Nach Übernahme erscheint nur die neue reguläre Position, bei Abbruch wieder nur die alte.
+- **Variante B:** Während der Vorschau wird **nur die neue Position** angezeigt. Die alte Position ist erst nach einem Abbruch wieder sichtbar.
+
+**Status:** Grundentscheidung 32 ist offen und noch nicht beschlossen.
