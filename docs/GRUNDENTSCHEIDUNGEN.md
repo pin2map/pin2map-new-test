@@ -64,11 +64,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die private Ebene steht als mögliche eindeutige Ebenenzuordnung von Anfang an zur Verfügung.
 - Wie die Ebene beim Anlegen ausgewählt wird, regelt die nächste Grundentscheidung.
 
-## Offen – Grundentscheidung 7: Ebenenzuordnung beim Anlegen eines Pins
+## Grundentscheidung 7 – Ebenenzuordnung beim Anlegen eines Pins
 
-Da jeder Pin genau einer Ebene angehören muss, ist der Bedienablauf beim Erstellen zu entscheiden:
+**Beschlossen (Variante A):** Ein neuer Pin wird **automatisch der aktuell aktiven Ebene** zugeordnet. Die aktive Ebene ist beim Anlegen erkennbar. Die Ebenenzuordnung eines vorhandenen Pins kann später geändert werden.
 
-- **Variante A (Empfehlung):** Ein neuer Pin wird automatisch der aktuell ausgewählten/aktiven Ebene zugeordnet. Die aktive Ebene wird beim Setzen des Pins erkennbar angezeigt; die Zuordnung kann später geändert werden. Wenn keine Ebene aktiv ist, muss vor dem Anlegen eine Ebene gewählt werden. Das gilt auch für die private Ebene.
-- **Variante B:** Bei jedem neuen Pin wird die zugehörige Ebene ausdrücklich ausgewählt, bevor er gespeichert werden kann, selbst wenn bereits eine Ebene aktiv ist.
+**Konsequenzen:**
+- Beim Erstellen eines Pins ist keine erneute Ebenenauswahl nötig, solange eine Ebene aktiv ist.
+- Ist keine Ebene aktiv, muss vor dem Anlegen zuerst eine Ebene ausgewählt werden; eine stillschweigende Zuordnung zu einer zufälligen Ebene ist ausgeschlossen.
+- Der Pin erhält eine einzige Ebenen-ID (Grundentscheidung 1), auch wenn seine Zuordnung später geändert wird.
+- Die private Ebene kann genauso als aktive Zielebene gewählt werden.
+- Die gewählte Ebenenzuordnung wird zusammen mit dem Pin in IndexedDB persistiert.
+- Wie die aktive Ebene beim Start der Anwendung festgelegt wird, ist in Grundentscheidung 8 zu entscheiden.
 
-**Status:** Grundentscheidung 7 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 8: Aktive Ebene beim Start der Anwendung
+
+Für die automatische Zuordnung neuer Pins muss festgelegt werden, welche Ebene beim erneuten Öffnen der PWA aktiv ist.
+
+- **Variante A (Empfehlung):** Die zuletzt aktive Ebene wird lokal gemerkt und beim nächsten Start wieder ausgewählt, sofern sie noch existiert. Falls sie nicht mehr existiert oder noch keine Auswahl gespeichert ist, muss ausdrücklich eine Ebene ausgewählt werden, bevor Pins angelegt werden können.
+- **Variante B:** Bei jedem Start ist zunächst keine Ebene aktiv. Vor dem ersten neuen Pin muss der Benutzer immer bewusst eine Ebene auswählen.
+
+**Status:** Grundentscheidung 8 ist offen und noch nicht beschlossen.
