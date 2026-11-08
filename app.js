@@ -126,19 +126,53 @@
     }
     layerSelect.value = selectedPin() ? selectedPin().layerId : existing;
   }
+  function panelHeight() {
+    return selectedPin() && !$("pinPanel").classList.contains("hidden") ? $("pinPanel").getBoundingClientRect().height : 0;
+  }
+  function updatePanelLayout() {
+    const height = panelHeight();
+    document.documentElement.style.setProperty("--pin-panel-height", height + "px");
+    document.body.classList.toggle("pin-open", !!height);
+  }
+  function keepSelectedAbovePanel() {
+    const pin = selectedPin();
+    if (!pin || !layerById(pin.layerId)?.visible) return;
+    map.panInside([pin.lat, pin.lng], {
+      paddingTopLeft: L.point(22, 24),
+      paddingBottomRight: L.point(22, panelHeight() + 24),
+      animate: false
+    });
+  }
+  function fitAllPins() {
+    const positions = state.pins.filter(p => layerById(p.layerId)?.visible).map(p => [p.lat, p.lng]);
+    if (!positions.length) { showNotice("Keine sichtbaren Pins vorhanden"); return; }
+    if (positions.length === 1) {
+      map.setView(positions[0], Math.max(map.getZoom(), 13), { animate: false });
+    } else {
+      map.fitBounds(L.latLngBounds(positions), {
+        paddingTopLeft: [35, 35],
+        paddingBottomRight: [35, panelHeight() + 35],
+        animate: false,
+        maxZoom: 15
+      });
+    }
+    keepSelectedAbovePanel();
+  }
   function renderPinPanel() {
     const pin = selectedPin();
     $("pinPanel").classList.toggle("hidden", !pin);
-    if (!pin) return;
+    if (!pin) { updatePanelLayout(); return; }
     if (document.activeElement !== $("pinName")) $("pinName").value = pin.name || "";
     $("pinLayer").value = pin.layerId;
     $("pinCoords").textContent = "Koordinaten: " + pin.lat.toFixed(6) + ", " + pin.lng.toFixed(6);
     $("pinHiddenInfo").classList.toggle("hidden", !!layerById(pin.layerId)?.visible);
     $("movePin").textContent = moveMode ? "Verschieben abbrechen" : "Pin verschieben";
+    updatePanelLayout();
   }
   function selectPin(id) {
     selected = id; moveMode = false; addMode = false; updateModeUI();
     renderMarkers(); renderLayers(); renderPinPanel();
+    requestAnimationFrame(keepSelectedAbovePanel);
   }
   function updateModeUI() {
     $("cancelAdd").classList.toggle("hidden", !addMode && !moveMode);
@@ -185,7 +219,8 @@
     hideResults();
     const pin = addPin(lat, lng, placeTitle(r), PRIVATE_ID);
     if (pin) {
-      map.setView([lat,lng], Math.max(map.getZoom(), 13), { animate: true });
+      map.setView([lat,lng], Math.max(map.getZoom(), 13), { animate: false });
+      requestAnimationFrame(keepSelectedAbovePanel);
       if (layerById(PRIVATE_ID).visible) renderMarkers();
     }
   }
@@ -273,6 +308,7 @@
       state.layers.push({ id, name: trimmed, color: COLORS[state.layers.length%COLORS.length], visible: true });
       state.activeLayer = id; renderLayers(); save();
     });
+    $("fitPins").addEventListener("click", fitAllPins);
     $("addPin").addEventListener("click", () => { addMode = !addMode; moveMode = false; updateModeUI(); if(addMode) showNotice("Auf die Karte tippen, um einen Pin anzulegen"); });
     $("cancelAdd").addEventListener("click", () => { addMode = false; moveMode = false; updateModeUI(); renderPinPanel(); });
     $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){p.name=cleanText(e.target.value);save();renderMarkers();} });
@@ -305,9 +341,11 @@
         moveMode=false;save();updateModeUI();renderMarkers();renderPinPanel();showNotice("Pin verschoben");return;
       }
       if(!addMode)return;
-      addMode=false;updateModeUI();addPin(e.latlng.lat,e.latlng.lng,"",state.activeLayer);
+      addMode=false;updateModeUI();const pin=addPin(e.latlng.lat,e.latlng.lng,"",state.activeLayer);
+      if (pin) requestAnimationFrame(fitAllPins);
     });
     map.on("moveend", persistViewport);
+    window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
   async function init() {
