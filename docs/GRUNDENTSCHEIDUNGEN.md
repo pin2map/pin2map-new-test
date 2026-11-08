@@ -1081,11 +1081,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Sobald der Pin sichtbar ist, verschwindet der Button wieder. Die Pin-Auswahl bleibt bestehen.
 - Das Ein- und Ausblenden darf keine störenden Layoutsprünge oder Rückkopplung mit der automatischen Bedienfeldhöhe auslösen (Grundentscheidung 90).
 
-## Offen – Grundentscheidung 95: Animation automatischer Kartenverschiebungen
+## Grundentscheidung 95 – Automatische Kartenverschiebungen ohne Animation
 
-Wenn pin2map die Karte automatisch verschiebt, um den ausgewählten Pin sichtbar zu halten oder ihn über „Pin zeigen“ wiederzufinden (Grundentscheidungen 91 und 93), wie soll diese Bewegung erscheinen?
+**Beschlossen (Variante B):** Automatische Kartenverschiebungen, mit denen pin2map den ausgewählten Pin beim Öffnen bzw. Anpassen des unteren Bedienfelds sichtbar hält oder nach Auslösen von **„Pin zeigen“** wieder in den sichtbaren Kartenbereich bringt, erfolgen **sofort und ohne Übergangsanimation**.
 
-- **Variante A (Empfehlung):** Die Karte verschiebt sich **kurz und sanft animiert**. Das macht die Richtungsänderung nachvollziehbar. Einstellungen für reduzierte Bewegung werden berücksichtigt.
-- **Variante B:** Die Karte **springt sofort ohne Animation** an die Zielposition. Das ist unmittelbar, kann aber den räumlichen Zusammenhang weniger deutlich machen.
+**Konsequenzen:**
+- Die Kartenansicht springt unmittelbar in den benötigten Kartenausschnitt; es gibt kein sanftes oder zeitlich verzögertes Verschieben.
+- Die Zielposition wird nur soweit angepasst, wie zur Sichtbarkeit des ausgewählten Pins oberhalb des Bedienfelds erforderlich (Grundentscheidungen 91 und 93).
+- Die gespeicherten Pin-Koordinaten und die Zoomstufe bleiben dabei unverändert.
+- Der Button „Pin zeigen“ erscheint weiterhin nur, wenn der ausgewählte Pin nicht sichtbar ist, und verschwindet nach erfolgreicher Rückführung (Grundentscheidung 94).
+- Manuelle Kartenbewegungen sowie die bestehende Pin-Auswahl bleiben von dieser Darstellungsentscheidung unberührt.
 
-**Status:** Grundentscheidung 95 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 96: Anzeige der Pin-Koordinaten im Bearbeitungsfeld
+
+Sollen die geographischen Koordinaten eines ausgewählten Pins in der ersten Basisversion direkt im unteren Pin-Bedienfeld angezeigt werden?
+
+- **Variante A (Empfehlung):** **Ja.** Breiten- und Längengrad werden im Bedienfeld als **nicht direkt editierbare Information** angezeigt. Zum Ändern des Standortes dient ausschließlich der bereits beschlossene explizite Verschiebemodus (Grundentscheidungen 30–35).
+- **Variante B:** **Nein.** Das untere Bedienfeld zeigt keine Zahlenkoordinaten. Der Standort ist ausschließlich über die Position des Pins auf der Karte sichtbar; Änderungen erfolgen über den Verschiebemodus.
+
+**Status:** Grundentscheidung 96 ist offen und noch nicht beschlossen.
