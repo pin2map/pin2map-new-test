@@ -545,11 +545,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Bei abgebrochenem oder fehlgeschlagenem Import bleiben die bisherige Ebenensichtbarkeit, aktive Ebene und Kartenansicht unverändert.
 - Der Importmodus „Hinzufügen“ ist hiervon nicht betroffen; seine neue Ebene ist bereits gemäß Grundentscheidung 43 sichtbar.
 
-## Offen – Grundentscheidung 48: Dateiformat für Export und Import
+## Grundentscheidung 48 – Eigenes versioniertes pin2map-JSON für Sicherungen
 
-Welches Dateiformat soll die erste stabile lokale Basisversion für ihre manuell erstellten Sicherungsdateien verwenden?
+**Beschlossen (Variante A):** Die manuelle Export- und Importfunktion der lokalen Basisversion verwendet ein **eigenes, dokumentiertes und versioniertes pin2map-JSON-Format**. Es ist das maßgebliche Sicherungsformat für vollständige Anwendungsdaten; GeoJSON ist nicht das primäre Sicherungsformat.
 
-- **Variante A (Empfehlung):** Ein **eigenes, klar dokumentiertes und versioniertes JSON-Format für pin2map** (z. B. Dateiendung `.json`). Es enthält die vollständigen Ebenen- und Pin-Daten einschließlich IDs, Koordinaten, Zuordnungen und für die Sicherung erforderlichen Einstellungen. Damit lassen sich Export und Import einschließlich Dateiprüfung einfach und verlustfrei aufeinander abstimmen.
-- **Variante B:** **GeoJSON** als hauptsächliches Sicherungsformat. Koordinaten sind damit leichter mit anderen Geowerkzeugen austauschbar; Ebenenstruktur, feste private Ebene und weitere Anwendungseinstellungen müssten jedoch über eigene Zusatzfelder abgebildet und geprüft werden.
+**Konsequenzen:**
+- Die Sicherungsdatei ist eine JSON-Datei und enthält eine eindeutige Kennung des pin2map-Formats sowie eine explizite Formatversionsangabe.
+- Das Format bewahrt alle für die Wiederherstellung notwendigen Pin-Daten (stabile interne ID, Koordinaten, optionale Bezeichnung und Zugehörigkeit zu genau einer Ebene) und Ebenendaten (IDs, Namen, Reihenfolge, Systemstatus und Sichtbarkeit) sowie die erforderlichen Anwendungseinstellungen.
+- Die geschützte Systemebene „Privat“ ist eindeutig abbildbar; ihre Eigenschaften dürfen durch Import nicht unterlaufen werden.
+- Der Import muss das Format und seine Version erkennen und unbekannte bzw. nicht unterstützte Versionen kontrolliert und ohne Datenänderung zurückweisen.
+- Die Datei ist ohne Server lesbar und transportierbar. Änderungen des Schemas sollen über dokumentierte Versionierung und gegebenenfalls gezielte Migrationen unterstützt werden; Abwärtskompatibilität wird nicht ungeprüft vorausgesetzt.
+- Ein möglicher zusätzlicher GeoJSON-Export für andere Geowerkzeuge bleibt eine separate zukünftige Erweiterung.
 
-**Status:** Grundentscheidung 48 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 49: Import von Sicherungen mit älteren Formatversionen
+
+Wie soll pin2map reagieren, wenn eine Sicherungsdatei zwar ein gültiges pin2map-JSON ist, aber aus einer **älteren Formatversion** stammt?
+
+- **Variante A (Empfehlung):** Die Anwendung unterstützt **ausdrücklich implementierte und getestete Migrationen** älterer Sicherungsformate auf die aktuelle Version. Existiert für die betreffende Version keine sichere Migration, wird der Import ohne Veränderung des Datenbestands abgelehnt.
+- **Variante B:** Die erste lokale Basisversion akzeptiert **nur die genau aktuelle Formatversion**. Ältere Sicherungsdateien werden grundsätzlich abgelehnt; Migrationsmöglichkeiten werden erst später ergänzt.
+
+**Status:** Grundentscheidung 49 ist offen und noch nicht beschlossen.
