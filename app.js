@@ -16,7 +16,7 @@
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
-  let lastTouchStartAt = 0;
+  let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -86,13 +86,8 @@
       shown.add(pin.id);
       let marker=markers.get(pin.id);
       if(!marker){
-        marker=L.marker([pin.lat,pin.lng],{draggable:true,autoPan:false}).addTo(map);
+        marker=L.marker([pin.lat,pin.lng],{draggable:false,autoPan:false}).addTo(map);
         marker.on("click",e=>{if(e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);selectPin(pin.id);});
-        marker.on("dragend",()=>{
-          const p=state.pins.find(x=>x.id===pin.id);if(!p)return;
-          const pos=marker.getLatLng();p.lat=pos.lat;p.lng=pos.lng;
-          save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");
-        });
         markers.set(pin.id,marker);
       }
       marker.setLatLng([pin.lat,pin.lng]);
@@ -108,6 +103,7 @@
         else occupied.push(box);
       }
       marker.setIcon(markerIcon(pin,chosen,label,side));
+      attachMarkerLongPress(marker,pin.id);
       marker.options.title=pin.name||"Pin";
     }
     for(const [id,marker] of markers)if(!shown.has(id)){map.removeLayer(marker);markers.delete(id);}
@@ -137,6 +133,28 @@
       save();renderLayers();renderMarkers();renderPinPanel();
       showNotice(privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
     };
+  }
+  function attachMarkerLongPress(marker,id){
+    const element=marker.getElement();if(!element)return;
+    const cancel=()=>{clearTimeout(markerPressTimer);markerPressTimer=null;markerPressStart=null;};
+    element.addEventListener("pointerdown",e=>{
+      if(e.button!==0)return;
+      cancel();
+      markerPressStart={id:e.pointerId,x:e.clientX,y:e.clientY};
+      markerPressTimer=setTimeout(()=>{
+        if(!markerPressStart)return;
+        cancel();suppressMapClickUntil=Date.now()+900;
+        if(selected!==id)selectPin(id);
+        $("pinName").focus();$("pinName").select();
+        showNotice("Pin-Name bearbeiten");
+      },1000);
+    });
+    element.addEventListener("pointermove",e=>{
+      if(markerPressStart&&markerPressStart.id===e.pointerId &&
+        Math.hypot(e.clientX-markerPressStart.x,e.clientY-markerPressStart.y)>9)cancel();
+    });
+    ["pointerup","pointercancel","pointerleave"].forEach(eventName=>
+      element.addEventListener(eventName,cancel));
   }
   function renderLayers() {
     const list = $("layersList");
@@ -255,9 +273,9 @@
       activePointers.add(e.pointerId);
       if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=Date.now();
       cancelLongPress();
-      if (moveMode || e.pointerType === "mouse" || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
+      if (moveMode || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
       longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
-      // Long press is exclusively for touch/pen; mouse uses right-click.
+      // Long press works for touch and mouse. Right click remains an alternative.
       longPressTimer = setTimeout(() => {
         if (!longPressStart || activePointers.size !== 1) return;
         const start = longPressStart;
