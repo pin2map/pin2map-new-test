@@ -727,11 +727,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Auswahl geeigneter Kacheldienste berücksichtigt Nutzungsbedingungen, Zuschreibung, Verfügbarkeit und Cache-Regeln; ein gezielter Offline-Kartendownload ist nicht Teil der Basisversion (Grundentscheidung 51).
 - Vektorkarten bleiben eine mögliche spätere Erweiterung. Die Basisversion muss jedoch keine Vektordaten verarbeiten oder eigene Vektorkartenstile rendern.
 
-## Offen – Grundentscheidung 64: Kartenbibliothek für die Basisversion
+## Grundentscheidung 64 – Leaflet als Kartenbibliothek der Basisversion
 
-Welche JavaScript-Kartenbibliothek soll die Rasterkarten, Zoom-/Schwenkbedienung und die Pin-Interaktion in der ersten Basisversion übernehmen?
+**Beschlossen (Variante A):** Für die erste stabile lokale Basisversion von pin2map wird **Leaflet** als JavaScript-Kartenbibliothek verwendet. Leaflet übernimmt die Darstellung der Rasterkarten, Kartenbewegung, Zoom und die grundlegende Interaktion mit Pin-Markierungen.
 
-- **Variante A (Empfehlung):** **Leaflet** als schlanke, etablierte Bibliothek für Rasterkarten und interaktive Marker. Die Anwendung kapselt die Bibliothek hinter einer eigenen Kartenkomponente, sodass Pin-Daten und Ebenenverwaltung unabhängig bleiben.
-- **Variante B:** **OpenLayers** als umfangreichere Kartenbibliothek mit zusätzlichen Möglichkeiten für Kartenprojektionen und komplexe GIS-Funktionen. Das bietet mehr Reserven, bedeutet für den beschlossenen Basisumfang aber tendenziell mehr Einarbeitung und Implementierungsaufwand.
+**Konsequenzen:**
+- Die Straßenkarte und topografische Karte werden über Leaflet-Rasterkachelebenen eingebunden (Grundentscheidungen 60 und 63).
+- Die Pin- und Ebenen-Domänenlogik sowie IndexedDB-Persistenz bleiben unabhängig von Leaflet und verwenden klar definierte Schnittstellen.
+- Leaflet wird hinter einer eigenen Kartenkomponente beziehungsweise einem Kartenadapter gekapselt. So sind zukünftige Änderungen an der Kartentechnik möglich, ohne das Datenmodell grundlegend umzubauen.
+- Die bereits beschlossenen Modi „Pin hinzufügen“ und „Pin verschieben“, Positionsvorschau, Bestätigung und temporäre Verbindungslinie werden auf der Karte umgesetzt, ohne die entsprechenden Speicherregeln zu verändern (Grundentscheidungen 25–35).
+- Die Kartenquellen bleiben zentral konfigurierbar und austauschbar (Grundentscheidung 62).
+- Die konkrete Bibliotheksversion wird bei der Implementierung festgelegt und für reproduzierbare Builds fixiert.
 
-**Status:** Grundentscheidung 64 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 65: Technische Darstellung der Pins auf der Karte
+
+Wie sollen Pins in der ersten Basisversion innerhalb von Leaflet dargestellt werden?
+
+- **Variante A (Empfehlung):** **Eigene, einheitliche HTML-/SVG-basierte Pin-Symbole** über Leaflet-Marker, zentral gestaltet und konfiguriert. Damit lassen sich ausgewählte Pins und die beiden Positionen beim Verschieben klar unterscheiden; die Pins bleiben vom Datenmodell getrennt.
+- **Variante B:** Zunächst das **unveränderte Standard-Markersymbol von Leaflet** verwenden. Das reduziert die anfängliche Gestaltung, schränkt aber die direkte Unterscheidung zwischen normalem Pin und Verschiebevorschau ein und erfordert für besondere Zustände separate Markierungen.
+
+**Status:** Grundentscheidung 65 ist offen und noch nicht beschlossen.
