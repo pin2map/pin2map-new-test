@@ -796,11 +796,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die feste Systemebene „Privat“ erhält ihre eigene festgelegte Farbe und wird nicht durch diese automatische Vergabefolge umgefärbt.
 - Die genaue Farbpalette sowie ein konsistenter Vergabezähler bzw. eine Ableitung aus der Anlegereihenfolge werden bei der Umsetzung definiert, sodass ein Neustart nicht zu unvorhersehbaren Farben führt.
 
-## Offen – Grundentscheidung 70: Farbpalette für reguläre Ebenen
+## Grundentscheidung 70 – Feste Farbpalette für reguläre Ebenen
 
-Wie soll die Auswahlpalette für die Pin-Farben regulärer Ebenen in der ersten Basisversion aussehen?
+**Beschlossen (Variante A):** Die erste stabile Basisversion verwendet für die Pin-Farben regulärer Ebenen **eine kleine, fest definierte Palette gut unterscheidbarer Farben** (als Größenordnung acht bis zwölf). Eine freie Eingabe beliebiger Farbwerte über einen Farbwähler ist in dieser Basisversion nicht vorgesehen.
 
-- **Variante A (Empfehlung):** Eine **kleine, fest definierte Palette gut unterscheidbarer Farben** (beispielsweise acht bis zwölf) ist sowohl für die automatische Farbvergabe als auch für die manuelle Auswahl verbindlich. Die Palette bleibt in der Basisversion konstant, damit Darstellung, Tests und gespeicherte Farben nachvollziehbar bleiben.
-- **Variante B:** Die Farbpalette enthält zusätzlich eine **freie Farbauswahl** (beliebiger Farbwert über einen Farbwähler). Das bietet maximale Gestaltungsfreiheit, erhöht aber Anforderungen an Kontrast, Bedienung und einheitliche Darstellung.
+**Konsequenzen:**
+- Dieselbe zentral definierte Palette wird sowohl für die automatische Vergabe in fester Reihenfolge (Grundentscheidung 69) als auch für die manuelle Farbauswahl (Grundentscheidung 67) verwendet.
+- Farben dürfen mehrfach verwendet werden (Grundentscheidung 68).
+- Die konkrete Auswahl und Reihenfolge der Farbwerte wird bei der Umsetzung dokumentiert; das bisherige Beispiel mit zwölf Farben ist noch keine verbindliche Festlegung einzelner Farbwerte.
+- Die Farben sollen auch vor unterschiedlichen Kartenhintergründen gut erkennbar sein. Auswahl- und Verschiebezustände müssen zusätzlich deutlich unterscheidbar bleiben.
+- Die für Ebenen gespeicherten Farben bleiben Bestandteil des versionierten Sicherungsformats; eine spätere Erweiterung der Palette darf vorhandene Ebenenfarben nicht unbemerkt verändern.
+- Die Systemebene „Privat“ behält ihre feste Farbe.
 
-**Status:** Grundentscheidung 70 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 71: Farbe der privaten Ebene
+
+Wie soll die feste Pin-Farbe der Systemebene **„Privat“** festgelegt werden?
+
+- **Variante A (Empfehlung):** Die Ebene **„Privat“ erhält eine feste, deutlich erkennbare Sonderfarbe**, die nicht Teil der regulären, automatisch durchlaufenen Farbpalette ist. Dadurch hebt sich die private Ebene auf der Karte visuell ab; ihre Funktion bleibt aber unabhängig von der Farbe.
+- **Variante B:** Die Ebene **„Privat“ erhält eine fest definierte Farbe aus derselben Palette** wie reguläre Ebenen. Andere Ebenen dürfen dieselbe Farbe verwenden; der Sonderstatus von „Privat“ ist nur über Ebenenname und Ebenenverwaltung erkennbar.
+
+**Status:** Grundentscheidung 71 ist offen und noch nicht beschlossen.
