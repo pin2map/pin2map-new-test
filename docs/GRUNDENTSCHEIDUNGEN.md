@@ -191,11 +191,26 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Sichtbarkeit auf der Karte bedeutet nicht Freigabe privater Daten für andere Benutzer oder Geräte. Zugriffs- und Synchronisationsregeln werden gesondert festgelegt.
 - Ihre Bezeichnung „Privat“ ist fest (Grundentscheidung 16); sie bleibt nicht löschbar (Grundentscheidung 15).
 
-## Offen – Grundentscheidung 18: Reguläre Ebene beim ersten Start
+## Grundentscheidung 18 – Ebenen beim ersten Start
 
-Die private Systemebene ist verpflichtend vorhanden. Soll die Anwendung beim ersten Start zusätzlich bereits eine reguläre Ebene bereitstellen?
+**Beschlossen (Variante A, mit ausdrücklich angepasster Bezeichnung):** Beim erstmaligen Initialisieren von pin2map werden zwei Ebenen angelegt:
 
-- **Variante A (Empfehlung):** Zusätzlich zur privaten Ebene wird automatisch eine reguläre Ebene **„Standard“** angelegt. Diese ist sichtbar und kann umbenannt oder – mit der beschlossenen Bestätigung – gelöscht werden. Es wird noch keine aktive Ebene vorausgewählt; der Benutzer wählt die Zielebene vor dem ersten Pin selbst (Grundentscheidung 8).
-- **Variante B:** Beim ersten Start existiert nur die feste private Ebene „Privat“. Weitere reguläre Ebenen legt der Benutzer selbst an. Auch hier muss die Zielebene vor dem ersten Pin bewusst gewählt werden.
+1. **„Privat“** – feste, nicht löschbare und nicht umbenennbare Systemebene.
+2. **„Ebene 1“** – reguläre Ebene, die umbenannt und nach ausdrücklicher Bestätigung auch einschließlich ihrer Pins gelöscht werden kann.
 
-**Status:** Grundentscheidung 18 ist offen und noch nicht beschlossen.
+**„Ebene 1“ ersetzt ausdrücklich den ursprünglich vorgeschlagenen Namen „Standard“.**
+
+**Konsequenzen:**
+- Beide Ebenen sind beim ersten Start sichtbar; ihre später eingestellte Sichtbarkeit wird lokal wiederhergestellt.
+- Keine Ebene wird beim ersten Start automatisch als aktive Zielebene vorausgewählt, solange noch keine frühere Auswahl existiert (Grundentscheidung 8).
+- Die initiale Einrichtung erfolgt nur einmal; spätere App-Starts dürfen die reguläre Ebene „Ebene 1“ nicht erneut erzeugen oder vom Benutzer vorgenommene Änderungen rückgängig machen.
+- Die reguläre Ebene erhält wie jede andere Ebene eine stabile interne ID und unterliegt den Regeln eindeutiger Ebenennamen.
+
+## Offen – Grundentscheidung 19: Vorschlag für Namen zusätzlich angelegter regulärer Ebenen
+
+Beim Anlegen weiterer regulärer Ebenen ist gemäß Grundentscheidung 12 eine Bezeichnung verpflichtend.
+
+- **Variante A (Empfehlung):** Im Eingabefeld wird jeweils ein freier fortlaufender Vorschlag („Ebene 2“, „Ebene 3“ usw.) **vorausgefüllt**. Der Benutzer kann ihn vor dem Speichern frei ändern; die Eindeutigkeitsprüfung aus Grundentscheidung 13 gilt weiterhin.
+- **Variante B:** Das Eingabefeld ist zunächst leer. Der Benutzer muss jedes Mal selbst einen Namen eingeben.
+
+**Status:** Grundentscheidung 19 ist noch offen. Der Namensvorschlag aus Variante A ist keine automatische Anlage ohne bewusste Bestätigung.
