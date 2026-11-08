@@ -16,7 +16,7 @@
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
-  let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null, markerDragActive = false;
+  let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   let movePreview = null, moveMarker = null, moveLine = null;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
@@ -88,7 +88,7 @@
       let marker=markers.get(pin.id);
       if(!marker){
         marker=L.marker([pin.lat,pin.lng],{draggable:false,autoPan:false}).addTo(map);
-        marker.on("click",e=>{if(e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);if(Date.now()<suppressMapClickUntil||moveMode)return;selectPin(pin.id);});
+        marker.on("click",e=>{if(Date.now()<suppressMapClickUntil||moveMode)return;selectPin(pin.id);});
         markers.set(pin.id,marker);
       }
       marker.setLatLng([pin.lat,pin.lng]);
@@ -137,66 +137,84 @@
   }
   function attachMarkerLongPress(marker,id){
     const element=marker.getElement();
-    if(!element || element.dataset.pinLongPressBound)return;
-    element.dataset.pinLongPressBound="true";
+    if(!element || element.dataset.pinGestureBound)return;
+    element.dataset.pinGestureBound="true";
+    // Prevent Leaflet's map drag handler taking ownership of a press on a pin.
+    L.DomEvent.disableClickPropagation(element);
+    L.DomEvent.on(element,"mousedown touchstart",L.DomEvent.stopPropagation);
+    element.style.touchAction="none";
     element.addEventListener("pointerdown",e=>{
-      if(e.button!==0 || moveMode)return;
-      clearTimeout(markerPressTimer);
-      markerPressStart={id:e.pointerId,pinId:id,x:e.clientX,y:e.clientY,started:false};
-      const start=markerPressStart;
-      const cancel=()=>{
+      if(e.button!==0 || moveMode || markerPressStart)return;
+      e.stopPropagation();
+      // Pin interaction must not pan the map, even during the first second.
+      const wasMapDraggable=map.dragging.enabled();
+      if(wasMapDraggable)map.dragging.disable();
+      const gesture={pointerId:e.pointerId,id,startX:e.clientX,startY:e.clientY,
+        wasMapDraggable,active:false,cancelled:false,finished:false};
+      markerPressStart=gesture;
+      try{element.setPointerCapture(e.pointerId);}catch(_){}
+      const cleanup=()=>{
         clearTimeout(markerPressTimer);markerPressTimer=null;
-        if(markerPressStart===start)markerPressStart=null;
+        if(markerPressStart===gesture)markerPressStart=null;
+        if(gesture.wasMapDraggable)map.dragging.enable();
+        gesture.finished=true;
+        try{if(element.hasPointerCapture(gesture.pointerId))element.releasePointerCapture(gesture.pointerId);}catch(_){}
+        element.removeEventListener("pointermove",onMove);
+        element.removeEventListener("pointerup",onUp);
+        element.removeEventListener("pointercancel",onCancel);
+        element.removeEventListener("lostpointercapture",onLost);
       };
-      const move=event=>{
-        if(event.pointerId!==start.id)return;
-        const dx=event.clientX-start.x,dy=event.clientY-start.y;
-        if(!start.started){
-          if(Math.hypot(dx,dy)>9)cancel();
+      const onMove=event=>{
+        if(event.pointerId!==gesture.pointerId || gesture.finished)return;
+        event.stopPropagation();
+        const dx=event.clientX-gesture.startX,dy=event.clientY-gesture.startY;
+        if(!gesture.active){
+          if(Math.hypot(dx,dy)>12){gesture.cancelled=true;cleanup();}
           return;
         }
         event.preventDefault();
-        const pin=selectedPin();
-        if(!pin || pin.id!==id)return;
-        const original=map.latLngToContainerPoint([pin.lat,pin.lng]);
-        const proposed=map.containerPointToLatLng([original.x+dx,original.y+dy]);
-        previewMove(proposed);
+        if(!selectedPin() || selectedPin().id!==id)return;
+        const p=selectedPin();
+        const base=map.latLngToContainerPoint([p.lat,p.lng]);
+        previewMove(map.containerPointToLatLng([base.x+dx,base.y+dy]));
       };
-      const finish=event=>{
-        if(event.pointerId!==start.id)return;
-        window.removeEventListener("pointermove",move);
-        window.removeEventListener("pointerup",finish);
-        window.removeEventListener("pointercancel",finish);
-        if(start.started){
-          suppressMapClickUntil=Date.now()+650;
-          markerDragActive=false;
-          map.dragging.enable();
-        }
-        cancel();
+      const onUp=event=>{
+        if(event.pointerId!==gesture.pointerId || gesture.finished)return;
+        event.stopPropagation();event.preventDefault();
+        const click=!gesture.active&&!gesture.cancelled;
+        suppressMapClickUntil=Date.now()+600;
+        cleanup();
+        if(click)selectPin(id); // Explicit tap handling; never depend on a Leaflet synthetic click.
       };
-      window.addEventListener("pointermove",move,{passive:false});
-      window.addEventListener("pointerup",finish);
-      window.addEventListener("pointercancel",finish);
+      const onCancel=event=>{
+        if(event.pointerId!==gesture.pointerId || gesture.finished)return;
+        gesture.cancelled=true;cleanup();
+      };
+      const onLost=event=>{
+        if(event.pointerId!==gesture.pointerId || gesture.finished)return;
+        gesture.cancelled=true;cleanup();
+      };
+      element.addEventListener("pointermove",onMove,{passive:false});
+      element.addEventListener("pointerup",onUp,{passive:false});
+      element.addEventListener("pointercancel",onCancel);
+      element.addEventListener("lostpointercapture",onLost);
       markerPressTimer=setTimeout(()=>{
-        if(markerPressStart!==start)return;
-        start.started=true;
-        markerDragActive=true;
-        suppressMapClickUntil=Date.now()+1400;
-        if(selected!==id){
-          selected=id;
-          hideResults();
-          $("layersPanel").classList.add("hidden");
-          $("settingsPanel").classList.add("hidden");
-          renderMarkers();renderLayers();
-        }
+        if(gesture.finished || gesture.cancelled || markerPressStart!==gesture)return;
+        gesture.active=true;
+        suppressMapClickUntil=Date.now()+1600;
+        // Do not replace marker icon here: that would destroy pointer capture.
+        selected=id;
+        hideResults();
+        $("layersPanel").classList.add("hidden");
+        $("settingsPanel").classList.add("hidden");
+        renderLayers();
         beginMove();
-        map.dragging.disable();
         const pin=selectedPin();
-        previewMove([pin.lat,pin.lng]);
-        $("moveText").textContent="Pin ziehen und danach Position übernehmen oder abbrechen.";
+        if(pin)previewMove([pin.lat,pin.lng]);
+        $("moveText").textContent="Pin ziehen, dann Position übernehmen oder abbrechen.";
         if(navigator.vibrate)navigator.vibrate(15);
       },1000);
-    });
+    },{passive:false});
   }
   function removeMovePreview(){
     if(moveMarker){map.removeLayer(moveMarker);moveMarker=null;}
