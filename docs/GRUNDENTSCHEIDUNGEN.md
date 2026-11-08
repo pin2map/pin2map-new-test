@@ -1162,11 +1162,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die vorhandenen Regeln zum bewussten Abwählen und Wechseln von Pins gelten weiter, soweit sie im aktuellen Kartenkontext nutzbar sind (Grundentscheidungen 84 und 87–88).
 - Was die Aktion „Pin zeigen“ bei einem ausgewählten Pin in einer ausgeblendeten Ebene leisten soll, wird in Grundentscheidung 102 festgelegt.
 
-## Offen – Grundentscheidung 102: „Pin zeigen“ bei ausgeblendeter Ebene
+## Grundentscheidung 102 – Ebene bewusst einblenden statt über „Pin zeigen“
 
-Wenn ein Pin ausgewählt bleibt, obwohl seine Ebene ausgeblendet ist (Grundentscheidung 101), wie soll die Funktion „Pin zeigen“ reagieren?
+**Beschlossen (Variante A):** Ist ein Pin ausgewählt, dessen Ebene ausgeblendet ist, wird der Button **„Pin zeigen“ nicht angeboten**. Stattdessen erscheint im geöffneten Pin-Bedienfeld ein verständlicher Hinweis mit der bewusst auslösbaren Aktion **„Ebene einblenden“**. Erst wenn die Ebene sichtbar ist, greifen die normalen Regeln für „Pin zeigen“ (Grundentscheidungen 93 und 94).
 
-- **Variante A (Empfehlung):** **Keine automatische Änderung der Ebenensichtbarkeit.** Der Button „Pin zeigen“ wird für einen wegen seiner ausgeblendeten Ebene unsichtbaren Pin nicht angeboten. Das Bedienfeld zeigt stattdessen einen Hinweis mit der bewusst auslösbaren Aktion **„Ebene einblenden“**. Erst nach dem Einblenden wird die normale Sichtbarkeits- und „Pin zeigen“-Logik angewendet.
-- **Variante B:** **„Pin zeigen“ blendet die betroffene Ebene ausdrücklich nach Antippen automatisch ein** und verschiebt die Karte bei Bedarf zum ausgewählten Pin. Damit ist der Pin mit einem Schritt sichtbar, allerdings wird durch diese Aktion auch die Ebenensichtbarkeit verändert.
+**Konsequenzen:**
+- Die Aktion „Pin zeigen“ ändert niemals die Sichtbarkeit einer Ebene; Kartenposition und Ebenensichtbarkeit bleiben getrennte Bedienvorgänge.
+- Die Aktion „Ebene einblenden“ ändert nach bewusstem Antippen die Sichtbarkeit der betreffenden Ebene; damit werden alle ihre Pins wieder sichtbar, nicht nur der ausgewählte Pin.
+- Die Pin-Auswahl und das untere Bedienfeld bleiben währenddessen erhalten (Grundentscheidung 101).
+- Nach dem Einblenden wird geprüft, ob der ausgewählte Pin innerhalb des tatsächlich sichtbaren Kartenbereichs liegt. Nur falls er nicht sichtbar ist, erscheint gemäß Grundentscheidung 94 der Button „Pin zeigen“.
+- Das Einblenden der Ebene führt nicht automatisch zu einer Kartenverschiebung. Die Zoomstufe und die gespeicherten Pin-Koordinaten bleiben unverändert.
+- Die vom Benutzer bewusst festgelegte Sichtbarkeit anderer Ebenen bleibt unberührt.
 
-**Status:** Grundentscheidung 102 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 103: Anzeige der Ebenensichtbarkeit im Pin-Bedienfeld
+
+Soll das untere Pin-Bedienfeld **neben dem Ebenenauswahlfeld** anzeigen, ob die aktuell zugeordnete Ebene sichtbar oder ausgeblendet ist?
+
+- **Variante A (Empfehlung):** **Ja.** Neben oder unter dem Ebenennamen ist ein kleines, eindeutig verständliches Sichtbarkeitssymbol (z. B. Auge/Auge durchgestrichen) zu sehen. Es zeigt ausschließlich den aktuellen Zustand; bei ausgeblendeter Ebene wird die bereits beschlossene Aktion „Ebene einblenden“ separat angeboten.
+- **Variante B:** **Nein.** Im normalen Pin-Bedienfeld wird nur der Ebenenname dargestellt. Der Sichtbarkeitszustand wird dort erst dann durch einen Hinweis deutlich, wenn die Ebene ausgeblendet und der ausgewählte Pin deshalb unsichtbar ist.
+
+**Status:** Grundentscheidung 103 ist offen und noch nicht beschlossen.
