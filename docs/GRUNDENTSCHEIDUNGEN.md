@@ -99,11 +99,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die aktive Ebene kann unabhängig von ihrer Sichtbarkeit ausgewählt sein; ein eventuell nötiger zusätzlicher Hinweis beim Setzen eines Pins auf einer ausgeblendeten Ebene wird gesondert entschieden.
 - Die private Ebene ist Teil der Ebenenverwaltung; besondere Sichtbarkeits-/Zugriffsregeln bei späterer Serveranbindung bleiben separat zu klären.
 
-## Offen – Grundentscheidung 10: Speicherung der Ebenensichtbarkeit
+## Grundentscheidung 10 – Ebenensichtbarkeit beim Neustart
 
-Wie soll sich die Anwendung merken, welche Ebenen gerade sichtbar sind?
+**Beschlossen (Variante A):** pin2map speichert lokal für jede Ebene, ob sie sichtbar oder ausgeblendet ist, und stellt diese Auswahl beim erneuten Öffnen der PWA automatisch wieder her. **Neu angelegte Ebenen sind zunächst sichtbar.**
 
-- **Variante A (Empfehlung):** Die Sichtbarkeit jeder Ebene wird lokal gespeichert und beim erneuten Öffnen der PWA wiederhergestellt. Neue Ebenen sind zunächst sichtbar; der genaue Umgang mit späterer Synchronisation von Anzeigeeinstellungen wird gesondert entschieden.
-- **Variante B:** Bei jedem Start sind zunächst alle vorhandenen Ebenen sichtbar, unabhängig davon, welche Ebenen vorher ausgeblendet waren.
+**Konsequenzen:**
+- Der Sichtbarkeitszustand jeder Ebene wird lokal dauerhaft gespeichert.
+- Das Öffnen oder Neuladen der PWA verändert die zuvor gewählte Ebenensichtbarkeit nicht.
+- Neue Ebenen sind standardmäßig eingeblendet.
+- Die Sichtbarkeit ist unabhängig von der aktiven Ebene (Grundentscheidungen 7–9).
+- Ausgeblendete Pins bleiben unverändert gespeichert; es handelt sich nur um eine Anzeigeeinstellung.
+- Ob beziehungsweise wie Anzeigeeinstellungen bei einer späteren Serveranbindung geräteübergreifend synchronisiert werden, bleibt eine gesonderte Entscheidung.
 
-**Status:** Grundentscheidung 10 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 11: Pin anlegen, wenn die aktive Ebene ausgeblendet ist
+
+Grundentscheidung 9 lässt zu, dass eine Ebene aktiv, aber nicht sichtbar ist. Wie verhält sich das Anlegen eines Pins in diesem Fall?
+
+- **Variante A (Empfehlung):** Vor dem Anlegen eines Pins auf einer ausgeblendeten aktiven Ebene weist die Anwendung darauf hin und bietet an, diese Ebene einzublenden. Der Pin wird nicht unbemerkt unsichtbar angelegt; die Nutzerentscheidung ist erforderlich.
+- **Variante B:** Das Anlegen eines Pins blendet die ausgeblendete aktive Ebene automatisch ein, ohne vorherige Nachfrage.
+
+**Status:** Grundentscheidung 11 ist noch offen.
