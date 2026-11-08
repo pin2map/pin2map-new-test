@@ -557,11 +557,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Datei ist ohne Server lesbar und transportierbar. Änderungen des Schemas sollen über dokumentierte Versionierung und gegebenenfalls gezielte Migrationen unterstützt werden; Abwärtskompatibilität wird nicht ungeprüft vorausgesetzt.
 - Ein möglicher zusätzlicher GeoJSON-Export für andere Geowerkzeuge bleibt eine separate zukünftige Erweiterung.
 
-## Offen – Grundentscheidung 49: Import von Sicherungen mit älteren Formatversionen
+## Grundentscheidung 49 – Sichere Migration älterer Sicherungsformate unterstützen
 
-Wie soll pin2map reagieren, wenn eine Sicherungsdatei zwar ein gültiges pin2map-JSON ist, aber aus einer **älteren Formatversion** stammt?
+**Beschlossen (Variante A):** pin2map erkennt beim Import die Formatversion einer Sicherungsdatei. **Ältere pin2map-JSON-Formatversionen werden nur dann automatisch in das aktuell verwendete Datenmodell überführt, wenn für diese konkrete Version eine ausdrücklich implementierte und getestete Migration verfügbar ist.** Ist keine sichere Migration vorhanden, wird der Import verständlich begründet abgelehnt.
 
-- **Variante A (Empfehlung):** Die Anwendung unterstützt **ausdrücklich implementierte und getestete Migrationen** älterer Sicherungsformate auf die aktuelle Version. Existiert für die betreffende Version keine sichere Migration, wird der Import ohne Veränderung des Datenbestands abgelehnt.
-- **Variante B:** Die erste lokale Basisversion akzeptiert **nur die genau aktuelle Formatversion**. Ältere Sicherungsdateien werden grundsätzlich abgelehnt; Migrationsmöglichkeiten werden erst später ergänzt.
+**Konsequenzen:**
+- Die Formatkennung und Versionsnummer aus Grundentscheidung 48 sind für die Auswahl des passenden Import- bzw. Migrationspfads verbindlich.
+- Die Anwendung darf unbekannte oder zukünftige Formatversionen nicht auf Verdacht interpretieren.
+- Jede Migration muss die strukturellen Invarianten schützen: Jeder Pin gehört genau einer Ebene an, die private Systemebene bleibt geschützt, IDs und Koordinaten sind gültig.
+- Die migrierten Daten werden vollständig validiert, bevor eine Übernahme erfolgt. Bei Fehlern bleiben alle vorhandenen lokalen Daten unverändert.
+- Die Migration verarbeitet die ausgewählte Importdatei, ohne deren Originaldatei zu verändern.
+- Für die erste Formatversion ist keine künstliche Migrationsimplementierung nötig, solange noch keine ältere Version existiert.
+- Für das anschließende „Ersetzen“ bzw. „Hinzufügen“ gelten die bereits beschlossenen Regeln (Grundentscheidungen 40–47).
 
-**Status:** Grundentscheidung 49 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 50: Offline-Startfähigkeit der lokalen Basisversion
+
+Soll die erste stabile lokale PWA nach einem erfolgreichen ersten Laden **auch ohne Internetverbindung neu gestartet und bedient** werden können?
+
+- **Variante A (Empfehlung):** Die PWA speichert die nötigen **Anwendungsdateien mittels Service Worker lokal zwischen**. Nach dem ersten erfolgreichen Laden lässt sie sich offline erneut öffnen; Pins und Ebenen aus IndexedDB bleiben lokal bearbeitbar. Online-Kartenkacheln sind davon ausdrücklich zu unterscheiden: Ohne zuvor verfügbare Kartenkacheln kann der Kartenhintergrund offline eingeschränkt sein, während die Daten erhalten bleiben.
+- **Variante B:** Die Anwendungsdateien werden zunächst **nicht für einen Offline-Neustart bereitgehalten**. Ein bestehender geöffneter Tab kann lokal weiterarbeiten; zum erneuten Starten ist jedoch eine Internetverbindung erforderlich. Eine voll offline-startfähige PWA folgt später.
+
+**Status:** Grundentscheidung 50 ist offen und noch nicht beschlossen.
