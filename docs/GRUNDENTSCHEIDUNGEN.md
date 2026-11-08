@@ -76,11 +76,25 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die gewählte Ebenenzuordnung wird zusammen mit dem Pin in IndexedDB persistiert.
 - Wie die aktive Ebene beim Start der Anwendung festgelegt wird, ist in Grundentscheidung 8 zu entscheiden.
 
-## Offen – Grundentscheidung 8: Aktive Ebene beim Start der Anwendung
+## Grundentscheidung 8 – Aktive Ebene beim Start der Anwendung
 
-Für die automatische Zuordnung neuer Pins muss festgelegt werden, welche Ebene beim erneuten Öffnen der PWA aktiv ist.
+**Beschlossen (Variante A):** Die **zuletzt aktive Ebene** wird lokal gespeichert und beim nächsten Öffnen der PWA automatisch wiederhergestellt, **sofern die Ebene noch existiert**.
 
-- **Variante A (Empfehlung):** Die zuletzt aktive Ebene wird lokal gemerkt und beim nächsten Start wieder ausgewählt, sofern sie noch existiert. Falls sie nicht mehr existiert oder noch keine Auswahl gespeichert ist, muss ausdrücklich eine Ebene ausgewählt werden, bevor Pins angelegt werden können.
-- **Variante B:** Bei jedem Start ist zunächst keine Ebene aktiv. Vor dem ersten neuen Pin muss der Benutzer immer bewusst eine Ebene auswählen.
+**Konsequenzen:**
+- Die Auswahl der aktiven Ebene wird lokal dauerhaft gespeichert, getrennt von der eigentlichen Ebenenzuordnung der Pins.
+- Nach dem Neustart wird die zuletzt aktive Ebene wieder ausgewählt und erkennbar angezeigt.
+- Ist noch keine Auswahl gespeichert oder existiert die zuletzt aktive Ebene nicht mehr, gibt es zunächst keine aktive Ebene. Vor dem Anlegen eines Pins muss dann ausdrücklich eine Ebene gewählt werden.
+- Es erfolgt kein stillschweigender Wechsel zu einer beliebigen anderen Ebene.
+- Die Regel gilt auch für die private Ebene; ihre späteren Zugriffs-/Sichtbarkeitsregeln bleiben gesondert zu klären.
+- Die automatische Zuordnung neuer Pins aus Grundentscheidung 7 bleibt unverändert.
 
-**Status:** Grundentscheidung 8 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 9: Sichtbarkeit von Pins auf der Karte
+
+Wie sollen Pins verschiedener Ebenen in der lokalen Basisversion angezeigt werden?
+
+- **Variante A (Empfehlung):** Mehrere Ebenen können unabhängig voneinander **sichtbar oder ausgeblendet** werden. Die aktive Ebene steuert ausschließlich, welcher Ebene neu angelegte Pins zugeordnet werden; sie muss nicht die einzige sichtbare Ebene sein.
+- **Variante B:** Auf der Karte erscheinen ausschließlich Pins der aktuell aktiven Ebene. Zum Anzeigen anderer Pins muss die aktive Ebene gewechselt werden.
+
+**Wichtige Abgrenzung:** Sichtbarkeit ist nicht Ebenenzugehörigkeit; jeder Pin gehört weiterhin genau einer Ebene. Sichtbarkeit und Aktivität sollen bei Variante A unterscheidbar bleiben.
+
+**Status:** Grundentscheidung 9 ist offen und noch nicht beschlossen.
