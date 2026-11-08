@@ -1208,11 +1208,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das direkte Wechseln zwischen ausgewählten Pins bleibt möglich; ausstehende Speichervorgänge dürfen keine Namen eines anderen Pins überschreiben (Grundentscheidung 88).
 - Der genaue Zeitpunkt, zu dem eingegebene Änderungen übernommen werden, wird in Grundentscheidung 106 konkretisiert.
 
-## Offen – Grundentscheidung 106: Zeitpunkt der automatischen Namensspeicherung
+## Grundentscheidung 106 – Automatische Namensspeicherung nach Eingabepause
 
-Wann soll pin2map Änderungen im direkt bearbeitbaren Namensfeld dauerhaft lokal speichern?
+**Beschlossen (Variante A):** Änderungen im direkt bearbeitbaren Namensfeld werden **automatisch nach einer kurzen Eingabepause (Debounce)** lokal gespeichert. Zusätzlich wird eine noch ausstehende Eingabe **beim Verlassen des Felds oder beim Wechsel zu einem anderen Pin zuverlässig gespeichert**.
 
-- **Variante A (Empfehlung):** Während der Eingabe **automatisch nach einer kurzen Eingabepause** (Debounce), zusätzlich zuverlässig beim Verlassen des Felds oder Wechseln des ausgewählten Pins. Es gibt keinen Speichern-Button; unnötige Speicherzugriffe bei jedem Tastendruck werden vermieden.
-- **Variante B:** **Unmittelbar nach jeder einzelnen Textänderung** wird der neue Name lokal gespeichert. Das ist möglichst direkt, kann aber insbesondere bei längeren Namen sehr viele Schreibvorgänge erzeugen.
+**Konsequenzen:**
+- Ein separater Speichern-Button ist nicht vorgesehen (Grundentscheidungen 29 und 105).
+- Während fortlaufender Eingabe werden unnötige Datenbankschreibvorgänge für jeden Tastendruck vermieden.
+- Beim Abwählen, Schließen des Pin-Bedienfelds oder direkten Wechsel zwischen Pins darf keine noch ausstehende Namensänderung verloren gehen (Grundentscheidungen 84, 87 und 88).
+- Asynchrone Speichervorgänge sind eindeutig an die unveränderliche Pin-ID zu binden, damit eine verspätete Speicherung nicht versehentlich einen anderen Pin verändert.
+- Nach erfolgreichem Speichern wird die Kartenbeschriftung aktualisiert; Speicherfehler sind verständlich erkennbar zu machen.
+- Die konkrete Länge der kurzen Eingabepause wird bei der Umsetzung einheitlich festgelegt und getestet.
 
-**Status:** Grundentscheidung 106 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 107: Maximale Länge von Pin-Namen
+
+Soll die erste Basisversion für die optionalen Namen der Pins eine feste maximale Zeichenlänge vorsehen?
+
+- **Variante A (Empfehlung):** **Ja.** Pin-Namen werden auf eine großzügige, klar definierte Länge (beispielsweise **120 Zeichen**) begrenzt. Das Eingabefeld informiert bei Erreichen der Grenze. Lange Namen werden auf der Karte ohnehin einzeilig gekürzt (Grundentscheidungen 78 und 79).
+- **Variante B:** **Nein, keine fachliche feste Zeichenbegrenzung** in der Basisversion. Beliebig lange Pin-Namen werden angenommen, soweit sie technisch speicherbar sind; auf der Karte wird ihre Anzeige weiterhin gekürzt.
+
+**Status:** Grundentscheidung 107 ist offen und noch nicht beschlossen.
