@@ -582,11 +582,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Aktualisierungen des App-Caches müssen so erfolgen, dass die lokale Datenbank nicht unbemerkt gelöscht oder durch eine unvollständige Aktualisierung beschädigt wird.
 - Der Offline-Neustart muss vor Freigabe der ersten Basisversion praktisch geprüft werden.
 
-## Offen – Grundentscheidung 51: Kartenhintergrund ohne Internet
+## Grundentscheidung 51 – Kein gezielter Offline-Kartendownload in der Basisversion
 
-Die Anwendung selbst startet nun verbindlich offline. Wie soll die **Kartenansicht** in der ersten Basisversion reagieren, wenn keine Kartenkacheln über das Internet geladen werden können?
+**Beschlossen (Variante A):** In der ersten stabilen lokalen Basisversion gibt es **keine gesonderte Funktion zum Herunterladen und Verwalten von Offline-Kartenbereichen**. Die Offline-Startfähigkeit der PWA aus Grundentscheidung 50 bleibt davon unberührt.
 
-- **Variante A (Empfehlung für die schlanke Basisversion):** **Keine systematische Offline-Kartenversorgung** in der ersten Version. Bereits im Browser-Cache vorhandene Kartenkacheln dürfen weiter angezeigt werden; fehlende Kacheln bleiben mit verständlichem Offline-Hinweis leer. Die lokal gespeicherten Pins und Ebenen bleiben erhalten und bearbeitbar, soweit die Bedienung ohne Kartenhintergrund möglich ist.
-- **Variante B:** Bereits die erste Basisversion bietet einen **bewusst herunterladbaren Offline-Kartenbereich**, der nach dem Download auch ohne Internetverbindung angezeigt werden kann. Dafür sind zusätzlicher Speicher, Downloadverwaltung sowie die Nutzungsbedingungen des Kartenanbieters zu berücksichtigen.
+**Konsequenzen:**
+- Bereits im zulässigen Browser-Cache vorhandene Kartenkacheln dürfen bei fehlender Verbindung weiterhin angezeigt werden, soweit sie tatsächlich verfügbar sind; ihre vollständige Offline-Verfügbarkeit wird nicht garantiert.
+- Fehlen Kartenkacheln, zeigt pin2map einen verständlichen Offline-Hinweis beziehungsweise eine geeignete leere Hintergrunddarstellung. Fehlende Kacheln dürfen nicht als Verlust der Pins oder Ebenen interpretiert werden.
+- Die lokal gespeicherten Pins und Ebenen bleiben in IndexedDB erhalten und können, soweit die Bedienung ohne Kartenhintergrund möglich ist, weiterhin lokal bearbeitet werden.
+- Für die erste Basisversion sind weder eine Downloadbereich-Auswahl noch eine Offline-Kachelverwaltung erforderlich.
+- Spätere Offline-Kartenfunktionen müssen Speicherbedarf und die Nutzungsbedingungen des jeweiligen Kartenanbieters berücksichtigen.
+- Lokale Anwendungsdateien bleiben gemäß Grundentscheidung 50 für einen Offline-Neustart zwischengespeichert.
 
-**Status:** Grundentscheidung 51 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 52: Anzeige des Verbindungszustands
+
+Soll die erste stabile Basisversion einen **dauerhaft sichtbaren Hinweis auf den aktuellen Online-/Offline-Zustand** der Anwendung bieten?
+
+- **Variante A (Empfehlung):** Ein **kleiner Verbindungsindikator in der Kopfzeile** zeigt an, ob das Gerät nach dem vom Browser gemeldeten Netzwerkzustand online oder offline ist. Er ist zurückhaltend gestaltet und darf nicht mit einer garantierten Server-Erreichbarkeit gleichgesetzt werden. Bei Offline-Betrieb bleibt ein verständlicher Hinweis zugänglich.
+- **Variante B:** In der Basisversion gibt es **keinen dauerhaften Verbindungsindikator**. Der Offline-Zustand wird nur dann erklärt, wenn eine konkrete Aktion oder Kartenkachel wegen fehlender Verbindung nicht funktioniert.
+
+**Status:** Grundentscheidung 52 ist offen und noch nicht beschlossen.
