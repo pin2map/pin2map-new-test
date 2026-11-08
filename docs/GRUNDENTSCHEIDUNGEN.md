@@ -1114,11 +1114,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nach bestätigter Pin-Verschiebung werden die dargestellten Werte aktualisiert, ohne zusätzliche Rundung der dauerhaft gespeicherten Koordinaten.
 - Das genaue Verhalten beim Kopieren von Koordinaten wird in Grundentscheidung 98 festgelegt.
 
-## Offen – Grundentscheidung 98: Koordinaten kopieren
+## Grundentscheidung 98 – Koordinaten mit einem Button kopieren
 
-Sollen die im Pin-Bedienfeld angezeigten Breiten- und Längengrade bereits in der ersten Basisversion unkompliziert in die Zwischenablage übernommen werden können?
+**Beschlossen (Variante A):** Die erste Basisversion bietet im unteren Pin-Bedienfeld einen **direkt erreichbaren Button „Koordinaten kopieren“**. Er übernimmt den Breiten- und Längengrad des aktuell ausgewählten Pins **gemeinsam als eindeutig getrenntes Dezimalgrad-Paar** in die Zwischenablage.
 
-- **Variante A (Empfehlung):** Ein **direkt erreichbarer Button „Koordinaten kopieren“** kopiert beide Koordinaten des ausgewählten Pins gemeinsam als klar getrenntes Dezimalgrad-Paar in die Zwischenablage. Eine kurze Bestätigung zeigt den Erfolg an; die gespeicherten Koordinaten bleiben unverändert.
-- **Variante B:** **Kein eigener Kopierbutton** in der ersten Basisversion. Die Werte können angezeigt und gegebenenfalls durch normale Textauswahl manuell kopiert werden.
+**Konsequenzen:**
+- Die Kopierfunktion ist ohne zusätzliches Menü erreichbar und erfordert kein manuelles Markieren der angezeigten Zahlen.
+- Die Reihenfolge ist eindeutig: zuerst Breitengrad, dann Längengrad.
+- Die Zwischenablage erhält maschinenlesbare Dezimalzahlen mit Punkt als Dezimaltrennzeichen, unabhängig von der lokalisierten Darstellung mit Komma, beispielsweise `48.775846, 9.182932`.
+- Nach erfolgreichem Kopieren erhält der Benutzer eine kurze Bestätigung; ein Fehler beim Zugriff auf die Zwischenablage wird verständlich angezeigt und nicht als Erfolg ausgegeben.
+- Die Aktion ändert weder Pin-Koordinaten noch sonstige gespeicherte Daten.
+- Die Anzeige der Koordinaten als WGS-84-Dezimalgrad und die Bearbeitung nur durch den expliziten Verschiebemodus bleiben unverändert (Grundentscheidungen 96 und 97).
 
-**Status:** Grundentscheidung 98 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 99: Bedienung der Ebenenzugehörigkeit eines Pins
+
+Ein Pin gehört immer genau einer Ebene an. Wie soll die zugehörige Ebene im unteren Pin-Bedienfeld angezeigt und gewechselt werden?
+
+- **Variante A (Empfehlung):** Im Pin-Bedienfeld wird die aktuelle Ebene **direkt als Auswahlfeld** angezeigt. Beim Antippen öffnet sich eine Liste der vorhandenen Ebenen einschließlich „Privat“. Die bewusste Auswahl einer anderen Ebene wird sofort lokal gespeichert; der Pin erhält unmittelbar deren Farbe.
+- **Variante B:** Das Pin-Bedienfeld zeigt zunächst **nur den Ebenennamen als Text**. Eine Änderung der Zugehörigkeit ist erst über eine separate Aktion **„Ebene ändern“** und einen weiteren Auswahldialog möglich.
+
+**Status:** Grundentscheidung 99 ist offen und noch nicht beschlossen.
