@@ -1587,11 +1587,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der zentrale Geocoding-Adapter (Grundentscheidung 130) und die Anbieterwahl müssen eine konforme Kennzeichnung ermöglichen.
 - Die **weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 137: Wahl des ersten Geocoding-Anbieters
+## Grundentscheidung 137 – Geocoding-Anbieter unmittelbar festlegen
 
-Nach der Entscheidung für eine serverlose Browser-Anbindung über einen Geocoding-Adapter: Wie soll der konkrete Anbieter für die erste Basisversion festgelegt werden?
+**Beschlossen (Variante B):** Für die erste Basisversion soll **jetzt ein konkreter Geocoding-Anbieter verbindlich ausgewählt werden**, statt zunächst eine offene Auswahl anhand eines ausführlichen Kriterienkatalogs durchzuführen. Die namentliche Anbieterwahl folgt unmittelbar als Grundentscheidung 138.
 
-- **Variante A (Empfehlung):** **Technische Auswahl anhand verbindlicher Eignungskriterien:** Weltweite Ortsnamensuche, direkte Browser-Anfragen (CORS), für den Testbetrieb zulässige Nutzungsbedingungen und Anfrageraten, keine geheimen Schlüssel im Browser sowie zulässige zentrale Quellenkennzeichnung (Grundentscheidung 136). Der Anbieter wird nach Prüfung dieser Kriterien ausgewählt und dokumentiert; ein ungeeigneter Dienst wird nicht verwendet.
-- **Variante B:** **Einen bestimmten Anbieter sofort fest vorgeben**, auch bevor seine tatsächlichen Browser-, Nutzungs- und Kennzeichnungsbedingungen geprüft sind. Falls diese Bedingungen nicht passen, muss die Anbindung später umgeplant werden.
+**Konsequenzen:**
+- Variante B ist eine Entscheidung für eine **sofortige Anbieterfestlegung**, jedoch **noch keine Benennung eines konkreten Dienstes**. Eine solche Benennung wird nicht erfunden.
+- Die später erforderliche technische und rechtliche Prüfung wird nicht übersprungen: Direkte Browser-Anfragen, Nutzungsbedingungen, Ratenlimits, Attribution und etwaige Zugangsschlüssel müssen bei der Umsetzung weiterhin passen (Grundentscheidungen 130, 131 und 136).
+- Falls ein festgelegter Anbieter die zwingenden Bedingungen nicht erfüllt, darf er nicht regelwidrig eingebunden werden; die Anbieterwahl ist dann erneut zu entscheiden.
+- Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 137 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 138: Konkreten Geocoding-Anbieter für die erste Basisversion festlegen
+
+Welcher konkrete Dienst soll als erste Anbindung des Geocoding-Adapters verwendet werden?
+
+- **Variante A (Empfehlung für einen begrenzten Testbetrieb): Photon, öffentlicher Demo-Dienst von komoot (`photon.komoot.io`).** Photon bietet weltweite Suche auf OpenStreetMap-Basis und eine JSON-API. Laut Projektdokumentation darf der öffentliche Demo-Dienst für Projekte mit **angemessen begrenzter Anfragezahl** genutzt werden; umfangreiche Nutzung kann gedrosselt oder gesperrt werden, und Verfügbarkeit wird nicht garantiert. Vor dem Einbau sind Browserzugriff/CORS und Attribution zu prüfen; für produktiven Mehrnutzerbetrieb kann später ein anderer Hosting-Anbieter nötig sein. Quelle: https://github.com/komoot/photon .
+- **Variante B: Öffentliche OpenStreetMap-Nominatim-API (`nominatim.openstreetmap.org`).** Die API erlaubt grundsätzlich vom Benutzer bewusst ausgelöste Suchen bei moderater Gesamtnutzung, verlangt aber strikte Einhaltung der veröffentlichten Richtlinie, insbesondere **höchstens eine Anfrage pro Sekunde über die gesamte Anwendung**, geeignete Kennzeichnung der Anwendung und Attribution; Autocomplete ist verboten. Ob der öffentliche Dienst zum geplanten pin2map-Einsatz passt, muss vor Verwendung verifiziert werden. Richtlinie: https://operations.osmfoundation.org/policies/nominatim/ .
+
+**Unabhängig von der Wahl:** Anbieterbedingungen und Browser-Kompatibilität bleiben zwingende Implementierungsvoraussetzungen. Die weltweite Ortsnamensuche und das Speichern der Such-Pins in „Privat“ bleiben unverändert.
+
+**Status:** Grundentscheidung 138 ist offen und noch nicht beschlossen.
