@@ -297,11 +297,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Regeln für aktive bzw. ausgeblendete Ebenen (Grundentscheidungen 7 und 11) gelten weiter.
 - Ein späterer optionaler Mehrfacherfassungsmodus ist durch diese Entscheidung nicht Bestandteil der ersten Basisversion.
 
-## Offen – Grundentscheidung 27: Speichern beim Anlegen eines Pins
+## Grundentscheidung 27 – Sofortiges Speichern eines neuen Pins
 
-Ein Pin kann ohne Bezeichnung angelegt werden (Grundentscheidung 6). Wie erfolgt das Speichern nach Auswahl einer Kartenposition im aktivierten Modus „Pin hinzufügen“?
+**Beschlossen (Variante A):** Nach dem Antippen einer Kartenposition im aktivierten Modus „Pin hinzufügen“ wird ein neuer Pin **sofort lokal in IndexedDB gespeichert**, mit seinen Koordinaten, einer stabilen internen ID und der Zuordnung zur aktiven Ebene. Eine Bezeichnung ist nicht erforderlich und kann später ergänzt werden.
 
-- **Variante A (Empfehlung):** Der Pin wird mit Koordinaten und aktiver Ebene sofort lokal gespeichert. Eine optionale Bezeichnung kann danach durch Bearbeiten ergänzt werden. Erst nach erfolgreichem Speichern endet der Modus gemäß Grundentscheidung 26.
-- **Variante B:** Nach dem Antippen der Karte öffnet sich zunächst ein kleiner Bearbeitungsdialog mit optionalem Namensfeld. Erst durch bewusstes Bestätigen wird der Pin gespeichert; bei Abbruch entsteht kein Pin.
+**Konsequenzen:**
+- Nach erfolgreichem Speichern wird der Pin auf der Karte angezeigt und der Modus „Pin hinzufügen“ gemäß Grundentscheidung 26 automatisch beendet.
+- Es erscheint kein obligatorischer Namens- oder Bestätigungsdialog.
+- Die Regeln zur aktiven Ebene (Grundentscheidung 7) und für ausgeblendete aktive Ebenen (Grundentscheidung 11) gelten weiterhin und müssen vor dem eigentlichen Speichern erfüllt sein.
+- Schlägt das Speichern fehl, darf kein vermeintlich dauerhaft angelegter Pin angezeigt werden; der Fehler muss erkennbar sein.
+- Die Möglichkeit, den Pin später zu bearbeiten und zu verschieben, bleibt erhalten.
 
-**Status:** Grundentscheidung 27 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 28: Pin nach dem Anlegen automatisch auswählen?
+
+Direkt nach dem erfolgreichen Anlegen eines Pins kann die Anwendung ihn entweder für weitere Aktionen öffnen oder die Karte unverändert zeigen.
+
+- **Variante A (Empfehlung):** Der neue Pin wird nach dem Speichern automatisch **ausgewählt**. Seine einfache Bearbeitungsansicht mit optionaler Bezeichnung und weiteren Basisaktionen wird geöffnet; sie kann ohne weitere Eingaben geschlossen werden. Der Modus „Pin hinzufügen“ ist bereits beendet.
+- **Variante B:** Nach dem Speichern erscheint der Pin nur auf der Karte. Es öffnet sich keine Bearbeitungsansicht; erst ein späteres Antippen des Pins zeigt dessen Details bzw. Bearbeitungsmöglichkeiten.
+
+**Status:** Grundentscheidung 28 ist offen und noch nicht beschlossen.
