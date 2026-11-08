@@ -660,11 +660,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die horizontale Platzierung ist mittig; die Umsetzung muss auch bei unterschiedlichen Bildschirmgrößen, Geräte-Aussparungen und Touch-Bedienung ohne Überschneidungen funktionieren.
 - Ein Wechsel des Kartenhintergrunds verändert Pins, Ebenen, Kartenmittelpunkt und Zoomstufe nicht (Grundentscheidung 54); die Auswahl bleibt gemäß Grundentscheidung 55 gespeichert.
 
-## Offen – Grundentscheidung 58: Darstellung der Kartenhintergrund-Auswahl
+## Grundentscheidung 58 – Kompaktes Kartenwahl-Menü oberhalb des Buttons
 
-Wie soll die Kartenhintergrund-Auswahl nach Antippen des unteren Kartenwahl-Buttons erscheinen?
+**Beschlossen (Variante A):** Beim Antippen des unten mittig angeordneten Kartenwahl-Buttons öffnet sich ein **kompaktes Auswahlmenü unmittelbar oberhalb des Buttons**. Das Menü zeigt die verfügbaren Kartenhintergründe und kennzeichnet die derzeit ausgewählte Kartenansicht eindeutig.
 
-- **Variante A (Empfehlung):** Ein **kompaktes Auswahlmenü direkt oberhalb des Kartenwahl-Buttons** zeigt die verfügbaren Kartenhintergründe und kennzeichnet die aktuell ausgewählte Karte. Die Kartenansicht bleibt sichtbar; die Auswahl schließt das Menü.
-- **Variante B:** Ein **zentraler Auswahldialog** über der Karte zeigt die Kartenhintergründe. Er kann mehr Platz für Informationen oder Vorschaubilder bieten, verdeckt aber mehr von der Karte.
+**Konsequenzen:**
+- Die Kartenansicht bleibt beim Öffnen des Menüs sichtbar; ein großer zentraler Dialog wird nicht benötigt.
+- Der Benutzer kann die Kartenhintergründe über das Menü direkt erreichen; die zuletzt gewählte Karte wird weiterhin lokal gespeichert (Grundentscheidungen 54–57).
+- Nach Auswahl eines Kartenhintergrunds schließt sich das Menü.
+- Der Wechsel des Kartenhintergrunds verändert weder Pins und Ebenen noch Kartenmittelpunkt und Zoomstufe.
+- Die Positionierung berücksichtigt kleine Displays und sichere Bedienbereiche, damit Menüeinträge nicht außerhalb des sichtbaren Bereichs liegen.
 
-**Status:** Grundentscheidung 58 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 59: Anwendung der Kartenwahl
+
+Wie soll pin2map einen im Kartenwahl-Menü ausgewählten Kartenhintergrund übernehmen?
+
+- **Variante A (Empfehlung):** **Sofortiger Wechsel:** Sobald eine Kartenansicht angetippt wird, schließt sich das Menü und der neue Kartenhintergrund wird direkt angezeigt und gespeichert. Es gibt keinen zusätzlichen Bestätigungsdialog.
+- **Variante B:** **Vorschau mit Bestätigung:** Das Antippen zeigt zunächst die ausgewählte Karte als Vorschau. Erst durch „Übernehmen“ wird die Auswahl gespeichert; „Abbrechen“ stellt die vorherige Kartenansicht wieder her.
+
+**Status:** Grundentscheidung 59 ist offen und noch nicht beschlossen.
