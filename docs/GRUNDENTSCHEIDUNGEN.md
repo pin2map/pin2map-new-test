@@ -605,11 +605,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Fehlende Kartenkacheln werden weiterhin angemessen erklärt; ein vermeintlicher Online-Zustand garantiert keine verfügbare Kartenverbindung.
 - Die spätere Serversynchronisation kann eigene zusätzliche Zustände erhalten, ohne die Bedeutung dieses Basisindikators rückwirkend zu verfälschen.
 
-## Offen – Grundentscheidung 53: Detailanzeige zum Verbindungsindikator
+## Grundentscheidung 53 – Antippbarer Verbindungsindikator mit Statushinweis
 
-Wie soll der kleine Verbindungsindikator in der Kopfzeile bedient werden?
+**Beschlossen (Variante A):** Der dauerhaft sichtbare Verbindungsindikator in der Kopfzeile ist **antippbar**. Ein Antippen öffnet einen kleinen Hinweis mit dem aktuell vom Browser gemeldeten Online-/Offline-Zustand und seiner Bedeutung.
 
-- **Variante A (Empfehlung):** Der Indikator ist **antippbar**. Ein Antippen öffnet einen kleinen Hinweis mit dem aktuellen Verbindungszustand und seiner Bedeutung; erneutes Antippen oder Antippen außerhalb schließt den Hinweis. Dies löst keinen Verbindungsversuch aus und beeinflusst weder Daten noch Synchronisation.
-- **Variante B:** Der Indikator ist **rein informativ und nicht antippbar**. Seine Bedeutung wird nur über einen allgemein zugänglichen Hilfetext erläutert.
+**Konsequenzen:**
+- Ein erneutes Antippen desselben Symbols **oder Antippen außerhalb** des Hinweises schließt ihn wieder.
+- Der Hinweis erläutert, dass der angezeigte Online-Zustand keine tatsächliche Erreichbarkeit eines Servers und keinen erfolgreichen Synchronisationsvorgang garantiert (Grundentscheidung 52).
+- Das Öffnen oder Schließen des Hinweises löst weder einen Verbindungsversuch noch eine Anmeldung, Datenspeicherung oder Synchronisation aus.
+- Das Symbol bleibt dauerhaft sichtbar; der aufklappbare Hinweis ist nur bei Bedarf eingeblendet.
+- Ändert sich der browserseitig gemeldete Netzwerkzustand, müssen Indikator und ein gegebenenfalls geöffneter Hinweis den aktualisierten Zustand anzeigen.
+- Die Bedienung muss mit Maus und Touch funktionieren sowie barrierearm zugänglich sein.
 
-**Status:** Grundentscheidung 53 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 54: Auswahl verschiedener Kartenhintergründe in der Basisversion
+
+Soll die erste stabile lokale Basisversion bereits einen Wechsel zwischen mehreren Kartenhintergründen unterstützen?
+
+- **Variante A (Empfehlung):** Die Basisversion erhält **eine einfache Kartenhintergrund-Auswahl** mit mindestens zwei geeigneten Kartenansichten. Der Benutzer kann wechseln, ohne Pins, Ebenen oder aktuellen Kartenausschnitt zu verlieren. Die Auswahl des Kartenanbieters und die technische Umsetzung werden gesondert festgelegt.
+- **Variante B:** Die Basisversion beginnt mit **einem einzigen festen Kartenhintergrund**. Eine Auswahl weiterer Kartentypen wird erst nach Stabilisierung der Pin- und Ebenenfunktionen ergänzt.
+
+**Status:** Grundentscheidung 54 ist offen und noch nicht beschlossen.
