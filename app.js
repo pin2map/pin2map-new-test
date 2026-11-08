@@ -17,6 +17,7 @@
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
+  let movePreview = null, moveMarker = null, moveLine = null;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -87,7 +88,7 @@
       let marker=markers.get(pin.id);
       if(!marker){
         marker=L.marker([pin.lat,pin.lng],{draggable:false,autoPan:false}).addTo(map);
-        marker.on("click",e=>{if(e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);selectPin(pin.id);});
+        marker.on("click",e=>{if(e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);if(Date.now()<suppressMapClickUntil||moveMode)return;selectPin(pin.id);});
         markers.set(pin.id,marker);
       }
       marker.setLatLng([pin.lat,pin.lng]);
@@ -156,6 +157,45 @@
     ["pointerup","pointercancel","pointerleave"].forEach(eventName=>
       element.addEventListener(eventName,cancel));
   }
+  function removeMovePreview(){
+    if(moveMarker){map.removeLayer(moveMarker);moveMarker=null;}
+    if(moveLine){map.removeLayer(moveLine);moveLine=null;}
+    movePreview=null;
+    $("confirmMove").disabled=true;
+  }
+  function previewMove(position){
+    const pin=selectedPin();if(!moveMode||!pin)return;
+    movePreview=L.latLng(position);
+    const old=[pin.lat,pin.lng];
+    if(!moveMarker){
+      moveMarker=L.marker(movePreview,{draggable:true,autoPan:false,zIndexOffset:1000}).addTo(map);
+      moveMarker.bindTooltip("Neue Position",{direction:"right",permanent:true});
+      moveMarker.on("drag",e=>previewMove(e.target.getLatLng()));
+      moveMarker.on("dragend",e=>previewMove(e.target.getLatLng()));
+    }else moveMarker.setLatLng(movePreview);
+    if(!moveLine)moveLine=L.polyline([old,movePreview],{color:"#d65a31",weight:3,dashArray:"7 5",interactive:false}).addTo(map);
+    else moveLine.setLatLngs([old,movePreview]);
+    $("confirmMove").disabled=false;
+    $("moveText").textContent="Alte und neue Position prüfen, danach übernehmen.";
+  }
+  function endMove(){
+    moveMode=false;removeMovePreview();
+    $("moveBar").classList.add("hidden");
+    updateModeUI();renderPinPanel();
+  }
+  function beginMove(){
+    if(!selectedPin())return;
+    moveMode=true;removeMovePreview();
+    $("pinPanel").classList.add("hidden");
+    $("moveBar").classList.remove("hidden");
+    $("moveText").textContent="Neue Stelle antippen. Die Vorschau lässt sich ziehen.";
+    updateModeUI();
+  }
+  function confirmMove(){
+    const pin=selectedPin();if(!pin||!movePreview)return;
+    pin.lat=movePreview.lat;pin.lng=movePreview.lng;
+    endMove();save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");
+  }
   function renderLayers() {
     const list = $("layersList");
     list.replaceChildren();
@@ -193,6 +233,7 @@
   function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
   function updatePanelLayout(){
     const panel=$("pinPanel"),pin=selectedPin();
+    if(moveMode)return;
     document.body.classList.toggle("pin-open",!!pin);
     if(!pin||!map)return;
     const p=map.latLngToContainerPoint([pin.lat,pin.lng]);
@@ -217,7 +258,7 @@
   }
   function renderPinPanel(){
     const pin=selectedPin();
-    $("pinPanel").classList.toggle("hidden",!pin);
+    $("pinPanel").classList.toggle("hidden",!pin||moveMode);
     if(!pin){document.body.classList.remove("pin-open");return;}
     if(document.activeElement!==$("pinName"))$("pinName").value=pin.name||"";
     $("pinLayer").value=pin.layerId;
@@ -255,6 +296,7 @@
     $("notice").classList.add("hidden");
     const dlg = $("deleteDialog");
     if (dlg.open) dlg.close("cancel");
+    if(moveMode)endMove();
     if (selected !== null || moveMode) {
       selected = null; moveMode = false;
       renderMarkers(); renderPinPanel(); updateModeUI();
@@ -454,10 +496,9 @@
       const p=selectedPin();if(!p)return;layerById(p.layerId).visible=true;
       save();renderLayers();renderMarkers();renderPinPanel();
     });
-    $("movePin").addEventListener("click", () => {
-      if(!selectedPin())return;moveMode=!moveMode;updateModeUI();renderPinPanel();
-      if(moveMode)showNotice("Neue Pin-Position auf der Karte antippen");
-    });
+    $("movePin").addEventListener("click",beginMove);
+    $("cancelMove").addEventListener("click",endMove);
+    $("confirmMove").addEventListener("click",confirmMove);
     $("deletePin").addEventListener("click", () => { if(selectedPin())$("deleteDialog").showModal(); });
     $("deleteDialog").addEventListener("close", () => {
       if($("deleteDialog").returnValue!=="confirm")return;
@@ -469,10 +510,7 @@
     });
     map.on("click", e => {
       if (Date.now() < suppressMapClickUntil) return;
-      if (moveMode && selectedPin()) {
-        const p = selectedPin(); p.lat = e.latlng.lat; p.lng = e.latlng.lng;
-        save(); closeMapOverlays(); showNotice("Pin verschoben"); return;
-      }
+      if (moveMode && selectedPin()) {previewMove(e.latlng);return;}
       closeMapOverlays();
     });
 
