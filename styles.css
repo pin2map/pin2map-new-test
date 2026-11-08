@@ -165,3 +165,23 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 }
 /* In the map region, suppress iOS selection callouts only; controls retain native behavior. */
 #map .leaflet-tile-pane,#map .leaflet-map-pane{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none }
+
+
+/* Layer deletion: fifth column; no delete action for the protected private layer. */
+.layer-row{grid-template-columns:25px 20px minmax(0,1fr) auto 30px}
+.layer-row .layer-delete{width:28px;height:28px;display:grid;place-items:center;
+  border-radius:8px;background:#f9eaea;color:#a92332;padding:0;font-size:16px}
+#clearPrivate:disabled{opacity:.45;cursor:default}
+.move-bar{
+  position:absolute;z-index:1400;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);width:min(550px,calc(100% - 20px));
+  padding:10px;background:#fff;border:1px solid #ccd8e4;border-radius:13px;
+  box-shadow:0 4px 18px #142b4644;display:flex;gap:8px;align-items:center;flex-wrap:wrap
+}
+.move-bar span{flex:1 1 100%;font-size:13px;color:#283a50}
+.move-bar button{flex:1 1 auto;font-size:13px}
+@media(max-width:630px){
+  .layer-row{grid-template-columns:23px 15px minmax(0,1fr) auto 28px;gap:5px}
+  .layer-row button{font-size:11px;padding:5px}
+  .move-bar button{min-height:38px}
+}
