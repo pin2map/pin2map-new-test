@@ -1648,11 +1648,26 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Cache darf die geltenden Nutzungsbedingungen des gewählten Dienstes nicht verletzen. Er ersetzt **keine anwendungsweite Durchsetzung des Nominatim-Anfragelimits** (Grundentscheidungen 138 und 139).
 - **Die weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-## Offen – Grundentscheidung 142: Beginn der Umsetzung der ersten lauffähigen Basisversion
+## Grundentscheidung 142 – Implementierung der ersten lauffähigen Basisversion jetzt beginnen
 
-Die wesentlichen Grundlagen für Karte, Ebenen, Pins, lokale Speicherung und die verbindliche weltweite Ortsnamensuche sind nun beschlossen. Wie soll die nächste Projektphase aussehen?
+**Beschlossen (Variante A):** Die Planungsphase der Grundentscheidungen wird zugunsten der **unmittelbaren Implementierung einer tatsächlich lauffähigen und testbaren PWA** im bestehenden GitHub-Repository `pin2map/pin2map-new-test` beendet. Weitere technische Einzelheiten werden während der Umsetzung pragmatisch entschieden, getestet und bei Bedarf dokumentiert, ohne die bereits verbindlichen Grundentscheidungen aufzuweichen.
 
-- **Variante A (Empfehlung):** **Jetzt die erste tatsächlich lauffähige PWA im bestehenden GitHub-Repository umsetzen.** Der erste durchgehende Teststand umfasst Kartenansicht, eine einfache Ebenenverwaltung, Pins mit genau einer Ebene, lokale Speicherung und eine von Beginn an nutzbare weltweite Ortsnamensuche über den Geocoding-Adapter. Noch offene technische Detailfragen werden bei der Implementierung pragmatisch entschieden und dokumentiert; der öffentliche Nominatim-Dienst wird nur unter den beschlossenen Test- und Nutzungsbedingungen angesprochen.
-- **Variante B:** **Vor der Umsetzung weitere Detailentscheidungen einzeln festlegen.** Die Implementierung der PWA beginnt erst, wenn zusätzliche technische und gestalterische Einzelfragen in eigenen Grundentscheidungen geklärt wurden.
+**Verbindlicher Mindestumfang der ersten Basisversion:**
+1. Interaktive Karte und die beschlossenen grundlegenden Kartenbedienelemente.
+2. Einfache Ebenenverwaltung einschließlich der Systemebene **„Privat“**.
+3. Pins mit stabiler Kennung und WGS84-Koordinaten, wobei **jeder Pin genau einer Ebene** angehört; Anlegen, Auswählen, Bearbeiten, Verschieben und Löschen gemäß den bereits getroffenen Entscheidungen.
+4. Offline-orientierte **lokale Speicherung in IndexedDB** einschließlich der relevanten Karten-/Ebenen-/Pin-Zustände.
+5. **Weltweite geografische Ortsnamensuche als Pflichtbestandteil der ersten Basisversion**, mit stets sichtbarem Suchfeld, bewusst ausgelösten Suchen, Trefferliste bei Mehrdeutigkeit, direkter Pin-Erstellung bei genau einem geeigneten Treffer, Speicherung jedes Such-Pins in „Privat“, Fehler- und Leertreffermeldungen sowie lokalem 24-Stunden-Suchergebnis-Cache.
+6. Geocoding über den zentralen Adapter; zunächst ausgewählt ist die öffentliche OpenStreetMap-Nominatim-API. **Real zugeschaltete API-Anfragen setzen den nachgewiesenen richtlinienkonformen kontrollierten Testbetrieb voraus** (Grundentscheidungen 138–141). Bei fehlender Zulässigkeit wird die externe Anfrage nicht regelwidrig ausgeführt; die Ortsnamensuche als Funktion der Basisversion darf deshalb nicht dauerhaft entfallen.
+7. Bereitstellung eines direkt im Browser testbaren Entwicklungsstands über das bestehende GitHub-basierte Testverfahren; Tests der Kernabläufe.
 
-**Status:** Grundentscheidung 142 ist offen und noch nicht beschlossen.
+**Ab jetzt geplanter konkreter Umsetzungsablauf:**
+- **Schritt 1 – Projektbestand prüfen:** vorhandene Dateien, Build-/Test-/Deployment-Prozess, Dokumentation und bereits implementierte Funktionen des aktuellen Repositorys feststellen; nichts funktionierendes ungeprüft ersetzen.
+- **Schritt 2 – Ausführbares PWA-Grundgerüst:** App-Start, Karte, Basiskarten-Auswahl und eine einfache lauffähige Testbereitstellung herstellen oder ergänzen.
+- **Schritt 3 – Datenmodell und lokale Persistenz:** Ebenen („Privat“ und „Ebene 1“), ein Pin pro Ebene, IndexedDB und Wiederherstellung nach Neuladen.
+- **Schritt 4 – Pin-Kernfunktionen:** Anlegen, Auswählen, Bearbeiten, Bewegen, Ebene wechseln und Löschen einschließlich der bereits beschlossenen Dialoge und Zustandsregeln.
+- **Schritt 5 – Ortsnamensuche:** Von Beginn an als Muss-Funktion des ersten zusammenhängenden testbaren Basisstands umsetzen; über Geocoding-Adapter inklusive Suchfeld, Trefferbehandlung, Pin-Erstellung in „Privat“, 24-Stunden-Cache, Fehlermeldungen und richtlinienkonformer Dienstanbindung.
+- **Schritt 6 – Integrationstest und Bereitstellung:** end-to-end prüfen, dass Karte, Ebenen, Pins, Speicherung und weltweite Suche zusammen funktionieren; Entwicklungsstand dokumentieren und über Test-URL zugänglich machen. Eine nicht funktionierende Ortssuche ist **kein abgeschlossener Basisstand**.
+- **Schritt 7 – Iteration:** erst anhand des lauffähigen Teststands fehlende Details und spätere Server-/Synchronisationsausbaustufen festlegen.
+
+**Status:** Grundentscheidung 142 ist beschlossen. Die nächste Phase ist **Implementierung und Testen**, nicht eine weitere Folge abstrakter Grundentscheidungen. Einzelne unvermeidbare Implementierungsfragen werden zielgerichtet während der Arbeit behandelt.
