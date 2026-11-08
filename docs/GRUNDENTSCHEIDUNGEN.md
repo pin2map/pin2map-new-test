@@ -1671,3 +1671,14 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - **Schritt 7 – Iteration:** erst anhand des lauffähigen Teststands fehlende Details und spätere Server-/Synchronisationsausbaustufen festlegen.
 
 **Status:** Grundentscheidung 142 ist beschlossen. Die nächste Phase ist **Implementierung und Testen**, nicht eine weitere Folge abstrakter Grundentscheidungen. Einzelne unvermeidbare Implementierungsfragen werden zielgerichtet während der Arbeit behandelt.
+
+## Umsetzungspräzisierung nach Grundentscheidung 142 – Mobile Kartenbedienung und Pin-Anlage
+
+**Verbindliche Aktualisierung auf ausdrücklichen Wunsch des Auftraggebers (2026-11-08):**
+
+1. **Eine einzige kompakte Kopfzeile auf dem iPhone.** Das Logo entfällt; die Ortssuche mit Suchschaltfläche sowie die Ebenen- und Einstellungen-Schaltflächen passen auf eine Zeile. Die frühere zweizeilige Gestaltung ist verworfen. Die weltweite Ortsnamensuche bleibt dauerhaft erreichbar und gehört weiter zur Basisversion.
+2. **Antippen einer freien Kartenfläche schließt alle offenen nichtmodalen Bedienfelder**, insbesondere Pin-Bearbeitung, Ebenenverwaltung, Einstellungen und die Trefferliste der Ortssuche; eine aktive Pin-Auswahl wird aufgehoben. Eine ausdrücklich laufende Pin-Verschiebung bleibt als Sonderhandlung auf einen Kartentipp ausführbar. Der Löschbestätigungsdialog wird nicht versehentlich durch die Karte bestätigt.
+3. **Drei runde Zoom-Schaltflächen** bilden eine zusammenhängende Gruppe: Vergrößern (+), Verkleinern (−) und automatische Ansicht aller **sichtbaren** Pins (◎). Die bisher separat angeordnete „Alle Pins“-Schaltfläche entfällt; ausgeblendete Ebenen werden nicht automatisch eingeblendet.
+4. **Neuer Pin durch langes Drücken auf eine freie Kartenposition** (derzeit ca. 650 ms). Der Pin wird exakt aus der gedrückten Kartenposition ermittelt und der aktiven Ebene zugeordnet. Ein kurzer Kartentipp erzeugt **keinen Pin**; Kartenverschiebung und Mehrfingergesten dürfen keine Pins erzeugen. Die „+ Pin“-Schaltfläche und der separate Pin-hinzufügen-Modus entfallen. Dies **ersetzt ausdrücklich die Bedienregel aus Grundentscheidungen 25 und 26** sowie den Aktivierungsschritt aus Grundentscheidung 27; sofortige lokale Speicherung, eindeutige Ebenenzuordnung, automatische Auswahl und Bearbeitung gemäß Grundentscheidungen 1, 7 und 27–29 bleiben erhalten.
+5. Die bereits ergänzte automatische Kartenanpassung auf alle sichtbaren Pins nach manueller Pin-Erstellung bleibt vorerst aktiv. Der Rundbutton (◎) ermöglicht dieselbe Funktion jederzeit bewusst.
+6. Die unmittelbar vorher getroffenen Grundentscheidungen bleiben ansonsten bestehen. **Die weltweite Ortsnamensuche einschließlich der Speicherung von Such-Pins in „Privat“ bleibt Bestandteil der Basisversion.**
