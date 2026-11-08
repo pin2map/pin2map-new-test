@@ -15,7 +15,7 @@
   });
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
-  let longPressTimer = null, longPressStart = null, suppressMapClick = false, activePointers = new Set();
+  let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -219,7 +219,7 @@
         if (!longPressStart || activePointers.size !== 1) return;
         const start = longPressStart;
         cancelLongPress();
-        suppressMapClick = true;
+        suppressMapClickUntil = Date.now() + 850;
         const rect = container.getBoundingClientRect();
         const point = L.point(start.x - rect.left, start.y - rect.top);
         const where = map.containerPointToLatLng(point);
@@ -389,14 +389,14 @@
       if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
     });
     map.on("click", e => {
-      if (suppressMapClick) { suppressMapClick = false; return; }
+      if (Date.now() < suppressMapClickUntil) return;
       if (moveMode && selectedPin()) {
         const p = selectedPin(); p.lat = e.latlng.lat; p.lng = e.latlng.lng;
         save(); closeMapOverlays(); showNotice("Pin verschoben"); return;
       }
       closeMapOverlays();
     });
-    map.on("contextmenu", () => { suppressMapClick = true; });
+
     attachLongPress();
     map.on("moveend", persistViewport);
     window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout(); });
