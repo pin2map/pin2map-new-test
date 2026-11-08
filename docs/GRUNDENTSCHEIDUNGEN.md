@@ -41,13 +41,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Schemaänderungen werden über versionierte Datenbankmigrationen gehandhabt.
 - Die lokale Persistenz wird praktisch getestet (Änderungen, erneutes Laden, App-Neustart). IndexedDB allein garantiert keinen Schutz vor Löschung der Browserdaten; Backup/Export werden separat entschieden.
 
-## Offen – Grundentscheidung 5: Startumfang der Pin-Funktionen
+## Grundentscheidung 5 – Funktionsumfang der Pins
 
-Die Basisversion benötigt eine bewusst schlanke Pin-Bearbeitung.
+**Beschlossen (Variante A):** Bereits die erste stabile lokale Basisversion unterstützt den vollständigen grundlegenden Pin-Lebenszyklus: **anlegen, anzeigen, bearbeiten, auf der Karte verschieben und löschen**.
 
-- **Variante A:** Pins anlegen, auf der Karte anzeigen, bearbeiten, verschieben und löschen – jeweils mit Zuordnung zu genau einer Ebene.
-- **Variante B:** Zunächst nur Pins anlegen, anzeigen und löschen; Bearbeiten und Verschieben folgen später.
+**Konsequenzen:**
+- Jede der fünf Aktionen wird über die Fachlogik und den gekapselten Datenzugriff in IndexedDB gespeichert.
+- Jeder Pin gehört weiterhin **genau einer Ebene** an; die private Ebene steht von Anfang an zur Verfügung.
+- Ein verschobener Pin behält seine Identität; nur seine Koordinaten werden aktualisiert.
+- Die Funktionen müssen auch nach Neuladen der PWA und Neustart erhalten bleiben.
+- Zusätzliche Pin-Attribute, erweiterte Bearbeitungsfunktionen und Synchronisationsdetails werden gesondert festgelegt.
 
-**Empfehlung:** Variante A. Damit lässt sich bereits in der lokalen Basisversion der vollständige grundlegende Lebenszyklus eines Pins und dessen Speicherung zuverlässig prüfen. Weitere Attribute und Komfortfunktionen bleiben späteren Entscheidungen vorbehalten.
+## Offen – Grundentscheidung 6: Mindestangaben für einen Pin
 
-**Status:** Grundentscheidung 5 ist offen und noch nicht beschlossen.
+Welche Angaben soll ein Pin in der lokalen Basisversion benötigen?
+
+- **Variante A (empfohlen):** Standort und genau eine Ebene sind Pflicht. Eine Bezeichnung ist optional. Ein Pin kann daher sofort durch Antippen der Karte erstellt und später benannt werden.
+- **Variante B:** Standort, genau eine Ebene **und eine Bezeichnung** sind Pflicht. Jeder neue Pin muss vor dem Speichern benannt werden.
+
+Beide Varianten sehen eine stabile interne Pin-ID vor; weitere Felder werden später festgelegt. **Grundentscheidung 6 ist noch nicht beschlossen.**
