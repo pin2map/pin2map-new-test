@@ -783,11 +783,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Systemebene „Privat“ behält ihre festgelegte, nicht veränderbare Farbe. Eine Übereinstimmung der Farbe mit einer regulären Ebene verändert ihren Sonderstatus nicht.
 - Die automatische Farbvergabe für neu angelegte reguläre Ebenen wird gesondert bestimmt.
 
-## Offen – Grundentscheidung 69: Automatische Farbvergabe für neue Ebenen
+## Grundentscheidung 69 – Automatische Ebenenfarben in fester Reihenfolge vergeben
 
-Wie soll pin2map die anfängliche Pin-Farbe einer neu angelegten regulären Ebene festlegen?
+**Beschlossen (Variante A):** Neu angelegte reguläre Ebenen erhalten ihre anfängliche Pin-Farbe **in einer festen, nachvollziehbaren Reihenfolge aus einer definierten Farbpalette**. Ist das Ende der Palette erreicht, beginnt die Vergabe wieder mit deren erster Farbe.
 
-- **Variante A (Empfehlung):** Farben werden aus einer **festgelegten Palette in einer nachvollziehbaren Reihenfolge** automatisch vergeben. Nach Ausschöpfen der Palette beginnt die Folge erneut; die Mehrfachverwendung bleibt erlaubt. Der Benutzer kann die Farbe anschließend jederzeit ändern.
-- **Variante B:** Bei jeder neu angelegten regulären Ebene wird eine Farbe **zufällig aus der Palette** gewählt. Der Benutzer kann sie anschließend ändern, aber unmittelbar aufeinanderfolgende Ebenen könnten dieselbe Farbe erhalten.
+**Konsequenzen:**
+- Nacheinander angelegte reguläre Ebenen erhalten unterschiedliche Startfarben, solange die Palette ausreichend viele Farben enthält.
+- Die Farbvergabe erfolgt nicht zufällig; sie ist reproduzierbar und testbar.
+- Eine erneute Verwendung von Farben ist ausdrücklich zulässig (Grundentscheidung 68).
+- Benutzer können die anfänglich vergebene Farbe regulärer Ebenen anschließend über die Ebenenverwaltung ändern (Grundentscheidung 67).
+- Die Farbe wird als Eigenschaft der Ebene lokal gespeichert und in das versionierte Sicherungsformat aufgenommen (Grundentscheidungen 38–49 und 66).
+- Die feste Systemebene „Privat“ erhält ihre eigene festgelegte Farbe und wird nicht durch diese automatische Vergabefolge umgefärbt.
+- Die genaue Farbpalette sowie ein konsistenter Vergabezähler bzw. eine Ableitung aus der Anlegereihenfolge werden bei der Umsetzung definiert, sodass ein Neustart nicht zu unvorhersehbaren Farben führt.
 
-**Status:** Grundentscheidung 69 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 70: Farbpalette für reguläre Ebenen
+
+Wie soll die Auswahlpalette für die Pin-Farben regulärer Ebenen in der ersten Basisversion aussehen?
+
+- **Variante A (Empfehlung):** Eine **kleine, fest definierte Palette gut unterscheidbarer Farben** (beispielsweise acht bis zwölf) ist sowohl für die automatische Farbvergabe als auch für die manuelle Auswahl verbindlich. Die Palette bleibt in der Basisversion konstant, damit Darstellung, Tests und gespeicherte Farben nachvollziehbar bleiben.
+- **Variante B:** Die Farbpalette enthält zusätzlich eine **freie Farbauswahl** (beliebiger Farbwert über einen Farbwähler). Das bietet maximale Gestaltungsfreiheit, erhöht aber Anforderungen an Kontrast, Bedienung und einheitliche Darstellung.
+
+**Status:** Grundentscheidung 70 ist offen und noch nicht beschlossen.
