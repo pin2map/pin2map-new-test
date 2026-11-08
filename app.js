@@ -362,8 +362,15 @@
       if (serial === searchSerial) { btn.disabled = false; searchAbort = null; }
     }
   }
+  function updateLabelButton(){
+    const btn=$("labelsToggle");
+    btn.setAttribute("aria-pressed",String(state.labelsVisible));
+    btn.title=state.labelsVisible?"Pin-Beschriftungen ausblenden":"Pin-Beschriftungen einblenden";
+    btn.classList.toggle("is-off",!state.labelsVisible);
+  }
   function bind() {
     $("searchForm").addEventListener("submit", runSearch);
+    $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => $(b.dataset.close).classList.add("hidden")));
@@ -444,7 +451,7 @@
       return holder;
     };
     zoomButtons.addTo(map);
-    setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();
+    setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && location.protocol==="https:")navigator.serviceWorker.register("./sw.js").catch(()=>{});
   }
   document.addEventListener("DOMContentLoaded",init);
