@@ -1092,11 +1092,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Button „Pin zeigen“ erscheint weiterhin nur, wenn der ausgewählte Pin nicht sichtbar ist, und verschwindet nach erfolgreicher Rückführung (Grundentscheidung 94).
 - Manuelle Kartenbewegungen sowie die bestehende Pin-Auswahl bleiben von dieser Darstellungsentscheidung unberührt.
 
-## Offen – Grundentscheidung 96: Anzeige der Pin-Koordinaten im Bearbeitungsfeld
+## Grundentscheidung 96 – Pin-Koordinaten im unteren Bedienfeld anzeigen
 
-Sollen die geographischen Koordinaten eines ausgewählten Pins in der ersten Basisversion direkt im unteren Pin-Bedienfeld angezeigt werden?
+**Beschlossen (Variante A):** In der ersten Basisversion werden **Breiten- und Längengrad des ausgewählten Pins als Zahlenwerte im unteren Pin-Detail-/Bearbeitungsfeld angezeigt**. Die Koordinaten sind dort **nicht direkt editierbar**; zur Änderung des Standorts dient ausschließlich der explizite Pin-Verschiebemodus (Grundentscheidungen 30–35).
 
-- **Variante A (Empfehlung):** **Ja.** Breiten- und Längengrad werden im Bedienfeld als **nicht direkt editierbare Information** angezeigt. Zum Ändern des Standortes dient ausschließlich der bereits beschlossene explizite Verschiebemodus (Grundentscheidungen 30–35).
-- **Variante B:** **Nein.** Das untere Bedienfeld zeigt keine Zahlenkoordinaten. Der Standort ist ausschließlich über die Position des Pins auf der Karte sichtbar; Änderungen erfolgen über den Verschiebemodus.
+**Konsequenzen:**
+- Breiten- und Längengrad werden eindeutig beschriftet und aus den aktuell gespeicherten Pin-Koordinaten abgeleitet.
+- Eine bestätigte Pin-Verschiebung aktualisiert die angezeigten Werte; eine abgebrochene Verschiebung verändert die gespeicherten Werte nicht.
+- Die Anzeige dient der Information und erlaubt keine versehentliche Änderung durch Texteingabe.
+- Die zusätzlichen Angaben werden im nach oben mitwachsenden unteren Bedienfeld untergebracht (Grundentscheidungen 89 und 90).
+- Das genaue Zahlenformat wird in Grundentscheidung 97 festgelegt.
 
-**Status:** Grundentscheidung 96 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 97: Zahlenformat der Pin-Koordinaten
+
+In welchem Format sollen die im Pin-Bedienfeld angezeigten geografischen Koordinaten dargestellt werden?
+
+- **Variante A (Empfehlung):** Als **Dezimalgrad (WGS 84)** mit beispielsweise sechs Nachkommastellen und eindeutiger Kennzeichnung von Breiten- und Längengrad (z. B. 48,775846° und 9,182932°). Das Format ist kompakt, gängig bei digitalen Karten und eignet sich zur Überprüfung.
+- **Variante B:** Als **Grad, Minuten und Sekunden (GMS)** mit Himmelsrichtung (z. B. 48° 46′ 33,05″ N und 9° 10′ 58,56″ E). Dieses traditionelle Format ist gut lesbar, aber länger und auf kleinen Bildschirmen platzintensiver.
+
+**Status:** Grundentscheidung 97 ist offen und noch nicht beschlossen.
