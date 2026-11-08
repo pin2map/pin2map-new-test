@@ -953,11 +953,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Bei Pins mit Namen bleibt zusätzlich die seitliche hervorgehobene Beschriftung gemäß Grundentscheidungen 76–79 bestehen.
 - Die konkrete Form, Stärke und Farbe der Kontur/des Rings werden bei der visuellen Umsetzung mit Blick auf beide Kartenhintergründe und unterschiedliche Ebenenfarben festgelegt.
 
-## Offen – Grundentscheidung 84: Auswahl eines Pins durch Antippen einer freien Kartenfläche beenden
+## Grundentscheidung 84 – Pin-Auswahl durch Antippen einer freien Kartenfläche aufheben
 
-Was soll geschehen, wenn ein Pin ausgewählt ist und der Benutzer **auf eine freie Stelle der Karte** tippt oder klickt (ohne aktiven „Pin hinzufügen“- oder Verschiebemodus)?
+**Beschlossen (Variante A):** Ist ein Pin ausgewählt und kein spezieller Kartenmodus aktiv, **hebt ein Antippen oder Anklicken einer freien Kartenfläche die Auswahl unmittelbar auf**. Die Pin-Detail-/Bearbeitungsansicht wird geschlossen, und Auswahlring bzw. hervorgehobene Pin-Beschriftung verschwinden.
 
-- **Variante A (Empfehlung):** Ein Antippen der freien Kartenfläche **hebt die Pin-Auswahl auf und schließt die Pin-Ansicht**. Die Kontur bzw. der Auswahlring und die hervorgehobene Beschriftung verschwinden. Die Karte bleibt am selben Ausschnitt.
-- **Variante B:** Ein Antippen der freien Kartenfläche **ändert die Pin-Auswahl nicht**. Die Auswahl bleibt bestehen, bis der Benutzer sie ausdrücklich über die Pin-Ansicht schließt oder einen anderen Pin auswählt.
+**Konsequenzen:**
+- Der Kartenausschnitt und die Zoomstufe bleiben beim Abwählen unverändert.
+- Die Aktion ändert keine Pin-Daten; zuvor automatisch gespeicherte Bearbeitungen bleiben erhalten (Grundentscheidung 29).
+- „Freie Kartenfläche“ bedeutet, dass weder das Pin-Symbol noch ein anderes bedienbares Steuerelement getroffen wurde; sichtbare Pin-Beschriftungen selbst sind keine Auswahlziele (Grundentscheidung 80).
+- In den ausdrücklich aktivierten Modi „Pin hinzufügen“ und „Pin verschieben“ gelten weiterhin deren besonderen Antipp-, Bestätigungs- und Abbruchregeln (Grundentscheidungen 25–27 und 30–35); ein Kartentipp darf dort nicht versehentlich die laufende Aktion durch bloßes Abwählen ersetzen.
+- Beim Wechsel zu einem anderen Pin wird stattdessen dieser andere Pin ausgewählt.
 
-**Status:** Grundentscheidung 84 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 85: Auswahl beim Verschieben der Karte
+
+Was geschieht mit einem ausgewählten Pin und seiner geöffneten Pin-Ansicht, wenn der Benutzer **die Karte mit dem Finger oder der Maus verschiebt (Pan)**, ohne auf eine freie Kartenfläche zu tippen?
+
+- **Variante A (Empfehlung):** Die **Pin-Auswahl bleibt beim Verschieben der Karte bestehen**. Ring, hervorgehobene Beschriftung und Pin-Ansicht bleiben erhalten, solange der Pin nicht ausdrücklich abgewählt oder ein anderer ausgewählt wird. Dadurch kann man den Kartenausschnitt um den ausgewählten Pin herum erkunden.
+- **Variante B:** **Jede Kartenverschiebung hebt die aktuelle Pin-Auswahl auf** und schließt die Pin-Ansicht. Das hält die Karte beim Navigieren frei, kann aber unbeabsichtigtes Abwählen verursachen.
+
+**Status:** Grundentscheidung 85 ist offen und noch nicht beschlossen.
