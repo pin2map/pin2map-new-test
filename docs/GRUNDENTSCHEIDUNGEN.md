@@ -772,11 +772,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Farben regulärer Ebenen werden beim Anlegen zunächst automatisch zugewiesen; eine abweichende Farbe kann anschließend bewusst über die Ebenenverwaltung gewählt werden.
 - Welche Palette verwendet wird und ob identische Farben für mehrere Ebenen zugelassen werden, wird gesondert festgelegt.
 
-## Offen – Grundentscheidung 68: Gleiche Pin-Farbe für mehrere Ebenen
+## Grundentscheidung 68 – Gleiche Pin-Farben für mehrere Ebenen zulassen
 
-Soll es erlaubt sein, dass zwei oder mehr reguläre Ebenen **dieselbe** Pin-Farbe verwenden?
+**Beschlossen (Variante A):** **Mehrere reguläre Ebenen dürfen dieselbe Pin-Farbe verwenden.** Die Farbe ist ein visuelles Organisationsmerkmal und kein eindeutiger Identifikator einer Ebene.
 
-- **Variante A (Empfehlung):** **Ja.** Farben können mehrfach verwendet werden. Die Farbpalette dient zur visuellen Organisation, ist aber kein eindeutiger Identifikator; Ebenen werden weiterhin durch ihre IDs und Namen unterschieden. Dadurch bleibt die Farbauswahl auch bei vielen Ebenen unkompliziert.
-- **Variante B:** **Nein.** Jede Ebene muss eine andere Farbe erhalten. Bereits vergebene Farben sind in der Palette gesperrt oder werden nicht angeboten. Die Zahl gleichzeitig möglicher Ebenenfarben wäre dadurch von der Größe der Palette abhängig.
+**Konsequenzen:**
+- Bereits von anderen Ebenen verwendete Farben bleiben in der Farbpalette auswählbar; keine Farbe wird wegen ihrer Verwendung gesperrt.
+- Ebenen werden durch ihre stabilen internen IDs und ihre eindeutigen Namen unterschieden, nicht durch die Farbe (Grundentscheidungen 12 und 13).
+- Beim Ändern der Farbe einer Ebene ändert sich die Darstellung ihrer Pins; andere Ebenen mit derselben Farbe bleiben unverändert (Grundentscheidungen 66 und 67).
+- Die Systemebene „Privat“ behält ihre festgelegte, nicht veränderbare Farbe. Eine Übereinstimmung der Farbe mit einer regulären Ebene verändert ihren Sonderstatus nicht.
+- Die automatische Farbvergabe für neu angelegte reguläre Ebenen wird gesondert bestimmt.
 
-**Status:** Grundentscheidung 68 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 69: Automatische Farbvergabe für neue Ebenen
+
+Wie soll pin2map die anfängliche Pin-Farbe einer neu angelegten regulären Ebene festlegen?
+
+- **Variante A (Empfehlung):** Farben werden aus einer **festgelegten Palette in einer nachvollziehbaren Reihenfolge** automatisch vergeben. Nach Ausschöpfen der Palette beginnt die Folge erneut; die Mehrfachverwendung bleibt erlaubt. Der Benutzer kann die Farbe anschließend jederzeit ändern.
+- **Variante B:** Bei jeder neu angelegten regulären Ebene wird eine Farbe **zufällig aus der Palette** gewählt. Der Benutzer kann sie anschließend ändern, aber unmittelbar aufeinanderfolgende Ebenen könnten dieselbe Farbe erhalten.
+
+**Status:** Grundentscheidung 69 ist offen und noch nicht beschlossen.
