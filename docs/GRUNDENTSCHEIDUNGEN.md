@@ -1285,11 +1285,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Löschaktion folgt der bestehenden Festlegung, dass in der Basisversion kein Papierkorb bzw. keine Rückgängig-Funktion vorgesehen ist (Grundentscheidung 37).
 - Was nach einer erfolgreich bestätigten Löschung mit Pin-Auswahl und Bedienfeld geschieht, wird gesondert entschieden.
 
-## Offen – Grundentscheidung 113: Pin-Bedienfeld nach erfolgreichem Löschen
+## Grundentscheidung 113 – Pin-Bedienfeld nach erfolgreicher Löschung schließen
 
-Wie reagiert die Kartenoberfläche unmittelbar nachdem der Benutzer das Löschen des ausgewählten Pins ausdrücklich bestätigt hat und die Löschung erfolgreich lokal gespeichert wurde?
+**Beschlossen (Variante A):** Sobald der Benutzer das Löschen des ausgewählten Pins ausdrücklich bestätigt hat und die Löschung **erfolgreich lokal gespeichert** ist, wird die **Pin-Auswahl aufgehoben** und das untere **Pin-Bedienfeld automatisch geschlossen**. Der gelöschte Pin verschwindet von der Karte. **Kartenausschnitt und Zoomstufe bleiben unverändert.** Eine kurze Meldung **„Pin gelöscht“** bestätigt den erfolgreichen Vorgang.
 
-- **Variante A (Empfehlung):** Die Pin-Auswahl wird **aufgehoben** und das untere **Pin-Bedienfeld geschlossen**. Der gelöschte Pin verschwindet von der Karte; Kartenausschnitt und Zoom bleiben unverändert. Eine kurze Erfolgsmeldung bestätigt die Löschung.
-- **Variante B:** Das Pin-Bedienfeld bleibt nach erfolgreicher Löschung **geöffnet** und zeigt vorübergehend einen neutralen Hinweis „Pin gelöscht“ mit einer Schaltfläche zum Schließen. Der Pin ist nicht mehr auswählbar oder bearbeitbar.
+**Konsequenzen:**
+- Das Pin-Bedienfeld wird erst nach bestätigter, erfolgreicher Datenlöschung geschlossen, nicht bereits beim Öffnen der Sicherheitsabfrage.
+- Wird die Löschung abgebrochen oder schlägt sie fehl, bleiben Pin-Auswahl und Bedienfeld bestehen; bei Fehlern erscheint ein verständlicher Hinweis.
+- Nach erfolgreichem Löschen darf keine Aktion mehr auf den gelöschten Pin angewendet werden.
+- Die Aktion bleibt ohne Papierkorb oder Rückgängig-Funktion (Grundentscheidungen 36 und 37).
+- Es erfolgt kein automatisches Verschieben oder Zoomen der Karte.
 
-**Status:** Grundentscheidung 113 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 114: Inhalt der Löschbestätigung für einen Pin
+
+Wie ausführlich soll die Bestätigungsabfrage sein, bevor ein ausgewählter Pin endgültig gelöscht wird?
+
+- **Variante A (Empfehlung):** Die Bestätigung nennt den **Pin-Namen, falls vorhanden**, andernfalls eine neutrale Bezeichnung wie **„Unbenannter Pin“**, und weist klar darauf hin, dass der Pin **dauerhaft gelöscht** wird. Es gibt zwei eindeutige Schaltflächen: **„Abbrechen“** und **„Pin endgültig löschen“**.
+- **Variante B:** Die Bestätigung zeigt nur die allgemeine Frage **„Pin wirklich löschen?“** mit den Schaltflächen **„Abbrechen“** und **„Löschen“**, ohne den ausgewählten Pin nochmals zu benennen.
+
+**Status:** Grundentscheidung 114 ist offen und noch nicht beschlossen.
