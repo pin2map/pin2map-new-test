@@ -1721,3 +1721,15 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 6. **Die weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
 **Stand:** Die Änderungen wurden in den Quellcode im GitHub-Repository übernommen. Ihre Bedienung im tatsächlichen Browser/iPhone bleibt zu prüfen.
+
+## Fehlerkorrektur – Pin-Auswahl und Pin-Verschiebung nach Regression (2026-11-08)
+
+**Verbindliches Verhalten, ausdrücklich nach Nutzerbefund erneut bestätigt:**
+
+- **Kurzes Antippen/Anklicken eines vorhandenen Pins** öffnet zuverlässig dessen Bearbeitungsdialog; erneutes kurzes Antippen desselben Pins schließt ihn. Die Kartenfläche erhält bei einer Geste auf dem Pin kein konkurrierendes Ziehereignis.
+- **Etwa eine Sekunde langes Drücken auf einen vorhandenen Pin** aktiviert den Verschiebemodus; der Finger bzw. die Maus kann anschließend in derselben durchgehenden Geste den Vorschau-Pin zur gewünschten Stelle ziehen. Die Karte selbst darf sich dabei **nicht verschieben**.
+- Die Ereignissteuerung verhindert Karten-Dragging bereits beim Beginn der Pin-Berührung und stellt die normale Kartenbedienung nach Loslassen oder Abbruch wieder her. Der Pin muss sein Eingabeelement während der aktiven Geste behalten, damit die Bewegung nicht durch einen DOM-Austausch unterbrochen wird.
+- Beim Loslassen wird die angezeigte neue Position **nicht automatisch gespeichert**; die vorhandenen Aktionen **„Position übernehmen“** bzw. **„Abbrechen“** bleiben verbindlich (Grundentscheidungen 30–35).
+- Dies ist die Korrektur einer Regression und **keine neue Funktion**. Die weltweite Ortsnamensuche bleibt Teil der Basisversion.
+
+**Prüfstatus:** JavaScript-Syntax und die relevanten Codepfade wurden geprüft; das Verhalten auf echtem iPhone und Desktop muss weiterhin praktisch verifiziert werden.
