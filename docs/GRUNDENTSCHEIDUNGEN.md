@@ -1242,11 +1242,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der bereinigte Name wird in der Pin-Ansicht und gegebenenfalls in der Kartenbeschriftung angezeigt (Grundentscheidungen 72–79).
 - Validierung und Import müssen dieselbe fachliche Namensregel berücksichtigen; importierte Daten dürfen nicht unbemerkt semantisch verändert werden.
 
-## Offen – Grundentscheidung 109: Zeilenumbrüche im Pin-Namen
+## Grundentscheidung 109 – Pin-Namen sind einzeilig
 
-Soll das Namensfeld in der ersten Basisversion die Eingabe von Zeilenumbrüchen erlauben?
+**Beschlossen (Variante A):** Pin-Namen sind in der ersten Basisversion **stets einzeilige Texte**. **Zeilenumbrüche sind in Pin-Namen nicht zulässig**; das direkt bearbeitbare Namensfeld erlaubt keine Eingabe zusätzlicher Zeilen.
 
-- **Variante A (Empfehlung):** **Nein.** Pin-Namen sind **einzeilige Texte**. Das Eingabefeld erlaubt keine Zeilenumbrüche; vorhandene oder importierte Namen mit Zeilenumbrüchen werden bei der Datenvalidierung ausdrücklich behandelt, nicht stillschweigend verändert. Dies entspricht der einzeiligen Kartenbeschriftung (Grundentscheidungen 78 und 79).
-- **Variante B:** **Ja.** Pin-Namen dürfen **Zeilenumbrüche enthalten**, auch wenn sie auf der Karte weiterhin nur als einzeilige, gekürzte Beschriftungen dargestellt werden. Im Eingabefeld wäre eine mehrzeilige Bearbeitung nötig.
+**Konsequenzen:**
+- Die Eingabetaste erzeugt im Namensfeld keinen Zeilenumbruch.
+- Die Regel gilt für manuelle Eingaben sowie für die Validierung von importierten Daten. Unzulässige Zeilenumbrüche dürfen beim Import nicht stillschweigend verändert werden.
+- Der optionale Name darf leer bleiben; die maximale Länge beträgt 120 Zeichen, und Rand-Leerzeichen werden beim Speichern entfernt (Grundentscheidungen 107 und 108).
+- Auch die Kartenbeschriftungen bleiben wie beschlossen einzeilig und werden bei Platzmangel mit „…“ gekürzt (Grundentscheidungen 78 und 79).
+- Eine spätere ausführliche Beschreibung wäre fachlich von dem kurzen Pin-Namen getrennt.
 
-**Status:** Grundentscheidung 109 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 110: Gleiche Namen bei verschiedenen Pins
+
+Dürfen mehrere Pins innerhalb derselben Ebene **denselben Namen** besitzen?
+
+- **Variante A (Empfehlung):** **Ja.** Pin-Namen müssen nicht eindeutig sein. Mehrere Pins können in derselben Ebene dieselbe Bezeichnung tragen; unterschieden werden sie durch ihre stabilen Pin-IDs und Koordinaten.
+- **Variante B:** **Nein.** Innerhalb einer Ebene muss jeder nichtleere Pin-Name eindeutig sein. Bei einer Dopplung wird die Eingabe zurückgewiesen oder eine bewusste Umbenennung verlangt.
+
+**Status:** Grundentscheidung 110 ist offen und noch nicht beschlossen.
