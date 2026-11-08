@@ -157,9 +157,21 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Löschung, mögliche Wiederherstellung und spätere Synchronisation werden bei der Serverintegration weiter spezifiziert; hier wird noch keine Undo- oder Papierkorb-Funktion beschlossen.
 - Die fest vorgesehene private Ebene ist von dieser Entscheidung ausdrücklich ausgenommen; ihre Löschbarkeit wird separat festgelegt.
 
-## Offen – Grundentscheidung 15: Darf die private Ebene gelöscht werden?
+## Grundentscheidung 15 – Löschbarkeit der privaten Ebene
 
-- **Variante A (Empfehlung):** Die private Ebene ist eine feste Systemebene und kann nicht gelöscht werden. Ihre Pins können normal bearbeitet und einzeln gelöscht werden. Die private Ebene bleibt immer verfügbar.
-- **Variante B:** Die private Ebene kann ebenso wie reguläre Ebenen gelöscht werden (mit Bestätigung und Angabe der Zahl betroffener Pins); bei Bedarf muss sie später neu erstellt werden können.
+**Beschlossen (Variante A):** Die private Ebene ist eine **dauerhaft vorhandene, nicht löschbare Systemebene**. Sie gehört von Anfang an zur Basisversion.
 
-**Status:** Grundentscheidung 15 ist offen und noch nicht beschlossen.
+**Konsequenzen:**
+- Die private Ebene wird beim Initialisieren der lokalen Datenhaltung zuverlässig bereitgestellt; es darf nicht versehentlich eine zweite private Systemebene erzeugt werden.
+- Für die private Ebene wird keine Aktion zum Löschen angeboten. Auch die Fachlogik verhindert ihre Löschung.
+- Ihre Pins können wie andere Pins angelegt, angezeigt, bearbeitet, verschoben und einzeln gelöscht werden.
+- Die Bestätigung zum Löschen einer regulären Ebene einschließlich aller Pins (Grundentscheidung 14) gilt **nicht** für die private Ebene.
+- Der Sonderstatus wird über eine stabile interne Identität bzw. einen Systemtyp abgebildet, nicht nur über einen Namen.
+- Die Festlegung ihrer Bezeichnung und Umbenennbarkeit ist noch offen.
+
+## Offen – Grundentscheidung 16: Bezeichnung und Umbenennbarkeit der privaten Ebene
+
+- **Variante A (Empfehlung):** Die private Systemebene heißt fest **„Privat“** und kann nicht umbenannt werden. Damit bleibt sie jederzeit eindeutig erkennbar.
+- **Variante B:** Die private Systemebene hat beim ersten Start den Namen **„Privat“**, kann aber später vom Benutzer umbenannt werden. Ihr nicht löschbarer Systemstatus bleibt unabhängig vom Namen erhalten.
+
+**Status:** Grundentscheidung 16 ist offen und noch nicht beschlossen.
