@@ -1033,11 +1033,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Karte und bestehende Kartensteuerungen sollen soweit möglich bedienbar bleiben. Für Fälle, in denen die Inhalte höher als die tatsächlich verfügbare Bildschirmfläche sind, ist ein sicherer, auf kleinen Geräten nutzbarer Überlauf erforderlich; das ersetzt nicht das beschlossene grundsätzliche Mitwachsen des Feldes.
 - Das Bedienfeld aktualisiert seine Höhe passend, wenn Inhalte wechseln, z. B. beim direkten Wechsel zwischen Pins (Grundentscheidung 88).
 
-## Offen – Grundentscheidung 91: Kartenposition beim Öffnen des unteren Pin-Bedienfelds
+## Grundentscheidung 91 – Ausgewählten Pin bei geöffnetem Bedienfeld sichtbar halten
 
-Wie soll sich die Kartenansicht verhalten, wenn das von unten nach oben wachsende Bedienfeld den ausgewählten Pin verdecken würde?
+**Beschlossen (Variante A):** Wenn das von unten nach oben wachsende Pin-Detail-/Bearbeitungsfeld den ausgewählten Pin verdecken würde, **verschiebt pin2map den sichtbaren Kartenausschnitt bei Bedarf automatisch gerade so weit, dass das Pin-Symbol oberhalb des Bedienfelds sichtbar bleibt**.
 
-- **Variante A (Empfehlung):** Die Karte **verschiebt ihren sichtbaren Ausschnitt bei Bedarf automatisch gerade so weit**, dass das ausgewählte Pin-Symbol **oberhalb des Bedienfelds** sichtbar bleibt. Die Zoomstufe bleibt gleich und die gespeicherten Pin-Koordinaten ändern sich nicht.
-- **Variante B:** Die Karte **bleibt unverändert**. Das Bedienfeld darf den ausgewählten Pin überdecken; der Benutzer kann die Karte bei Bedarf selbst verschieben.
+**Konsequenzen:**
+- Die automatische Verschiebung betrifft nur den sichtbaren Kartenausschnitt, **nicht die gespeicherten Koordinaten** des Pins oder anderer Pins.
+- Die Zoomstufe wird dadurch nicht verändert.
+- Wenn der Pin ohnehin sichtbar bleibt, wird die Karte nicht unnötig verschoben.
+- Die Anpassung berücksichtigt die tatsächliche Höhe des Bedienfelds, auch wenn sich diese beim Wechsel zu einem anderen Pin ändert (Grundentscheidungen 88–90).
+- Das Bedienfeld bleibt unten verankert; der ausgewählte Pin muss in der verbleibenden Kartenfläche nach Möglichkeit gut erkennbar bleiben.
+- Die automatische Anpassung beim Öffnen oder Wechseln der Pin-Ansicht ist von der bewussten manuellen Kartenbewegung zu unterscheiden: Manuelles Verschieben der Karte darf die Auswahl weiterhin erhalten (Grundentscheidung 85).
+- Wie sich die Kartenansicht beim späteren Schließen des Bedienfelds verhält, wird gesondert festgelegt.
 
-**Status:** Grundentscheidung 91 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 92: Kartenposition beim Schließen des Pin-Bedienfelds
+
+Wenn pin2map die Karte wegen des geöffneten Pin-Bedienfelds automatisch verschoben hat: Soll der ursprüngliche Kartenausschnitt beim Schließen des Bedienfelds wiederhergestellt werden?
+
+- **Variante A (Empfehlung):** Die Karte **bleibt beim Schließen in der zuletzt angezeigten Position**. Sie springt nicht automatisch zurück. Das vermeidet unerwartete Kartenbewegungen und erhält zwischenzeitlich vorgenommene manuelle Anpassungen.
+- **Variante B:** Die Karte **kehrt beim Schließen automatisch zum Kartenausschnitt vor dem Öffnen des Bedienfelds zurück**, sofern pin2map sie für die Pin-Sichtbarkeit verschoben hatte. Dadurch entsteht eine Rückkehr zum vorherigen Blickpunkt, kann aber zwischenzeitliche Navigation überschreiben.
+
+**Status:** Grundentscheidung 92 ist offen und noch nicht beschlossen.
