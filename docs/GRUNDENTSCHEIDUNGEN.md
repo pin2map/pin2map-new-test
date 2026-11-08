@@ -1624,11 +1624,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der zentrale Geocoding-Adapter ermöglicht den späteren Wechsel des Dienstes (Grundentscheidung 130).
 - Die **weltweite Ortsnamensuche mit Pin-Erstellung in „Privat“ bleibt verbindlicher Bestandteil der ersten Basisversion** (Grundentscheidungen 115–120).
 
-## Offen – Grundentscheidung 140: Wiederholte identische Ortsnamensuchen
+## Grundentscheidung 140 – Erfolgreiche Ortsnamensuchen kurzzeitig lokal zwischenspeichern
 
-Soll pin2map im kontrollierten Testbetrieb bei einer **erneut bewusst gestarteten identischen Ortsnamensuche** ein zuvor erhaltenes gültiges Ergebnis wiederverwenden, um die öffentliche Nominatim-API weniger zu belasten?
+**Beschlossen (Variante A):** pin2map speichert **erfolgreiche Suchergebnisse der geografischen Ortsnamensuche für eine begrenzte Zeit lokal im Suchergebnis-Cache**. Wird **dieselbe Suchanfrage** anschließend erneut bewusst ausgelöst, können die bereits vorliegenden gültigen Treffer wiederverwendet werden, **ohne eine neue Anfrage** an den Geocoding-Dienst zu senden.
 
-- **Variante A (Empfehlung):** **Ja, kurzer lokaler Suchergebnis-Cache.** Für begrenzte Zeit werden erfolgreiche Suchergebnisse lokal zwischengespeichert. Eine bewusst erneut gestartete identische Suche kann diese Ergebnisse verwenden, ohne erneut den externen Dienst anzufragen. Die bestehenden Regeln für Trefferliste, eindeutigen Treffer und Pin-Erstellung gelten unverändert. Der Cache muss zeitlich begrenzt sein, darf keine fragwürdigen bzw. veralteten Suchergebnisse dauerhaft festschreiben und muss die Vorgaben des gewählten Anbieters einhalten.
-- **Variante B:** **Nein, kein Suchergebnis-Cache in der ersten Basisversion.** Jede bewusst erneut gestartete gültige Ortssuche fragt den Geocoding-Dienst erneut an. Das ist einfacher umzusetzen, erhöht aber die Anfragezahl und die Gefahr, Nutzungsgrenzen zu erreichen.
+**Konsequenzen:**
+- Die grundsätzliche **bewusste Suchauslösung** durch Suchbutton oder Eingabetaste bleibt bestehen (Grundentscheidung 121). Eine Cache-Antwort darf nicht ungefragt während der Texteingabe ausgelöst werden.
+- Die normalen Suchregeln gelten auch für zwischengespeicherte Ergebnisse: genau ein geeigneter Treffer kann unmittelbar einen Pin erstellen, mehrere plausible Treffer erfordern eine bewusste Auswahl (Grundentscheidung 116).
+- Der Cache ist **zeitlich begrenzt**. Veraltete oder ungültige Einträge dürfen nicht dauerhaft verwendet werden; Ablaufdauer und Speichergrenze müssen im Zuge der Umsetzung festgelegt und getestet werden.
+- Die Speicherung ist lokal und erhöht nicht die Zahl der Anfragen an die öffentliche Nominatim-API. Die aktuellen Nutzungs- und Lizenzbedingungen des konkreten Dienstes sind weiterhin einzuhalten.
+- Der Cache ersetzt keine anwendungsweit verlässliche Begrenzung der API-Anfragerate. Der öffentliche Nominatim-Dienst bleibt ausschließlich für den bereits beschlossenen richtlinienkonformen kontrollierten Testbetrieb vorgesehen (Grundentscheidungen 138 und 139).
+- Die **weltweite Ortsnamensuche mit Speicherung neu angelegter Pins in „Privat“ bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 140 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 141: Lebensdauer zwischengespeicherter Ortssuchergebnisse
+
+Wie lange sollen die erfolgreichen Ergebnisse einer identischen Ortssuche im lokalen Cache als aktuell gelten?
+
+- **Variante A (Empfehlung):** **24 Stunden.** Erfolgreiche Ergebnisse einer identischen Suchanfrage werden bis zu 24 Stunden wiederverwendet. Danach fragt eine erneut bewusst ausgelöste Suche den Geocoding-Dienst wieder an. Fehlerhafte Antworten werden nicht als erfolgreiche Treffer gespeichert.
+- **Variante B:** **Nur während der laufenden Sitzung.** Der Cache wird spätestens beim vollständigen Schließen bzw. Neustart der Anwendung verworfen, auch wenn die Ergebnisse erst vor kurzer Zeit abgefragt wurden. Das ist kurzlebiger, erzeugt aber bei wiederholter Nutzung häufiger externe Anfragen.
+
+**Status:** Grundentscheidung 141 ist offen und noch nicht beschlossen.
