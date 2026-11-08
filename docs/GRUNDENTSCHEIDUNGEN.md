@@ -29,8 +29,25 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Serveranbindung wird **nicht** auf einen erst sehr spät erreichten Vollausbau verschoben.
 - Der bisherige UI-PoC ist nur eine Design-/Verhaltensreferenz und keine zu übernehmende Codebasis.
 
-## Offen – Grundentscheidung 4: Art der lokalen Datenhaltung
+## Grundentscheidung 4 – Lokale Datenhaltung
 
-Für die stabile lokale Basisversion ist festzulegen, ob die Daten **strukturiert in IndexedDB** gespeichert werden (Variante A) oder zunächst in einem einfacheren lokalen Speichermodell, etwa localStorage (Variante B). Noch **kein Beschluss**.
+**Beschlossen (Variante A):** Die lokale Basisversion verwendet **IndexedDB** für die dauerhafte Speicherung strukturierter Anwendungsdaten.
 
-**Empfehlung:** Variante A (IndexedDB), weil Pins, Ebenen und spätere Synchronisationsmetadaten strukturiert und transaktionsfähig gespeichert werden können. Die Fachlogik bleibt über eine Repository-/Datenzugriffsschnittstelle unabhängig davon.
+**Konsequenzen:**
+- Pins, Ebenen und ihre Beziehungen werden lokal in IndexedDB abgelegt.
+- Ein Pin verweist auf genau eine Ebene; die private Ebene gehört von Anfang an zum Datenmodell.
+- Datenzugriffe erfolgen über eine klar abgegrenzte Schnittstelle, nicht direkt aus UI-Komponenten oder Fachlogik.
+- Die Datenstruktur wird auf spätere Synchronisationsinformationen vorbereitet, ohne dass die erste lokale Basisversion bereits einen Server benötigt.
+- Schemaänderungen werden über versionierte Datenbankmigrationen gehandhabt.
+- Die lokale Persistenz wird praktisch getestet (Änderungen, erneutes Laden, App-Neustart). IndexedDB allein garantiert keinen Schutz vor Löschung der Browserdaten; Backup/Export werden separat entschieden.
+
+## Offen – Grundentscheidung 5: Startumfang der Pin-Funktionen
+
+Die Basisversion benötigt eine bewusst schlanke Pin-Bearbeitung.
+
+- **Variante A:** Pins anlegen, auf der Karte anzeigen, bearbeiten, verschieben und löschen – jeweils mit Zuordnung zu genau einer Ebene.
+- **Variante B:** Zunächst nur Pins anlegen, anzeigen und löschen; Bearbeiten und Verschieben folgen später.
+
+**Empfehlung:** Variante A. Damit lässt sich bereits in der lokalen Basisversion der vollständige grundlegende Lebenszyklus eines Pins und dessen Speicherung zuverlässig prüfen. Weitere Attribute und Komfortfunktionen bleiben späteren Entscheidungen vorbehalten.
+
+**Status:** Grundentscheidung 5 ist offen und noch nicht beschlossen.
