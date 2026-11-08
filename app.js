@@ -218,9 +218,9 @@
     container.addEventListener("pointerdown", e => {
       activePointers.add(e.pointerId);
       cancelLongPress();
-      if (moveMode || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
+      if (moveMode || e.pointerType === "mouse" || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
       longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
-      // Mouse users can also long-press; normal clicks remain navigation/dismissal only.
+      // Long press is exclusively for touch/pen; mouse uses right-click.
       longPressTimer = setTimeout(() => {
         if (!longPressStart || activePointers.size !== 1) return;
         const start = longPressStart;
@@ -232,7 +232,7 @@
         const pin = addPin(where.lat, where.lng, "", state.activeLayer);
         if (pin) {
           if (navigator.vibrate) navigator.vibrate(15);
-          requestAnimationFrame(fitAllPins);
+          requestAnimationFrame(updatePanelLayout);
         }
       }, 650);
     }, { passive: true });
@@ -246,8 +246,18 @@
       }, { passive: true });
     }
     map.on("dragstart zoomstart", cancelLongPress);
-    // Do not expose iOS callout on map long press; retain the native behavior for buttons/inputs.
-    container.addEventListener("contextmenu", e => { if (isMapSurface(e.target)) e.preventDefault(); });
+    // Native desktop context menu is replaced by pin creation. Touch uses the timer above.
+    container.addEventListener("contextmenu", e => {
+      if(!isMapSurface(e.target))return;
+      e.preventDefault();
+      // iOS may synthesize contextmenu after a long touch; only create once.
+      if(e.pointerType==="touch" || (Date.now()<suppressMapClickUntil))return;
+      if(moveMode)return;
+      const rect=container.getBoundingClientRect();
+      const location=map.containerPointToLatLng([e.clientX-rect.left,e.clientY-rect.top]);
+      addPin(location.lat,location.lng,"",state.activeLayer);
+      suppressMapClickUntil=Date.now()+750;
+    });
   }
   function togglePanel(id) {
     const panel = $(id), wasHidden = panel.classList.contains("hidden");
@@ -404,8 +414,9 @@
     });
 
     attachLongPress();
-    map.on("moveend", persistViewport);
-    window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout(); });
+    map.on("moveend", () => {persistViewport();renderMarkers();updatePanelLayout();});
+    map.on("zoomend", () => {renderMarkers();updatePanelLayout();});
+    window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout();renderMarkers(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
   async function init() {
