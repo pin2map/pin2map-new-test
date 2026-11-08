@@ -1421,11 +1421,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Suchtext bleibt nach erfolgreichem Vorgang erhalten; ob und wie er über einen Neustart hinweg erhalten bleibt, ist damit nicht festgelegt.
 - Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 123: Platzierung des Suchfeldes für die Ortsnamensuche
+## Grundentscheidung 123 – Ortsnamensuchfeld dauerhaft am oberen Kartenrand
 
-Wie soll die verbindlich zur Basisversion gehörende Ortsnamensuche in der Kartenansicht erreichbar sein?
+**Beschlossen (Variante A):** Die geografische Ortsnamensuche ist in der ersten Basisversion über ein **dauerhaft sichtbares, kompaktes Suchfeld am oberen Rand der Kartenansicht** direkt erreichbar. Die Kartenansicht bleibt die Hauptansicht; für die Eingabe muss kein separates Suchmenü geöffnet werden.
 
-- **Variante A (Empfehlung):** Ein **dauerhaft sichtbares, kompaktes Suchfeld am oberen Rand der Kartenansicht** ermöglicht die Eingabe eines Ortsnamens. Die bewusste Suche wird über Eingabetaste oder die Suchschaltfläche gestartet (Grundentscheidung 121). Trefferlisten werden unmittelbar beim Suchfeld angezeigt; die Karte bleibt als Hauptansicht erhalten.
-- **Variante B:** In der Kartenansicht ist zunächst **nur ein Suchsymbol** sichtbar. Erst nach Antippen öffnet sich ein separates Suchfeld bzw. eine Suchansicht. Nach der Pin-Erstellung kehrt der Benutzer zur Karte zurück; der eingegebene Text bleibt in der Suchansicht verfügbar.
+**Konsequenzen:**
+- Der Benutzer kann jederzeit einen Ortsnamen eingeben. Eine Anfrage an den Geocoding-Dienst wird weiterhin **erst durch bewusste Betätigung des Suchbuttons oder der Eingabetaste** ausgelöst (Grundentscheidung 121).
+- Wenn mehrere plausible Suchergebnisse gefunden werden, erscheint die **Trefferliste unmittelbar am Suchfeld**. Ein Pin wird erst nach bewusster Trefferauswahl erstellt (Grundentscheidung 116).
+- Bei genau einem geeigneten Treffer erfolgt die vereinbarte direkte Pin-Erstellung; neue Ortssuch-Pins werden **immer in der Ebene „Privat“** gespeichert (Grundentscheidungen 116 und 119).
+- Nach der Pin-Erstellung bleibt der eingegebene Suchtext im Suchfeld stehen, die Trefferliste wird geschlossen und die Karte springt zum neuen Pin (Grundentscheidungen 117 und 122).
+- Das Suchfeld muss auf kleinen Touch-Bildschirmen mit weiteren Bedienelementen der Kopfzeile vereinbar und ohne Überdeckung wichtiger Funktionen nutzbar sein.
+- Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 123 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 124: Darstellung der Trefferliste bei Ortsnamensuchen
+
+Wenn eine bewusst gestartete Ortsnamensuche mehrere plausible Ergebnisse liefert: Wie wird die Trefferliste auf der Karte dargestellt?
+
+- **Variante A (Empfehlung):** Ein **kompaktes, bei Bedarf vertikal scrollbareres Auswahlfeld direkt unter dem Suchfeld** zeigt die Treffer mit Ort, Region und Land. Die Karte bleibt sichtbar und bedienbar, soweit die Liste sie nicht überdeckt. Nach Auswahl oder bewusstem Schließen verschwindet die Liste.
+- **Variante B:** Die Treffer erscheinen in einer **größeren, separaten Auswahlansicht**, die einen wesentlichen Teil der Karte überdeckt, um mehr Platz für lange Ortsnamen und Zusatzinformationen zu bieten. Nach Auswahl oder Abbruch wird die normale Kartenansicht wiederhergestellt.
+
+**Status:** Grundentscheidung 124 ist offen und noch nicht beschlossen.
