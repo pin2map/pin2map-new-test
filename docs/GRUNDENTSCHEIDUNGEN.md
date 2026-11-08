@@ -1022,11 +1022,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das Bedienfeld verschwindet beim Abwählen des Pins (Grundentscheidungen 84 und 87). Beim Verschieben oder Zoomen der Karte bleibt es bestehen (Grundentscheidungen 85 und 86).
 - Die Bedienung der Karte und die bereits festgelegten Bedienelemente am unteren Kartenrand, einschließlich Kartenwahl und Beschriftungsbutton, dürfen nicht unbeabsichtigt blockiert werden. Das konkrete Verhalten bei Platzmangel wird gesondert entschieden.
 
-## Offen – Grundentscheidung 90: Verhalten des unteren Pin-Bedienfelds bei wenig Platz
+## Grundentscheidung 90 – Unteres Pin-Bedienfeld wächst bei Bedarf nach oben
 
-Wie soll sich das kompakte Pin-Bedienfeld auf Smartphones verhalten, wenn für alle Inhalte nicht ausreichend Höhe verfügbar ist?
+**Beschlossen (Variante B):** Das am unteren Bildschirmrand angeordnete Pin-Detail-/Bearbeitungsfeld **wächst bei Bedarf nach oben**, damit seine Inhalte **möglichst vollständig ohne eigenen vertikalen Scrollbereich** sichtbar werden. Auf kleinen Displays darf es dabei einen großen Teil der Karte verdecken.
 
-- **Variante A (Empfehlung):** Das Bedienfeld besitzt eine **begrenzte Höhe und einen eigenen vertikal scrollbaren Inhaltsbereich**. Seine Außenkante bleibt am unteren Bildschirmrand; die Karte bleibt darüber sichtbar und bedienbar. Die Schaltflächen für wichtige Aktionen müssen gut erreichbar bleiben.
-- **Variante B:** Das Bedienfeld **vergrößert sich bei Bedarf nach oben**, um alle Inhalte ohne eigenes Scrollen gleichzeitig anzuzeigen. Auf kleinen Bildschirmen kann dadurch ein großer Teil der Karte verdeckt werden.
+**Konsequenzen:**
+- Die Unterkante des Bedienfelds bleibt am unteren Bildschirmrand verankert (Grundentscheidung 89).
+- Die Höhe orientiert sich am tatsächlich benötigten Platz für die angezeigten Pin-Daten und Bearbeitungsaktionen; unnötige Leerfläche wird vermieden.
+- Anders als die nicht gewählte Variante A wird kein auf eine feste Höhe begrenztes Bedienfeld mit regulär eigenem Scrollbereich als Standard vorgesehen.
+- Karte und bestehende Kartensteuerungen sollen soweit möglich bedienbar bleiben. Für Fälle, in denen die Inhalte höher als die tatsächlich verfügbare Bildschirmfläche sind, ist ein sicherer, auf kleinen Geräten nutzbarer Überlauf erforderlich; das ersetzt nicht das beschlossene grundsätzliche Mitwachsen des Feldes.
+- Das Bedienfeld aktualisiert seine Höhe passend, wenn Inhalte wechseln, z. B. beim direkten Wechsel zwischen Pins (Grundentscheidung 88).
 
-**Status:** Grundentscheidung 90 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 91: Kartenposition beim Öffnen des unteren Pin-Bedienfelds
+
+Wie soll sich die Kartenansicht verhalten, wenn das von unten nach oben wachsende Bedienfeld den ausgewählten Pin verdecken würde?
+
+- **Variante A (Empfehlung):** Die Karte **verschiebt ihren sichtbaren Ausschnitt bei Bedarf automatisch gerade so weit**, dass das ausgewählte Pin-Symbol **oberhalb des Bedienfelds** sichtbar bleibt. Die Zoomstufe bleibt gleich und die gespeicherten Pin-Koordinaten ändern sich nicht.
+- **Variante B:** Die Karte **bleibt unverändert**. Das Bedienfeld darf den ausgewählten Pin überdecken; der Benutzer kann die Karte bei Bedarf selbst verschieben.
+
+**Status:** Grundentscheidung 91 ist offen und noch nicht beschlossen.
