@@ -308,11 +308,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Schlägt das Speichern fehl, darf kein vermeintlich dauerhaft angelegter Pin angezeigt werden; der Fehler muss erkennbar sein.
 - Die Möglichkeit, den Pin später zu bearbeiten und zu verschieben, bleibt erhalten.
 
-## Offen – Grundentscheidung 28: Pin nach dem Anlegen automatisch auswählen?
+## Grundentscheidung 28 – Automatische Auswahl eines neu angelegten Pins
 
-Direkt nach dem erfolgreichen Anlegen eines Pins kann die Anwendung ihn entweder für weitere Aktionen öffnen oder die Karte unverändert zeigen.
+**Beschlossen (Variante A):** Nach dem erfolgreichen lokalen Speichern wird ein neuer Pin automatisch ausgewählt und seine einfache Bearbeitungsansicht geöffnet. Dort kann insbesondere die optionale Bezeichnung sofort ergänzt werden.
 
-- **Variante A (Empfehlung):** Der neue Pin wird nach dem Speichern automatisch **ausgewählt**. Seine einfache Bearbeitungsansicht mit optionaler Bezeichnung und weiteren Basisaktionen wird geöffnet; sie kann ohne weitere Eingaben geschlossen werden. Der Modus „Pin hinzufügen“ ist bereits beendet.
-- **Variante B:** Nach dem Speichern erscheint der Pin nur auf der Karte. Es öffnet sich keine Bearbeitungsansicht; erst ein späteres Antippen des Pins zeigt dessen Details bzw. Bearbeitungsmöglichkeiten.
+**Konsequenzen:**
+- Das Anlegen bleibt gemäß Grundentscheidung 27 unmittelbar und ohne vorausgehenden Eingabedialog möglich.
+- Der Modus „Pin hinzufügen“ ist nach erfolgreicher Speicherung beendet (Grundentscheidung 26), auch während die Bearbeitungsansicht geöffnet ist.
+- Die Bearbeitungsansicht kann ohne weitere Eingaben geschlossen werden; der bereits gespeicherte Pin bleibt dabei erhalten.
+- Ein neu angelegter Pin ist deutlich als ausgewählt erkennbar.
+- Der konkrete Speichervorgang für nachträgliche Änderungen in der Bearbeitungsansicht wird mit Grundentscheidung 29 festgelegt.
 
-**Status:** Grundentscheidung 28 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 29: Speichern von Änderungen an einem Pin
+
+Nach dem Anlegen können Pins bearbeitet werden, beispielsweise durch Ändern ihrer optionalen Bezeichnung. Wie sollen solche Bearbeitungen gespeichert werden?
+
+- **Variante A (Empfehlung):** Änderungen in der Bearbeitungsansicht werden erst durch bewusstes Antippen von „Speichern“ übernommen. „Abbrechen“ verwirft ungespeicherte Eingaben; der bereits existierende Pin bleibt erhalten.
+- **Variante B:** Änderungen an Eingabefeldern werden automatisch lokal gespeichert, beispielsweise nach Verlassen des Feldes. Ein eigener Speichern-Button ist nicht erforderlich.
+
+**Abgrenzung:** Das unmittelbare erstmalige Anlegen eines Pins aus Grundentscheidung 27 bleibt in beiden Varianten unverändert. Das Verschieben auf der Karte kann später gesondert spezifiziert werden.
+
+**Status:** Grundentscheidung 29 ist offen und noch nicht beschlossen.
