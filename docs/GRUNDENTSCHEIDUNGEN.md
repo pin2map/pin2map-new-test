@@ -909,11 +909,21 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Bei Überlagerungen können normale Beschriftungen gemäß Grundentscheidung 75 dynamisch ausgeblendet werden; die hervorgehobene Beschriftung des ausgewählten Pins bleibt davon ausgenommen (Grundentscheidung 76).
 - Die Beschriftungsanzeige kann weiterhin über den gut erreichbaren Button ein- und ausgeblendet werden (Grundentscheidungen 72–74).
 
-## Offen – Grundentscheidung 80: Pin-Auswahl durch Antippen der Beschriftung
+## Grundentscheidung 80 – Pin-Auswahl ausschließlich über das Pin-Symbol
 
-Soll eine sichtbare Pin-Beschriftung als **zusätzliche Antippfläche** für ihren Pin dienen?
+**Beschlossen (Variante B):** Eine sichtbare Pin-Beschriftung dient **ausschließlich der Anzeige** und ist **keine zusätzliche Antipp- oder Klickfläche** für den Pin. **Nur das Pin-Symbol** löst durch Antippen oder Anklicken die Auswahl des betreffenden Pins und das Öffnen seiner Pin-Ansicht aus.
 
-- **Variante A (Empfehlung):** **Ja.** Antippen oder Anklicken einer Pin-Beschriftung **wählt denselben Pin aus wie das Antippen des Pin-Symbols** und öffnet seine Pin-Ansicht. Die Beschriftung kann damit auf Touchscreens als zusätzliche Bedienfläche dienen.
-- **Variante B:** **Nein.** Nur das Pin-Symbol selbst ist auswählbar. Die Beschriftung dient ausschließlich der Anzeige; Antippen der Beschriftung löst keine Pin-Auswahl aus.
+**Konsequenzen:**
+- Antippen/Anklicken einer normalen oder hervorgehobenen Kartenbeschriftung wählt keinen Pin aus und öffnet keine Pin-Ansicht.
+- Die Kartenbeschriftungen bleiben reine Anzeigeelemente (Grundentscheidungen 72–79); die Beschriftung eines ausgewählten Pins bleibt weiterhin sichtbar hervorgehoben (Grundentscheidung 76).
+- Die Beschriftungsflächen dürfen die Bedienung des darunterliegenden Kartenausschnitts nicht unnötig blockieren; insbesondere darf die normale Kartenverschiebung nicht durch Beschriftungen verhindert werden.
+- Die Pin-Symbole müssen auf Touchscreens hinreichend gut bedienbar sein; ihre konkrete Trefferfläche wird gesondert entschieden.
 
-**Status:** Grundentscheidung 80 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 81: Antippfläche der Pin-Symbole
+
+Wie groß soll die interaktive Trefferfläche eines Pins auf Touchscreens sein, wenn nur das Pin-Symbol auswählbar ist?
+
+- **Variante A (Empfehlung):** Das sichtbare Pin-Symbol erhält eine **unsichtbar vergrößerte Antippfläche** rund um das Symbol. Dadurch bleibt der Pin auch auf Smartphones leichter auswählbar, ohne ihn grafisch größer machen zu müssen. Beschriftungen selbst bleiben nicht antippbar.
+- **Variante B:** Die Antippfläche entspricht **genau der sichtbaren Form des Pin-Symbols**, ohne zusätzliche Vergrößerung. Das ist geometrisch präziser, erfordert aber bei kleinen Pins genaueres Treffen.
+
+**Status:** Grundentscheidung 81 ist offen und noch nicht beschlossen.
