@@ -739,11 +739,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Kartenquellen bleiben zentral konfigurierbar und austauschbar (Grundentscheidung 62).
 - Die konkrete Bibliotheksversion wird bei der Implementierung festgelegt und für reproduzierbare Builds fixiert.
 
-## Offen – Grundentscheidung 65: Technische Darstellung der Pins auf der Karte
+## Grundentscheidung 65 – Eigene, zentral gestaltete Pin-Symbole
 
-Wie sollen Pins in der ersten Basisversion innerhalb von Leaflet dargestellt werden?
+**Beschlossen (Variante A):** Die erste stabile Basisversion verwendet **eigene, einheitlich gestaltete Pin-Symbole auf HTML-/SVG-Basis** statt der unveränderten Leaflet-Standardmarker. Die Darstellung erfolgt über Leaflet und ist zentral konfigurierbar.
 
-- **Variante A (Empfehlung):** **Eigene, einheitliche HTML-/SVG-basierte Pin-Symbole** über Leaflet-Marker, zentral gestaltet und konfiguriert. Damit lassen sich ausgewählte Pins und die beiden Positionen beim Verschieben klar unterscheiden; die Pins bleiben vom Datenmodell getrennt.
-- **Variante B:** Zunächst das **unveränderte Standard-Markersymbol von Leaflet** verwenden. Das reduziert die anfängliche Gestaltung, schränkt aber die direkte Unterscheidung zwischen normalem Pin und Verschiebevorschau ein und erfordert für besondere Zustände separate Markierungen.
+**Konsequenzen:**
+- Normale Pins, ausgewählte Pins und die beiden Positionen beim Verschieben können eindeutig unterschieden werden.
+- Der ursprüngliche und der vorgeschlagene Pin bleiben während der Verschiebevorschau als verschiedene Zustände desselben Datenobjekts sichtbar; die Verbindungslinie ergänzt die Darstellung (Grundentscheidungen 31–35).
+- Form, Größe und Darstellung der Symbole werden zentral in der Kartenkomponente beziehungsweise in gemeinsamen Darstellungsregeln verwaltet.
+- Pin-Daten und Ebenenzuordnung bleiben unabhängig von der konkreten Gestaltung und der Kartenbibliothek (Grundentscheidungen 1 und 64).
+- Die konkrete Farbgebung und mögliche farbliche Unterscheidung der Ebenen werden gesondert beschlossen.
 
-**Status:** Grundentscheidung 65 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 66: Farbgebung der Pins nach Ebenen
+
+Sollen Pins verschiedener Ebenen bereits in der ersten Basisversion auf der Karte farblich unterscheidbar sein?
+
+- **Variante A (Empfehlung):** **Jede Ebene erhält eine eigene Pin-Farbe.** Alle regulären Pins einer Ebene verwenden diese Farbe; die Ebene „Privat“ erhält ebenfalls eine eindeutig festgelegte Farbe. Dadurch wird die Ebenenzugehörigkeit unmittelbar auf der Karte erkennbar. Die Farben werden als Ebeneneigenschaft gespeichert, während Auswahl- und Verschiebezustände zusätzlich erkennbar bleiben.
+- **Variante B:** **Alle regulären Pins verwenden zunächst dieselbe Farbe**, unabhängig von ihrer Ebene. Die Ebenenzugehörigkeit wird ausschließlich über Ebenenverwaltung und Pin-Details erkennbar. Unterschiedliche Farben können später ergänzt werden.
+
+**Status:** Grundentscheidung 66 ist offen und noch nicht beschlossen.
