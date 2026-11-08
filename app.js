@@ -16,7 +16,7 @@
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
-  let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
+  let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null, markerDragActive = false;
   let movePreview = null, moveMarker = null, moveLine = null;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
@@ -136,26 +136,67 @@
     };
   }
   function attachMarkerLongPress(marker,id){
-    const element=marker.getElement();if(!element)return;
-    const cancel=()=>{clearTimeout(markerPressTimer);markerPressTimer=null;markerPressStart=null;};
+    const element=marker.getElement();
+    if(!element || element.dataset.pinLongPressBound)return;
+    element.dataset.pinLongPressBound="true";
     element.addEventListener("pointerdown",e=>{
-      if(e.button!==0)return;
-      cancel();
-      markerPressStart={id:e.pointerId,x:e.clientX,y:e.clientY};
+      if(e.button!==0 || moveMode)return;
+      clearTimeout(markerPressTimer);
+      markerPressStart={id:e.pointerId,pinId:id,x:e.clientX,y:e.clientY,started:false};
+      const start=markerPressStart;
+      const cancel=()=>{
+        clearTimeout(markerPressTimer);markerPressTimer=null;
+        if(markerPressStart===start)markerPressStart=null;
+      };
+      const move=event=>{
+        if(event.pointerId!==start.id)return;
+        const dx=event.clientX-start.x,dy=event.clientY-start.y;
+        if(!start.started){
+          if(Math.hypot(dx,dy)>9)cancel();
+          return;
+        }
+        event.preventDefault();
+        const pin=selectedPin();
+        if(!pin || pin.id!==id)return;
+        const original=map.latLngToContainerPoint([pin.lat,pin.lng]);
+        const proposed=map.containerPointToLatLng([original.x+dx,original.y+dy]);
+        previewMove(proposed);
+      };
+      const finish=event=>{
+        if(event.pointerId!==start.id)return;
+        window.removeEventListener("pointermove",move);
+        window.removeEventListener("pointerup",finish);
+        window.removeEventListener("pointercancel",finish);
+        if(start.started){
+          suppressMapClickUntil=Date.now()+650;
+          markerDragActive=false;
+          map.dragging.enable();
+        }
+        cancel();
+      };
+      window.addEventListener("pointermove",move,{passive:false});
+      window.addEventListener("pointerup",finish);
+      window.addEventListener("pointercancel",finish);
       markerPressTimer=setTimeout(()=>{
-        if(!markerPressStart)return;
-        cancel();suppressMapClickUntil=Date.now()+900;
-        if(selected!==id)selectPin(id);
-        $("pinName").focus();$("pinName").select();
-        showNotice("Pin-Name bearbeiten");
+        if(markerPressStart!==start)return;
+        start.started=true;
+        markerDragActive=true;
+        suppressMapClickUntil=Date.now()+1400;
+        if(selected!==id){
+          selected=id;
+          hideResults();
+          $("layersPanel").classList.add("hidden");
+          $("settingsPanel").classList.add("hidden");
+          renderMarkers();renderLayers();
+        }
+        beginMove();
+        map.dragging.disable();
+        const pin=selectedPin();
+        previewMove([pin.lat,pin.lng]);
+        $("moveText").textContent="Pin ziehen und danach Position übernehmen oder abbrechen.";
+        if(navigator.vibrate)navigator.vibrate(15);
       },1000);
     });
-    element.addEventListener("pointermove",e=>{
-      if(markerPressStart&&markerPressStart.id===e.pointerId &&
-        Math.hypot(e.clientX-markerPressStart.x,e.clientY-markerPressStart.y)>9)cancel();
-    });
-    ["pointerup","pointercancel","pointerleave"].forEach(eventName=>
-      element.addEventListener(eventName,cancel));
   }
   function removeMovePreview(){
     if(moveMarker){map.removeLayer(moveMarker);moveMarker=null;}
