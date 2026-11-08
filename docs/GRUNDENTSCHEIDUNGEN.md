@@ -1011,11 +1011,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Antippen desselben bereits ausgewählten Pins hebt dagegen weiterhin dessen Auswahl auf (Grundentscheidung 87).
 - Für explizite Pin-Hinzufüge- und Verschiebemodi gelten deren gesonderte Regeln.
 
-## Offen – Grundentscheidung 89: Anordnung der Pin-Bearbeitungsansicht
+## Grundentscheidung 89 – Pin-Bearbeitungsansicht als unteres Bedienfeld
 
-Wie soll die Pin-Detail-/Bearbeitungsansicht in der ersten Basisversion angezeigt werden, damit die Karte gleichzeitig nutzbar bleibt?
+**Beschlossen (Variante A):** Die Pin-Detail-/Bearbeitungsansicht wird in der ersten Basisversion **als kompaktes Bedienfeld am unteren Bildschirmrand** angezeigt. Der übrige Kartenbereich bleibt sichtbar und bedienbar.
 
-- **Variante A (Empfehlung):** Als **kompaktes, am unteren Bildschirmrand eingeblendetes Bedienfeld**, das den ausgewählten Pin-Namen und die Bearbeitungsaktionen zeigt. Die Karte bleibt im übrigen Bereich sichtbar und bedienbar; auf kleinen Displays berücksichtigt das Feld die verfügbare Höhe.
-- **Variante B:** Als **seitliches Bedienfeld** am rechten Bildschirmrand. Die Karte bleibt daneben sichtbar; auf schmalen Smartphones kann das Feld einen großen Teil der Kartenbreite belegen.
+**Konsequenzen:**
+- Das untere Bedienfeld stellt die Daten des ausgewählten Pins sowie seine vorgesehenen Bearbeitungsaktionen bereit, insbesondere die optionale Bezeichnung, Ebenenzugehörigkeit, den expliziten Verschiebemodus und das Löschen entsprechend den bestehenden Beschlüssen.
+- Die Ansicht passt sich der verfügbaren Bildschirmhöhe an und muss insbesondere auf Smartphones sinnvoll bedienbar bleiben.
+- Beim direkten Wechsel zu einem anderen Pin werden die angezeigten Daten unmittelbar aktualisiert (Grundentscheidung 88).
+- Das Bedienfeld verschwindet beim Abwählen des Pins (Grundentscheidungen 84 und 87). Beim Verschieben oder Zoomen der Karte bleibt es bestehen (Grundentscheidungen 85 und 86).
+- Die Bedienung der Karte und die bereits festgelegten Bedienelemente am unteren Kartenrand, einschließlich Kartenwahl und Beschriftungsbutton, dürfen nicht unbeabsichtigt blockiert werden. Das konkrete Verhalten bei Platzmangel wird gesondert entschieden.
 
-**Status:** Grundentscheidung 89 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 90: Verhalten des unteren Pin-Bedienfelds bei wenig Platz
+
+Wie soll sich das kompakte Pin-Bedienfeld auf Smartphones verhalten, wenn für alle Inhalte nicht ausreichend Höhe verfügbar ist?
+
+- **Variante A (Empfehlung):** Das Bedienfeld besitzt eine **begrenzte Höhe und einen eigenen vertikal scrollbaren Inhaltsbereich**. Seine Außenkante bleibt am unteren Bildschirmrand; die Karte bleibt darüber sichtbar und bedienbar. Die Schaltflächen für wichtige Aktionen müssen gut erreichbar bleiben.
+- **Variante B:** Das Bedienfeld **vergrößert sich bei Bedarf nach oben**, um alle Inhalte ohne eigenes Scrollen gleichzeitig anzuzeigen. Auf kleinen Bildschirmen kann dadurch ein großer Teil der Karte verdeckt werden.
+
+**Status:** Grundentscheidung 90 ist offen und noch nicht beschlossen.
