@@ -865,11 +865,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Berechnung reagiert auf Kartenbewegung, Zoom und geänderte Pin-Bezeichnungen, ohne Pins zu verschieben.
 - Die Umsetzung soll auch auf Geräten mit geringerer Rechenleistung eine flüssige Kartenbedienung erlauben.
 
-## Offen – Grundentscheidung 76: Beschriftung eines ausgewählten Pins
+## Grundentscheidung 76 – Beschriftung des ausgewählten Pins auf der Karte hervorheben
 
-Wenn sich die Beschriftungen wegen Überlagerung automatisch reduzieren oder über den Beschriftungsbutton ausgeblendet sind: Wie wird der Name eines **ausgewählten Pins** angezeigt?
+**Beschlossen (Variante B):** Wird ein Pin mit vorhandener Bezeichnung ausgewählt, wird **sein Name zusätzlich direkt an seiner Kartenmarkierung deutlich hervorgehoben**. Dies gilt ausdrücklich auch dann, wenn normale Pin-Beschriftungen über den globalen Button ausgeblendet oder wegen Überlappungen unterdrückt sind. Die zusätzliche Hervorhebung verschwindet beim Abwählen des Pins.
 
-- **Variante A (Empfehlung):** Die Bezeichnung des ausgewählten Pins wird **immer in der Pin-Detail-/Bearbeitungsansicht angezeigt**, unabhängig von der Kartenbeschriftungs-Einstellung. Eine ausgeblendete Kartenbeschriftung wird nicht erzwungen eingeblendet; damit bleibt der globale Schalter verlässlich.
-- **Variante B:** Die Bezeichnung des ausgewählten Pins wird zusätzlich **direkt an seiner Kartenmarkierung hervorgehoben**, selbst wenn sonstige Beschriftungen ausgeschaltet oder wegen Überlagerung unterdrückt sind. Sie verschwindet wieder beim Abwählen des Pins.
+**Konsequenzen:**
+- Die Hervorhebung ist eine temporäre Ausnahme für den ausgewählten Pin von den allgemeinen Beschriftungsregeln (Grundentscheidungen 72–75); sie verändert nicht den gespeicherten Ein-/Aus-Zustand des Beschriftungsbuttons.
+- Andere Pin-Beschriftungen bleiben entsprechend der gewählten globalen Einstellung sichtbar oder ausgeblendet.
+- In der Pin-Detail-/Bearbeitungsansicht bleibt der Name des Pins ebenfalls zugänglich.
+- Pins ohne Bezeichnung erhalten keine künstlich erzeugte Beschriftung.
+- Die Position und Darstellung der hervorgehobenen Bezeichnung müssen auf kleinen Bildschirmen und bei dicht belegten Kartenflächen lesbar bleiben.
 
-**Status:** Grundentscheidung 76 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 77: Position der hervorgehobenen Pin-Beschriftung
+
+Wie soll pin2map die zusätzliche Beschriftung eines ausgewählten Pins auf der Karte platzieren, insbesondere in Randnähe?
+
+- **Variante A (Empfehlung):** Die hervorgehobene Beschriftung wird **automatisch auf einer passenden Seite des Pins angeordnet** (z. B. rechts, links oder oberhalb), sodass sie möglichst vollständig im sichtbaren Kartenbereich bleibt und andere Bedienelemente nicht verdeckt.
+- **Variante B:** Die hervorgehobene Beschriftung erscheint **immer an derselben festen Position relativ zum Pin**, auch wenn sie dadurch am Kartenrand abgeschnitten werden kann. Die Umsetzung ist einfacher und die Platzierung vorhersehbar.
+
+**Status:** Grundentscheidung 77 ist offen und noch nicht beschlossen.
