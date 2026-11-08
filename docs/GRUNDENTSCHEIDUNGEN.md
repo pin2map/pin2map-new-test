@@ -111,11 +111,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ausgeblendete Pins bleiben unverändert gespeichert; es handelt sich nur um eine Anzeigeeinstellung.
 - Ob beziehungsweise wie Anzeigeeinstellungen bei einer späteren Serveranbindung geräteübergreifend synchronisiert werden, bleibt eine gesonderte Entscheidung.
 
-## Offen – Grundentscheidung 11: Pin anlegen, wenn die aktive Ebene ausgeblendet ist
+## Grundentscheidung 11 – Neuen Pin auf einer ausgeblendeten aktiven Ebene anlegen
 
-Grundentscheidung 9 lässt zu, dass eine Ebene aktiv, aber nicht sichtbar ist. Wie verhält sich das Anlegen eines Pins in diesem Fall?
+**Beschlossen (Variante A):** Ist die aktuell aktive Ebene ausgeblendet, weist pin2map vor dem Anlegen eines neuen Pins sichtbar darauf hin und bietet an, diese Ebene einzublenden. Eine unsichtbare Pin-Anlage ohne bewusste Nutzerentscheidung ist ausgeschlossen.
 
-- **Variante A (Empfehlung):** Vor dem Anlegen eines Pins auf einer ausgeblendeten aktiven Ebene weist die Anwendung darauf hin und bietet an, diese Ebene einzublenden. Der Pin wird nicht unbemerkt unsichtbar angelegt; die Nutzerentscheidung ist erforderlich.
-- **Variante B:** Das Anlegen eines Pins blendet die ausgeblendete aktive Ebene automatisch ein, ohne vorherige Nachfrage.
+**Konsequenzen:**
+- Das Antippen der Karte zum Anlegen eines Pins auf einer ausgeblendeten aktiven Ebene löst zuerst einen verständlichen Hinweis mit der Möglichkeit zum Einblenden aus.
+- Die Anwendung ändert den gespeicherten Sichtbarkeitszustand einer Ebene nicht ohne ausdrückliche Zustimmung.
+- Bis zur bewussten Entscheidung wird kein neuer Pin gespeichert.
+- Die Regel wahrt die Trennung von aktiver Ebene und sichtbaren Ebenen (Grundentscheidungen 7–10).
+- Der genaue Ablauf weiterer Optionen im Hinweis kann bei der UI-Spezifikation präzisiert werden, ohne die bewusste Entscheidung zu unterlaufen.
 
-**Status:** Grundentscheidung 11 ist noch offen.
+## Offen – Grundentscheidung 12: Bezeichnung neu angelegter Ebenen
+
+Die Basisversion enthält eine einfache Ebenenverwaltung. Wie wird eine neue reguläre Ebene bezeichnet?
+
+- **Variante A (Empfehlung):** Beim Anlegen einer neuen Ebene muss eine nichtleere Bezeichnung eingegeben werden. Diese kann später geändert werden. Das vermeidet schwer unterscheidbare Ebenen.
+- **Variante B:** Neue Ebenen erhalten zunächst einen automatisch erzeugten Namen (z. B. „Ebene 1“). Eine Umbenennung ist optional und auch später möglich.
+
+**Abgrenzung:** Es geht um regulär vom Benutzer angelegte Ebenen. Die bereits beschlossene private Ebene ist davon unabhängig.
+
+**Status:** Grundentscheidung 12 ist noch offen.
