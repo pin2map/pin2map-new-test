@@ -930,11 +930,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die konkrete Größe der Trefferfläche wird bei der Umsetzung für Touch- und Mausbedienung getestet; nahe benachbarte Pins und normales Verschieben/Zoomen der Karte müssen bedienbar bleiben.
 - Bei überlappenden Trefferflächen mehrerer Pins ist ein eindeutiges, nachvollziehbares Auswahlverhalten erforderlich, das gesondert festgelegt wird.
 
-## Offen – Grundentscheidung 82: Auswahl bei überlappenden Pin-Trefferflächen
+## Grundentscheidung 82 – Nächstgelegenen Pin bei überlappenden Trefferflächen auswählen
 
-Wenn mehrere Pins eng beieinanderliegen und sich ihre unsichtbar vergrößerten Antippflächen überschneiden: Wie soll pin2map auf ein Antippen im gemeinsamen Bereich reagieren?
+**Beschlossen (Variante A):** Überschneiden sich die unsichtbar vergrößerten Antippflächen mehrerer Pins, wählt pin2map **direkt den Pin aus, dessen sichtbares Symbol dem Berührungs- bzw. Klickpunkt am nächsten liegt**. Ein zusätzliches Auswahlmenü erscheint nicht.
 
-- **Variante A (Empfehlung):** pin2map wählt **direkt den Pin, dessen sichtbares Symbol dem Berührungspunkt am nächsten liegt**. Bei exakt gleichem Abstand erfolgt die Auswahl nach einer stabilen Regel. So bleibt die Bedienung ohne zusätzliches Auswahlmenü schnell.
-- **Variante B:** pin2map öffnet bei mehreren möglichen Pins **ein kleines Auswahlmenü**, in dem der Benutzer den gewünschten Pin bewusst auswählt. Das vermeidet Mehrdeutigkeiten, erfordert aber zusätzliche Schritte.
+**Konsequenzen:**
+- Maßgeblich ist der Abstand in der aktuellen Bildschirmdarstellung; die Berechnung muss bei Kartenzoom und -bewegung entsprechend aktuell sein.
+- Für exakt gleiche Abstände gilt eine stabile, nachvollziehbare Gleichstandsregel (z. B. Vergleich der unveränderlichen Pin-IDs), damit dieselbe Berührung nicht zufällig wechselnde Pins auswählt.
+- Es werden nur Pins berücksichtigt, deren Ebene sichtbar ist und deren Trefferfläche den Berührungspunkt umfasst.
+- Beschriftungen lösen keine Pin-Auswahl aus (Grundentscheidung 80).
+- Das Verhalten gilt für Touch- und Mausbedienung; die normale Kartenbewegung darf dadurch nicht unnötig beeinträchtigt werden.
+- Der Benutzer kann durch Heranzoomen eine genauere Auswahl ermöglichen.
 
-**Status:** Grundentscheidung 82 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 83: Markierung des ausgewählten Pins
+
+Wie soll die eigentliche **Pin-Markierung** bei Auswahl visuell hervorgehoben werden – zusätzlich zur bereits beschlossenen hervorgehobenen Namensbeschriftung (Grundentscheidung 76)?
+
+- **Variante A (Empfehlung):** Der ausgewählte Pin erhält **eine deutlich sichtbare zusätzliche Kontur bzw. einen Hervorhebungsring**, behält jedoch seine Ebenenfarbe. Damit bleibt die Ebenenzuordnung erkennbar und die Auswahl ist auch bei namenlosen Pins sichtbar.
+- **Variante B:** Der ausgewählte Pin wird **durch eine andere, einheitliche Auswahlfarbe** ersetzt. Das signalisiert die Auswahl, verdeckt aber währenddessen seine reguläre Ebenenfarbe.
+
+**Status:** Grundentscheidung 83 ist offen und noch nicht beschlossen.
