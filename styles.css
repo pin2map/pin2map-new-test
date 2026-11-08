@@ -88,3 +88,80 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   .leaflet-top.leaflet-left{top:8px;left:6px}
   .pin-zoom-button{width:40px;height:40px;font-size:25px!important}
 }
+
+
+/* Compact floating search block: iPhone-sized even on large displays. */
+#map{inset:0;top:0!important;right:0;bottom:0;left:0}
+.topbar{
+  position:absolute!important;z-index:1100;
+  top:calc(7px + env(safe-area-inset-top,0px));left:50%;right:auto;
+  transform:translateX(-50%);
+  width:min(410px,calc(100% - 14px));max-width:410px;
+  height:44px!important;padding:4px 5px!important;
+  display:flex!important;flex-direction:row!important;
+  gap:4px!important;border-radius:13px;
+  background:#172b49;box-shadow:0 3px 15px #12253b33
+}
+.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;height:35px!important;grid-row:auto;grid-column:auto;border-radius:9px;margin:0!important}
+.topbar .search input{font-size:16px!important;padding:5px 8px!important;min-width:0;max-width:100%;height:35px}
+.topbar .search button{flex:0 0 34px!important;height:35px;padding:0!important;font-size:20px!important}
+.topbar .topbtn{grid-row:auto;grid-column:auto;flex:0 0 34px!important;width:34px!important;height:35px!important;padding:0!important;font-size:18px!important}
+.search-results{
+  top:calc(53px + env(safe-area-inset-top,0px))!important;
+  left:50%!important;right:auto!important;transform:translateX(-50%)!important;
+  width:min(405px,calc(100% - 18px))!important
+}
+.panel{top:calc(56px + env(safe-area-inset-top,0px))!important}
+.notice{top:calc(56px + env(safe-area-inset-top,0px))!important}
+/* Pin editor floats above the actual map pin instead of using the bottom edge. */
+.pin-panel{
+  position:absolute!important;z-index:1250!important;
+  right:auto!important;bottom:auto!important;
+  border-radius:13px!important;padding:12px 13px!important;
+  max-width:calc(100vw - 16px);
+  max-height:min(335px,calc(100dvh - 105px))!important;
+  overflow-y:auto!important;
+  box-shadow:0 7px 26px #132e4d4a
+}
+.pin-panel .panel-head{margin-bottom:3px}
+.pin-panel .panel-head h2{font-size:16px!important}
+.pin-panel label{margin:7px 0!important;font-size:12px!important}
+.pin-panel input,.pin-panel select{padding:7px 8px!important;font-size:15px!important;margin-top:3px}
+.pin-panel .muted{margin:7px 0;font-size:11px}
+.pin-panel .pin-actions button{font-size:12px!important;padding:8px!important}
+/* Noninteractive, one-line text always placed left or right of the pin. */
+.pin-icon{background:none!important;border:none!important;overflow:visible!important}
+.pin-side-label{
+  position:absolute;top:-5px;display:block;box-sizing:border-box;
+  max-width:min(175px,40vw);min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;padding:3px 6px;border-radius:5px;
+  color:#162d49;background:rgba(255,255,255,.92);
+  border:1px solid rgba(55,76,99,.35);
+  box-shadow:0 1px 4px #0002;font-size:12px;font-weight:500;
+  line-height:18px;pointer-events:none;user-select:none;
+}
+.pin-side-label.right{left:34px}
+.pin-side-label.left{right:34px}
+.pin-side-label.highlighted{font-weight:750;background:#ffffff;border-color:#1c538f;box-shadow:0 2px 7px #0003}
+.pin-marker{position:relative;z-index:1}
+.pin-icon:has(.pin-side-label){z-index:auto}
+/* Labelling control – direct map control rather than a hidden setting. */
+.labels-toggle{
+  position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));
+  z-index:1100;width:38px;height:38px;border-radius:50%;padding:0;
+  color:#1c497a;background:#fff;border:1px solid #9badbe;
+  font-size:22px;font-family:Georgia,serif;font-weight:700;
+  box-shadow:0 2px 8px #0003
+}
+.labels-toggle.is-off{color:#778797;background:#edf1f5}
+@media(max-width:630px){
+  .topbar{top:calc(5px + env(safe-area-inset-top,0px));width:calc(100% - 12px);max-width:410px}
+  .topbar .search input{font-size:16px!important}
+  .search-results{top:calc(51px + env(safe-area-inset-top,0px))!important}
+  .pin-panel{max-height:min(320px,calc(100dvh - 100px))!important}
+  .panel{max-width:calc(100vw - 16px)}
+  .leaflet-top.leaflet-left{top:calc(59px + env(safe-area-inset-top,0px))}
+  .pin-zoom-button{width:39px;height:39px}
+}
+/* In the map region, suppress iOS selection callouts only; controls retain native behavior. */
+#map .leaflet-tile-pane,#map .leaflet-map-pane{ -webkit-user-select:none;user-select:none;-webkit-touch-callout:none }
