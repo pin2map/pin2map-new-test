@@ -1231,11 +1231,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Auch innerhalb des Limits werden längere Kartenbeschriftungen weiterhin einzeilig mit „…“ verkürzt (Grundentscheidungen 78 und 79). Der vollständig gespeicherte Name bleibt im Pin-Bedienfeld zugänglich.
 - Die automatische Speicherung nach kurzer Eingabepause bleibt bestehen (Grundentscheidung 106).
 
-## Offen – Grundentscheidung 108: Leerzeichen am Anfang und Ende eines Pin-Namens
+## Grundentscheidung 108 – Führende und abschließende Leerzeichen in Pin-Namen entfernen
 
-Wie soll pin2map mit führenden und abschließenden Leerzeichen umgehen, wenn ein Pin-Name eingegeben wird?
+**Beschlossen (Variante A):** Beim Speichern eines optionalen Pin-Namens werden **führende und abschließende Leerzeichen automatisch entfernt**. Besteht der eingegebene Name nach dieser Bereinigung ausschließlich aus Leerzeichen bzw. ist er leer, bleibt der Pin **unbenannt**.
 
-- **Variante A (Empfehlung):** **Führende und abschließende Leerzeichen werden beim Speichern automatisch entfernt**. Enthält der eingegebene Text anschließend keine Zeichen mehr, bleibt der Pin unbenannt. Leerzeichen zwischen Wörtern bleiben erhalten.
-- **Variante B:** **Der Name wird exakt so gespeichert, wie er eingegeben wurde**, einschließlich führender und abschließender Leerzeichen. Auch Namen, die ausschließlich aus Leerzeichen bestehen, wären damit technisch möglich.
+**Konsequenzen:**
+- Leerzeichen zwischen Wörtern bleiben erhalten; nur der Rand des Namens wird bereinigt.
+- Das Verhalten gilt auch für automatisch gespeicherte Eingaben nach einer kurzen Eingabepause sowie beim Verlassen des Feldes (Grundentscheidungen 105 und 106).
+- Für die maximale Namenslänge von 120 Zeichen ist der bereinigte Name maßgeblich (Grundentscheidung 107).
+- Der bereinigte Name wird in der Pin-Ansicht und gegebenenfalls in der Kartenbeschriftung angezeigt (Grundentscheidungen 72–79).
+- Validierung und Import müssen dieselbe fachliche Namensregel berücksichtigen; importierte Daten dürfen nicht unbemerkt semantisch verändert werden.
 
-**Status:** Grundentscheidung 108 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 109: Zeilenumbrüche im Pin-Namen
+
+Soll das Namensfeld in der ersten Basisversion die Eingabe von Zeilenumbrüchen erlauben?
+
+- **Variante A (Empfehlung):** **Nein.** Pin-Namen sind **einzeilige Texte**. Das Eingabefeld erlaubt keine Zeilenumbrüche; vorhandene oder importierte Namen mit Zeilenumbrüchen werden bei der Datenvalidierung ausdrücklich behandelt, nicht stillschweigend verändert. Dies entspricht der einzeiligen Kartenbeschriftung (Grundentscheidungen 78 und 79).
+- **Variante B:** **Ja.** Pin-Namen dürfen **Zeilenumbrüche enthalten**, auch wenn sie auf der Karte weiterhin nur als einzeilige, gekürzte Beschriftungen dargestellt werden. Im Eingabefeld wäre eine mehrzeilige Bearbeitung nötig.
+
+**Status:** Grundentscheidung 109 ist offen und noch nicht beschlossen.
