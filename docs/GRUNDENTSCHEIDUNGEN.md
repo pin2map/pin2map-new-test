@@ -1540,11 +1540,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Fehlermeldung unterscheidet sich ausdrücklich vom **stillschweigenden Ignorieren einer leeren Suchanfrage** (Grundentscheidung 126).
 - **Die Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**, auch wenn der externe Dienst vorübergehend nicht verfügbar ist.
 
-## Offen – Grundentscheidung 133: Meldung bei einer erfolgreichen Ortssuche ohne Treffer
+## Grundentscheidung 133 – Hinweis bei erfolgreicher Ortssuche ohne Treffer
 
-Wie soll pin2map reagieren, wenn der Geocoding-Dienst erreichbar ist und die bewusst gestartete Ortsnamensuche technisch erfolgreich bearbeitet, aber **keinen geeigneten Ort** gefunden hat?
+**Beschlossen (Variante A):** Wird eine gültige geografische Ortsnamensuche erfolgreich durch den Geocoding-Dienst bearbeitet, liefert aber **keinen geeigneten Ort**, zeigt pin2map **direkt beim Suchfeld** die kurze Meldung **„Kein Ort gefunden“** an.
 
-- **Variante A (Empfehlung):** Im Suchbereich erscheint eine kurze Meldung **„Kein Ort gefunden“**. Der eingegebene Suchtext bleibt erhalten, die Karte unverändert, und es wird **kein Pin erstellt**. Der Benutzer kann die Suchanfrage direkt korrigieren und erneut starten.
-- **Variante B:** Die Suche endet **ohne Meldung**; es erscheint weder eine Trefferliste noch ein Pin. Der Suchtext bleibt erhalten, die Karte unverändert.
+**Konsequenzen:**
+- Bei einer ergebnislosen Suche wird **kein Pin erstellt** und der Kartenausschnitt sowie der Zoom bleiben unverändert.
+- Der eingegebene Suchtext bleibt im Suchfeld stehen, sodass eine Korrektur und erneute, bewusst ausgelöste Suche möglich ist (Grundentscheidungen 121 und 122).
+- Die Ladeanzeige endet, sobald das ergebnislose Suchergebnis vorliegt (Grundentscheidung 127).
+- Dieser Hinweis unterscheidet sich von der Fehlermeldung bei technischen bzw. Verbindungsproblemen (Grundentscheidung 132) sowie vom bewusst stillen Ignorieren leerer Suchanfragen (Grundentscheidung 126).
+- **Die Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-**Status:** Grundentscheidung 133 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 134: Höchstzahl der Treffer in der Ortssuchliste
+
+Wie viele plausible Ergebnisse einer mehrdeutigen Ortsnamensuche soll pin2map in der kompakten Trefferliste maximal anzeigen?
+
+- **Variante A (Empfehlung):** Zunächst **bis zu zehn Treffer** anzeigen. Die Liste ist bei Bedarf scrollbar und bleibt kompakt. Gibt es weitere Ergebnisse, weist die Oberfläche auf die Möglichkeit hin, die Suchanfrage durch zusätzliche Angaben (z. B. Land oder Region) zu präzisieren. Das beschränkt den Platzbedarf und die Auswahllast.
+- **Variante B:** **Alle vom Geocoding-Dienst gelieferten Treffer** ohne eigene Höchstzahl in einer entsprechend langen, scrollbaren Liste anzeigen. Das ermöglicht mehr Auswahl unmittelbar, kann aber unübersichtlich werden; dienstseitige Ergebnislimits bleiben bestehen.
+
+**Status:** Grundentscheidung 134 ist offen und noch nicht beschlossen.
