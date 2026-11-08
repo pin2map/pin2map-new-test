@@ -172,6 +172,10 @@
   }
   function selectPin(id) {
     if (selected === id) { closeMapOverlays(); return; }
+    // A pin tap replaces other map overlays with the selected pin editor.
+    hideResults();
+    $("layersPanel").classList.add("hidden");
+    $("settingsPanel").classList.add("hidden");
     selected = id; moveMode = false; updateModeUI();
     renderMarkers(); renderLayers(); renderPinPanel();
     requestAnimationFrame(keepSelectedAbovePanel);
