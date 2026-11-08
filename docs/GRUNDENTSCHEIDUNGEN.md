@@ -387,11 +387,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - „Abbrechen“ verwirft die gesamte Vorschau unabhängig davon, wie oft die Position zuvor geändert wurde.
 - Die ID und Ebenenzugehörigkeit des Pins bleiben erhalten.
 
-## Offen – Grundentscheidung 35: Feineinstellung der Vorschauposition
+## Grundentscheidung 35 – Vorschau-Pin direkt verschieben
 
-Wie genau lässt sich die Vorschauposition eines Pins in der ersten Basisversion justieren?
+**Beschlossen (Variante A):** Während des bewusst aktivierten Modus „Pin verschieben“ lässt sich der Vorschau-Pin zusätzlich zum Festlegen einer neuen Position durch Antippen der Karte **direkt per Finger oder Maus ziehen**, um die vorgeschlagene Position präzise zu korrigieren.
 
-- **Variante A (Empfehlung):** Neben dem erneuten Antippen der Karte kann der **Vorschau-Pin direkt mit Finger oder Maus gezogen** werden, solange der bewusst gestartete Verschiebemodus aktiv ist. Alte Position und Verbindungslinie bleiben sichtbar. Außerhalb des Modus ist das Ziehen von Pins nicht möglich.
-- **Variante B:** Die neue Position wird ausschließlich durch Antippen einer Kartenstelle festgelegt bzw. korrigiert. Direktes Ziehen des Vorschau-Pins ist in der Basisversion nicht vorgesehen.
+**Konsequenzen:**
+- Direktes Ziehen eines Pins ist ausschließlich im aktiven Verschiebemodus für den jeweiligen Vorschau-Pin möglich. Außerhalb dieses Modus ist Ziehen keine Pin-Positionsänderung.
+- Die ursprüngliche Position bleibt sichtbar und unverändert gespeichert. Die Verbindungslinie zwischen ursprünglicher Position und Vorschauposition wird während des Ziehens aktualisiert (Grundentscheidungen 32 und 33).
+- Erneutes Antippen der Karte kann die Position ebenfalls beliebig oft korrigieren (Grundentscheidung 34).
+- Erst nach ausdrücklichem „Position übernehmen“ werden die zuletzt gewählten Koordinaten dauerhaft in IndexedDB gespeichert (Grundentscheidung 31). „Abbrechen“ verwirft die Vorschau.
+- Die stabile Pin-ID sowie die Zuordnung zu genau einer Ebene bleiben unverändert.
 
-**Status:** Grundentscheidung 35 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 36: Löschen eines einzelnen Pins
+
+Wie soll das Löschen eines einzelnen Pins in der ersten stabilen Basisversion abgesichert werden?
+
+- **Variante A (Empfehlung):** Nach „Pin löschen“ erscheint eine **Bestätigungsabfrage**, die den betroffenen Pin benennt bzw. bei fehlender Bezeichnung kenntlich macht. Erst nach ausdrücklicher Bestätigung wird der Pin aus IndexedDB gelöscht.
+- **Variante B:** Das Antippen von „Pin löschen“ entfernt den Pin **sofort ohne zusätzliche Bestätigung**. Ein Papierkorb oder „Rückgängig“ wird damit nicht automatisch zugesichert.
+
+**Status:** Grundentscheidung 36 ist offen und noch nicht beschlossen.
