@@ -410,11 +410,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Löschung ganzer regulärer Ebenen samt Pins folgt weiterhin Grundentscheidung 14.
 - Eine spätere Papierkorb-, Wiederherstellungs- oder Synchronisationsregel ist hiermit noch nicht beschlossen.
 
-## Offen – Grundentscheidung 37: Rückgängig-Funktion nach dem Löschen eines Pins
+## Grundentscheidung 37 – Kein Papierkorb in der ersten Basisversion
 
-Soll die erste lokale Basisversion bereits eine Möglichkeit zur Wiederherstellung eines bestätigten, gelöschten Pins bieten?
+**Beschlossen (Variante B):** Nach der ausdrücklich bestätigten Löschung eines einzelnen Pins wird der Pin lokal aus IndexedDB gelöscht. Die **erste lokale Basisversion enthält weder einen Papierkorb noch eine Rückgängig-Funktion** für solche Löschungen.
 
-- **Variante A:** Ein bestätigtes Löschen verschiebt den Pin zunächst in einen lokalen **Papierkorb**, aus dem er wiederhergestellt werden kann. Das erfordert zusätzliche Datenhaltung und eine einfache Papierkorb-Bedienung.
-- **Variante B (Empfehlung für die schlanke Basisversion):** Nach Bestätigung wird der Pin lokal gelöscht; in der ersten Basisversion gibt es **noch keinen Papierkorb und keine Rückgängig-Funktion**. Wiederherstellung und spätere Synchronisationsbehandlung werden vor der Serveranbindung gesondert geprüft.
+**Konsequenzen:**
+- Die Sicherheitsabfrage vor dem Löschen aus Grundentscheidung 36 ist verbindlich; erst nach Bestätigung darf der Pin gelöscht werden.
+- Die Benutzeroberfläche darf keine Wiederherstellung versprechen, solange diese nicht implementiert ist.
+- Ein bestätigtes Löschen eines Pins entfernt ihn aus dem aktiven lokalen Datenbestand; eine eingebaute Wiederherstellung ist in der Basisversion nicht vorgesehen.
+- Die besonderen Anforderungen an spätere Server-Synchronisation, Datensicherung und Wiederherstellung bleiben gesondert zu entscheiden, bevor der Zwei-Geräte-Test beginnt.
+- Die Löschung einer regulären Ebene einschließlich ihrer Pins folgt weiterhin Grundentscheidung 14.
 
-**Status:** Grundentscheidung 37 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 38: Lokale Datensicherung vor der Serveranbindung
+
+Die Basisversion speichert Pins und Ebenen in IndexedDB. Browser- beziehungsweise App-Daten können jedoch auch unabhängig von der Anwendung verloren gehen. Soll die erste stabile lokale Basisversion deshalb schon eine manuelle Exportfunktion bieten?
+
+- **Variante A (Empfehlung):** Bereits die lokale Basisversion erhält einen **manuellen Export** der Pins und Ebenen in eine Datei. Damit können Daten außerhalb des Browsers gesichert werden. Der spätere Import beziehungsweise die Wiederherstellung wird separat entschieden.
+- **Variante B:** In der ersten lokalen Basisversion gibt es **noch keinen Export**. Die Datensicherung wird erst im Zuge der frühen Serveranbindung angegangen.
+
+**Status:** Grundentscheidung 38 ist offen und noch nicht beschlossen.
