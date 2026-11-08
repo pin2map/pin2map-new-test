@@ -1410,11 +1410,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nicht verfügbare Suche bzw. Verbindungsfehler müssen verständlich angezeigt werden, ohne versehentlich einen Pin zu erzeugen.
 - Die Ortsnamensuche und die daraus mögliche Pin-Erstellung bleiben **verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 122: Eingabe im Suchfeld nach erfolgreicher Ortsnamensuche
+## Grundentscheidung 122 – Suchtext nach erfolgreicher Pin-Erstellung beibehalten
 
-Wie soll sich das Suchfeld nach erfolgreich erstelltem Pin verhalten?
+**Beschlossen (Variante A):** Nach erfolgreicher Erstellung eines Pins über die verbindlich zur Basisversion gehörende Ortsnamensuche **bleibt der zuvor eingegebene Suchtext im Suchfeld stehen**. Eine zuvor geöffnete Trefferliste wird nach der Pin-Erstellung geschlossen.
 
-- **Variante A (Empfehlung):** Der eingegebene Suchtext **bleibt im Suchfeld stehen**. So ist der zuletzt gesuchte Ort weiterhin nachvollziehbar und kann bei Bedarf direkt geändert oder erneut gesucht werden. Die Liste möglicher Treffer wird nach der Pin-Erstellung geschlossen.
-- **Variante B:** Nach erfolgreicher Pin-Erstellung wird das Suchfeld **automatisch geleert** und die gegebenenfalls geöffnete Trefferliste geschlossen. Für die nächste Suche beginnt der Benutzer mit einem leeren Feld.
+**Konsequenzen:**
+- Der zuletzt gesuchte Ortsname ist weiterhin sichtbar und kann bei Bedarf bearbeitet oder erneut gesucht werden.
+- Das automatische Beibehalten des Textes löst **keine** zusätzliche Suchanfrage aus; eine neue Ortssuche benötigt weiterhin eine bewusste Aktion (Grundentscheidung 121).
+- Die erfolgte Pin-Erstellung folgt weiterhin den beschlossenen Regeln: Speicherung in „Privat“, auch wenn diese Ebene ausgeblendet ist; automatische Übernahme eines gültigen Ortsnamens sowie Kartensprung zum neuen Pin (Grundentscheidungen 117–120).
+- Der Suchtext bleibt nach erfolgreichem Vorgang erhalten; ob und wie er über einen Neustart hinweg erhalten bleibt, ist damit nicht festgelegt.
+- Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 122 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 123: Platzierung des Suchfeldes für die Ortsnamensuche
+
+Wie soll die verbindlich zur Basisversion gehörende Ortsnamensuche in der Kartenansicht erreichbar sein?
+
+- **Variante A (Empfehlung):** Ein **dauerhaft sichtbares, kompaktes Suchfeld am oberen Rand der Kartenansicht** ermöglicht die Eingabe eines Ortsnamens. Die bewusste Suche wird über Eingabetaste oder die Suchschaltfläche gestartet (Grundentscheidung 121). Trefferlisten werden unmittelbar beim Suchfeld angezeigt; die Karte bleibt als Hauptansicht erhalten.
+- **Variante B:** In der Kartenansicht ist zunächst **nur ein Suchsymbol** sichtbar. Erst nach Antippen öffnet sich ein separates Suchfeld bzw. eine Suchansicht. Nach der Pin-Erstellung kehrt der Benutzer zur Karte zurück; der eingegebene Text bleibt in der Suchansicht verfügbar.
+
+**Status:** Grundentscheidung 123 ist offen und noch nicht beschlossen.
