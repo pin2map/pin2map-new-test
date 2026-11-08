@@ -1564,11 +1564,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Aus der Suche erstellte Pins werden weiterhin in **„Privat“** gespeichert, auch bei ausgeblendeter privater Ebene (Grundentscheidungen 119 und 120).
 - **Die Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion.**
 
-## Offen – Grundentscheidung 135: Reihenfolge der Treffer in der Ortssuchliste
+## Grundentscheidung 135 – Relevanzreihenfolge des Geocoding-Dienstes beibehalten
 
-In welcher Reihenfolge sollen die vom Geocoding-Dienst gelieferten Suchtreffer dargestellt werden?
+**Beschlossen (Variante A):** Die Treffer einer geografischen Ortsnamensuche werden in **der vom Geocoding-Dienst gelieferten Relevanzreihenfolge** angezeigt. pin2map sortiert die Ergebnisse **nicht eigenständig alphabetisch oder nach Entfernung** um.
 
-- **Variante A (Empfehlung):** Die Treffer bleiben in der **vom Geocoding-Dienst gelieferten Relevanzreihenfolge**. pin2map sortiert sie nicht eigenmächtig nach Entfernung oder alphabetisch um. Die bewusste Trefferauswahl und das Verbot der automatischen Auswahl aus mehreren Treffern bleiben unverändert.
-- **Variante B:** pin2map sortiert die Ergebnisse **alphabetisch nach Ortsname und ergänzender Ortsangabe**. Dadurch ist die Liste unabhängig von der Relevanzbewertung des Anbieters geordnet, aber wahrscheinlich passende Treffer können weiter unten stehen.
+**Konsequenzen:**
+- Die Reihenfolge des gewählten Suchanbieters bleibt beim Aufbereiten und Darstellen der Treffer erhalten.
+- Die Trefferliste zeigt weiterhin alle tatsächlich vom Geocoding-Dienst gelieferten plausiblen Ergebnisse ohne zusätzliche feste Beschränkung durch pin2map (Grundentscheidung 134).
+- Eine hohe Relevanzwertung führt **nicht** zur automatischen Pin-Erstellung, wenn mehrere plausible Treffer vorliegen: Die bewusste Auswahl bleibt zwingend (Grundentscheidung 116).
+- Bei genau einem geeigneten Treffer bleibt die direkte Pin-Erstellung zulässig.
+- Der aus der Suche erstellte Pin wird wie beschlossen in der Systemebene **„Privat“** gespeichert (Grundentscheidung 119).
+- Die **weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 135 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 136: Kennzeichnung der Herkunft von Ortssuchtreffern
+
+Soll die Trefferliste bei jeder Ortsnamensuche sichtbar angeben, **von welchem Geocoding-Dienst** die angezeigten Suchergebnisse stammen?
+
+- **Variante A (Empfehlung):** **Ja.** Eine kleine, unaufdringliche Quellenangabe wie **„Suchergebnisse: [Anbieter]“** wird am unteren Rand der Trefferliste angezeigt, mit der vom Anbieter verlangten Verlinkung beziehungsweise Attribution. Die tatsächlichen Kennzeichnungspflichten des gewählten Dienstes sind unabhängig davon stets einzuhalten.
+- **Variante B:** **Keine zusätzliche Quellenangabe in der Trefferliste**, sofern der konkrete Geocoding-Anbieter eine Kennzeichnung ausschließlich an einer anderen, zentralen Stelle erlaubt. Rechtlich oder vertraglich erforderliche Attributionen werden dort weiterhin vollständig erfüllt.
+
+**Status:** Grundentscheidung 136 ist offen und noch nicht beschlossen.
