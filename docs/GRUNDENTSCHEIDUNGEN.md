@@ -1196,11 +1196,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Antippen des Symbols darf keine Sichtbarkeitsänderung und keine andere Aktion auslösen.
 - Dadurch wird das versehentliche Ausblenden einer gesamten Ebene aus der Pin-Bearbeitung heraus vermieden.
 
-## Offen – Grundentscheidung 105: Pin-Namen im Bedienfeld bearbeiten
+## Grundentscheidung 105 – Pin-Namen direkt im Bedienfeld bearbeiten
 
-Wie soll der optionale Name eines ausgewählten Pins im unteren Pin-Bedienfeld geändert werden?
+**Beschlossen (Variante A):** Der optionale Name des ausgewählten Pins ist im unteren Pin-Detail-/Bearbeitungsfeld **unmittelbar als bearbeitbares Textfeld** vorhanden. Es ist weder ein zusätzlicher Button „Name bearbeiten“ noch ein separater Speichern-Button erforderlich.
 
-- **Variante A (Empfehlung):** Der Name steht **direkt in einem jederzeit bearbeitbaren Textfeld**. Änderungen werden wie beschlossen automatisch gespeichert, ohne gesonderten Speichern-Button (Grundentscheidung 29).
-- **Variante B:** Der Name wird zunächst **als reiner Text** angezeigt. Erst nach Antippen einer separaten Aktion **„Name bearbeiten“** öffnet sich ein Eingabefeld zur Änderung; anschließend greift ebenfalls die automatische Speicherung.
+**Konsequenzen:**
+- Ein vorhandener Name wird direkt im Eingabefeld angezeigt; bei unbenannten Pins kann dort optional ein Name ergänzt werden.
+- Änderungen werden entsprechend der automatischen Speicherung aus Grundentscheidung 29 lokal gespeichert.
+- Eine leere Eingabe ist erlaubt, weil der Pin-Name optional ist (Grundentscheidung 6).
+- Die Kartenbeschriftung eines Pins wird entsprechend der gespeicherten Namensänderung aktualisiert (Grundentscheidungen 72–79).
+- Das direkte Wechseln zwischen ausgewählten Pins bleibt möglich; ausstehende Speichervorgänge dürfen keine Namen eines anderen Pins überschreiben (Grundentscheidung 88).
+- Der genaue Zeitpunkt, zu dem eingegebene Änderungen übernommen werden, wird in Grundentscheidung 106 konkretisiert.
 
-**Status:** Grundentscheidung 105 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 106: Zeitpunkt der automatischen Namensspeicherung
+
+Wann soll pin2map Änderungen im direkt bearbeitbaren Namensfeld dauerhaft lokal speichern?
+
+- **Variante A (Empfehlung):** Während der Eingabe **automatisch nach einer kurzen Eingabepause** (Debounce), zusätzlich zuverlässig beim Verlassen des Felds oder Wechseln des ausgewählten Pins. Es gibt keinen Speichern-Button; unnötige Speicherzugriffe bei jedem Tastendruck werden vermieden.
+- **Variante B:** **Unmittelbar nach jeder einzelnen Textänderung** wird der neue Name lokal gespeichert. Das ist möglichst direkt, kann aber insbesondere bei längeren Namen sehr viele Schreibvorgänge erzeugen.
+
+**Status:** Grundentscheidung 106 ist offen und noch nicht beschlossen.
