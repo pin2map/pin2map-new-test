@@ -52,11 +52,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Funktionen müssen auch nach Neuladen der PWA und Neustart erhalten bleiben.
 - Zusätzliche Pin-Attribute, erweiterte Bearbeitungsfunktionen und Synchronisationsdetails werden gesondert festgelegt.
 
-## Offen – Grundentscheidung 6: Mindestangaben für einen Pin
+## Grundentscheidung 6 – Mindestangaben für einen Pin
 
-Welche Angaben soll ein Pin in der lokalen Basisversion benötigen?
+**Beschlossen (Variante A):** Zum Erstellen eines Pins sind **Standort (Koordinaten)** und die **Zuordnung zu genau einer Ebene** Pflicht. Die **Bezeichnung ist optional**.
 
-- **Variante A (empfohlen):** Standort und genau eine Ebene sind Pflicht. Eine Bezeichnung ist optional. Ein Pin kann daher sofort durch Antippen der Karte erstellt und später benannt werden.
-- **Variante B:** Standort, genau eine Ebene **und eine Bezeichnung** sind Pflicht. Jeder neue Pin muss vor dem Speichern benannt werden.
+**Konsequenzen:**
+- Ein Pin darf ohne Namenseingabe erstellt und dauerhaft gespeichert werden.
+- Eine Bezeichnung kann nachträglich ergänzt oder geändert werden.
+- Jeder Pin erhält unabhängig vom Namen eine stabile eindeutige interne ID.
+- Das Datenmodell erlaubt leere/nicht gesetzte Bezeichnungen.
+- Die private Ebene steht als mögliche eindeutige Ebenenzuordnung von Anfang an zur Verfügung.
+- Wie die Ebene beim Anlegen ausgewählt wird, regelt die nächste Grundentscheidung.
 
-Beide Varianten sehen eine stabile interne Pin-ID vor; weitere Felder werden später festgelegt. **Grundentscheidung 6 ist noch nicht beschlossen.**
+## Offen – Grundentscheidung 7: Ebenenzuordnung beim Anlegen eines Pins
+
+Da jeder Pin genau einer Ebene angehören muss, ist der Bedienablauf beim Erstellen zu entscheiden:
+
+- **Variante A (Empfehlung):** Ein neuer Pin wird automatisch der aktuell ausgewählten/aktiven Ebene zugeordnet. Die aktive Ebene wird beim Setzen des Pins erkennbar angezeigt; die Zuordnung kann später geändert werden. Wenn keine Ebene aktiv ist, muss vor dem Anlegen eine Ebene gewählt werden. Das gilt auch für die private Ebene.
+- **Variante B:** Bei jedem neuen Pin wird die zugehörige Ebene ausdrücklich ausgewählt, bevor er gespeichert werden kann, selbst wenn bereits eine Ebene aktiv ist.
+
+**Status:** Grundentscheidung 7 ist offen und noch nicht beschlossen.
