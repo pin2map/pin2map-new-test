@@ -942,11 +942,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Das Verhalten gilt für Touch- und Mausbedienung; die normale Kartenbewegung darf dadurch nicht unnötig beeinträchtigt werden.
 - Der Benutzer kann durch Heranzoomen eine genauere Auswahl ermöglichen.
 
-## Offen – Grundentscheidung 83: Markierung des ausgewählten Pins
+## Grundentscheidung 83 – Ausgewählten Pin mit Kontur oder Ring hervorheben
 
-Wie soll die eigentliche **Pin-Markierung** bei Auswahl visuell hervorgehoben werden – zusätzlich zur bereits beschlossenen hervorgehobenen Namensbeschriftung (Grundentscheidung 76)?
+**Beschlossen (Variante A):** Der ausgewählte Pin behält **seine reguläre Ebenenfarbe** und erhält zusätzlich **eine deutlich sichtbare Kontur bzw. einen Hervorhebungsring**. Die Auswahl muss auch bei Pins ohne Bezeichnung klar erkennbar sein.
 
-- **Variante A (Empfehlung):** Der ausgewählte Pin erhält **eine deutlich sichtbare zusätzliche Kontur bzw. einen Hervorhebungsring**, behält jedoch seine Ebenenfarbe. Damit bleibt die Ebenenzuordnung erkennbar und die Auswahl ist auch bei namenlosen Pins sichtbar.
-- **Variante B:** Der ausgewählte Pin wird **durch eine andere, einheitliche Auswahlfarbe** ersetzt. Das signalisiert die Auswahl, verdeckt aber währenddessen seine reguläre Ebenenfarbe.
+**Konsequenzen:**
+- Die Ebenenfarbe des Pins bleibt bei Auswahl unverändert und weiterhin sichtbar (Grundentscheidungen 66–71).
+- Die zusätzliche Auswahlmarkierung ist von den Vorschau- und Positionsmarkierungen bei einer Pin-Verschiebung klar unterscheidbar (Grundentscheidungen 31–35 und 65).
+- Die Hervorhebung erscheint unmittelbar bei Auswahl und verschwindet bei Abwahl.
+- Bei Pins mit Namen bleibt zusätzlich die seitliche hervorgehobene Beschriftung gemäß Grundentscheidungen 76–79 bestehen.
+- Die konkrete Form, Stärke und Farbe der Kontur/des Rings werden bei der visuellen Umsetzung mit Blick auf beide Kartenhintergründe und unterschiedliche Ebenenfarben festgelegt.
 
-**Status:** Grundentscheidung 83 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 84: Auswahl eines Pins durch Antippen einer freien Kartenfläche beenden
+
+Was soll geschehen, wenn ein Pin ausgewählt ist und der Benutzer **auf eine freie Stelle der Karte** tippt oder klickt (ohne aktiven „Pin hinzufügen“- oder Verschiebemodus)?
+
+- **Variante A (Empfehlung):** Ein Antippen der freien Kartenfläche **hebt die Pin-Auswahl auf und schließt die Pin-Ansicht**. Die Kontur bzw. der Auswahlring und die hervorgehobene Beschriftung verschwinden. Die Karte bleibt am selben Ausschnitt.
+- **Variante B:** Ein Antippen der freien Kartenfläche **ändert die Pin-Auswahl nicht**. Die Auswahl bleibt bestehen, bis der Benutzer sie ausdrücklich über die Pin-Ansicht schließt oder einen anderen Pin auswählt.
+
+**Status:** Grundentscheidung 84 ist offen und noch nicht beschlossen.
