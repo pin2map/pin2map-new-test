@@ -1372,11 +1372,25 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Pin wird wie beschlossen lokal gespeichert, auf der Karte angezeigt und ausgewählt; die Karte springt zum Standort des gefundenen Orts (Grundentscheidungen 115–117).
 - Die Ortsnamensuche mit Pin-Erstellung ist und bleibt **verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 119: Ebene für einen Pin aus der Ortsnamensuche
+## Grundentscheidung 119 – Ortsnamensuche speichert neue Pins immer in „Privat“
 
-Welcher Ebene soll ein Pin zugeordnet werden, der durch die Ortsnamensuche erstellt wird?
+**Beschlossen (Variante C, ausdrücklich vom Auftraggeber eingebracht):** **Jeder über die geografische Ortsnamensuche neu angelegte Pin wird immer der Systemebene „Privat“ zugeordnet**, unabhängig davon, welche andere Ebene gerade aktiv ist oder ob überhaupt eine Ebene aktiv ist. Es erfolgt dafür **keine gesonderte Ebenenauswahl**.
 
-- **Variante A (Empfehlung):** Es gelten **dieselben Regeln wie bei einem manuell erstellten Pin**: Der Pin wird der aktuell aktiven Ebene zugeordnet. Ist keine gültige Ebene aktiv, wird vor der Erstellung ausdrücklich eine Ebene ausgewählt. Die Suche legt keine eigene Ebene an und ändert die aktive Ebene nicht automatisch (Grundentscheidungen 1 und 7).
-- **Variante B:** Für jeden Pin aus der Ortsnamensuche wird **grundsätzlich eine Ebene separat abgefragt**, selbst wenn bereits eine gültige aktive Ebene ausgewählt ist. So muss die Ebene für jeden Suchtreffer erneut bewusst festgelegt werden.
+**Konsequenzen:**
+- Die verbindlich zur ersten Basisversion gehörende Ortsnamensuche speichert Pins nach eindeutigen Suchtreffern oder bewusster Trefferauswahl grundsätzlich in „Privat“ (Basisanforderung Ortsnamensuche, Grundentscheidungen 115–118).
+- Die allgemein beschlossene Regel, manuell erzeugte Pins in der aktiven Ebene anzulegen (Grundentscheidung 7), bleibt **für manuell erstellte Pins** bestehen; die Ortsnamensuche erhält mit diesem Beschluss ausdrücklich eine **abweichende Spezialregel**.
+- Die aktive Ebene bleibt unverändert; die Ortssuche aktiviert die private Ebene nicht automatisch.
+- Jeder Pin gehört weiterhin genau **einer** Ebene an (Grundentscheidung 1).
+- Nach der Erstellung kann der Pin über das direkte Ebenenauswahlfeld im Pin-Bedienfeld wie jeder andere Pin einer anderen Ebene zugeordnet werden (Grundentscheidung 99).
+- Die private Systemebene existiert von Beginn an und kann nicht gelöscht werden (Grundentscheidungen 2, 15 und 16).
+- Das bisher beschlossene automatische Springen der Karte zum neu angelegten Such-Pin und das geöffnete Pin-Bedienfeld bleiben bestehen (Grundentscheidung 117).
+- Ist die Ebene „Privat“ ausgeblendet, muss die Anwendung ihre Sichtbarkeit respektieren. Die genaue Führung bei der Suche und Erstellung in dieser Situation wird in Grundentscheidung 120 geklärt.
 
-**Status:** Grundentscheidung 119 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 120: Ortsnamensuche bei ausgeblendeter privater Ebene
+
+Ein Ortssuchtreffer soll gemäß Grundentscheidung 119 immer als Pin in der Ebene **„Privat“** gespeichert werden. Was soll geschehen, wenn „Privat“ zum Zeitpunkt der Suche ausgeblendet ist?
+
+- **Variante A (Empfehlung):** Die Trefferwahl bzw. eindeutige Ortssuche speichert den Pin weiterhin **in „Privat“**, ohne deren Sichtbarkeit eigenmächtig zu ändern. pin2map zeigt einen deutlichen Hinweis „Der Pin wurde in der ausgeblendeten Ebene Privat gespeichert“ sowie eine **bewusst auslösbare Aktion „Ebene einblenden“**. Der Pin bleibt im geöffneten Bearbeitungsfeld ausgewählt; das beschlossene automatische Zentrieren der Karte auf den Suchort kann erfolgen, obwohl das Pin-Symbol wegen der ausgeblendeten Ebene nicht sichtbar ist.
+- **Variante B:** Vor der Speicherung erscheint ein Hinweis, dass „Privat“ ausgeblendet ist. Erst nach **bewusstem Einblenden der Ebene** wird der Orts-Pin angelegt. Ein Abbruch lässt die Ebene ausgeblendet und erzeugt keinen Pin.
+
+**Status:** Grundentscheidung 120 ist offen und noch nicht beschlossen.
