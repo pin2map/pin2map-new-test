@@ -831,11 +831,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Darstellung soll überlappende Beschriftungen möglichst reduzieren. Die im PoC vorhandene Bedienung über ein Label-Steuerelement kann als Orientierung dienen.
 - Ob der zuletzt gewählte Sichtbarkeitszustand über Neustarts erhalten bleibt, wird in Grundentscheidung 73 entschieden.
 
-## Offen – Grundentscheidung 73: Beschriftungssichtbarkeit nach Neustart
+## Grundentscheidung 73 – Letzte Sichtbarkeit der Pin-Beschriftungen wiederherstellen
 
-Soll pin2map die letzte Einstellung des Beschriftungsbuttons über einen Neustart hinweg beibehalten?
+**Beschlossen (Variante A):** pin2map speichert die zuletzt durch den Beschriftungsbutton gewählte Einstellung **„Pin-Beschriftungen anzeigen/ausblenden“ lokal** und stellt sie beim nächsten Start der Anwendung automatisch wieder her. Beim **allerersten Start** sind Beschriftungen standardmäßig sichtbar.
 
-- **Variante A (Empfehlung):** Die zuletzt gewählte Einstellung **„Beschriftungen anzeigen/ausblenden“ wird lokal gespeichert** und beim nächsten Start wiederhergestellt. Beim allerersten Start sind Beschriftungen sichtbar (Grundentscheidung 72).
-- **Variante B:** Nach **jedem Neustart** sind die Beschriftungen wieder sichtbar, auch wenn sie in der vorherigen Sitzung ausgeblendet waren.
+**Konsequenzen:**
+- Die Sichtbarkeit der Pin-Beschriftungen ist eine lokale Anzeigeeinstellung und unabhängig von den gespeicherten Pin-Bezeichnungen.
+- Ein Umschalten über den direkt erreichbaren Button (Grundentscheidung 72) aktualisiert die Anzeige unmittelbar und speichert die Einstellung lokal.
+- Nach einem Neustart bleibt die zuletzt gewählte Sichtbarkeit erhalten; nur wenn noch keine Einstellung existiert, gilt „Beschriftungen anzeigen“ als Ausgangszustand.
+- Das Ausblenden verändert weder Pin-Namen noch die Darstellung der Pin-Symbole und ihre Auswahlmöglichkeit.
+- Die Einstellung ist unabhängig von der Sichtbarkeit der Ebenen und der Wahl des Kartenhintergrunds.
 
-**Status:** Grundentscheidung 73 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 74: Position des Beschriftungsbuttons
+
+Wo soll der direkt erreichbare Button zum Ein- und Ausblenden der Pin-Beschriftungen in der Kartenansicht positioniert werden?
+
+- **Variante A (Empfehlung):** **Links neben dem unten mittig angeordneten Kartenwahl-Button**, auf derselben horizontalen Höhe wie der Zoom-Minus-Button. So liegen die beiden Kartenanzeige-Steuerungen nebeneinander; das entspricht dem zuletzt im PoC erprobten Bedienkonzept.
+- **Variante B:** **Oben in der Kopfzeile**, getrennt von der Kartenwahl. Dadurch bleibt am unteren Kartenrand mehr Platz, aber die zusammengehörigen Kartenanzeige-Steuerungen liegen weiter auseinander.
+
+**Status:** Grundentscheidung 74 ist offen und noch nicht beschlossen.
