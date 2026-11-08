@@ -88,13 +88,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Regel gilt auch für die private Ebene; ihre späteren Zugriffs-/Sichtbarkeitsregeln bleiben gesondert zu klären.
 - Die automatische Zuordnung neuer Pins aus Grundentscheidung 7 bleibt unverändert.
 
-## Offen – Grundentscheidung 9: Sichtbarkeit von Pins auf der Karte
+## Grundentscheidung 9 – Sichtbarkeit von Ebenen auf der Karte
 
-Wie sollen Pins verschiedener Ebenen in der lokalen Basisversion angezeigt werden?
+**Beschlossen (Variante A):** Mehrere Ebenen können gleichzeitig auf der Karte sichtbar sein. **Jede Ebene kann unabhängig ein- oder ausgeblendet werden.** Die aktuell aktive Ebene bestimmt, welcher Ebene neu angelegte Pins zugeordnet werden, nicht welche Pins sichtbar sind.
 
-- **Variante A (Empfehlung):** Mehrere Ebenen können unabhängig voneinander **sichtbar oder ausgeblendet** werden. Die aktive Ebene steuert ausschließlich, welcher Ebene neu angelegte Pins zugeordnet werden; sie muss nicht die einzige sichtbare Ebene sein.
-- **Variante B:** Auf der Karte erscheinen ausschließlich Pins der aktuell aktiven Ebene. Zum Anzeigen anderer Pins muss die aktive Ebene gewechselt werden.
+**Konsequenzen:**
+- Sichtbarkeit und Aktivität sind getrennte Zustände mit klar unterscheidbarer Bedienung und Anzeige.
+- Pins aller eingeblendeten Ebenen werden gemeinsam auf der Karte gezeigt; ausgeblendete Ebenen und ihre Pins bleiben unverändert gespeichert.
+- Ein Pin gehört weiterhin genau einer Ebene (Grundentscheidung 1).
+- Die aktive Ebene kann unabhängig von ihrer Sichtbarkeit ausgewählt sein; ein eventuell nötiger zusätzlicher Hinweis beim Setzen eines Pins auf einer ausgeblendeten Ebene wird gesondert entschieden.
+- Die private Ebene ist Teil der Ebenenverwaltung; besondere Sichtbarkeits-/Zugriffsregeln bei späterer Serveranbindung bleiben separat zu klären.
 
-**Wichtige Abgrenzung:** Sichtbarkeit ist nicht Ebenenzugehörigkeit; jeder Pin gehört weiterhin genau einer Ebene. Sichtbarkeit und Aktivität sollen bei Variante A unterscheidbar bleiben.
+## Offen – Grundentscheidung 10: Speicherung der Ebenensichtbarkeit
 
-**Status:** Grundentscheidung 9 ist offen und noch nicht beschlossen.
+Wie soll sich die Anwendung merken, welche Ebenen gerade sichtbar sind?
+
+- **Variante A (Empfehlung):** Die Sichtbarkeit jeder Ebene wird lokal gespeichert und beim erneuten Öffnen der PWA wiederhergestellt. Neue Ebenen sind zunächst sichtbar; der genaue Umgang mit späterer Synchronisation von Anzeigeeinstellungen wird gesondert entschieden.
+- **Variante B:** Bei jedem Start sind zunächst alle vorhandenen Ebenen sichtbar, unabhängig davon, welche Ebenen vorher ausgeblendet waren.
+
+**Status:** Grundentscheidung 10 ist offen und noch nicht beschlossen.
