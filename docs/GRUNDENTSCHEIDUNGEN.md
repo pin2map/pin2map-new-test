@@ -498,11 +498,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nach der erfolgreichen Anpassung gilt die neue Kartenansicht als letzte Ansicht und wird gemäß Grundentscheidung 22 lokal gespeichert.
 - Für den Importmodus „Ersetzen“ wird mit dieser Entscheidung keine automatische Kartenausschnitt-Anpassung festgelegt.
 
-## Offen – Grundentscheidung 44: Aktive Ebene nach dem Hinzufügen
+## Grundentscheidung 44 – Aktive Ebene nach dem Hinzufügen beibehalten
 
-Nach dem Import mit „Hinzufügen“ existiert eine neue reguläre Importebene, die auf der Karte sichtbar ist. Soll sie auch automatisch zur **aktiven Ebene** werden, in der neue Pins angelegt werden?
+**Beschlossen (Variante B):** Nach einem erfolgreichen Dateiimport mit **„Hinzufügen“** bleibt die zuvor aktive Ebene unverändert aktiv. Die neu angelegte Importebene wird **nicht automatisch zur aktiven Ebene**.
 
-- **Variante A (Empfehlung):** Die neu angelegte Importebene wird nach einem erfolgreichen Hinzufügen **automatisch aktiv**. Weitere neu gesetzte Pins landen dadurch direkt in dieser Ebene, bis der Benutzer eine andere aktive Ebene wählt.
-- **Variante B:** Die **bisher aktive Ebene bleibt aktiv** (oder es bleibt weiterhin keine Ebene aktiv). Die neue Importebene wird lediglich sichtbar angelegt; für neue Pins muss sie ausdrücklich als aktiv gewählt werden.
+**Konsequenzen:**
+- Die neue Importebene wird angelegt und sichtbar geschaltet, alle importierten Pins werden ihr zugeordnet (Grundentscheidungen 41 und 43).
+- Die bisherige aktive Ebene bleibt bestehen. War vor dem Import keine Ebene aktiv, bleibt auch anschließend keine Ebene aktiv.
+- Neu erstellte Pins werden weiterhin der aktiven Ebene zugeordnet (Grundentscheidung 7); die Importebene wird erst nach bewusster Auswahl durch den Benutzer zur aktiven Ebene.
+- Die gespeicherte aktive Ebene wird durch den Import im Modus „Hinzufügen“ nicht geändert (Grundentscheidung 8).
+- Diese Entscheidung betrifft ausschließlich „Hinzufügen“; die Behandlung eines Ersetzen-Imports bleibt davon unberührt.
 
-**Status:** Grundentscheidung 44 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 45: Aktive Ebene beim Importmodus „Ersetzen“
+
+Beim Import mit **„Ersetzen“** wird der bisherige Bestand vollständig durch die gültige Sicherungsdatei ersetzt. Was geschieht mit der zuvor aktiven Ebene?
+
+- **Variante A (Empfehlung):** Nach erfolgreichem Ersetzen ist **zunächst keine Ebene aktiv**. So wird nicht versehentlich in einer anderen Ebene weitergearbeitet. Eine aktive Ebene muss anschließend bewusst ausgewählt werden.
+- **Variante B:** Falls die Sicherungsdatei eine zuletzt aktive Ebene als Einstellung enthält und diese im importierten Bestand existiert, wird **diese Ebene automatisch aktiv**. Andernfalls bleibt keine Ebene aktiv.
+
+**Status:** Grundentscheidung 45 ist offen und noch nicht beschlossen.
