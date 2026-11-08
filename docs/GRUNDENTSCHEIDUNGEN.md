@@ -533,11 +533,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nach dem Ersetzen bleibt unabhängig vom Kartenausschnitt zunächst **keine Ebene aktiv** (Grundentscheidung 45).
 - Für „Hinzufügen“ gilt weiterhin die automatische Kartenanpassung ausschließlich auf die neu hinzugefügten Pins (Grundentscheidung 43).
 
-## Offen – Grundentscheidung 47: Sichtbarkeit der Ebenen nach dem Ersetzen
+## Grundentscheidung 47 – Nach Ersetzen alle importierten Ebenen sichtbar schalten
 
-Nach dem Import mit **„Ersetzen“** sollen die importierten Pins auf der Karte sichtbar sein (Grundentscheidung 46). Wie wird die Ebenensichtbarkeit dafür behandelt?
+**Beschlossen (Variante A):** Nach einem erfolgreich abgeschlossenen Import im Modus **„Ersetzen“** werden **sämtliche importierten Ebenen zunächst sichtbar geschaltet**, unabhängig von den in der Sicherungsdatei hinterlegten Sichtbarkeitseinstellungen.
 
-- **Variante A (Empfehlung):** Nach erfolgreichem „Ersetzen“ werden **alle importierten Ebenen zunächst sichtbar geschaltet**. Dadurch kann die Karte wirklich alle importierten Pins anzeigen, auch wenn einzelne Ebenen in der Sicherungsdatei zuvor ausgeblendet waren. Die neue Sichtbarkeit wird lokal gespeichert.
-- **Variante B:** Die **Sichtbarkeit der Ebenen aus der Sicherungsdatei wird wiederhergestellt**. Der Kartenausschnitt umfasst zwar die Koordinaten aller importierten Pins, Pins ausgeblendeter Ebenen bleiben jedoch weiterhin unsichtbar.
+**Konsequenzen:**
+- Alle importierten Pins können nach dem Import im automatisch angepassten Kartenausschnitt tatsächlich angezeigt werden (Grundentscheidung 46).
+- Die Sichtbarkeitseinstellungen aus der Sicherungsdatei werden für diesen ersten Zustand nach dem Ersetzen bewusst nicht übernommen; anschließend kann der Benutzer einzelne Ebenen wieder ausblenden.
+- Die Sichtbarkeit aller Ebenen einschließlich der geschützten Systemebene „Privat“ wird gemäß Grundentscheidungen 10 und 17 lokal gespeichert.
+- Unabhängig von der Sichtbarkeit ist unmittelbar nach dem Ersetzen **keine Ebene aktiv** (Grundentscheidung 45). Sichtbar und aktiv sind getrennte Eigenschaften.
+- Bei abgebrochenem oder fehlgeschlagenem Import bleiben die bisherige Ebenensichtbarkeit, aktive Ebene und Kartenansicht unverändert.
+- Der Importmodus „Hinzufügen“ ist hiervon nicht betroffen; seine neue Ebene ist bereits gemäß Grundentscheidung 43 sichtbar.
 
-**Status:** Grundentscheidung 47 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 48: Dateiformat für Export und Import
+
+Welches Dateiformat soll die erste stabile lokale Basisversion für ihre manuell erstellten Sicherungsdateien verwenden?
+
+- **Variante A (Empfehlung):** Ein **eigenes, klar dokumentiertes und versioniertes JSON-Format für pin2map** (z. B. Dateiendung `.json`). Es enthält die vollständigen Ebenen- und Pin-Daten einschließlich IDs, Koordinaten, Zuordnungen und für die Sicherung erforderlichen Einstellungen. Damit lassen sich Export und Import einschließlich Dateiprüfung einfach und verlustfrei aufeinander abstimmen.
+- **Variante B:** **GeoJSON** als hauptsächliches Sicherungsformat. Koordinaten sind damit leichter mit anderen Geowerkzeugen austauschbar; Ebenenstruktur, feste private Ebene und weitere Anwendungseinstellungen müssten jedoch über eigene Zusatzfelder abgebildet und geprüft werden.
+
+**Status:** Grundentscheidung 48 ist offen und noch nicht beschlossen.
