@@ -1503,11 +1503,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nach erfolgreicher Erstellung des Ortssuch-Pins springt die Karte an dessen Standort (Grundentscheidung 117). Der Pin wird unabhängig von der aktiven Ebene in **„Privat“** gespeichert (Grundentscheidung 119).
 - Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 130: Einbindung des Geocoding-Dienstes
+## Grundentscheidung 130 – Geocoding-Dienst über zentrale Schnittstelle anbinden
 
-Wie soll der externe Dienst zur weltweiten Ortsnamensuche in der ersten Basisversion technisch eingebunden werden?
+**Beschlossen (Variante A):** Die verbindlich zur ersten Basisversion gehörende geografische Ortsnamensuche wird über eine **zentrale Geocoding-Schnittstelle (Adapter)** angebunden. Sie kapselt die Kommunikation mit dem zunächst ausgewählten externen Suchdienst, die Aufbereitung der Suchtreffer und die Fehlerbehandlung; Benutzeroberfläche, Karte und Pin-Verwaltung sind nicht an das proprietäre Antwortformat eines Anbieters gebunden.
 
-- **Variante A (Empfehlung):** Über eine **zentrale Geocoding-Schnittstelle (Adapter)**, die Suchanfragen, Trefferaufbereitung und Fehlerbehandlung von der übrigen Anwendung trennt. Für die erste Version wird ein geeigneter Anbieter angebunden; ein späterer Anbieterwechsel ist möglich, ohne die Karten- oder Pin-Logik umzubauen. Nutzungsbedingungen und Anfragebeschränkungen des konkreten Anbieters sind einzuhalten.
-- **Variante B:** Die Anwendung spricht den zunächst gewählten Geocoding-Dienst **direkt aus der Suchoberfläche** an. Das ist kurzfristig einfacher, koppelt aber Suchfeld, Trefferliste und Pin-Erstellung eng an das Antwortformat dieses Dienstes.
+**Konsequenzen:**
+- Das Suchfeld und die Trefferliste arbeiten mit einem anbieterunabhängigen Ergebnisformat, das insbesondere Ortsname, unterscheidende Ortsangaben und Koordinaten umfasst.
+- Der Adapter kapselt Anfrageaufbau, Antwortvalidierung, Abbruch bzw. Verwerfen veralteter Antworten (Grundentscheidung 128) sowie die einheitliche Behandlung von Fehlern und leeren Ergebnissen.
+- Ein Wechsel des Geocoding-Anbieters bleibt möglich, ohne die eigentliche Pin-Erstellung, die Trefferliste oder die Kartenbedienung neu zu entwickeln.
+- Bei der Auswahl und Einbindung des konkreten Anbieters müssen dessen Nutzungsbedingungen, Nutzungsgrenzen, Datenschutz- und Zuordnungsanforderungen beachtet werden.
+- Die beschlossenen fachlichen Regeln bleiben unverändert: weltweite Suche (129), Auswahlliste bei mehreren plausiblen Treffern (116), direkte Pin-Erstellung bei genau einem geeigneten Treffer, und Speicherung aller Such-Pins in **„Privat“** (119).
+- **Die Ortsnamensuche bleibt ausdrücklich und verbindlich Bestandteil der ersten Basisversion.**
 
-**Status:** Grundentscheidung 130 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 131: Geocoding-Anbindung ohne eigenen Server in der Basisversion
+
+Soll die erste testbare Basisversion der Ortsnamensuche bereits einen eigenen pin2map-Server für die Weiterleitung von Suchanfragen voraussetzen?
+
+- **Variante A (Empfehlung):** **Nein.** Die erste Basisversion nutzt über den Geocoding-Adapter zunächst einen geeigneten Dienst, der **direkte Browser-Anfragen ausdrücklich zulässt** und dessen Nutzungsbedingungen dies im vorgesehenen Testbetrieb erlauben. Die Ortssuche ist damit schon in der lokalen PWA ohne eigenen pin2map-Server testbar. Anbieterwahl, Anfragegrenzen, Herkunftsangaben und gegebenenfalls Schlüsselverwaltung müssen dazu passen.
+- **Variante B:** **Ja.** Die Ortsnamensuche wird von Beginn an ausschließlich über einen **eigenen pin2map-Server** ausgeführt, der die Anfragen an den Geocoding-Anbieter weiterleitet. Das ermöglicht serverseitige Schlüsselverwaltung und zentrale Kontrolle, macht die erste Ortssuchfunktion aber von einer zusätzlich betriebenen Serverkomponente abhängig.
+
+**Status:** Grundentscheidung 131 ist offen und noch nicht beschlossen.
