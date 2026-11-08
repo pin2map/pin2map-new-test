@@ -253,16 +253,18 @@
       active.textContent = state.activeLayer === layer.id ? "Aktiv" : "Aktivieren";
       active.addEventListener("click", () => { state.activeLayer = layer.id; save(); renderLayers(); });
       row.append(eye,dot,label,active);
-      if(layer.id!==PRIVATE_ID){
-        const del=document.createElement("button");
-        del.type="button";del.className="layer-delete";del.textContent="✕";
-        del.title="Ebene mit Pins löschen";del.setAttribute("aria-label",layer.name+" löschen");
-        del.addEventListener("click",()=>deleteLayerOrPrivatePins(layer.id));
-        row.append(del);
-      }
+      const del=document.createElement("button");
+      del.type="button";del.className="layer-delete";
+      const isPrivate=layer.id===PRIVATE_ID;
+      const pinCount=state.pins.filter(p=>p.layerId===PRIVATE_ID).length;
+      del.textContent=isPrivate?"⌫":"✕";
+      del.title=isPrivate?"Alle Pins in Privat löschen":"Ebene mit Pins löschen";
+      del.setAttribute("aria-label",del.title);
+      del.disabled=isPrivate && pinCount===0;
+      del.addEventListener("click",()=>deleteLayerOrPrivatePins(layer.id));
+      row.append(del);
       list.append(row);
     }
-    $("clearPrivate").disabled=!state.pins.some(p=>p.layerId===PRIVATE_ID);
     const layerSelect = $("pinLayer"); const existing = layerSelect.value;
     layerSelect.replaceChildren();
     for (const layer of state.layers) {
@@ -515,15 +517,20 @@
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
-    $("clearPrivate").addEventListener("click",()=>deleteLayerOrPrivatePins(PRIVATE_ID));
     $("addLayer").addEventListener("click", () => {
-      const name = prompt("Name der neuen Ebene:");
-      if (name === null) return;
-      const trimmed = cleanText(name);
-      if (!trimmed) { showNotice("Bitte einen Ebenennamen eingeben"); return; }
-      const id = uid();
-      state.layers.push({ id, name: trimmed, color: COLORS[state.layers.length%COLORS.length], visible: true });
-      state.activeLayer = id; renderLayers(); save();
+      let number=1;
+      const taken=new Set(state.layers.map(l=>l.name.trim().toLocaleLowerCase("de")));
+      while(taken.has(("Ebene "+number).toLocaleLowerCase("de")))number++;
+      const name=prompt("Name der neuen Ebene:","Ebene "+number);
+      if(name===null)return;
+      const trimmed=cleanText(name);
+      if(!trimmed){showNotice("Bitte einen Ebenennamen eingeben");return;}
+      if(taken.has(trimmed.toLocaleLowerCase("de")) || trimmed.toLocaleLowerCase("de")==="privat"){
+        showNotice("Der Ebenenname ist bereits vergeben");return;
+      }
+      const id=uid();
+      state.layers.push({id,name:trimmed,color:COLORS[state.layers.length%COLORS.length],visible:true});
+      state.activeLayer=id;renderLayers();save();
     });
 
     $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){p.name=cleanText(e.target.value);save();renderMarkers();} });
