@@ -1480,11 +1480,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Für die Ergebnisverarbeitung gelten weiterhin die Grundentscheidungen 116–125, einschließlich der Speicherung aller aus der Ortsnamensuche erstellten Pins in **„Privat“**.
 - **Die Ortsnamensuche ist und bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 128: Neue Suche während einer bereits laufenden Ortssuchanfrage
+## Grundentscheidung 128 – Neue Ortssuche ersetzt die bisherige Anfrage
 
-Was soll geschehen, wenn während einer noch laufenden Ortsnamensuche der eingegebene Suchtext geändert wird und der Benutzer anschließend eine andere Suche starten möchte?
+**Beschlossen (Variante A):** Während eine geografische Ortsnamensuche läuft, darf der Benutzer den Suchtext ändern und **eine neue Suche ausdrücklich starten**. Die neue Suche **ersetzt** die alte; die bisherige Anfrage wird soweit technisch möglich abgebrochen. Treffen verspätete Antworten der alten Anfrage dennoch ein, werden diese **vollständig ignoriert**. Nur Ergebnisse der **zuletzt bewusst gestarteten** Suche dürfen angezeigt werden oder zur Pin-Erstellung führen.
 
-- **Variante A (Empfehlung):** **Nur die zuletzt ausdrücklich gestartete Suche darf Ergebnisse anzeigen oder Pins erzeugen.** Eine neue Suche ersetzt die vorherige: Eine bestehende Anfrage wird soweit technisch möglich abgebrochen; verspätete Ergebnisse der alten Anfrage werden grundsätzlich ignoriert. Der Benutzer darf den Suchtext weiter bearbeiten.
-- **Variante B:** **Während der laufenden Anfrage ist keine neue Suche möglich.** Zuerst muss die bisherige Suche beendet sein. Der Benutzer kann erst danach einen anderen Ortsnamen suchen; so werden parallele Anfragen vermieden, aber die Bedienung ist weniger flexibel.
+**Konsequenzen:**
+- Die Suchanfragen erhalten eine eindeutige Zuordnung (z. B. fortlaufende Anfragekennung); veraltete Antworten dürfen weder die Trefferliste noch die Ladeanzeige der aktuellen Anfrage überschreiben.
+- Die Ladeanzeige und das Verhindern doppelter identischer Anfragen bleiben erhalten (Grundentscheidung 127). Der Suchbutton ist während einer unveränderten laufenden Anfrage deaktiviert, wird für eine **bewusst geänderte Suchanfrage** jedoch wieder nutzbar; alternativ darf die Eingabetaste die geänderte Anfrage starten.
+- Bei einer abgelösten Anfrage darf auch ein verspäteter eindeutiger Treffer **keinen Pin** mehr automatisch erzeugen.
+- Die bewusste Suchauslösung bleibt erforderlich; Texteingabe allein startet keine Anfrage (Grundentscheidung 121).
+- Die Kartenansicht bleibt bedienbar. Alle Ortssuch-Pins gehören weiterhin zur Ebene **„Privat“**, unabhängig von der aktiven Ebene (Grundentscheidung 119).
+- Die **Ortsnamensuche ist verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 128 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 129: Räumlicher Suchbereich der Ortsnamensuche
+
+Soll die Ortsnamensuche ausschließlich nach Orten im gerade sichtbaren Kartenausschnitt suchen oder unabhängig davon auch weiter entfernte Orte finden können?
+
+- **Variante A (Empfehlung):** **Weltweite Ortssuche unabhängig vom aktuellen Kartenausschnitt.** Der aktuelle Ausschnitt kann für die Sortierung geeigneter Treffer als unverbindlicher Kontext dienen, aber Orte außerhalb des Ausschnitts werden nicht ausgeschlossen. So kann man etwa von einer Karte in Deutschland nach „Oxford“ suchen.
+- **Variante B:** **Suche zunächst nur im aktuellen Kartenausschnitt.** Es werden nur Orte innerhalb des sichtbaren Kartengebiets angeboten. Für weiter entfernte Orte müsste die Karte zuerst entsprechend verschoben oder herausgezoomt werden.
+
+**Status:** Grundentscheidung 129 ist offen und noch nicht beschlossen.
