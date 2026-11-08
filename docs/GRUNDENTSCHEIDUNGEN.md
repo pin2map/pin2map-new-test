@@ -486,11 +486,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Alle importierten Pins werden dieser einzigen neuen Ebene zugeordnet, bestehende Pins und Ebenen bleiben unverändert (Grundentscheidung 41).
 - Der Import selbst bleibt vor der Datenübernahme bewusst zu bestätigen (Grundentscheidung 40).
 
-## Offen – Grundentscheidung 43: Kartenausschnitt nach dem Hinzufügen importierter Pins
+## Grundentscheidung 43 – Kartenausschnitt nach dem Hinzufügen automatisch auf importierte Pins einstellen
 
-Wie soll sich die Karte nach einem erfolgreichen Import mit „Hinzufügen“ verhalten?
+**Beschlossen (Variante A):** Nach einem erfolgreichen Import im Modus **„Hinzufügen“** stellt pin2map die Karte automatisch so ein, dass **alle gerade hinzugefügten Pins sichtbar** sind.
 
-- **Variante A (Empfehlung):** pin2map stellt den **Kartenausschnitt automatisch so ein, dass alle hinzugefügten Pins sichtbar sind**, sofern die Importdatei Pins enthält. Dies erleichtert eine unmittelbare Sichtprüfung; die neu angelegte Ebene ist entsprechend der Regel für neue Ebenen sichtbar.
-- **Variante B:** Der bisherige Kartenausschnitt **bleibt unverändert**. Importierte Pins erscheinen nur, soweit sie im aktuellen Ausschnitt liegen. Die neu angelegte Ebene ist sichtbar, kann aber wie jede reguläre Ebene später ein-/ausgeblendet werden.
+**Konsequenzen:**
+- Die Karte verschiebt und zoomt den Ausschnitt passend zur geografischen Ausdehnung der neu importierten Pins; ein angemessener Kartenrand vermeidet abgeschnittene Markierungen.
+- Die automatisch neu angelegte Importebene ist sichtbar (Grundentscheidungen 10 und 41), sodass die importierten Pins unmittelbar geprüft werden können.
+- Die automatische Anpassung erfolgt **erst nach erfolgreich abgeschlossener Datenübernahme**. Bei Abbruch, ungültiger Datei oder Importfehler bleibt der bisherige Kartenausschnitt unverändert.
+- Enthält die importierte Datei keine Pins, erfolgt keine positionsabhängige Kartenanpassung.
+- Nach der erfolgreichen Anpassung gilt die neue Kartenansicht als letzte Ansicht und wird gemäß Grundentscheidung 22 lokal gespeichert.
+- Für den Importmodus „Ersetzen“ wird mit dieser Entscheidung keine automatische Kartenausschnitt-Anpassung festgelegt.
 
-**Status:** Grundentscheidung 43 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 44: Aktive Ebene nach dem Hinzufügen
+
+Nach dem Import mit „Hinzufügen“ existiert eine neue reguläre Importebene, die auf der Karte sichtbar ist. Soll sie auch automatisch zur **aktiven Ebene** werden, in der neue Pins angelegt werden?
+
+- **Variante A (Empfehlung):** Die neu angelegte Importebene wird nach einem erfolgreichen Hinzufügen **automatisch aktiv**. Weitere neu gesetzte Pins landen dadurch direkt in dieser Ebene, bis der Benutzer eine andere aktive Ebene wählt.
+- **Variante B:** Die **bisher aktive Ebene bleibt aktiv** (oder es bleibt weiterhin keine Ebene aktiv). Die neue Importebene wird lediglich sichtbar angelegt; für neue Pins muss sie ausdrücklich als aktiv gewählt werden.
+
+**Status:** Grundentscheidung 44 ist offen und noch nicht beschlossen.
