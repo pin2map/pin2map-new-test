@@ -1457,11 +1457,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein Antippen auf einen Treffer gilt als bewusste Auswahl und erstellt den entsprechenden Pin; es darf nicht zugleich als „außerhalb antippen“ behandelt werden.
 - Das Schließen der Liste unterbricht nur die Ergebnisdarstellung, nicht die allgemeine Verfügbarkeit der **verbindlich zur ersten Basisversion gehörenden Ortsnamensuche**.
 
-## Offen – Grundentscheidung 126: Leere Suchanfrage
+## Grundentscheidung 126 – Leere Ortssuchanfragen ohne Hinweis ignorieren
 
-Wie soll die Ortsnamensuche reagieren, wenn der Benutzer den Suchbutton betätigt oder die Eingabetaste drückt, obwohl das Suchfeld **leer ist oder nur Leerzeichen enthält**?
+**Beschlossen (Variante B):** Wenn das Suchfeld bei Betätigung des Suchbuttons oder der Eingabetaste **leer ist oder ausschließlich Leerzeichen enthält**, wird der Suchversuch **ohne sichtbare Rückmeldung ignoriert**.
 
-- **Variante A (Empfehlung):** Es wird **keine Geocoding-Anfrage** gestartet. pin2map zeigt eine kurze, verständliche Aufforderung wie **„Bitte einen Ort eingeben“** direkt beim Suchfeld an. Es entsteht kein Pin.
-- **Variante B:** Es wird ebenfalls keine Anfrage gestartet, aber pin2map gibt **keinen zusätzlichen Hinweis** aus; die leere Suche bleibt ohne sichtbare Reaktion.
+**Konsequenzen:**
+- Es wird **keine Geocoding-Anfrage** gesendet und **kein Pin erstellt**.
+- Es erscheint **keine zusätzliche Hinweismeldung** wie „Bitte einen Ort eingeben“.
+- Der vorhandene Kartenausschnitt, die Ebenen und bereits gespeicherte Pins bleiben unverändert.
+- Die Regel betrifft ausschließlich leere bzw. nur aus Leerzeichen bestehende Suchtexte; für gültige Suchanfragen und etwaige Geocoding-Fehler gelten die übrigen beschlossenen Regeln.
+- Die **Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 126 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 127: Rückmeldung während einer laufenden Ortsnamensuche
+
+Was soll die Anwendung anzeigen, nachdem eine **gültige Ortsnamensuche bewusst gestartet** wurde, während der Geocoding-Dienst noch auf die Anfrage antwortet?
+
+- **Variante A (Empfehlung):** Im Suchbereich erscheint **ein kompakter Ladeindikator** (beispielsweise ein drehendes Symbol) und der Suchbutton ist bis zur Antwort vorübergehend deaktiviert. Der eingegebene Suchtext bleibt sichtbar und die Karte normal benutzbar. So sind Bearbeitungsstand und Wartezeit erkennbar und doppelte identische Anfragen werden vermieden.
+- **Variante B:** Während der Anfrage erscheint **keine besondere Ladeanzeige** und der Suchbutton bleibt normal benutzbar. Die Oberfläche ändert sich erst, wenn Ergebnisse oder ein Fehler eintreffen.
+
+**Status:** Grundentscheidung 127 ist offen und noch nicht beschlossen.
