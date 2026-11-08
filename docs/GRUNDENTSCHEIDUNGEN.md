@@ -206,11 +206,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die initiale Einrichtung erfolgt nur einmal; spätere App-Starts dürfen die reguläre Ebene „Ebene 1“ nicht erneut erzeugen oder vom Benutzer vorgenommene Änderungen rückgängig machen.
 - Die reguläre Ebene erhält wie jede andere Ebene eine stabile interne ID und unterliegt den Regeln eindeutiger Ebenennamen.
 
-## Offen – Grundentscheidung 19: Vorschlag für Namen zusätzlich angelegter regulärer Ebenen
+## Grundentscheidung 19 – Namensvorschlag für weitere reguläre Ebenen
 
-Beim Anlegen weiterer regulärer Ebenen ist gemäß Grundentscheidung 12 eine Bezeichnung verpflichtend.
+**Beschlossen (Variante A):** Beim Anlegen einer weiteren regulären Ebene wird im Namensfeld ein **freier fortlaufender Name** (z. B. „Ebene 2“, „Ebene 3“ usw.) vorausgefüllt. Der Benutzer darf den Vorschlag vor dem Speichern frei ändern.
 
-- **Variante A (Empfehlung):** Im Eingabefeld wird jeweils ein freier fortlaufender Vorschlag („Ebene 2“, „Ebene 3“ usw.) **vorausgefüllt**. Der Benutzer kann ihn vor dem Speichern frei ändern; die Eindeutigkeitsprüfung aus Grundentscheidung 13 gilt weiterhin.
-- **Variante B:** Das Eingabefeld ist zunächst leer. Der Benutzer muss jedes Mal selbst einen Namen eingeben.
+**Konsequenzen:**
+- Der automatisch vorgeschlagene Name ist nur ein editierbarer Vorschlag und wird nicht ohne bewusste Bestätigung gespeichert.
+- Als Vorschlag wird ein noch nicht belegter Name des Musters „Ebene N“ gewählt. Die Regel eindeutig benannter Ebenen aus Grundentscheidung 13 gilt ebenso beim Speichern.
+- Bei einer Kollision durch zwischenzeitliche Änderungen muss ein neuer eindeutiger Name gewählt werden.
+- Reguläre Ebenen können später umbenannt werden; die stabile interne Ebenen-ID und Pin-Zuordnungen ändern sich dadurch nicht.
+- Die feste Systemebene „Privat“ bleibt von diesen Vorschlägen ausgenommen.
 
-**Status:** Grundentscheidung 19 ist noch offen. Der Namensvorschlag aus Variante A ist keine automatische Anlage ohne bewusste Bestätigung.
+## Offen – Grundentscheidung 20: Reihenfolge der Ebenen in der Ebenenverwaltung
+
+Wie werden die Ebenen in der ersten Basisversion angezeigt?
+
+- **Variante A (Empfehlung):** „Privat“ steht immer am Anfang. Darunter stehen die regulären Ebenen in ihrer Anlegereihenfolge. Eine manuelle Sortierung kann später ergänzt werden.
+- **Variante B:** „Privat“ steht immer am Anfang. Darunter werden die regulären Ebenen automatisch alphabetisch nach Namen sortiert; eine Umbenennung kann die Position verändern.
+
+**Status:** Grundentscheidung 20 ist offen und noch nicht beschlossen.
