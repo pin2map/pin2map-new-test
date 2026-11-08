@@ -180,13 +180,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Name „Privat“ ist für die Systemebene reserviert und kann nicht für eine reguläre Ebene verwendet werden; die Eindeutigkeitsregel aus Grundentscheidung 13 bleibt gewahrt.
 - Die private Ebene bleibt nicht löschbar (Grundentscheidung 15). Ihre Pins können weiterhin bearbeitet und einzeln gelöscht werden.
 
-## Offen – Grundentscheidung 17: Sichtbarkeit der privaten Ebene beim ersten Start
+## Grundentscheidung 17 – Anfängliche Sichtbarkeit der privaten Ebene
 
-Die allgemeine Regel aus Grundentscheidung 10 lautet: Neue Ebenen sind zunächst sichtbar. Soll dies auch beim erstmaligen Bereitstellen der privaten Systemebene gelten?
+**Beschlossen (Variante A):** Die Systemebene **„Privat“ ist beim ersten Start sichtbar**. Anschließend kann sie wie andere Ebenen ein- und ausgeblendet werden. Die zuletzt eingestellte Sichtbarkeit wird lokal gespeichert und beim nächsten Start wiederhergestellt (Grundentscheidung 10).
 
-- **Variante A (Empfehlung):** Die private Ebene ist beim ersten Start **sichtbar**. Danach kann sie wie andere Ebenen ein- und ausgeblendet werden; ihr zuletzt gewählter Sichtbarkeitszustand wird lokal wiederhergestellt.
-- **Variante B:** Die private Ebene ist beim ersten Start **ausgeblendet**. Sie kann jederzeit bewusst eingeblendet werden; anschließend wird ihr zuletzt gewählter Sichtbarkeitszustand lokal wiederhergestellt.
+**Konsequenzen:**
+- Die private Ebene wird beim erstmaligen Initialisieren standardmäßig als sichtbar angelegt.
+- Eine spätere bewusste Änderung der Sichtbarkeit bleibt über Neuladen und Neustarts hinweg erhalten.
+- Die Sichtbarkeit sagt nichts über die aktive Ebene aus; eine Auswahl als Zielebene zum Pin-Anlegen bleibt erforderlich (Grundentscheidungen 7 und 8).
+- Sichtbarkeit auf der Karte bedeutet nicht Freigabe privater Daten für andere Benutzer oder Geräte. Zugriffs- und Synchronisationsregeln werden gesondert festgelegt.
+- Ihre Bezeichnung „Privat“ ist fest (Grundentscheidung 16); sie bleibt nicht löschbar (Grundentscheidung 15).
 
-**Abgrenzung:** Diese Entscheidung betrifft ausschließlich die anfängliche Kartensichtbarkeit, nicht den Schutz oder die mögliche spätere geräteübergreifende Behandlung privater Daten.
+## Offen – Grundentscheidung 18: Reguläre Ebene beim ersten Start
 
-**Status:** Grundentscheidung 17 ist offen und noch nicht beschlossen.
+Die private Systemebene ist verpflichtend vorhanden. Soll die Anwendung beim ersten Start zusätzlich bereits eine reguläre Ebene bereitstellen?
+
+- **Variante A (Empfehlung):** Zusätzlich zur privaten Ebene wird automatisch eine reguläre Ebene **„Standard“** angelegt. Diese ist sichtbar und kann umbenannt oder – mit der beschlossenen Bestätigung – gelöscht werden. Es wird noch keine aktive Ebene vorausgewählt; der Benutzer wählt die Zielebene vor dem ersten Pin selbst (Grundentscheidung 8).
+- **Variante B:** Beim ersten Start existiert nur die feste private Ebene „Privat“. Weitere reguläre Ebenen legt der Benutzer selbst an. Auch hier muss die Zielebene vor dem ersten Pin bewusst gewählt werden.
+
+**Status:** Grundentscheidung 18 ist offen und noch nicht beschlossen.
