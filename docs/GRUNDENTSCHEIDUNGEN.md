@@ -169,9 +169,24 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der Sonderstatus wird über eine stabile interne Identität bzw. einen Systemtyp abgebildet, nicht nur über einen Namen.
 - Die Festlegung ihrer Bezeichnung und Umbenennbarkeit ist noch offen.
 
-## Offen – Grundentscheidung 16: Bezeichnung und Umbenennbarkeit der privaten Ebene
+## Grundentscheidung 16 – Bezeichnung der privaten Ebene
 
-- **Variante A (Empfehlung):** Die private Systemebene heißt fest **„Privat“** und kann nicht umbenannt werden. Damit bleibt sie jederzeit eindeutig erkennbar.
-- **Variante B:** Die private Systemebene hat beim ersten Start den Namen **„Privat“**, kann aber später vom Benutzer umbenannt werden. Ihr nicht löschbarer Systemstatus bleibt unabhängig vom Namen erhalten.
+**Beschlossen (Variante A):** Die dauerhaft vorhandene private Systemebene trägt den festen Namen **„Privat“** und kann nicht umbenannt werden.
 
-**Status:** Grundentscheidung 16 ist offen und noch nicht beschlossen.
+**Konsequenzen:**
+- Die private Ebene wird als feste Systemebene mit dem Anzeigenamen „Privat“ bereitgestellt.
+- Das Umbenennen der privaten Ebene ist in der Oberfläche nicht verfügbar und wird auch von der Fachlogik verhindert.
+- Ihr Status wird durch ihre stabile interne Kennzeichnung/Identität gesichert, nicht durch einen bloßen Namensvergleich.
+- Der Name „Privat“ ist für die Systemebene reserviert und kann nicht für eine reguläre Ebene verwendet werden; die Eindeutigkeitsregel aus Grundentscheidung 13 bleibt gewahrt.
+- Die private Ebene bleibt nicht löschbar (Grundentscheidung 15). Ihre Pins können weiterhin bearbeitet und einzeln gelöscht werden.
+
+## Offen – Grundentscheidung 17: Sichtbarkeit der privaten Ebene beim ersten Start
+
+Die allgemeine Regel aus Grundentscheidung 10 lautet: Neue Ebenen sind zunächst sichtbar. Soll dies auch beim erstmaligen Bereitstellen der privaten Systemebene gelten?
+
+- **Variante A (Empfehlung):** Die private Ebene ist beim ersten Start **sichtbar**. Danach kann sie wie andere Ebenen ein- und ausgeblendet werden; ihr zuletzt gewählter Sichtbarkeitszustand wird lokal wiederhergestellt.
+- **Variante B:** Die private Ebene ist beim ersten Start **ausgeblendet**. Sie kann jederzeit bewusst eingeblendet werden; anschließend wird ihr zuletzt gewählter Sichtbarkeitszustand lokal wiederhergestellt.
+
+**Abgrenzung:** Diese Entscheidung betrifft ausschließlich die anfängliche Kartensichtbarkeit, nicht den Schutz oder die mögliche spätere geräteübergreifende Behandlung privater Daten.
+
+**Status:** Grundentscheidung 17 ist offen und noch nicht beschlossen.
