@@ -964,11 +964,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - In den ausdrücklich aktivierten Modi „Pin hinzufügen“ und „Pin verschieben“ gelten weiterhin deren besonderen Antipp-, Bestätigungs- und Abbruchregeln (Grundentscheidungen 25–27 und 30–35); ein Kartentipp darf dort nicht versehentlich die laufende Aktion durch bloßes Abwählen ersetzen.
 - Beim Wechsel zu einem anderen Pin wird stattdessen dieser andere Pin ausgewählt.
 
-## Offen – Grundentscheidung 85: Auswahl beim Verschieben der Karte
+## Grundentscheidung 85 – Pin-Auswahl bleibt beim Verschieben der Karte bestehen
 
-Was geschieht mit einem ausgewählten Pin und seiner geöffneten Pin-Ansicht, wenn der Benutzer **die Karte mit dem Finger oder der Maus verschiebt (Pan)**, ohne auf eine freie Kartenfläche zu tippen?
+**Beschlossen (Variante A):** Wird die Karte mit Finger oder Maus verschoben (Pan), **bleibt die bestehende Pin-Auswahl erhalten**. Die Pin-Detail-/Bearbeitungsansicht bleibt geöffnet und der Pin behält seine Auswahlkontur und – falls vorhanden – seine hervorgehobene Beschriftung.
 
-- **Variante A (Empfehlung):** Die **Pin-Auswahl bleibt beim Verschieben der Karte bestehen**. Ring, hervorgehobene Beschriftung und Pin-Ansicht bleiben erhalten, solange der Pin nicht ausdrücklich abgewählt oder ein anderer ausgewählt wird. Dadurch kann man den Kartenausschnitt um den ausgewählten Pin herum erkunden.
-- **Variante B:** **Jede Kartenverschiebung hebt die aktuelle Pin-Auswahl auf** und schließt die Pin-Ansicht. Das hält die Karte beim Navigieren frei, kann aber unbeabsichtigtes Abwählen verursachen.
+**Konsequenzen:**
+- Die Auswahl bleibt auch dann bestehen, wenn sich der ausgewählte Pin infolge der Kartenverschiebung außerhalb des sichtbaren Kartenausschnitts befindet.
+- Die Karte lässt sich weiterhin normal verschieben; die gespeicherten Pin-Koordinaten ändern sich dadurch nicht.
+- Ein bewusstes Antippen einer freien Kartenfläche ohne Verschiebegeste hebt die Auswahl weiterhin auf (Grundentscheidung 84). Die Interaktion unterscheidet deshalb Kartentipp und Kartenverschiebung.
+- Das Auswählen eines anderen Pins wechselt die Auswahl zu diesem Pin.
+- Die gesondert festgelegten Abläufe zum expliziten Verschieben von Pins bleiben unberührt (Grundentscheidungen 30–35).
 
-**Status:** Grundentscheidung 85 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 86: Pin-Auswahl beim Zoomen der Karte
+
+Was soll mit einem ausgewählten Pin und seiner geöffneten Pin-Ansicht passieren, wenn die Karte **durch Pinch-Geste, Mausrad oder Zoomtasten vergrößert oder verkleinert** wird?
+
+- **Variante A (Empfehlung):** **Die Pin-Auswahl bleibt auch beim Zoomen bestehen.** Auswahlring, hervorgehobene Beschriftung und Pin-Ansicht bleiben erhalten, selbst wenn der Pin nach dem Zoom außerhalb des sichtbaren Kartenausschnitts liegt.
+- **Variante B:** **Ein Zoomvorgang beendet die Pin-Auswahl** und schließt die Pin-Ansicht. So wird beim Ändern des Maßstabs der Bildschirm für die Kartennavigation freigemacht.
+
+**Status:** Grundentscheidung 86 ist offen und noch nicht beschlossen.
