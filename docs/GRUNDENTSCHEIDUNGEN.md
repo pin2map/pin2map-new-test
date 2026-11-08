@@ -217,11 +217,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Reguläre Ebenen können später umbenannt werden; die stabile interne Ebenen-ID und Pin-Zuordnungen ändern sich dadurch nicht.
 - Die feste Systemebene „Privat“ bleibt von diesen Vorschlägen ausgenommen.
 
-## Offen – Grundentscheidung 20: Reihenfolge der Ebenen in der Ebenenverwaltung
+## Grundentscheidung 20 – Reihenfolge der Ebenen in der Ebenenverwaltung
 
-Wie werden die Ebenen in der ersten Basisversion angezeigt?
+**Beschlossen (Variante A):** Die Systemebene **„Privat“ steht immer ganz oben**. Darunter erscheinen die regulären Ebenen **in ihrer Anlegereihenfolge**.
 
-- **Variante A (Empfehlung):** „Privat“ steht immer am Anfang. Darunter stehen die regulären Ebenen in ihrer Anlegereihenfolge. Eine manuelle Sortierung kann später ergänzt werden.
-- **Variante B:** „Privat“ steht immer am Anfang. Darunter werden die regulären Ebenen automatisch alphabetisch nach Namen sortiert; eine Umbenennung kann die Position verändern.
+**Konsequenzen:**
+- Die Systemebene „Privat“ wird stets an erster Stelle dargestellt, unabhängig von ihrem Anlagezeitpunkt.
+- Reguläre Ebenen werden anhand einer stabilen Anlegereihenfolge angezeigt; eine spätere Umbenennung verändert ihre Position nicht.
+- Die Anlegereihenfolge bleibt über Neuladen und Neustarts der PWA erhalten.
+- Neue reguläre Ebenen werden am Ende der Liste ergänzt.
+- Eine manuelle Umsortierung gehört zunächst nicht zum beschlossenen Funktionsumfang und kann später gesondert entschieden werden.
+- Das Löschen einer Ebene verändert nicht die relative Reihenfolge der verbleibenden regulären Ebenen.
 
-**Status:** Grundentscheidung 20 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 21: Anzeige der Pins in der lokalen Basisversion
+
+Die grundlegenden Pin-Funktionen und die Ebenenverwaltung stehen fest. Soll die erste Basisversion neben der Kartenansicht schon eine zusätzliche Pin-Liste besitzen?
+
+- **Variante A (Empfehlung):** Pins werden zunächst auf der Karte angezeigt und durch Antippen dort ausgewählt und bearbeitet. Eine zusätzliche Pin-Liste wird erst später ergänzt. So bleibt die erste Basisversion klein und konzentriert sich auf stabile Karten- und Speicherfunktionen.
+- **Variante B:** Bereits die erste Basisversion bietet zusätzlich eine einfache Liste der Pins, über die Pins ausgewählt und auf der Karte gefunden werden können.
+
+**Status:** Grundentscheidung 21 ist offen und noch nicht beschlossen.
