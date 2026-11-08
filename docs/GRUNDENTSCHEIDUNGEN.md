@@ -1307,11 +1307,28 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - **„Löschen“** führt nach Bestätigung die lokale Löschung aus. Erst nach Erfolg werden Auswahl und Pin-Bedienfeld geschlossen und die Meldung „Pin gelöscht“ angezeigt (Grundentscheidung 113).
 - Die Löschaktion ist weiterhin im Pin-Bedienfeld direkt sichtbar (Grundentscheidung 112); in der Basisversion gibt es keinen Papierkorb (Grundentscheidung 37).
 
+## Verbindliche Basisanforderung – Ortsnamensuche und Pin-Erstellung (Ergänzung vor Grundentscheidung 115)
+
+**Verbindlich beschlossen:** Bereits die **erste Basisversion** von pin2map bietet die **Suche nach einem Ortsnamen bzw. geografischen Objekt** (beispielsweise „Oxford“) und ermöglicht, daraus direkt einen Pin zu erstellen. Diese Funktion ist keine spätere Erweiterung.
+
+**Verbindliches Nutzerverhalten:**
+- Benutzer können einen Ortsnamen in ein Suchfeld eingeben und eine Ortssuche auslösen.
+- Liefert die Suche **mehrere plausible Treffer**, erscheint eine **Auswahlliste** mit genügend Zusatzinformationen zur Unterscheidung (beispielsweise Land/Region).
+- Durch bewusste Auswahl eines Listeneintrags wird an den Koordinaten des ausgewählten Orts **ein Pin angelegt**.
+- Ist der Ort **eindeutig ermittelt** (genau ein ausreichend verlässlicher Treffer), kann der Pin **direkt ohne Trefferliste** angelegt werden.
+- Das Ergebnis ist ein regulärer Pin mit stabiler ID, geografischen Koordinaten und **genau einer Ebene**; die bestehenden Regeln zum Erstellen, Speichern und Bearbeiten von Pins gelten.
+- Ortsnamensuche ist **geografische Suche** (Geocoding), nicht lediglich die Suche unter bereits vorhandenen Pins.
+- Bei **keinem Treffer**, **unklarer Zuordnung** oder **Verbindungs-/Dienstfehler** darf kein falscher Pin stillschweigend angelegt werden; die Anwendung informiert verständlich.
+- Anbieter/Geocoding-Dienst, Offline-Verhalten, Umgang mit der aktiven Ebene und genaue Kriterien für „eindeutig“ sind noch technische bzw. fachliche Umsetzungsdetails; sie dürfen den hier beschlossenen Funktionsumfang nicht einschränken.
+- Für eine Suche über einen externen Geocoding-Dienst wird eine Internetverbindung benötigt; die bereits lokale Offline-Pinverwaltung bleibt unabhängig davon funktionsfähig.
+
+**Einordnung:** Diese explizit vom Auftraggeber ergänzte Basisanforderung gilt unabhängig davon, ob für die Umsetzungsstrategie der noch offenen Grundentscheidung 115 Variante A oder B gewählt wird.
+
 ## Offen – Grundentscheidung 115: Start der Umsetzung der Basisversion
 
-Nach den zahlreichen Grundentscheidungen über Pins, Ebenen, Karte, Bedienfeld, lokale Speicherung und Import/Export: Wie sollen die beschlossenen Basisfunktionen nun technisch umgesetzt und getestet werden?
+Nach den zahlreichen Grundentscheidungen über Pins, Ebenen, Karte, Bedienfeld, lokale Speicherung, Import/Export **und der verbindlich ergänzten Ortsnamensuche mit Pin-Erstellung**: Wie sollen die beschlossenen Basisfunktionen nun technisch umgesetzt und getestet werden?
 
-- **Variante A (Empfehlung):** **Schrittweise lauffähige Umsetzung im bestehenden Test-Repository.** Zuerst ein durchgängiger lokaler Kern aus Kartenansicht, Ebenen, Pins und IndexedDB, mit frühzeitigem Test über die bereitgestellte PWA. Anschließend werden Bedienungsdetails und weitere beschlossene Basisfunktionen in kleinen, überprüfbaren Schritten ergänzt. Jede Etappe bleibt start- und testbar; der Server folgt erst nach stabiler lokaler Basis entsprechend Grundentscheidung 3.
-- **Variante B:** **Zunächst alle beschlossenen Basisfunktionen in einem größeren Entwicklungsschritt implementieren** und erst anschließend die vollständige Anwendung als Ganzes testen. Das reduziert Zwischenversionen, verzögert jedoch frühe Rückmeldungen und erschwert die Fehlersuche.
+- **Variante A (Empfehlung):** **Schrittweise lauffähige Umsetzung im bestehenden Test-Repository.** Zuerst ein durchgängiger lokaler Kern aus Kartenansicht, Ebenen, Pins und IndexedDB **einschließlich der Ortsnamensuche mit Trefferwahl bzw. direkter Pin-Erstellung bei Eindeutigkeit**, mit frühzeitigem Test über die bereitgestellte PWA. Anschließend werden Bedienungsdetails und weitere beschlossene Basisfunktionen in kleinen, überprüfbaren Schritten ergänzt. Jede Etappe bleibt start- und testbar; der Server folgt erst nach stabiler lokaler Basis entsprechend Grundentscheidung 3.
+- **Variante B:** **Zunächst alle beschlossenen Basisfunktionen einschließlich Ortsnamensuche in einem größeren Entwicklungsschritt implementieren** und erst anschließend die vollständige Anwendung als Ganzes testen. Das reduziert Zwischenversionen, verzögert jedoch frühe Rückmeldungen und erschwert die Fehlersuche.
 
 **Status:** Grundentscheidung 115 ist offen und noch nicht beschlossen.
