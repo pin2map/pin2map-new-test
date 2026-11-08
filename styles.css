@@ -185,3 +185,13 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   .layer-row button{font-size:11px;padding:5px}
   .move-bar button{min-height:38px}
 }
+
+
+/* The private layer keeps its row but offers deletion of its pins only. */
+.layer-delete:disabled{opacity:.3;cursor:default}
+.layer-row .layer-delete{flex-shrink:0}
+.layer-row .layer-delete[title="Alle Pins in Privat löschen"]{
+  background:#f7e8e8;color:#a42f3a;font-size:19px
+}
+/* A long press on a pin starts a move preview; avoid text callouts on marker icons. */
+.leaflet-marker-icon.pin-icon{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
