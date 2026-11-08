@@ -16,6 +16,7 @@
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
+  let lastTouchStartAt = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -86,7 +87,7 @@
       let marker=markers.get(pin.id);
       if(!marker){
         marker=L.marker([pin.lat,pin.lng],{draggable:true,autoPan:false}).addTo(map);
-        marker.on("click",e=>{L.DomEvent.stopPropagation(e);selectPin(pin.id);});
+        marker.on("click",e=>{if(e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);selectPin(pin.id);});
         marker.on("dragend",()=>{
           const p=state.pins.find(x=>x.id===pin.id);if(!p)return;
           const pos=marker.getLatLng();p.lat=pos.lat;p.lng=pos.lng;
@@ -217,6 +218,7 @@
     const isMapSurface = target => !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, button, input");
     container.addEventListener("pointerdown", e => {
       activePointers.add(e.pointerId);
+      if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=Date.now();
       cancelLongPress();
       if (moveMode || e.pointerType === "mouse" || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
       longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -251,7 +253,7 @@
       if(!isMapSurface(e.target))return;
       e.preventDefault();
       // iOS may synthesize contextmenu after a long touch; only create once.
-      if(e.pointerType==="touch" || (Date.now()<suppressMapClickUntil))return;
+      if(Date.now()-lastTouchStartAt<2400 || Date.now()<suppressMapClickUntil)return;
       if(moveMode)return;
       const rect=container.getBoundingClientRect();
       const location=map.containerPointToLatLng([e.clientX-rect.left,e.clientY-rect.top]);
