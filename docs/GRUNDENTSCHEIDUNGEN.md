@@ -434,11 +434,23 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein Import bzw. eine Wiederherstellung aus der Datei ist durch diesen Beschluss noch **nicht** zugesichert und wird in Grundentscheidung 39 entschieden.
 - Löschbestätigungen und der Verzicht auf einen Papierkorb aus Grundentscheidungen 36 und 37 bleiben unverändert.
 
-## Offen – Grundentscheidung 39: Import der gesicherten Daten in der Basisversion
+## Grundentscheidung 39 – Manueller Import bereits in der lokalen Basisversion
 
-Soll die erste stabile lokale Basisversion den zuvor beschlossenen Datenexport auch wieder einlesen können?
+**Beschlossen (Variante A):** Die erste stabile lokale Basisversion bietet zusätzlich zum manuellen Export (Grundentscheidung 38) einen **manuell auslösbaren Import gültiger pin2map-Sicherungsdateien**. Vor jeder Übernahme werden Datei und Datenstruktur geprüft.
 
-- **Variante A (Empfehlung):** Die Basisversion enthält neben dem Export eine **manuelle Importfunktion** für gültige pin2map-Sicherungsdateien. Vor jeglicher Datenübernahme werden Datei und Datenstruktur geprüft; der konkrete Umgang mit bereits vorhandenen Daten (Ersetzen oder Zusammenführen) wird anschließend gesondert entschieden.
-- **Variante B:** Die Basisversion bietet zunächst **nur den Export**. Ein Import wird erst vor oder bei der frühen Serveranbindung ergänzt. Exportdateien sind bis dahin nicht unmittelbar über die App wiederherstellbar.
+**Konsequenzen:**
+- Export und Import können vollständig lokal und ohne Serveranbindung verwendet werden.
+- Die Importfunktion prüft insbesondere Dateiformat und Formatversion, erforderliche Datensätze, gültige Pin-Koordinaten, eindeutige IDs und gültige Zuordnungen der Pins zu genau einer Ebene.
+- Die feste private Systemebene „Privat“ muss in ihrem Sonderstatus gewahrt bleiben; Importdaten dürfen keine zweite private Systemebene erzeugen oder deren Nichtlöschbarkeit aushebeln.
+- Ungültige beziehungsweise nicht unterstützte Sicherungsdateien werden mit verständlicher Fehlermeldung zurückgewiesen und dürfen den bestehenden Datenbestand nicht verändern.
+- Wie gültige Importdaten mit bereits vorhandenen Daten zusammengeführt oder an deren Stelle übernommen werden, wird ausdrücklich in Grundentscheidung 40 festgelegt. Bis dahin ist **kein automatisches Überschreiben oder Zusammenführen** beschlossen.
+- Die Datenübernahme muss nach Festlegung der Importstrategie konsistent erfolgen und auch bei Fehlern den vorhandenen Datenbestand schützen.
 
-**Status:** Grundentscheidung 39 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 40: Umgang mit vorhandenen Daten beim Import
+
+Wenn bereits Pins und Ebenen in der lokalen Datenbank vorhanden sind, wie soll eine gültige Sicherungsdatei importiert werden?
+
+- **Variante A (Empfehlung für eine überschaubare erste Basisversion):** Der Import **ersetzt den bisherigen lokalen Bestand vollständig**, aber nur nach einer deutlichen Vorschau und ausdrücklicher Bestätigung. Die Datei wird vollständig geprüft, bevor bestehende Daten verändert werden; die Übernahme muss atomar erfolgen. Der Benutzer wird davor auf die Möglichkeit hingewiesen, den bisherigen Bestand zuerst zu exportieren.
+- **Variante B:** Die Importdaten werden mit dem bestehenden lokalen Bestand **zusammengeführt**. Bestehende Pins und Ebenen bleiben erhalten; gleiche IDs, doppelte Ebenennamen und die feste private Ebene müssen regelbasiert aufgelöst werden. Das ist flexibler, aber deutlich komplexer.
+
+**Status:** Grundentscheidung 40 ist offen und noch nicht beschlossen.
