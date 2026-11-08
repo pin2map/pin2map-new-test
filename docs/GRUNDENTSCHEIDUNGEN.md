@@ -1576,11 +1576,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der aus der Suche erstellte Pin wird wie beschlossen in der Systemebene **„Privat“** gespeichert (Grundentscheidung 119).
 - Die **weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-## Offen – Grundentscheidung 136: Kennzeichnung der Herkunft von Ortssuchtreffern
+## Grundentscheidung 136 – Keine zusätzliche Geocoding-Anbieterkennzeichnung in der Trefferliste
 
-Soll die Trefferliste bei jeder Ortsnamensuche sichtbar angeben, **von welchem Geocoding-Dienst** die angezeigten Suchergebnisse stammen?
+**Beschlossen (Variante B):** Die Trefferliste der geografischen Ortsnamensuche zeigt **keine zusätzliche Quellen- oder Anbieterangabe unmittelbar in der Liste**, sofern der konkret gewählte Geocoding-Dienst es zulässt, notwendige Quellenkennzeichnungen **an einer anderen zentralen Stelle** der Anwendung zu platzieren.
 
-- **Variante A (Empfehlung):** **Ja.** Eine kleine, unaufdringliche Quellenangabe wie **„Suchergebnisse: [Anbieter]“** wird am unteren Rand der Trefferliste angezeigt, mit der vom Anbieter verlangten Verlinkung beziehungsweise Attribution. Die tatsächlichen Kennzeichnungspflichten des gewählten Dienstes sind unabhängig davon stets einzuhalten.
-- **Variante B:** **Keine zusätzliche Quellenangabe in der Trefferliste**, sofern der konkrete Geocoding-Anbieter eine Kennzeichnung ausschließlich an einer anderen, zentralen Stelle erlaubt. Rechtlich oder vertraglich erforderliche Attributionen werden dort weiterhin vollständig erfüllt.
+**Konsequenzen:**
+- Die Trefferliste bleibt auf Ortsnamen und unterscheidende Angaben wie Region und Land fokussiert (Grundentscheidungen 124 und 135).
+- **Vertraglich oder rechtlich notwendige Attributionen müssen weiterhin vollständig und gut zugänglich angezeigt werden.** Die Platzierung außerhalb der Trefferliste ist nur zulässig, wenn die tatsächlichen Nutzungsbedingungen des gewählten Dienstes dies erlauben.
+- Verlangt ein Anbieter die Kennzeichnung direkt an den Ergebnissen, ist diese Vorgabe einzuhalten oder ein anderer geeigneter Anbieter zu wählen; die beschlossene Vereinfachung darf keine Anbieterbedingungen verletzen.
+- Der zentrale Geocoding-Adapter (Grundentscheidung 130) und die Anbieterwahl müssen eine konforme Kennzeichnung ermöglichen.
+- Die **weltweite Ortsnamensuche bleibt verbindlicher Bestandteil der ersten Basisversion**.
 
-**Status:** Grundentscheidung 136 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 137: Wahl des ersten Geocoding-Anbieters
+
+Nach der Entscheidung für eine serverlose Browser-Anbindung über einen Geocoding-Adapter: Wie soll der konkrete Anbieter für die erste Basisversion festgelegt werden?
+
+- **Variante A (Empfehlung):** **Technische Auswahl anhand verbindlicher Eignungskriterien:** Weltweite Ortsnamensuche, direkte Browser-Anfragen (CORS), für den Testbetrieb zulässige Nutzungsbedingungen und Anfrageraten, keine geheimen Schlüssel im Browser sowie zulässige zentrale Quellenkennzeichnung (Grundentscheidung 136). Der Anbieter wird nach Prüfung dieser Kriterien ausgewählt und dokumentiert; ein ungeeigneter Dienst wird nicht verwendet.
+- **Variante B:** **Einen bestimmten Anbieter sofort fest vorgeben**, auch bevor seine tatsächlichen Browser-, Nutzungs- und Kennzeichnungsbedingungen geprüft sind. Falls diese Bedingungen nicht passen, muss die Anbindung später umgeplant werden.
+
+**Status:** Grundentscheidung 137 ist offen und noch nicht beschlossen.
