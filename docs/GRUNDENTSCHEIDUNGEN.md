@@ -705,11 +705,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Falls der gespeicherte Kartentyp dauerhaft nicht mehr verfügbar oder konfiguriert ist, gilt die definierte Standardkarte als Rückfalloption (Grundentscheidung 55).
 - Die Karte startet beim erstmaligen Öffnen mit dem bereits beschlossenen neutralen Kartenausschnitt ohne automatische Standortabfrage (Grundentscheidung 23).
 
-## Offen – Grundentscheidung 62: Austauschbarkeit der Kartenanbieter
+## Grundentscheidung 62 – Kartenanbieter über zentrale Konfiguration austauschbar halten
 
-Wie sollen die konkreten Quellen für Straßenkarte und topografische Karte technisch eingebunden werden?
+**Beschlossen (Variante A):** Die Kartenquellen für die Straßenkarte und die topografische Karte werden **über eine zentrale Konfiguration beziehungsweise klar abgegrenzte Kartenquellen-Schnittstelle** eingebunden. Anbieter dürfen bei Bedarf ausgetauscht werden, ohne die Pin- und Ebenenlogik zu verändern.
 
-- **Variante A (Empfehlung):** Kartenquellen werden **über eine zentrale Konfiguration bzw. einen klaren Kartenquellen-Adapter** eingebunden. Anbieter, Kacheladressen und erforderliche Quellenangaben können so bei Bedarf geändert werden, ohne die Pin- und Ebenenlogik anzupassen. Die Auswahl geeigneter Anbieter erfolgt gesondert unter Beachtung ihrer Nutzungsbedingungen.
-- **Variante B:** Die Kartenquellen werden **direkt in der Kartenansicht fest verdrahtet**. Das reduziert anfängliche Abstraktion, macht spätere Anbieterwechsel und Wartung jedoch aufwendiger.
+**Konsequenzen:**
+- Anbieterbezogene Angaben wie Kachel-/Kartendienst-Adresse, Kartenart, notwendige Quellenkennzeichnungen und gegebenenfalls Zugriffskonfiguration werden zentral verwaltet und nicht quer über die Kartenansicht verteilt.
+- Kartenbedienung, Pin- und Ebenenverwaltung sowie Persistenz bleiben unabhängig vom jeweiligen Anbieter.
+- Die technischen und rechtlichen Voraussetzungen eines konkreten Anbieters (insbesondere Nutzungsbedingungen, zulässiger Abruf, Attribution und Offline-/Cache-Regeln) werden vor seiner produktiven Verwendung geprüft.
+- Ein Austausch der Kartenquelle darf bestehende Pins, Koordinaten, Ebenen und gespeicherten Kartenausschnitt nicht verändern.
+- Die Standard-Straßenkarte, die Topografiekarte und die Speicherung der letzten Kartenwahl bleiben gemäß Grundentscheidungen 54–61 bestehen.
 
-**Status:** Grundentscheidung 62 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 63: Kartentechnik in der ersten Basisversion
+
+Auf welche grundlegende Technik sollen wir die ersten zwei Kartenhintergründe ausrichten?
+
+- **Variante A (Empfehlung):** Zunächst **klassische Rasterkacheln** für Straßen- und topografische Karte verwenden. Die austauschbare Kartenquellen-Konfiguration aus Grundentscheidung 62 bleibt erhalten; Unterstützung für Vektorkarten kann bei konkretem Bedarf später ergänzt werden. Damit bleiben Umfang und Testbarkeit der Basisversion überschaubar.
+- **Variante B:** Bereits die erste Basisversion auf **Vektorkarten mit clientseitigem Rendering** ausrichten. Das eröffnet zusätzliche Darstellungs- und Stiloptionen, erfordert aber eine entsprechend geeignete Karten-Engine, Datenquellen und höhere anfängliche Komplexität.
+
+**Status:** Grundentscheidung 63 ist offen und noch nicht beschlossen.
