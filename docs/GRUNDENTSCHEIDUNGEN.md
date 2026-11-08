@@ -376,11 +376,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Nach erfolgreichem „Position übernehmen“ oder nach „Abbrechen“ verschwindet die Linie zusammen mit der temporären Vorschau.
 - Die bisherigen Koordinaten werden erst nach ausdrücklicher Übernahme geändert (Grundentscheidung 31).
 
-## Offen – Grundentscheidung 34: Verschiebevorschau mehrfach korrigieren
+## Grundentscheidung 34 – Wiederholtes Korrigieren der Verschiebevorschau
 
-Wie soll sich die Vorschau verhalten, wenn die neue Position beim ersten Versuch noch nicht genau passt?
+**Beschlossen (Variante A):** Während der Verschiebemodus aktiv ist, kann die vorgeschlagene neue Position durch erneutes Antippen einer Kartenposition **beliebig oft verändert** werden. Die bisherige Position bleibt unverändert, und Vorschau-Pin sowie Verbindungslinie werden bei jeder Änderung aktualisiert.
 
-- **Variante A (Empfehlung):** Solange der Verschiebemodus aktiv ist, kann durch erneutes Antippen einer Kartenposition die **vorgeschlagene Position beliebig oft angepasst** werden. Beide Positionsmarkierungen und die Verbindungslinie aktualisieren sich. Erst „Position übernehmen“ speichert die zuletzt gewählte Position.
-- **Variante B:** Nach der ersten Auswahl einer neuen Position bleibt die Vorschau fixiert. Um eine andere Position zu wählen, muss die Vorschau abgebrochen und „Pin verschieben“ erneut gestartet werden.
+**Konsequenzen:**
+- Jede neue Auswahl einer Kartenposition ersetzt lediglich die vorherige Vorschauposition und speichert keine neuen Pin-Koordinaten.
+- Die ursprüngliche Position bleibt bis zur ausdrücklichen Bestätigung sichtbar und erhalten (Grundentscheidungen 31–33).
+- „Position übernehmen“ speichert ausschließlich die zuletzt vorgeschlagene Position in IndexedDB.
+- „Abbrechen“ verwirft die gesamte Vorschau unabhängig davon, wie oft die Position zuvor geändert wurde.
+- Die ID und Ebenenzugehörigkeit des Pins bleiben erhalten.
 
-**Status:** Grundentscheidung 34 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 35: Feineinstellung der Vorschauposition
+
+Wie genau lässt sich die Vorschauposition eines Pins in der ersten Basisversion justieren?
+
+- **Variante A (Empfehlung):** Neben dem erneuten Antippen der Karte kann der **Vorschau-Pin direkt mit Finger oder Maus gezogen** werden, solange der bewusst gestartete Verschiebemodus aktiv ist. Alte Position und Verbindungslinie bleiben sichtbar. Außerhalb des Modus ist das Ziehen von Pins nicht möglich.
+- **Variante B:** Die neue Position wird ausschließlich durch Antippen einer Kartenstelle festgelegt bzw. korrigiert. Direktes Ziehen des Vorschau-Pins ist in der Basisversion nicht vorgesehen.
+
+**Status:** Grundentscheidung 35 ist offen und noch nicht beschlossen.
