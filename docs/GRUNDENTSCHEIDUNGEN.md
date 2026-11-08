@@ -639,11 +639,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Eine fehlende Internetverbindung kann Kartenkacheln vorübergehend verhindern, ohne dass die gespeicherte Kartenauswahl deshalb automatisch überschrieben werden muss (Grundentscheidungen 50–51).
 - Die Auswahl bleibt bei normalem Neustart erhalten, bis der Benutzer bewusst eine andere Karte auswählt oder ein nicht mehr unterstützter Kartentyp ersetzt werden muss.
 
-## Offen – Grundentscheidung 56: Platzierung der Kartenhintergrund-Auswahl
+## Grundentscheidung 56 – Direkter Kartenwahl-Button am unteren Kartenrand
 
-Wo soll die Steuerung für die Auswahl des Kartenhintergrunds in der ersten Basisversion liegen?
+**Beschlossen (Variante A):** Die erste stabile lokale Basisversion von pin2map erhält einen **direkt sichtbaren Kartenwahl-Button am unteren Kartenrand**. Über diesen Button öffnet sich ein kleines Menü zur Auswahl der verfügbaren Kartenhintergründe.
 
-- **Variante A (Empfehlung):** Ein **direkt sichtbarer Kartenwahl-Button am unteren Kartenrand** öffnet ein kleines Auswahlmenü. Damit kann der Benutzer ohne Umweg über Einstellungen zwischen den Kartenhintergründen wechseln; die Karte bleibt dabei sichtbar.
-- **Variante B:** Die Auswahl wird **ausschließlich im allgemeinen Menü** angeboten. Die Kartenansicht enthält keinen eigenen Kartenwahl-Button.
+**Konsequenzen:**
+- Die Kartenhintergrund-Auswahl ist unmittelbar aus der Kartenansicht erreichbar; ein Umweg über das allgemeine Menü ist nicht erforderlich.
+- Nach der Auswahl wechselt lediglich der Kartenhintergrund. Pins, Ebenen sowie Kartenmittelpunkt und Zoomstufe bleiben erhalten (Grundentscheidung 54).
+- Die ausgewählte Kartenansicht wird lokal gespeichert und beim Neustart wiederhergestellt (Grundentscheidung 55).
+- Die Kartenwahl-Bedienung funktioniert mit Touch und Maus, ohne die normale Kartenbewegung unnötig zu behindern.
+- Die genaue Position und Ausrichtung des Buttons innerhalb des unteren Kartenrands werden in einer folgenden Entscheidung präzisiert.
 
-**Status:** Grundentscheidung 56 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 57: Genaue Position des Kartenwahl-Buttons
+
+Wo soll der direkt sichtbare Kartenwahl-Button am unteren Kartenrand positioniert werden?
+
+- **Variante A (Empfehlung):** **Horizontal zentriert am unteren Kartenrand**, auf derselben Höhe wie der untere Zoom-Button („−“). Dies entspricht der im PoC erprobten Anordnung und hält den Kartenwechsel gut erreichbar.
+- **Variante B:** **In der unteren rechten Kartenecke**, in der Nähe der Zoom-Steuerung. Die Kartenmitte bleibt so frei von Bedienelementen.
+
+**Status:** Grundentscheidung 57 ist offen und noch nicht beschlossen.
