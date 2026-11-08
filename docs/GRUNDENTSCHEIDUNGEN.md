@@ -898,11 +898,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Der vollständige Name bleibt in der Pin-Detail-/Bearbeitungsansicht zugänglich.
 - Die Regel gilt auch, wenn allgemeine Pin-Beschriftungen ausgeblendet sind und die Beschriftung eines ausgewählten Pins dennoch eingeblendet wird (Grundentscheidung 76).
 
-## Offen – Grundentscheidung 79: Darstellungsform der regulären Pin-Beschriftungen
+## Grundentscheidung 79 – Alle normalen Pin-Beschriftungen einzeilig darstellen
 
-Sollen die **normalen, nicht hervorgehobenen** Bezeichnungen sichtbarer Pins wie die des ausgewählten Pins einzeilig dargestellt werden?
+**Beschlossen (Variante A):** Auch die normalen, nicht hervorgehobenen Pin-Beschriftungen werden **immer einzeilig** und **seitlich neben dem jeweiligen Pin** dargestellt. Reicht der verfügbare Platz nicht aus, wird der angezeigte Name **mit Auslassungspunkten („…“) gekürzt**.
 
-- **Variante A (Empfehlung):** Auch normale Pin-Beschriftungen sind **immer einzeilig** und werden bei Bedarf mit **„…“ gekürzt**. Sie bleiben seitlich neben dem Pin und können bei Überschneidungen gemäß Grundentscheidung 75 zeitweise ausgeblendet werden. Dadurch bleibt die Karte einheitlich und platzsparend.
-- **Variante B:** Normale Pin-Beschriftungen dürfen **mehrzeilig** dargestellt werden, um möglichst viel vom Namen zu zeigen. Nur die hervorgehobene Beschriftung des ausgewählten Pins bleibt gemäß Grundentscheidung 78 zwingend einzeilig.
+**Konsequenzen:**
+- Für normale und hervorgehobene Beschriftungen gilt dieselbe kompakte, einzeilige Grundform (Grundentscheidungen 77 und 78).
+- Eine Platzierung oberhalb oder unterhalb des Pins sowie ein mehrzeiliger Umbruch sind nicht vorgesehen.
+- Die Kürzung betrifft ausschließlich die Darstellung; der vollständige Name bleibt unverändert gespeichert und über die Pin-Ansicht zugänglich.
+- Bei Überlagerungen können normale Beschriftungen gemäß Grundentscheidung 75 dynamisch ausgeblendet werden; die hervorgehobene Beschriftung des ausgewählten Pins bleibt davon ausgenommen (Grundentscheidung 76).
+- Die Beschriftungsanzeige kann weiterhin über den gut erreichbaren Button ein- und ausgeblendet werden (Grundentscheidungen 72–74).
 
-**Status:** Grundentscheidung 79 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 80: Pin-Auswahl durch Antippen der Beschriftung
+
+Soll eine sichtbare Pin-Beschriftung als **zusätzliche Antippfläche** für ihren Pin dienen?
+
+- **Variante A (Empfehlung):** **Ja.** Antippen oder Anklicken einer Pin-Beschriftung **wählt denselben Pin aus wie das Antippen des Pin-Symbols** und öffnet seine Pin-Ansicht. Die Beschriftung kann damit auf Touchscreens als zusätzliche Bedienfläche dienen.
+- **Variante B:** **Nein.** Nur das Pin-Symbol selbst ist auswählbar. Die Beschriftung dient ausschließlich der Anzeige; Antippen der Beschriftung löst keine Pin-Auswahl aus.
+
+**Status:** Grundentscheidung 80 ist offen und noch nicht beschlossen.
