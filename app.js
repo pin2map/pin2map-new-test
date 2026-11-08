@@ -136,48 +136,41 @@
     }
     layerSelect.value = selectedPin() ? selectedPin().layerId : existing;
   }
-  function panelHeight() {
-    return selectedPin() && !$("pinPanel").classList.contains("hidden") ? $("pinPanel").getBoundingClientRect().height : 0;
+  function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
+  function updatePanelLayout(){
+    const panel=$("pinPanel"),pin=selectedPin();
+    document.body.classList.toggle("pin-open",!!pin);
+    if(!pin||!map)return;
+    const p=map.latLngToContainerPoint([pin.lat,pin.lng]);
+    const rect=map.getContainer().getBoundingClientRect();
+    const width=Math.min(310,window.innerWidth-16);
+    const height=panel.offsetHeight;
+    const x=rect.left+p.x,y=rect.top+p.y;
+    const left=Math.max(8,Math.min(window.innerWidth-width-8,x-width/2));
+    const minTop=rect.top+8;
+    const top=Math.max(minTop,y-height-30);
+    panel.style.left=left+"px";panel.style.top=top+"px";
+    panel.style.bottom="auto";panel.style.transform="none";panel.style.width=width+"px";
+    panel.classList.toggle("panel-near-top",y-height-30<minTop);
   }
-  function updatePanelLayout() {
-    const height = panelHeight();
-    document.documentElement.style.setProperty("--pin-panel-height", height + "px");
-    document.body.classList.toggle("pin-open", !!height);
-  }
-  function keepSelectedAbovePanel() {
-    const pin = selectedPin();
-    if (!pin || !layerById(pin.layerId)?.visible) return;
-    map.panInside([pin.lat, pin.lng], {
-      paddingTopLeft: L.point(22, 24),
-      paddingBottomRight: L.point(22, panelHeight() + 24),
-      animate: false
-    });
-  }
-  function fitAllPins() {
-    const positions = state.pins.filter(p => layerById(p.layerId)?.visible).map(p => [p.lat, p.lng]);
-    if (!positions.length) { showNotice("Keine sichtbaren Pins vorhanden"); return; }
-    if (positions.length === 1) {
-      map.setView(positions[0], Math.max(map.getZoom(), 13), { animate: false });
-    } else {
-      map.fitBounds(L.latLngBounds(positions), {
-        paddingTopLeft: [35, 35],
-        paddingBottomRight: [35, panelHeight() + 35],
-        animate: false,
-        maxZoom: 15
-      });
-    }
-    keepSelectedAbovePanel();
-  }
-  function renderPinPanel() {
-    const pin = selectedPin();
-    $("pinPanel").classList.toggle("hidden", !pin);
-    if (!pin) { updatePanelLayout(); return; }
-    if (document.activeElement !== $("pinName")) $("pinName").value = pin.name || "";
-    $("pinLayer").value = pin.layerId;
-    $("pinCoords").textContent = "Koordinaten: " + pin.lat.toFixed(6) + ", " + pin.lng.toFixed(6);
-    $("pinHiddenInfo").classList.toggle("hidden", !!layerById(pin.layerId)?.visible);
-    $("movePin").textContent = moveMode ? "Verschieben abbrechen" : "Pin verschieben";
+  function keepSelectedAbovePanel(){updatePanelLayout();}
+  function fitAllPins(){
+    const pts=state.pins.filter(p=>layerById(p.layerId)?.visible).map(p=>[p.lat,p.lng]);
+    if(!pts.length){showNotice("Keine sichtbaren Pins vorhanden");return;}
+    if(pts.length===1)map.setView(pts[0],Math.max(map.getZoom(),13),{animate:false});
+    else map.fitBounds(L.latLngBounds(pts),{padding:[35,35],maxZoom:15,animate:false});
     updatePanelLayout();
+  }
+  function renderPinPanel(){
+    const pin=selectedPin();
+    $("pinPanel").classList.toggle("hidden",!pin);
+    if(!pin){document.body.classList.remove("pin-open");return;}
+    if(document.activeElement!==$("pinName"))$("pinName").value=pin.name||"";
+    $("pinLayer").value=pin.layerId;
+    $("pinCoords").textContent="Koordinaten: "+pin.lat.toFixed(6)+", "+pin.lng.toFixed(6);
+    $("pinHiddenInfo").classList.toggle("hidden",!!layerById(pin.layerId)?.visible);
+    $("movePin").textContent=moveMode?"Verschieben abbrechen":"Pin verschieben";
+    requestAnimationFrame(updatePanelLayout);
   }
   function selectPin(id) {
     if (selected === id) { closeMapOverlays(); return; }
