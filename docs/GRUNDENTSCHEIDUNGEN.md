@@ -750,11 +750,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Pin-Daten und Ebenenzuordnung bleiben unabhängig von der konkreten Gestaltung und der Kartenbibliothek (Grundentscheidungen 1 und 64).
 - Die konkrete Farbgebung und mögliche farbliche Unterscheidung der Ebenen werden gesondert beschlossen.
 
-## Offen – Grundentscheidung 66: Farbgebung der Pins nach Ebenen
+## Grundentscheidung 66 – Eigene Pin-Farbe je Ebene
 
-Sollen Pins verschiedener Ebenen bereits in der ersten Basisversion auf der Karte farblich unterscheidbar sein?
+**Beschlossen (Variante A):** Jede Ebene erhält eine **eigene Pin-Farbe**. Alle regulär dargestellten Pins einer Ebene verwenden die Farbe ihrer jeweiligen Ebene. Auch die dauerhafte Systemebene „Privat“ erhält eine eindeutig festgelegte Farbe.
 
-- **Variante A (Empfehlung):** **Jede Ebene erhält eine eigene Pin-Farbe.** Alle regulären Pins einer Ebene verwenden diese Farbe; die Ebene „Privat“ erhält ebenfalls eine eindeutig festgelegte Farbe. Dadurch wird die Ebenenzugehörigkeit unmittelbar auf der Karte erkennbar. Die Farben werden als Ebeneneigenschaft gespeichert, während Auswahl- und Verschiebezustände zusätzlich erkennbar bleiben.
-- **Variante B:** **Alle regulären Pins verwenden zunächst dieselbe Farbe**, unabhängig von ihrer Ebene. Die Ebenenzugehörigkeit wird ausschließlich über Ebenenverwaltung und Pin-Details erkennbar. Unterschiedliche Farben können später ergänzt werden.
+**Konsequenzen:**
+- Die Farbe ist eine Eigenschaft der Ebene, nicht jedes einzelnen Pins. Die Zugehörigkeit eines Pins zu genau einer Ebene bleibt unverändert (Grundentscheidung 1).
+- Beim Erstellen neuer regulärer Ebenen wird eine geeignete Farbe vergeben. Wie Farben vergeben werden und ob sie bearbeitbar sind, wird gesondert entschieden.
+- Die Farben der Ebenen werden lokal gespeichert und sind für die vollständige Sicherung und Wiederherstellung im versionierten pin2map-JSON zu berücksichtigen (Grundentscheidungen 38–49).
+- Auswahl-, Verschiebe- und Vorschauzustände müssen trotz Ebenenfarben eindeutig erkennbar sein (Grundentscheidungen 31–35 und 65).
+- Der Sonderstatus der festen privaten Ebene „Privat“ bleibt unberührt (Grundentscheidungen 15–17).
 
-**Status:** Grundentscheidung 66 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 67: Farben der Ebenen ändern
+
+Sollen Benutzer die automatisch vergebenen Farben regulärer Ebenen bereits in der ersten Basisversion selbst ändern können?
+
+- **Variante A (Empfehlung):** Für jede **reguläre Ebene** kann in der Ebenenverwaltung aus einer kleinen, gut unterscheidbaren **Farbpalette** eine Farbe ausgewählt werden. Die Änderung wird lokal gespeichert und wirkt sich sofort auf alle Pins dieser Ebene aus. Die Farbe der Systemebene „Privat“ bleibt fest.
+- **Variante B:** Die Farben werden beim Anlegen regulärer Ebenen **automatisch vergeben und bleiben in der Basisversion unveränderbar**. Eine manuelle Farbauswahl kann später ergänzt werden; auch „Privat“ behält ihre feste Farbe.
+
+**Status:** Grundentscheidung 67 ist offen und noch nicht beschlossen.
