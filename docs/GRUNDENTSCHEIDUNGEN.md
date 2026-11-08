@@ -263,11 +263,22 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Ein späteres optionales Zentrieren auf den Gerätestandort bleibt möglich, bedarf aber einer gesonderten Entscheidung.
 - Ist eine gespeicherte Kartenansicht unbrauchbar, kann der feste Startausschnitt als sicherer Rückfall dienen.
 
-## Offen – Grundentscheidung 24: Karten-Grundbedienung in der Basisversion
+## Grundentscheidung 24 – Grundbedienung der Karte in der Basisversion
 
-Welche Karteninteraktionen sollen bereits in der ersten stabilen Basisversion unterstützt werden?
+**Beschlossen (Variante A):** Die erste stabile Basisversion unterstützt das **Verschieben der Karte per Finger oder Maus**, das **Zoomen über Touch-Gesten beziehungsweise Mausrad** sowie **sichtbare Plus- und Minus-Zoomtasten**.
 
-- **Variante A (Empfehlung):** Die Karte lässt sich per Ziehen verschieben und per Touch-Geste bzw. Mausrad zoomen; zusätzlich gibt es sichtbare **Plus- und Minus-Zoomtasten**. Damit funktioniert die grundlegende Navigation auch ohne präzise Gesten.
-- **Variante B:** Die Basisversion bietet zunächst nur Verschieben und Zoomen über Gesten beziehungsweise Mausrad. Separate Zoomtasten werden erst später ergänzt.
+**Konsequenzen:**
+- Kartennavigation funktioniert auf mobilen Touch-Geräten und am Desktop.
+- Sichtbare Schaltflächen „+“ und „−“ ermöglichen eine Bedienung ohne Pinch-Geste oder Mausrad.
+- Zoomen und Verschieben ändern den Kartenausschnitt, ohne Pin-Koordinaten oder die Zuordnung zu Ebenen zu verändern.
+- Der zuletzt eingestellte Kartenausschnitt einschließlich Zoomstufe wird gemäß Grundentscheidung 22 lokal gespeichert.
+- Die genaue Positionierung und Darstellung der Zoomtasten ist Sache der späteren UI-Umsetzung; der bestehende PoC kann als Gestaltungsreferenz dienen, ohne dessen Programmcode zu übernehmen.
 
-**Status:** Grundentscheidung 24 ist offen und noch nicht beschlossen.
+## Offen – Grundentscheidung 25: Karte und Pin-Anlegen voneinander unterscheiden
+
+Wie verhindert die Basisversion, dass beim normalen Navigieren auf der Karte versehentlich neue Pins entstehen?
+
+- **Variante A (Empfehlung):** Ein neuer Pin wird nur nach bewusster Aktivierung eines **„Pin hinzufügen“-Modus** durch anschließendes Antippen einer Kartenposition angelegt. Verschieben und Zoomen bleiben unabhängig davon reguläre Kartenaktionen.
+- **Variante B:** Ein einfaches Antippen einer freien Kartenstelle startet unmittelbar das Anlegen eines Pins; das Ziehen der Karte wird als Bewegung erkannt und legt keinen Pin an.
+
+**Status:** Grundentscheidung 25 ist noch offen und nicht beschlossen.
