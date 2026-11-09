@@ -373,3 +373,6 @@ button.layer-delete.p2m-icon-control{color:#ad3540!important}
     min-width:34px!important;min-height:34px!important;flex:0 0 34px!important
   }
 }
+
+.p2m-text-action{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.p2m-text-action .p2m-lucide{--p2m-icon-size:17px}
