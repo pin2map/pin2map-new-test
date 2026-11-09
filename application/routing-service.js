@@ -6,7 +6,7 @@
  */
 (function(root){
   const MODES=Object.freeze({
-    CAR:"car",PEDESTRIAN:"pedestrian",TRANSIT:"transit"
+    CAR:"car",PEDESTRIAN:"pedestrian",BICYCLE:"bicycle",TRANSIT:"transit"
   });
   const knownModes=Object.freeze(Object.values(MODES));
   class RoutingService {
