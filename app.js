@@ -275,6 +275,7 @@
     if(!selectedPin())return;
     moveMode=true;removeMovePreview();
     $("pinPanel").classList.add("hidden");
+    document.body.classList.remove("pin-open");
     // Controls only appear once a new position has been selected.
     $("moveBar").classList.add("hidden");
     updateModeUI();
