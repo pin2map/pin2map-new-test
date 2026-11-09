@@ -1,0 +1,24 @@
+name: Modular core checks
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax-check JavaScript modules
+        run: |
+          find domain application adapters ui -name '*.js' -print0 | xargs -0 -n1 node --check
+          node --check app.js
+          node --check map-adapter-leaflet.js
+          node --check sw.js
+      - name: Run modular tests
+        run: node --test tests/*.test.js
