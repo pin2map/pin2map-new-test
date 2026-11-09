@@ -22,7 +22,7 @@ function fixture(){
     focus(){this.focused=true;}
     click(){this.listeners.click?.();}
   }
-  const elements=Object.fromEntries(["pinLayerTrigger","pinLayerMenu","pinLayer"].map(id=>[id,new Node("div")]));
+  const elements=Object.fromEntries(["pinLayerTrigger","pinLayerMenu","pinLayer","pinPanel"].map(id=>[id,new Node("div")]));
   const listeners={},doc={
     defaultView:{Event:class{constructor(type,options){this.type=type;this.bubbles=options?.bubbles;}}},
     createElement:tag=>new Node(tag),
@@ -61,10 +61,12 @@ test("selecting a layer dispatches the existing native change event exactly once
   picker.render({layers,selectedLayerId:"private"});
   elements.pinLayerTrigger.click();
   assert.equal(elements.pinLayerTrigger.attrs["aria-expanded"],"true");
+  assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),true);
   elements.pinLayerMenu.children[1].click();
   assert.equal(elements.pinLayer.value,"work");
   assert.equal(changes,1);
   assert.equal(elements.pinLayerTrigger.attrs["aria-expanded"],"false");
+  assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),false);
   assert.equal(elements.pinLayerTrigger.focused,true);
   // Re-selecting identical value must not create redundant save events.
   elements.pinLayerMenu.children[1].click();
@@ -76,6 +78,7 @@ test("outside press and Escape close selector without changing assignment",()=>{
   elements.pinLayerTrigger.click();
   listeners.pointerdown({target:{closest:()=>null}});
   assert.equal(picker.open,false);
+  assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),false);
   elements.pinLayerTrigger.click();
   let prevented=false;
   elements.pinLayerMenu.listeners.keydown({key:"Escape",preventDefault(){prevented=true;}});
@@ -89,6 +92,7 @@ test("layer picker overlay does not change dialog height and labels are 12px",()
   const css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
   const menu=css.match(/#pinPanel \.pin-layer-menu\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(menu.includes("position:absolute"),"Floating list should not enlarge the pin panel");
+  assert.ok(css.includes("#pinPanel.pin-layer-open{overflow:visible!important}"),"Open menu must not clip against scrolling pin panel");
   assert.ok(menu.includes("z-index:20"));
   assert.ok(menu.includes("top:100%"));
   const label=css.match(/#pinPanel \.pin-layer-trigger,[\s\S]*?#pinPanel \.pin-layer-option\s*\{([^}]+)\}/)?.[1]||"";
