@@ -40,6 +40,13 @@
         throw new TypeError("Pin marker adapter and callbacks required");
       this.map=mapAdapter;this.onSelect=onSelect;this.attachGesture=attachGesture;
       this.cleanText=cleanText;this.defaultColor=defaultColor;this.markers=new Map();
+      this.relocationSourceId=null;
+    }
+    setRelocationSource(id){
+      this.relocationSourceId=id||null;
+      for(const [pinId,marker] of this.markers){
+        this.map.getMarkerElement(marker)?.classList.toggle("pin-relocation-source",pinId===this.relocationSourceId);
+      }
     }
     render({pins,layers,selectedPinId=null,labelsVisible=true}){
       const colorsByLayer=Object.fromEntries(layers.map(l=>[l.id,l.color]));
@@ -60,6 +67,7 @@
         }
         this.map.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
         this.map.setMarkerAppearance(marker,look);
+        this.map.getMarkerElement(marker)?.classList.toggle("pin-relocation-source",pin.id===this.relocationSourceId);
         this.attachGesture(marker,pin.id);
       }
       for(const [id,marker] of this.markers){
