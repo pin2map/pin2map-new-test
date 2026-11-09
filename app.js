@@ -72,12 +72,12 @@
       }).addTo(map);
     $("basemapSelect").value = state.basemap;
   }
-  function markerIcon(pin,highlighted,label,side) {
+  function markerAppearance(pin,highlighted,label,side) {
     const layer=layerById(pin.layerId);
     const color=layer?layer.color:COLORS[0];
     const labelHtml=label?'<span class="pin-side-label '+side+(highlighted?' highlighted':'')+'">'+esc(label)+'</span>':'';
-    return L.divIcon({html:'<div class="pin-marker'+(highlighted?' selected':'')+'" style="background:'+color+'"></div>'+labelHtml,
-      iconSize:[30,32],iconAnchor:[15,29],className:"pin-icon"});
+    return {html:'<div class="pin-marker'+(highlighted?' selected':'')+'" style="background:'+color+'"></div>'+labelHtml,
+      title:pin.name||"Pin"};
   }
   function renderMarkers() {
     if(!map)return;
@@ -88,27 +88,27 @@
       shown.add(pin.id);
       let marker=markers.get(pin.id);
       if(!marker){
-        marker=L.marker([pin.lat,pin.lng],{draggable:false,autoPan:false}).addTo(map);
-        marker.on("click",e=>{if(Date.now()<suppressMapClickUntil||moveMode)return;selectPin(pin.id);});
+        marker=mapAdapter.createMarker({lat:pin.lat,lng:pin.lng},{draggable:false,autoPan:false});
+        mapAdapter.onMarker(marker,"click",()=>{if(Date.now()<suppressMapClickUntil||moveMode)return;selectPin(pin.id);});
         markers.set(pin.id,marker);
       }
-      marker.setLatLng([pin.lat,pin.lng]);
+      mapAdapter.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
       const chosen=pin.id===selected,point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
-      const side=point.x>map.getSize().x*0.55?"left":"right";
+      const side=point.x>mapAdapter.getSize().x*0.55?"left":"right";
       let label=cleanText(pin.name);
       if(!chosen&&!state.labelsVisible)label="";
       if(label){
-        const width=Math.min(175,Math.max(80,map.getSize().x*0.40));
+        const width=Math.min(175,Math.max(80,mapAdapter.getSize().x*0.40));
         const left=side==="right"?point.x+20:point.x-20-width;
         const box={left,right:left+width,top:point.y-40,bottom:point.y-10};
         if(!chosen&&occupied.some(r=>!(r.right<box.left||r.left>box.right||r.bottom<box.top||r.top>box.bottom)))label="";
         else occupied.push(box);
       }
-      marker.setIcon(markerIcon(pin,chosen,label,side));
+      mapAdapter.setMarkerAppearance(marker,markerAppearance(pin,chosen,label,side));
       attachMarkerLongPress(marker,pin.id);
-      marker.options.title=pin.name||"Pin";
+      
     }
-    for(const [id,marker] of markers)if(!shown.has(id)){map.removeLayer(marker);markers.delete(id);}
+    for(const [id,marker] of markers)if(!shown.has(id)){mapAdapter.removeOverlay(marker);markers.delete(id);}
   }
   function deleteLayerOrPrivatePins(id) {
     const layer=layerById(id);
@@ -138,40 +138,39 @@
   // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
   // A tap still opens/closes its editor; dragging a pin never moves it.
   function zoomHeldPin(marker){
-    if(!map || !map.hasLayer(marker))return;
-    const pinPosition=marker.getLatLng();
+    if(!mapAdapter || !mapAdapter.hasOverlay(marker))return;
+    const pinPosition=mapAdapter.getMarkerPosition(marker);
     const second=marker._heldZoomClose===true;
     const providerMax=state.basemap==="topo"?17:19;
     const target=Math.min(second?14:18,providerMax);
-    const anchor=map.latLngToContainerPoint(pinPosition);
-    map.setZoomAround(pinPosition,target,{animate:false});
-    const actual=map.latLngToContainerPoint(pinPosition);
-    const delta=actual.subtract(anchor);
-    if(Math.abs(delta.x)>0.5 || Math.abs(delta.y)>0.5)map.panBy(delta,{animate:false});
+    const anchor=mapAdapter.project(pinPosition);
+    mapAdapter.zoomAround(pinPosition,target,{animate:false});
+    const actual=mapAdapter.project(pinPosition);
+    const delta={x:actual.x-anchor.x,y:actual.y-anchor.y};
+    if(Math.abs(delta.x)>0.5 || Math.abs(delta.y)>0.5)mapAdapter.panBy(delta,{animate:false});
     marker._heldZoomClose=!second;
     persistViewport();updatePanelLayout();
   }
   function attachMarkerLongPress(marker,id){
-    const element=marker.getElement();
+    const element=mapAdapter.getMarkerElement(marker);
     if(!element || element.dataset.pinGestureBound)return;
     element.dataset.pinGestureBound="true";
     // Stop Leaflet dragging for touches and mouse presses that begin on a pin.
-    L.DomEvent.disableClickPropagation(element);
-    L.DomEvent.on(element,"mousedown touchstart",L.DomEvent.stopPropagation);
+    mapAdapter.stopMarkerEventPropagation(element);
     element.style.touchAction="none";
     element.addEventListener("pointerdown",event=>{
       if(event.button!==0 || moveMode)return;
       event.stopPropagation();
       if(markerPressStart)return;
       const gesture={id:event.pointerId,x:event.clientX,y:event.clientY,
-        activated:false,cancelled:false,finished:false,wasDraggable:map.dragging.enabled()};
+        activated:false,cancelled:false,finished:false,wasDraggable:mapAdapter.isPanEnabled()};
       markerPressStart=gesture;
-      if(gesture.wasDraggable)map.dragging.disable();
+      if(gesture.wasDraggable)mapAdapter.setPanEnabled(false);
       try{element.setPointerCapture(gesture.id);}catch(_){}
       const cleanup=()=>{
         clearTimeout(markerPressTimer);markerPressTimer=null;
         if(markerPressStart===gesture)markerPressStart=null;
-        if(gesture.wasDraggable)map.dragging.enable();
+        if(gesture.wasDraggable)mapAdapter.setPanEnabled(true);
         gesture.finished=true;
         element.removeEventListener("pointermove",onMove);
         element.removeEventListener("pointerup",onUp);
@@ -244,23 +243,23 @@
     bar.style.transform="none";
   }
   function removeMovePreview(){
-    if(moveMarker){map.removeLayer(moveMarker);moveMarker=null;}
-    if(moveLine){map.removeLayer(moveLine);moveLine=null;}
+    if(moveMarker){mapAdapter.removeOverlay(moveMarker);moveMarker=null;}
+    if(moveLine){mapAdapter.removeOverlay(moveLine);moveLine=null;}
     movePreview=null;
     $("confirmMove").disabled=true;
     $("moveBar").classList.add("hidden");
   }
   function previewMove(position){
     const pin=selectedPin();if(!moveMode||!pin)return;
-    movePreview=L.latLng(position);
+    movePreview={lat:Number(position.lat),lng:Number(position.lng)};
     const old=[pin.lat,pin.lng];
     if(!moveMarker){
-      moveMarker=L.marker(movePreview,{draggable:true,autoPan:false,zIndexOffset:1000}).addTo(map);
-      moveMarker.on("drag",e=>previewMove(e.target.getLatLng()));
-      moveMarker.on("dragend",e=>previewMove(e.target.getLatLng()));
-    }else moveMarker.setLatLng(movePreview);
-    if(!moveLine)moveLine=L.polyline([old,movePreview],{color:"#d65a31",weight:3,dashArray:"7 5",interactive:false}).addTo(map);
-    else moveLine.setLatLngs([old,movePreview]);
+      moveMarker=mapAdapter.createMarker(movePreview,{draggable:true,autoPan:false,zIndexOffset:1000});
+      mapAdapter.onMarker(moveMarker,"drag",previewMove);
+      mapAdapter.onMarker(moveMarker,"dragend",previewMove);
+    }else mapAdapter.setMarkerPosition(moveMarker,movePreview);
+    if(!moveLine)moveLine=mapAdapter.createLine([old,movePreview],{color:"#d65a31",weight:3,dashArray:"7 5",interactive:false});
+    else mapAdapter.setLinePositions(moveLine,[old,movePreview]);
     $("confirmMove").disabled=false;
     $("moveText").textContent="Neue Position";
     $("moveBar").classList.remove("hidden");
