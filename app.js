@@ -212,11 +212,33 @@
       },550);
     },{passive:false});
   }
+  function positionMoveBar(){
+    if(!movePreview || !moveMode)return;
+    const bar=$("moveBar");
+    const mapRect=map.getContainer().getBoundingClientRect();
+    const point=map.latLngToContainerPoint(movePreview);
+    const x=mapRect.left+point.x;
+    const y=mapRect.top+point.y;
+    const width=bar.offsetWidth || 202;
+    const height=bar.offsetHeight || 46;
+    const pad=8;
+    const bottomSafety=12+(window.visualViewport?Math.max(0,window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop):0);
+    const left=Math.min(Math.max(x-width/2,pad),Math.max(pad,window.innerWidth-width-pad));
+    const below=y+31;
+    // Normally below the pin; if not enough room, place directly above it.
+    const top=below+height+bottomSafety<=window.innerHeight
+      ? below : Math.max(pad,y-height-32);
+    bar.style.left=left+"px";
+    bar.style.top=top+"px";
+    bar.style.bottom="auto";
+    bar.style.transform="none";
+  }
   function removeMovePreview(){
     if(moveMarker){map.removeLayer(moveMarker);moveMarker=null;}
     if(moveLine){map.removeLayer(moveLine);moveLine=null;}
     movePreview=null;
     $("confirmMove").disabled=true;
+    $("moveBar").classList.add("hidden");
   }
   function previewMove(position){
     const pin=selectedPin();if(!moveMode||!pin)return;
@@ -224,14 +246,15 @@
     const old=[pin.lat,pin.lng];
     if(!moveMarker){
       moveMarker=L.marker(movePreview,{draggable:true,autoPan:false,zIndexOffset:1000}).addTo(map);
-      moveMarker.bindTooltip("Neue Position",{direction:"right",permanent:true});
       moveMarker.on("drag",e=>previewMove(e.target.getLatLng()));
       moveMarker.on("dragend",e=>previewMove(e.target.getLatLng()));
     }else moveMarker.setLatLng(movePreview);
     if(!moveLine)moveLine=L.polyline([old,movePreview],{color:"#d65a31",weight:3,dashArray:"7 5",interactive:false}).addTo(map);
     else moveLine.setLatLngs([old,movePreview]);
     $("confirmMove").disabled=false;
-    $("moveText").textContent="Alte und neue Position prüfen, danach übernehmen.";
+    $("moveText").textContent="Neue Position";
+    $("moveBar").classList.remove("hidden");
+    positionMoveBar();
   }
   function endMove(){
     moveMode=false;removeMovePreview();
@@ -242,8 +265,8 @@
     if(!selectedPin())return;
     moveMode=true;removeMovePreview();
     $("pinPanel").classList.add("hidden");
-    $("moveBar").classList.remove("hidden");
-    $("moveText").textContent="Neue Stelle antippen. Die Vorschau lässt sich ziehen.";
+    // Controls only appear once a new position has been selected.
+    $("moveBar").classList.add("hidden");
     updateModeUI();
   }
   function confirmMove(){
@@ -576,9 +599,9 @@
     });
 
     attachLongPress();
-    map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();updatePanelLayout();});
-    map.on("zoomend", () => {if(!markerPressStart)renderMarkers();updatePanelLayout();});
-    window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout();renderMarkers(); });
+    map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();updatePanelLayout();positionMoveBar();});
+    map.on("zoomend", () => {if(!markerPressStart)renderMarkers();updatePanelLayout();positionMoveBar();});
+    window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout();renderMarkers();positionMoveBar(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
   async function init() {
