@@ -215,21 +215,30 @@
   function positionMoveBar(){
     if(!movePreview || !moveMode)return;
     const bar=$("moveBar");
+    if(bar.classList.contains("hidden"))return;
+    const appRect=$("app").getBoundingClientRect();
     const mapRect=map.getContainer().getBoundingClientRect();
     const point=map.latLngToContainerPoint(movePreview);
     const x=mapRect.left+point.x;
     const y=mapRect.top+point.y;
-    const width=bar.offsetWidth || 202;
-    const height=bar.offsetHeight || 46;
-    const pad=8;
-    const bottomSafety=12+(window.visualViewport?Math.max(0,window.innerHeight-window.visualViewport.height-window.visualViewport.offsetTop):0);
-    const left=Math.min(Math.max(x-width/2,pad),Math.max(pad,window.innerWidth-width-pad));
-    const below=y+31;
-    // Normally below the pin; if not enough room, place directly above it.
-    const top=below+height+bottomSafety<=window.innerHeight
-      ? below : Math.max(pad,y-height-32);
-    bar.style.left=left+"px";
-    bar.style.top=top+"px";
+    const width=bar.offsetWidth,height=bar.offsetHeight;
+    if(!width || !height)return;
+    const viewport=window.visualViewport;
+    const visibleLeft=viewport?viewport.offsetLeft:0;
+    const visibleTop=viewport?viewport.offsetTop:0;
+    const visibleRight=visibleLeft+(viewport?viewport.width:window.innerWidth);
+    const visibleBottom=visibleTop+(viewport?viewport.height:window.innerHeight);
+    const margin=8;
+    // Screen-space position within #app, not within the movable Leaflet pane.
+    const centerX=Math.max(visibleLeft+margin+width/2,
+      Math.min(visibleRight-margin-width/2,x));
+    const desiredBelow=y+30;  // Small gap below the preview marker.
+    const desiredAbove=y-height-30;
+    const top=desiredBelow+height+margin<=visibleBottom
+      ?desiredBelow:Math.max(visibleTop+margin,desiredAbove);
+    bar.style.left=(centerX-width/2-appRect.left)+"px";
+    bar.style.top=(top-appRect.top)+"px";
+    bar.style.right="auto";
     bar.style.bottom="auto";
     bar.style.transform="none";
   }
