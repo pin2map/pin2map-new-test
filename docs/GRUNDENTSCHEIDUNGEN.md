@@ -1747,3 +1747,20 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 6. Die **weltweite geografische Ortssuche bleibt verbindlicher Bestandteil der Basisversion**; alle darüber erzeugten Pins gehören in „Privat“.
 
 **Prüfstatus:** Gegen das Original-Verhalten geprüft, Code eingecheckt und JavaScript-Syntax kontrolliert. Ein realer Browser-/iPhone-Interaktionstest ist weiterhin erforderlich.
+
+
+## Verbindliche Änderung – Neue Objekte immer in „Privat“, keine aktive Ebene (2026-11-09)
+
+**Neue Grundentscheidung 1 (überschreibt ältere Festlegungen):** **Jedes neu erzeugte Objekt, insbesondere jeder Pin, wird zunächst ausschließlich in der Systemebene „Privat“ angelegt.** Das gilt unabhängig vom Erstellungsweg, einschließlich langem Drücken bzw. Rechtsklick auf die Karte und geografischer Ortsnamensuche. Der Benutzer kann ein vorhandenes Objekt anschließend ausdrücklich einer anderen regulären Ebene zuordnen. Die Regel „ein Pin gehört genau einer Ebene“ bleibt bestehen.
+
+**Neue Grundentscheidung 2 (Konsequenz aus 1):** Die Kennzeichnung beziehungsweise Auswahl einer **aktiven Ebene entfällt vollständig**. In der Ebenenverwaltung gibt es keine Aktionen „Aktiv“ oder „Aktivieren“ mehr. Beim Anlegen einer Ebene wird diese weder aktiv noch als bevorzugtes Ziel für neue Objekte markiert. Die bisher lokal gespeicherte `activeLayer`-Eigenschaft wird bei der Übernahme vorhandener Browserdaten verworfen. Die Sichtbarkeit von Ebenen bleibt eine unabhängige Einstellung.
+
+**Weitere Konsequenzen:**
+- Die Beschlüsse zur automatischen Zuordnung neuer Pins zur aktiven Ebene (insbesondere Grundentscheidungen 7–9), zum Erstellen in ausgeblendeten *aktiven* Ebenen (Grundentscheidung 11) sowie entsprechende Passagen der bisherigen Umsetzungspräzisierungen sind **in diesem Punkt ausdrücklich aufgehoben**.
+- Die bereits beschlossene Regel der Ortssuche, neue Pins in „Privat“ zu speichern (Grundentscheidung 119), wird auf **alle** Erstellungsarten erweitert.
+- Die Ebene „Privat“ bleibt nicht löschbar; ihre Pins können wie beschlossen gesammelt gelöscht werden.
+- Wird ein Pin neu angelegt, während „Privat“ ausgeblendet ist, bleibt die Ebene ausgeblendet. Der Pin wird dennoch in „Privat“ angelegt; ein Hinweis mit bewusster Möglichkeit zum Einblenden ist bereitzustellen. Diese Regel ersetzt die frühere Pflicht, vor dem Anlegen eine aktive Ebene auszuwählen.
+- Bestehende Pins werden **nicht** verschoben oder umsortiert. Ihre bisherigen Ebenenzuordnungen bleiben unverändert. Die explizite Änderung einer Pin-Ebene über dessen Bearbeitungsdialog bleibt möglich.
+- **Die weltweite geografische Ortsnamensuche bleibt verbindlicher Bestandteil der Basisversion.**
+
+**Status:** In der testbaren Anwendung umgesetzt. Browser- und iPhone-Interaktionen müssen nach der Veröffentlichung weiterhin praktisch überprüft werden.
