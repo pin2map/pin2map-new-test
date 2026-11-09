@@ -30,7 +30,6 @@ function draw(){
 }
 function showError(error){status.textContent="MapLibre-Test fehlgeschlagen: "+String(error?.message||error);}
 try{
-  if(!maplibregl.supported())throw Error("WebGL wird auf diesem Gerät/Browser nicht unterstützt");
   adapter=window.Pin2MapMapLibreAdapter.mount("map",{center:{lat:49.3,lng:7.4},zoom:4.6},maplibregl);
   adapter.map.on("load",()=>{draw();status.textContent="MapLibre geladen · drei Test-Pins angezeigt";});
   adapter.map.on("error",event=>showError(event.error||"Unbekannter Kartenfehler"));
