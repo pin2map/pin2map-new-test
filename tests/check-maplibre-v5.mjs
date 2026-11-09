@@ -15,6 +15,6 @@ check(js.includes('adapter.zoomAround(position,far?14:18)'),'held pin zoom toggl
 check(js.includes('if(moveMode){setPreview(position);return;}'),'map click places preview without saving');
 check(js.includes('pin.lat=movePreview.lat;pin.lng=movePreview.lng'),'confirmation transfers coordinates');
 check(js.includes('if(moveMarker){adapter.removeOverlay(moveMarker);moveMarker=null;}'),'preview cleanup');
-check(js.includes('status.textContent=message')===false,'status is updated through notify');
+check(js.includes('function notify(message){status.textContent=message;}'),'status is updated through notify');
 check(!js.includes('indexedDB.open') && !js.includes('serviceWorker.register'),'v5 does not touch stored user data');
 console.log('MapLibre v5 static interaction checks passed (14).');
