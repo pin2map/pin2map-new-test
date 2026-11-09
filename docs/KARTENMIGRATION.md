@@ -47,7 +47,7 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [x] Referenz-Branch ab tatsächlichem V18-Commit
 - [x] Separater Migrationszweig
 - [x] Schnittstellenvertrag dokumentiert
-- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom, Bewegungsereignisse, reguläre Pin-Marker, Pin-Klicks, Marker-DOM-Zugriff, Pan-Sperre beim Langdruck, Zoom am gehaltenen Pin, verschiebbare Vorschau-Marker und Verbindungslinie laufen nun über den Adapter. **Noch nicht vollständig rendererunabhängig:** DOM-spezifische Pointer-Gesten und deren Leaflet-CSS-Ausschlussselektoren sowie die spätere vollständige MapLibre-Implementierung.
+- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom, Bewegungsereignisse, reguläre Pin-Marker, Pin-Klicks, Marker-DOM-Zugriff, Pan-Sperre beim Langdruck, Zoom am gehaltenen Pin, verschiebbare Vorschau-Marker und Verbindungslinie laufen nun über den Adapter. **Noch nicht vollständig rendererunabhängig:** DOM-spezifische Pointer-Gesten, deren Zustandslogik sowie die spätere vollständige MapLibre-Implementierung. Leaflet-CSS-Ausschlussselektoren befinden sich nur noch im Leaflet-Adapter.
 - [~] Dialogpositionierung und Kartenbewegung nutzen Adapter-Projektion/Pan und Adapter-Ereignisse; normale Pin-Marker und Verschiebevorschau werden ebenfalls ausschließlich über den Adapter erzeugt und verändert. Die Basiskarten und Controls sowie Map-Klick-/Dragstart-/Zoomstart-Ereignisse werden inzwischen ebenfalls über den Adapter bedient.
 - [ ] Reale Browser-Regressionstests mit Desktop + iPhone
 
@@ -85,6 +85,13 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Anwendung initialisiert die Karte über `Pin2MapLeafletAdapter.mount` statt `L.map`; Basiskartenwechsel läuft über `setBasemap('street'|'topo')`, inklusive ursprünglicher URLs, Attributionen und Maximalzoomstufen.
 - Die bisherigen drei Zoom-Buttons werden unverändert als Leaflet-Control in `addZoomControls` aufgebaut. Die Oberfläche übergibt nur noch die Aktion `onFitAll`; Leaflet-DOM- und Event-APIs verbleiben im Adapter.
 - `onMapClick` liefert ausschließlich `{lat,lng}`, statt eines Leaflet-Ereignisobjekts. `on('dragstart zoomstart', ...)` registriert und entfernt beide Kartenereignisse. `fitBounds`, `getContainer` und `unproject` übernehmen weitere direkte Kartenaufrufe.
-- In `app.js` gibt es keine direkten `L.`- oder `map.`-Aufrufe mehr. Die bestehenden Pointer-Gesten funktionieren jedoch noch über DOM-Elemente und Leaflet-Klassen wie `.leaflet-marker-icon`; das ist eine offene Renderer-Unabhängigkeit. Außerdem sind gerenderte Markerhandles bislang noch Leaflet-Objekte, aber für die App nur opake Handles.
+- In `app.js` gibt es keine direkten `L.`- oder `map.`-Aufrufe mehr. Die bestehenden Pointer-Gesten funktionieren weiterhin über DOM-Elemente. Leaflet-Klassen wie `.leaflet-marker-icon` werden nur noch durch den Renderer-Adapter ausgewertet; die Pointer-Zustandslogik selbst befindet sich noch in `app.js`. Außerdem sind gerenderte Markerhandles bislang noch Leaflet-Objekte, aber für die App nur opake Handles.
 - Statische Tests und Adapter-Mocks wurden erweitert. Die aktuellen GitHub-Dateien bestanden 84 statische UI-Checks und 37 Adapter-Assertions in einer isolierten JavaScript-Ausführung, die Node-Dateileseoperationen nachbildet; Syntax von `app.js` und `map-adapter-leaflet.js` geprüft. Der vollständige Node-Testlauf und reale Browser-/iPhone-Interaktionen bleiben offen.
 - Kein Deployment nach `main`; V18-Referenz-Branch und lokaler IndexedDB-Datenbestand bleiben unangetastet.
+
+## Inkrement 4: Rendererabhängige Gesten-Hit-Tests isoliert (2026-11-09)
+
+- `app.js` verwendet für Langdruck und Kontextmenü nur noch `mapAdapter.isMapSurface(target)`; die CSS-Klassen von Leaflet zur Abgrenzung von Controls, Markern, Popups und Tooltips stehen ausschließlich im Leaflet-Adapter.
+- Bestehende Gestenschwellen und Sicherheitslogik (ein Pointer, Bewegungsschwelle, Langdruck, Kontextmenü-Unterdrückung) bleiben unverändert.
+- Isolierte Ausführung der Tests mit den aktuellen GitHub-Dateien: **86 statische UI-Checks und 41 Adapter-Assertions bestanden**, Syntax von `app.js` und `map-adapter-leaflet.js` geprüft. Der vollständige Node-, Desktop-Browser- und iPhone-Test ist noch offen.
+- Für den MapLibre-Adapter ist eine eigene `isMapSurface`-Implementierung erforderlich. Eine echte iPhone-Abnahme ist erst sinnvoll, wenn ein unabhängiger Testzweig sichtbar bereitgestellt wird; `main` bleibt unangetastet.
