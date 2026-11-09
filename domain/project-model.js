@@ -38,9 +38,11 @@
     return position(geometry.coordinates[1],geometry.coordinates[0]);
   }
   function validatePinLayer(pin,layers){
-    if(!pin||typeof pin.layerId!=="string"||!Array.isArray(layers))
+    if(!pin||typeof pin!=="object"||!Array.isArray(layers))
       throw new TypeError("Invalid pin or layers");
-    // Exactly one layerId, never a list of layers. A private layer always exists.
+    // A pin belongs to exactly one existing layer. Malformed assignments
+    // (including legacy arrays) are rejected as invalid, not thrown as errors.
+    if(typeof pin.layerId!=="string"||!pin.layerId)return false;
     return layers.some(l=>l?.id===pin.layerId);
   }
   const api=Object.freeze({
