@@ -234,3 +234,21 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 /* No active layer: eye, color, name/count, deletion only. */
 .layer-row{grid-template-columns:25px 20px minmax(0,1fr) 30px}
 @media(max-width:630px){.layer-row{grid-template-columns:23px 15px minmax(0,1fr) 28px}}
+
+
+/* Predecessor-style focused pin editing. All map UI controls disappear while
+   the editor is open. Attribution remains visible for tile-license compliance. */
+body.pin-open .topbar,
+body.pin-open .labels-toggle,
+body.pin-open .layers-bottom-button,
+body.pin-open .pin-zoom-buttons,
+body.pin-open .search-results,
+body.pin-open #layersPanel,
+body.pin-open #settingsPanel,
+body.pin-open .notice,
+body.pin-open .leaflet-control-container .leaflet-control:not(.leaflet-control-attribution){
+  display:none!important;
+}
+/* The editor is positioned by JavaScript at the pin, deliberately without
+   edge constraints. The #app viewport clips the dialog naturally offscreen. */
+body.pin-open #pinPanel{visibility:visible}
