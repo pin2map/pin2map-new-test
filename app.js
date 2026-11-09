@@ -1,15 +1,13 @@
 "use strict";
 (function () {
   const $ = id => document.getElementById(id);
-  const STORAGE_DB = "pin2map-new-v1";
-  const STORAGE_KEY = "appState";
   const GEOCACHE_HOURS = 24;
   const projectModel = window.Pin2MapProjectModel;
   if (!projectModel) throw new Error("pin2map project-model.js must load before app.js");
   const PRIVATE_ID = projectModel.PRIVATE_ID;
   const COLORS = projectModel.DEFAULT_COLORS;
   const defaults = projectModel.defaultProject;
-  let db, state = defaults(), mapAdapter, markers = new Map();
+  let projectStore, state = defaults(), mapAdapter, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
@@ -23,29 +21,8 @@
     $("notice").textContent = message; $("notice").classList.remove("hidden");
     clearTimeout(noticeTimer); noticeTimer = setTimeout(() => $("notice").classList.add("hidden"), 3500);
   }
-  function openDB() {
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(STORAGE_DB, 1);
-      req.onupgradeneeded = () => req.result.createObjectStore("kv");
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
-  function dbRead() {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction("kv", "readonly");
-      const req = tx.objectStore("kv").get(STORAGE_KEY);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-  }
   function dbWrite() {
-    if (!db) return Promise.resolve();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction("kv", "readwrite");
-      tx.objectStore("kv").put(state, STORAGE_KEY);
-      tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
-    });
+    return projectStore ? projectStore.saveProject(state) : Promise.resolve();
   }
   function save() {
     clearTimeout(saveTimer);
@@ -704,7 +681,7 @@
   }
   async function init() {
     if(!window.L){$("notice").textContent="Die Kartenbibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen."; $("notice").classList.remove("hidden");return;}
-    try {db=await openDB();const saved=await dbRead();if(saved && Array.isArray(saved.layers) && Array.isArray(saved.pins))state={...defaults(),...saved};}
+    try {projectStore=await window.Pin2MapIndexedDBProjectStore.open();const saved=await projectStore.loadProject();if(saved && Array.isArray(saved.layers) && Array.isArray(saved.pins))state={...defaults(),...saved};}
     catch(e){showNotice("IndexedDB nicht verfügbar – Änderungen können verloren gehen");}
     if(!layerById(PRIVATE_ID))state.layers.unshift(defaults().layers[0]);
     // Obsolete active-layer selection is deliberately discarded on load.
