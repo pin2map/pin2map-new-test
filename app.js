@@ -4,15 +4,11 @@
   const STORAGE_DB = "pin2map-new-v1";
   const STORAGE_KEY = "appState";
   const GEOCACHE_HOURS = 24;
-  const PRIVATE_ID = "private";
-  const COLORS = ["#326cc2", "#e07c2b", "#865ab8", "#16836b", "#c14d72", "#8a7431"];
-  const defaults = () => ({
-    layers: [{ id: PRIVATE_ID, name: "Privat", color: "#326cc2", visible: true },
-      { id: "layer-1", name: "Ebene 1", color: "#e07c2b", visible: true }],
-    pins: [],
-    viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
-    basemap: "street", labelsVisible: true, allowGeocode: false, geoCache: {}
-  });
+  const projectModel = window.Pin2MapProjectModel;
+  if (!projectModel) throw new Error("pin2map project-model.js must load before app.js");
+  const PRIVATE_ID = projectModel.PRIVATE_ID;
+  const COLORS = projectModel.DEFAULT_COLORS;
+  const defaults = projectModel.defaultProject;
   let db, state = defaults(), mapAdapter, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
@@ -22,7 +18,7 @@
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
-  const cleanText = value => String(value || "").trim().slice(0,120);
+  const cleanText = projectModel.cleanText;
   function showNotice(message) {
     $("notice").textContent = message; $("notice").classList.remove("hidden");
     clearTimeout(noticeTimer); noticeTimer = setTimeout(() => $("notice").classList.add("hidden"), 3500);
