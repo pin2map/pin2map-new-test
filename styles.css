@@ -519,12 +519,18 @@ body.pin-relocation-picking #map .leaflet-interactive{
 
 /* Pin editor layer picker: compact names, colored layer dots, explicit visibility.
    The native select remains the state/change API but not the rendered popup. */
-#pinPanel .pin-layer-picker{
-  position:relative;margin:7px 0 9px;min-width:0;
-  isolation:isolate;
+/* Compact layer selector occupies the middle of the footer, NOT a
+   separate full-width row. The label floats across its upper border. */
+#pinPanel .pin-actions .pin-layer-picker{
+  position:relative;flex:1 1 auto;width:auto;min-width:0;
+  margin:0 2px;isolation:isolate;
 }
 #pinPanel .pin-layer-picker > label{
-  display:block;margin:0 0 4px!important;font-size:12px!important;font-weight:600;
+  position:absolute;z-index:2;top:-8px;left:11px;
+  display:block;width:auto;margin:0!important;padding:0 5px;
+  background:#fff;color:#617287;
+  font-size:11px!important;line-height:14px;font-weight:500!important;
+  pointer-events:none;
 }
 #pinPanel .pin-layer-native-select{display:none!important}
 #pinPanel .pin-layer-trigger,
@@ -568,11 +574,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
    selector is open, allow this ONE overlaid menu to escape that clipping.
    Closing restores the original responsive scrolling behavior. */
 #pinPanel.pin-layer-open{overflow:visible!important}
-/* Floating overlay: MUST NOT enter the pin dialog's normal layout or
-   enlarge the popup. It is anchored below the trigger within the picker. */
+/* The footer is at the bottom of the dialog: float the options UP,
+   outside the normal layout, never resizing the dialog or covering its tip. */
 #pinPanel .pin-layer-menu{
   position:absolute;z-index:20;
-  left:0;right:0;top:100%;
+  left:0;right:0;top:auto;bottom:calc(100% + 4px);
   display:flex;flex-direction:column;gap:2px;
   padding:4px;margin:4px 0 0;border:1px solid #ccd6e0;
   border-radius:9px;background:#fff;
@@ -586,3 +592,27 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel .pin-layer-option[aria-selected="true"]{
   background:#eaf2f9!important;border-color:#c9dae9!important;
 }
+
+/* Compact footer selector has the same 32px height as its neighboring buttons,
+   but takes only the horizontal space left between Move and OK. */
+#pinPanel .pin-actions .pin-layer-trigger{
+  height:var(--p2m-pin-dialog-action-size)!important;
+  min-height:var(--p2m-pin-dialog-action-size)!important;
+  max-height:var(--p2m-pin-dialog-action-size)!important;
+  padding:3px 7px!important;
+  gap:6px!important;
+  font-size:11px!important;
+}
+#pinPanel .pin-actions .pin-layer-option{font-size:11px!important}
+#pinPanel .pin-actions .pin-layer-dot{
+  width:10px;height:10px;flex-basis:10px;
+}
+#pinPanel .pin-actions .pin-layer-visibility{
+  width:15px;height:15px;flex-basis:15px;
+}
+#pinPanel .pin-actions .pin-layer-visibility-icon{
+  width:15px!important;height:15px!important;
+}
+/* The editor's pointer triangle belongs to the pin, not to the open menu.
+   Hide it while choosing a layer, restore it immediately on closing. */
+#pinPanel.pin-layer-open + #pinDialogTip{display:none!important}
