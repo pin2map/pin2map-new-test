@@ -30,7 +30,7 @@ async function longPress(page,x,y,ms=725){
   const errors=[];
   let stage="browser launch";
   const step=label=>{stage=label;console.log("[browser] "+label);};
-  page.on("pageerror",error=>errors.push(error.message));
+  page.on("pageerror",error=>{errors.push(error.message);console.error("[pageerror]",error.stack||error.message);});
   page.on("console",message=>{
     if(message.type()==="error")console.error("[page console]",message.text());
   });
