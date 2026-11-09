@@ -323,7 +323,36 @@
       ]
     ]
   });
+  // A pin2map-specific composite icon, drawn with Lucide's round-cap 2px
+  // outline language. Red = old position, green = new position.
+  // Unlike ordinary Lucide symbols this icon deliberately has three colors.
+  function relocationSvg(doc){
+    const out=doc.createElementNS(NS,"svg");
+    for(const [key,value] of Object.entries({
+      xmlns:NS,width:36,height:24,viewBox:"0 0 36 24",
+      fill:"none",stroke:"currentColor","stroke-width":2,
+      "stroke-linecap":"round","stroke-linejoin":"round",
+      "aria-hidden":"true",focusable:"false",
+      class:"p2m-lucide p2m-relocate-icon"
+    }))out.setAttribute(key,String(value));
+    const make=(tag,attrs)=>{
+      const element=doc.createElementNS(NS,tag);
+      for(const [key,value] of Object.entries(attrs))element.setAttribute(key,String(value));
+      out.append(element);
+    };
+    // Connection behind the two pins, so the markers remain readable.
+    make("path",{d:"M13 16 Q18 11 23 16",stroke:"#78838c",
+      "stroke-dasharray":"2 3"});
+    make("path",{d:"M14 8a5 5 0 1 0-10 0c0 3.5 5 10 5 10s5-6.5 5-10Z",
+      stroke:"#cf3444"});
+    make("circle",{cx:9,cy:8,r:1.6,stroke:"#cf3444"});
+    make("path",{d:"M32 8a5 5 0 1 0-10 0c0 3.5 5 10 5 10s5-6.5 5-10Z",
+      stroke:"#16864f"});
+    make("circle",{cx:27,cy:8,r:1.6,stroke:"#16864f"});
+    return out;
+  }
   function svg(name,doc=root.document){
+    if(name==="pin-relocate")return relocationSvg(doc);
     const shape=SHAPES[name];
     if(!shape)throw new RangeError("Unknown Lucide icon: "+name);
     const out=doc.createElementNS(NS,"svg");
