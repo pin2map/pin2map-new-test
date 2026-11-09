@@ -8,7 +8,7 @@
   const COLORS = projectModel.DEFAULT_COLORS;
   const defaults = projectModel.defaultProject;
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
-  let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
+  let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   let movePreview = null, moveMarker = null, moveLine = null;
@@ -17,10 +17,8 @@
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
   const cleanText = projectModel.cleanText;
-  function showNotice(message) {
-    $("notice").textContent = message; $("notice").classList.remove("hidden");
-    clearTimeout(noticeTimer); noticeTimer = setTimeout(() => $("notice").classList.add("hidden"), 3500);
-  }
+  const uiShell = new window.Pin2MapUIShell({getElement:$});
+  const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
   }
@@ -384,10 +382,8 @@
   }
   function closeMapOverlays() {
     hideResults();
-    $("layersPanel").classList.add("hidden");
-    $("layersButton").setAttribute("aria-expanded","false");
-    $("settingsPanel").classList.add("hidden");
-    $("notice").classList.add("hidden");
+    uiShell.closePanels();
+    uiShell.hideNotice();
     const dlg = $("deleteDialog");
     if (dlg.open) dlg.close("cancel");
     if(moveMode)endMove();
@@ -450,12 +446,7 @@
       suppressMapClickUntil=Date.now()+750;
     });
   }
-  function togglePanel(id) {
-    const panel=$(id),wasHidden=panel.classList.contains("hidden");
-    ["layersPanel","settingsPanel"].forEach(x=>$(x).classList.add("hidden"));
-    if(wasHidden)panel.classList.remove("hidden");
-    $("layersButton").setAttribute("aria-expanded",String(!$("layersPanel").classList.contains("hidden")));
-  }
+  const togglePanel = id => uiShell.togglePanel(id);
   function resultHead() {
     const head = document.createElement("div"); head.className = "results-head";
     const close = document.createElement("button"); close.type = "button"; close.textContent = "×"; close.title = "Trefferliste schließen";
@@ -554,12 +545,7 @@
       if (serial === searchSerial) { btn.disabled = false; searchAbort = null; }
     }
   }
-  function updateLabelButton(){
-    const btn=$("labelsToggle");
-    btn.setAttribute("aria-pressed",String(state.labelsVisible));
-    btn.title=state.labelsVisible?"Pin-Beschriftungen ausblenden":"Pin-Beschriftungen einblenden";
-    btn.classList.toggle("is-off",!state.labelsVisible);
-  }
+  const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
     $("searchForm").addEventListener("submit", runSearch);
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
@@ -622,7 +608,7 @@
         console.warn("PWA refresh:",error);
       }
     });
-    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
+    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}uiShell.closePanel(b.dataset.close);}));
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
