@@ -18,6 +18,14 @@
         if(!event.target.closest?.("#pinLayerPicker"))this.setOpen(false);
       });
     }
+    visibilityIcon(visible){
+      const icon=root.Pin2MapIcons.svg(visible?"eye":"eye-off",this.document);
+      icon.classList.add("pin-layer-visibility-icon");
+      return icon;
+    }
+    visibilityLabel(visible){
+      return visible?"Sichtbar":"Ausgeblendet";
+    }
     setOpen(open){
       this.open=Boolean(open);
       this.el("pinLayerMenu").classList.toggle("hidden",!this.open);
@@ -30,8 +38,11 @@
       if(selected){
         const dot=this.document.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=selected.color;
         const name=this.document.createElement("span");name.className="pin-layer-name";name.textContent=selected.name;
-        const status=this.document.createElement("span");status.className="pin-layer-visibility"+(selected.visible?"":" is-hidden");
-        status.textContent=selected.visible?"Sichtbar":"Ausgeblendet";
+        const status=this.document.createElement("span");
+        status.className="pin-layer-visibility"+(selected.visible?"":" is-hidden");
+        status.title=this.visibilityLabel(selected.visible);
+        status.setAttribute("aria-label",this.visibilityLabel(selected.visible));
+        status.append(this.visibilityIcon(selected.visible));
         const arrow=this.document.createElement("span");arrow.className="pin-layer-chevron";arrow.setAttribute("aria-hidden","true");arrow.textContent="";
         trigger.append(dot,name,status,arrow);
       }
@@ -45,7 +56,10 @@
         const name=this.document.createElement("span");name.className="pin-layer-name";name.textContent=layer.name;
         const status=this.document.createElement("span");
         status.className="pin-layer-visibility"+(layer.visible?"":" is-hidden");
-        status.textContent=layer.visible?"Sichtbar":"Ausgeblendet";
+        status.title=this.visibilityLabel(layer.visible);
+        status.setAttribute("aria-label",this.visibilityLabel(layer.visible));
+        status.append(this.visibilityIcon(layer.visible));
+        option.setAttribute("aria-label",layer.name+", "+this.visibilityLabel(layer.visible));
         option.append(dot,name,status);
         option.addEventListener("click",()=>{
           const select=this.el("pinLayer");
