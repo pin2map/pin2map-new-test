@@ -87,3 +87,11 @@ Jede Domänenfunktion erhält Unit-Tests ohne Kartenbibliothek; UI- und Kartenin
 2. Zunächst **Oberflächen-Shell und UI-Zustand** aus `app.js` lösen; keine Designänderungen im ersten Schnitt.
 3. Nach erfolgreichem Regressionstest erste sichtbare Verbesserung mit der Vorgänger-App vergleichen (Kopfzeile, Steuerung und Pin-Dialog).
 4. Danach Komponenten einzeln bearbeiten und auf dem iPhone abnehmen.
+
+## Querschnittsmodul Filter – verbindliche Ergänzung vom 2026-11-09
+
+Die Ebenensichtbarkeit wird ab sofort als **erste Filterbedingung** behandelt, nicht als Spezialfall des Karten-Renderers. Die Module `domain/pin-filter.js` und `application/filter-operations.js` sind angelegt und in den Entwicklungszweig integriert.
+
+Sobald die Oberfläche modular ist, kommt eine eigenständige **Filter-UI** hinzu: zunächst Ebenen ein-/ausblenden, danach lokale Filter nach Pinname und textuellen Inhalten; später können zusätzlich fachlich definierte Felder und weitere Objektarten folgen. Diese Filter werden logisch kombiniert und verändern keine Projektdaten. Ein versteckter Layer bleibt auch bei passendem Inhalt verborgen.
+
+Vor einem sichtbaren neuen Textfilter müssen wir dessen Benutzerführung an der Vorgänger-App und auf iPhone testen. Die bestehende Nominatim-Ortssuche bleibt unabhängig davon. Damit können beide Suchaufgaben später nebeneinander existieren: **Ort finden** vs. **meine Projektobjekte filtern**.
