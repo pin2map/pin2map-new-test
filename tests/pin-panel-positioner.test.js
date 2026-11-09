@@ -78,7 +78,7 @@ test("initial opening pans only once and subsequent relayout never pans",()=>{
   // Negating a zero pan offset yields -0; both describe the same map movement.
   assert.equal(f.pans.length,1);
   assert.equal(f.pans[0].point.x,-32);
-  assert.equal(f.pans[0].point.y,0);
+  assert.ok(Math.abs(f.pans[0].point.y)<Number.EPSILON);
   assert.deepEqual(f.pans[0].options,{animate:false});
   f.view.layout({pin,moving:false});
   assert.equal(f.pans.length,1);
