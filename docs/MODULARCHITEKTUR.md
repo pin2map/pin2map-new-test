@@ -116,3 +116,19 @@ Aus `app.js` sind die reinen Oberflächenfunktionen **temporäre Meldungen, Pane
 - `tests/check-ui-state.mjs` und `tests/check-pin-editor.mjs` prüfen Auswahl-/Verschiebeübergänge, das Schließen, Feldwerte, Ebenensichtbarkeit und Eingabefokus. Syntax- und isolierte Funktionsprüfungen wurden durchgeführt. Die GitHub-Actions-Workflowdatei und die Architekturregeln sind ergänzt, die Modul-Ladereihenfolge in `index.html` geprüft und korrigiert.
 - **Einschränkung:** Die komplette Browser-/iPhone-Regression dieses Branchs ist noch offen. Beim Umziehen von Zuständen verwendet `app.js` vorläufig noch direkte Eigenschaftszuweisungen an `uiState`; in einer späteren, getrennten Änderung können alle Übergänge über öffentliche Methoden geführt werden. Deshalb ist die architektonische Trennung begonnen, **noch nicht vollständig abgeschlossen**.
 - Keine Datenbankschemaänderung, keine Änderungen an `main`, Referenzzweigen oder der aktiven Leaflet-PWA.
+
+## Inkrement 6: Fachliche Pin-Operationen und kombinierbares Filtersystem (2026-11-09)
+
+**Neue, in der aktiven Entwicklungs-Anwendung verdrahtete Module:**
+- `application/pin-operations.js`: `findPin`, `createPin`, `renamePin`, `assignLayer`, `movePin`, `deletePin`. Der Aufrufer übergibt Projekt und Validierungsfunktionen. Keine Leaflet-, UI- oder Speicherzugriffe. Die Operationen mutieren aus Kompatibilitätsgründen das vorhandene Projekt und überlassen Speichern, Zeichnen und Dialoge explizit der aufrufenden Schicht; die Datenstruktur bleibt unverändert.
+- `domain/pin-filter.js`: reine Funktionen `createFilter({query,fields})`, `isVisible(pin,layers,filter)`, `visiblePins(pins,layers,filter)`, `countByLayer(pins,layers)`. **Verknüpfungsregel:** Pin sichtbar = zugehörige Ebene sichtbar **UND** (kein Textfilter **ODER** Treffer in einem aktivierten Textfeld). Versteckte Ebenen werden auch bei Texttreffer nie eingeblendet. Fehlt eine Ebene, ist ihr Pin nicht sichtbar. Textvergleich ist normalisiert und case-insensitiv.
+- `application/filter-operations.js`: `setLayerVisible(project,layerId,visible)`, `setQuery(filterDomain,query,fields)`. Änderungen der Ebenensichtbarkeit erfolgen nicht mehr direkt im entsprechenden UI-Event. Ein Filter darf **niemals Pins löschen oder ihre Zuordnung verändern**.
+- `app.js` nutzt Filter bei Pin-Zeichnung und „Alle Pins einpassen“ sowie fachliche Pin-Operationen beim Erstellen, Umbenennen, Umhängen, Verschieben und Löschen. Bisheriges Verhalten: **Textfilter nicht eingeschaltet**; die vorhandenen sichtbaren Pins hängen weiterhin allein von der Ebenensichtbarkeit ab.
+- `tests/check-pin-filter.mjs`, `tests/check-filter-operations.mjs`, `tests/check-pin-operations.mjs` decken die Kombinationsregel, ausgeblendete Ebenen, Zählungen, Eingabevalidierung und Pin-Operationen ab. Die CI-Syntax- und Architekturprüfungen wurden entsprechend erweitert.
+
+**Wichtiger Ausblick für eine spätere Filteroberfläche:**
+- Der Karten-/Objektfilter ist **keine Ortssuche**. Nominatim-Ortssuche bleibt eigenständiges Modul; Name, Beschreibungs- und Inhaltssuche erfolgt künftig über den lokalen Projektbestand.
+- Die Filterlogik wird auf zusätzliche Geometrietypen erst dann erweitert, wenn Flächen, Linien und Routen eigene Domainmodelle erhalten. Gemeinsamer Filterzustand/Kompositionsregeln werden dann ausdrücklich geprüft.
+- Die Frage, ob bei aktivem Inhaltsfilter etwa mehrere Suchfelder ausgewählt werden können, ist eine spätere UX-Entscheidung; die Domain-API erlaubt es bereits. Filter bleiben bis zu einer anderslautenden Entscheidung flüchtige Darstellungsbedingungen, keine Veränderung von Projektobjekten.
+
+**Abnahme:** JavaScript-Syntax und einfache isolierte Funktionsausführung wurden geprüft. Vollständiger GitHub-Actions-Lauf, End-to-End-Regression und iPhone-Test sind noch offen; keine Änderung an `main` oder gesicherten Referenzständen.
