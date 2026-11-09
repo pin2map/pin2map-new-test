@@ -1,7 +1,6 @@
 "use strict";
 (function () {
   const $ = id => document.getElementById(id);
-  const GEOCACHE_HOURS = 24;
   const projectModel = window.Pin2MapProjectModel;
   if (!projectModel) throw new Error("pin2map project-model.js must load before app.js");
   const PRIVATE_ID = projectModel.PRIVATE_ID;
@@ -10,11 +9,16 @@
   const pinOps = window.Pin2MapPinOperations;
   const pinFilter = window.Pin2MapPinFilter;
   const filterOps = window.Pin2MapFilterOperations;
+  const placeDomain = window.Pin2MapPlaceSearch;
+  const placeSearch = new window.Pin2MapPlaceSearchService({
+    domain:placeDomain,
+    geocoder:new window.Pin2MapNominatimGeocoder({fetchImpl:(...args)=>fetch(...args),language:navigator.language||"de"})
+  });
   const layerOps = window.Pin2MapLayerOperations;
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
   const uiState = new window.Pin2MapUIState();
-  let saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0;
+  let saveTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   let movePreview = null, moveMarker = null, moveLine = null;
@@ -30,8 +34,8 @@
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
     onChoose:result=>choosePlace(result),
-    titleOf:result=>placeTitle(result),
-    detailOf:result=>placeDetail(result)
+    titleOf:result=>placeDomain.title(result),
+    detailOf:result=>placeDomain.detail(result)
   });
   const layerView = new window.Pin2MapLayerView({
     getElement:$,document,
@@ -431,20 +435,11 @@
   const togglePanel = id => uiShell.togglePanel(id);
   const hideResults = () => searchView.hide();
   const searchMessage = msg => searchView.message(msg);
-  function placeTitle(r) {
-    const a = r.address || {};
-    return a.city || a.town || a.village || a.hamlet || a.municipality || a.suburb || a.county || r.name || String(r.display_name || "").split(",")[0];
-  }
-  function placeDetail(r) {
-    const a = r.address || {};
-    const parts = [a.state || a.region || a.county, a.country].filter(Boolean);
-    return parts.join(", ") || String(r.display_name || "").split(",").slice(1,4).join(",").trim();
-  }
   function choosePlace(r) {
     const lat = Number(r.lat), lng = Number(r.lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) { searchMessage("Ort konnte nicht übernommen werden"); return; }
     hideResults();
-    const pin = addPin(lat, lng, placeTitle(r));
+    const pin = addPin(lat, lng, placeDomain.title(r));
     if (pin) {
       mapAdapter.setView({center:{lat,lng},zoom:Math.max(mapAdapter.getViewport().zoom,13)}, { animate: false });
       requestAnimationFrame(keepSelectedAbovePanel);
@@ -456,59 +451,26 @@
     if (list.length === 1) { choosePlace(list[0]); return; }
     searchView.show(list);
   }
-  function cacheKey(s) { return s.trim().replace(/\s+/g," ").toLocaleLowerCase("de"); }
-  function cleanupCache() {
-    const now = Date.now(), entries = Object.entries(state.geoCache || {});
-    state.geoCache = Object.fromEntries(entries.filter(([,v]) => v && now-v.time < GEOCACHE_HOURS*3600000).slice(-100));
-  }
-  async function geocode(query, signal) {
-    // Central adapter: Nominatim JSON -> normalized list. Endpoint can later be replaced.
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("q", query); url.searchParams.set("format", "jsonv2");
-    url.searchParams.set("addressdetails", "1"); url.searchParams.set("accept-language", navigator.language || "de");
-    url.searchParams.set("limit", "40");
-    const response = await fetch(url.toString(), { method:"GET", signal, headers: { "Accept":"application/json" } });
-    if (!response.ok) throw new Error("HTTP " + response.status);
-    const json = await response.json();
-    if (!Array.isArray(json)) throw new Error("Ungültige Suchantwort");
-    return json.filter(r => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lon)));
-  }
   async function runSearch(event) {
-    if (event) event.preventDefault();
-    const query = $("searchInput").value.trim();
-    if (!query) return;
-    ++searchSerial;
-    const serial = searchSerial;
-    if (searchAbort) searchAbort.abort();
-    searchAbort = null;
-    cleanupCache();
-    const cached = state.geoCache[cacheKey(query)];
-    if (cached) { renderResults(cached.results); return; }
-    if (!state.allowGeocode) {
-      searchMessage("Ortssuche im Test noch nicht aktiviert. Bitte in ⚙ Einstellungen nach Prüfung der Nominatim-Richtlinie aktivieren.");
-      return;
-    }
-    // Local throttle only; this does NOT enforce the provider's aggregate cross-client limit.
-    const remaining = 1100 - (Date.now() - lastRequestAt);
-    if (remaining > 0) {
-      searchMessage("Bitte kurz warten und die Suche erneut starten.");
-      return;
-    }
-    const controller = new AbortController(); searchAbort = controller;
-    const btn = $("searchButton"); btn.disabled = true;
-    searchMessage("Ort wird gesucht …");
-    lastRequestAt = Date.now();
-    try {
-      const results = await geocode(query, controller.signal);
-      if (serial !== searchSerial) return;
-      state.geoCache[cacheKey(query)] = { time: Date.now(), results };
-      cleanupCache(); save();
-      renderResults(results);
-    } catch (err) {
-      if (serial !== searchSerial || err.name === "AbortError") return;
-      searchMessage("Ortssuche derzeit nicht verfügbar. Bitte Verbindung prüfen und erneut suchen.");
-    } finally {
-      if (serial === searchSerial) { btn.disabled = false; searchAbort = null; }
+    if(event)event.preventDefault();
+    const query=$("searchInput").value.trim();
+    if(!query)return;
+    // Search service owns cache, throttling, cancellation and provider calls.
+    const btn=$("searchButton");
+    btn.disabled=false;
+    const result=await placeSearch.search(query,{
+      state,allowed:state.allowGeocode,
+      onStart:()=>{btn.disabled=true;searchMessage("Ort wird gesucht …");},
+      onFinish:()=>{btn.disabled=false;},
+      onCacheWrite:save
+    });
+    switch(result.kind){
+      case "results":renderResults(result.results);break;
+      case "disabled":searchMessage("Ortssuche im Test noch nicht aktiviert. Bitte in ⚙ Einstellungen nach Prüfung der Nominatim-Richtlinie aktivieren.");break;
+      case "throttled":searchMessage("Bitte kurz warten und die Suche erneut starten.");break;
+      case "error":searchMessage("Ortssuche derzeit nicht verfügbar. Bitte Verbindung prüfen und erneut suchen.");break;
+      // A superseded or cancelled request must never change the UI.
+      case "stale":break;
     }
   }
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
@@ -634,7 +596,7 @@
     if(!layerById(PRIVATE_ID))state.layers.unshift(defaults().layers[0]);
     // Obsolete active-layer selection is deliberately discarded on load.
     delete state.activeLayer;
-    cleanupCache();
+    placeSearch.cleanup(state);
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
