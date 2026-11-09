@@ -13,7 +13,7 @@
     viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
     basemap: "street", labelsVisible: true, allowGeocode: false, geoCache: {}
   });
-  let db, state = defaults(), map, mapAdapter, tileLayer, markers = new Map();
+  let db, state = defaults(), mapAdapter, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
@@ -61,15 +61,7 @@
     state.viewport = { lat: view.center.lat, lng: view.center.lng, zoom: view.zoom }; save();
   }
   function setTileLayer() {
-    if (tileLayer) map.removeLayer(tileLayer);
-    const isTopo = state.basemap === "topo";
-    tileLayer = L.tileLayer(isTopo
-      ? "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: isTopo ? 17 : 19,
-        attribution: isTopo ? '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://opentopomap.org/">OpenTopoMap</a>' :
-          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      }).addTo(map);
+    mapAdapter.setBasemap(state.basemap);
     $("basemapSelect").value = state.basemap;
   }
   function markerAppearance(pin,highlighted,label,side) {
@@ -80,7 +72,7 @@
       title:pin.name||"Pin"};
   }
   function renderMarkers() {
-    if(!map)return;
+    if(!mapAdapter)return;
     const shown=new Set(),occupied=[];
     const sorted=[...state.pins].sort((a,b)=>Number(b.id===selected)-Number(a.id===selected));
     for(const pin of sorted){
@@ -217,7 +209,7 @@
     const bar=$("moveBar");
     if(bar.classList.contains("hidden"))return;
     const appRect=$("app").getBoundingClientRect();
-    const mapRect=map.getContainer().getBoundingClientRect();
+    const mapRect=mapAdapter.getContainer().getBoundingClientRect();
     const point=mapAdapter.project(movePreview);
     const x=mapRect.left+point.x;
     const y=mapRect.top+point.y;
@@ -329,7 +321,7 @@
     // including beyond every edge of the viewport. No clamping or auto-hiding.
     const point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
     const appRect=$("app").getBoundingClientRect();
-    const mapRect=map.getContainer().getBoundingClientRect();
+    const mapRect=mapAdapter.getContainer().getBoundingClientRect();
     const width=Math.min(310,appRect.width-16);
     const height=panel.offsetHeight;
     const x=mapRect.left+point.x-appRect.left;
@@ -379,7 +371,7 @@
     const pts=state.pins.filter(p=>layerById(p.layerId)?.visible).map(p=>[p.lat,p.lng]);
     if(!pts.length){showNotice("Keine sichtbaren Pins vorhanden");return;}
     if(pts.length===1)mapAdapter.setView({center:{lat:pts[0][0],lng:pts[0][1]},zoom:Math.max(mapAdapter.getViewport().zoom,13)},{animate:false});
-    else map.fitBounds(L.latLngBounds(pts),{padding:[35,35],maxZoom:15,animate:false});
+    else mapAdapter.fitBounds(pts,{padding:[35,35],maxZoom:15,animate:false});
     updatePanelLayout();
   }
   function renderPinPanel(){
@@ -406,7 +398,7 @@
     requestAnimationFrame(keepSelectedAbovePanel);
   }
   function updateModeUI() {
-    map.getContainer().style.cursor = moveMode ? "crosshair" : "";
+    mapAdapter.getContainer().style.cursor = moveMode ? "crosshair" : "";
   }
   function addPin(lat, lng, name) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
@@ -438,7 +430,7 @@
     longPressStart = null;
   }
   function attachLongPress() {
-    const container = map.getContainer();
+    const container = mapAdapter.getContainer();
     const isMapSurface = target => !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, button, input");
     container.addEventListener("pointerdown", e => {
       activePointers.add(e.pointerId);
@@ -453,7 +445,7 @@
         cancelLongPress();
         suppressMapClickUntil = Date.now() + 850;
         const rect = container.getBoundingClientRect();
-        const point = L.point(start.x - rect.left, start.y - rect.top);
+        const point = {x:start.x - rect.left, y:start.y - rect.top};
         const where = mapAdapter.unproject(point);
         const pin = addPin(where.lat, where.lng, "");
         if (pin) {
@@ -471,7 +463,7 @@
         if (!longPressStart || e.pointerId === longPressStart.id) cancelLongPress();
       }, { passive: true });
     }
-    map.on("dragstart zoomstart", cancelLongPress);
+    mapAdapter.on("dragstart zoomstart", cancelLongPress);
     // Native desktop context menu is replaced by pin creation. Touch uses the timer above.
     container.addEventListener("contextmenu", e => {
       if(!isMapSurface(e.target))return;
@@ -700,9 +692,9 @@
     document.addEventListener("pointerdown", e => {
       if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
     });
-    map.on("click", e => {
+    mapAdapter.onMapClick(position => {
       if (Date.now() < suppressMapClickUntil) return;
-      if (moveMode && selectedPin()) {previewMove(e.latlng);return;}
+      if (moveMode && selectedPin()) {previewMove(position);return;}
       closeMapOverlays();
     });
 
@@ -722,25 +714,8 @@
     // Obsolete active-layer selection is deliberately discarded on load.
     delete state.activeLayer;
     cleanupCache();
-    map=L.map("map",{zoomControl:false}).setView([state.viewport.lat,state.viewport.lng],state.viewport.zoom);
-    mapAdapter=new window.Pin2MapLeafletAdapter(map);
-    const zoomButtons = L.control({position:"topleft"});
-    zoomButtons.onAdd = () => {
-      const holder = L.DomUtil.create("div","pin-zoom-buttons leaflet-bar");
-      const add = (symbol, title, action) => {
-        const button = L.DomUtil.create("button","pin-zoom-button",holder);
-        button.type = "button"; button.textContent = symbol; button.title = title;
-        button.setAttribute("aria-label",title);
-        L.DomEvent.on(button,"click",e => {L.DomEvent.stop(e);action();});
-      };
-      add("+","Vergrößern",() => mapAdapter.zoomIn());
-      add("−","Verkleinern",() => mapAdapter.zoomOut());
-      add("◎","Alle sichtbaren Pins anzeigen",fitAllPins);
-      L.DomEvent.disableClickPropagation(holder);
-      L.DomEvent.disableScrollPropagation(holder);
-      return holder;
-    };
-    zoomButtons.addTo(map);
+    mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
+    mapAdapter.addZoomControls({onFitAll:fitAllPins});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && location.protocol==="https:")navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
