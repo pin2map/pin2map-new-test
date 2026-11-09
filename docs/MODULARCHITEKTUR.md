@@ -99,3 +99,11 @@ Aus `app.js` sind die reinen Oberflächenfunktionen **temporäre Meldungen, Pane
 - Quellcode-Syntax wurde isoliert geprüft und der Shell-Controller mit DOM-Mock ausgeführt. Ein vollständiger GitHub-Actions-Lauf sowie ein iPhone-Funktionstest dieser Branch-Version sind **noch nicht bestätigt**.
 
 **Nächste Zerlegung:** Oberflächenzustand und Suchtreffer-Ansicht aus der zentralen Datei herauslösen, dann Pin-Editor und Ebenenpanel durch klar definierte UI-Verträge ersetzen. Anschließend erst die Bedienung der Vorgänger-App schrittweise nachbilden. Niemals zwei neue UI-Module gleichzeitig ohne Regression in das aktive Hauptprogramm integrieren.
+
+## Inkrement 4: Suchergebnisansicht aus der Anwendung gelöst (2026-11-09)
+
+- `ui/search-results.js` ist ein reines Präsentationsmodul mit `SearchResultsView` und den Operationen `show(results)`, `message(text)`, `hide()`, `isVisible()`. Benötigte Abhängigkeiten (`container`, `document`, `onChoose`, `titleOf`, `detailOf`) werden explizit injiziert; keine Kenntnis von Leaflet, IndexedDB, Netzwerk/Nominatim oder Pin-Erstellung.
+- `app.js` delegiert jetzt Trefferliste, Schließknopf und Suchstatus-Darstellung an den UI-Baustein. Die bisherige Suchlogik (Throttle, Cache, Nominatim-Freigabe), Trefferformatierung, Auswahl eines einzelnen Resultats sowie das Anlegen eines Pins bleiben **absichtlich noch unverändert**, um zuerst eine minimale Regressionseinheit abzusichern. Die separierte UI kann später ohne Änderung der Nominatim- oder Pinlogik gestaltet werden.
+- `tests/check-search-results.mjs` prüft leere/mehrere Treffer, Meldungen, Schließen und Auswahl-Callback anhand eines simulierten DOM. Der Architekturwächter verbietet Karten- und Storagezugriffe in UI-Modulen; der Leaflet-Modularisierungs-Workflow enthält Syntax-, Domänen-, Speicher- und UI-Regressionstests.
+- Quellcode-Syntax und Ladenreihenfolge wurden geprüft; GitHub-Actions-Ergebnis sowie ein realer iPhone-Lauf dieses Entwicklungszweigs sind noch nicht bestätigt. `main` und Referenzversionen unverändert.
+- **Folgearbeiten:** Suchstatus/Interaktion eindeutig in eigenem UI-State-Controller kapseln, danach Pin-Dialog- und Ebenen-UI aufteilen. Eine weitere Auslagerung von Suchdienst und Suchergebnisformatierung erfolgt separat; keine gleichzeitige Änderung an Kartenlayout oder Fachlogik.
