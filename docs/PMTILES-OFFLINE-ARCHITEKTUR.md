@@ -48,3 +48,21 @@ Quellen:
 - [ ] Nach Abnahme adapterseitige Integration in den eigentlichen pin2map-Entwicklungszweig; `main` und Referenz V18 bis dahin unverändert.
 
 **Statusentscheidung:** Gespeicherte Datei ≠ vollständige Offlinefähigkeit. Erst wenn Shell, Kartendaten, Stilbibliothek, Schriftkacheln und Symbole offline verfügbar sind, kann die gesamte PWA ohne Netzwerkverbindung starten und eine Karte zeichnen.
+
+## Inkrement C: eigenständiges Offline-Labor als Build-Artefakt (2026-11-09)
+
+Im Preview-Repository ist das Skript `scripts/assemble-offline-lab.py` ergänzt. Der Workflow `package-offline-map-assets.yml` nutzt es nach dem Herunterladen der festgelegten Bibliotheken und Kopieren der Protomaps-Assets, um ein **separates, als ZIP/Artifact herunterladbares Testpaket** zusammenzustellen.
+
+Das Paket enthält:
+
+- `index.html` mit auf `./vendor/` umgeschriebenen JS-/CSS-Bibliotheken.
+- Eine eigene Kopie der lokalen PMTiles-Speicherprobe: IndexedDB `pin2map-pmtiles-persistent-lab-v1`, Datei bewusst importieren, öffnen und löschen.
+- Den Protomaps-Light-Stil mit auf `./assets/fonts/` und `./assets/sprites/v4/light` umgestellten URLs.
+- Einen auf den eigenen Test-Unterordner begrenzten Service Worker `offline-stuttgart-sw.js` mit vollständigem Install-Precache des eingebundenen Ressourcenpakets. Die Installation scheitert, wenn eine erforderliche Datei nicht geladen wird; fremde Origins werden nicht abgefangen, und PMTiles-Dateien bleiben ausschließlich in IndexedDB.
+- Manifest mit SHA-256 und Bytezahl jeder im Paket enthaltenen Datei. Der Build kontrolliert die Bibliotheks-Dateien, Schrift-/Sprite-Pfade sowie die Maximalgröße des Testpakets (100 MiB).
+
+Das Paket ist **noch nicht erzeugt, nicht online bereitgestellt und nicht auf einem iPhone im Flugmodus getestet**. Außerdem ist ein kompletter Voll-Precache der Schriftressourcen auf iOS wegen Speichergrenzen noch zu überprüfen. Weitere Produktionsvoraussetzungen: Quell-Asset-Commit fest pinnen, Herkunft und Lizenzen prüfen, korrekte Offline-Start-/Update- und Recovery-Meldungen und dauerhafte Datenhaltung nachweisen.
+
+Der Build erzeugt nur das Artefakt `pin2map-stuttgart-offline-lab-package` (14 Tage), keine automatische Änderung der GitHub-Pages-Veröffentlichung. Die Ausgabe muss in einem **eigenen Unterordner** einer HTTPS-Website bereitgestellt werden, damit der Service Worker nicht die bestehende MapLibre-PWA beeinflusst. Die Karte `stuttgart-z12.pmtiles` ist aus Datenschutz- und Größengründen weiterhin **nicht Teil des Pakets** und wird beim Test lokal importiert.
+
+Automatische statische Regression: `tests/check-pmtiles-offline-package.mjs` kontrolliert die URL-Umstellung, den begrenzten Service-Worker-Scope und die isolierte Persistenzschnittstelle. Der tatsächliche GitHub-Actions-Lauf und sein Ergebnis stehen noch aus.
