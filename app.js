@@ -431,7 +431,7 @@
   }
   function attachLongPress() {
     const container = mapAdapter.getContainer();
-    const isMapSurface = target => !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, button, input");
+    const isMapSurface = target => mapAdapter.isMapSurface(target);
     container.addEventListener("pointerdown", e => {
       activePointers.add(e.pointerId);
       if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=Date.now();
