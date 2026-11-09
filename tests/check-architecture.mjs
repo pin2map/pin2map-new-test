@@ -29,6 +29,12 @@ for(const filename of modelFiles){
   assert.doesNotMatch(executable,re,filename+": forbidden "+term);
  }
 }
+scan("ui");
+for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
+ const code=source(filename).replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,"");
+ assert.doesNotMatch(code,/\b(?:indexedDB|localStorage|sessionStorage|maplibregl|Leaflet)\b|\bL\s*\./,
+   filename+": UI must not know database or map engine");
+}
 const app=source("app.js");
 assert.doesNotMatch(app,/\bL\s*\./,"Active application must only use map adapter");
 assert.match(app,/Pin2MapProjectModel/,"Domain model must be used by app");
@@ -39,8 +45,9 @@ assert.match(app,/projectStore\.saveProject/);
 const html=source("index.html");
 const domain=html.indexOf('src="./domain/project-model.js"');
 const storage=html.indexOf('src="./adapters/storage/indexeddb-project-store.js"');
+const ui=html.indexOf('src="./ui/shell.js"');
 const adapter=html.indexOf('src="./map-adapter-leaflet.js"');
 const application=html.indexOf('src="./app.js"');
-assert.ok(domain>=0&&storage>domain&&adapter>storage&&application>adapter,
-  "Domain → repository → map adapter → app load order required");
+assert.ok(domain>=0&&storage>domain&&ui>storage&&adapter>ui&&application>adapter,
+  "Domain → repository → UI shell → map adapter → app load order required");
 console.log("Architectural gates passed:",modelFiles.join(", "),"; Leaflet app uses adapter");
