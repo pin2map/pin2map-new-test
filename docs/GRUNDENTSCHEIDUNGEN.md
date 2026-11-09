@@ -1825,3 +1825,15 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 3. In der oberen Bedienleiste erscheint eine **Refresh-Schaltfläche „Neueste Version laden“ (⟳)**. Sie schreibt ausstehende lokale Änderungen nach IndexedDB, bittet die registrierte PWA-Service-Worker-Version um Aktualisierung und navigiert anschließend zur aktuellen Seite mit frischem Versionsparameter. Vorhandene Pins/Ebenen werden durch Refresh nicht absichtlich gelöscht. Schlägt das Schreiben der lokalen Daten fehl, wird der Reload abgebrochen und eine Meldung gezeigt.
 4. Solange der normale Pin-Dialog geöffnet ist, wird auch der Refresh-Button wie alle übrigen Karten-Bedienelemente ausgeblendet. Nach Schließen erscheint er wieder.
 5. Für beide Änderungen gelten die verbindlichen CSS-, Code-, Regressionstest- und echten Browser-Testkriterien. Nicht durchgeführte Browser-/iPhone-Tests sind als offen zu kennzeichnen.
+
+
+## Bedienpräzisierung – Dialog beim Öffnen vollständig sichtbar machen (2026-11-09)
+
+**Verbindlich, ergänzend zum Fokusmodus und zum synchronen Mitwandern des Dialogs:**
+
+1. Wird der Pin-Bearbeitungsdialog geöffnet und befindet sich ein Teil des Dialogs (einschließlich der kleinen Spitze) außerhalb des sichtbaren Bildfelds, **verschiebt pin2map einmalig die Karte gerade so weit, dass der Dialog vollständig sichtbar ist**, mit kleinem Randabstand.
+2. **Die geografischen Koordinaten des Pins werden nicht geändert**; nur der Kartenausschnitt wird korrigiert. Der Dialog bleibt am Pin verankert.
+3. Ist der Dialog bereits vollständig sichtbar, erfolgt **keine automatische Kartenbewegung**.
+4. **Nach dem Öffnen bleibt das freie Kartenverschieben erhalten:** Der Dialog darf beim späteren manuellen Verschieben wie beschlossen zusammen mit dem Pin über den Rand hinauswandern. Es wird **nicht dauerhaft automatisch nachzentriert**.
+5. Dies gilt auch für Pins, die über die geografische Ortssuche neu angelegt und anschließend ausgewählt werden.
+6. Vor einer Fertigmeldung gelten weiterhin die verbindlichen CSS-, Code- und tatsächlichen Browser-/iPhone-Prüfungen. Statische Prüfungen sind ausdrücklich kein Ersatz für einen Interaktionstest.
