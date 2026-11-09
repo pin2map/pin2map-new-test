@@ -94,7 +94,7 @@ test("layer picker overlay does not change dialog height and labels are 12px",()
   assert.ok(menu.includes("position:absolute"),"Floating list should not enlarge the pin panel");
   assert.ok(css.includes("#pinPanel.pin-layer-open{overflow:visible!important}"),"Open menu must not clip against scrolling pin panel");
   assert.ok(menu.includes("z-index:20"));
-  assert.ok(menu.includes("top:auto;bottom:calc(100% + 4px)"),"Options open upwards above bottom-row selector");
+  assert.ok(menu.includes("top:calc(100% + 4px);bottom:auto"),"Options open downward without obscuring the pin name");
   const label=css.match(/#pinPanel \.pin-layer-trigger,[\s\S]*?#pinPanel \.pin-layer-option\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(label.includes("font-size:12px!important"));
   const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
@@ -109,7 +109,7 @@ test("layer picker overlay does not change dialog height and labels are 12px",()
   assert.ok(section.includes('<span id="pinLayerLabel" class="sr-only">Ebene auswählen</span>'),"Accessibility label retained");
   assert.ok(css.includes("flex:1 1 0%;width:100%;min-width:0"),"Picker fills space between buttons");
   assert.ok(css.includes("align-items:center;justify-content:space-between"),"All footer controls share a baseline");
-  assert.ok(css.includes("gap:6px!important;width:100%"),"Only compact gaps remain between controls");
+  assert.ok(css.includes("gap:12px!important;width:100%"),"Selector has visible breathing room beside both buttons");
   assert.ok(css.includes("#pinPanel.pin-layer-open + #pinDialogTip{display:none!important}"),
     "Pin pointer triangle must be hidden while list is open");
 });
