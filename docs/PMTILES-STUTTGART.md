@@ -47,3 +47,18 @@ Quelle: <https://source.coop/protomaps/openstreetmap/v4.pmtiles> (Source Coopera
 - **Workflow-Status weiterhin unbestätigt:** GitHub-Connector ermöglicht Dateiprüfungen, liefert hier aber keine Push-getriggerten Workflow-Runs; kombinierte Commit-Statusabfrage ergab keine Einträge. Auch ein externer Browserabruf des Actions-Laufs war nicht möglich. Wir haben daher **weder einen erfolgreichen Lauf noch eine erzeugte Datei verifiziert**.
 - Als nächste unabhängige Prüfstufe liegt die **lokale Dateiauswahl** im Preview-Repository unter `https://pin2map.github.io/pin2map-maplibre-preview/pmtiles-local-file-check.html`. Sie liest eine vom Nutzer im Browser gewählte `.pmtiles`-Datei über `pmtiles.FileSource`, ohne sie hochzuladen. Der Test verwendet den Protomaps-Light-Stil mit **externen** Glyph-/Sprite-Dateien; er ist kein autonomer Offline-Betrieb und noch nicht auf iOS getestet.
 - Erst nach nachgewiesen erfolgreicher Extraktion und einem Dateitest kann eine kleine selbst gehostete Region für den integrierten MapLibre-Stand freigegeben werden.
+
+## Automatische Abnahmeprüfung im Build
+
+Der GitHub-Actions-Workflow wurde am 2026-11-09 um folgende technische Prüfschritte erweitert:
+
+- `pmtiles verify` prüft die innere Archivstruktur.
+- Die aus `pmtiles show --header-json` gelesenen Daten müssen eine Vektorkarte (`tile_type=mvt`), konsistente Zoomgrenzen und eine räumliche Überlappung mit dem Stuttgarter Testgebiet ausweisen.
+- Die Datei muss zwischen 127 Byte und 80 MiB groß sein. Eine Überschreitung führt zum Buildfehler statt zu einer stillschweigenden Veröffentlichung.
+- Metadaten werden als JSON kontrolliert; die tatsächliche Datei erhält eine SHA-256-Prüfsumme.
+- Im GitHub-Actions-Lauf wird eine `GITHUB_STEP_SUMMARY` mit Größe, Bounds, Zoomgrenzen, Typ und Prüfsumme ausgegeben. Nur nach Erfolg wird das Archiv als `stuttgart-pmtiles-z12` hochgeladen.
+- Die Quelladresse, die Geo-Bounds, der Zoom-Deckel und die CLI-Version bleiben unverändert. Eine Veröffentlichung auf GitHub Pages erfolgt weiterhin nicht.
+
+**Status:** Workflow-Datei ist in GitHub gespeichert, aber ein tatsächlich erfolgreicher Workflow-Lauf und ein herunterladbares, verifiziertes Artifact sind mit der verfügbaren Schnittstelle noch nicht belegbar. Es wird ausdrücklich keine fertige PMTiles-Karte behauptet.
+
+**Lauf prüfen:** [GitHub Actions – Stuttgart PMTiles](https://github.com/pin2map/pin2map-maplibre-preview/actions/workflows/build-stuttgart-pmtiles.yml). Ein erfolgreiches Ergebnis zeigt eine grüne Markierung, eine Build-Zusammenfassung und das Artifact `stuttgart-pmtiles-z12`.
