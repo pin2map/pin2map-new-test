@@ -22,4 +22,10 @@ check(js.includes('bar.classList.contains("hidden")'),'bubble is not positioned 
 check(js.includes('moveMode=true;removeMovePreview();') && js.includes('$("moveBar").classList.add("hidden");'),'no instruction dialog at start of moving');
 check(!js.includes('Neue Stelle antippen') && !js.includes('Alte und neue Position prüfen'),'obsolete move instructions removed');
 check(!js.includes('showNotice("Neue Position') && !js.includes('showNotice("Neue Stelle'),'no extra move instruction toast');
+check(js.includes('map.on("move",scheduleMapOverlayUpdate)'), 'dialog tracks the map continuously, not only at moveend');
+check(js.includes('mapOverlayFrame=requestAnimationFrame'), 'live dialog updates are throttled per animation frame');
+check(js.includes('map.latLngToContainerPoint([pin.lat,pin.lng])'), 'dialog follows the selected pin coordinates');
+check(js.includes('panel.style.visibility="hidden"') && js.includes('panel.style.visibility="visible"'), 'dialog hides when pin leaves view and reappears on return');
+check(js.includes('if(!onScreen){'), 'dialog does not remain frozen at the screen edge');
+check(js.includes('scheduleMapOverlayUpdate();'), 'map movement and resize trigger layout updates');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
