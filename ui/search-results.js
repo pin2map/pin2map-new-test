@@ -29,6 +29,7 @@
       const close=this.document.createElement("button");
       close.type="button";
       close.textContent="×";
+      root.Pin2MapIcons?.mount(close,"x");
       close.title="Trefferliste schließen";
       close.addEventListener("click",()=>this.hide());
       head.append(close);
