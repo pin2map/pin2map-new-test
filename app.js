@@ -19,8 +19,7 @@
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
   const uiState = new window.Pin2MapUIState();
   let saveTimer;
-  let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
-  let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
+  let gestures;
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -75,7 +74,7 @@
       let marker=markers.get(pin.id);
       if(!marker){
         marker=mapAdapter.createMarker({lat:pin.lat,lng:pin.lng},{draggable:false,autoPan:false});
-        mapAdapter.onMarker(marker,"click",()=>{if(Date.now()<suppressMapClickUntil||uiState.moveMode)return;selectPin(pin.id);});
+        mapAdapter.onMarker(marker,"click",()=>{if(gestures.isSuppressed()||uiState.moveMode)return;selectPin(pin.id);});
         markers.set(pin.id,marker);
       }
       mapAdapter.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
@@ -91,7 +90,7 @@
         else occupied.push(box);
       }
       mapAdapter.setMarkerAppearance(marker,markerAppearance(pin,chosen,label,side));
-      attachMarkerLongPress(marker,pin.id);
+      gestures.attachMarkerLongPress(marker,pin.id);
       
     }
     for(const [id,marker] of markers)if(!shown.has(id)){mapAdapter.removeOverlay(marker);markers.delete(id);}
@@ -114,83 +113,6 @@
       save();renderLayers();renderMarkers();renderPinPanel();
       showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
     };
-  }
-  // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
-  // A tap still opens/closes its editor; dragging a pin never moves it.
-  function zoomHeldPin(marker){
-    if(!mapAdapter || !mapAdapter.hasOverlay(marker))return;
-    const pinPosition=mapAdapter.getMarkerPosition(marker);
-    const second=marker._heldZoomClose===true;
-    const providerMax=state.basemap==="topo"?17:19;
-    const target=Math.min(second?14:18,providerMax);
-    const anchor=mapAdapter.project(pinPosition);
-    mapAdapter.zoomAround(pinPosition,target,{animate:false});
-    const actual=mapAdapter.project(pinPosition);
-    const delta={x:actual.x-anchor.x,y:actual.y-anchor.y};
-    if(Math.abs(delta.x)>0.5 || Math.abs(delta.y)>0.5)mapAdapter.panBy(delta,{animate:false});
-    marker._heldZoomClose=!second;
-    persistViewport();updatePanelLayout();
-  }
-  function attachMarkerLongPress(marker,id){
-    const element=mapAdapter.getMarkerElement(marker);
-    if(!element || element.dataset.pinGestureBound)return;
-    element.dataset.pinGestureBound="true";
-    // Stop Leaflet dragging for touches and mouse presses that begin on a pin.
-    mapAdapter.stopMarkerEventPropagation(element);
-    element.style.touchAction="none";
-    element.addEventListener("pointerdown",event=>{
-      if(event.button!==0 || uiState.moveMode)return;
-      event.stopPropagation();
-      if(markerPressStart)return;
-      const gesture={id:event.pointerId,x:event.clientX,y:event.clientY,
-        activated:false,cancelled:false,finished:false,wasDraggable:mapAdapter.isPanEnabled()};
-      markerPressStart=gesture;
-      if(gesture.wasDraggable)mapAdapter.setPanEnabled(false);
-      try{element.setPointerCapture(gesture.id);}catch(_){}
-      const cleanup=()=>{
-        clearTimeout(markerPressTimer);markerPressTimer=null;
-        if(markerPressStart===gesture)markerPressStart=null;
-        if(gesture.wasDraggable)mapAdapter.setPanEnabled(true);
-        gesture.finished=true;
-        element.removeEventListener("pointermove",onMove);
-        element.removeEventListener("pointerup",onUp);
-        element.removeEventListener("pointercancel",onCancel);
-        element.removeEventListener("lostpointercapture",onCancel);
-        try{if(element.hasPointerCapture(gesture.id))element.releasePointerCapture(gesture.id);}catch(_){}
-      };
-      const onMove=e=>{
-        if(e.pointerId!==gesture.id || gesture.finished)return;
-        e.stopPropagation();
-        // Before zooming, movement cancels the hold. After zooming, no dragging occurs.
-        if(!gesture.activated && Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>11){
-          gesture.cancelled=true;cleanup();
-        }else if(gesture.activated)e.preventDefault();
-      };
-      const onUp=e=>{
-        if(e.pointerId!==gesture.id || gesture.finished)return;
-        e.stopPropagation();e.preventDefault();
-        const tap=!gesture.activated&&!gesture.cancelled;
-        suppressMapClickUntil=Date.now()+600;
-        cleanup();
-        if(tap)selectPin(id);
-        else renderMarkers();
-      };
-      const onCancel=e=>{
-        if(e.pointerId!==gesture.id || gesture.finished)return;
-        gesture.cancelled=true;cleanup();
-      };
-      element.addEventListener("pointermove",onMove,{passive:false});
-      element.addEventListener("pointerup",onUp,{passive:false});
-      element.addEventListener("pointercancel",onCancel);
-      element.addEventListener("lostpointercapture",onCancel);
-      markerPressTimer=setTimeout(()=>{
-        if(markerPressStart!==gesture || gesture.finished || gesture.cancelled)return;
-        gesture.activated=true;
-        suppressMapClickUntil=Date.now()+900;
-        zoomHeldPin(marker);
-        if(navigator.vibrate)navigator.vibrate(15);
-      },550);
-    },{passive:false});
   }
   function positionMoveBar(){
     if(!movePreview || !uiState.moveMode)return;
@@ -379,59 +301,6 @@
     }
     if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
   }
-  function cancelLongPress() {
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
-    longPressStart = null;
-  }
-  function attachLongPress() {
-    const container = mapAdapter.getContainer();
-    const isMapSurface = target => mapAdapter.isMapSurface(target);
-    container.addEventListener("pointerdown", e => {
-      activePointers.add(e.pointerId);
-      if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=Date.now();
-      cancelLongPress();
-      if (uiState.moveMode || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
-      longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
-      // Long press works for touch and mouse. Right click remains an alternative.
-      longPressTimer = setTimeout(() => {
-        if (!longPressStart || activePointers.size !== 1) return;
-        const start = longPressStart;
-        cancelLongPress();
-        suppressMapClickUntil = Date.now() + 850;
-        const rect = container.getBoundingClientRect();
-        const point = {x:start.x - rect.left, y:start.y - rect.top};
-        const where = mapAdapter.unproject(point);
-        const pin = addPin(where.lat, where.lng, "");
-        if (pin) {
-          if (navigator.vibrate) navigator.vibrate(15);
-          requestAnimationFrame(updatePanelLayout);
-        }
-      }, 650);
-    }, { passive: true });
-    container.addEventListener("pointermove", e => {
-      if (longPressStart && e.pointerId === longPressStart.id && Math.hypot(e.clientX - longPressStart.x, e.clientY - longPressStart.y) > 10) cancelLongPress();
-    }, { passive: true });
-    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
-      container.addEventListener(type, e => {
-        activePointers.delete(e.pointerId);
-        if (!longPressStart || e.pointerId === longPressStart.id) cancelLongPress();
-      }, { passive: true });
-    }
-    mapAdapter.on("dragstart zoomstart", cancelLongPress);
-    // Native desktop context menu is replaced by pin creation. Touch uses the timer above.
-    container.addEventListener("contextmenu", e => {
-      if(!isMapSurface(e.target))return;
-      e.preventDefault();
-      // iOS may synthesize contextmenu after a long touch; only create once.
-      if(Date.now()-lastTouchStartAt<2400 || Date.now()<suppressMapClickUntil)return;
-      if(uiState.moveMode)return;
-      const rect=container.getBoundingClientRect();
-      const location=mapAdapter.unproject({x:e.clientX-rect.left,y:e.clientY-rect.top});
-      addPin(location.lat,location.lng,"");
-      suppressMapClickUntil=Date.now()+750;
-    });
-  }
   const togglePanel = id => uiShell.togglePanel(id);
   const hideResults = () => searchView.hide();
   const searchMessage = msg => searchView.message(msg);
@@ -576,16 +445,16 @@
       if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
     });
     mapAdapter.onMapClick(position => {
-      if (Date.now() < suppressMapClickUntil) return;
+      if (gestures.isSuppressed()) return;
       if (uiState.moveMode && selectedPin()) {previewMove(position);return;}
       closeMapOverlays();
     });
 
-    attachLongPress();
+    gestures.attachLongPress();
     // Leaflet fires move continuously while dragging/pinching, unlike moveend.
     mapAdapter.on("move",scheduleMapOverlayUpdate);
-    mapAdapter.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
-    mapAdapter.on("zoomend", () => {if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
+    mapAdapter.on("moveend", () => {persistViewport();if(!gestures.isMarkerPressActive())renderMarkers();scheduleMapOverlayUpdate();});
+    mapAdapter.on("zoomend", () => {if(!gestures.isMarkerPressActive())renderMarkers();scheduleMapOverlayUpdate();});
     window.addEventListener("resize", () => { mapAdapter.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
@@ -598,6 +467,14 @@
     delete state.activeLayer;
     placeSearch.cleanup(state);
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
+    gestures=window.Pin2MapMapGestureController({
+      mapAdapter,
+      getBasemap:()=>state.basemap,
+      isMoveMode:()=>uiState.moveMode,
+      selectPin,addPin,renderMarkers,persistViewport,updatePanelLayout,
+      scheduleFrame:requestAnimationFrame,
+      vibrate:duration=>{if(navigator.vibrate)navigator.vibrate(duration);}
+    });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && location.protocol==="https:")navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
