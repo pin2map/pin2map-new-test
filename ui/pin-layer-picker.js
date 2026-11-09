@@ -6,9 +6,10 @@
  */
 (function(root){
   class PinLayerPicker{
-    constructor({getElement,document:doc}){
+    constructor({getElement,document:doc,icons=root.Pin2MapIcons}){
       if(typeof getElement!=="function"||!doc)throw new TypeError("Layer picker DOM dependencies required");
-      this.el=getElement;this.document=doc;
+      this.el=getElement;this.document=doc;this.icons=icons;
+      if(!icons||typeof icons.svg!=="function")throw new TypeError("Lucide icons required");
       this.open=false;
       this.el("pinLayerTrigger").addEventListener("click",()=>this.setOpen(!this.open));
       this.el("pinLayerMenu").addEventListener("keydown",event=>{
@@ -19,7 +20,7 @@
       });
     }
     visibilityIcon(visible){
-      const icon=root.Pin2MapIcons.svg(visible?"eye":"eye-off",this.document);
+      const icon=this.icons.svg(visible?"eye":"eye-off",this.document);
       icon.classList.add("pin-layer-visibility-icon");
       return icon;
     }
@@ -36,6 +37,7 @@
       const selected=layers.find(l=>l.id===selectedLayerId)||layers[0];
       trigger.replaceChildren();
       if(selected){
+        trigger.setAttribute("aria-label","Ebene: "+selected.name+", "+this.visibilityLabel(selected.visible));
         const dot=this.document.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=selected.color;
         const name=this.document.createElement("span");name.className="pin-layer-name";name.textContent=selected.name;
         const status=this.document.createElement("span");
