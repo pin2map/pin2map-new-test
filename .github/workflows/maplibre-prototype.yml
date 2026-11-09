@@ -34,6 +34,8 @@ jobs:
           node --check maplibre-full-integration-app.js
           node --check maplibre-full-integration-adapter.js
           node --check tests/check-maplibre-full-integration.mjs
+          node --check pmtiles-experiment-1.js
+          node --check tests/check-pmtiles-experiment.mjs
       - name: Run regression and adapter checks
         run: |
           node tests/check-ui.mjs
@@ -41,6 +43,7 @@ jobs:
           node tests/check-maplibre-prototype.mjs
           node tests/check-maplibre-v5.mjs
           node tests/check-maplibre-full-integration.mjs
+          node tests/check-pmtiles-experiment.mjs
       - name: Package separate prototype
         run: |
           mkdir -p preview
