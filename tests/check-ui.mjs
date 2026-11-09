@@ -92,4 +92,6 @@ check(js.includes('mapAdapter.onMapClick(position =>'), 'map clicks return neutr
 check(js.includes('mapAdapter.fitBounds(pts,'), 'fit all pins routed through adapter');
 check(js.includes('mapAdapter.on("dragstart zoomstart", cancelLongPress)'), 'map gestures cancel pin creation hold through adapter');
 check(!/\\b(?:L|map)\\./.test(js), 'app no longer calls Leaflet or raw map directly');
+check(js.includes('const isMapSurface = target => mapAdapter.isMapSurface(target);'), 'surface hit testing uses renderer adapter');
+check(!js.includes('.leaflet-marker-icon') && !js.includes('.leaflet-control') && !js.includes('.leaflet-popup'), 'app gesture filtering avoids Leaflet CSS selectors');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
