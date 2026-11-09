@@ -299,8 +299,10 @@
       if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
     });
     mapAdapter.onMapClick(position => {
-      if (gestures.isSuppressed()) return;
+      // A deliberate relocation target is not an accidental follow-up click
+      // to the preceding long press. Process move mode before suppression.
       if (uiState.moveMode) {moveController.previewAt(position);return;}
+      if (gestures.isSuppressed()) return;
       closeMapOverlays();
     });
 
