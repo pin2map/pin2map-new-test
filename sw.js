@@ -58,7 +58,12 @@ async function previouslyViewedTile(request){
 }
 async function rememberViewedTile(request,response){
   const until=tileFreshUntil(response,Date.now());
-  if(until===null)return; // Honour Cache-Control: no-store.
+  if(until===null){
+    const tiles=await caches.open(TILE_CACHE);
+    const meta=await caches.open(TILE_META_CACHE);
+    await Promise.all([tiles.delete(request),meta.delete(tileMetadataKey(request))]);
+    return; // Honour Cache-Control: no-store, including previously cached tiles.
+  }
   const tiles=await caches.open(TILE_CACHE);
   const meta=await caches.open(TILE_META_CACHE);
   // Store the response body first; an absent metadata entry is always stale.
