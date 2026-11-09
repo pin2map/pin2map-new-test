@@ -9,7 +9,7 @@
   const defaults = () => ({
     layers: [{ id: PRIVATE_ID, name: "Privat", color: "#326cc2", visible: true },
       { id: "layer-1", name: "Ebene 1", color: "#e07c2b", visible: true }],
-    pins: [], activeLayer: "layer-1",
+    pins: [],
     viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
     basemap: "street", labelsVisible: true, allowGeocode: false, geoCache: {}
   });
@@ -129,7 +129,6 @@
       const layers=privateOnly?state.layers:state.layers.filter(l=>l.id!==id);
       const currentSelected=selected;
       state.pins=pins;state.layers=layers;
-      if(!layerById(state.activeLayer))state.activeLayer=PRIVATE_ID;
       if(currentSelected&&!pins.some(p=>p.id===currentSelected))selected=null;
       save();renderLayers();renderMarkers();renderPinPanel();
       showNotice(privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
@@ -264,10 +263,7 @@
       const name = document.createElement("strong"); name.textContent = layer.name;
       const count = document.createElement("small"); count.textContent = state.pins.filter(p => p.layerId === layer.id).length + " Pins";
       label.append(name, count);
-      const active = document.createElement("button"); active.className = state.activeLayer === layer.id ? "" : "secondary";
-      active.textContent = state.activeLayer === layer.id ? "Aktiv" : "Aktivieren";
-      active.addEventListener("click", () => { state.activeLayer = layer.id; save(); renderLayers(); });
-      row.append(eye,dot,label,active);
+      row.append(eye,dot,label);
       const del=document.createElement("button");
       del.type="button";del.className="layer-delete";
       const isPrivate=layer.id===PRIVATE_ID;
@@ -338,9 +334,9 @@
   function updateModeUI() {
     map.getContainer().style.cursor = moveMode ? "crosshair" : "";
   }
-  function addPin(lat, lng, name, layerId) {
+  function addPin(lat, lng, name) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-    if (!layerById(layerId)) { showNotice("Bitte zuerst eine Ebene auswählen"); return; }
+    const layerId=PRIVATE_ID;
     const pin = { id: uid(), lat, lng, name: cleanText(name), layerId };
     state.pins.push(pin); save(); selectPin(pin.id);
     const layer = layerById(layerId);
@@ -385,7 +381,7 @@
         const rect = container.getBoundingClientRect();
         const point = L.point(start.x - rect.left, start.y - rect.top);
         const where = map.containerPointToLatLng(point);
-        const pin = addPin(where.lat, where.lng, "", state.activeLayer);
+        const pin = addPin(where.lat, where.lng, "");
         if (pin) {
           if (navigator.vibrate) navigator.vibrate(15);
           requestAnimationFrame(updatePanelLayout);
@@ -411,7 +407,7 @@
       if(moveMode)return;
       const rect=container.getBoundingClientRect();
       const location=map.containerPointToLatLng([e.clientX-rect.left,e.clientY-rect.top]);
-      addPin(location.lat,location.lng,"",state.activeLayer);
+      addPin(location.lat,location.lng,"");
       suppressMapClickUntil=Date.now()+750;
     });
   }
@@ -445,7 +441,7 @@
     const lat = Number(r.lat), lng = Number(r.lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) { searchMessage("Ort konnte nicht übernommen werden"); return; }
     hideResults();
-    const pin = addPin(lat, lng, placeTitle(r), PRIVATE_ID);
+    const pin = addPin(lat, lng, placeTitle(r));
     if (pin) {
       map.setView([lat,lng], Math.max(map.getZoom(), 13), { animate: false });
       requestAnimationFrame(keepSelectedAbovePanel);
@@ -547,7 +543,7 @@
       }
       const id=uid();
       state.layers.push({id,name:trimmed,color:COLORS[state.layers.length%COLORS.length],visible:true});
-      state.activeLayer=id;renderLayers();save();
+      renderLayers();save();
     });
 
     $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){p.name=cleanText(e.target.value);save();renderMarkers();} });
@@ -590,7 +586,8 @@
     try {db=await openDB();const saved=await dbRead();if(saved && Array.isArray(saved.layers) && Array.isArray(saved.pins))state={...defaults(),...saved};}
     catch(e){showNotice("IndexedDB nicht verfügbar – Änderungen können verloren gehen");}
     if(!layerById(PRIVATE_ID))state.layers.unshift(defaults().layers[0]);
-    if(!layerById(state.activeLayer))state.activeLayer=state.layers[0].id;
+    // Obsolete active-layer selection is deliberately discarded on load.
+    delete state.activeLayer;
     cleanupCache();
     map=L.map("map",{zoomControl:false}).setView([state.viewport.lat,state.viewport.lng],state.viewport.zoom);
     const zoomButtons = L.control({position:"topleft"});
