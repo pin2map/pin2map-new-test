@@ -195,7 +195,6 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 #cancelMove{background:#d42b32}
 #confirmMove:disabled{opacity:.4}
 @media(max-width:630px){
-  .move-bar{gap:6px;padding:4px 6px}
   .move-bar button{width:38px;height:38px;min-height:38px;flex-basis:38px}
 }
 
