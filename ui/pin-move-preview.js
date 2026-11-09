@@ -35,19 +35,33 @@
       if(!pin)return;
       const next={lat:Number(position.lat),lng:Number(position.lng)};
       if(!Number.isFinite(next.lat)||!Number.isFinite(next.lng))return;
-      this.position=next;
-      const initial=[pin.lat,pin.lng];
-      if(!this.marker){
-        this.marker=this.map.createMarker(next,{draggable:true,autoPan:false,zIndexOffset:1000});
-        this.map.onMarker(this.marker,"drag",p=>this.onPosition(p));
-        this.map.onMarker(this.marker,"dragend",p=>this.onPosition(p));
-      }else this.map.setMarkerPosition(this.marker,next);
-      if(!this.line)this.line=this.map.createLine([initial,next],{color:"#d65a31",weight:3,dashArray:"7 5",interactive:false});
-      else this.map.setLinePositions(this.line,[initial,next]);
-      this.el("confirmMove").disabled=false;
-      this.el("moveText").textContent="Neue Position";
-      this.el("moveBar").classList.remove("hidden");
-      this.positionBar();
+      let phase="create preview marker";
+      try{
+        this.position=next;
+        const initial=[pin.lat,pin.lng];
+        if(!this.marker){
+          this.marker=this.map.createMarker(next,{draggable:true,autoPan:false,zIndexOffset:1000});
+          phase="bind preview drag events";
+          this.map.onMarker(this.marker,"drag",p=>this.onPosition(p));
+          this.map.onMarker(this.marker,"dragend",p=>this.onPosition(p));
+        }else{
+          phase="update preview marker";
+          this.map.setMarkerPosition(this.marker,next);
+        }
+        phase="create or update preview line";
+        if(!this.line)this.line=this.map.createLine([initial,next],{color:"#d65a31",weight:3,dashArray:"7 5",interactive:false});
+        else this.map.setLinePositions(this.line,[initial,next]);
+        phase="show confirmation controls";
+        this.el("confirmMove").disabled=false;
+        this.el("moveText").textContent="Neue Position";
+        this.el("moveBar").classList.remove("hidden");
+        phase="position confirmation controls";
+        this.positionBar();
+      }catch(error){
+        // A failed UI render is never a confirmed move. Preserve the original
+        // cause and stack; annotate the failing adapter/UI boundary for CI.
+        throw new Error("Pin move preview failed at "+phase+": "+error.message,{cause:error});
+      }
     }
     positionBar(){
       if(!this.position)return;
