@@ -439,7 +439,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 /* Pin-dialog red delete and green OK: exactly the same compact diameter.
    Single shared token prevents later size divergence across mobile CSS. */
-.pin-panel{--p2m-pin-dialog-action-size:36px}
+.pin-panel{--p2m-pin-dialog-action-size:32px}
 /* Destructive action sits left of the name and matches the OK diameter. */
 .pin-panel .pin-editor-head #deletePin.p2m-icon-control{
   --p2m-button-size:var(--p2m-pin-dialog-action-size);
@@ -488,3 +488,30 @@ body.pin-relocation-picking #map .leaflet-interactive{
 .pin-panel .pin-actions #closePin.pin-ok-button:active{
   background:#9dd6a3!important;
 }
+
+
+/* All button controls INSIDE the pin editor share this ONE trial diameter.
+   Include the conditional eye button for revealing a hidden layer. Scoped to
+   #pinPanel to leave separate confirmation dialogs / map controls unchanged. */
+#pinPanel button:is(#movePin,#deletePin,#closePin,#showPinLayer){
+  --p2m-button-size:var(--p2m-pin-dialog-action-size);
+  box-sizing:border-box!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  width:var(--p2m-pin-dialog-action-size)!important;
+  height:var(--p2m-pin-dialog-action-size)!important;
+  min-width:var(--p2m-pin-dialog-action-size)!important;
+  min-height:var(--p2m-pin-dialog-action-size)!important;
+  max-width:var(--p2m-pin-dialog-action-size)!important;
+  max-height:var(--p2m-pin-dialog-action-size)!important;
+  flex:0 0 var(--p2m-pin-dialog-action-size)!important;
+  padding:0!important;border-radius:50%!important;
+  line-height:1!important;
+}
+#pinPanel #movePin .p2m-relocate-icon{width:28px!important;height:19px!important}
+#pinPanel #showPinLayer.p2m-icon-control{
+  vertical-align:middle;margin-left:6px;
+  background:#fff!important;color:#1764a9!important;
+  border:1px solid var(--p2m-button-border)!important;
+}
+#pinPanel #showPinLayer .p2m-lucide{width:18px;height:18px}
+#pinPanel #closePin.pin-ok-button{font-size:12px!important}
