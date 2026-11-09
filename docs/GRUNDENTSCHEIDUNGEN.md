@@ -1837,3 +1837,19 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 4. **Nach dem Öffnen bleibt das freie Kartenverschieben erhalten:** Der Dialog darf beim späteren manuellen Verschieben wie beschlossen zusammen mit dem Pin über den Rand hinauswandern. Es wird **nicht dauerhaft automatisch nachzentriert**.
 5. Dies gilt auch für Pins, die über die geografische Ortssuche neu angelegt und anschließend ausgewählt werden.
 6. Vor einer Fertigmeldung gelten weiterhin die verbindlichen CSS-, Code- und tatsächlichen Browser-/iPhone-Prüfungen. Statische Prüfungen sind ausdrücklich kein Ersatz für einen Interaktionstest.
+
+
+## Refresh-Zuverlässigkeit – Version vor Neuladen aktivieren (2026-11-09)
+
+**Verbindlicher Grundsatz für PWA-Updates (ersetzt den bisherigen nur-best-effort Refresh):**
+
+- Der Refresh-Button speichert zuerst ausstehende lokale Änderungen in IndexedDB; bei einem Speicherfehler wird **nicht** neu geladen.
+- Der Button prüft den **tatsächlich über das Netz verfügbaren** Service Worker mit `cache: "no-store"`, meldet Offline-/Verbindungsprobleme und unterbricht den Refresh ohne Täuschung über dessen Erfolg.
+- Die Registrierung verwendet `updateViaCache: "none"`; der neue Service Worker lädt die erforderlichen Programmdateien (HTML, JavaScript, CSS, Manifest) frisch. Eine unvollständige Installation wird **nicht** aktiviert.
+- Bestehende und neue Worker können ihre Cache-/Programmversion melden. Ein wartender neuer Worker wird zum Aktivieren aufgefordert.
+- Die Anwendung lädt die Seite **erst dann** neu, wenn der aktive Worker die erwartete neue Version tatsächlich bestätigt. Nach einem Zeitlimit erscheint stattdessen eine Fehlermeldung, während die bestehende Seite geöffnet bleibt.
+- Der Service Worker nutzt bei gültiger Netzverbindung für Programmdateien einen **netzwerkbasierten Abruf ohne HTTP-Zwischenspeicher**, hält eine Offline-Kopie unter kanonischen URLs und greift nur bei Netzproblemen auf diese zurück. Die Versions-URL darf keinen unendlichen Cache-Namensraum erzeugen.
+- Das Neuladen verändert **keine Pins oder Ebenen** und löscht weder IndexedDB noch Browser-Datenspeicher.
+- **Prüfstatus getrennt ausweisen:** Code-/CSS-Prüfung, Test der Installations-/Aktivierungslogik und echter Test auf einem iPhone sind getrennte Nachweise.
+
+**Technischer Hinweis:** Bei einem bereits offenen alten Client kann erst ein erster, eventuell manueller Reload die neuen Refresh-Regeln in den Client holen. In der aktuellen Version kontrolliert der Button die tatsächliche Aktivierung.
