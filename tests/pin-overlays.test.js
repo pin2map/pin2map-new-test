@@ -100,7 +100,7 @@ test("temporary preview creates marker and line, updates and clears without muta
   preview.show({lat:49,lng:10},pin);
   assert.deepEqual(preview.current(),{lat:49,lng:10});
   assert.equal(calls.created.length,1);assert.equal(calls.lines.length,1);
-  assert.deepEqual(calls.lines[0].points,[{lat:48,lng:9},{lat:49,lng:10}]);
+  assert.deepEqual(calls.lines[0].points,[[48,9],{lat:49,lng:10}]);
   preview.show({lat:50,lng:11},pin);
   assert.equal(calls.created.length,1);assert.equal(calls.lines.length,1);
   assert.equal(calls.lines[0].points[1].lat,50);
