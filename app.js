@@ -49,7 +49,7 @@
     const layer=layerById(pin.layerId);
     const color=layer?layer.color:COLORS[0];
     const labelHtml=label?'<span class="pin-side-label '+side+(highlighted?' highlighted':'')+'">'+esc(label)+'</span>':'';
-    return {html:'<div class="pin-marker'+(highlighted?' uiState.selectedPinId':'')+'" style="background:'+color+'"></div>'+labelHtml,
+    return {html:'<div class="pin-marker'+(highlighted?' selected':'')+'" style="background:'+color+'"></div>'+labelHtml,
       title:pin.name||"Pin"};
   }
   function renderMarkers() {
@@ -249,7 +249,7 @@
     $("pinPanel").classList.add("hidden");
     document.body.classList.remove("pin-open");
     $("pinDialogTip").classList.add("hidden");
-    // Controls only appear once a new position has been uiState.selectedPinId.
+    // Controls only appear once a new position has been selected.
     $("moveBar").classList.add("hidden");
     updateModeUI();
   }
@@ -364,7 +364,7 @@
   }
   function selectPin(id) {
     if (uiState.selectedPinId === id) { closeMapOverlays(); return; }
-    // A pin tap replaces other map overlays with the uiState.selectedPinId pin editor.
+    // A pin tap replaces other map overlays with the selected pin editor.
     hideResults();
     $("layersPanel").classList.add("hidden");
     $("settingsPanel").classList.add("hidden");
