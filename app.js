@@ -13,7 +13,7 @@
     viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
     basemap: "street", labelsVisible: true, allowGeocode: false, geoCache: {}
   });
-  let db, state = defaults(), map, tileLayer, markers = new Map();
+  let db, state = defaults(), map, mapAdapter, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
@@ -57,8 +57,8 @@
   }
   function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])); }
   function persistViewport() {
-    const center = map.getCenter();
-    state.viewport = { lat: center.lat, lng: center.lng, zoom: map.getZoom() }; save();
+    const view = mapAdapter.getViewport();
+    state.viewport = { lat: view.center.lat, lng: view.center.lng, zoom: view.zoom }; save();
   }
   function setTileLayer() {
     if (tileLayer) map.removeLayer(tileLayer);
@@ -93,7 +93,7 @@
         markers.set(pin.id,marker);
       }
       marker.setLatLng([pin.lat,pin.lng]);
-      const chosen=pin.id===selected,point=map.latLngToContainerPoint([pin.lat,pin.lng]);
+      const chosen=pin.id===selected,point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
       const side=point.x>map.getSize().x*0.55?"left":"right";
       let label=cleanText(pin.name);
       if(!chosen&&!state.labelsVisible)label="";
@@ -219,7 +219,7 @@
     if(bar.classList.contains("hidden"))return;
     const appRect=$("app").getBoundingClientRect();
     const mapRect=map.getContainer().getBoundingClientRect();
-    const point=map.latLngToContainerPoint(movePreview);
+    const point=mapAdapter.project(movePreview);
     const x=mapRect.left+point.x;
     const y=mapRect.top+point.y;
     const width=bar.offsetWidth,height=bar.offsetHeight;
@@ -328,7 +328,7 @@
     if(!dialogOpen || !map)return;
     // Match predecessor: the editor remains rigidly anchored to its pin,
     // including beyond every edge of the viewport. No clamping or auto-hiding.
-    const point=map.latLngToContainerPoint([pin.lat,pin.lng]);
+    const point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
     const appRect=$("app").getBoundingClientRect();
     const mapRect=map.getContainer().getBoundingClientRect();
     const width=Math.min(310,appRect.width-16);
@@ -372,14 +372,14 @@
     const dy=rect.top<minY?minY-rect.top:lowest>maxY?maxY-lowest:0;
     if(Math.abs(dx)>0.5 || Math.abs(dy)>0.5){
       // Leaflet panBy offsets the map opposite the desired pin/dialog shift.
-      map.panBy([-dx,-dy],{animate:false});
+      mapAdapter.panBy({x:-dx,y:-dy},{animate:false});
       updatePanelLayout();
     }
   }
   function fitAllPins(){
     const pts=state.pins.filter(p=>layerById(p.layerId)?.visible).map(p=>[p.lat,p.lng]);
     if(!pts.length){showNotice("Keine sichtbaren Pins vorhanden");return;}
-    if(pts.length===1)map.setView(pts[0],Math.max(map.getZoom(),13),{animate:false});
+    if(pts.length===1)mapAdapter.setView({center:{lat:pts[0][0],lng:pts[0][1]},zoom:Math.max(mapAdapter.getViewport().zoom,13)},{animate:false});
     else map.fitBounds(L.latLngBounds(pts),{padding:[35,35],maxZoom:15,animate:false});
     updatePanelLayout();
   }
@@ -455,7 +455,7 @@
         suppressMapClickUntil = Date.now() + 850;
         const rect = container.getBoundingClientRect();
         const point = L.point(start.x - rect.left, start.y - rect.top);
-        const where = map.containerPointToLatLng(point);
+        const where = mapAdapter.unproject(point);
         const pin = addPin(where.lat, where.lng, "");
         if (pin) {
           if (navigator.vibrate) navigator.vibrate(15);
@@ -481,7 +481,7 @@
       if(Date.now()-lastTouchStartAt<2400 || Date.now()<suppressMapClickUntil)return;
       if(moveMode)return;
       const rect=container.getBoundingClientRect();
-      const location=map.containerPointToLatLng([e.clientX-rect.left,e.clientY-rect.top]);
+      const location=mapAdapter.unproject({x:e.clientX-rect.left,y:e.clientY-rect.top});
       addPin(location.lat,location.lng,"");
       suppressMapClickUntil=Date.now()+750;
     });
@@ -518,7 +518,7 @@
     hideResults();
     const pin = addPin(lat, lng, placeTitle(r));
     if (pin) {
-      map.setView([lat,lng], Math.max(map.getZoom(), 13), { animate: false });
+      mapAdapter.setView({center:{lat,lng},zoom:Math.max(mapAdapter.getViewport().zoom,13)}, { animate: false });
       requestAnimationFrame(keepSelectedAbovePanel);
       if (layerById(PRIVATE_ID).visible) renderMarkers();
     }
@@ -709,10 +709,10 @@
 
     attachLongPress();
     // Leaflet fires move continuously while dragging/pinching, unlike moveend.
-    map.on("move",scheduleMapOverlayUpdate);
-    map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
-    map.on("zoomend", () => {if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
-    window.addEventListener("resize", () => { map.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
+    mapAdapter.on("move",scheduleMapOverlayUpdate);
+    mapAdapter.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
+    mapAdapter.on("zoomend", () => {if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
+    window.addEventListener("resize", () => { mapAdapter.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
   async function init() {
@@ -724,6 +724,7 @@
     delete state.activeLayer;
     cleanupCache();
     map=L.map("map",{zoomControl:false}).setView([state.viewport.lat,state.viewport.lng],state.viewport.zoom);
+    mapAdapter=new window.Pin2MapLeafletAdapter(map);
     const zoomButtons = L.control({position:"topleft"});
     zoomButtons.onAdd = () => {
       const holder = L.DomUtil.create("div","pin-zoom-buttons leaflet-bar");
@@ -733,8 +734,8 @@
         button.setAttribute("aria-label",title);
         L.DomEvent.on(button,"click",e => {L.DomEvent.stop(e);action();});
       };
-      add("+","Vergrößern",() => map.zoomIn());
-      add("−","Verkleinern",() => map.zoomOut());
+      add("+","Vergrößern",() => mapAdapter.zoomIn());
+      add("−","Verkleinern",() => mapAdapter.zoomOut());
       add("◎","Alle sichtbaren Pins anzeigen",fitAllPins);
       L.DomEvent.disableClickPropagation(holder);
       L.DomEvent.disableScrollPropagation(holder);
