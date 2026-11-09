@@ -24,6 +24,8 @@ jobs:
           node --check adapters/storage/indexeddb-project-store.js
           node --check ui/shell.js
           node --check ui/search-results.js
+          node --check ui/ui-state.js
+          node --check ui/pin-editor.js
           node --check map-adapter-leaflet.js
           node --check app.js
           node --check tests/check-architecture.mjs
@@ -31,6 +33,8 @@ jobs:
           node --check tests/check-project-store.mjs
           node --check tests/check-ui-shell.mjs
           node --check tests/check-search-results.mjs
+          node --check tests/check-ui-state.mjs
+          node --check tests/check-pin-editor.mjs
       - name: Pure domain contract tests
         run: node tests/check-project-model.mjs
       - name: Existing database schema remains stable
@@ -39,5 +43,9 @@ jobs:
         run: node tests/check-ui-shell.mjs
       - name: Search results view regression tests
         run: node tests/check-search-results.mjs
+      - name: UI state and pin editor regression tests
+        run: |
+          node tests/check-ui-state.mjs
+          node tests/check-pin-editor.mjs
       - name: Layer dependency contract
         run: node tests/check-architecture.mjs
