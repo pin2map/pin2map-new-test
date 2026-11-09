@@ -25,6 +25,8 @@ jobs:
           node --check application/pin-operations.js
           node --check application/filter-operations.js
           node --check application/routing-service.js
+          node --check application/geographic-information-service.js
+          node --check application/watercourse-service.js
           node --check adapters/storage/indexeddb-project-store.js
           node --check ui/shell.js
           node --check ui/search-results.js
@@ -43,6 +45,7 @@ jobs:
           node --check tests/check-pin-operations.mjs
           node --check tests/check-filter-operations.mjs
           node --check tests/check-routing-service.mjs
+          node --check tests/check-future-services.mjs
       - name: Pure domain contract tests
         run: node tests/check-project-model.mjs
       - name: Existing database schema remains stable
@@ -62,5 +65,7 @@ jobs:
           node tests/check-filter-operations.mjs
       - name: Provider-agnostic routing contracts
         run: node tests/check-routing-service.mjs
+      - name: Geographic information and watercourse port contracts
+        run: node tests/check-future-services.mjs
       - name: Layer dependency contract
         run: node tests/check-architecture.mjs
