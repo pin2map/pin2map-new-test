@@ -521,6 +521,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
    The native select remains the state/change API but not the rendered popup. */
 #pinPanel .pin-layer-picker{
   position:relative;margin:7px 0 9px;min-width:0;
+  isolation:isolate;
 }
 #pinPanel .pin-layer-picker > label{
   display:block;margin:0 0 4px!important;font-size:12px!important;font-weight:600;
@@ -533,7 +534,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
   padding:6px 9px!important;border-radius:8px!important;
   border:1px solid #d3dce5!important;
   background:#fff!important;color:#253a4b!important;
-  box-shadow:none!important;font-size:13px!important;font-weight:500!important;
+  box-shadow:none!important;font-size:12px!important;font-weight:500!important;
   line-height:1.35!important;
 }
 #pinPanel .pin-layer-trigger:hover,
@@ -547,25 +548,36 @@ body.pin-relocation-picking #map .leaflet-interactive{
   overflow:hidden;text-overflow:ellipsis;
 }
 #pinPanel .pin-layer-visibility{
-  flex:0 0 auto;color:#28774b;font-size:11px;font-weight:600;
+  flex:0 0 16px;display:inline-flex;align-items:center;
+  justify-content:center;width:16px;height:16px;
+  color:#28774b;
 }
 #pinPanel .pin-layer-visibility.is-hidden{color:#8a5962}
+#pinPanel .pin-layer-visibility-icon{
+  display:block;width:16px!important;height:16px!important;
+  stroke:currentColor;stroke-width:2;
+  pointer-events:none;
+}
 #pinPanel .pin-layer-chevron{
   flex:0 0 7px;width:7px;height:7px;
   border-right:1.7px solid currentColor;
   border-bottom:1.7px solid currentColor;
   transform:translateY(-2px) rotate(45deg);margin:0 3px;
 }
+/* Floating overlay: MUST NOT enter the pin dialog's normal layout or
+   enlarge the popup. It is anchored below the trigger within the picker. */
 #pinPanel .pin-layer-menu{
+  position:absolute;z-index:20;
+  left:0;right:0;top:100%;
   display:flex;flex-direction:column;gap:2px;
-  padding:4px;margin-top:4px;border:1px solid #ccd6e0;
+  padding:4px;margin:4px 0 0;border:1px solid #ccd6e0;
   border-radius:9px;background:#fff;
   box-shadow:0 4px 14px #142c3d24;
-  max-height:175px;overflow-y:auto;overscroll-behavior:contain;
+  max-height:min(175px,40dvh);overflow-y:auto;overscroll-behavior:contain;
 }
 #pinPanel .pin-layer-option{
   border-color:transparent!important;flex:0 0 auto;
-  min-height:33px;border-radius:6px!important;
+  min-height:30px;border-radius:6px!important;
 }
 #pinPanel .pin-layer-option[aria-selected="true"]{
   background:#eaf2f9!important;border-color:#c9dae9!important;
