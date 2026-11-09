@@ -18,6 +18,7 @@
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   let movePreview = null, moveMarker = null, moveLine = null;
+  let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -319,11 +320,22 @@
   function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
   function updatePanelLayout(){
     const panel=$("pinPanel"),pin=selectedPin();
-    if(moveMode)return;
-    document.body.classList.toggle("pin-open",!!pin);
-    if(!pin||!map)return;
+    document.body.classList.toggle("pin-open",!!pin && !moveMode);
+    if(!pin || !map || moveMode || panel.classList.contains("hidden")){
+      panel.style.visibility="";
+      return;
+    }
     const p=map.latLngToContainerPoint([pin.lat,pin.lng]);
     const rect=map.getContainer().getBoundingClientRect();
+    // A selected pin that leaves the map must not leave behind an orphaned
+    // dialog frozen at the map edge. It reappears when the pin comes back.
+    const onScreen=p.x>=-16 && p.y>=-16 &&
+      p.x<=rect.width+16 && p.y<=rect.height+16;
+    if(!onScreen){
+      panel.style.visibility="hidden";
+      return;
+    }
+    panel.style.visibility="visible";
     const width=Math.min(310,window.innerWidth-16);
     const height=panel.offsetHeight;
     const x=rect.left+p.x,y=rect.top+p.y;
@@ -333,6 +345,14 @@
     panel.style.left=left+"px";panel.style.top=top+"px";
     panel.style.bottom="auto";panel.style.transform="none";panel.style.width=width+"px";
     panel.classList.toggle("panel-near-top",y-height-30<minTop);
+  }
+  function scheduleMapOverlayUpdate(){
+    if(mapOverlayFrame)return;
+    mapOverlayFrame=requestAnimationFrame(()=>{
+      mapOverlayFrame=0;
+      updatePanelLayout();
+      positionMoveBar();
+    });
   }
   function keepSelectedAbovePanel(){updatePanelLayout();}
   function fitAllPins(){
@@ -608,9 +628,11 @@
     });
 
     attachLongPress();
-    map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();updatePanelLayout();positionMoveBar();});
-    map.on("zoomend", () => {if(!markerPressStart)renderMarkers();updatePanelLayout();positionMoveBar();});
-    window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout();renderMarkers();positionMoveBar(); });
+    // Leaflet fires move continuously while dragging/pinching, unlike moveend.
+    map.on("move",scheduleMapOverlayUpdate);
+    map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
+    map.on("zoomend", () => {if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
+    window.addEventListener("resize", () => { map.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
   async function init() {
