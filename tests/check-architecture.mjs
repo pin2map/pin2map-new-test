@@ -53,11 +53,13 @@ assert.match(app,/Pin2MapUIState/,"App must use isolated UI state");
 assert.match(app,/Pin2MapPinEditorView/,"App must use pin editor view");
 assert.match(app,/Pin2MapPinOperations/,"App must use independent pin use cases");
 assert.match(app,/Pin2MapPinFilter/,"App must use composed pin visibility");
+assert.match(app,/Pin2MapFilterOperations/,"App must use filter operations");
 assert.match(app,/pinEditorView\.render/,"Pin editor must render through its view");
 const html=source("index.html");
 const domain=html.indexOf('src="./domain/project-model.js"');
 const pinFilter=html.indexOf('src="./domain/pin-filter.js"');
 const pinOperations=html.indexOf('src="./application/pin-operations.js"');
+const filterOperations=html.indexOf('src="./application/filter-operations.js"');
 const storage=html.indexOf('src="./adapters/storage/indexeddb-project-store.js"');
 const ui=html.indexOf('src="./ui/shell.js"');
 const searchView=html.indexOf('src="./ui/search-results.js"');
@@ -65,6 +67,6 @@ const uiState=html.indexOf('src="./ui/ui-state.js"');
 const pinEditor=html.indexOf('src="./ui/pin-editor.js"');
 const adapter=html.indexOf('src="./map-adapter-leaflet.js"');
 const application=html.indexOf('src="./app.js"');
-assert.ok(domain>=0&&pinFilter>domain&&pinOperations>pinFilter&&storage>pinOperations&&ui>storage&&searchView>ui&&uiState>searchView&&pinEditor>uiState&&adapter>pinEditor&&application>adapter,
+assert.ok(domain>=0&&pinFilter>domain&&pinOperations>pinFilter&&filterOperations>pinOperations&&storage>filterOperations&&ui>storage&&searchView>ui&&uiState>searchView&&pinEditor>uiState&&adapter>pinEditor&&application>adapter,
   "Domain → repository → UI modules → map adapter → app load order required");
 console.log("Architectural gates passed:",modelFiles.join(", "),"; Leaflet app uses adapter");
