@@ -47,8 +47,8 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [x] Referenz-Branch ab tatsächlichem V18-Commit
 - [x] Separater Migrationszweig
 - [x] Schnittstellenvertrag dokumentiert
-- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom, Bewegungsereignisse, reguläre Pin-Marker, Pin-Klicks, Marker-DOM-Zugriff, Pan-Sperre beim Langdruck, Zoom am gehaltenen Pin, verschiebbare Vorschau-Marker und Verbindungslinie laufen nun über den Adapter. **Noch nicht vollständig rendererunabhängig:** Basiskarten-/Layersteuerung, Zoom-Control, Karteninitialisierung, Map-Klick und Karten-Langdruck sowie DOM-spezifische Pointer-Gesten.
-- [~] Dialogpositionierung und Kartenbewegung nutzen Adapter-Projektion/Pan und Adapter-Ereignisse; normale Pin-Marker und Verschiebevorschau werden ebenfalls ausschließlich über den Adapter erzeugt und verändert. Vor dem zweiten Renderer sind die verbleibenden Kartenlayer, Map-Gesten und Controls zu kapseln.
+- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom, Bewegungsereignisse, reguläre Pin-Marker, Pin-Klicks, Marker-DOM-Zugriff, Pan-Sperre beim Langdruck, Zoom am gehaltenen Pin, verschiebbare Vorschau-Marker und Verbindungslinie laufen nun über den Adapter. **Noch nicht vollständig rendererunabhängig:** DOM-spezifische Pointer-Gesten und deren Leaflet-CSS-Ausschlussselektoren sowie die spätere vollständige MapLibre-Implementierung.
+- [~] Dialogpositionierung und Kartenbewegung nutzen Adapter-Projektion/Pan und Adapter-Ereignisse; normale Pin-Marker und Verschiebevorschau werden ebenfalls ausschließlich über den Adapter erzeugt und verändert. Die Basiskarten und Controls sowie Map-Klick-/Dragstart-/Zoomstart-Ereignisse werden inzwischen ebenfalls über den Adapter bedient.
 - [ ] Reale Browser-Regressionstests mit Desktop + iPhone
 
 ### B. Unabhängiger MapLibre-/Protomaps-Prototyp
@@ -70,7 +70,7 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [ ] Bewusst entscheiden, ob `main` zu MapLibre wechselt
 - [ ] Rollback aus Referenz prüfen, ohne lokale Nutzerdaten zu verlieren
 
-**Stand 2026-11-09:** Erster technischer Umbau in `feature/maplibre-protomaps` eingecheckt. Die Leaflet-Bibliothek ist weiterhin der einzige Renderer; `main` und die Referenz bleiben unangetastet. Der zusätzliche Adapter ist in der PWA-Shell V19 vorgemerkt. Ein echter Browser-/iPhone-Vergleich steht aus. MapLibre, Protomaps und ihr Offline-Verhalten sind noch nicht implementiert bzw. bestätigt.
+**Stand 2026-11-09:** Drei inkrementelle Umbauten in `feature/maplibre-protomaps` eingecheckt. Die Leaflet-Bibliothek ist weiterhin der einzige Renderer; `main` und die Referenz bleiben unangetastet. Der zusätzliche Adapter ist in der PWA-Shell V19 vorgemerkt. Ein echter Browser-/iPhone-Vergleich steht aus. MapLibre, Protomaps und ihr Offline-Verhalten sind noch nicht implementiert bzw. bestätigt.
 
 ## Inkrement 2: Marker und Pin-Bedienereignisse (2026-11-09)
 
@@ -79,3 +79,12 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Die bewährte Gesten-Zustandsmaschine (550 ms, 11 px, Unterdrückung des folgenden Map-Klicks), Dialogposition und explizite Verschiebebestätigung bleiben erhalten. Die DOM-Pointer-Events selbst liegen noch in der Anwendung; ein zweiter Renderer benötigt vergleichbare Marker-Elemente oder eine einheitliche Gestenschicht.
 - Statische UI-Prüfungen wurden auf die Adapter-Aufrufe umgestellt, ergänzende Adapter-Mocks hinzugefügt. Die Tests sowie echte Desktop-/iPhone-Interaktionen müssen nach diesem Commit **noch ausgeführt** werden; es wird kein bestandener Lauf behauptet.
 - `main` und die schreibgeschützte Wiederherstellungsreferenz bleiben unverändert. Kein MapLibre-/Protomaps-Code in dieser Phase.
+
+## Inkrement 3: Basiskarte, Map-Events und Controls (2026-11-09)
+
+- Anwendung initialisiert die Karte über `Pin2MapLeafletAdapter.mount` statt `L.map`; Basiskartenwechsel läuft über `setBasemap('street'|'topo')`, inklusive ursprünglicher URLs, Attributionen und Maximalzoomstufen.
+- Die bisherigen drei Zoom-Buttons werden unverändert als Leaflet-Control in `addZoomControls` aufgebaut. Die Oberfläche übergibt nur noch die Aktion `onFitAll`; Leaflet-DOM- und Event-APIs verbleiben im Adapter.
+- `onMapClick` liefert ausschließlich `{lat,lng}`, statt eines Leaflet-Ereignisobjekts. `on('dragstart zoomstart', ...)` registriert und entfernt beide Kartenereignisse. `fitBounds`, `getContainer` und `unproject` übernehmen weitere direkte Kartenaufrufe.
+- In `app.js` gibt es keine direkten `L.`- oder `map.`-Aufrufe mehr. Die bestehenden Pointer-Gesten funktionieren jedoch noch über DOM-Elemente und Leaflet-Klassen wie `.leaflet-marker-icon`; das ist eine offene Renderer-Unabhängigkeit. Außerdem sind gerenderte Markerhandles bislang noch Leaflet-Objekte, aber für die App nur opake Handles.
+- Statische Tests und Adapter-Mocks wurden erweitert. Vollständige Node-/Browser-/iPhone-Prüfung nach diesen Änderungen ist noch offen und darf nicht als bestanden gelten.
+- Kein Deployment nach `main`; V18-Referenz-Branch und lokaler IndexedDB-Datenbestand bleiben unangetastet.
