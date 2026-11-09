@@ -142,3 +142,9 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Separater Diagnose-Prototyp: `https://pin2map.github.io/pin2map-maplibre-preview/test-v7.html` mit eigenen Version-7-Dateinamen. Gelbes, an der Ausgangs-Bildschirmposition feststehendes Fadenkreuz und Anzeige des Abstands zwischen Pin-Projektion vor und nach dem Zoom in Pixeln (Ziel nahe 0 px).
 - Verwendet weiterhin `zoomTo(zoom,{around:[lng,lat],duration:0,animate:false})`; keine bestehenden PWA-Pins, Ebenen, IndexedDB oder Service Worker.
 - JavaScript-Syntax und statische Verbindungen der Diagnosekomponenten kontrolliert. Noch keine iPhone-Abnahme von v7; Ergebnis muss auf dem Gerät bestätigt werden.
+
+## iPhone-Nachtest MapLibre v7 (2026-11-09)
+
+- Nutzer hat die Version 7 mit Fadenkreuz-/Pixelversatz-Diagnose auf dem iPhone getestet und bestätigt: **„funktioniert“**. Der Langdruck-Zoom wird damit funktional als abgenommen geführt.
+- Der genaue numerische Pixelversatz wurde nicht übermittelt; daher keine unbelegte Zusage einer exakt gemessenen Abweichung von 0 px.
+- Als nächstes: Pin-Dialoggeometrie an Bildschirmrändern sowie Verbindungslinie, Vorschau und Bestätigung beim Verschieben mit dem Leaflet-Referenzverhalten vergleichen. Dazu erneut eine isolierte Preview-Version verwenden, ohne `main`, Referenz-V18 oder Nutzerdaten zu ändern.
