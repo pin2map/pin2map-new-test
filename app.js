@@ -335,7 +335,7 @@
     const y=mapRect.top+point.y-appRect.top;
     panel.style.visibility="visible";
     panel.style.left=(x-width/2)+"px";
-    panel.style.top=(y-height-30)+"px";
+    panel.style.top=(y-height-76)+"px";
     panel.style.bottom="auto";
     panel.style.right="auto";
     panel.style.transform="none";
@@ -575,6 +575,25 @@
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
+    $("refreshButton").addEventListener("click",async()=>{
+      const button=$("refreshButton");
+      button.disabled=true;
+      button.setAttribute("aria-busy","true");
+      // Flush any queued local edit before reloading the application.
+      clearTimeout(saveTimer);
+      try{await dbWrite();}catch(e){showNotice("Lokale Änderungen konnten nicht gespeichert werden");button.disabled=false;button.removeAttribute("aria-busy");return;}
+      try{
+        if("serviceWorker" in navigator){
+          const registration=await navigator.serviceWorker.getRegistration();
+          if(registration)await registration.update();
+        }
+      }catch(e){/* Reload still works if service-worker update is unavailable. */}
+      // A fresh URL forces navigation through the network-first service worker,
+      // while IndexedDB (pins/layers) remains untouched.
+      const target=new URL(window.location.href);
+      target.searchParams.set("v",String(Date.now()));
+      window.location.replace(target.href);
+    });
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
     $("allowGeocode").checked = state.allowGeocode;
