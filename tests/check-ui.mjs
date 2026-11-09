@@ -54,7 +54,7 @@ check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel);\n      if (layerById(PRIVATE_ID).visible)'), 'search-created pin gets fitted after map zoom');
 check(!js.includes('mapAdapter.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
-check(sw.includes("const CACHE='pin2map-new-v18'"), 'new cache-aware app shell version deployed');
+check(sw.includes("const CACHE='pin2map-new-v19'"), 'new cache-aware app shell version deployed');
 check(sw.includes("const TILE_CACHE='pin2map-viewed-osm-tiles-v1'"), 'OSM tiles retained separately from app shell updates');
 check(sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js') &&
   sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'), 'both Leaflet runtime assets precached');
@@ -75,6 +75,7 @@ check(sw.includes('return entry?.response || Response.error()'), 'expired cached
 check(sw.includes('meta.delete(tileMetadataKey(request))'), 'no-store removes previously cached tile and metadata');
 check(sw.includes('if(!record)return {response:cached,fresh:false}'), 'old V17 tiles are retained but revalidated');
 
+check(sw.includes("'./map-adapter-leaflet.js'"), 'Leaflet adapter available during offline start');
 check(html.includes('src="./map-adapter-leaflet.js"'), 'Leaflet adapter loaded before application');
 check(js.includes('mapAdapter=new window.Pin2MapLeafletAdapter(map)'), 'Leaflet adapter instantiated');
 check(js.includes('mapAdapter.getViewport()'), 'viewport data goes through adapter');
