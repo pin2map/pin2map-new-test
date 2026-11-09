@@ -33,5 +33,5 @@ try{
   adapter=window.Pin2MapMapLibreAdapter.mount("map",{center:{lat:49.3,lng:7.4},zoom:4.6},maplibregl);
   adapter.map.on("load",()=>{draw();status.textContent="MapLibre geladen · drei Test-Pins angezeigt";});
   adapter.map.on("error",event=>showError(event.error||"Unbekannter Kartenfehler"));
-  adapter.addZoomControls({onFitAll:()=>adapter.fitBounds(samples,{padding:60,maxZoom:7})});
+  adapter.addZoomControls({onFitAll:()=>adapter.fitBounds(samples,{padding:60,maxZoom:7,duration:350})});
 }catch(error){showError(error);}
