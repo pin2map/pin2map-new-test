@@ -89,8 +89,15 @@ test("pin dialog name replaces heading and red delete button uses official white
   assert.match(pinSection,/<div class="pin-actions">[\s\S]*?<button id="closePin"[^>]*data-close="pinPanel"[^>]*>OK<\/button><\/div>/,
     "Bottom-right OK closes pin dialog; it does not perform deletion");
   assert.equal((pinSection.match(/id="deletePin"/g)||[]).length,1);
-  assert.match(css,/\.pin-panel \.pin-editor-head #deletePin\.p2m-icon-control\s*\{[\s\S]*?--p2m-button-size:32px/);
-  assert.match(css,/\.pin-panel \.pin-actions #closePin\.pin-ok-button\s*\{[\s\S]*?background:#c9eecb!important/);
+  assert.match(css,/\.pin-panel\{--p2m-pin-dialog-action-size:36px\}/);
+  const deleteStyles=css.match(/\.pin-panel \.pin-editor-head #deletePin\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
+  const okStyles=css.match(/\.pin-panel \.pin-actions #closePin\.pin-ok-button\s*\{([^}]+)\}/)?.[1]||"";
+  for(const styles of [deleteStyles,okStyles]){
+    assert.ok(styles.includes("width:var(--p2m-pin-dialog-action-size)!important"));
+    assert.ok(styles.includes("height:var(--p2m-pin-dialog-action-size)!important"));
+    assert.ok(styles.includes("flex:0 0 var(--p2m-pin-dialog-action-size)!important"));
+  }
+  assert.match(okStyles,/background:#c9eecb!important/);
   assert.match(css,/\.pin-panel \.pin-editor-head #pinName\s*\{/);
   const icon=Icons.svg("map-pin-off",documentStub());
   assert.equal(icon.children.length,5);
