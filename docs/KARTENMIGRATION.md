@@ -250,3 +250,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Der GitHub-Actions-Lauf erhält eine lesbare Schrittzusammenfassung mit Archivname, Größe, Zoomstufen, geografischen Grenzen und Hash. Nur nach bestandenem Validierungsschritt soll das `stuttgart-pmtiles-z12`-Artifact entstehen.
 - Die verfügbaren GitHub-App-Aktionen können den Push-getriggerten Actions-Lauf nicht direkt auflisten. Öffentliches Actions-Webinterface ließ sich ebenfalls nicht abrufen. **Build-Erfolg, Archiv und echte iPhone-Karte weiterhin nicht bestätigt.**
 - Technische Details unter `docs/PMTILES-STUTTGART.md`. Keine Änderung an Haupt-PWA, MapLibre-Referenz oder Offline-Speicherung.
+
+## Inkrement 17: Stuttgart-PMTiles tatsächlich erzeugt und verifiziert (2026-11-09)
+
+- Nutzer-Screenshot von GitHub Actions **Build #3**, grün, zeigt eine vollständige `Stuttgart PMTiles extraction`-Zusammenfassung samt `stuttgart-pmtiles-z12`-Artifact.
+- Archiv `stuttgart-z12.pmtiles` existiert als Build-Artefakt (2.866.574 Bytes, 2,73 MiB), Format `mvt`, Zoom 0–12, Bounds `9.12000,48.72000,9.25000,48.82000`, `pmtiles verify: Passed`.
+- SHA-256 des Archivs: `d3eec669bd7556d96d939933c3e5253e9d174857fd67c137888607d00366a80d`. Das angezeigte GitHub-Artefakt hat eine **eigene** ZIP-/Artifact-Prüfsumme und ist von der PMTiles-Datei-Prüfsumme zu unterscheiden.
+- Das Build-Ergebnis ist **nicht** auf GitHub Pages veröffentlicht und **noch nicht** als lokale Datei im iPhone-Browser getestet. Nächster Test mit der isolierten Browser-`FileSource`-Vorschau `pmtiles-local-file-check.html`. Keine Auswirkungen auf die gespeicherte Leaflet-/MapLibre-Anwendung oder Offline-Behauptung.
