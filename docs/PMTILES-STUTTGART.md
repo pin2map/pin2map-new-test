@@ -39,3 +39,11 @@ Quelle: <https://source.coop/protomaps/openstreetmap/v4.pmtiles> (Source Coopera
 5. Erst danach Download-/Offline-Datenhaltung konzipieren: dauerhafte, bewusst ausgelöste Regionen-Downloads, lokale Dateiverwaltung, Quota-/Eviction-Strategie auf iOS, lokale Fonts/Sprites, Versionierung und Integritätsprüfung.
 
 **Wichtig:** Die erfolgreichen MapLibre-Integrationsstände bleiben in `reference/maplibre-full-integration-accepted-2026-11-09` und im Preview-Repository `reference/maplibre-integration-v2-accepted-2026-11-09` gesichert. `pin2map-new-test/main` und die Leaflet-V18-Referenz bleiben unberührt.
+
+## Umsetzungsstand – zweite Prüfrunde (2026-11-09)
+
+- Offizielle Quelle und CLI-Syntax erneut überprüft: Source Cooperative listet das v4-Archiv unter dem verwendeten Pfad, `pmtiles show`, `extract --bbox --maxzoom --download-threads` und `verify` sind dokumentierte CLI-Befehle.
+- **Buildkorrektur:** `go install github.com/protomaps/go-pmtiles@v1.31.2` liefert unter Go den Paket-Binärnamen `go-pmtiles`. Der Workflow erstellt bei Bedarf einen Link `pmtiles` und führt `pmtiles version` vor dem Zugriff auf das entfernte Archiv aus. Damit vermeiden wir einen `pmtiles: command not found`-Fehler.
+- **Workflow-Status weiterhin unbestätigt:** GitHub-Connector ermöglicht Dateiprüfungen, liefert hier aber keine Push-getriggerten Workflow-Runs; kombinierte Commit-Statusabfrage ergab keine Einträge. Auch ein externer Browserabruf des Actions-Laufs war nicht möglich. Wir haben daher **weder einen erfolgreichen Lauf noch eine erzeugte Datei verifiziert**.
+- Als nächste unabhängige Prüfstufe liegt die **lokale Dateiauswahl** im Preview-Repository unter `https://pin2map.github.io/pin2map-maplibre-preview/pmtiles-local-file-check.html`. Sie liest eine vom Nutzer im Browser gewählte `.pmtiles`-Datei über `pmtiles.FileSource`, ohne sie hochzuladen. Der Test verwendet den Protomaps-Light-Stil mit **externen** Glyph-/Sprite-Dateien; er ist kein autonomer Offline-Betrieb und noch nicht auf iOS getestet.
+- Erst nach nachgewiesen erfolgreicher Extraktion und einem Dateitest kann eine kleine selbst gehostete Region für den integrierten MapLibre-Stand freigegeben werden.
