@@ -83,10 +83,14 @@ test("pin dialog name replaces heading and red delete button uses official white
   const pinSection=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
   assert.ok(pinSection);
   assert.ok(!pinSection.includes("<h2>Pin bearbeiten</h2>"));
-  assert.match(pinSection,/<div class="panel-head pin-editor-head"><label[^>]*for="pinName"/);
+  assert.match(pinSection,/<div class="panel-head pin-editor-head"><button id="deletePin"[^>]*data-pin-icon="map-pin-off"[^>]*aria-label="Pin löschen"><\/button><label[^>]*for="pinName"/,
+    "Small red delete icon comes BEFORE the name input");
   assert.match(pinSection,/<input id="pinName"[^>]*aria-label="Pin-Name"/);
-  assert.match(pinSection,/<button id="deletePin"[^>]*data-pin-icon="map-pin-off"[^>]*aria-label="Pin löschen"><\/button>/);
-  assert.match(css,/#deletePin\.p2m-icon-control,[\s\S]*?background:#bc2837!important;color:#fff!important/);
+  assert.match(pinSection,/<div class="pin-actions">[\s\S]*?<button id="closePin"[^>]*data-close="pinPanel"[^>]*>OK<\/button><\/div>/,
+    "Bottom-right OK closes pin dialog; it does not perform deletion");
+  assert.equal((pinSection.match(/id="deletePin"/g)||[]).length,1);
+  assert.match(css,/\.pin-panel \.pin-editor-head #deletePin\.p2m-icon-control\s*\{[\s\S]*?--p2m-button-size:32px/);
+  assert.match(css,/\.pin-panel \.pin-actions #closePin\.pin-ok-button\s*\{[\s\S]*?background:#c9eecb!important/);
   assert.match(css,/\.pin-panel \.pin-editor-head #pinName\s*\{/);
   const icon=Icons.svg("map-pin-off",documentStub());
   assert.equal(icon.children.length,5);
