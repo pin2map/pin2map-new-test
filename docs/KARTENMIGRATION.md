@@ -47,8 +47,8 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [x] Referenz-Branch ab tatsächlichem V18-Commit
 - [x] Separater Migrationszweig
 - [x] Schnittstellenvertrag dokumentiert
-- [ ] Leaflet-Adapter aus bestehendem `app.js` herauslösen, ohne Verhaltensänderung
-- [ ] Pin-Dialog und Layer-UIs nur noch über Adapter an Kartenereignisse anbinden
+- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom und Bewegungsereignisse laufen bereits über eine eigene Schnittstelle. Die verbleibenden Leaflet-Marker, Kartenlayer, Pin-Gesten und Popup-Interaktionen sind **noch nicht** gekapselt. Dies ist kein abgeschlossener Adapter.
+- [~] Dialogpositionierung und Kartenbewegung nutzen bereits Adapter-Projektion/Pan und Adapter-Ereignisse; Kartenmarker/Layer und einzelne Sonderfunktionen benötigen noch direkte Leaflet-Aufrufe.
 - [ ] Reale Browser-Regressionstests mit Desktop + iPhone
 
 ### B. Unabhängiger MapLibre-/Protomaps-Prototyp
@@ -70,4 +70,4 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [ ] Bewusst entscheiden, ob `main` zu MapLibre wechselt
 - [ ] Rollback aus Referenz prüfen, ohne lokale Nutzerdaten zu verlieren
 
-**Wichtig:** Dieses Dokument markiert den Start der Migration. Der aktuelle Leaflet-Code ist noch aktiv. Protomaps/MapLibre sind nicht implementiert und ihr Offline-Verhalten ist noch nicht bestätigt.
+**Stand 2026-11-09:** Erster technischer Umbau in `feature/maplibre-protomaps` eingecheckt. Die Leaflet-Bibliothek ist weiterhin der einzige Renderer; `main` und die Referenz bleiben unangetastet. Der zusätzliche Adapter ist in der PWA-Shell V19 vorgemerkt. Ein echter Browser-/iPhone-Vergleich steht aus. MapLibre, Protomaps und ihr Offline-Verhalten sind noch nicht implementiert bzw. bestätigt.
