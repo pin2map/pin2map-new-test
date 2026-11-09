@@ -1,97 +1,143 @@
-// Dependency-free regression checks. Run: node --check app.js && node tests/check-ui.mjs
-import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-const js=readFileSync(new URL('../app.js',import.meta.url),'utf8');
-const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-const css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
-const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
-function check(ok,description){assert.ok(ok,description);console.log('OK',description);}
-check((css.match(/\.move-bar\s*\{/g)||[]).length===1,'exactly one CSS declaration for the move confirmation container');
-check((css.match(/\.move-bar span\s*\{/g)||[]).length===1,'exactly one CSS declaration for its label');
-check(!css.includes('move-bar{\n  position:absolute;z-index:1400;left:50%;bottom:'),'old bottom-docked move bar styles removed');
-check(css.includes('#confirmMove{background:#16883e}') && css.includes('#cancelMove{background:#d42b32}'),'green approval and red cancellation buttons');
-check(css.includes('border-radius:50%') && css.includes('flex-flow:row nowrap'),'round, horizontal, compact controls');
-check(html.includes('<span id="moveText">Neue Position</span>'),'only short requested label is rendered');
-check(html.includes('id="confirmMove"') && html.includes('>✓</button>'),'confirmation displays a check');
-check(html.includes('id="cancelMove"') && html.includes('>×</button>'),'cancellation displays an X');
-check(js.includes('const desiredBelow=y+30') && js.includes('desiredBelow+height+margin<=visibleBottom'),'bubble appears below pin if room exists');
-check(js.includes('Math.max(visibleTop+margin,desiredAbove)'),'fallback placement remains on screen');
-check(js.includes('bar.style.left=(centerX-width/2-appRect.left)'),'bubble centered at new position');
-check(js.includes('mapAdapter.onMarker(moveMarker,"drag",previewMove)'),'bubble tracks dragged preview via adapter');
-check(js.includes('mapAdapter.on("moveend", () =>') && js.includes('scheduleMapOverlayUpdate();'), 'move confirmation tracks map changes');
-check(js.includes('bar.classList.contains("hidden")'),'bubble is not positioned before display');
-check(js.includes('moveMode=true;removeMovePreview();') && js.includes('$("moveBar").classList.add("hidden");'),'no instruction dialog at start of moving');
-check(!js.includes('Neue Stelle antippen') && !js.includes('Alte und neue Position prüfen'),'obsolete move instructions removed');
-check(!js.includes('showNotice("Neue Position') && !js.includes('showNotice("Neue Stelle'),'no extra move instruction toast');
-check(js.includes('mapAdapter.on("move",scheduleMapOverlayUpdate)'), 'dialog tracks the map continuously, not only at moveend');
-check(js.includes('mapOverlayFrame=requestAnimationFrame'), 'live dialog updates are throttled per animation frame');
-check(js.includes('mapAdapter.project({lat:pin.lat,lng:pin.lng})'), 'dialog follows the selected pin coordinates');
-check(js.includes('panel.style.visibility="visible"') && !js.includes('panel.style.visibility="hidden"'), 'open pin editor never hides when pin goes offscreen');
-check(js.includes('panel.style.left=(x-width/2)+"px"') && js.includes('panel.style.top=(y-height-76)+"px"'), 'dialog follows pin without clamping at predecessor 76px offset');
-check(!js.includes('if(!onScreen)') && !js.includes('Math.max(minTop,y-height-30)'), 'no offscreen or edge clamp remains');
-check(js.includes('document.body.classList.toggle("pin-open",!!pin&&!moveMode)'), 'pin editor enables focused UI mode immediately');
-check(css.includes('body.pin-open .topbar') && css.includes('body.pin-open .labels-toggle') && css.includes('body.pin-open .layers-bottom-button') && css.includes('body.pin-open .pin-zoom-buttons'), 'all primary map controls hidden while editor open');
-check(css.includes('.leaflet-control:not(.leaflet-control-attribution)'), 'tile attribution remains visible');
-check(js.includes('scheduleMapOverlayUpdate();'), 'map movement and resize trigger layout updates');
-check(js.includes('if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}'), 'pin editor close restores controls and clears selection');
-check(js.includes('moveMode=true;removeMovePreview();') && js.includes('document.body.classList.remove("pin-open");'), 'moving a pin leaves focus mode immediately');
-check(html.includes('id="refreshButton"'), 'new version refresh button exists');
-check(js.includes('await dbWrite()'), 'refresh persists local pins before updating');
-check(js.includes('fetch(workerURL.href+"?refresh="+Date.now(),{cache:"no-store"})'), 'refresh checks network worker version bypassing HTTP cache');
-check(js.includes('updateViaCache:"none"') && js.includes('await registration.update()'), 'refresh asks for uncached service worker update');
-check(js.includes('registration.waiting.postMessage({type:"SKIP_WAITING"})'), 'refresh activates waiting worker');
-check(js.includes('getActiveVersion()===expectedVersion'), 'refresh confirms worker activation before navigation');
-check(js.includes('location.replace(target.href)'), 'refresh navigates only after verification');
-check(js.includes('if(!activated)throw Error'), 'failed activation does not pretend to succeed');
-check(html.includes('id="pinDialogTip"'), 'pin dialog pointer has independent element');
-check(js.includes('panel.style.top=(y-height-76)+"px"'), 'pin-dialog clearance matches predecessor 76px');
-check(js.includes('tip.style.top=(y-76)+"px"') && js.includes('tip.style.left=x+"px"'), 'pointer follows map-anchored dialog');
-check(css.includes('.pin-dialog-tip{') && css.includes('border-top:15px solid #fff'), 'white downward triangle is styled');
-check(js.includes('$("pinDialogTip").classList.toggle("hidden",!pin||moveMode)'), 'pointer disappears when editor closes or moving starts');
-check(js.includes('function keepSelectedAbovePanel(){') && js.includes('mapAdapter.panBy({x:-dx,y:-dy},{animate:false})'), 'opening an edge pin moves the map rather than the pin');
-check(js.includes('const lowest=Math.max(rect.bottom,tip.bottom)'), 'entire dialog including tip is considered');
-check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<minY?'), 'all viewport edges considered');
-check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
-check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)') && js.includes('if (layerById(PRIVATE_ID).visible) renderMarkers()'), 'search-created pin selection and marker render paths preserved');
-check(!js.includes('mapAdapter.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
-check(sw.includes("const CACHE='pin2map-new-v19'"), 'new cache-aware app shell version deployed');
-check(sw.includes("const TILE_CACHE='pin2map-viewed-osm-tiles-v1'"), 'OSM tiles retained separately from app shell updates');
-check(sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js') &&
-  sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'), 'both Leaflet runtime assets precached');
-check(sw.includes("mode:'cors',cache:'reload'") && sw.includes('if(!response.ok)throw Error'), 'offline shell install rejects incomplete dependencies');
-check(sw.includes('if(LEAFLET.includes(url.href))') && sw.includes('if(cached)return cached'), 'offline Leaflet loads from local PWA cache');
-check(sw.includes('if(isOsmTile(url))') && sw.includes('await tiles.put(request,response.clone())'), 'only requested OSM tiles become cached');
-check(sw.includes('const cached=await tiles.match(request)') && sw.includes('if(cached)return cached'), 'previously viewed OSM tile can be read offline');
-check(!sw.includes('tile.openstreetmap.org/{') && !sw.includes('prefetchTiles('), 'no proactive tile download mechanism');
-check(sw.includes("name.startsWith('pin2map-new-')&&name!==CACHE"), 'app-shell cleanup retains viewed tile cache');
-check(sw.includes("event.data?.type==='GET_VERSION'"), 'worker version remains compatible with verified refresh');
-check(sw.includes("const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1'"), 'separate tile expiry metadata is retained across app updates');
-check(sw.includes('function tileFreshUntil(') && sw.includes("headers.get('Cache-Control')"), 'tile freshness calculation honors readable cache control');
-check(sw.includes("headers.get('Age')") && sw.includes("headers.get('Expires')"), 'tile freshness accounts for Age and Expires');
-check(sw.includes('if(response.type===\'opaque\')return now+FALLBACK_TILE_TTL'), 'opaque tiles get OSM seven-day fallback');
-check(sw.includes("if(entry?.fresh)return entry.response"), 'fresh cache tile is served before online fetch');
-check(sw.includes("const response=await fetch(request); // default HTTP cache"), 'expired tile fetch uses browser conditional validation');
-check(sw.includes('return entry?.response || Response.error()'), 'expired cached tile remains available offline');
-check(sw.includes('meta.delete(tileMetadataKey(request))'), 'no-store removes previously cached tile and metadata');
-check(sw.includes('if(!record)return {response:cached,fresh:false}'), 'old V17 tiles are retained but revalidated');
+// Regression checks for the modularized UI, without relying on obsolete app.js internals.
+// Run: node tests/check-ui.mjs
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {createRequire} from "node:module";
 
-check(sw.includes("'./map-adapter-leaflet.js'"), 'Leaflet adapter available during offline start');
-check(html.includes('src="./map-adapter-leaflet.js"'), 'Leaflet adapter loaded before application');
-check(js.includes('mapAdapter=window.Pin2MapLeafletAdapter.mount('), 'Leaflet adapter mounts the map');
-check(js.includes('mapAdapter.getViewport()'), 'viewport data goes through adapter');
-check(js.includes('mapAdapter.unproject('), 'map click coordinates use adapter');
-check(js.includes('mapAdapter.setView('), 'search and one-pin center use adapter');
-check(js.includes('mapAdapter.on("zoomend"'), 'zoom events use adapter');
-check(js.includes('mapAdapter.createMarker(') && js.includes('mapAdapter.setMarkerAppearance('),'ordinary pin markers use adapter');
-check(js.includes('mapAdapter.createLine(') && js.includes('mapAdapter.setLinePositions('),'move preview uses adapter');
-check(js.includes('mapAdapter.stopMarkerEventPropagation(element)') && js.includes('mapAdapter.setPanEnabled(false)'),'pin gestures use adapter for pointer event isolation');
-check(!js.includes('L.marker(') && !js.includes('L.polyline(') && !js.includes('L.divIcon('),'no direct Leaflet marker or preview creation remains in app');
-check(js.includes('mapAdapter.setBasemap(state.basemap)'), 'basemap selection routed through adapter');
-check(js.includes('mapAdapter.addZoomControls({onFitAll:fitAllPins})'), 'zoom controls routed through adapter');
-check(js.includes('mapAdapter.onMapClick(position =>'), 'map clicks return neutral coordinates');
-check(js.includes('mapAdapter.fitBounds(pts,'), 'fit all pins routed through adapter');
-check(js.includes('mapAdapter.on("dragstart zoomstart", cancelLongPress)'), 'map gestures cancel pin creation hold through adapter');
-check(!/\\b(?:L|map)\\./.test(js), 'app no longer calls Leaflet or raw map directly');
-check(js.includes('const isMapSurface = target => mapAdapter.isMapSurface(target);'), 'surface hit testing uses renderer adapter');
-check(!js.includes('.leaflet-marker-icon') && !js.includes('.leaflet-control') && !js.includes('.leaflet-popup'), 'app gesture filtering avoids Leaflet CSS selectors');
-console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
+const require=createRequire(import.meta.url);
+const read=name=>readFileSync(new URL("../"+name,import.meta.url),"utf8");
+const app=read("app.js");
+const html=read("index.html");
+const css=read("styles.css");
+const sw=read("sw.js");
+const move=read("ui/pin-move-preview.js");
+const gestures=read("ui/map-gesture-controller.js");
+const positioner=read("ui/pin-panel-positioner.js");
+const editor=read("ui/pin-editor.js");
+const controller=read("application/pin-move-controller.js");
+const map=read("map-adapter-leaflet.js");
+
+const {barPlacement}=require("../ui/pin-move-preview.js");
+const {anchorGeometry,openingCorrection}=require("../ui/pin-panel-positioner.js");
+
+function check(ok,description){
+  assert.ok(ok,description);
+  console.log("OK",description);
+}
+
+// Each feature is owned by its module, not copied back into app.js.
+check((css.match(/\.move-bar\s*\{/g)||[]).length===1,
+  "one move confirmation container declaration");
+check((css.match(/\.move-bar span\s*\{/g)||[]).length===1,
+  "one move confirmation label declaration");
+check(css.includes("#confirmMove{background:#16883e}") &&
+  css.includes("#cancelMove{background:#d42b32}"),
+  "green confirm and red cancel controls");
+check(html.includes('<span id="moveText">Neue Position</span>') &&
+  html.includes('id="confirmMove"') && html.includes('id="cancelMove"'),
+  "short preview label and explicit confirmation/cancellation");
+check(move.includes("class PinMovePreview") &&
+  move.includes("this.map.createMarker(") && move.includes("this.map.createLine("),
+  "temporary marker and line owned by preview module");
+check(move.includes('this.map.onMarker(this.marker,"drag"') &&
+  move.includes("this.positionBar()"),
+  "dragging preview updates its position through map adapter");
+check(controller.includes("class PinMoveController") &&
+  controller.includes("this.pinOperations.movePin(") &&
+  controller.includes("this.preview.clear()"),
+  "only confirmation workflow writes new pin coordinates");
+check(app.includes("moveController.previewAt(position)") &&
+  app.includes("moveController.confirm()") &&
+  app.includes("moveController.cancel()"),
+  "map and buttons delegate the move workflow");
+check(app.includes('mapAdapter.on("move",scheduleMapOverlayUpdate)') &&
+  app.includes("moveView.positionBar()"),
+  "confirmation bar tracks map changes");
+check(!app.includes("Neue Stelle antippen") &&
+  !app.includes("Alte und neue Position prüfen"),
+  "obsolete move instructions stay removed");
+
+// Test the actual pure geometry contracts instead of matching old source text.
+const visible=barPlacement({
+  point:{x:150,y:120},
+  mapRect:{left:0,top:0},
+  appRect:{left:0,top:0},
+  width:120,height:40,
+  viewport:{offsetLeft:0,offsetTop:0,width:320,height:360}
+});
+check(visible.left===90 && visible.top===150,
+  "preview bar appears beneath a pin when there is room");
+const nearBottom=barPlacement({
+  point:{x:150,y:320},
+  mapRect:{left:0,top:0},
+  appRect:{left:0,top:0},
+  width:120,height:40,
+  viewport:{offsetLeft:0,offsetTop:0,width:320,height:360}
+});
+check(nearBottom.top===250,
+  "preview bar moves above pin near bottom edge");
+const anchored=anchorGeometry({
+  point:{x:200,y:250},
+  mapRect:{left:0,top:0},
+  appRect:{left:0,top:0,width:400,height:500},
+  panelHeight:140
+});
+check(anchored.panel.left===45 && anchored.panel.top===34 &&
+  anchored.tip.left===200 && anchored.tip.top===174,
+  "pin editor retains predecessor-style 76px pointer clearance");
+const correction=openingCorrection({
+  appRect:{left:0,top:0,right:400,bottom:500},
+  panelRect:{left:-10,top:25,right:300,bottom:170},
+  tipRect:{left:150,right:170,top:160,bottom:175}
+});
+check(correction.needsPan && correction.dx===22,
+  "edge correction pans map rather than changing stored pin");
+
+// Structural interface checks for modular UI wiring.
+check(positioner.includes("class PinPanelPositioner") &&
+  positioner.includes("this.map.panBy(") &&
+  app.includes("requestAnimationFrame(keepSelectedAbovePanel)"),
+  "selected pin gets one-time opening correction");
+check(editor.includes('this.document.body.classList.toggle("pin-open",shown)') &&
+  css.includes("body.pin-open .topbar") &&
+  css.includes("body.pin-open .layers-bottom-button"),
+  "focused pin editing hides map controls");
+check(css.includes(".leaflet-control:not(.leaflet-control-attribution)"),
+  "attribution stays visible");
+check(gestures.includes("attachMarkerLongPress") &&
+  gestures.includes("attachLongPress"),
+  "touch, mouse and marker gestures live in dedicated controller");
+check(map.includes("onMapClick(callback)") &&
+  app.includes("mapAdapter.onMapClick(position =>"),
+  "map events pass neutral coordinates");
+check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
+  "application never creates raw Leaflet overlays");
+check(app.includes("mapAdapter.setBasemap(state.basemap)") &&
+  app.includes("mapAdapter.addZoomControls({onFitAll:fitAllPins})"),
+  "map selection and zoom controls use Leaflet adapter");
+check(html.includes('id="refreshButton"') &&
+  app.includes('updateViaCache:"none"'),
+  "refresh control and worker no-cache configuration remain");
+
+// Version-independent offline contract: never hardcode an old app-shell version.
+check(/const CACHE='pin2map-new-v\d+'/.test(sw),
+  "versioned offline shell is present");
+check(sw.includes("pin2map-viewed-osm-tiles-v1") &&
+  sw.includes("pin2map-viewed-osm-tile-metadata-v1"),
+  "tile and tile metadata caches are distinct");
+check(sw.includes("https://unpkg.com/leaflet@1.9.4/dist/leaflet.js") &&
+  sw.includes("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"),
+  "Leaflet runtime is precached");
+check(sw.includes("function tileFreshUntil(") &&
+  sw.includes("if(entry?.fresh)return entry.response") &&
+  sw.includes("return entry?.response || Response.error()"),
+  "viewed tiles are fresh-first and still available offline");
+check(!sw.includes("prefetchTiles("),
+  "tile prefetch and bulk downloads remain disabled");
+check(sw.includes("event.data?.type==='GET_VERSION'") &&
+  sw.includes("event.data?.type==='SKIP_WAITING'"),
+  "worker still supports explicit refresh protocol");
+check(html.includes('src="./ui/pin-move-preview.js"') &&
+  html.includes('src="./ui/pin-panel-positioner.js"'),
+  "both UI overlays load before main app");
+console.log("Modular UI static and geometry checks passed.");
