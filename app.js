@@ -16,7 +16,7 @@
   });
   const layerOps = window.Pin2MapLayerOperations;
   const currentPinFilter = pinFilter.createFilter();
-  let projectStore, state = defaults(), mapAdapter, markerView, moveView, panelPositioner;
+  let projectStore, state = defaults(), mapAdapter, markerView, moveView, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let saveTimer;
   let gestures;
@@ -83,26 +83,6 @@
       showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
     };
   }
-  function endMove(){
-    uiState.moveMode=false;moveView.clear();
-    $("moveBar").classList.add("hidden");
-    updateModeUI();renderPinPanel();
-  }
-  function beginMove(){
-    if(!selectedPin())return;
-    uiState.moveMode=true;moveView.clear();
-    $("pinPanel").classList.add("hidden");
-    document.body.classList.remove("pin-open");
-    $("pinDialogTip").classList.add("hidden");
-    // Controls only appear once a new position has been selected.
-    $("moveBar").classList.add("hidden");
-    updateModeUI();
-  }
-  function confirmMove(){
-    const pin=selectedPin(),position=moveView.current();if(!pin||!position)return;
-    pinOps.movePin(state,pin.id,position,{validatePosition:projectModel.position});
-    endMove();save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");
-  }
   function renderLayers(){
     layerView.render({
       layers:state.layers,
@@ -144,7 +124,8 @@
     hideResults();
     $("layersPanel").classList.add("hidden");
     $("settingsPanel").classList.add("hidden");
-    uiState.selectedPinId = id; uiState.moveMode = false; updateModeUI();
+    moveController.cancel();
+    uiState.selectPin(id); updateModeUI();
     renderMarkers(); renderLayers(); renderPinPanel();
     requestAnimationFrame(keepSelectedAbovePanel);
   }
@@ -167,7 +148,7 @@
     uiShell.hideNotice();
     const dlg = $("deleteDialog");
     if (dlg.open) dlg.close("cancel");
-    if(uiState.moveMode)endMove();
+    if(uiState.moveMode)moveController.cancel();
     if (uiState.selectedPinId !== null || uiState.moveMode) {
       uiState.selectedPinId = null; uiState.moveMode = false;
       renderMarkers(); renderPinPanel(); updateModeUI();
@@ -305,9 +286,9 @@
       const p=selectedPin();if(!p)return;filterOps.setLayerVisible(state,p.layerId,true);
       save();renderLayers();renderMarkers();renderPinPanel();
     });
-    $("movePin").addEventListener("click",beginMove);
-    $("cancelMove").addEventListener("click",endMove);
-    $("confirmMove").addEventListener("click",confirmMove);
+    $("movePin").addEventListener("click",()=>moveController.begin());
+    $("cancelMove").addEventListener("click",()=>moveController.cancel());
+    $("confirmMove").addEventListener("click",()=>moveController.confirm());
     $("deletePin").addEventListener("click", () => { if(selectedPin())$("deleteDialog").showModal(); });
     $("deleteDialog").addEventListener("close", () => {
       if($("deleteDialog").returnValue!=="confirm")return;
@@ -319,7 +300,7 @@
     });
     mapAdapter.onMapClick(position => {
       if (gestures.isSuppressed()) return;
-      if (uiState.moveMode && selectedPin()) {moveView.show(position,selectedPin());return;}
+      if (uiState.moveMode) {moveController.previewAt(position);return;}
       closeMapOverlays();
     });
 
@@ -357,10 +338,23 @@
       mapAdapter,getElement:$,
       getAppRect:()=>$("app").getBoundingClientRect(),
       getViewport:()=>window.visualViewport||{offsetLeft:0,offsetTop:0,width:window.innerWidth,height:window.innerHeight},
-      onPosition:position=>{if(uiState.moveMode&&selectedPin())moveView.show(position,selectedPin());}
+      onPosition:position=>moveController.previewAt(position)
     });
     panelPositioner=new window.Pin2MapPinPanelPositioner.PinPanelPositioner({
       mapAdapter,getElement:$,document
+    });
+    moveController=new window.Pin2MapPinMoveController({
+      uiState,getProject:()=>state,getSelectedPin:selectedPin,
+      pinOperations:pinOps,validatePosition:projectModel.position,preview:moveView,
+      onEnter:()=>{
+        $("pinPanel").classList.add("hidden");
+        document.body.classList.remove("pin-open");
+        $("pinDialogTip").classList.add("hidden");
+        $("moveBar").classList.add("hidden");
+        updateModeUI();
+      },
+      onExit:()=>{updateModeUI();renderPinPanel();},
+      onCommitted:()=>{save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");}
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
