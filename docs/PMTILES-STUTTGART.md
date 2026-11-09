@@ -62,3 +62,18 @@ Der GitHub-Actions-Workflow wurde am 2026-11-09 um folgende technische Prüfschr
 **Status:** Workflow-Datei ist in GitHub gespeichert, aber ein tatsächlich erfolgreicher Workflow-Lauf und ein herunterladbares, verifiziertes Artifact sind mit der verfügbaren Schnittstelle noch nicht belegbar. Es wird ausdrücklich keine fertige PMTiles-Karte behauptet.
 
 **Lauf prüfen:** [GitHub Actions – Stuttgart PMTiles](https://github.com/pin2map/pin2map-maplibre-preview/actions/workflows/build-stuttgart-pmtiles.yml). Ein erfolgreiches Ergebnis zeigt eine grüne Markierung, eine Build-Zusammenfassung und das Artifact `stuttgart-pmtiles-z12`.
+
+## Bestätigter GitHub-Actions-Build #3 (2026-11-09)
+
+Der Nutzer hat die vollständige GitHub-Actions-Zusammenfassung und den Artifacts-Bereich des erfolgreichen Laufs übermittelt:
+
+- `stuttgart-z12.pmtiles`, **2.866.574 Bytes = 2,73 MiB**.
+- Vektorkacheln `mvt`, Zoomstufen **0–12**.
+- Kartengrenzen W/S/E/N: `9.12000,48.72000,9.25000,48.82000`.
+- SHA-256: `d3eec669bd7556d96d939933c3e5253e9d174857fd67c137888607d00366a80d`.
+- `PMTiles verify: Passed`.
+- GitHub-Actions-Artefakt **`stuttgart-pmtiles-z12`** ist tatsächlich vorhanden; GitHub zeigt für das komprimierte Artefakt ungefähr **2,74 MB** an.
+- Veröffentlichung: **Not published: Actions artifact only**. Dies ist noch keine produktive, öffentlich gehostete oder offlinefähige Karte.
+- Im erfolgreichen Lauf sind Warnungen zur Node.js-20-Abkündigung und zum Go-Cache sichtbar. Diese haben den Lauf nicht verhindert.
+
+**Nächster Schritt:** Artifact als ZIP herunterladen und entpacken, darin `stuttgart-z12.pmtiles` auswählen unter `https://pin2map.github.io/pin2map-maplibre-preview/pmtiles-local-file-check.html`. Die Testseite nutzt den lokalen Browser-`FileSource` ohne Datei-Upload; Fonts/Sprites werden noch online geladen. Erfolg des lokalen Dateitests ist noch nicht bestätigt.
