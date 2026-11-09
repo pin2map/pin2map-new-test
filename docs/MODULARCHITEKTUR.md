@@ -87,3 +87,15 @@ Die bestehende informationsreiche Leaflet-V18-Referenz `reference/leaflet-v18-20
 - `index.html` lädt Domänenmodell, Speicheradapter und Kartenadapter vor `app.js`.
 - `tests/check-project-store.mjs` prüft die Datenbankkennungen und das Lese-/Schreibverhalten gegen eine isolierte Testimplementierung; `tests/check-architecture.mjs` verhindert direkten IndexedDB-/Leaflet-Zugriff aus der Anwendung und Browser-Abhängigkeiten in `domain/`. Workflow `.github/workflows/leaflet-modular.yml` ist auf diesen Zweig begrenzt.
 - **Noch ausstehend:** tatsächlicher GitHub-Actions-Lauf sowie Browser-/PWA-Test der neuen Modulversion. `main`, Leaflet-V18- und MapLibre-Referenzen bleiben vollständig unverändert.
+
+## Inkrement 3: Erste eigenständige UI-Shell (2026-11-09)
+
+Aus `app.js` sind die reinen Oberflächenfunktionen **temporäre Meldungen, Panel-Wechsel, Panel-Schließen und Pin-Beschriftungsbutton-Darstellung** in `ui/shell.js` ausgelagert. Der UI-Baustein erhält ausschließlich eine DOM-Elementauflösung und Timer-Funktionen als Abhängigkeiten. Er kennt **weder Leaflet noch IndexedDB**, und übernimmt keine Pin-, Ebenen- oder Geometrieregeln.
+
+- `ui/shell.js`: öffentliche API `showNotice(message)`, `hideNotice()`, `closePanels()`, `togglePanel(id)`, `closePanel(id)`, `updateLabelButton(visible)`, `dispose()`.
+- `app.js`: meldet UI-Änderungen über diesen Baustein an; bestehende Schaltflächen, CSS-Klassen, Texte und Zeitsteuerung bleiben in diesem Refactor bewusst erhalten.
+- `index.html`: lädt `ui/shell.js` vor dem Startcode; keine andere Web-Version geändert.
+- `tests/check-ui-shell.mjs`: UI-Funktionsvertrag mit simulierten DOM-Elementen und Timern. `tests/check-architecture.mjs` kontrolliert die Abhängigkeitsrichtung und die Reihenfolge der geladenen Module. Beide sind in `.github/workflows/leaflet-modular.yml` aufgenommen.
+- Quellcode-Syntax wurde isoliert geprüft und der Shell-Controller mit DOM-Mock ausgeführt. Ein vollständiger GitHub-Actions-Lauf sowie ein iPhone-Funktionstest dieser Branch-Version sind **noch nicht bestätigt**.
+
+**Nächste Zerlegung:** Oberflächenzustand und Suchtreffer-Ansicht aus der zentralen Datei herauslösen, dann Pin-Editor und Ebenenpanel durch klar definierte UI-Verträge ersetzen. Anschließend erst die Bedienung der Vorgänger-App schrittweise nachbilden. Niemals zwei neue UI-Module gleichzeitig ohne Regression in das aktive Hauptprogramm integrieren.
