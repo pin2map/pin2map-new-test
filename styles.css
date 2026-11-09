@@ -515,3 +515,58 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel #showPinLayer .p2m-lucide{width:18px;height:18px}
 #pinPanel #closePin.pin-ok-button{font-size:12px!important}
+
+
+/* Pin editor layer picker: compact names, colored layer dots, explicit visibility.
+   The native select remains the state/change API but not the rendered popup. */
+#pinPanel .pin-layer-picker{
+  position:relative;margin:7px 0 9px;min-width:0;
+}
+#pinPanel .pin-layer-picker > label{
+  display:block;margin:0 0 4px!important;font-size:12px!important;font-weight:600;
+}
+#pinPanel .pin-layer-native-select{display:none!important}
+#pinPanel .pin-layer-trigger,
+#pinPanel .pin-layer-option{
+  display:flex;align-items:center;gap:8px;text-align:left;
+  width:100%;min-width:0;min-height:34px;
+  padding:6px 9px!important;border-radius:8px!important;
+  border:1px solid #d3dce5!important;
+  background:#fff!important;color:#253a4b!important;
+  box-shadow:none!important;font-size:13px!important;font-weight:500!important;
+  line-height:1.35!important;
+}
+#pinPanel .pin-layer-trigger:hover,
+#pinPanel .pin-layer-option:hover{background:#f2f6fa!important}
+#pinPanel .pin-layer-dot{
+  flex:0 0 12px;display:block;width:12px;height:12px;
+  border-radius:50%;border:1px solid #34445745;
+}
+#pinPanel .pin-layer-name{
+  flex:1 1 auto;min-width:0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+#pinPanel .pin-layer-visibility{
+  flex:0 0 auto;color:#28774b;font-size:11px;font-weight:600;
+}
+#pinPanel .pin-layer-visibility.is-hidden{color:#8a5962}
+#pinPanel .pin-layer-chevron{
+  flex:0 0 7px;width:7px;height:7px;
+  border-right:1.7px solid currentColor;
+  border-bottom:1.7px solid currentColor;
+  transform:translateY(-2px) rotate(45deg);margin:0 3px;
+}
+#pinPanel .pin-layer-menu{
+  display:flex;flex-direction:column;gap:2px;
+  padding:4px;margin-top:4px;border:1px solid #ccd6e0;
+  border-radius:9px;background:#fff;
+  box-shadow:0 4px 14px #142c3d24;
+  max-height:175px;overflow-y:auto;overscroll-behavior:contain;
+}
+#pinPanel .pin-layer-option{
+  border-color:transparent!important;flex:0 0 auto;
+  min-height:33px;border-radius:6px!important;
+}
+#pinPanel .pin-layer-option[aria-selected="true"]{
+  background:#eaf2f9!important;border-color:#c9dae9!important;
+}
