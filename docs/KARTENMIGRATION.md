@@ -345,3 +345,17 @@ Kein Commit in `main` oder Referenzzweigen; dies ist ausschließlich eine dokume
 - Zum direkteren Nachweis wurde die eigenständige **gleiche-Rasterquelle**-Vergleichsseite `https://pin2map.github.io/pin2map-maplibre-preview/osm-raster-parity-v1.html` angelegt. Links Leaflet, rechts MapLibre, beide mit `tile.openstreetmap.org`, identischer Startposition und Zoomstufe, beide interaktiv; die Kartenansichten werden bei Kartenbewegung synchronisiert. Kein Pin-/Ebenenspeicher und keine Änderung bestehender App-Versionen.
 - **Nächster Qualitätstest:** Seite auf dem bekannten Stuttgarter Vergleichsausschnitt prüfen. Bei identischer Rasterkachel-Darstellung muss dieselbe Hausnummern-, Einrichtungs-, Wege- und Beschriftungsfülle erscheinen, unabhängig von Leaflet/MapLibre. Erst danach gegebenenfalls MapLibre-Vollintegration bei unveränderter Rasterbasiskarte weiterentwickeln.
 - Bei OSM-Standardrastertiles keine automatisierten Bulks, kein Offline-Prefetching, keine Integration in einen PMTiles-Downloader. Für Offline später separate Lizenzen und gleichwertige Datenquelle untersuchen.
+
+## Inkrement 29: Leaflet-Hauptentwicklung, Modulgrenzen verbindlich (2026-11-09)
+
+Nach dem OSM-/Protomaps-Informationsvergleich wurde **Leaflet als Standard-Engine** für die weitere Entwicklung bestätigt. pin2map ist ein räumliches Informationswerkzeug mit Pins, Flächen, Linien, Routen und Ebenen – keine 3D- oder allgemeine GIS-Visualisierungsplattform. Karteninformationsdichte ist wichtiger als Offline-Karten. MapLibre-/PMTiles-Prototyp und dessen Referenzen werden nicht gelöscht, sind aber derzeit keine Hauptentwicklungsrichtung.
+
+**Gleichrangige, ausdrücklich priorisierte Architekturvorgabe:** Weiterentwicklung muss in voneinander getrennten Modulen mit minimalen, dokumentierten Abhängigkeiten erfolgen. Das monolithische Vorgehen der Vorgängeranwendung darf sich nicht wiederholen. Normative Regeln stehen in `docs/MODULARCHITEKTUR.md`; die automatisierten Wächter in `tests/check-architecture.mjs`, die reinen Domänentests in `tests/check-project-model.mjs` und die Speichertests in `tests/check-project-store.mjs`.
+
+**Aktuelle Umsetzung im neuen Zweig `feature/leaflet-modular-core`:**
+- Das vorhandene `map-adapter-leaflet.js` kapselt den Kartenrenderer; die aktive `app.js` ruft Leaflet nicht direkt auf.
+- `domain/project-model.js` definiert Standard-Projektdaten, einzelne Pin-Ebenenzuordnung und rendererfreie WGS84-/GeoJSON-Punktfunktionen.
+- `adapters/storage/indexeddb-project-store.js` kapselt die alte IndexedDB-Datenstruktur **ohne** Kennungs-/Versionsänderung und ohne Projektdatenmigration.
+- `index.html` lädt alle Module in festgelegter Reihenfolge, und `.github/workflows/leaflet-modular.yml` prüft auf diesem Zweig Syntax, reine Fachregeln, Datenbankschema und Abhängigkeitsrichtung.
+
+**Wichtig:** Weitere Ausgliederungen sind nötig: Pin-/Ebenen-Use-Cases, UI, Interaktion/Gesten, Suche und Routen-/Geometriedienste liegen teilweise noch in `app.js`. Keine Behauptung, die Anwendung sei bereits vollständig modular. Umsetzung nur inkrementell, pro Modul mit Vertrag/Test und Regression gegen die stabile Leaflet-V18-Referenz. Keine Änderungen an `main` oder früheren Referenzen ohne gesonderte Abnahme.
