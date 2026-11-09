@@ -17,7 +17,7 @@ check(html.includes('id="cancelMove"') && html.includes('>×</button>'),'cancell
 check(js.includes('const desiredBelow=y+30') && js.includes('desiredBelow+height+margin<=visibleBottom'),'bubble appears below pin if room exists');
 check(js.includes('Math.max(visibleTop+margin,desiredAbove)'),'fallback placement remains on screen');
 check(js.includes('bar.style.left=(centerX-width/2-appRect.left)'),'bubble centered at new position');
-check(js.includes('moveMarker.on("drag",e=>previewMove(e.target.getLatLng()))'),'bubble tracks dragged preview');
+check(js.includes('mapAdapter.onMarker(moveMarker,"drag",previewMove)'),'bubble tracks dragged preview via adapter');
 check(js.includes('mapAdapter.on("moveend", () =>') && js.includes('scheduleMapOverlayUpdate();'), 'move confirmation tracks map changes');
 check(js.includes('bar.classList.contains("hidden")'),'bubble is not positioned before display');
 check(js.includes('moveMode=true;removeMovePreview();') && js.includes('$("moveBar").classList.add("hidden");'),'no instruction dialog at start of moving');
@@ -82,4 +82,8 @@ check(js.includes('mapAdapter.getViewport()'), 'viewport data goes through adapt
 check(js.includes('mapAdapter.unproject('), 'map click coordinates use adapter');
 check(js.includes('mapAdapter.setView('), 'search and one-pin center use adapter');
 check(js.includes('mapAdapter.on("zoomend"'), 'zoom events use adapter');
+check(js.includes('mapAdapter.createMarker(') && js.includes('mapAdapter.setMarkerAppearance('),'ordinary pin markers use adapter');
+check(js.includes('mapAdapter.createLine(') && js.includes('mapAdapter.setLinePositions('),'move preview uses adapter');
+check(js.includes('mapAdapter.stopMarkerEventPropagation(element)') && js.includes('mapAdapter.setPanEnabled(false)'),'pin gestures use adapter for pointer event isolation');
+check(!js.includes('L.marker(') && !js.includes('L.polyline(') && !js.includes('L.divIcon('),'no direct Leaflet marker or preview creation remains in app');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
