@@ -27,9 +27,14 @@
     project(position){const p=ll(position),q=this.map.project([p.lng,p.lat]);return {x:q.x,y:q.y};}
     unproject(point){const p=this.map.unproject([Number(point.x),Number(point.y)]);return {lat:p.lat,lng:p.lng};}
     panBy(point,options={}){
-      // Leaflet contract: a positive pan shifts the map CONTENT left/up.
+      // Renderer-neutral Leaflet contract: +x/+y moves map content left/up.
+      // Derive the camera center explicitly to avoid MapLibre panBy sign
+      // ambiguities (regression from the v8 edge-dialog iPhone test).
       const x=Number(point.x),y=Number(point.y);
-      this.map.panBy([x,y],{duration:0,animate:false,...options});
+      const center=this.map.getCenter();
+      const screen=this.map.project([center.lng,center.lat]);
+      const next=this.map.unproject([screen.x+x,screen.y+y]);
+      this.map.jumpTo({center:[next.lng,next.lat]});
     }
     setView(viewport,options={}){
       const p=ll(viewport.center);
