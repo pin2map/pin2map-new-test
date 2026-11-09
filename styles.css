@@ -564,6 +564,10 @@ body.pin-relocation-picking #map .leaflet-interactive{
   border-bottom:1.7px solid currentColor;
   transform:translateY(-2px) rotate(45deg);margin:0 3px;
 }
+/* The pin dialog normally scrolls/clips when height-limited. While its
+   selector is open, allow this ONE overlaid menu to escape that clipping.
+   Closing restores the original responsive scrolling behavior. */
+#pinPanel.pin-layer-open{overflow:visible!important}
 /* Floating overlay: MUST NOT enter the pin dialog's normal layout or
    enlarge the popup. It is anchored below the trigger within the picker. */
 #pinPanel .pin-layer-menu{
