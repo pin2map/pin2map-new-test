@@ -105,7 +105,11 @@ test("layer picker overlay does not change dialog height and labels are 12px",()
   const ok=footer.indexOf('id="closePin"');
   assert.ok(move>=0&&move<picker&&picker<ok,"Layer selection must sit between Move and OK");
   assert.ok(css.includes("#pinPanel .pin-actions .pin-layer-picker{"));
-  assert.ok(css.includes("font-size:11px!important;line-height:14px"),"Floating label matches coordinate text");
+  assert.ok(!section.includes('<label id="pinLayerLabel">Ebene</label>'),"No visible Ebene heading");
+  assert.ok(section.includes('<span id="pinLayerLabel" class="sr-only">Ebene auswählen</span>'),"Accessibility label retained");
+  assert.ok(css.includes("flex:1 1 0%;width:100%;min-width:0"),"Picker fills space between buttons");
+  assert.ok(css.includes("align-items:center;justify-content:space-between"),"All footer controls share a baseline");
+  assert.ok(css.includes("gap:6px!important;width:100%"),"Only compact gaps remain between controls");
   assert.ok(css.includes("#pinPanel.pin-layer-open + #pinDialogTip{display:none!important}"),
     "Pin pointer triangle must be hidden while list is open");
 });
