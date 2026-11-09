@@ -9,6 +9,7 @@
   const defaults = projectModel.defaultProject;
   const pinOps = window.Pin2MapPinOperations;
   const pinFilter = window.Pin2MapPinFilter;
+  const filterOps = window.Pin2MapFilterOperations;
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
   const uiState = new window.Pin2MapUIState();
@@ -267,7 +268,7 @@
     for (const layer of state.layers) {
       const row = document.createElement("div"); row.className = "layer-row";
       const eye = document.createElement("input"); eye.type = "checkbox"; eye.checked = layer.visible; eye.title = "Ebene sichtbar"; eye.setAttribute("aria-label", layer.name + " sichtbar");
-      eye.addEventListener("change", () => { layer.visible = eye.checked; save(); renderLayers(); renderMarkers(); renderPinPanel(); });
+      eye.addEventListener("change", () => { filterOps.setLayerVisible(state,layer.id,eye.checked); save(); renderLayers(); renderMarkers(); renderPinPanel(); });
       const dot = document.createElement("span"); dot.className = "layer-color"; dot.style.background = layer.color;
       const label = document.createElement("div"); label.className = "layer-name";
       const name = document.createElement("strong"); name.textContent = layer.name;
@@ -628,7 +629,7 @@
       if(!layerById(p.layerId).visible) showNotice("Pin liegt jetzt in einer ausgeblendeten Ebene");
     });
     $("showPinLayer").addEventListener("click", () => {
-      const p=selectedPin();if(!p)return;layerById(p.layerId).visible=true;
+      const p=selectedPin();if(!p)return;filterOps.setLayerVisible(state,p.layerId,true);
       save();renderLayers();renderMarkers();renderPinPanel();
     });
     $("movePin").addEventListener("click",beginMove);
