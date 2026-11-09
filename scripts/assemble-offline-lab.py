@@ -58,6 +58,16 @@ def main() -> None:
     js = replace_once(source_js,
         'https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs',
         './vendor/maplibre-gl.mjs')
+    # Explicit worker path avoids browsers deriving a wrong worker URL from
+    # the packaged ESM entry point. The ESM worker and its shared sibling
+    # must be hosted together under the same origin.
+    js = js.replace(
+        'const $=id=>document.getElementById(id);',
+        'maplibregl.setWorkerUrl(new URL("./vendor/maplibre-gl-worker.mjs", import.meta.url).href);\n'
+        'const $=id=>document.getElementById(id);',
+        1)
+    if 'maplibregl.setWorkerUrl(' not in js:
+        raise ValueError("Failed to wire MapLibre local worker URL")
     js = replace_once(js,
         'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
         './assets/fonts/{fontstack}/{range}.pbf')
@@ -77,6 +87,8 @@ def main() -> None:
     # Check presence of complete local renderer and one standard glyph range.
     required = [
         VENDOR / "maplibre-gl.mjs",
+        VENDOR / "maplibre-gl-worker.mjs",
+        VENDOR / "maplibre-gl-shared.mjs",
         VENDOR / "maplibre-gl.css",
         VENDOR / "pmtiles.js",
         VENDOR / "basemaps.js",
