@@ -1,0 +1,31 @@
+name: Leaflet modular architecture gates
+
+on:
+  push:
+    branches:
+      - feature/leaflet-modular-core
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  modular:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks for active Leaflet application and pure domain
+        run: |
+          node --check domain/project-model.js
+          node --check map-adapter-leaflet.js
+          node --check app.js
+          node --check tests/check-architecture.mjs
+          node --check tests/check-project-model.mjs
+      - name: Pure domain contract tests
+        run: node tests/check-project-model.mjs
+      - name: Layer dependency contract
+        run: node tests/check-architecture.mjs
