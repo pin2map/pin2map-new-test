@@ -99,3 +99,11 @@ Vor einem sichtbaren neuen Textfilter müssen wir dessen Benutzerführung an der
 ## Vorbereitendes Routingmodul – 2026-11-09
 
 Auto-, Fußgänger- und ÖPNV-Routing werden als **eigenständiger, austauschbarer Routingbereich** geplant. Ein providerneutraler Koordinator (`application/routing-service.js`) existiert mit Tests, ist aber noch nicht in die aktive PWA eingebunden. Verkehrsmittel sind lediglich Kategorien zur späteren getrennten Anbieteranbindung. Weder konkrete Anbieter, Optionen, Routenvarianten und Datenschemata noch der genaue Funktionsumfang sind entschieden. Es wird weiterhin keine Synchronisation vorgezogen.
+
+## Referenzprüfung abgeschlossen – Übergang zurück zur Oberfläche (2026-11-09)
+
+Die Vorgänger-App wurde anhand ihres echten Quellcodes systematisch auf **künftige Modulgrenzen** geprüft. Siehe `docs/VORGAENGER_APP_MODUL_AUDIT.md` mit Funktionsbelegen, aktuellem Abdeckungsstatus und fehlenden Modulen. Die inventarisierten Funktionen bilden den Zielumfang für spätere Parität; ihre alte Codeorganisation und globale Zustände sind ausdrücklich **kein** Implementierungsmuster.
+
+Als zusätzliche Fachbereiche wurden eine **geografische Informationsschnittstelle** (Wetter/Höhe/Sonnenzeiten/Tageslänge etc.) und eine **eigene Wasserlauf-/Flussschnittstelle** eingerichtet, noch ohne echte Berechnung/Anbindung. Fahrradroute ist als zusätzlich nachgewiesene Referenzfunktion vermerkt.
+
+**Jetzt weiter in Etappe 1:** Ebenenpanel und Ebenen-Use-Cases einzeln aus `app.js` auslagern; für den ersten Schritt keine optischen Neuerungen. Regression/Architekturschnittstellen testen, dann anschließende UX-Abnahme an der Vorgänger-App.
