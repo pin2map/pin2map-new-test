@@ -82,13 +82,21 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
     step("layer visibility hides/restores the persisted pin");
+    // Focused pin editing intentionally hides all other map controls.
+    // Close the editor before opening the bottom-center layers picker.
+    await page.locator('#pinPanel [data-close="pinPanel"]').click();
+    await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator("#layersButton").click();
     const privateRow=page.locator("#layersList .layer-row").filter({hasText:"Privat"});
     const privateCheckbox=privateRow.locator('input[type="checkbox"]');
     await privateCheckbox.uncheck();
     await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===0);
-    await privateRow.locator('input[type="checkbox"]').check();
+    await privateCheckbox.check();
     await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===1);
+    await page.locator("#layersButton").click();
+    // Reopen the marker before checking its unchanged persisted position.
+    await page.locator(".leaflet-marker-icon").first().click({force:true});
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     step("pin coordinates remain unchanged by layer visibility");
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
     step("offline application shell and persisted pin");
