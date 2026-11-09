@@ -45,7 +45,7 @@
     setRelocationSource(id){
       this.relocationSourceId=id||null;
       for(const [pinId,marker] of this.markers){
-        this.map.getMarkerElement(marker)?.classList.toggle("pin-relocation-source",pinId===this.relocationSourceId);
+        this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pinId===this.relocationSourceId);
       }
     }
     render({pins,layers,selectedPinId=null,labelsVisible=true}){
@@ -67,7 +67,7 @@
         }
         this.map.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
         this.map.setMarkerAppearance(marker,look);
-        this.map.getMarkerElement(marker)?.classList.toggle("pin-relocation-source",pin.id===this.relocationSourceId);
+        this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pin.id===this.relocationSourceId);
         this.attachGesture(marker,pin.id);
       }
       for(const [id,marker] of this.markers){
