@@ -236,3 +236,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - CLI in GitHub Actions `go-pmtiles@v1.31.2`; der Build soll `pmtiles verify`, Header-/Metadatenexport und SHA-256-Prüfsumme ausführen. Ausgabe nur als 14 Tage verfügbares Artifact `stuttgart-pmtiles-z12`.
 - Vollständiger, nachvollziehbarer Ablauf und spätere Freigabegates stehen in `docs/PMTILES-STUTTGART.md`. Die erfolgreiche **Durchführung** des ersten CI-Laufs und das Vorhandensein einer tatsächlich erzeugten `.pmtiles`-Datei sind noch **nicht bestätigt**.
 - Kein Merge nach `main`, keine Änderung des zuvor auf dem iPhone abgenommenen Kartenadapters und keine Behauptung von Offline-Unterstützung.
+
+## Inkrement 15: PMTiles-Build stabilisiert und Dateivorschau vorbereitet (2026-11-09)
+
+- Vorheriges GitHub-Actions-Skript um explizite Kontrolle des CLI-Namens nach `go install` ergänzt (`go-pmtiles` → `pmtiles`) und einen `pmtiles version`-Aufruf eingebaut. Der korrigierte Workflow liegt ausschließlich im Preview-Repository; keine Auswirkungen auf die bestehende MapLibre-PWA.
+- Der v4-Quellpfad auf Source Cooperative und die offiziellen PMTiles-CLI-Befehle sind dokumentiert bestätigt. **Erfolgreicher Workflow-Lauf, Artifact und Ausgabegröße konnten noch nicht unabhängig bestätigt werden.**
+- Eine zusätzliche, vom bestehenden Prototyp getrennte Testseite `pmtiles-local-file-check.html` nutzt die Browser-`File`-API und `pmtiles.FileSource`. Die PMTiles-Datei bleibt dabei lokal auf dem Gerät; sie wird nicht hochgeladen, nicht in IndexedDB kopiert und nicht automatisch synchronisiert. Die Testseite lädt weiterhin Stilbibliothek, Fonts und Sprites online.
+- Die geprüfte MapLibre-Integration, das normale `main` sowie die Referenz Leaflet-V18 bleiben unverändert.
