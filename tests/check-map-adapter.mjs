@@ -77,7 +77,7 @@ assert.equal(calls.at(-1)[0],'basemap');
 adapter.setBasemap('topo');
 assert.equal(calls.at(-1)[0],'basemap');
 assert.ok(calls.some(c=>c[0]==='removeLayer'));
-assert.throws(()=>adapter.setBasemap('invalid'),RangeError);
+assert.throws(()=>adapter.setBasemap('invalid'),/Unknown basemap/);
 adapter.addZoomControls({onFitAll:()=>{}});
 assert.equal(buttons.length,3);
 let mapClick;
