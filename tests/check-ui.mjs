@@ -35,8 +35,13 @@ check(js.includes('scheduleMapOverlayUpdate();'), 'map movement and resize trigg
 check(js.includes('if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}'), 'pin editor close restores controls and clears selection');
 check(js.includes('moveMode=true;removeMovePreview();') && js.includes('document.body.classList.remove("pin-open");'), 'moving a pin leaves focus mode immediately');
 check(html.includes('id="refreshButton"'), 'new version refresh button exists');
-check(js.includes('await dbWrite()') && js.includes('registration.update()'), 'refresh flushes local edits and checks service-worker updates');
-check(js.includes('window.location.replace(target.href)'), 'refresh performs a real navigation');
+check(js.includes('await dbWrite()'), 'refresh persists local pins before updating');
+check(js.includes('fetch(workerURL.href+"?refresh="+Date.now(),{cache:"no-store"})'), 'refresh checks network worker version bypassing HTTP cache');
+check(js.includes('updateViaCache:"none"') && js.includes('await registration.update()'), 'refresh asks for uncached service worker update');
+check(js.includes('registration.waiting.postMessage({type:"SKIP_WAITING"})'), 'refresh activates waiting worker');
+check(js.includes('getActiveVersion()===expectedVersion'), 'refresh confirms worker activation before navigation');
+check(js.includes('location.replace(target.href)'), 'refresh navigates only after verification');
+check(js.includes('if(!activated)throw Error'), 'failed activation does not pretend to succeed');
 check(html.includes('id="pinDialogTip"'), 'pin dialog pointer has independent element');
 check(js.includes('panel.style.top=(y-height-76)+"px"'), 'pin-dialog clearance matches predecessor 76px');
 check(js.includes('tip.style.top=(y-76)+"px"') && js.includes('tip.style.left=x+"px"'), 'pointer follows map-anchored dialog');
