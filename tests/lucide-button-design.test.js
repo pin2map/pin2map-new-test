@@ -18,7 +18,7 @@ function documentStub(){
   };
 }
 test("all selected control icons are available as offline Lucide SVG geometry",()=>{
-  for(const name of ["search","refresh-cw","settings","layers","info","plus","minus","scan","x","check","trash"]){
+  for(const name of ["search","refresh-cw","settings","layers","info","plus","minus","scan","x","check","trash","map-pin-off"]){
     const icon=Icons.svg(name,documentStub());
     assert.equal(icon.name,"svg");
     assert.equal(icon.attributes.viewBox,"0 0 24 24");
@@ -76,4 +76,19 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
   assert.match(css,/#movePin \.p2m-relocate-icon\s*\{/);
   assert.match(html,/<button id="movePin"[^>]*><\/button>/,
     "Relocation button must have no visible text, even before SVG mounting");
+});
+
+test("pin dialog name replaces heading and red delete button uses official white Lucide icon",()=>{
+  const html=read("index.html"),css=read("styles.css");
+  const pinSection=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
+  assert.ok(pinSection);
+  assert.ok(!pinSection.includes("<h2>Pin bearbeiten</h2>"));
+  assert.match(pinSection,/<div class="panel-head pin-editor-head"><label[^>]*for="pinName"/);
+  assert.match(pinSection,/<input id="pinName"[^>]*aria-label="Pin-Name"/);
+  assert.match(pinSection,/<button id="deletePin"[^>]*data-pin-icon="map-pin-off"[^>]*aria-label="Pin löschen"><\/button>/);
+  assert.match(css,/#deletePin\.p2m-icon-control,[\s\S]*?background:#bc2837!important;color:#fff!important/);
+  assert.match(css,/\.pin-panel \.pin-editor-head #pinName\s*\{/);
+  const icon=Icons.svg("map-pin-off",documentStub());
+  assert.equal(icon.children.length,5);
+  assert.equal(icon.attributes.stroke,"currentColor");
 });
