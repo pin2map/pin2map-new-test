@@ -264,3 +264,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Damit sind Erzeugung/Archivvalidierung, lokale Dateiauswahl und renderingtechnische Anbindung an MapLibre/Protomaps-Light nachgewiesen. Dies bestätigt nur den isolierten Test, noch nicht den Start der eigentlichen PWA mit lokalem PMTiles-Archiv.
 - Noch über das Internet: JavaScript-Bibliotheken, Glyphs und Sprites. Die Testseite speichert die gewählte Datei nicht persistent. **Kein vollständiger Offline-Betrieb**.
 - Nächste Stufe: reproduzierbare Ressourcenliste, eigene Styles/Fonts/Sprites und später kontrollierter Download/Import in dauerhaftes lokales Kartenarchiv. Frühere Leaflet-/MapLibre-Referenzen und `main` nicht verändert.
+
+## Inkrement 19: Dauerhafter lokaler PMTiles-Speicher und Asset-Paket vorbereitet (2026-11-09)
+
+- Erfolgreicher Test der **lokal ausgewählten** eigenen Stuttgart-PMTiles-Datei wurde zuvor abgenommen; neu ist eine **separate, noch nicht im iPhone getestete** Speicherprobe `pmtiles-persistent-lab-v1.html` im Preview-Repository.
+- Die Speicherprobe prüft `.pmtiles`-Dateiname, Größe bis 40 MiB, MVT-Header und Metadaten, speichert die komplette Browser-`File` in separater IndexedDB `pin2map-pmtiles-persistent-lab-v1` und erlaubt bewusstes Wiederöffnen bzw. Löschen. Nach Import ist ein Lese-/Größencheck eingebaut; `navigator.storage.persist()` fragt nach besserem Speicherschutz und meldet den Entscheid. Kein Upload, keine bestehende Pin-/Ebenendatenbank.
+- Zweiter neuer Workflow `pin2map-maplibre-preview/.github/workflows/package-offline-map-assets.yml` soll die momentan extern geladenen JavaScript-/CSS-Bibliotheken, Schrift-PBFs und Protomaps-Light-Sprites einschließlich Lizenzdateien in ein überprüfbares GitHub-Actions-Artifact bündeln. Der Upstream-Asset-Commit wird protokolliert, die Größe begrenzt und pro Datei SHA-256 ins Manifest geschrieben. **Build-Erfolg und Asset-Paket sind bislang nicht bestätigt.**
+- Ausführliche Freigabegates und verbleibende Aufgaben in `docs/PMTILES-OFFLINE-ARCHITEKTUR.md`. Weder Service Worker für den Offline-Start noch Offline-Ready-Status oder Integration in die gesicherte Haupt-PWA behaupten.
+- Bereits abgenommene Leaflet-/MapLibre-Stände bleiben unverändert.
