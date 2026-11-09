@@ -45,6 +45,13 @@ def main() -> None:
         "Kartenstil, Glyphs, Sprites und Bibliotheken werden noch online geladen.",
         "Kartenstil, Glyphs, Sprites und Bibliotheken liegen in diesem Testpaket lokal. Offline-Funktion noch gesondert testen.")
     html = replace_once(html,
+        "<footer>",
+        '<div id="offlineReadiness" role="status" '
+        'style="position:absolute;z-index:6;left:8px;bottom:66px;'
+        'max-width:calc(100% - 16px);background:#fffefa;'
+        'border:1px solid #d8e1eb;padding:8px;border-radius:8px;'
+        'font-size:11px">Offline-Ressourcen werden vorbereitet …</div>\\n<footer>')
+    html = replace_once(html,
         "</body>",
         '<script src="./offline-register.js" defer></script>\n</body>')
 
@@ -84,14 +91,34 @@ def main() -> None:
         if not item.is_file() or item.stat().st_size == 0:
             raise SystemExit(f"Missing offline resource: {item}")
 
-    register = """// Scope stays inside the separately hosted lab directory.
+    register = """// The worker is allowed only in the isolated offline-lab folder.
+const readiness=document.getElementById("offlineReadiness");
+function report(text){if(readiness)readiness.textContent=text;}
 if ("serviceWorker" in navigator && location.protocol === "https:" &&
     location.pathname.includes("/offline-stuttgart-lab/")) {
+  report("Installiere lokale Programm-, Schrift- und Symbolressourcen …");
   navigator.serviceWorker.register("./offline-stuttgart-sw.js",
-    {scope:"./", updateViaCache:"none"}).catch(error => {
-      const status=document.getElementById("status");
-      if(status)status.textContent="Offline-Service-Worker nicht installiert: "+error.message;
-    });
+    {scope:"./", updateViaCache:"none"})
+    .then(()=>navigator.serviceWorker.ready)
+    .then(async()=>{
+      const entries=await caches.keys();
+      const names=entries.filter(name=>name.startsWith("pin2map-stuttgart-lab-"));
+      if(!names.length)throw Error("Kein vollständiger Ressourcen-Cache gefunden");
+      const cache=await caches.open(names[names.length-1]);
+      const required=[
+        "./index.html","./vendor/maplibre-gl.mjs","./vendor/pmtiles.js",
+        "./vendor/basemaps.js","./assets/sprites/v4/light.json",
+        "./assets/fonts/Noto Sans Regular/0-255.pbf"
+      ];
+      for(const item of required){
+        if(!await cache.match(new URL(item,location.href)))
+          throw Error("Ressource nicht im Cache: "+item);
+      }
+      report("Programm und Kartenstil lokal verfügbar. Die PMTiles-Region muss separat gespeichert sein. Flugmodus-Test noch offen.");
+    })
+    .catch(error=>report("Offline-Ressourcen NICHT bereit: "+String(error?.message||error)));
+}else{
+  report("Offline-Service-Worker nur im separaten HTTPS-Testordner verfügbar.");
 }
 """
     (OUTPUT / "offline-register.js").write_text(register)
