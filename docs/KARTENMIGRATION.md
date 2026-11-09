@@ -128,3 +128,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Test-Pins: Antippen öffnet/schließt den am Pin verankerten Bearbeitungsdialog. Name ist während der Sitzung änderbar. Pin-Langdruck ab 550 ms mit 11-px-Abbruchschwelle schaltet 18/14 am Pin um. Verschieben setzt zunächst nur einen separaten, per Karte oder Drag verschiebbaren Vorschau-Pin mit Verbindungslinie; erst ✓ ändert die Position, × verwirft die Vorschau.
 - Diese Version ist **nur ein flüchtiger Interaktionstest**: drei fest programmierte Pins, keine IndexedDB, keine Ebenenverwaltung, keine Synchronisation, keine PMTiles-Karten und kein Offline-Betrieb. V5 ist noch **nicht funktionsgleich** mit der Leaflet-PWA; insbesondere sind die Dialog-Autoausrichtung an Bildschirmrändern und vollständig identische iOS-Pointer-Gesten noch zu prüfen.
 - JavaScript-Syntax geprüft; 14 v5-spezifische statische Assertions bestanden. Echter Browser-/iPhone-Test der neuen Pin-Gesten **noch offen**. Keine Freigabe zur Migration auf `main`.
+
+## Inkrement 8: Pin-Langdruck-Zoom am Bildschirmanker korrigiert (2026-11-09)
+
+- Nutzerbefund in v5 auf dem iPhone: Pin liegt zu Beginn unter dem Finger, wandert nach dem Langdruck-Zoom an eine andere Bildschirmstelle. Andere v5-Funktionen wurden als funktionierend gemeldet.
+- Ursache: MapLibre `jumpTo({zoom,around})` interpretiert den Anker `around` nicht als Teil seiner JumpToOptions. Stattdessen nutzt der v6-Adapter `zoomTo(zoom,{around:[lng,lat],duration:0,animate:false})`, das den geografischen Punkt am Bildschirmanker hält.
+- Isolierte neue Dateien in `pin2map-maplibre-preview`: `test-v6.html`, `maplibre-prototype-v6.js`, `map-adapter-maplibre-v6.js`; entsprechende Kopien im Entwicklungszweig. Die abgenommene v4 und v5 bleiben erhalten. Kein Eingriff in `main` der Leaflet-PWA.
+- Syntax von Adapter und Prototype sowie die Ankerargumente (Zoom 18/14; Koordinatenreihenfolge [lng,lat]) in einem JavaScript-Mock geprüft. Die tatsächliche iPhone-Bestätigung des Ankerverhaltens ist noch offen.
