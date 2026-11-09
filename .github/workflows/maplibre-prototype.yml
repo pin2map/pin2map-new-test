@@ -31,12 +31,16 @@ jobs:
           node --check tests/check-maplibre-prototype.mjs
           node --check maplibre-prototype-v5.js
           node --check tests/check-maplibre-v5.mjs
+          node --check maplibre-full-integration-app.js
+          node --check maplibre-full-integration-adapter.js
+          node --check tests/check-maplibre-full-integration.mjs
       - name: Run regression and adapter checks
         run: |
           node tests/check-ui.mjs
           node tests/check-map-adapter.mjs
           node tests/check-maplibre-prototype.mjs
           node tests/check-maplibre-v5.mjs
+          node tests/check-maplibre-full-integration.mjs
       - name: Package separate prototype
         run: |
           mkdir -p preview
