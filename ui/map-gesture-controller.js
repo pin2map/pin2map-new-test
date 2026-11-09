@@ -89,7 +89,7 @@
         gesture.activated=true;
         suppressFor(900);
         zoomHeldPin(marker);
-        if(navigator.vibrate)navigator.vibrate(15);
+        vibrate(15);
       },550);
     },{passive:false});
   }
