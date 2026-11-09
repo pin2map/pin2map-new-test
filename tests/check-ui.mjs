@@ -42,4 +42,10 @@ check(js.includes('panel.style.top=(y-height-76)+"px"'), 'pin-dialog clearance m
 check(js.includes('tip.style.top=(y-76)+"px"') && js.includes('tip.style.left=x+"px"'), 'pointer follows map-anchored dialog');
 check(css.includes('.pin-dialog-tip{') && css.includes('border-top:15px solid #fff'), 'white downward triangle is styled');
 check(js.includes('$("pinDialogTip").classList.toggle("hidden",!pin||moveMode)'), 'pointer disappears when editor closes or moving starts');
+check(js.includes('function keepSelectedAbovePanel(){') && js.includes('map.panBy([-dx,-dy],{animate:false})'), 'opening an edge pin moves the map rather than the pin');
+check(js.includes('const lowest=Math.max(rect.bottom,tip.bottom)'), 'entire dialog including tip is considered');
+check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<minY?'), 'all viewport edges considered');
+check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
+check(js.includes('requestAnimationFrame(keepSelectedAbovePanel);\n      if (layerById(PRIVATE_ID).visible)'), 'search-created pin gets fitted after map zoom');
+check(!js.includes('map.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
