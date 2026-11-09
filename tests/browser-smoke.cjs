@@ -46,7 +46,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     // Surface any incidental error from the initial long-press separately
     // from a later preview error, rather than hiding it in a final count.
-    if(errors.length)console.error("[browser] errors after initial pin:",errors.join(" | "));
+    assert.deepEqual(errors,[],"No JavaScript error may occur while opening the pin editor");
     const coordsBefore=await page.locator("#pinCoords").textContent();
     assert.match(coordsBefore,/Koordinaten:/);
     assert.equal(await page.locator(".pin-marker").count(),1);
