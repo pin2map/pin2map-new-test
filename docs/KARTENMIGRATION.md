@@ -47,8 +47,8 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [x] Referenz-Branch ab tatsächlichem V18-Commit
 - [x] Separater Migrationszweig
 - [x] Schnittstellenvertrag dokumentiert
-- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom und Bewegungsereignisse laufen bereits über eine eigene Schnittstelle. Die verbleibenden Leaflet-Marker, Kartenlayer, Pin-Gesten und Popup-Interaktionen sind **noch nicht** gekapselt. Dies ist kein abgeschlossener Adapter.
-- [~] Dialogpositionierung und Kartenbewegung nutzen bereits Adapter-Projektion/Pan und Adapter-Ereignisse; Kartenmarker/Layer und einzelne Sonderfunktionen benötigen noch direkte Leaflet-Aufrufe.
+- [~] Leaflet-Adapter als `map-adapter-leaflet.js` eingeführt: Ausschnitt, Projektion, Kartenschwenk, Zoom, Bewegungsereignisse, reguläre Pin-Marker, Pin-Klicks, Marker-DOM-Zugriff, Pan-Sperre beim Langdruck, Zoom am gehaltenen Pin, verschiebbare Vorschau-Marker und Verbindungslinie laufen nun über den Adapter. **Noch nicht vollständig rendererunabhängig:** Basiskarten-/Layersteuerung, Zoom-Control, Karteninitialisierung, Map-Klick und Karten-Langdruck sowie DOM-spezifische Pointer-Gesten.
+- [~] Dialogpositionierung und Kartenbewegung nutzen Adapter-Projektion/Pan und Adapter-Ereignisse; normale Pin-Marker und Verschiebevorschau werden ebenfalls ausschließlich über den Adapter erzeugt und verändert. Vor dem zweiten Renderer sind die verbleibenden Kartenlayer, Map-Gesten und Controls zu kapseln.
 - [ ] Reale Browser-Regressionstests mit Desktop + iPhone
 
 ### B. Unabhängiger MapLibre-/Protomaps-Prototyp
@@ -71,3 +71,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [ ] Rollback aus Referenz prüfen, ohne lokale Nutzerdaten zu verlieren
 
 **Stand 2026-11-09:** Erster technischer Umbau in `feature/maplibre-protomaps` eingecheckt. Die Leaflet-Bibliothek ist weiterhin der einzige Renderer; `main` und die Referenz bleiben unangetastet. Der zusätzliche Adapter ist in der PWA-Shell V19 vorgemerkt. Ein echter Browser-/iPhone-Vergleich steht aus. MapLibre, Protomaps und ihr Offline-Verhalten sind noch nicht implementiert bzw. bestätigt.
+
+## Inkrement 2: Marker und Pin-Bedienereignisse (2026-11-09)
+
+- `createMarker`, `setMarkerPosition`, `getMarkerPosition`, `setMarkerAppearance`, `onMarker`, `removeOverlay`, `hasOverlay` und `getMarkerElement` kapseln die Marker. `onMarker` liefert bei `drag`/`dragend` eine reine `{lat,lng}`-Position.
+- `createLine` und `setLinePositions` kapseln die Verschiebevorschau. `zoomAround`, `isPanEnabled`, `setPanEnabled` und `stopMarkerEventPropagation` kapseln Leaflet-Besonderheiten beim Pin-Langdruck.
+- Die bewährte Gesten-Zustandsmaschine (550 ms, 11 px, Unterdrückung des folgenden Map-Klicks), Dialogposition und explizite Verschiebebestätigung bleiben erhalten. Die DOM-Pointer-Events selbst liegen noch in der Anwendung; ein zweiter Renderer benötigt vergleichbare Marker-Elemente oder eine einheitliche Gestenschicht.
+- Statische UI-Prüfungen wurden auf die Adapter-Aufrufe umgestellt, ergänzende Adapter-Mocks hinzugefügt. Die Tests sowie echte Desktop-/iPhone-Interaktionen müssen nach diesem Commit **noch ausgeführt** werden; es wird kein bestandener Lauf behauptet.
+- `main` und die schreibgeschützte Wiederherstellungsreferenz bleiben unverändert. Kein MapLibre-/Protomaps-Code in dieser Phase.
