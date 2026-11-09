@@ -1775,3 +1775,18 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die Leiste folgt dem Vorschau-Pin bei dessen Verschiebung und bei Kartennavigation; falls unterhalb des Pins kein ausreichender Platz besteht, wird sie am sichtbaren Bildschirmrand sinnvoll oberhalb der Position platziert.
 - Die Leiste wird erst angezeigt, nachdem eine neue Position als Vorschau vorliegt. Die ursprüngliche Position, Vorschau und Verbindungslinie bleiben erhalten. Die Speicherung erfolgt weiterhin **erst nach Bestätigung**, Abbrechen verwirft die Vorschau (Grundentscheidungen 30–35).
 - Die weltweite Ortssuche und die Regel, alle neuen Pins zunächst in „Privat“ anzulegen, bleiben unberührt.
+
+
+## Verbindlicher Qualitätsgrundsatz – Vor Fertigmeldung prüfen (2026-11-09)
+
+**Verbindliche, übergreifende Arbeitsregel für alle künftigen Änderungen an pin2map NEW:**
+
+1. **Anforderung ↔ Umsetzung:** Vor einer Fertigmeldung die Nutzeranforderung einzeln gegen die tatsächlich realisierte Benutzerführung und Darstellung abgleichen; nicht allein gegen die eigene Implementierungsabsicht.
+2. **CSS-Regeln:** Alle betroffenen Selektoren auf alte, widersprüchliche oder übersteuernde Regeln, Browser- und iPhone-Breakpoints, Sichtbarkeit, Größe, Position, Überlagerung und Schaltflächen-Treffflächen prüfen. Bestehende widersprüchliche Regeln **bereinigen**, nicht durch immer weitere Overrides verdecken.
+3. **Codequalität:** JavaScript-Syntax, Verfügbarkeit referenzierter DOM-Elemente, Ereignisabläufe und die Auswirkungen auf bestehende Funktionen prüfen. Änderungen am Kartenverhalten verlangen Regressionstests mindestens für Pin-Tipp, Langdruck-Zoom, Pin-Erstellung, Pin-Verschiebung inklusive Bestätigung/Abbruch, Kartenpan und Ebenensteuerung.
+4. **Visuelle und funktionale Kontrolle:** Wenn technisch möglich, das tatsächliche Ergebnis im Browser in mindestens mobiler und Desktop-Ansicht betrachten und die wesentlichen Gesten ausführen. Für iPhone-spezifische Touchprobleme ist ein Test auf einem tatsächlichen iPhone bzw. einem geeigneten mobilen Browser nötig.
+5. **Wahrheitsgemäßer Abschlussstatus:** Nur nach tatsächlicher Prüfung als **verifiziert/fertig** ausweisen. **„Code eingecheckt“**, **„statische Prüfungen bestanden“**, **„Browser getestet“** und **„iPhone getestet“** sind unterschiedliche Zustände. Nicht durchgeführte Prüfungen ausdrücklich nennen, niemals als bestanden darstellen.
+6. **Dauerhafte Regressionstests:** Die überprüfbaren Eigenschaften, wo sinnvoll, in automatisierte Tests aufnehmen und im Repository pflegen. Tests sind Hilfsmittel, keine Ersatzbehauptung für eine reale Bedienprüfung.
+7. **Relevante UI-Spezifikation dieser Korrektur:** Beim Pin-Verschieben gibt es **keine zusätzliche Aufforderung oder Hinweisblase**, eine neue Kartenstelle anzutippen. Erst nach Wahl einer Vorschauposition erscheint ein äußerst kompakter Dialog **unterhalb der neuen Position** mit ausschließlich „Neue Position“, grünem rundem Haken und rotem rundem X. Die neue Position bleibt bis zur ausdrücklichen Bestätigung eine Vorschau.
+
+**Dieser Qualitätsgrundsatz hat Vorrang vor früheren, lediglich auf Codekontrolle gestützten Aussagen über einen abgeschlossenen Implementierungsstand.**
