@@ -422,3 +422,43 @@ body.pin-relocation-picking #map .leaflet-interactive{
     animation:none;outline:3px dashed #cf3444;outline-offset:3px;
   }
 }
+
+
+/* Pin editor: editable name replaces the former heading on the first row. */
+.pin-panel .pin-editor-head{
+  display:flex;align-items:center;gap:8px;
+  min-width:0;margin-bottom:7px;
+}
+.pin-panel .pin-editor-head #pinName{
+  flex:1 1 auto;width:0;min-width:0;
+  margin:0!important;padding:7px 10px!important;
+  font-size:16px!important;font-weight:600;
+  border:1px solid var(--p2m-button-border);
+  border-radius:8px;
+  background:#fff;color:#17253c;
+}
+.pin-panel .pin-editor-head .close{
+  flex:0 0 32px;margin:0;
+}
+/* Destructive pin action: same circular geometry, strong red fill,
+   official white Lucide map-pin-off icon. The confirmation stays in place. */
+#deletePin.p2m-icon-control,
+.pin-panel .pin-actions #deletePin.p2m-icon-control{
+  --p2m-button-size:44px;
+  width:44px!important;height:44px!important;
+  min-width:44px!important;min-height:44px!important;
+  flex:0 0 44px!important;padding:0!important;
+  background:#bc2837!important;color:#fff!important;
+  border:1px solid #a81f2e!important;border-radius:50%!important;
+}
+#deletePin.p2m-icon-control:hover,
+.pin-panel .pin-actions #deletePin.p2m-icon-control:hover{
+  background:#a92231!important;color:#fff!important;
+}
+#deletePin.p2m-icon-control:active,
+.pin-panel .pin-actions #deletePin.p2m-icon-control:active{
+  background:#911827!important;color:#fff!important;
+}
+.pin-panel .pin-actions{
+  display:flex;align-items:center;justify-content:space-between;
+}
