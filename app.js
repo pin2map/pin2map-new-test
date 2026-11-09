@@ -8,16 +8,20 @@
   const COLORS = projectModel.DEFAULT_COLORS;
   const defaults = projectModel.defaultProject;
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
-  let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0;
+  const uiState = new window.Pin2MapUIState();
+  let saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0;
   let longPressTimer = null, longPressStart = null, suppressMapClickUntil = 0, activePointers = new Set();
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
-  const selectedPin = () => state.pins.find(p => p.id === selected);
+  const selectedPin = () => state.pins.find(p => p.id === uiState.selectedPinId);
   const cleanText = projectModel.cleanText;
   const uiShell = new window.Pin2MapUIShell({getElement:$});
+  const pinEditorView = new window.Pin2MapPinEditorView({
+    getElement:$,document,scheduleFrame:requestAnimationFrame
+  });
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
     onChoose:result=>choosePlace(result),
@@ -45,24 +49,24 @@
     const layer=layerById(pin.layerId);
     const color=layer?layer.color:COLORS[0];
     const labelHtml=label?'<span class="pin-side-label '+side+(highlighted?' highlighted':'')+'">'+esc(label)+'</span>':'';
-    return {html:'<div class="pin-marker'+(highlighted?' selected':'')+'" style="background:'+color+'"></div>'+labelHtml,
+    return {html:'<div class="pin-marker'+(highlighted?' uiState.selectedPinId':'')+'" style="background:'+color+'"></div>'+labelHtml,
       title:pin.name||"Pin"};
   }
   function renderMarkers() {
     if(!mapAdapter)return;
     const shown=new Set(),occupied=[];
-    const sorted=[...state.pins].sort((a,b)=>Number(b.id===selected)-Number(a.id===selected));
+    const sorted=[...state.pins].sort((a,b)=>Number(b.id===uiState.selectedPinId)-Number(a.id===uiState.selectedPinId));
     for(const pin of sorted){
       if(!layerById(pin.layerId)?.visible)continue;
       shown.add(pin.id);
       let marker=markers.get(pin.id);
       if(!marker){
         marker=mapAdapter.createMarker({lat:pin.lat,lng:pin.lng},{draggable:false,autoPan:false});
-        mapAdapter.onMarker(marker,"click",()=>{if(Date.now()<suppressMapClickUntil||moveMode)return;selectPin(pin.id);});
+        mapAdapter.onMarker(marker,"click",()=>{if(Date.now()<suppressMapClickUntil||uiState.moveMode)return;selectPin(pin.id);});
         markers.set(pin.id,marker);
       }
       mapAdapter.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
-      const chosen=pin.id===selected,point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
+      const chosen=pin.id===uiState.selectedPinId,point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
       const side=point.x>mapAdapter.getSize().x*0.55?"left":"right";
       let label=cleanText(pin.name);
       if(!chosen&&!state.labelsVisible)label="";
@@ -97,9 +101,9 @@
       if($("bulkDialog").returnValue!=="confirm")return;
       const pins=state.pins.filter(p=>p.layerId!==id);
       const layers=privateOnly?state.layers:state.layers.filter(l=>l.id!==id);
-      const currentSelected=selected;
+      const currentSelected=uiState.selectedPinId;
       state.pins=pins;state.layers=layers;
-      if(currentSelected&&!pins.some(p=>p.id===currentSelected))selected=null;
+      if(currentSelected&&!pins.some(p=>p.id===currentSelected))uiState.selectedPinId=null;
       save();renderLayers();renderMarkers();renderPinPanel();
       showNotice(privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
     };
@@ -128,7 +132,7 @@
     mapAdapter.stopMarkerEventPropagation(element);
     element.style.touchAction="none";
     element.addEventListener("pointerdown",event=>{
-      if(event.button!==0 || moveMode)return;
+      if(event.button!==0 || uiState.moveMode)return;
       event.stopPropagation();
       if(markerPressStart)return;
       const gesture={id:event.pointerId,x:event.clientX,y:event.clientY,
@@ -182,7 +186,7 @@
     },{passive:false});
   }
   function positionMoveBar(){
-    if(!movePreview || !moveMode)return;
+    if(!movePreview || !uiState.moveMode)return;
     const bar=$("moveBar");
     if(bar.classList.contains("hidden"))return;
     const appRect=$("app").getBoundingClientRect();
@@ -219,7 +223,7 @@
     $("moveBar").classList.add("hidden");
   }
   function previewMove(position){
-    const pin=selectedPin();if(!moveMode||!pin)return;
+    const pin=selectedPin();if(!uiState.moveMode||!pin)return;
     movePreview={lat:Number(position.lat),lng:Number(position.lng)};
     const old=[pin.lat,pin.lng];
     if(!moveMarker){
@@ -235,17 +239,17 @@
     positionMoveBar();
   }
   function endMove(){
-    moveMode=false;removeMovePreview();
+    uiState.moveMode=false;removeMovePreview();
     $("moveBar").classList.add("hidden");
     updateModeUI();renderPinPanel();
   }
   function beginMove(){
     if(!selectedPin())return;
-    moveMode=true;removeMovePreview();
+    uiState.moveMode=true;removeMovePreview();
     $("pinPanel").classList.add("hidden");
     document.body.classList.remove("pin-open");
     $("pinDialogTip").classList.add("hidden");
-    // Controls only appear once a new position has been selected.
+    // Controls only appear once a new position has been uiState.selectedPinId.
     $("moveBar").classList.add("hidden");
     updateModeUI();
   }
@@ -290,7 +294,7 @@
   function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
   function updatePanelLayout(){
     const panel=$("pinPanel"),pin=selectedPin();
-    const dialogOpen=!!pin && !moveMode && !panel.classList.contains("hidden");
+    const dialogOpen=!!pin && !uiState.moveMode && !panel.classList.contains("hidden");
     document.body.classList.toggle("pin-open",dialogOpen);
     $("pinDialogTip").classList.toggle("hidden",!dialogOpen);
     if(!dialogOpen || !map)return;
@@ -328,7 +332,7 @@
     // Subsequent user drags remain free and do not trigger another correction.
     updatePanelLayout();
     const panel=$("pinPanel"),pin=selectedPin();
-    if(!pin || moveMode || panel.classList.contains("hidden") || !map)return;
+    if(!pin || uiState.moveMode || panel.classList.contains("hidden") || !map)return;
     const app=$("app").getBoundingClientRect();
     const rect=panel.getBoundingClientRect();
     const tip=$("pinDialogTip").getBoundingClientRect();
@@ -353,29 +357,23 @@
   }
   function renderPinPanel(){
     const pin=selectedPin();
-    $("pinPanel").classList.toggle("hidden",!pin||moveMode);
-    document.body.classList.toggle("pin-open",!!pin&&!moveMode);
-    $("pinDialogTip").classList.toggle("hidden",!pin||moveMode);
-    if(!pin){document.body.classList.remove("pin-open");return;}
-    if(document.activeElement!==$("pinName"))$("pinName").value=pin.name||"";
-    $("pinLayer").value=pin.layerId;
-    $("pinCoords").textContent="Koordinaten: "+pin.lat.toFixed(6)+", "+pin.lng.toFixed(6);
-    $("pinHiddenInfo").classList.toggle("hidden",!!layerById(pin.layerId)?.visible);
-    $("movePin").textContent=moveMode?"Verschieben abbrechen":"Pin verschieben";
-    requestAnimationFrame(updatePanelLayout);
+    pinEditorView.render({
+      pin,moving:uiState.moveMode,layerVisible:pin?!!layerById(pin.layerId)?.visible:true,
+      onLayout:updatePanelLayout
+    });
   }
   function selectPin(id) {
-    if (selected === id) { closeMapOverlays(); return; }
-    // A pin tap replaces other map overlays with the selected pin editor.
+    if (uiState.selectedPinId === id) { closeMapOverlays(); return; }
+    // A pin tap replaces other map overlays with the uiState.selectedPinId pin editor.
     hideResults();
     $("layersPanel").classList.add("hidden");
     $("settingsPanel").classList.add("hidden");
-    selected = id; moveMode = false; updateModeUI();
+    uiState.selectedPinId = id; uiState.moveMode = false; updateModeUI();
     renderMarkers(); renderLayers(); renderPinPanel();
     requestAnimationFrame(keepSelectedAbovePanel);
   }
   function updateModeUI() {
-    mapAdapter.getContainer().style.cursor = moveMode ? "crosshair" : "";
+    mapAdapter.getContainer().style.cursor = uiState.moveMode ? "crosshair" : "";
   }
   function addPin(lat, lng, name) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
@@ -392,9 +390,9 @@
     uiShell.hideNotice();
     const dlg = $("deleteDialog");
     if (dlg.open) dlg.close("cancel");
-    if(moveMode)endMove();
-    if (selected !== null || moveMode) {
-      selected = null; moveMode = false;
+    if(uiState.moveMode)endMove();
+    if (uiState.selectedPinId !== null || uiState.moveMode) {
+      uiState.selectedPinId = null; uiState.moveMode = false;
       renderMarkers(); renderPinPanel(); updateModeUI();
     }
     if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
@@ -411,7 +409,7 @@
       activePointers.add(e.pointerId);
       if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=Date.now();
       cancelLongPress();
-      if (moveMode || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
+      if (uiState.moveMode || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
       longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
       // Long press works for touch and mouse. Right click remains an alternative.
       longPressTimer = setTimeout(() => {
@@ -445,7 +443,7 @@
       e.preventDefault();
       // iOS may synthesize contextmenu after a long touch; only create once.
       if(Date.now()-lastTouchStartAt<2400 || Date.now()<suppressMapClickUntil)return;
-      if(moveMode)return;
+      if(uiState.moveMode)return;
       const rect=container.getBoundingClientRect();
       const location=mapAdapter.unproject({x:e.clientX-rect.left,y:e.clientY-rect.top});
       addPin(location.lat,location.lng,"");
@@ -635,7 +633,7 @@
     $("deletePin").addEventListener("click", () => { if(selectedPin())$("deleteDialog").showModal(); });
     $("deleteDialog").addEventListener("close", () => {
       if($("deleteDialog").returnValue!=="confirm")return;
-      state.pins=state.pins.filter(p=>p.id!==selected);selected=null;moveMode=false;
+      state.pins=state.pins.filter(p=>p.id!==uiState.selectedPinId);uiState.selectedPinId=null;uiState.moveMode=false;
       save();renderMarkers();renderLayers();renderPinPanel();updateModeUI();showNotice("Pin gelöscht");
     });
     document.addEventListener("pointerdown", e => {
@@ -643,7 +641,7 @@
     });
     mapAdapter.onMapClick(position => {
       if (Date.now() < suppressMapClickUntil) return;
-      if (moveMode && selectedPin()) {previewMove(position);return;}
+      if (uiState.moveMode && selectedPin()) {previewMove(position);return;}
       closeMapOverlays();
     });
 
