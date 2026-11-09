@@ -85,3 +85,10 @@ Der Nutzer hat die vollständige GitHub-Actions-Zusammenfassung und den Artifact
 - Die gesamte technische Kette – eigener Extrakt aus Protomaps-v4-Quelle, PMTiles-Verifizierung im GitHub-Actions-Build, Übergabe über lokale Datei und Browserdarstellung mit MapLibre – ist damit erstmals auf dem getesteten Gerät bestätigt. Die Nutzerdatei wird in der Testseite nicht hochgeladen und nicht persistent gespeichert.
 - **Keine Offline-Freigabe**: Protomaps-Schriftarten, Symbole, MapLibre/PMTiles-Bibliotheken kommen noch über externe Online-URLs. Die Sichtbarkeit bei Netzwerkverbindung besagt nicht, dass die Testseite offline startet.
 - Nächste Arbeitspakete: lokale stabile Ressourcenbereitstellung für JavaScript/Styles, benötigte `glyphs` und `sprites` bundeln, danach gezielter Flugmodus-Test; erst dann Integration in die abgesicherte MapLibre-PWA.
+
+## Detaildiagnose und separat erzeugte z15-Alternative (2026-11-09)
+
+- Der Nutzer hat die Detailarmut der z12-Karte nachgewiesen (fehlende Straßennamen, wenige hochauflösende Objekte). Die Ursache ist nicht allein fehlende Beschriftung: Datenarchiv endet auf Zoomstufe 12, höheres Zoom ist nur Vektor-Overzoom; der Protomaps-Light-Stil hat eigene Zoom- und Kollisionsregeln.
+- Neuer **getrennter** Workflow `build-stuttgart-detailed-pmtiles.yml` für `stuttgart-z15.pmtiles` (Stuttgart BBox 9.12,48.72,9.25,48.82; Datenzoom 0–15), Größe begrenzt auf 200 MiB, Integritätsprüfung und eigenes Artifact `stuttgart-pmtiles-z15`. Alte funktionierende z12-Version nicht überschrieben.
+- Für einen kontrollierten Stilvergleich besitzt das isolierte Offline-Labor die Option `Mehr Straßennamen (Test)`. Im Stil wird ab Kartenzoom 13 eine zusätzliche `symbol`-Ebene aus den Protomaps-`roads`-Vektoren verwendet. Mit Textkollisionen verbleiben möglicherweise Lücken; nur vorhandene `name`-Attribute können angezeigt werden.
+- Vor abschließender Entscheidung z15-Dateigröße, tatsächliche Detailverbesserung und iPhone-Leistung testen. Keine automatische Übernahme des Detailmodus oder Archivs in produktives pin2map.
