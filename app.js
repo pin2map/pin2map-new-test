@@ -40,6 +40,7 @@
     onVisibility:(id,visible)=>{filterOps.setLayerVisible(state,id,visible);save();renderLayers();renderMarkers();renderPinPanel();},
     onDelete:id=>deleteLayerOrPrivatePins(id)
   });
+  const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -117,6 +118,8 @@
       pin,moving:uiState.moveMode,layerVisible:pin?!!layerById(pin.layerId)?.visible:true,
       onLayout:updatePanelLayout
     });
+    if(pin)pinLayerPicker.render({layers:state.layers,selectedLayerId:pin.layerId});
+    else pinLayerPicker.setOpen(false);
   }
   function selectPin(id) {
     if (uiState.selectedPinId === id) { closeMapOverlays(); return; }
