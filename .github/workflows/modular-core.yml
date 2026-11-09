@@ -22,3 +22,27 @@ jobs:
           node --check sw.js
       - name: Run modular tests
         run: node --test tests/*.test.js
+
+  chromium-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright for this smoke test
+        run: npm install --no-save playwright@1.56.1
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Serve development checkout on localhost
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/pin2map-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/pin2map-server.log
+          exit 1
+      - name: Test real browser interactions and offline reload
+        run: node tests/browser-smoke.cjs
