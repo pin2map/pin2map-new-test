@@ -218,3 +218,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   .layers-bottom-button{width:44px;height:44px;line-height:44px;bottom:calc(9px + env(safe-area-inset-bottom,0px))}
   #layersPanel{bottom:calc(61px + env(safe-area-inset-bottom,0px))!important;max-height:60dvh!important}
 }
+
+
+/* No active layer: eye, color, name/count, deletion only. */
+.layer-row{grid-template-columns:25px 20px minmax(0,1fr) 30px}
+@media(max-width:630px){.layer-row{grid-template-columns:23px 15px minmax(0,1fr) 28px}}
