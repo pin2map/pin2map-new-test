@@ -24,6 +24,7 @@ jobs:
           node --check domain/pin-filter.js
           node --check application/pin-operations.js
           node --check application/filter-operations.js
+          node --check application/layer-operations.js
           node --check application/routing-service.js
           node --check application/geographic-information-service.js
           node --check application/watercourse-service.js
@@ -32,6 +33,7 @@ jobs:
           node --check ui/search-results.js
           node --check ui/ui-state.js
           node --check ui/pin-editor.js
+          node --check ui/layer-view.js
           node --check map-adapter-leaflet.js
           node --check app.js
           node --check tests/check-architecture.mjs
@@ -46,6 +48,8 @@ jobs:
           node --check tests/check-filter-operations.mjs
           node --check tests/check-routing-service.mjs
           node --check tests/check-future-services.mjs
+          node --check tests/check-layer-operations.mjs
+          node --check tests/check-layer-view.mjs
       - name: Pure domain contract tests
         run: node tests/check-project-model.mjs
       - name: Existing database schema remains stable
@@ -67,5 +71,9 @@ jobs:
         run: node tests/check-routing-service.mjs
       - name: Geographic information and watercourse port contracts
         run: node tests/check-future-services.mjs
+      - name: Layer use cases and view regression tests
+        run: |
+          node tests/check-layer-operations.mjs
+          node tests/check-layer-view.mjs
       - name: Layer dependency contract
         run: node tests/check-architecture.mjs
