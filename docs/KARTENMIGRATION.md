@@ -243,3 +243,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Der v4-Quellpfad auf Source Cooperative und die offiziellen PMTiles-CLI-Befehle sind dokumentiert bestätigt. **Erfolgreicher Workflow-Lauf, Artifact und Ausgabegröße konnten noch nicht unabhängig bestätigt werden.**
 - Eine zusätzliche, vom bestehenden Prototyp getrennte Testseite `pmtiles-local-file-check.html` nutzt die Browser-`File`-API und `pmtiles.FileSource`. Die PMTiles-Datei bleibt dabei lokal auf dem Gerät; sie wird nicht hochgeladen, nicht in IndexedDB kopiert und nicht automatisch synchronisiert. Die Testseite lädt weiterhin Stilbibliothek, Fonts und Sprites online.
 - Die geprüfte MapLibre-Integration, das normale `main` sowie die Referenz Leaflet-V18 bleiben unverändert.
+
+## Inkrement 16: Automatische Qualitätsprüfung für eigene Stuttgart-PMTiles (2026-11-09)
+
+- Der Workflow `pin2map-maplibre-preview/.github/workflows/build-stuttgart-pmtiles.yml` validiert jetzt zusätzlich das Ausgabeformat (`mvt`), konsistente Zoomgrenzen bis maximal 12, die räumliche Überlappung mit Stuttgart, JSON-Metadaten und die Größenbegrenzung bis 80 MiB. Zusätzlich zu `pmtiles verify` gibt es eine SHA-256-Prüfsumme.
+- Der GitHub-Actions-Lauf erhält eine lesbare Schrittzusammenfassung mit Archivname, Größe, Zoomstufen, geografischen Grenzen und Hash. Nur nach bestandenem Validierungsschritt soll das `stuttgart-pmtiles-z12`-Artifact entstehen.
+- Die verfügbaren GitHub-App-Aktionen können den Push-getriggerten Actions-Lauf nicht direkt auflisten. Öffentliches Actions-Webinterface ließ sich ebenfalls nicht abrufen. **Build-Erfolg, Archiv und echte iPhone-Karte weiterhin nicht bestätigt.**
+- Technische Details unter `docs/PMTILES-STUTTGART.md`. Keine Änderung an Haupt-PWA, MapLibre-Referenz oder Offline-Speicherung.
