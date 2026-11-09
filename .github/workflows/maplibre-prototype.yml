@@ -40,6 +40,7 @@ jobs:
           node --check pmtiles-persistent-lab-v1.js
           node --check tests/check-pmtiles-persistence.mjs
           node --check tests/check-pmtiles-offline-package.mjs
+          node --check scripts/check-offline-package.mjs
       - name: Run regression and adapter checks
         run: |
           node tests/check-ui.mjs
