@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>pin2map · PMTiles-Speicherprobe</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<script defer src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+<script defer src="https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js"></script>
+<script defer src="./pmtiles-persistent-store-v1.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font:14px system-ui,-apple-system,sans-serif;color:#172b49}
+header{position:absolute;top:0;left:0;right:0;z-index:5;background:#172b49;color:white;padding:10px 14px;touch-action:manipulation}
+header strong{display:block;font-size:16px}header small{opacity:.85}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:9px}
+.controls input{max-width:230px;font-size:12px;color:white}
+button{font:inherit;cursor:pointer;border:0;border-radius:7px;background:#e8f1fc;color:#152f4e;padding:8px 10px}
+button:disabled{opacity:.45;cursor:default}
+#status{background:#fff;color:#173450;padding:6px 10px;border-radius:7px;margin-top:8px;font-size:12px}
+#status.error{border-left:4px solid #b92b2b}
+#map{position:absolute;inset:166px 0 0}
+footer{position:absolute;bottom:8px;left:8px;right:8px;z-index:3;background:#fffe;border-radius:7px;padding:7px 10px;font-size:11px}
+@media(max-width:650px){#map{top:208px}}
+</style>
+</head>
+<body>
+<header>
+<strong>pin2map · PMTiles-Speicherprobe</strong>
+<small>Isolierter Test: Kartendatei lokal sichern und nach Neuladen wieder öffnen</small>
+<div class="controls">
+<input id="archiveFile" type="file" accept=".pmtiles" aria-label="PMTiles-Datei auswählen">
+<button id="save" disabled>Datei lokal speichern</button>
+<button id="reopen">Gespeicherte Karte öffnen</button>
+<button id="remove">Gespeicherte Karte entfernen</button>
+</div>
+<div id="status" role="status">Prüfe lokalen Speicher …</div>
+</header>
+<div id="map" aria-label="Lokale gespeicherte PMTiles-Karte"></div>
+<footer>Die PMTiles-Datei bleibt im Browserprofil auf diesem Gerät (IndexedDB). Kein Upload und keine Synchronisation. Kartenstil, Glyphs, Sprites und Bibliotheken werden noch online geladen. Browser können lokale Daten bei Speicherknappheit entfernen.</footer>
+<script type="module" src="./pmtiles-persistent-lab-v1.js"></script>
+</body>
+</html>
