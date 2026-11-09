@@ -142,7 +142,7 @@
       this.map.addLayer({id:line.id,type:"line",source:line.id,
         paint:{"line-color":options.color||"#d65a31","line-width":options.weight||3,
           "line-dasharray":options.dashArray
-            ? options.dashArray.split(/\\s+/).map(Number)
+            ? options.dashArray.trim().split(/\s+/).map(Number)
             :[1,1]}});
     }
     restoreLines(){
