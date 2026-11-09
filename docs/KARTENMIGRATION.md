@@ -156,3 +156,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Nur beim erstmaligen Öffnen wird anhand der tatsächlichen Dialog- und Dreiecksrechtecke die Karte bei Bedarf um Pixel verschoben, sodass der Dialog sichtbar wird. Die MapLibre-Pan-Richtung berücksichtigt die gegensätzliche Semantik zu Leaflet und darf nicht blind kopiert werden.
 - Verschiebe-Bestätigungsleiste wird relativ zur neuen Pinposition, zur sichtbaren VisualViewport-Größe und zu den Bildschirmrändern platziert (unterhalb, wenn Platz ist, sonst oberhalb). Alter und neuer Pin werden über die unveränderte Verbindungslinie verbunden. Die ursprüngliche Position wird erst durch ✓ geändert.
 - 13 v8-spezifische statische Prüfungen und JavaScript-Syntax bestanden. Ein echter iPhone-Test, insbesondere nahe allen vier Bildschirmrändern, steht **noch aus**. Weiterhin drei nicht gespeicherte Beispiel-Pins; keine IndexedDB, Ebenen, Synchronisation oder Offline-Funktion.
+
+## Inkrement 11: Korrektur der Kartenverschiebung beim Öffnen von Rand-Pins (2026-11-09)
+
+- iPhone-Befund zu v8: An sämtlichen Rändern verschwindet ein angetippter Pin infolge der automatischen Korrektur **weiter aus dem Bildschirm**, statt den Dialog sichtbar zu machen. Die übrigen Funktionen der v8 wurden als gut bestätigt. V8 ist deshalb **nicht abgenommen**.
+- Neue eigenständige Vorschau `https://pin2map.github.io/pin2map-maplibre-preview/test-v9.html`: Beim erstmaligen Öffnen wird weiterhin der benötigte Pixelversatz des Dialogs ermittelt. Der neue Kartenmittelpunkt wird jedoch ausdrücklich mit `unproject(centerPixel.x - dx, centerPixel.y - dy)` bestimmt und durch `setView` ohne Animation gesetzt. Damit wird nicht mehr die möglicherweise falsch verstandene `panBy`-Richtung verwendet; eine reine Kamerabewegung verändert keine Pin-Koordinaten.
+- Einfache Projektions-Mocks für links, rechts, oben und unten bestätigen das gewünschte Pixelvorzeichen. JavaScript-Syntax und eigenständige Version-9-Dateireferenzen geprüft. **iPhone-Randtest steht noch aus.**
+- Frühere MapLibre-Versionen und Leaflet-PWA `main` sowie Referenz-V18 bleiben unverändert.
