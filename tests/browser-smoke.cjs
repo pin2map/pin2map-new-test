@@ -71,6 +71,16 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".leaflet-marker-icon").first().click({force:true});
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
+    console.log("[browser] layer visibility hides/restores the persisted pin");
+    await page.locator("#layersButton").click();
+    const privateRow=page.locator("#layersList .layer-row").filter({hasText:"Privat"});
+    const privateCheckbox=privateRow.locator('input[type="checkbox"]');
+    await privateCheckbox.uncheck();
+    await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===0);
+    await privateRow.locator('input[type="checkbox"]').check();
+    await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===1);
+    console.log("[browser] pin coordinates remain unchanged by layer visibility");
+    assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
     console.log("[browser] offline application shell and persisted pin");
     const sw=await page.evaluate(async()=>{
       const registration=await navigator.serviceWorker.ready;
