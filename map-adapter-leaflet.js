@@ -58,6 +58,48 @@
       this.map.on(event,callback);
       return ()=>this.map.off(event,callback);
     }
+    // Renderer-neutral pin and preview primitives. Handles remain opaque to app.js.
+    createMarker(position,options={}) {
+      const p=latLng(position);
+      return window.L.marker([p.lat,p.lng],options).addTo(this.map);
+    }
+    setMarkerPosition(marker,position) {
+      const p=latLng(position); marker.setLatLng([p.lat,p.lng]);
+    }
+    getMarkerPosition(marker) {
+      const p=marker.getLatLng(); return {lat:p.lat,lng:p.lng};
+    }
+    setMarkerAppearance(marker,{html,selected=false,label="",side="right",color="#d65a31",title="Pin"}={}) {
+      const markup=html===undefined
+        ? '<div class="pin-marker'+(selected?' selected':'')+'" style="background:'+color+'"></div>'+label
+        : html;
+      marker.setIcon(window.L.divIcon({html:markup,iconSize:[30,32],iconAnchor:[15,29],className:"pin-icon"}));
+      marker.options.title=title;
+    }
+    getMarkerElement(marker) { return marker.getElement(); }
+    onMarker(marker,event,callback) {
+      const handler=e=>callback(event==="drag"||event==="dragend"?this.getMarkerPosition(e.target):e);
+      marker.on(event,handler);
+      return ()=>marker.off(event,handler);
+    }
+    removeOverlay(overlay) { if(overlay)this.map.removeLayer(overlay); }
+    hasOverlay(overlay) { return this.map.hasLayer(overlay); }
+    setMarkerZIndex(marker,value) { marker.setZIndexOffset(value); }
+    createLine(positions,options={}) {
+      return window.L.polyline(positions.map(p=>{const v=latLng(p);return [v.lat,v.lng];}),options).addTo(this.map);
+    }
+    setLinePositions(line,positions) {
+      line.setLatLngs(positions.map(p=>{const v=latLng(p);return [v.lat,v.lng];}));
+    }
+    zoomAround(position,zoom,options={}) {
+      const p=latLng(position);this.map.setZoomAround([p.lat,p.lng],zoom,options);
+    }
+    isPanEnabled() { return this.map.dragging.enabled(); }
+    setPanEnabled(enabled) { if(enabled)this.map.dragging.enable();else this.map.dragging.disable(); }
+    stopMarkerEventPropagation(element) {
+      window.L.DomEvent.disableClickPropagation(element);
+      window.L.DomEvent.on(element,"mousedown touchstart",window.L.DomEvent.stopPropagation);
+    }
     destroy() { this.map.remove(); }
   }
   root.Pin2MapLeafletAdapter=LeafletMapAdapter;
