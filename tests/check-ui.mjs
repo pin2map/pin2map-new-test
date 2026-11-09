@@ -32,4 +32,6 @@ check(js.includes('document.body.classList.toggle("pin-open",!!pin&&!moveMode)')
 check(css.includes('body.pin-open .topbar') && css.includes('body.pin-open .labels-toggle') && css.includes('body.pin-open .layers-bottom-button') && css.includes('body.pin-open .pin-zoom-buttons'), 'all primary map controls hidden while editor open');
 check(css.includes('.leaflet-control:not(.leaflet-control-attribution)'), 'tile attribution remains visible');
 check(js.includes('scheduleMapOverlayUpdate();'), 'map movement and resize trigger layout updates');
+check(js.includes('if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}'), 'pin editor close restores controls and clears selection');
+check(js.includes('moveMode=true;removeMovePreview();') && js.includes('document.body.classList.remove("pin-open");'), 'moving a pin leaves focus mode immediately');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
