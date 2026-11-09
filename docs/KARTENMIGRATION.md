@@ -179,3 +179,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Basemaps sind weiterhin **online geladene Rasterkacheln** (bestehende OpenStreetMap- und OpenTopoMap-URLs) und ausdrücklich noch **keine Protomaps/PMTiles-Umstellung**. Der v9-Prototyp mit drei temporären Pins bleibt separat bestehen.
 - Neuer Node-Vertragstest `tests/check-maplibre-full-integration.mjs` für Dateiverknüpfungen, getrennte Datenbank, Kartenwechsel, Koordinatenreihenfolge, Linienaktualisierung/-entfernung und Bildschirm-Pan; in GitHub Actions eingebunden. Dateiquellcode und Mock-Aufrufe wurden separat geprüft; tatsächliches Ergebnis eines GitHub-Actions-Laufs und echte Browser-Funktionsgleichheit sind **noch nicht bestätigt**.
 - Kein Merge nach `main`, keine Änderung der Leaflet-V18-Referenz. Nächste Abnahme: Seite starten, Pin erstellen/auswählen, Dialog am Bildschirmrand, Pin-Verschieben mit ✓/×, Ebene wechseln, Kartenwechsel; danach entscheiden, welche Adapterabweichungen noch behoben werden müssen.
+
+## Integrations-Nachtest 2: gestrichelte Verschiebelinie (2026-11-09)
+
+- Der iPhone-Integrationstest der vollständigen MapLibre-PWA bestand für Start, Pins und Ebenen sowie die Verschiebung, **außer** dass die Verbindungslinie zwischen altem und neuem Pin nicht sichtbar war.
+- Ursache im Adapter: `dashArray.split(/\\\\s+/)` wurde als falsch maskierter regulärer Ausdruck interpretiert. Korrigiert zu `dashArray.trim().split(/\\s+/).map(Number)`, sodass aus `"7 5"` das gültige MapLibre-Strichmuster `[7,5]` entsteht.
+- Geprüft mittels isoliertem Adapter-Mock: Geokoordinaten `[[9,48],[10,49]]`, Paint-Property `line-dasharray: [7,5]`, JavaScript-Syntax OK.
+- Cache-unabhängige neue Vorschau: `https://pin2map.github.io/pin2map-maplibre-preview/full-maplibre-v2.html` mit eigener Bootstrap- und Adapterdatei. Sie verwendet weiterhin die **getrennte** Integrations-IndexedDB; alte Leaflet-PWA und deren gespeicherte Daten bleiben unangetastet.
+- Browserabnahme für die Darstellung der Linie ist noch offen.
