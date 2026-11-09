@@ -16,7 +16,7 @@
   });
   const layerOps = window.Pin2MapLayerOperations;
   const currentPinFilter = pinFilter.createFilter();
-  let projectStore, state = defaults(), mapAdapter, markerView, moveView, panelPositioner, moveController;
+  let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let saveTimer;
   let gestures;
@@ -130,7 +130,9 @@
     requestAnimationFrame(keepSelectedAbovePanel);
   }
   function updateModeUI() {
-    mapAdapter.getContainer().style.cursor = uiState.moveMode ? "crosshair" : "";
+    const picking=uiState.moveMode&&!moveView.current();
+    document.body.classList.toggle("pin-relocation-picking",picking);
+    mapAdapter.getContainer().style.cursor = picking ? "crosshair" : "";
   }
   function addPin(lat, lng, name) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
@@ -301,7 +303,14 @@
     mapAdapter.onMapClick(position => {
       // A deliberate relocation target is not an accidental follow-up click
       // to the preceding long press. Process move mode before suppression.
-      if (uiState.moveMode) {moveController.previewAt(position);return;}
+      if (uiState.moveMode) {
+        if(moveController.previewAt(position)){
+          moveGuide.stop();
+          markerView.setRelocationSource(null);
+          updateModeUI();
+        }
+        return;
+      }
       if (gestures.isSuppressed()) return;
       closeMapOverlays();
     });
@@ -342,6 +351,10 @@
       getViewport:()=>window.visualViewport||{offsetLeft:0,offsetTop:0,width:window.innerWidth,height:window.innerHeight},
       onPosition:position=>moveController.previewAt(position)
     });
+    moveGuide=new window.Pin2MapPinMoveGuide({
+      mapAdapter,requestFrame:callback=>window.requestAnimationFrame(callback),
+      cancelFrame:id=>window.cancelAnimationFrame(id)
+    });
     panelPositioner=new window.Pin2MapPinPanelPositioner.PinPanelPositioner({
       mapAdapter,getElement:$,document
     });
@@ -353,10 +366,17 @@
         document.body.classList.remove("pin-open");
         $("pinDialogTip").classList.add("hidden");
         $("moveBar").classList.add("hidden");
+        moveGuide.start(selectedPin());
+        markerView.setRelocationSource(uiState.selectedPinId);
         updateModeUI();
       },
-      onExit:()=>{updateModeUI();renderPinPanel();},
-      onCommitted:()=>{save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");}
+      onExit:({committed}={})=>{
+        moveGuide.stop();
+        markerView.setRelocationSource(null);
+        if(committed)uiState.clearSelection();
+        updateModeUI();renderMarkers();renderPinPanel();
+      },
+      onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
