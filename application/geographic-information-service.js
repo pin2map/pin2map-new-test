@@ -17,7 +17,7 @@
     has(capability){return this.providers.has(capability);}
     async lookup(capability,request){
       const provider=this.providers.get(capability);
-      if(!provider)throw new Error("No geographic information provider configured: "+capability);
+      if(!provider)throw new Error("Geographic information provider not configured: "+capability);
       return provider.lookup(request);
     }
   }
