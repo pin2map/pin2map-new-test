@@ -27,7 +27,7 @@
   const cleanText = projectModel.cleanText;
   const uiShell = new window.Pin2MapUIShell({getElement:$});
   const pinEditorView = new window.Pin2MapPinEditorView({
-    getElement:$,document,scheduleFrame:requestAnimationFrame
+    getElement:$,document,scheduleFrame:callback=>window.requestAnimationFrame(callback)
   });
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
