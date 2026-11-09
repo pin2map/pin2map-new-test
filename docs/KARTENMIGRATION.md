@@ -272,3 +272,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Zweiter neuer Workflow `pin2map-maplibre-preview/.github/workflows/package-offline-map-assets.yml` soll die momentan extern geladenen JavaScript-/CSS-Bibliotheken, Schrift-PBFs und Protomaps-Light-Sprites einschließlich Lizenzdateien in ein überprüfbares GitHub-Actions-Artifact bündeln. Der Upstream-Asset-Commit wird protokolliert, die Größe begrenzt und pro Datei SHA-256 ins Manifest geschrieben. **Build-Erfolg und Asset-Paket sind bislang nicht bestätigt.**
 - Ausführliche Freigabegates und verbleibende Aufgaben in `docs/PMTILES-OFFLINE-ARCHITEKTUR.md`. Weder Service Worker für den Offline-Start noch Offline-Ready-Status oder Integration in die gesicherte Haupt-PWA behaupten.
 - Bereits abgenommene Leaflet-/MapLibre-Stände bleiben unverändert.
+
+## Inkrement 20: Vollständig lokale Ressourcenpaketierung vorbereitet (2026-11-09)
+
+- Aus der bereits getrennten PMTiles-IndexedDB-Testseite und den Protomaps-/MapLibre-Abhängigkeiten erzeugt `scripts/assemble-offline-lab.py` künftig eine eigenständige `index.html` mit **relativen, eigenen** JS-/CSS-, Glyph- und Sprite-URLs.
+- Der Browser-Service-Worker `offline-stuttgart-sw.js` darf ausschließlich den vorgesehenen Test-Unterordner der eigenen Origin bearbeiten. Er versucht dort die App-Shell und die übrigen lokalen Ressourcen bei der Installation komplett zwischenzuspeichern; die PMTiles-Datei bleibt als Browser-`File` in IndexedDB und wird nicht dupliziert.
+- Die Ausgabe ist ein auf maximal 100 MiB begrenztes, prüfbares Paket mit Dateihashes; der Workflow `package-offline-map-assets.yml` lädt das Paket weiterhin nur als **Artefakt**, ohne eine bestehende PWA umzuschalten. `tests/check-pmtiles-offline-package.mjs` ist in der Entwicklungs-CI ergänzt.
+- **Keine Offline-Freigabe:** Tatsächlicher Build-Erfolg, vollständige Asset-Abdeckung, Hosting unter eigenem Unterpfad und Flugmodus-Test fehlen noch. Die bereits abgenommenen MapLibre- und Leaflet-Referenzen sind unverändert.
