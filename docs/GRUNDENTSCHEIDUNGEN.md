@@ -1866,3 +1866,19 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 5. **Kartenanbieter und Grenzen:** Die topografische `OpenTopoMap`-Darstellung ist **nicht** in den eigenen Offline-Kachelcache aufgenommen. Für diesen Anbieter bedarf es einer gesonderten Prüfung der Nutzungsbedingungen. Offline können neue Kartenbereiche oder Zoomstufen, die vorher nicht geladen wurden, **leer** bleiben. Das Kartenzentrum und vorhandene Pins bleiben dennoch erhalten.
 6. **Cache-Trennung:** Bei PWA-Updates wird nur der alte Programmdateien-Cache ersetzt; der gesonderte Tile-Cache bleibt unangetastet. Der Browser kann bei Speicherknappheit weiterhin Daten aus Cache Storage entfernen. Eine garantierte dauerhafte Offline-Abdeckung folgt daraus nicht.
 7. **Prüfprotokoll:** Statische Prüfungen und Service-Worker-Syntax sichern die Codebedingungen; ein realer Offline-Start ist **erst nach tatsächlicher Prüfung im Flugmodus** als verifiziert zu bezeichnen. Testfolge: online neue PWA aktivieren, Straßenkarte in bestimmtem Gebiet auf genau einer Zoomstufe betrachten, PWA schließen, Flugmodus einschalten, PWA neu starten, lokale Pins/Ebenen und dieselben Kacheln prüfen, andere Zoomstufen separat bewerten.
+
+
+## Tile-Cache – Gültigkeit zuerst prüfen und offline alt verwenden (2026-11-09)
+
+**Verbindliche Implementierung mit Service-Worker-Version V18:**
+
+- Für tatsächlich interaktiv angeforderte OpenStreetMap-Straßenkartenkacheln wird der bestehende Bildcache (`pin2map-viewed-osm-tiles-v1`) beibehalten und um einen separaten, dauerhaften Gültigkeitsmetadaten-Cache ergänzt.
+- **Gültige gespeicherte Kachel:** Aus dem eigenen PWA-Cache zurückgeben, ohne sie erneut über das Netzwerk abzurufen.
+- **Abgelaufene bzw. noch nicht bewertete Kachel:** Normalen Browser-`fetch` ohne Cache-Umgehung ausführen. Der Browser darf anhand seines HTTP-Caches und `ETag`/`Last-Modified` konditionell beim Kartenserver validieren; keine künstlichen `no-cache`-Header, Cache-Buster oder massenhaften Abrufe einsetzen.
+- **Offline/Netzwerkfehler:** Falls eine konkrete Kachel schon gespeichert ist, diese auch nach Ablauf ihrer Online-Gültigkeit anzeigen; dabei wird nicht heimlich ein anderer Kartenausschnitt geladen.
+- **Lesbare HTTP-Header:** `Cache-Control` (`max-age`, `no-cache`, `must-revalidate`, `no-store`), `Age`, `Date` sowie `Expires` berücksichtigen. `no-store` verhindert Speicherung und entfernt einen etwaigen früheren Eintrag.
+- **Opaque-Antworten (Cross-Origin-Browser-Bildanforderungen):** Die Header lassen sich technisch nicht auslesen. Für die Online-Gültigkeit wird ersatzweise die von der OpenStreetMap Foundation vorgesehene Mindest-Cachezeit von **7 Tagen ab Speichern** angewandt. Das ist **keine Löschfrist**; eine später abgelaufene Kachel bleibt als Offline-Fallback gespeichert.
+- **Bestandsschutz:** Kacheln aus V17 ohne Metadateneintrag bleiben verfügbar, werden jedoch online beim ersten Wiederbesuch erneut geladen/validiert; danach erhalten sie eigene Gültigkeitsdaten. Programmupdates löschen weder den Kachel- noch den Metadaten-Cache.
+- **Speicherdauer:** Keine feste Löschfrist und keine unnötige LRU-Löschung; Browser-/iOS-Speicherbereinigung oder ausdrückliche Nutzerlöschung bleiben möglich.
+- **Anbietergrenzen:** Keine Vorausladung, kein gezielter Offline-Gebietsdownload. `OpenTopoMap` erhält weiterhin keinen eigenen Kachelcache. Maßgebend ist die offizielle OSMF Tile Usage Policy: https://operations.osmfoundation.org/policies/tiles/
+- **Prüfpflicht:** Automatische Tests für Gültigkeit, Netzwerkfehler, alte Einträge und Ablaufregeln ergänzen; echter iPhone-/Flugmodus-Test bleibt gesondert erforderlich.
