@@ -32,7 +32,7 @@
         const name=this.document.createElement("span");name.className="pin-layer-name";name.textContent=selected.name;
         const status=this.document.createElement("span");status.className="pin-layer-visibility"+(selected.visible?"":" is-hidden");
         status.textContent=selected.visible?"Sichtbar":"Ausgeblendet";
-        const arrow=this.document.createElement("span");arrow.className="pin-layer-chevron";arrow.setAttribute("aria-hidden","true");arrow.textContent="⌄";
+        const arrow=this.document.createElement("span");arrow.className="pin-layer-chevron";arrow.setAttribute("aria-hidden","true");arrow.textContent="";
         trigger.append(dot,name,status,arrow);
       }
       menu.replaceChildren();
