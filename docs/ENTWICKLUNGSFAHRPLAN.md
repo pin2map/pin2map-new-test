@@ -107,3 +107,13 @@ Die Vorgänger-App wurde anhand ihres echten Quellcodes systematisch auf **künf
 Als zusätzliche Fachbereiche wurden eine **geografische Informationsschnittstelle** (Wetter/Höhe/Sonnenzeiten/Tageslänge etc.) und eine **eigene Wasserlauf-/Flussschnittstelle** eingerichtet, noch ohne echte Berechnung/Anbindung. Fahrradroute ist als zusätzlich nachgewiesene Referenzfunktion vermerkt.
 
 **Jetzt weiter in Etappe 1:** Ebenenpanel und Ebenen-Use-Cases einzeln aus `app.js` auslagern; für den ersten Schritt keine optischen Neuerungen. Regression/Architekturschnittstellen testen, dann anschließende UX-Abnahme an der Vorgänger-App.
+
+## Architektur-Gate nach Vorgänger-App-Audit (2026-11-09)
+
+Die vollständige statische **Funktions-/Modulinventur** ist unter [VORGAENGER_APP_MODUL_AUDIT.md](./VORGAENGER_APP_MODUL_AUDIT.md) dokumentiert. Das Altprogramm ist Funktions- und UX-Referenz, **keine Quellcodevorlage**. In NEW gilt die alte Funktionsvielfalt als Wiederherstellungsziel, vorbehaltlich ausdrücklich gestrichener Funktionen (Screenshot/Kartenbildexport, Fotos) und später bewusst geänderter Einzelentscheidungen. Das Inventar beweist nicht die Fehlerfreiheit der Altanwendung.
+
+**Aktueller Entwicklungszweig:** Projekt-/Pin-Domain, Speicheradapter, Kartenadapter, UI-Shell, Suchtreffer, Pin-Editor, Ebenen-Use-Cases und Ebenenansicht, Filter-Ebenenregel. **Reserviert und nicht aktiv:** Routing (Auto, Fuß, Fahrrad aus Legacy, ÖPNV), geografische Zusatzinformationen (Wetter, Höhe, Sonnen-/Tageslänge, Zeitzone), Wasserläufe/Flüsse. Filterziele außer Ebenensichtbarkeit bleiben ausdrücklich unentschieden.
+
+**Jetzt UI-Phase fortsetzen:** zuerst Grundlayout, Kopfzeile, Bedienkontrollen, Pin-Dialog und Ebenenpanel mit der Vorgänger-App vergleichen. Jeder Schritt bekommt einen kleinen eigenständigen UI-Test und anschließend einen realen iPhone-Abgleich; keine Vermischung mit künftigen Wetter-/Fluss-/Routing-Funktionen. Danach die weiteren Fachfunktionen gemäß Audit schrittweise implementieren, Synchronisation erst nach Funktionsparität.
+
+**Offenes Gate:** Vollständiger GitHub-Actions-Lauf, reale Browserregression und iPhone-Abnahme sind noch nicht bestätigt. Keine Änderung an `main` oder gesicherten Referenzständen.
