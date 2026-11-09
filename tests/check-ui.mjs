@@ -54,7 +54,7 @@ check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel);\n      if (layerById(PRIVATE_ID).visible)'), 'search-created pin gets fitted after map zoom');
 check(!js.includes('map.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
-check(sw.includes("const CACHE='pin2map-new-v17'"), 'new offline shell version deployed');
+check(sw.includes("const CACHE='pin2map-new-v18'"), 'new cache-aware app shell version deployed');
 check(sw.includes("const TILE_CACHE='pin2map-viewed-osm-tiles-v1'"), 'OSM tiles retained separately from app shell updates');
 check(sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js') &&
   sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'), 'both Leaflet runtime assets precached');
@@ -65,4 +65,13 @@ check(sw.includes('const cached=await tiles.match(request)') && sw.includes('if(
 check(!sw.includes('tile.openstreetmap.org/{') && !sw.includes('prefetchTiles('), 'no proactive tile download mechanism');
 check(sw.includes("name.startsWith('pin2map-new-')&&name!==CACHE"), 'app-shell cleanup retains viewed tile cache');
 check(sw.includes("event.data?.type==='GET_VERSION'"), 'worker version remains compatible with verified refresh');
+check(sw.includes("const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1'"), 'separate tile expiry metadata is retained across app updates');
+check(sw.includes('function tileFreshUntil(') && sw.includes("headers.get('Cache-Control')"), 'tile freshness calculation honors readable cache control');
+check(sw.includes("headers.get('Age')") && sw.includes("headers.get('Expires')"), 'tile freshness accounts for Age and Expires');
+check(sw.includes('if(response.type===\'opaque\')return now+FALLBACK_TILE_TTL'), 'opaque tiles get OSM seven-day fallback');
+check(sw.includes("if(entry?.fresh)return entry.response"), 'fresh cache tile is served before online fetch');
+check(sw.includes("const response=await fetch(request); // default HTTP cache"), 'expired tile fetch uses browser conditional validation');
+check(sw.includes('return entry?.response || Response.error()'), 'expired cached tile remains available offline');
+check(sw.includes('meta.delete(tileMetadataKey(request))'), 'no-store removes previously cached tile and metadata');
+check(sw.includes('if(!record)return {response:cached,fresh:false}'), 'old V17 tiles are retained but revalidated');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
