@@ -437,28 +437,43 @@ body.pin-relocation-picking #map .leaflet-interactive{
   border-radius:8px;
   background:#fff;color:#17253c;
 }
-.pin-panel .pin-editor-head .close{
-  flex:0 0 32px;margin:0;
-}
-/* Destructive pin action: same circular geometry, strong red fill,
-   official white Lucide map-pin-off icon. The confirmation stays in place. */
-#deletePin.p2m-icon-control,
-.pin-panel .pin-actions #deletePin.p2m-icon-control{
-  --p2m-button-size:44px;
-  width:44px!important;height:44px!important;
-  min-width:44px!important;min-height:44px!important;
-  flex:0 0 44px!important;padding:0!important;
+/* Destructive action now sits left of the name, 32px like the old close button. */
+.pin-panel .pin-editor-head #deletePin.p2m-icon-control{
+  --p2m-button-size:32px;
+  width:32px!important;height:32px!important;
+  min-width:32px!important;min-height:32px!important;
+  flex:0 0 32px!important;padding:0!important;
   background:#bc2837!important;color:#fff!important;
   border:1px solid #a81f2e!important;border-radius:50%!important;
 }
-#deletePin.p2m-icon-control:hover,
-.pin-panel .pin-actions #deletePin.p2m-icon-control:hover{
+.pin-panel .pin-editor-head #deletePin .p2m-lucide{
+  width:18px;height:18px;
+}
+.pin-panel .pin-editor-head #deletePin.p2m-icon-control:hover{
   background:#a92231!important;color:#fff!important;
 }
-#deletePin.p2m-icon-control:active,
-.pin-panel .pin-actions #deletePin.p2m-icon-control:active{
+.pin-panel .pin-editor-head #deletePin.p2m-icon-control:active{
   background:#911827!important;color:#fff!important;
 }
+/* Bottom-right: 44px light-green circular OK action replacing close X. */
 .pin-panel .pin-actions{
   display:flex;align-items:center;justify-content:space-between;
+}
+.pin-panel .pin-actions #closePin.pin-ok-button{
+  appearance:none;display:inline-flex;align-items:center;justify-content:center;
+  width:44px!important;height:44px!important;
+  min-width:44px!important;min-height:44px!important;
+  flex:0 0 44px!important;padding:0!important;
+  border-radius:50%!important;
+  border:1px solid #a6ceaa!important;
+  background:#c9eecb!important;color:#245b30!important;
+  font-size:14px!important;font-weight:750!important;
+  line-height:1!important;
+  box-shadow:var(--p2m-button-shadow);
+}
+.pin-panel .pin-actions #closePin.pin-ok-button:hover{
+  background:#b6e4ba!important;
+}
+.pin-panel .pin-actions #closePin.pin-ok-button:active{
+  background:#9dd6a3!important;
 }
