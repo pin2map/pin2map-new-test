@@ -92,7 +92,12 @@ $("save").addEventListener("click",async()=>{
   await store.put({file,importedAt:new Date().toISOString(),format:"pmtiles-mvt-v1"});
   const stored=await store.get();
   if(!stored?.file||stored.file.size!==file.size)throw Error("Gespeicherte Datei konnte nicht verifiziert werden");
-  notify("Lokal gespeichert: "+describe(stored)+(await storageNote())+" · Jetzt auch nach Neuladen verfügbar");
+  let persistence="Speicherschutz nicht bestätigt";
+  if(navigator.storage?.persist){
+   try{persistence=await navigator.storage.persist()?"Speicherschutz gewährt":"Speicherschutz nicht gewährt";}
+   catch{persistence="Speicherschutz nicht verfügbar";}
+  }
+  notify("Lokal gespeichert: "+describe(stored)+(await storageNote())+" · "+persistence+" · Nach Neuladen erneut öffnen");
   // Existing map stays intact; reopening is an explicit user operation.
  }catch(error){notify("Speichern fehlgeschlagen: "+String(error.message||error),true);}
  finally{$("save").disabled=!selectedFile;}
