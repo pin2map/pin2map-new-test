@@ -437,12 +437,19 @@ body.pin-relocation-picking #map .leaflet-interactive{
   border-radius:8px;
   background:#fff;color:#17253c;
 }
-/* Destructive action now sits left of the name, 32px like the old close button. */
+/* Pin-dialog red delete and green OK: exactly the same compact diameter.
+   Single shared token prevents later size divergence across mobile CSS. */
+.pin-panel{--p2m-pin-dialog-action-size:36px}
+/* Destructive action sits left of the name and matches the OK diameter. */
 .pin-panel .pin-editor-head #deletePin.p2m-icon-control{
-  --p2m-button-size:32px;
-  width:32px!important;height:32px!important;
-  min-width:32px!important;min-height:32px!important;
-  flex:0 0 32px!important;padding:0!important;
+  --p2m-button-size:var(--p2m-pin-dialog-action-size);
+  width:var(--p2m-pin-dialog-action-size)!important;
+  height:var(--p2m-pin-dialog-action-size)!important;
+  min-width:var(--p2m-pin-dialog-action-size)!important;
+  min-height:var(--p2m-pin-dialog-action-size)!important;
+  max-width:var(--p2m-pin-dialog-action-size)!important;
+  max-height:var(--p2m-pin-dialog-action-size)!important;
+  flex:0 0 var(--p2m-pin-dialog-action-size)!important;padding:0!important;
   background:#bc2837!important;color:#fff!important;
   border:1px solid #a81f2e!important;border-radius:50%!important;
 }
@@ -455,15 +462,19 @@ body.pin-relocation-picking #map .leaflet-interactive{
 .pin-panel .pin-editor-head #deletePin.p2m-icon-control:active{
   background:#911827!important;color:#fff!important;
 }
-/* Bottom-right: 44px light-green circular OK action replacing close X. */
+/* Bottom-right: matching compact light-green circular OK action. */
 .pin-panel .pin-actions{
   display:flex;align-items:center;justify-content:space-between;
 }
 .pin-panel .pin-actions #closePin.pin-ok-button{
   appearance:none;display:inline-flex;align-items:center;justify-content:center;
-  width:44px!important;height:44px!important;
-  min-width:44px!important;min-height:44px!important;
-  flex:0 0 44px!important;padding:0!important;
+  width:var(--p2m-pin-dialog-action-size)!important;
+  height:var(--p2m-pin-dialog-action-size)!important;
+  min-width:var(--p2m-pin-dialog-action-size)!important;
+  min-height:var(--p2m-pin-dialog-action-size)!important;
+  max-width:var(--p2m-pin-dialog-action-size)!important;
+  max-height:var(--p2m-pin-dialog-action-size)!important;
+  flex:0 0 var(--p2m-pin-dialog-action-size)!important;padding:0!important;
   border-radius:50%!important;
   border:1px solid #a6ceaa!important;
   background:#c9eecb!important;color:#245b30!important;
