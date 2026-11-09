@@ -94,7 +94,18 @@ test("layer picker overlay does not change dialog height and labels are 12px",()
   assert.ok(menu.includes("position:absolute"),"Floating list should not enlarge the pin panel");
   assert.ok(css.includes("#pinPanel.pin-layer-open{overflow:visible!important}"),"Open menu must not clip against scrolling pin panel");
   assert.ok(menu.includes("z-index:20"));
-  assert.ok(menu.includes("top:100%"));
+  assert.ok(menu.includes("top:auto;bottom:calc(100% + 4px)"),"Options open upwards above bottom-row selector");
   const label=css.match(/#pinPanel \.pin-layer-trigger,[\s\S]*?#pinPanel \.pin-layer-option\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(label.includes("font-size:12px!important"));
+  const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
+  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
+  const footer=section.split('<div class="pin-actions">')[1]||"";
+  const move=footer.indexOf('id="movePin"');
+  const picker=footer.indexOf('id="pinLayerPicker"');
+  const ok=footer.indexOf('id="closePin"');
+  assert.ok(move>=0&&move<picker&&picker<ok,"Layer selection must sit between Move and OK");
+  assert.ok(css.includes("#pinPanel .pin-actions .pin-layer-picker{"));
+  assert.ok(css.includes("font-size:11px!important;line-height:14px"),"Floating label matches coordinate text");
+  assert.ok(css.includes("#pinPanel.pin-layer-open + #pinDialogTip{display:none!important}"),
+    "Pin pointer triangle must be hidden while list is open");
 });
