@@ -89,7 +89,7 @@ test("pin dialog name replaces heading and red delete button uses official white
   assert.match(pinSection,/<div class="pin-actions">[\s\S]*?<button id="closePin"[^>]*data-close="pinPanel"[^>]*>OK<\/button><\/div>/,
     "Bottom-right OK closes pin dialog; it does not perform deletion");
   assert.equal((pinSection.match(/id="deletePin"/g)||[]).length,1);
-  assert.match(css,/\.pin-panel\{--p2m-pin-dialog-action-size:36px\}/);
+  assert.match(css,/\.pin-panel\{--p2m-pin-dialog-action-size:32px\}/);
   const deleteStyles=css.match(/\.pin-panel \.pin-editor-head #deletePin\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
   const okStyles=css.match(/\.pin-panel \.pin-actions #closePin\.pin-ok-button\s*\{([^}]+)\}/)?.[1]||"";
   for(const styles of [deleteStyles,okStyles]){
@@ -102,4 +102,21 @@ test("pin dialog name replaces heading and red delete button uses official white
   const icon=Icons.svg("map-pin-off",documentStub());
   assert.equal(icon.children.length,5);
   assert.equal(icon.attributes.stroke,"currentColor");
+});
+
+test("all four pin-dialog buttons use one shared 32px size token",()=>{
+  const html=read("index.html"),css=read("styles.css");
+  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
+  for(const id of ["movePin","deletePin","closePin","showPinLayer"]){
+    assert.ok(section.includes('id="'+id+'"'),"Missing pin-dialog button: "+id);
+  }
+  assert.ok(section.includes('id="showPinLayer" type="button" data-pin-icon="eye"'));
+  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"));
+  const start=css.indexOf("#pinPanel button:is(#movePin,#deletePin,#closePin,#showPinLayer){");
+  assert.ok(start>=0);
+  const shared=css.slice(start,css.indexOf("}",start));
+  for(const property of ["width","height","min-width","min-height","max-width","max-height"]){
+    assert.ok(shared.includes(property+":var(--p2m-pin-dialog-action-size)!important"),property);
+  }
+  assert.ok(css.includes("#pinPanel #movePin .p2m-relocate-icon{width:28px!important;height:19px!important}"));
 });
