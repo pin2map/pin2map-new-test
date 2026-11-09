@@ -30,6 +30,7 @@
     setOpen(open){
       this.open=Boolean(open);
       this.el("pinLayerMenu").classList.toggle("hidden",!this.open);
+      this.el("pinPanel").classList.toggle("pin-layer-open",this.open);
       this.el("pinLayerTrigger").setAttribute("aria-expanded",String(this.open));
     }
     render({layers,selectedLayerId}){
