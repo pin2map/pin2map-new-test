@@ -112,7 +112,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:" &&
         version_hash.update(hashlib.sha256(path.read_bytes()).digest())
     cache_version = "pin2map-stuttgart-lab-" + version_hash.hexdigest()[:16]
     worker = """/* Isolated offline lab shell. No tile interception, no sync. */
-const VERSION="""" + cache_version + """";
+const VERSION=""" + json.dumps(cache_version) + """;
 const RESOURCES=""" + json.dumps(all_paths, ensure_ascii=False) + """;
 self.addEventListener("install",event=>{
   event.waitUntil((async()=>{
