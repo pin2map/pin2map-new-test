@@ -571,11 +571,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
    selector is open, allow this ONE overlaid menu to escape that clipping.
    Closing restores the original responsive scrolling behavior. */
 #pinPanel.pin-layer-open{overflow:visible!important}
-/* The footer is at the bottom of the dialog: float the options UP,
-   outside the normal layout, never resizing the dialog or covering its tip. */
+/* Open downward onto the map, outside the layout: the pin name and
+   coordinates above remain unobscured and the dialog never changes height. */
 #pinPanel .pin-layer-menu{
   position:absolute;z-index:20;
-  left:0;right:0;top:auto;bottom:calc(100% + 4px);
+  left:0;right:0;top:calc(100% + 4px);bottom:auto;
   display:flex;flex-direction:column;gap:2px;
   padding:4px;margin:4px 0 0;border:1px solid #ccd6e0;
   border-radius:9px;background:#fff;
@@ -619,7 +619,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel .pin-actions{
   display:flex;flex-wrap:nowrap;
   align-items:center;justify-content:space-between;
-  gap:6px!important;width:100%;
+  gap:12px!important;width:100%;
 }
 #pinPanel .pin-actions .pin-layer-trigger{
   width:100%!important;min-width:0!important;
