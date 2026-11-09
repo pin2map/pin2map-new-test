@@ -1,0 +1,25 @@
+// Dependency-free regression checks. Run: node --check app.js && node tests/check-ui.mjs
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const js=readFileSync(new URL('../app.js',import.meta.url),'utf8');
+const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
+function check(ok,description){assert.ok(ok,description);console.log('OK',description);}
+check((css.match(/\.move-bar\s*\{/g)||[]).length===1,'exactly one CSS declaration for the move confirmation container');
+check((css.match(/\.move-bar span\s*\{/g)||[]).length===1,'exactly one CSS declaration for its label');
+check(!css.includes('move-bar{\n  position:absolute;z-index:1400;left:50%;bottom:'),'old bottom-docked move bar styles removed');
+check(css.includes('#confirmMove{background:#16883e}') && css.includes('#cancelMove{background:#d42b32}'),'green approval and red cancellation buttons');
+check(css.includes('border-radius:50%') && css.includes('flex-flow:row nowrap'),'round, horizontal, compact controls');
+check(html.includes('<span id="moveText">Neue Position</span>'),'only short requested label is rendered');
+check(html.includes('id="confirmMove"') && html.includes('>✓</button>'),'confirmation displays a check');
+check(html.includes('id="cancelMove"') && html.includes('>×</button>'),'cancellation displays an X');
+check(js.includes('const desiredBelow=y+30') && js.includes('desiredBelow+height+margin<=visibleBottom'),'bubble appears below pin if room exists');
+check(js.includes('Math.max(visibleTop+margin,desiredAbove)'),'fallback placement remains on screen');
+check(js.includes('bar.style.left=(centerX-width/2-appRect.left)'),'bubble centered at new position');
+check(js.includes('moveMarker.on("drag",e=>previewMove(e.target.getLatLng()))'),'bubble tracks dragged preview');
+check(js.includes('map.on("moveend", () =>') && js.includes('updatePanelLayout();positionMoveBar();'),'bubble tracks map changes');
+check(js.includes('bar.classList.contains("hidden")'),'bubble is not positioned before display');
+check(js.includes('moveMode=true;removeMovePreview();') && js.includes('$("moveBar").classList.add("hidden");'),'no instruction dialog at start of moving');
+check(!js.includes('Neue Stelle antippen') && !js.includes('Alte und neue Position prüfen'),'obsolete move instructions removed');
+check(!js.includes('showNotice("Neue Position') && !js.includes('showNotice("Neue Stelle'),'no extra move instruction toast');
+console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
