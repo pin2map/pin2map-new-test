@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>pin2map · PMTiles-Experiment 1</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font:14px system-ui,-apple-system,sans-serif;color:#1b3147}
+header{position:absolute;z-index:3;top:0;left:0;right:0;min-height:58px;padding:9px 14px;background:#172b49;color:white;display:flex;flex-direction:column;justify-content:center;gap:2px;touch-action:manipulation}
+header strong{font-size:16px}header span{font-size:11px}
+#map{position:absolute;inset:58px 0 0}
+#status{position:absolute;z-index:4;top:69px;left:10px;max-width:calc(100vw - 20px);padding:9px 12px;border-radius:9px;background:#fff;box-shadow:0 2px 10px #0003;font-size:12px}
+#status.error{border-left:5px solid #c02c2c}
+.controls{position:absolute;right:10px;top:128px;z-index:4;display:flex;flex-direction:column;gap:5px}
+button{background:white;border:1px solid #b7c5d4;border-radius:8px;color:#172b49;padding:9px;min-width:43px;min-height:43px;font-size:20px;box-shadow:0 1px 5px #0003}
+footer{position:absolute;z-index:3;left:10px;bottom:14px;background:#fffE;padding:9px 11px;border-radius:9px;font-size:11px;max-width:calc(100vw - 20px)}
+</style>
+</head>
+<body>
+<header><strong>pin2map · PMTiles-Experiment 1</strong><span>Isolierter Vektor-Kartentest · Florenz · keine gespeicherten Daten</span></header>
+<div id="map" aria-label="PMTiles Vektorkartentest Florenz"></div>
+<div id="status" role="status">PMTiles wird geladen …</div>
+<div class="controls"><button id="plus" aria-label="Vergrößern">+</button><button id="minus" aria-label="Verkleinern">−</button><button id="reset" aria-label="Auf Florenz zentrieren">⌖</button></div>
+<footer>Online-Test aus einem kleinen öffentlichen PMTiles-Beispiel. Noch keine vollständige Basiskarte, keine Offline-Karte und keine Nutzerdaten.</footer>
+<script type="module" src="./pmtiles-experiment-1.js"></script>
+</body>
+</html>
