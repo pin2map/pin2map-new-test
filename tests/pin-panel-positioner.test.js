@@ -75,7 +75,11 @@ function fixture({panelRect={left:-20,right:260,top:30,bottom:180},hidden=false}
 test("initial opening pans only once and subsequent relayout never pans",()=>{
   const f=fixture();const pin={lat:48,lng:9};
   assert.equal(f.view.keepVisibleAtOpen({pin,moving:false}),true);
-  assert.deepEqual(f.pans,[{point:{x:-32,y:0},options:{animate:false}}]);
+  // Negating a zero pan offset yields -0; both describe the same map movement.
+  assert.equal(f.pans.length,1);
+  assert.equal(f.pans[0].point.x,-32);
+  assert.equal(f.pans[0].point.y,0);
+  assert.deepEqual(f.pans[0].options,{animate:false});
   f.view.layout({pin,moving:false});
   assert.equal(f.pans.length,1);
   assert.deepEqual(pin,{lat:48,lng:9});
