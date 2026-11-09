@@ -376,3 +376,24 @@ button.layer-delete.p2m-icon-control{color:#ad3540!important}
 
 .p2m-text-action{display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .p2m-text-action .p2m-lucide{--p2m-icon-size:17px}
+
+
+/* Special pin2map action: two colored pins, dashed connection, no visible text. */
+#movePin.p2m-icon-control{
+  --p2m-button-size:44px;
+  width:44px!important;height:44px!important;
+  min-width:44px!important;min-height:44px!important;
+  flex:0 0 44px!important;padding:0!important;
+  border-radius:50%!important;
+  background:#fff!important;color:var(--p2m-button-ink)!important;
+}
+#movePin .p2m-relocate-icon{
+  width:34px;height:23px;max-width:none;
+}
+@media(max-width:630px){
+  #movePin.p2m-icon-control{
+    --p2m-button-size:44px;
+    width:44px!important;height:44px!important;
+    min-width:44px!important;min-height:44px!important;
+  }
+}
