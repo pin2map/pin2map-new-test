@@ -11,10 +11,9 @@
     layer.visible=Boolean(visible);
     return true;
   }
-  function setQuery(filterDomain,query,fields){
-    return filterDomain.createFilter(fields?{query,fields}:{query});
-  }
-  const api=Object.freeze({setLayerVisible,setQuery});
+  // Future non-layer criteria will be specified after UX requirements.
+  // The generic matcher port lives in domain/pin-filter.js.
+  const api=Object.freeze({setLayerVisible});
   root.Pin2MapFilterOperations=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
