@@ -1801,3 +1801,16 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Die gespeicherten Pin-Koordinaten, die Zoomstufe und die laufenden Benutzereingaben werden durch das Mitwandern nicht verändert. Das Verschieben eines Pins über den eigenen Button mit Vorschau und Bestätigung bleibt davon unabhängig.
 - Die Positionierung wird pro Bildschirm-Frame begrenzt, um mobile Geräte nicht durch übermäßige Layoutarbeit zu belasten.
 - **Prüfanforderung:** Das Verhalten ist auf Desktop und iPhone bei Drag, Zoom, Kartenrand und anschließendem Zurückschwenken zu testen. Bestandenes statisches Prüfen allein bestätigt keine echte Gerätebedienung.
+
+
+## Bedienentscheidung – Fokusmodus mit Pin-Dialog wie in der Vorgänger-App (2026-11-09)
+
+**Verbindliche Korrektur auf ausdrücklichen Nutzerwunsch (ersetzt die vorherige Offscreen-Versteckregel):**
+
+1. **Während der Pin-Bearbeitungsdialog geöffnet ist, werden sämtliche Karten-Bedienelemente ausgeblendet**, insbesondere Suche/Kopfzeile, Zoom-/Einpassen-Buttons, Ebenenwahl, Labelschalter, Suchergebnisse und weitere Karten-Steuerungen. Die gesetzlich/lizenzrechtlich erforderliche Kartenquellenangabe bleibt sichtbar.
+2. **Der Pin-Dialog bleibt fest an der Bildschirmposition seines Pins verankert.** Bei jeder Kartenbewegung und Zoomänderung folgt er synchron, nicht erst nach Ende der Bewegung.
+3. **Keine Bildschirmrandkorrektur:** Der Dialog wird ausdrücklich weder horizontal noch vertikal am sichtbaren Bereich festgehalten. Wenn der Pin Richtung oder über den Bildschirmrand wandert, bewegt sich der Dialog mit ihm und darf teilweise oder vollständig aus dem Bildfeld verschwinden. Das ist erwünscht; zurückschwenken bringt ihn unverändert zurück.
+4. Wird der Dialog geschlossen (z. B. über die Schließen-Schaltfläche oder eine Kartenaktion), werden sämtliche ausgeblendeten Steuerungen wieder eingeblendet. Die Pin-Daten und zuvor eingegebene Texte bleiben erhalten.
+5. **Pin verschieben** bleibt eine bewusst aktivierte Funktion aus dem Pin-Dialog mit separater Vorschau und Bestätigung. Während dieses Modus gilt der normale Fokusmodus des *geöffneten Bearbeitungsdialogs* nicht; dessen Steuerelemente dürfen für den Verschiebeablauf entsprechend sichtbar sein.
+6. Die frühere Entscheidung, den Dialog beim Verlassen des sichtbaren Bildfelds vorübergehend auszublenden bzw. an Bildschirmränder zu klemmen, ist **aufgehoben**.
+7. Der Qualitätsgrundsatz bleibt verbindlich: Code-, CSS- und Regressionstests sind vor Statusmeldungen vorzunehmen; ein echter Browser-/iPhone-Test darf nicht ohne Durchführung als erledigt bezeichnet werden.
