@@ -276,6 +276,7 @@
     moveMode=true;removeMovePreview();
     $("pinPanel").classList.add("hidden");
     document.body.classList.remove("pin-open");
+    $("pinDialogTip").classList.add("hidden");
     // Controls only appear once a new position has been selected.
     $("moveBar").classList.add("hidden");
     updateModeUI();
@@ -323,6 +324,7 @@
     const panel=$("pinPanel"),pin=selectedPin();
     const dialogOpen=!!pin && !moveMode && !panel.classList.contains("hidden");
     document.body.classList.toggle("pin-open",dialogOpen);
+    $("pinDialogTip").classList.toggle("hidden",!dialogOpen);
     if(!dialogOpen || !map)return;
     // Match predecessor: the editor remains rigidly anchored to its pin,
     // including beyond every edge of the viewport. No clamping or auto-hiding.
@@ -336,6 +338,9 @@
     panel.style.visibility="visible";
     panel.style.left=(x-width/2)+"px";
     panel.style.top=(y-height-76)+"px";
+    const tip=$("pinDialogTip");
+    tip.style.left=x+"px";
+    tip.style.top=(y-76)+"px";
     panel.style.bottom="auto";
     panel.style.right="auto";
     panel.style.transform="none";
@@ -362,6 +367,7 @@
     const pin=selectedPin();
     $("pinPanel").classList.toggle("hidden",!pin||moveMode);
     document.body.classList.toggle("pin-open",!!pin&&!moveMode);
+    $("pinDialogTip").classList.toggle("hidden",!pin||moveMode);
     if(!pin){document.body.classList.remove("pin-open");return;}
     if(document.activeElement!==$("pinName"))$("pinName").value=pin.name||"";
     $("pinLayer").value=pin.layerId;
