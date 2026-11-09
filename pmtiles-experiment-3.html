@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>pin2map · Protomaps-Kartenstil-Diagnose 3</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css">
+<script src="https://unpkg.com/pmtiles@4.2.1/dist/pmtiles.js"></script>
+<script src="https://unpkg.com/@protomaps/basemaps@5.7.2/dist/basemaps.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font:14px system-ui,-apple-system,sans-serif;color:#172b49}
+header{position:absolute;z-index:5;inset:0 0 auto;min-height:61px;background:#172b49;color:#fff;padding:10px 15px;display:flex;flex-direction:column;gap:3px;justify-content:center;touch-action:manipulation}
+header strong{font-size:16px}header span{font-size:11px;opacity:.88}
+#map{position:absolute;inset:61px 0 0}
+#status{position:absolute;z-index:5;top:73px;left:10px;right:10px;max-width:430px;background:#fffffff0;border-radius:8px;padding:8px 12px;box-shadow:0 2px 9px #0002;font-size:12px}
+#status.error{border-left:4px solid #c83737}
+.controls{position:absolute;z-index:5;right:12px;top:190px;display:flex;flex-direction:column;gap:5px}
+.controls button{width:44px;height:44px;border-radius:10px;border:1px solid #d0d8e3;background:#fff;color:#172b49;font-size:22px;box-shadow:0 2px 8px #0002}
+footer{position:absolute;z-index:5;bottom:12px;left:10px;background:#fffffff0;border-radius:8px;padding:8px 11px;font-size:11px;max-width:calc(100vw - 20px)}
+</style>
+</head>
+<body>
+<header><strong>pin2map · Protomaps-Kartenstil-Diagnose 3</strong><span>Stuttgart-Demo prüfen · Fallback Florenz · nur Online-Test</span></header>
+<div id="map" aria-label="Protomaps-Light-Vektorkarte"></div>
+<div id="status" role="status">PMTiles-Quellen werden geprüft …</div>
+<div id="diagnostics" style="position:absolute;z-index:6;top:119px;left:10px;right:64px;max-width:530px;background:#fffe;border-radius:8px;padding:8px 11px;font-size:11px;line-height:1.5;box-shadow:0 2px 9px #0002">Prüfung wird gestartet …</div>
+<div class="controls">
+<button id="plus" aria-label="Vergrößern">+</button>
+<button id="minus" aria-label="Verkleinern">−</button>
+<button id="reset" aria-label="Nach Stuttgart springen">⌖</button>
+</div>
+<footer>Online-Kartenstiltest mit öffentlichem Demonstrationsdatensatz, externen Schrift- und Symbolressourcen. Keine Offline-Downloads, keine Nutzerdaten.</footer>
+<script type="module" src="./pmtiles-experiment-3.js"></script>
+</body>
+</html>
