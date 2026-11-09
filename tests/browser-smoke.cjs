@@ -94,6 +94,9 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".pin-marker").count(),1);
     assert.equal(errors.length,0,"Browser errors: "+errors.join("; "));
     console.log("[browser] PASS – selection, move/cancel/confirm, persistence, offline reload");
+  }catch(error){
+    await page.screenshot({path:"browser-smoke-failure.png",fullPage:true}).catch(()=>{});
+    throw error;
   }finally{
     await context.close();
     await browser.close();
