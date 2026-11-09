@@ -18,7 +18,7 @@ function documentStub(){
   };
 }
 test("all selected control icons are available as offline Lucide SVG geometry",()=>{
-  for(const name of ["search","refresh-cw","settings","layers","info","plus","minus","scan","x","check","trash-2"]){
+  for(const name of ["search","refresh-cw","settings","layers","info","plus","minus","scan","x","check","trash"]){
     const icon=Icons.svg(name,documentStub());
     assert.equal(icon.name,"svg");
     assert.equal(icon.attributes.viewBox,"0 0 24 24");
