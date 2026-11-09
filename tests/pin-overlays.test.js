@@ -110,3 +110,24 @@ test("temporary preview creates marker and line, updates and clears without muta
   assert.equal(calls.removed.length,2);
   assert.equal(nodes.confirmMove.disabled,true);
 });
+
+test("preview errors report failing adapter phase without mutating the pin",()=>{
+  const {adapter}=mapFixture();
+  const nodes=Object.fromEntries(["confirmMove","moveBar","moveText"].map(id=>[id,{
+    disabled:true,classList:{add(){},remove(){},contains:()=>false},
+    style:{},offsetWidth:120,offsetHeight:50
+  }]));
+  const original=adapter.createLine;
+  adapter.createLine=()=>{throw new TypeError("Illegal invocation");};
+  const preview=new PinMovePreview({
+    mapAdapter:adapter,getElement:id=>nodes[id],
+    getAppRect:()=>({left:0,top:0,width:320,height:400}),
+    getViewport:()=>({offsetLeft:0,offsetTop:0,width:320,height:400}),
+    onPosition:()=>{}
+  });
+  const pin={id:"a",lat:48,lng:9};
+  assert.throws(()=>preview.show({lat:49,lng:10},pin),
+    /Pin move preview failed at create or update preview line: Illegal invocation/);
+  assert.deepEqual(pin,{id:"a",lat:48,lng:9});
+  adapter.createLine=original;
+});
