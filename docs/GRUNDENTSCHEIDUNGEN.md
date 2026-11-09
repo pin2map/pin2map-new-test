@@ -1764,3 +1764,14 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - **Die weltweite geografische Ortsnamensuche bleibt verbindlicher Bestandteil der Basisversion.**
 
 **Status:** In der testbaren Anwendung umgesetzt. Browser- und iPhone-Interaktionen müssen nach der Veröffentlichung weiterhin praktisch überprüft werden.
+
+
+## UI-Präzisierung – Kompakte Positionsbestätigung am Vorschau-Pin (2026-11-09)
+
+**Verbindlich aus dem Nutzertest:**
+- Die Bestätigung des bewussten Pin-Verschiebens ist **kein breiter Dialog am unteren Bildschirmrand** mehr. Stattdessen erscheint eine **äußerst kompakte Bestätigungsleiste mit geringem Abstand unterhalb der neu gewählten Pin-Position**.
+- Die Beschriftung lautet ausschließlich **„Neue Position“**.
+- „Position übernehmen“ erscheint als **runder grüner Button mit weißem Haken (✓)**, „Abbrechen“ als **runder roter Button mit weißem X (×)**. Die Buttons erhalten eindeutige barrierefreie Beschriftungen.
+- Die Leiste folgt dem Vorschau-Pin bei dessen Verschiebung und bei Kartennavigation; falls unterhalb des Pins kein ausreichender Platz besteht, wird sie am sichtbaren Bildschirmrand sinnvoll oberhalb der Position platziert.
+- Die Leiste wird erst angezeigt, nachdem eine neue Position als Vorschau vorliegt. Die ursprüngliche Position, Vorschau und Verbindungslinie bleiben erhalten. Die Speicherung erfolgt weiterhin **erst nach Bestätigung**, Abbrechen verwirft die Vorschau (Grundentscheidungen 30–35).
+- Die weltweite Ortssuche und die Regel, alle neuen Pins zunächst in „Privat“ anzulegen, bleiben unberührt.
