@@ -52,9 +52,9 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - [ ] Reale Browser-Regressionstests mit Desktop + iPhone
 
 ### B. Unabhängiger MapLibre-/Protomaps-Prototyp
-- [ ] MapLibre/PMTiles-Abhängigkeiten und Lizenzstände festhalten
+- [~] MapLibre GL JS 6.16.0 für den isolierten Online-Prototyp fest gepinnt (BSD-3-Clause); PMTiles-Abhängigkeit und Lizenzstände für Offline-Test noch offen
 - [ ] Kleine, legale regionale PMTiles-Testdatei und Stil/Fonts/Symbole bereitstellen
-- [ ] MapLibre-Adapter mit Pins, Dialogen, Labels und Verschiebevorschau
+- [~] Separater MapLibre-Adapter mit Projektion, Test-Pins und Labels sowie Zoom-Steuerung; Original-Pin-Dialoge, Gesten und Verschiebevorschau noch nicht integriert
 - [ ] Leistungs- und Darstellungsvergleich auf iPhone
 - [ ] iPhone-Offline-Neustart inklusive PMTiles-Speicherung erfolgreich testen
 
@@ -95,3 +95,13 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Bestehende Gestenschwellen und Sicherheitslogik (ein Pointer, Bewegungsschwelle, Langdruck, Kontextmenü-Unterdrückung) bleiben unverändert.
 - Isolierte Ausführung der Tests mit den aktuellen GitHub-Dateien: **86 statische UI-Checks und 41 Adapter-Assertions bestanden**, Syntax von `app.js` und `map-adapter-leaflet.js` geprüft. Der vollständige Node-, Desktop-Browser- und iPhone-Test ist noch offen.
 - Für den MapLibre-Adapter ist eine eigene `isMapSurface`-Implementierung erforderlich. Eine echte iPhone-Abnahme ist erst sinnvoll, wenn ein unabhängiger Testzweig sichtbar bereitgestellt wird; `main` bleibt unangetastet.
+
+## Inkrement 5: Isolierter MapLibre-Testaufbau (2026-11-09)
+
+- Neue Dateien im Branch `feature/maplibre-protomaps`: `maplibre-prototype.html`, `maplibre-prototype.js`, `map-adapter-maplibre.js` und `tests/check-maplibre-prototype.mjs`.
+- MapLibre GL JS **6.16.0** fest gepinnt, mit offiziellem `https://demotiles.maplibre.org/style.json`. Lizenz MapLibre GL JS: BSD-3-Clause. Demokacheln sind nur für den technischen Prototyp; ihre Nutzung ist keine Produktions- oder systematische Offline-Downloadfreigabe.
+- Karteninitialisierung, `getViewport`, `project`, `unproject`, `setView`, `panBy`, `fitBounds`, Klicks, drei nicht gespeicherte Test-Marker, Labels und Zoom-Buttons im getrennten Prototyp. Es werden **keine bestehenden IndexedDB-Daten** geöffnet, gespeichert oder migriert und **kein Service Worker** registriert.
+- JavaScript-Syntax des Adapters und Prototyp-Skripts geprüft; **17 isolierte Vertragsprüfungen bestanden**, insbesondere die korrekte Umrechnung zwischen `{lat,lng}` und MapLibre `[lng,lat]`.
+- MapLibre v6 verlangt WebGL2. Echte Geräteprüfung, Rendering, Pin-Gesten, Dialog und Offline-/PMTiles-Test stehen aus. Dies ist bewusst kein funktionsgleicher Ersatz für die bisherige PWA.
+- GitHub Pages zeigt weiterhin `main`. Die neue `maplibre-prototype.html` liegt nur im Entwicklungszweig und ist **noch nicht über einen eigenen GitHub-Pages-Testlink veröffentlicht**. Daher noch keine Nutzerprüfung anfordern.
+- Nächster Schritt: isolierten Preview-Deploy einrichten, dann gezielte iPhone-Prüfung; anschließend Protomaps/PMTiles und verschiebbare Vorschau integrieren.
