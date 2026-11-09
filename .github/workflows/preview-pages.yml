@@ -81,8 +81,10 @@ jobs:
           # Scope caches by preview: the preview worker must not purge the
           # existing root worker's offline app shell on activation.
           replace_exact("sw.js", "pin2map-new-v", "pin2map-preview-v")
-          # The app-shell prefix is already isolated above. Do not replace
-          # it a second time: there is no longer a matching old prefix.
+          # Separate cleanup prefix: the worker must not delete the main
+          # app's cache when a preview worker activates.
+          replace_exact("sw.js", "name.startsWith('pin2map-new-')",
+                        "name.startsWith('pin2map-preview-')")
           replace_exact("sw.js", "pin2map-viewed-osm-tiles-v1",
                         "pin2map-preview-viewed-osm-tiles-v1")
           replace_exact("sw.js", "pin2map-viewed-osm-tile-metadata-v1",
