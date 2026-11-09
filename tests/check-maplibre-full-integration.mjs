@@ -31,7 +31,10 @@ const map={
  getLayer(id){return layers.get(id);},
  removeLayer(id){layers.delete(id);},
  removeSource(id){sources.delete(id);},
- panBy(x){events.push(["pan",x]);},
+ getCenter(){return {lat:48,lng:9};},
+ project([lng,lat]){return {x:lng*10,y:lat*10};},
+ unproject([x,y]){return {lng:x/10,lat:y/10};},
+ jumpTo(opts){events.push(["jump",opts]);},
  getContainer(){return {clientWidth:300,clientHeight:500};}
 };
 const a=new scope.window.Pin2MapMapLibreAdapter(map,{});
@@ -48,5 +51,7 @@ a.removeOverlay(line);
 assert.equal(sources.size,0);
 assert.equal(layers.size,0);
 a.panBy({x:10,y:-4});
-assert.deepEqual(Array.from(events.find(e=>e[0]==="pan")[1]),[10,-4]);
+const nextCenter=events.find(e=>e[0]==="jump")[1].center;
+assert.equal(Math.abs(nextCenter[0]-10)<1e-9,true);
+assert.equal(Math.abs(nextCenter[1]-47.6)<1e-9,true);
 console.log("MapLibre full-app integration: wiring + adapter mock checks passed.");
