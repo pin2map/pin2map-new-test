@@ -252,3 +252,16 @@ body.pin-open .leaflet-control-container .leaflet-control:not(.leaflet-control-a
 /* The editor is positioned by JavaScript at the pin, deliberately without
    edge constraints. The #app viewport clips the dialog naturally offscreen. */
 body.pin-open #pinPanel{visibility:visible}
+
+
+/* Predecessor popup geometry: 76px clearance measured from pin anchor to
+   the editor's bottom edge. Separate pointer avoids overflow clipping. */
+.pin-dialog-tip{
+  position:absolute;z-index:1251;pointer-events:none;
+  width:0;height:0;transform:translateX(-50%);
+  border-left:11px solid transparent;
+  border-right:11px solid transparent;
+  border-top:15px solid #fff;
+  filter:drop-shadow(0 2px 1px #293a4d45);
+}
+body.pin-open .pin-dialog-tip:not(.hidden){display:block}
