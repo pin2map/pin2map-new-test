@@ -14,10 +14,11 @@
 <div id="app">
   <header class="topbar">
     <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen" aria-label="Ort weltweit suchen"><button type="submit" id="searchButton" title="Ort suchen">⌕</button></form>
-    <button id="layersButton" class="topbtn" title="Ebenen verwalten" aria-label="Ebenen verwalten">☷</button>
+
     <button id="settingsButton" class="topbtn" title="Einstellungen" aria-label="Einstellungen">⚙</button>
   </header>
   <main id="map" aria-label="Interaktive Karte"></main>
+  <button id="layersButton" class="layers-bottom-button" type="button" title="Ebenen auswählen" aria-label="Ebenen auswählen" aria-expanded="false">☷</button>
   <button id="labelsToggle" class="labels-toggle" type="button" title="Pin-Beschriftungen ein- oder ausblenden" aria-label="Pin-Beschriftungen ein- oder ausblenden">i</button>
   <div id="searchResults" class="search-results hidden" role="status" aria-live="polite"></div>
   <aside id="layersPanel" class="panel layers-panel hidden" aria-label="Ebenen"><div class="panel-head"><h2>Ebenen</h2><button class="close" data-close="layersPanel" aria-label="Schließen">×</button></div><div id="layersList"></div><button id="addLayer" class="secondary full">+ Neue Ebene</button></aside>
