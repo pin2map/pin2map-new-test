@@ -320,31 +320,26 @@
   function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
   function updatePanelLayout(){
     const panel=$("pinPanel"),pin=selectedPin();
-    document.body.classList.toggle("pin-open",!!pin && !moveMode);
-    if(!pin || !map || moveMode || panel.classList.contains("hidden")){
-      panel.style.visibility="";
-      return;
-    }
-    const p=map.latLngToContainerPoint([pin.lat,pin.lng]);
-    const rect=map.getContainer().getBoundingClientRect();
-    // A selected pin that leaves the map must not leave behind an orphaned
-    // dialog frozen at the map edge. It reappears when the pin comes back.
-    const onScreen=p.x>=-16 && p.y>=-16 &&
-      p.x<=rect.width+16 && p.y<=rect.height+16;
-    if(!onScreen){
-      panel.style.visibility="hidden";
-      return;
-    }
-    panel.style.visibility="visible";
-    const width=Math.min(310,window.innerWidth-16);
+    const dialogOpen=!!pin && !moveMode && !panel.classList.contains("hidden");
+    document.body.classList.toggle("pin-open",dialogOpen);
+    if(!dialogOpen || !map)return;
+    // Match predecessor: the editor remains rigidly anchored to its pin,
+    // including beyond every edge of the viewport. No clamping or auto-hiding.
+    const point=map.latLngToContainerPoint([pin.lat,pin.lng]);
+    const appRect=$("app").getBoundingClientRect();
+    const mapRect=map.getContainer().getBoundingClientRect();
+    const width=Math.min(310,appRect.width-16);
     const height=panel.offsetHeight;
-    const x=rect.left+p.x,y=rect.top+p.y;
-    const left=Math.max(8,Math.min(window.innerWidth-width-8,x-width/2));
-    const minTop=rect.top+8;
-    const top=Math.max(minTop,y-height-30);
-    panel.style.left=left+"px";panel.style.top=top+"px";
-    panel.style.bottom="auto";panel.style.transform="none";panel.style.width=width+"px";
-    panel.classList.toggle("panel-near-top",y-height-30<minTop);
+    const x=mapRect.left+point.x-appRect.left;
+    const y=mapRect.top+point.y-appRect.top;
+    panel.style.visibility="visible";
+    panel.style.left=(x-width/2)+"px";
+    panel.style.top=(y-height-30)+"px";
+    panel.style.bottom="auto";
+    panel.style.right="auto";
+    panel.style.transform="none";
+    panel.style.width=width+"px";
+    panel.classList.remove("panel-near-top");
   }
   function scheduleMapOverlayUpdate(){
     if(mapOverlayFrame)return;
@@ -365,6 +360,7 @@
   function renderPinPanel(){
     const pin=selectedPin();
     $("pinPanel").classList.toggle("hidden",!pin||moveMode);
+    document.body.classList.toggle("pin-open",!!pin&&!moveMode);
     if(!pin){document.body.classList.remove("pin-open");return;}
     if(document.activeElement!==$("pinName"))$("pinName").value=pin.name||"";
     $("pinLayer").value=pin.layerId;
