@@ -77,6 +77,7 @@
         const add=(symbol,title,action)=>{
           const button=window.L.DomUtil.create("button","pin-zoom-button",holder);
           button.type="button";button.textContent=symbol;button.title=title;
+          window.Pin2MapIcons?.mount(button,symbol==="+"?"plus":symbol==="−"?"minus":"scan");
           button.setAttribute("aria-label",title);
           window.L.DomEvent.on(button,"click",event=>{window.L.DomEvent.stop(event);action();});
         };
