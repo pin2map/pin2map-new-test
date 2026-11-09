@@ -79,3 +79,11 @@ Entwicklungszweig: `feature/leaflet-modular-core`, **nicht `main`**. Er wurde au
 **Nicht zwischen Leaflet und MapLibre abstrahieren, nur um zwei Engines zu unterstützen.** Der Karten-Port bleibt gerade so klein wie die tatsächlichen Anforderungen an Pins, Flächen, Linien, Routen und Viewport. Seine Aufgabe ist, Fachlogik von einem Renderer zu entkoppeln, nicht ein vollständiges Universal-Kartenframework zu entwickeln.
 
 Die bestehende informationsreiche Leaflet-V18-Referenz `reference/leaflet-v18-2026-11-09` und der abgenommene MapLibre-Integrationsstand `reference/maplibre-full-integration-accepted-2026-11-09` bleiben unverändert.
+
+## Inkrement 2: Speicheradapter ohne Datenmigration (2026-11-09)
+
+- `adapters/storage/indexeddb-project-store.js` kapselt die bereits existierende Projektdatenbank. **Unveränderte Kennungen:** Datenbank `pin2map-new-v1`, Version `1`, Object Store `kv`, Schlüssel `appState`. Kein Datenexport, keine Migration, keine Schemaänderung.
+- Das Hauptprogramm greift nur noch über `Pin2MapIndexedDBProjectStore.open()`, `loadProject()` und `saveProject(state)` darauf zu. Weder `indexedDB.open()` noch `db.transaction()` sind noch im aktiven `app.js`.
+- `index.html` lädt Domänenmodell, Speicheradapter und Kartenadapter vor `app.js`.
+- `tests/check-project-store.mjs` prüft die Datenbankkennungen und das Lese-/Schreibverhalten gegen eine isolierte Testimplementierung; `tests/check-architecture.mjs` verhindert direkten IndexedDB-/Leaflet-Zugriff aus der Anwendung und Browser-Abhängigkeiten in `domain/`. Workflow `.github/workflows/leaflet-modular.yml` ist auf diesen Zweig begrenzt.
+- **Noch ausstehend:** tatsächlicher GitHub-Actions-Lauf sowie Browser-/PWA-Test der neuen Modulversion. `main`, Leaflet-V18- und MapLibre-Referenzen bleiben vollständig unverändert.
