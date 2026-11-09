@@ -292,3 +292,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - GitHub-Dateiprüfung bestätigt die **tatsächliche Existenz** der isolierten Offline-Site-Dateien einschließlich Service Worker und Manifest; 1040 Dateien, 18,19 MiB, davon 1024 Schriftkachel-Dateien. Service-Worker-Precache: 1039 Dateien; Version `pin2map-stuttgart-lab-67a476a99139ee27`.
 - Neue sichtbare Bereitschaftsanzeige trennt lokal gecachte Programm-/Stilressourcen von der separat gespeicherten PMTiles-Datei.
 - **Noch keine Geräte-Offline-Abnahme:** Öffentliche Pages-Erreichbarkeit und erfolgreicher iOS-/Brave-Cache-Install sowie Flugmodus-Start sind noch separat zu testen. PMTiles-Datei bleibt nur in der isolierten IndexedDB-Testdatenbank, niemals in bestehenden Pin-Datenbanken.
+
+## Inkrement 23: Fehler im Offline-MapLibre-Worker lokalisiert und Build korrigiert (2026-11-09)
+
+- Nutzer-Screenshot: Graue Karte und Meldung `Worker failed to load. Check that the worker URL is correct.` in der neuen separaten Offline-Labor-Seite.
+- Ursache: Die MapLibre-6-ESM-Bibliothek wurde zunächst **ohne** die zwingend erforderliche separate `maplibre-gl-worker.mjs` ausgeliefert. Das ergänzende `maplibre-gl-shared.mjs` wird ebenfalls in das Paket aufgenommen. Die bereits erfolgreich getestete lokale Stuttgart-PMTiles-Datei selbst ist dadurch nicht widerlegt.
+- Build und Paketvalidierung im Preview-Repository ergänzt: Worker-/Shared-Bundles lokal abrufen, Vollständigkeit verlangen, eigene Worker-URL über `setWorkerUrl` setzen und im SW-Precache verifizieren.
+- Bei letzter Prüfung waren die Worker-Dateien in der veröffentlichten GitHub-Pages-Struktur **noch nicht vorhanden**. Neuer Build/Deployment und anschließender Browser-Test stehen aus. Gesicherte Haupt-PWA/Referenzen unverändert.
