@@ -1733,3 +1733,17 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Dies ist die Korrektur einer Regression und **keine neue Funktion**. Die weltweite Ortsnamensuche bleibt Teil der Basisversion.
 
 **Prüfstatus:** JavaScript-Syntax und die relevanten Codepfade wurden geprüft; das Verhalten auf echtem iPhone und Desktop muss weiterhin praktisch verifiziert werden.
+
+
+## Umsetzungspräzisierung – Pin-Langdruck-Zoom und Ebenenauswahl unten (2026-11-09)
+
+**Nach Prüfung des Originals in `pin2map/pin2map` und auf ausdrücklichen Nutzerwunsch verbindlich festgelegt:**
+
+1. **Ein langer Druck auf ein bestehendes Pin-Symbol dient zum Zoomen, nicht zum Verschieben.** Die Vorgänger-App verwendet den Wechsel zwischen Zoomstufe **18 und 14** mit einem Halteintervall von ca. **550 ms**. Der Pin behält seine **bisherige Bildschirmposition** statt automatisch in die Kartenmitte zu springen; der Übergang erfolgt ohne Animation. Die maximale Zoomstufe des gewählten Kartenanbieters wird respektiert.
+2. **Ein kurzer Pin-Tipp öffnet weiterhin den Pin-Bearbeitungsdialog**, erneutes Tippen schließt ihn. Pin-Gesten dürfen keine Kartenverschiebung auslösen.
+3. **Pin-Verschieben ist nur über die bewusst gewählte Schaltfläche „Pin verschieben“ im Pin-Bearbeitungsdialog möglich.** Die vorherige Langdruck-Verschiebegeste wird aufgehoben. Die separate Vorschau mit alter Position, neuer Position, Verbindungslinie sowie „Position übernehmen“/„Abbrechen“ bleibt bestehen.
+4. **Die Ebenensteuerung wandert aus dem oberen Suchblock heraus.** Ein eigener **runder Button unten horizontal zentriert** öffnet die Ebenenverwaltung **direkt darüber**, sowohl auf iPhone als auch Desktop. Die obere Suchsteuerung bleibt kompakt und enthält die Ortssuche und Einstellungen.
+5. Das lange Drücken auf eine **freie Kartenfläche** erzeugt weiterhin einen neuen Pin, auch am Desktop. Diese Geste ist unabhängig vom Langdruck auf einen bestehenden Pin.
+6. Die **weltweite geografische Ortssuche bleibt verbindlicher Bestandteil der Basisversion**; alle darüber erzeugten Pins gehören in „Privat“.
+
+**Prüfstatus:** Gegen das Original-Verhalten geprüft, Code eingecheckt und JavaScript-Syntax kontrolliert. Ein realer Browser-/iPhone-Interaktionstest ist weiterhin erforderlich.
