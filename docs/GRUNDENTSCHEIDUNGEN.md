@@ -1790,3 +1790,14 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 7. **Relevante UI-Spezifikation dieser Korrektur:** Beim Pin-Verschieben gibt es **keine zusätzliche Aufforderung oder Hinweisblase**, eine neue Kartenstelle anzutippen. Erst nach Wahl einer Vorschauposition erscheint ein äußerst kompakter Dialog **unterhalb der neuen Position** mit ausschließlich „Neue Position“, grünem rundem Haken und rotem rundem X. Die neue Position bleibt bis zur ausdrücklichen Bestätigung eine Vorschau.
 
 **Dieser Qualitätsgrundsatz hat Vorrang vor früheren, lediglich auf Codekontrolle gestützten Aussagen über einen abgeschlossenen Implementierungsstand.**
+
+
+## Bedienpräzisierung – Pin-Dialog folgt laufender Kartenbewegung (2026-11-09)
+
+**Verbindlich auf Grundlage des Nutzertests:**
+- Ist der Pin-Bearbeitungsdialog geöffnet und wird die Karte mit Finger oder Maus verschoben bzw. gezoomt, darf der Dialog nicht unbewegt an seiner alten Bildschirmposition stehen.
+- **Gewählte Umsetzung:** Der Dialog bleibt geöffnet und folgt während der laufenden Kartenbewegung **synchron der Bildschirmposition des zugehörigen Pins**. Die Aktualisierung beginnt nicht erst beim Ende der Kartenbewegung.
+- Verlässt der ausgewählte Pin die sichtbare Karte, wird sein Dialog **vorübergehend ausgeblendet**, während die Pin-Auswahl erhalten bleibt. Sobald der Pin zurück in den sichtbaren Ausschnitt bewegt wird, erscheint der Dialog wieder an dessen Position.
+- Die gespeicherten Pin-Koordinaten, die Zoomstufe und die laufenden Benutzereingaben werden durch das Mitwandern nicht verändert. Das Verschieben eines Pins über den eigenen Button mit Vorschau und Bestätigung bleibt davon unabhängig.
+- Die Positionierung wird pro Bildschirm-Frame begrenzt, um mobile Geräte nicht durch übermäßige Layoutarbeit zu belasten.
+- **Prüfanforderung:** Das Verhalten ist auf Desktop und iPhone bei Drag, Zoom, Kartenrand und anschließendem Zurückschwenken zu testen. Bestandenes statisches Prüfen allein bestätigt keine echte Gerätebedienung.
