@@ -22,7 +22,11 @@
    this.element("pinLayer").value=pin.layerId;
    this.element("pinCoords").textContent="Koordinaten: "+pin.lat.toFixed(6)+", "+pin.lng.toFixed(6);
    this.element("pinHiddenInfo").classList.toggle("hidden",Boolean(layerVisible));
-   this.element("movePin").textContent=moving?"Verschieben abbrechen":"Pin verschieben";
+   // Preserve the SVG child: assigning textContent would remove the icon.
+   const moveButton=this.element("movePin");
+   const moveLabel=moving?"Verschieben abbrechen":"Pin verschieben";
+   moveButton.title=moveLabel;
+   moveButton.setAttribute("aria-label",moveLabel);
    this.scheduleFrame(onLayout);
   }
  }
