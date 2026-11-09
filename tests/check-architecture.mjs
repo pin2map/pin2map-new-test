@@ -33,9 +33,14 @@ const app=source("app.js");
 assert.doesNotMatch(app,/\bL\s*\./,"Active application must only use map adapter");
 assert.match(app,/Pin2MapProjectModel/,"Domain model must be used by app");
 assert.match(app,/projectModel\.defaultProject/);
+assert.doesNotMatch(app,/\bindexedDB\s*\.|\bindexedDB\.open\s*\(/,"Application must not access IndexedDB directly");
+assert.match(app,/Pin2MapIndexedDBProjectStore\.open/);
+assert.match(app,/projectStore\.saveProject/);
 const html=source("index.html");
 const domain=html.indexOf('src="./domain/project-model.js"');
+const storage=html.indexOf('src="./adapters/storage/indexeddb-project-store.js"');
 const adapter=html.indexOf('src="./map-adapter-leaflet.js"');
 const application=html.indexOf('src="./app.js"');
-assert.ok(domain>=0&&adapter>domain&&application>adapter,"Domain → adapter → app load order required");
+assert.ok(domain>=0&&storage>domain&&adapter>storage&&application>adapter,
+  "Domain → repository → map adapter → app load order required");
 console.log("Architectural gates passed:",modelFiles.join(", "),"; Leaflet app uses adapter");
