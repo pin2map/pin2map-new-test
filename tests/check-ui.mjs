@@ -34,4 +34,12 @@ check(css.includes('.leaflet-control:not(.leaflet-control-attribution)'), 'tile 
 check(js.includes('scheduleMapOverlayUpdate();'), 'map movement and resize trigger layout updates');
 check(js.includes('if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}'), 'pin editor close restores controls and clears selection');
 check(js.includes('moveMode=true;removeMovePreview();') && js.includes('document.body.classList.remove("pin-open");'), 'moving a pin leaves focus mode immediately');
+check(html.includes('id="refreshButton"'), 'new version refresh button exists');
+check(js.includes('await dbWrite()') && js.includes('registration.update()'), 'refresh flushes local edits and checks service-worker updates');
+check(js.includes('window.location.replace(target.href)'), 'refresh performs a real navigation');
+check(html.includes('id="pinDialogTip"'), 'pin dialog pointer has independent element');
+check(js.includes('panel.style.top=(y-height-76)+"px"'), 'pin-dialog clearance matches predecessor 76px');
+check(js.includes('tip.style.top=(y-76)+"px"') && js.includes('tip.style.left=x+"px"'), 'pointer follows map-anchored dialog');
+check(css.includes('.pin-dialog-tip{') && css.includes('border-top:15px solid #fff'), 'white downward triangle is styled');
+check(js.includes('$("pinDialogTip").classList.toggle("hidden",!pin||moveMode)'), 'pointer disappears when editor closes or moving starts');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
