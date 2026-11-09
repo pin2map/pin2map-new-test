@@ -337,3 +337,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 5. Erneuter Flugmodus-Test des bisherigen Protomaps-Light-Labors ist **nicht** die nächste Priorität; erst Detailtreue untersuchen.
 
 Kein Commit in `main` oder Referenzzweigen; dies ist ausschließlich eine dokumentierte Qualitätsanforderung im Entwicklungszweig.
+
+## Inkrement 28: OSM-Informationsdichte unabhängig von Karten-Engine abgesichert (2026-11-09)
+
+- Verbindliche Priorität: Informationsfülle der bisherigen OSM-Standardkarte darf durch eine Engine-/Datenmigration nicht sinken. Protomaps-Light bleibt optionale Experimentierkarte; Offline-Betrieb ist nachrangig.
+- **Technischer Ist-Befund:** Bereits die abgenommene MapLibre-Vollintegration `full-maplibre-adapter-v2.js` bietet unter `setBasemap("street")` eine MapLibre-Raster-Source mit `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, `tileSize:256` und `maxzoom:19`. Die identischen Rastertiles sind auch mit Leaflet darstellbar. Die informationsärmere Ansicht entstand ausschließlich beim separaten Protomaps-v4/Light-PMTiles-Test, nicht durch einen inhärenten MapLibre-Datenverlust.
+- Zum direkteren Nachweis wurde die eigenständige **gleiche-Rasterquelle**-Vergleichsseite `https://pin2map.github.io/pin2map-maplibre-preview/osm-raster-parity-v1.html` angelegt. Links Leaflet, rechts MapLibre, beide mit `tile.openstreetmap.org`, identischer Startposition und Zoomstufe, beide interaktiv; die Kartenansichten werden bei Kartenbewegung synchronisiert. Kein Pin-/Ebenenspeicher und keine Änderung bestehender App-Versionen.
+- **Nächster Qualitätstest:** Seite auf dem bekannten Stuttgarter Vergleichsausschnitt prüfen. Bei identischer Rasterkachel-Darstellung muss dieselbe Hausnummern-, Einrichtungs-, Wege- und Beschriftungsfülle erscheinen, unabhängig von Leaflet/MapLibre. Erst danach gegebenenfalls MapLibre-Vollintegration bei unveränderter Rasterbasiskarte weiterentwickeln.
+- Bei OSM-Standardrastertiles keine automatisierten Bulks, kein Offline-Prefetching, keine Integration in einen PMTiles-Downloader. Für Offline später separate Lizenzen und gleichwertige Datenquelle untersuchen.
