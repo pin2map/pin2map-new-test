@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync(new URL('../maplibre-prototype-v5.html',import.meta.url),'utf8');
+const js=readFileSync(new URL('../maplibre-prototype-v5.js',import.meta.url),'utf8');
+function check(ok,message){assert.ok(ok,message);}
+check(html.includes('MapLibre Testversion 5'),'v5 page is separately named');
+check(html.includes('maplibre-prototype-v5.js'),'v5 script is independently cached');
+check(js.includes('map-adapter-maplibre-v4.js'),'stable MapLibre adapter loaded');
+check(html.includes('id="pinEditor"') && html.includes('id="pinName"'),'pin editor controls exist');
+check(html.includes('id="previewLine"') && html.includes('id="moveLine"'),'preview line SVG exists');
+check(html.includes('.hidden{display:none!important}'),'hidden elements really hide');
+check(html.includes('height:calc(100% - 58px)'),'preview SVG aligned to map origin');
+check(js.includes('},550);') && js.includes('>11'),'long press threshold and movement cancellation');
+check(js.includes('adapter.zoomAround(position,far?14:18)'),'held pin zoom toggles at its coordinate');
+check(js.includes('if(moveMode){setPreview(position);return;}'),'map click places preview without saving');
+check(js.includes('pin.lat=movePreview.lat;pin.lng=movePreview.lng'),'confirmation transfers coordinates');
+check(js.includes('if(moveMarker){adapter.removeOverlay(moveMarker);moveMarker=null;}'),'preview cleanup');
+check(js.includes('status.textContent=message')===false,'status is updated through notify');
+check(!js.includes('indexedDB.open') && !js.includes('serviceWorker.register'),'v5 does not touch stored user data');
+console.log('MapLibre v5 static interaction checks passed (14).');
