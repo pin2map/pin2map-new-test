@@ -74,5 +74,6 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
   assert.match(html,/<button id="movePin"[^>]*data-pin-icon="pin-relocate"[^>]*aria-label="Pin verschieben"/);
   assert.match(css,/#movePin\.p2m-icon-control\s*\{/);
   assert.match(css,/#movePin \.p2m-relocate-icon\s*\{/);
-  assert.ok(!html.includes('id="movePin" class="secondary">Pin verschieben</button>'));
+  assert.match(html,/<button id="movePin"[^>]*><\/button>/,
+    "Relocation button must have no visible text, even before SVG mounting");
 });
