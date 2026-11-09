@@ -59,8 +59,7 @@ def main() -> None:
         'https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs',
         './vendor/maplibre-gl.mjs')
     # Explicit worker path avoids browsers deriving a wrong worker URL from
-    # the packaged ESM entry point. The ESM worker and its shared sibling
-    # must be hosted together under the same origin.
+    # the packaged ESM entry point. MapLibre 6.16 uses a standalone worker.
     js = js.replace(
         'const $=id=>document.getElementById(id);',
         'maplibregl.setWorkerUrl(new URL("./vendor/maplibre-gl-worker.mjs", import.meta.url).href);\n'
@@ -88,7 +87,6 @@ def main() -> None:
     required = [
         VENDOR / "maplibre-gl.mjs",
         VENDOR / "maplibre-gl-worker.mjs",
-        VENDOR / "maplibre-gl-shared.mjs",
         VENDOR / "maplibre-gl.css",
         VENDOR / "pmtiles.js",
         VENDOR / "basemaps.js",
