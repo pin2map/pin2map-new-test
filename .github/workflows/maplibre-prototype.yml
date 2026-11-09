@@ -39,6 +39,7 @@ jobs:
           node --check pmtiles-persistent-store-v1.js
           node --check pmtiles-persistent-lab-v1.js
           node --check tests/check-pmtiles-persistence.mjs
+          node --check tests/check-pmtiles-offline-package.mjs
       - name: Run regression and adapter checks
         run: |
           node tests/check-ui.mjs
@@ -48,6 +49,7 @@ jobs:
           node tests/check-maplibre-full-integration.mjs
           node tests/check-pmtiles-experiment.mjs
           node tests/check-pmtiles-persistence.mjs
+          node tests/check-pmtiles-offline-package.mjs
       - name: Package separate prototype
         run: |
           mkdir -p preview
