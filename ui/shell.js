@@ -5,7 +5,8 @@
  */
 (function(root){
   class UIShell {
-    constructor({getElement,setTimer=setTimeout,clearTimer=clearTimeout}){
+    constructor({getElement,setTimer=(callback,delay)=>root.setTimeout(callback,delay),
+      clearTimer=id=>root.clearTimeout(id)}){
       if(typeof getElement!=="function")throw new TypeError("getElement must be a function");
       this.element=getElement;
       this.setTimer=setTimer;
