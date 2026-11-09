@@ -305,3 +305,8 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - GitHub-Dateiprüfung bestätigt `offline-stuttgart-lab/vendor/maplibre-gl-worker.mjs` (519.372 Bytes), explizite `setWorkerUrl`-Anweisung in veröffentlichter `pmtiles-persistent-lab-v1.js` und 1.041 Manifest-Dateien mit Worker. Der ursprüngliche Offline-Renderingfehler durch fehlenden Worker ist im Deployment behoben.
 - **Versionsspezifischer Befund:** MapLibre 6.16.0 benötigt keine separate `maplibre-gl-shared.mjs`. Diese Datei ist bewusst weder im Manifest noch als zwingende Build-Abhängigkeit enthalten.
 - Reale Kartendarstellung und Flugmodus-Start mit aktualisiertem Cache müssen weiterhin auf dem iPhone überprüft werden; bestehende Haupt-PWA und Referenzen unangetastet.
+
+## Inkrement 25: Offline-Labor zeigt eigene Stuttgart-Karte und Ressourcen-Cache (2026-11-09)
+
+- Nutzer-Screenshot bestätigt Rendering der Datei `stuttgart-z12.pmtiles` mit lokal bereitgestelltem Protomaps-Stil, MapLibre-Worker-Korrektur und erfolgreicher Meldung `Programm und Kartenstil lokal verfügbar` des isolierten Service Workers.
+- Noch offen und vor Offline-Abnahme zwingend: iPhone-Flugmodus-Test nach vollständigem Neustart bzw. Neuaufruf, Kontrolle der in IndexedDB gespeicherten Region, Symbol-/Beschriftungsprüfung. Bestehende PWA und Referenzen unverändert.
