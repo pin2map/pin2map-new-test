@@ -42,12 +42,14 @@ assert.match(app,/projectModel\.defaultProject/);
 assert.doesNotMatch(app,/\bindexedDB\s*\.|\bindexedDB\.open\s*\(/,"Application must not access IndexedDB directly");
 assert.match(app,/Pin2MapIndexedDBProjectStore\.open/);
 assert.match(app,/projectStore\.saveProject/);
+assert.match(app,/Pin2MapSearchResultsView/,"App must use independent search presentation");
 const html=source("index.html");
 const domain=html.indexOf('src="./domain/project-model.js"');
 const storage=html.indexOf('src="./adapters/storage/indexeddb-project-store.js"');
 const ui=html.indexOf('src="./ui/shell.js"');
+const searchView=html.indexOf('src="./ui/search-results.js"');
 const adapter=html.indexOf('src="./map-adapter-leaflet.js"');
 const application=html.indexOf('src="./app.js"');
-assert.ok(domain>=0&&storage>domain&&ui>storage&&adapter>ui&&application>adapter,
-  "Domain → repository → UI shell → map adapter → app load order required");
+assert.ok(domain>=0&&storage>domain&&ui>storage&&searchView>ui&&adapter>searchView&&application>adapter,
+  "Domain → repository → UI modules → map adapter → app load order required");
 console.log("Architectural gates passed:",modelFiles.join(", "),"; Leaflet app uses adapter");
