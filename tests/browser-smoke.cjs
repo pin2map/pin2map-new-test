@@ -28,22 +28,27 @@ async function longPress(page,x,y,ms=725){
   const context=await browser.newContext({viewport:{width:1100,height:780},serviceWorkers:"allow"});
   const page=await context.newPage();
   const errors=[];
+  let stage="browser launch";
+  const step=label=>{stage=label;console.log("[browser] "+label);};
   page.on("pageerror",error=>errors.push(error.message));
+  page.on("console",message=>{
+    if(message.type()==="error")console.error("[page console]",message.text());
+  });
   try{
-    console.log("[browser] load application");
+    step("load application");
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await assertReady(page);
     const box=await page.locator("#map").boundingBox();
     assert.ok(box&&box.width>300&&box.height>300,"Map viewport is present");
     const center={x:box.x+box.width*.5,y:box.y+box.height*.57};
-    console.log("[browser] long-press creates and selects a private pin");
+    step("long-press creates and selects a private pin");
     await longPress(page,center.x,center.y);
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     const coordsBefore=await page.locator("#pinCoords").textContent();
     assert.match(coordsBefore,/Koordinaten:/);
     assert.equal(await page.locator(".pin-marker").count(),1);
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
-    console.log("[browser] cancellation retains original coordinates");
+    step("cancellation retains original coordinates");
     await page.locator("#movePin").click();
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
     const first={x:box.x+box.width*.70,y:box.y+box.height*.72};
@@ -53,7 +58,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#cancelMove").click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinCoords").textContent(),coordsBefore);
-    console.log("[browser] explicit confirmation updates coordinates");
+    step("explicit confirmation updates coordinates");
     await page.locator("#movePin").click();
     const second={x:box.x+box.width*.72,y:box.y+box.height*.73};
     await page.mouse.click(second.x,second.y);
@@ -61,7 +66,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.notEqual(await page.locator("#pinCoords").textContent(),coordsBefore);
     assert.equal(await page.locator(".pin-marker").count(),1);
-    console.log("[browser] update is persisted after reload");
+    step("update is persisted after reload");
     const coordsAfter=await page.locator("#pinCoords").textContent();
     await page.waitForTimeout(650); // Debounced IndexedDB save.
     await page.reload({waitUntil:"domcontentloaded"});
@@ -71,7 +76,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".leaflet-marker-icon").first().click({force:true});
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
-    console.log("[browser] layer visibility hides/restores the persisted pin");
+    step("layer visibility hides/restores the persisted pin");
     await page.locator("#layersButton").click();
     const privateRow=page.locator("#layersList .layer-row").filter({hasText:"Privat"});
     const privateCheckbox=privateRow.locator('input[type="checkbox"]');
@@ -79,9 +84,9 @@ async function longPress(page,x,y,ms=725){
     await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===0);
     await privateRow.locator('input[type="checkbox"]').check();
     await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===1);
-    console.log("[browser] pin coordinates remain unchanged by layer visibility");
+    step("pin coordinates remain unchanged by layer visibility");
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
-    console.log("[browser] offline application shell and persisted pin");
+    step("offline application shell and persisted pin");
     const sw=await page.evaluate(async()=>{
       const registration=await navigator.serviceWorker.ready;
       return {active:!!registration.active,scope:registration.scope};
@@ -95,6 +100,23 @@ async function longPress(page,x,y,ms=725){
     assert.equal(errors.length,0,"Browser errors: "+errors.join("; "));
     console.log("[browser] PASS – selection, move/cancel/confirm, persistence, offline reload");
   }catch(error){
+    let snapshot={};
+    try{
+      snapshot=await page.evaluate(()=>({
+        url:location.href,readyState:document.readyState,
+        pinPanelHidden:document.querySelector("#pinPanel")?.classList.contains("hidden"),
+        moveBarHidden:document.querySelector("#moveBar")?.classList.contains("hidden"),
+        confirmDisabled:document.querySelector("#confirmMove")?.disabled,
+        markerCount:document.querySelectorAll(".pin-marker").length,
+        leafletMarkers:document.querySelectorAll(".leaflet-marker-icon").length,
+        pinCoords:document.querySelector("#pinCoords")?.textContent,
+        notice:document.querySelector("#notice")?.textContent,
+        serviceWorkerControlled:!!navigator.serviceWorker?.controller
+      }));
+    }catch(e){snapshot={inspectionError:String(e)};}
+    console.error("[browser] FAILED STAGE:",stage);
+    console.error("[browser] DOM snapshot:",JSON.stringify(snapshot));
+    console.error("[browser] page errors:",JSON.stringify(errors));
     await page.screenshot({path:"browser-smoke-failure.png",fullPage:true}).catch(()=>{});
     throw error;
   }finally{
