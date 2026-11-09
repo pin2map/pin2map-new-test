@@ -140,3 +140,17 @@ Aus `app.js` sind die reinen Oberflächenfunktionen **temporäre Meldungen, Pane
 **Routing als eigenständiger Fachbereich:** `application/routing-service.js` stellt einen providerunabhängigen Koordinator mit den ausdrücklich genannten Verkehrsarten `car`, `pedestrian`, `transit` bereit. Über `register(mode, provider)` und `calculate({mode,...request})` sind jeweils unterschiedliche Dienste austauschbar. Ohne registrierten Dienst wird eine klare Fehlermeldung erzeugt. Das Modul kennt weder Leaflet noch HTTP, Endpunkte, Datenbank, UI oder Anbieterformate. **Noch keine Routingberechnung, keine Anbieterwahl, keine Strecke in der PWA.** Routen als dauerhaft gespeicherte Domainobjekte, Ergebnisnormalisierung und konkrete Routenalternativen folgen erst mit der Funktionsplanung.
 
 Der Test `tests/check-routing-service.mjs` deckt die drei Verkehrsarten, fehlende Anbieter, unabhängige Anbieterwechsel und Übergabe der unveränderten Anfrage ab. Die bisherigen Filtertests wurden an die Entscheidung angepasst und zusammen mit dem Routingtest in `.github/workflows/leaflet-modular.yml` aufgenommen. Noch kein bestätigter kompletter Browser-/Actions-Lauf. `main` und Referenzzweige unverändert.
+
+## Inkrement 8: Vorgänger-App systematisch untersucht (2026-11-09)
+
+Der verbindliche Funktions- und Modulabgleich ist in **`docs/VORGAENGER_APP_MODUL_AUDIT.md`** hinterlegt. Grundlage ist die echte Vorgängerdatei `pin2map/pin2map:index.html` (ca. 790 kB Quelltext) mit nachgewiesenen Funktionen für Pins, Ebenen, Flächen, Flüsse/Gewässer, Routing inklusive Fahrrad, GPX, Filtern, Datenexport, Notizen/Links, Ortsrecherche und Wetter-/Höhen-/Sonnen-/Zeitzoneninformationen.
+
+Die folgenden **fachlichen Reservierungen** ergänzen die verbindliche Modularchitektur:
+- `application/watercourse-service.js` kapselt den künftigen Ablauf „Gewässer finden → Kandidaten entscheiden → OSM-Geometrie auflösen“. Künftig getrennte Domain für Wasserlaufobjekte und Topologie/Segmentzusammenbau; weder Map-Renderer noch Import-/Exportlogik gehören hinein.
+- `application/geographic-information-service.js` reserviert getrennte Datenprovider für Wetter, Höhen, Sonnenzeiten/Tageslänge und weitere geografische Kontextdaten, ohne jetzt APIs, Berechnung, Aktualisierungsregeln oder UI festzulegen. **Diese beiden Reservierungen sind nicht in der PWA aktiv.**
+- Das bestehende `application/routing-service.js` bleibt providerneutral; die Vorgänger-App weist zusätzlich **Fahrradrouting** nach. Es ist deshalb im Funktionsinventar vermerkt, aber keine weitere Transportmodus-Implementierung ohne separate Entscheidung.
+- Referenz-Funktionen werden **nicht** per Copy-and-Paste in NEW übertragen: erst Fachmodell, Provider-/Speicherports, UI und unabhängige Tests, dann Einzelfunktionsabnahme.
+
+Die ermittelten Moduldefizite sind kein Grund, die Oberflächenentwicklung zu blockieren: **Als Nächstes wird die Ebenenverwaltung in `application/layer-operations` und `ui/layers-panel` getrennt**, ohne die bisherige Bedienung zu verändern. Fluss-, Wetter- und Routingfunktionalität folgen erst in der vorgesehenen Funktionsphase; jetzt werden ausschließlich ihre Grenzen gesichert.
+
+`tests/check-future-services.mjs` und die CI-Datei `.github/workflows/leaflet-modular.yml` prüfen die Reservierungsports. Der vollständige Actions- und iPhone-Lauf bleibt gesondert zu bestätigen.
