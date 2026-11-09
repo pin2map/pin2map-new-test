@@ -10,6 +10,7 @@
   const pinOps = window.Pin2MapPinOperations;
   const pinFilter = window.Pin2MapPinFilter;
   const filterOps = window.Pin2MapFilterOperations;
+  const layerOps = window.Pin2MapLayerOperations;
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
   const uiState = new window.Pin2MapUIState();
@@ -19,7 +20,7 @@
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
-  const layerById = id => state.layers.find(x => x.id === id);
+  const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
   const cleanText = projectModel.cleanText;
   const uiShell = new window.Pin2MapUIShell({getElement:$});
@@ -31,6 +32,11 @@
     onChoose:result=>choosePlace(result),
     titleOf:result=>placeTitle(result),
     detailOf:result=>placeDetail(result)
+  });
+  const layerView = new window.Pin2MapLayerView({
+    getElement:$,document,
+    onVisibility:(id,visible)=>{filterOps.setLayerVisible(state,id,visible);save();renderLayers();renderMarkers();renderPinPanel();},
+    onDelete:id=>deleteLayerOrPrivatePins(id)
   });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
@@ -87,28 +93,22 @@
     for(const [id,marker] of markers)if(!shown.has(id)){mapAdapter.removeOverlay(marker);markers.delete(id);}
   }
   function deleteLayerOrPrivatePins(id) {
-    const layer=layerById(id);
-    if(!layer)return;
-    const count=state.pins.filter(p=>p.layerId===id).length;
-    if(id===PRIVATE_ID&&!count){showNotice("Keine privaten Pins vorhanden");return;}
-    const privateOnly=id===PRIVATE_ID;
-    const heading=privateOnly?"Alle Pins in Privat löschen?":"Ebene „"+layer.name+"“ löschen?";
-    const message=privateOnly
-      ?"Die Ebene Privat bleibt bestehen. "+count+" Pins werden gelöscht."
-      :"Die Ebene und "+count+" zugeordnete Pins werden gelöscht.";
-    $("bulkTitle").textContent=heading;
-    $("bulkDescription").textContent=message;
+    const info=layerOps.deletionInfo(state,id,PRIVATE_ID);
+    if(!info)return;
+    if(!info.allowed){showNotice("Keine privaten Pins vorhanden");return;}
+    $("bulkTitle").textContent=info.privateOnly?"Alle Pins in Privat löschen?":"Ebene „"+info.layer.name+"“ löschen?";
+    $("bulkDescription").textContent=info.privateOnly
+      ?"Die Ebene Privat bleibt bestehen. "+info.count+" Pins werden gelöscht."
+      :"Die Ebene und "+info.count+" zugeordnete Pins werden gelöscht.";
     $("bulkDialog").returnValue="cancel";
     $("bulkDialog").showModal();
     $("bulkDialog").onclose=()=>{
       if($("bulkDialog").returnValue!=="confirm")return;
-      const pins=state.pins.filter(p=>p.layerId!==id);
-      const layers=privateOnly?state.layers:state.layers.filter(l=>l.id!==id);
-      const currentSelected=uiState.selectedPinId;
-      state.pins=pins;state.layers=layers;
-      if(currentSelected&&!pins.some(p=>p.id===currentSelected))uiState.selectedPinId=null;
+      const result=layerOps.deleteLayerOrPins(state,id,PRIVATE_ID);
+      if(!result)return;
+      if(uiState.selectedPinId&&result.removedPinIds.includes(uiState.selectedPinId))uiState.selectedPinId=null;
       save();renderLayers();renderMarkers();renderPinPanel();
-      showNotice(privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
+      showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
     };
   }
   // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
@@ -261,39 +261,12 @@
     pinOps.movePin(state,pin.id,movePreview,{validatePosition:projectModel.position});
     endMove();save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");
   }
-  function renderLayers() {
-    const list = $("layersList");
-    list.replaceChildren();
-    const layerCounts=pinFilter.countByLayer(state.pins,state.layers);
-    for (const layer of state.layers) {
-      const row = document.createElement("div"); row.className = "layer-row";
-      const eye = document.createElement("input"); eye.type = "checkbox"; eye.checked = layer.visible; eye.title = "Ebene sichtbar"; eye.setAttribute("aria-label", layer.name + " sichtbar");
-      eye.addEventListener("change", () => { filterOps.setLayerVisible(state,layer.id,eye.checked); save(); renderLayers(); renderMarkers(); renderPinPanel(); });
-      const dot = document.createElement("span"); dot.className = "layer-color"; dot.style.background = layer.color;
-      const label = document.createElement("div"); label.className = "layer-name";
-      const name = document.createElement("strong"); name.textContent = layer.name;
-      const count = document.createElement("small"); count.textContent = layerCounts[layer.id] + " Pins";
-      label.append(name, count);
-      row.append(eye,dot,label);
-      const del=document.createElement("button");
-      del.type="button";del.className="layer-delete";
-      const isPrivate=layer.id===PRIVATE_ID;
-      const pinCount=state.pins.filter(p=>p.layerId===PRIVATE_ID).length;
-      del.textContent=isPrivate?"⌫":"✕";
-      del.title=isPrivate?"Alle Pins in Privat löschen":"Ebene mit Pins löschen";
-      del.setAttribute("aria-label",del.title);
-      del.disabled=isPrivate && pinCount===0;
-      del.addEventListener("click",()=>deleteLayerOrPrivatePins(layer.id));
-      row.append(del);
-      list.append(row);
-    }
-    const layerSelect = $("pinLayer"); const existing = layerSelect.value;
-    layerSelect.replaceChildren();
-    for (const layer of state.layers) {
-      const option = document.createElement("option"); option.value = layer.id; option.textContent = layer.name;
-      layerSelect.append(option);
-    }
-    layerSelect.value = selectedPin() ? selectedPin().layerId : existing;
+  function renderLayers(){
+    layerView.render({
+      layers:state.layers,
+      counts:pinFilter.countByLayer(state.pins,state.layers),
+      selectedLayerId:selectedPin()?.layerId??null
+    });
   }
   function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
   function updatePanelLayout(){
@@ -606,18 +579,14 @@
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
     $("addLayer").addEventListener("click", () => {
-      let number=1;
-      const taken=new Set(state.layers.map(l=>l.name.trim().toLocaleLowerCase("de")));
-      while(taken.has(("Ebene "+number).toLocaleLowerCase("de")))number++;
-      const name=prompt("Name der neuen Ebene:","Ebene "+number);
+      const name=prompt("Name der neuen Ebene:",layerOps.nextName(state));
       if(name===null)return;
-      const trimmed=cleanText(name);
-      if(!trimmed){showNotice("Bitte einen Ebenennamen eingeben");return;}
-      if(taken.has(trimmed.toLocaleLowerCase("de")) || trimmed.toLocaleLowerCase("de")==="privat"){
-        showNotice("Der Ebenenname ist bereits vergeben");return;
+      try{layerOps.create(state,{id:uid(),name,cleanText,colors:COLORS});}
+      catch(error){
+        showNotice(error.message==="Empty layer name"?"Bitte einen Ebenennamen eingeben":
+          error.message==="Duplicate layer name"?"Der Ebenenname ist bereits vergeben":"Ebene konnte nicht erstellt werden");
+        return;
       }
-      const id=uid();
-      state.layers.push({id,name:trimmed,color:COLORS[state.layers.length%COLORS.length],visible:true});
       renderLayers();save();
     });
 
