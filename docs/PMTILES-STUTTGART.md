@@ -77,3 +77,11 @@ Der Nutzer hat die vollständige GitHub-Actions-Zusammenfassung und den Artifact
 - Im erfolgreichen Lauf sind Warnungen zur Node.js-20-Abkündigung und zum Go-Cache sichtbar. Diese haben den Lauf nicht verhindert.
 
 **Nächster Schritt:** Artifact als ZIP herunterladen und entpacken, darin `stuttgart-z12.pmtiles` auswählen unter `https://pin2map.github.io/pin2map-maplibre-preview/pmtiles-local-file-check.html`. Die Testseite nutzt den lokalen Browser-`FileSource` ohne Datei-Upload; Fonts/Sprites werden noch online geladen. Erfolg des lokalen Dateitests ist noch nicht bestätigt.
+
+## Erfolgreicher lokaler Kartentest (2026-11-09)
+
+- Nutzer hat Screenshot der isolierten Seite `pmtiles-local-file-check.html` nach Auswahl der selbst erstellten `stuttgart-z12.pmtiles` geschickt. Die Seite meldet ausdrücklich: **„stuttgart-z12.pmtiles geöffnet · Protomaps Light · Zoom 0–12“**.
+- Sichtbar sind der vollständige Protomaps-Light-Kartenstil mit Wasser, Straßen, Gebäuden, Grünflächen und Beschriftungen einschließlich Stuttgart und mehrerer Stadtteile/Ortsnamen.
+- Die gesamte technische Kette – eigener Extrakt aus Protomaps-v4-Quelle, PMTiles-Verifizierung im GitHub-Actions-Build, Übergabe über lokale Datei und Browserdarstellung mit MapLibre – ist damit erstmals auf dem getesteten Gerät bestätigt. Die Nutzerdatei wird in der Testseite nicht hochgeladen und nicht persistent gespeichert.
+- **Keine Offline-Freigabe**: Protomaps-Schriftarten, Symbole, MapLibre/PMTiles-Bibliotheken kommen noch über externe Online-URLs. Die Sichtbarkeit bei Netzwerkverbindung besagt nicht, dass die Testseite offline startet.
+- Nächste Arbeitspakete: lokale stabile Ressourcenbereitstellung für JavaScript/Styles, benötigte `glyphs` und `sprites` bundeln, danach gezielter Flugmodus-Test; erst dann Integration in die abgesicherte MapLibre-PWA.
