@@ -5,7 +5,7 @@ const notify=(message,error=false)=>{
  $("status").textContent=message;
  $("status").classList.toggle("error",error);
 };
-const SIZE_LIMIT=40*1024*1024;
+const SIZE_LIMIT=200*1024*1024;
 let selectedFile=null;
 let currentMap=null;
 let sequence=0;
@@ -25,7 +25,7 @@ async function storageNote(){
 function validateFile(file){
  if(!file || typeof file.slice!=="function")throw Error("Keine Datei ausgewählt");
  if(!file.name.toLowerCase().endsWith(".pmtiles"))throw Error("Datei muss .pmtiles heißen");
- if(file.size<127||file.size>SIZE_LIMIT)throw Error("Testdatei muss zwischen 127 Byte und 40 MiB liegen");
+ if(file.size<127||file.size>SIZE_LIMIT)throw Error("Testdatei muss zwischen 127 Byte und 200 MiB liegen");
 }
 async function inspectFile(file){
  validateFile(file);
@@ -43,6 +43,41 @@ function safePosition(header){
   return [9.1829,48.7758];
  return [(bounds[0]+bounds[2])/2,(bounds[1]+bounds[3])/2];
 }
+// Optional comparison only: keeps the official Protomaps layers unchanged.
+const EXTRA_ROAD_LABELS="pin2map-extra-road-names";
+function updateRoadLabelVisibility(){
+ if(!currentMap || !currentMap.getLayer(EXTRA_ROAD_LABELS))return;
+ currentMap.setLayoutProperty(EXTRA_ROAD_LABELS,"visibility",
+  $("denseStreetLabels").checked?"visible":"none");
+}
+function addRoadNameComparisonLayer(map){
+ // Protomaps v4 'roads' contains names and line geometry where available.
+ map.addLayer({
+  id:EXTRA_ROAD_LABELS,
+  type:"symbol",
+  source:"protomaps",
+  "source-layer":"roads",
+  minzoom:13,
+  filter:["match",["get","kind"],["minor_road","major_road","highway"],true,false],
+  layout:{
+   "symbol-placement":"line",
+   "symbol-spacing":145,
+   "text-field":["coalesce",["get","name:de"],["get","name"],""],
+   "text-font":["Noto Sans Regular"],
+   "text-size":["interpolate",["linear"],["zoom"],13,10,17,13],
+   "text-max-angle":35,
+   "text-padding":2,
+   "text-allow-overlap":false,
+   "visibility":$("denseStreetLabels").checked?"visible":"none"
+  },
+  paint:{
+   "text-color":"#52565a",
+   "text-halo-color":"#ffffff",
+   "text-halo-width":1.4
+  }
+ });
+}
+$("denseStreetLabels").addEventListener("change",updateRoadLabelVisibility);
 async function display(file){
  if(!window.pmtiles?.FileSource||!window.basemaps?.layers){
   throw Error("PMTiles-/Kartenstilbibliothek nicht geladen (Internet prüfen)");
@@ -71,7 +106,10 @@ async function display(file){
  const map=new maplibregl.Map({container:"map",style,center,zoom,pitch:0,bearing:0});
  currentMap=map;
  map.on("load",()=>{
-  if(sequence===token)notify("Karte angezeigt: "+file.name+" · Zoom 0–"+header.maxZoom+" (Stilressourcen noch online)");
+  if(sequence!==token)return;
+  try{addRoadNameComparisonLayer(map);}
+  catch(error){notify("Straßennamen-Test nicht verfügbar: "+String(error.message||error),true);return;}
+  notify("Karte angezeigt: "+file.name+" · Datenzoom 0–"+header.maxZoom+" (Stilressourcen noch online)");
  });
  map.on("error",event=>{
   if(sequence===token)notify("Kartenfehler: "+String(event.error?.message||event.error||"Unbekannt"),true);
