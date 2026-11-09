@@ -187,3 +187,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Geprüft mittels isoliertem Adapter-Mock: Geokoordinaten `[[9,48],[10,49]]`, Paint-Property `line-dasharray: [7,5]`, JavaScript-Syntax OK.
 - Cache-unabhängige neue Vorschau: `https://pin2map.github.io/pin2map-maplibre-preview/full-maplibre-v2.html` mit eigener Bootstrap- und Adapterdatei. Sie verwendet weiterhin die **getrennte** Integrations-IndexedDB; alte Leaflet-PWA und deren gespeicherte Daten bleiben unangetastet.
 - Browserabnahme für die Darstellung der Linie ist noch offen.
+
+## iPhone-Abnahme: vollständige MapLibre-Integration, Verschiebelinie (2026-11-09)
+
+- Nutzer hat den Nachtest der separaten Integrationsvorschau `full-maplibre-v2.html` mit **„funktioniert“** bestätigt. Die zuvor fehlende rote gestrichelte Verbindungslinie ist damit im iPhone-Test funktional abgenommen.
+- Vorher wurden bereits das Starten der Anwendung, Pin-Erstellung, Pin-Dialoge, Ebenen und die bestätigte Verschiebung als funktionierend gemeldet. Der neue Test bestätigt zusätzlich die Liniendarstellung.
+- Die Integration verwendet weiterhin getrennte IndexedDB (`pin2map-maplibre-integration-v1`), Online-Rasterbasiskarten und keinen Service Worker. **Protomaps/PMTiles und Offline-Karten sind noch nicht umgesetzt.** Eine Freigabe der MapLibre-Integration auf `main` ist noch nicht erfolgt.
+- Nächste Etappe: MapLibre-Integrationsstand gegen den bestehenden PWA-Funktionsumfang absichern, danach eigenständige Protomaps/PMTiles-Basiskarte im Entwicklungszweig vorbereiten und isoliert testen. Leaflet-V18-Referenz und Haupt-PWA bleiben unverändert.
