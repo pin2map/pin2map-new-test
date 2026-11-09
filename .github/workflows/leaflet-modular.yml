@@ -22,14 +22,18 @@ jobs:
         run: |
           node --check domain/project-model.js
           node --check adapters/storage/indexeddb-project-store.js
+          node --check ui/shell.js
           node --check map-adapter-leaflet.js
           node --check app.js
           node --check tests/check-architecture.mjs
           node --check tests/check-project-model.mjs
           node --check tests/check-project-store.mjs
+          node --check tests/check-ui-shell.mjs
       - name: Pure domain contract tests
         run: node tests/check-project-model.mjs
       - name: Existing database schema remains stable
         run: node tests/check-project-store.mjs
+      - name: Presentation shell regression tests
+        run: node tests/check-ui-shell.mjs
       - name: Layer dependency contract
         run: node tests/check-architecture.mjs
