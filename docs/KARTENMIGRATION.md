@@ -257,3 +257,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Archiv `stuttgart-z12.pmtiles` existiert als Build-Artefakt (2.866.574 Bytes, 2,73 MiB), Format `mvt`, Zoom 0–12, Bounds `9.12000,48.72000,9.25000,48.82000`, `pmtiles verify: Passed`.
 - SHA-256 des Archivs: `d3eec669bd7556d96d939933c3e5253e9d174857fd67c137888607d00366a80d`. Das angezeigte GitHub-Artefakt hat eine **eigene** ZIP-/Artifact-Prüfsumme und ist von der PMTiles-Datei-Prüfsumme zu unterscheiden.
 - Das Build-Ergebnis ist **nicht** auf GitHub Pages veröffentlicht und **noch nicht** als lokale Datei im iPhone-Browser getestet. Nächster Test mit der isolierten Browser-`FileSource`-Vorschau `pmtiles-local-file-check.html`. Keine Auswirkungen auf die gespeicherte Leaflet-/MapLibre-Anwendung oder Offline-Behauptung.
+
+## Inkrement 18: Eigene lokale Stuttgart-PMTiles-Datei auf Karte dargestellt (2026-11-09)
+
+- Nutzer-Screenshot des lokalen Dateitests zeigt **„stuttgart-z12.pmtiles geöffnet · Protomaps Light · Zoom 0–12“** und eine gerenderte Karte von Stuttgart mit Stadtteilen, Straßennetz, Grünflächen und deutschsprachigen Labels.
+- Damit sind Erzeugung/Archivvalidierung, lokale Dateiauswahl und renderingtechnische Anbindung an MapLibre/Protomaps-Light nachgewiesen. Dies bestätigt nur den isolierten Test, noch nicht den Start der eigentlichen PWA mit lokalem PMTiles-Archiv.
+- Noch über das Internet: JavaScript-Bibliotheken, Glyphs und Sprites. Die Testseite speichert die gewählte Datei nicht persistent. **Kein vollständiger Offline-Betrieb**.
+- Nächste Stufe: reproduzierbare Ressourcenliste, eigene Styles/Fonts/Sprites und später kontrollierter Download/Import in dauerhaftes lokales Kartenarchiv. Frühere Leaflet-/MapLibre-Referenzen und `main` nicht verändert.
