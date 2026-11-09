@@ -1,6 +1,12 @@
 import * as maplibregl from "https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs";
-import "./map-adapter-maplibre.js";
+import "./map-adapter-maplibre.js?v=3";
 
+// The header is informational only. Suppress Safari smart zoom and text selection
+// without affecting pinch/drag gestures on the actual map.
+const header=document.querySelector("header");
+for(const eventName of ["touchstart","touchend"]){
+  header.addEventListener(eventName,event=>event.preventDefault(),{passive:false});
+}
 const status=document.getElementById("status");
 const samples=[
   {id:"a",lat:48.7758,lng:9.1829,name:"Stuttgart",color:"#d65a31"},
@@ -31,7 +37,7 @@ function draw(){
 function showError(error){status.textContent="MapLibre-Test fehlgeschlagen: "+String(error?.message||error);}
 try{
   adapter=window.Pin2MapMapLibreAdapter.mount("map",{center:{lat:49.3,lng:7.4},zoom:4.6},maplibregl);
-  adapter.map.on("load",()=>{draw();status.textContent="MapLibre geladen · drei Test-Pins angezeigt";});
+  adapter.map.on("load",()=>{draw();status.textContent="MapLibre Testversion 3 · drei Test-Pins angezeigt";});
   adapter.map.on("error",event=>showError(event.error||"Unbekannter Kartenfehler"));
-  adapter.addZoomControls({onFitAll:()=>adapter.fitBounds(samples,{padding:60,maxZoom:7,duration:350})});
+  adapter.addZoomControls({onFitAll:()=>adapter.fitBounds(samples,{padding:60,maxZoom:7,duration:0,animate:false})});
 }catch(error){showError(error);}
