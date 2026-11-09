@@ -14,9 +14,11 @@ permissions:
   id-token: write
 
 # Share the GitHub Pages deployment lock with the main-site workflow.
+# Never queue an older preview behind a newer source update.
+# Shared Pages lock remains intact: the stable site is still protected.
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   preview:
@@ -113,6 +115,11 @@ jobs:
           assert "Entwicklungsvorschau" in preview
           assert (Path("site-root/preview/styles.css").stat().st_size > 1000), "Preview stylesheet missing"
           assert (Path("site-root/preview/app.js").stat().st_size > 1000), "Preview app.js missing"
+          # Custom layer selector must be in the published bundle, not only CI.
+          assert 'id="pinLayerPicker"' in preview
+          picker = Path("site-root/preview/ui/pin-layer-picker.js").read_text(encoding="utf-8")
+          assert "class PinLayerPicker" in picker
+          assert ".pin-layer-trigger" in Path("site-root/preview/styles.css").read_text(encoding="utf-8")
           sw = Path("site-root/preview/sw.js").read_text(encoding="utf-8")
           assert "name.startsWith('pin2map-preview-')" in sw
           assert "name.startsWith('pin2map-new-')" not in sw
@@ -146,6 +153,7 @@ jobs:
               "index.html": ("text/html", "Entwicklungsvorschau"),
               "styles.css": ("text/css", ".pin-panel"),
               "app.js": ("javascript", "Pin2MapProjectModel"),
+              "ui/pin-layer-picker.js": ("javascript", "class PinLayerPicker"),
               "sw.js": ("javascript", "pin2map-preview-v"),
           }
           print("Checking live preview assets at:", base, flush=True)
