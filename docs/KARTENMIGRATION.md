@@ -148,3 +148,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Nutzer hat die Version 7 mit Fadenkreuz-/Pixelversatz-Diagnose auf dem iPhone getestet und bestätigt: **„funktioniert“**. Der Langdruck-Zoom wird damit funktional als abgenommen geführt.
 - Der genaue numerische Pixelversatz wurde nicht übermittelt; daher keine unbelegte Zusage einer exakt gemessenen Abweichung von 0 px.
 - Als nächstes: Pin-Dialoggeometrie an Bildschirmrändern sowie Verbindungslinie, Vorschau und Bestätigung beim Verschieben mit dem Leaflet-Referenzverhalten vergleichen. Dazu erneut eine isolierte Preview-Version verwenden, ohne `main`, Referenz-V18 oder Nutzerdaten zu ändern.
+
+## Inkrement 10: MapLibre v8 – Dialog und Verschiebevorschau (2026-11-09)
+
+- Separate Testseite: `https://pin2map.github.io/pin2map-maplibre-preview/test-v8.html`. Bestehende Version 7 und die Leaflet-PWA bleiben unberührt.
+- Dialoggeometrie an Leaflet-Referenz angepasst: Dialog horizontal über dem Pin zentriert, obere Position = Pin-Y minus Dialoghöhe minus **76 px**; Dreiecksspitze bei Pin-Y minus **76 px**. Bei manueller Kartenbewegung bleibt der Dialog fest am Pin; keine Randbegrenzung und kein automatisches Verschwinden.
+- Nur beim erstmaligen Öffnen wird anhand der tatsächlichen Dialog- und Dreiecksrechtecke die Karte bei Bedarf um Pixel verschoben, sodass der Dialog sichtbar wird. Die MapLibre-Pan-Richtung berücksichtigt die gegensätzliche Semantik zu Leaflet und darf nicht blind kopiert werden.
+- Verschiebe-Bestätigungsleiste wird relativ zur neuen Pinposition, zur sichtbaren VisualViewport-Größe und zu den Bildschirmrändern platziert (unterhalb, wenn Platz ist, sonst oberhalb). Alter und neuer Pin werden über die unveränderte Verbindungslinie verbunden. Die ursprüngliche Position wird erst durch ✓ geändert.
+- 13 v8-spezifische statische Prüfungen und JavaScript-Syntax bestanden. Ein echter iPhone-Test, insbesondere nahe allen vier Bildschirmrändern, steht **noch aus**. Weiterhin drei nicht gespeicherte Beispiel-Pins; keine IndexedDB, Ebenen, Synchronisation oder Offline-Funktion.
