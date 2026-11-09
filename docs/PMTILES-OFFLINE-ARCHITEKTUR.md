@@ -106,3 +106,9 @@ Automatische statische Regression: `tests/check-pmtiles-offline-package.mjs` kon
 - GitHub-Überprüfung der veröffentlichten Dateien bestätigt jetzt `offline-stuttgart-lab/vendor/maplibre-gl-worker.mjs` (519.372 Bytes im Manifest), die `setWorkerUrl(new URL("./vendor/maplibre-gl-worker.mjs", import.meta.url).href)`-Anweisung **vor** der MapLibre-Karteninitialisierung und den Worker-Eintrag in `manifest.json`.
 - Veröffentlichtes Manifest: **1.041 Dateien** (gegenüber 1.040 zuvor). Der Worker und der Programmpfad sind in der GitHub-Pages-Quellstruktur nachweislich vorhanden. Damit ist der zuvor sichtbare Packaging-Fehler auf Quellebene behoben.
 - **Noch offen:** Der erneute Browser-Test durch den Nutzer und die Bestätigung, dass der Service-Worker-Cache die neue Fassung aktiviert. Ein neues Gerätetest-Ergebnis darf nicht vorweggenommen werden.
+
+## Inkrement I: Erneuter Online-Kartentest mit lokalem Worker bestanden (2026-11-09)
+
+- Nutzer-Screenshot aus `offline-stuttgart-lab/` nach dem ergänzten MapLibre-6.16-Worker bestätigt ein vollständiges Kartenbild: Straßen, Gewässer, Grünflächen und Ortsbeschriftungen rund um Stuttgart.
+- Im Screenshot: `Karte angezeigt: stuttgart-z12.pmtiles · Zoom 0–12 (Stilressourcen lokal)` und zusätzlich `Programm und Kartenstil lokal verfügbar. Die PMTiles-Region muss separat gespeichert sein. Flugmodus-Test noch offen.` Damit ist der vorige Renderfehler behoben und die Cache-Bereitschaftsprüfung erfolgreich.
+- **Nicht** durch den Screenshot bewiesen: erfolgreiches Neuladen im Flugmodus, nach Browser-Neustart persistierende PMTiles-Datei, Verhalten bei Speicherdruck oder vollständige Offlinefähigkeit. Als nächster Test das Gerät offline schalten, Browser und Testseite erneut öffnen, gespeicherte Karte öffnen und Bezeichnungen prüfen. Keine automatische PWA-Integration.
