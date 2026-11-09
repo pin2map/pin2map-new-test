@@ -34,12 +34,12 @@
       this.preview.show(position,pin);
       return true;
     }
-    cancel(){
+    cancel({committed=false}={}){
       const wasActive=this.isActive()||this.uiState.moveMode;
       this.uiState.leaveMove();
       this.pinId=null;
       this.preview.clear();
-      if(wasActive)this.onExit();
+      if(wasActive)this.onExit({committed});
       return wasActive;
     }
     confirm(){
@@ -50,7 +50,7 @@
         validatePosition:this.validatePosition
       });
       if(!updated)return null;
-      this.cancel();
+      this.cancel({committed:true});
       this.onCommitted(updated);
       return updated;
     }
