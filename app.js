@@ -16,7 +16,7 @@
   });
   const layerOps = window.Pin2MapLayerOperations;
   const currentPinFilter = pinFilter.createFilter();
-  let projectStore, state = defaults(), mapAdapter, markerView, moveView;
+  let projectStore, state = defaults(), mapAdapter, markerView, moveView, panelPositioner;
   const uiState = new window.Pin2MapUIState();
   let saveTimer;
   let gestures;
@@ -110,33 +110,8 @@
       selectedLayerId:selectedPin()?.layerId??null
     });
   }
-  function panelHeight(){return selectedPin()&&!$("pinPanel").classList.contains("hidden")?$("pinPanel").offsetHeight:0;}
   function updatePanelLayout(){
-    const panel=$("pinPanel"),pin=selectedPin();
-    const dialogOpen=!!pin && !uiState.moveMode && !panel.classList.contains("hidden");
-    document.body.classList.toggle("pin-open",dialogOpen);
-    $("pinDialogTip").classList.toggle("hidden",!dialogOpen);
-    if(!dialogOpen || !mapAdapter)return;
-    // Match predecessor: the editor remains rigidly anchored to its pin,
-    // including beyond every edge of the viewport. No clamping or auto-hiding.
-    const point=mapAdapter.project({lat:pin.lat,lng:pin.lng});
-    const appRect=$("app").getBoundingClientRect();
-    const mapRect=mapAdapter.getContainer().getBoundingClientRect();
-    const width=Math.min(310,appRect.width-16);
-    const height=panel.offsetHeight;
-    const x=mapRect.left+point.x-appRect.left;
-    const y=mapRect.top+point.y-appRect.top;
-    panel.style.visibility="visible";
-    panel.style.left=(x-width/2)+"px";
-    panel.style.top=(y-height-76)+"px";
-    const tip=$("pinDialogTip");
-    tip.style.left=x+"px";
-    tip.style.top=(y-76)+"px";
-    panel.style.bottom="auto";
-    panel.style.right="auto";
-    panel.style.transform="none";
-    panel.style.width=width+"px";
-    panel.classList.remove("panel-near-top");
+    if(panelPositioner)panelPositioner.layout({pin:selectedPin(),moving:uiState.moveMode});
   }
   function scheduleMapOverlayUpdate(){
     if(mapOverlayFrame)return;
@@ -147,25 +122,7 @@
     });
   }
   function keepSelectedAbovePanel(){
-    // Only when the editor first opens: pan the *map*, never change pin coordinates.
-    // Subsequent user drags remain free and do not trigger another correction.
-    updatePanelLayout();
-    const panel=$("pinPanel"),pin=selectedPin();
-    if(!pin || uiState.moveMode || panel.classList.contains("hidden") || !mapAdapter)return;
-    const app=$("app").getBoundingClientRect();
-    const rect=panel.getBoundingClientRect();
-    const tip=$("pinDialogTip").getBoundingClientRect();
-    const margin=12;
-    const minX=app.left+margin,maxX=app.right-margin;
-    const minY=app.top+margin,maxY=app.bottom-margin;
-    const dx=rect.left<minX?minX-rect.left:rect.right>maxX?maxX-rect.right:0;
-    const lowest=Math.max(rect.bottom,tip.bottom);
-    const dy=rect.top<minY?minY-rect.top:lowest>maxY?maxY-lowest:0;
-    if(Math.abs(dx)>0.5 || Math.abs(dy)>0.5){
-      // Leaflet panBy offsets the map opposite the desired pin/dialog shift.
-      mapAdapter.panBy({x:-dx,y:-dy},{animate:false});
-      updatePanelLayout();
-    }
+    if(panelPositioner)panelPositioner.keepVisibleAtOpen({pin:selectedPin(),moving:uiState.moveMode});
   }
   function fitAllPins(){
     const pts=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter).map(p=>[p.lat,p.lng]);
@@ -401,6 +358,9 @@
       getAppRect:()=>$("app").getBoundingClientRect(),
       getViewport:()=>window.visualViewport||{offsetLeft:0,offsetTop:0,width:window.innerWidth,height:window.innerHeight},
       onPosition:position=>{if(uiState.moveMode&&selectedPin())moveView.show(position,selectedPin());}
+    });
+    panelPositioner=new window.Pin2MapPinPanelPositioner.PinPanelPositioner({
+      mapAdapter,getElement:$,document
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
