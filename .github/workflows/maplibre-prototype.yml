@@ -1,0 +1,49 @@
+name: MapLibre isolated prototype checks
+
+on:
+  push:
+    branches:
+      - feature/maplibre-protomaps
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prototype:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out development branch
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check map-adapter-leaflet.js
+          node --check map-adapter-maplibre.js
+          node --check maplibre-prototype.js
+          node --check tests/check-ui.mjs
+          node --check tests/check-map-adapter.mjs
+          node --check tests/check-maplibre-prototype.mjs
+      - name: Run regression and adapter checks
+        run: |
+          node tests/check-ui.mjs
+          node tests/check-map-adapter.mjs
+          node tests/check-maplibre-prototype.mjs
+      - name: Package separate prototype
+        run: |
+          mkdir -p preview
+          cp maplibre-prototype.html preview/index.html
+          cp maplibre-prototype.js map-adapter-maplibre.js preview/
+          printf '%s\n' 'Isolated MapLibre technical preview.' 'Host the contents of this folder as a static site over HTTPS.' 'No local project data or service worker is used.' > preview/README.txt
+      - name: Upload static preview package
+        uses: actions/upload-artifact@v4
+        with:
+          name: maplibre-isolated-preview
+          path: preview/
+          if-no-files-found: error
+          retention-days: 14
