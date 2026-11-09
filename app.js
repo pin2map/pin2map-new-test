@@ -355,7 +355,27 @@
       positionMoveBar();
     });
   }
-  function keepSelectedAbovePanel(){updatePanelLayout();}
+  function keepSelectedAbovePanel(){
+    // Only when the editor first opens: pan the *map*, never change pin coordinates.
+    // Subsequent user drags remain free and do not trigger another correction.
+    updatePanelLayout();
+    const panel=$("pinPanel"),pin=selectedPin();
+    if(!pin || moveMode || panel.classList.contains("hidden") || !map)return;
+    const app=$("app").getBoundingClientRect();
+    const rect=panel.getBoundingClientRect();
+    const tip=$("pinDialogTip").getBoundingClientRect();
+    const margin=12;
+    const minX=app.left+margin,maxX=app.right-margin;
+    const minY=app.top+margin,maxY=app.bottom-margin;
+    const dx=rect.left<minX?minX-rect.left:rect.right>maxX?maxX-rect.right:0;
+    const lowest=Math.max(rect.bottom,tip.bottom);
+    const dy=rect.top<minY?minY-rect.top:lowest>maxY?maxY-lowest:0;
+    if(Math.abs(dx)>0.5 || Math.abs(dy)>0.5){
+      // Leaflet panBy offsets the map opposite the desired pin/dialog shift.
+      map.panBy([-dx,-dy],{animate:false});
+      updatePanelLayout();
+    }
+  }
   function fitAllPins(){
     const pts=state.pins.filter(p=>layerById(p.layerId)?.visible).map(p=>[p.lat,p.lng]);
     if(!pts.length){showNotice("Keine sichtbaren Pins vorhanden");return;}
