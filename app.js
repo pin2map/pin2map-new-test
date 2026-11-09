@@ -149,7 +149,7 @@
     const delta=actual.subtract(anchor);
     if(Math.abs(delta.x)>0.5 || Math.abs(delta.y)>0.5)map.panBy(delta,{animate:false});
     marker._heldZoomClose=!second;
-    persistViewport();renderMarkers();updatePanelLayout();
+    persistViewport();updatePanelLayout();
   }
   function attachMarkerLongPress(marker,id){
     const element=marker.getElement();
@@ -194,6 +194,7 @@
         suppressMapClickUntil=Date.now()+600;
         cleanup();
         if(tap)selectPin(id);
+        else renderMarkers();
       };
       const onCancel=e=>{
         if(e.pointerId!==gesture.id || gesture.finished)return;
@@ -349,6 +350,7 @@
   function closeMapOverlays() {
     hideResults();
     $("layersPanel").classList.add("hidden");
+    $("layersButton").setAttribute("aria-expanded","false");
     $("settingsPanel").classList.add("hidden");
     $("notice").classList.add("hidden");
     const dlg = $("deleteDialog");
@@ -414,9 +416,10 @@
     });
   }
   function togglePanel(id) {
-    const panel = $(id), wasHidden = panel.classList.contains("hidden");
-    ["layersPanel","settingsPanel"].forEach(x => $(x).classList.add("hidden"));
-    if (wasHidden) panel.classList.remove("hidden");
+    const panel=$(id),wasHidden=panel.classList.contains("hidden");
+    ["layersPanel","settingsPanel"].forEach(x=>$(x).classList.add("hidden"));
+    if(wasHidden)panel.classList.remove("hidden");
+    $("layersButton").setAttribute("aria-expanded",String(!$("layersPanel").classList.contains("hidden")));
   }
   function resultHead() {
     const head = document.createElement("div"); head.className = "results-head";
@@ -527,7 +530,7 @@
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
-    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => $(b.dataset.close).classList.add("hidden")));
+    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
@@ -577,8 +580,8 @@
     });
 
     attachLongPress();
-    map.on("moveend", () => {persistViewport();renderMarkers();updatePanelLayout();});
-    map.on("zoomend", () => {renderMarkers();updatePanelLayout();});
+    map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();updatePanelLayout();});
+    map.on("zoomend", () => {if(!markerPressStart)renderMarkers();updatePanelLayout();});
     window.addEventListener("resize", () => { map.invalidateSize(); updatePanelLayout();renderMarkers(); });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
