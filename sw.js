@@ -1,7 +1,9 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v17';
+const CACHE='pin2map-new-v18';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
+const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
+const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
 const CORE=['./','./index.html','./app.js','./styles.css','./manifest.webmanifest'];
 const LEAFLET=[
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
@@ -10,6 +12,62 @@ const LEAFLET=[
 const isOsmTile=url=>url.protocol==='https:' &&
   url.hostname==='tile.openstreetmap.org' &&
   /^\/\d+\/\d+\/\d+\.png$/.test(url.pathname);
+
+
+/* Browser image tile requests normally produce opaque (no-cors) responses.
+   Opaque headers cannot be read, so use OSM's >=7-day fallback. If response
+   headers are readable, honour their actual freshness/expiry directives. */
+function tileFreshUntil(response,now){
+  if(response.type==='opaque')return now+FALLBACK_TILE_TTL;
+  const headers=response.headers;
+  const control=(headers.get('Cache-Control')||'').toLowerCase();
+  if(/(?:^|,)\s*no-store(?:,|$)/.test(control))return null; // Do not store.
+  if(/(?:^|,)\s*(no-cache|must-revalidate)(?:,|$)/.test(control))return now;
+  const maxAge=control.match(/(?:^|,)\s*(?:s-maxage|max-age)\s*=\s*(\d+)/);
+  const dateMs=Date.parse(headers.get('Date')||'');
+  const ageSeconds=Number(headers.get('Age')||0);
+  const elapsed=Number.isFinite(dateMs)?Math.max(0,now-dateMs):0;
+  const age=Number.isFinite(ageSeconds)?Math.max(0,ageSeconds*1000):0;
+  if(maxAge){
+    const freshness=Number(maxAge[1])*1000-Math.max(age,elapsed);
+    return now+Math.max(0,freshness);
+  }
+  const expires=Date.parse(headers.get('Expires')||'');
+  if(Number.isFinite(expires))return Math.max(now,expires);
+  return now+FALLBACK_TILE_TTL;
+}
+function tileMetadataKey(request){
+  // Separate same-origin metadata keys: no duplicate image bodies.
+  const key=new URL('./__tile-cache-metadata',self.registration.scope);
+  key.searchParams.set('tile',request.url);
+  return key.href;
+}
+async function previouslyViewedTile(request){
+  const tiles=await caches.open(TILE_CACHE);
+  const cached=await tiles.match(request);
+  if(!cached)return null;
+  const meta=await caches.open(TILE_META_CACHE);
+  const record=await meta.match(tileMetadataKey(request));
+  if(!record)return {response:cached,fresh:false}; // V17 migration: revalidate online.
+  try{
+    const {freshUntil}=await record.json();
+    return {response:cached,fresh:Number.isFinite(freshUntil)&&Date.now()<freshUntil};
+  }catch(e){
+    return {response:cached,fresh:false};
+  }
+}
+async function rememberViewedTile(request,response){
+  const until=tileFreshUntil(response,Date.now());
+  if(until===null)return; // Honour Cache-Control: no-store.
+  const tiles=await caches.open(TILE_CACHE);
+  const meta=await caches.open(TILE_META_CACHE);
+  // Store the response body first; an absent metadata entry is always stale.
+  await tiles.put(request,response.clone());
+  await meta.put(tileMetadataKey(request),
+    new Response(JSON.stringify({freshUntil:until}),{
+      headers:{'Content-Type':'application/json'}
+    }));
+}
 
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
@@ -60,25 +118,24 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  // Only tiles requested by Leaflet while the user views a map are stored.
-  // No preloading, no programmatic map-area downloads, no request cache busting.
-  // Online fetch follows the provider's HTTP cache headers; offline returns
-  // the exact matching tile and zoom from Cache Storage, when available.
+  // Cache-first for *fresh* previously viewed tiles only. Expired tiles
+  // use the browser's normal HTTP cache/revalidation (ETag/Last-Modified).
+  // No cache-busting headers or proactive downloads are sent to OSM.
   if(isOsmTile(url)){
     event.respondWith((async()=>{
-      const tiles=await caches.open(TILE_CACHE);
+      const entry=await previouslyViewedTile(request);
+      if(entry?.fresh)return entry.response;
       try{
-        const response=await fetch(request);
+        const response=await fetch(request); // default HTTP cache and conditional validation.
         if(response.ok||response.type==='opaque'){
-          try{await tiles.put(request,response.clone());}catch(e){
-            // Storage quota denial must not prevent live map rendering.
+          try{await rememberViewedTile(request,response);}catch(e){
+            // Quota errors must not block normal live map display.
           }
         }
         return response;
       }catch(error){
-        const cached=await tiles.match(request);
-        if(cached)return cached;
-        return Response.error();
+        // Offline: return the same previously viewed tile, even if expired.
+        return entry?.response || Response.error();
       }
     })());
     return;
