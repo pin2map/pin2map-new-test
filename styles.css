@@ -397,3 +397,28 @@ button.layer-delete.p2m-icon-control{color:#ad3540!important}
     min-width:44px!important;min-height:44px!important;
   }
 }
+
+
+/* Relocation target picking: crosshair even over Leaflet's draggable map layers.
+   Pin pulsing applies only to the original source and stops at the first target tap. */
+body.pin-relocation-picking #map,
+body.pin-relocation-picking #map .leaflet-container,
+body.pin-relocation-picking #map .leaflet-pane,
+body.pin-relocation-picking #map .leaflet-tile,
+body.pin-relocation-picking #map .leaflet-interactive{
+  cursor:crosshair!important;
+}
+.pin-relocation-source .pin-marker{
+  animation:p2m-source-pin-pulse 1.05s ease-in-out infinite;
+  transform-origin:50% 65%;
+  will-change:opacity,filter,scale;
+}
+@keyframes p2m-source-pin-pulse{
+  0%,100%{opacity:1;filter:brightness(1);scale:1}
+  50%{opacity:.35;filter:brightness(1.3);scale:1.18}
+}
+@media(prefers-reduced-motion:reduce){
+  .pin-relocation-source .pin-marker{
+    animation:none;outline:3px dashed #cf3444;outline-offset:3px;
+  }
+}
