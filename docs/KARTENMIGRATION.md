@@ -318,3 +318,22 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Separater Workflow `pin2map-maplibre-preview/.github/workflows/build-stuttgart-detailed-pmtiles.yml` für **`stuttgart-z15.pmtiles`**, BBox wie vorher, Datenzoom 0–15 und Höchstgröße 200 MiB angelegt; alte z12-Datei, bisheriger Workflow, Referenzen und PWA bleiben erhalten. Workflow-Erfolg/Dateigröße des neuen Archivs noch nicht bestätigt.
 - In isoliertem Offline-Labor neue Checkbox **„Mehr Straßennamen (Test)“** (ab Kartenzoom 13), ergänzende symbolbasierte Beschriftung aus Protomaps-v4-`roads`-Ebene mit `name:de`/ `name`-Fallback. Sie verändert die Protomaps-Standardebenen nicht und verhindert Textüberschneidungen weiterhin. Der Vergleichsmodus ist im Preview-Repository als veröffentlichte Datei nachgewiesen, aber sein visueller Effekt noch nicht getestet.
 - Die isolierte PMTiles-Import-Grenze wurde für das z15-Experiment von 40 auf 200 MiB erhöht. Das ist keine Produktempfehlung für offline gespeicherte Regionen; iOS-Speicherverfügbarkeit bleibt gesondert zu prüfen.
+
+## Inkrement 27: Karteninformationsdichte als verbindliches Abnahme-Gate (2026-11-09)
+
+**Anlass:** Nutzer zeigt direkten Nebeneinander-Vergleich derselben Umgebung am Stuttgarter Park Villa Berg: links Leaflet mit OSM-Standardkarte (viele POI-Symbole, Einrichtungen, Gebäude-/Hausnummern, Wege und Straßennamen), rechts PMTiles/Protomaps z15 Light (deutlich weniger sichtbare Information). Nutzer bewertet die Informationsfülle der bisherigen Leaflet-Karte ausdrücklich als wichtiger als Offlinefähigkeit. Ein deutlich informationsärmeres Kartensystem ist für pin2map **nicht akzeptabel**.
+
+**Quellenbefund:**
+- Protomaps v4 ist laut eigener Basemap-Dokumentation eine bewusst reduzierte, aus OSM abgeleitete **Kontextkarte**, die ausdrücklich nicht alle OSM-Daten und Tags enthält. POIs bilden eine kuratierte Teilmenge ab. Damit können fehlende Objekte/Attribute nicht ausschließlich durch Style-Anpassungen nachgerüstet werden. <https://docs.protomaps.com/basemaps/layers>.
+- Separate Kartenstile entscheiden zusätzlich, welche bereits vorhandenen Merkmale bei welcher Zoomstufe und Symbolkollision sichtbar werden. Aus dem Screenshot allein lässt sich die exakte Menge fehlender Quelldaten noch nicht quantifizieren.
+- Die Rasterkacheln des bisherigen OSM-Kartendienstes sind auch in MapLibre über eine `raster`-Source darstellbar. Die **MapLibre-Migration ist deshalb unabhängig von Protomaps als Basiskarte**. <https://maplibre.org/maplibre-gl-js/docs/guides/leaflet-migration-guide/>.
+- Das Online-Anzeigen normal abgerufener OSM-Standardkacheln ist von systematischen Offline-Downloads zu unterscheiden. OSMFs öffentlicher `tile.openstreetmap.org`-Dienst verbietet Bulk-Downloads/Offline-Prefetching. Für geplante Offline-Pakete sind ein eigens erzeugter Datensatz oder ein Anbieter mit ausdrücklicher Erlaubnis erforderlich. <https://operations.osmfoundation.org/policies/tiles/>.
+
+**Entwicklungs- und Abnahmevorgabe:**
+1. Die bisherige Leaflet-/OSM-Detailfülle ist vorläufig der **Mindestmaßstab**. Kein Austausch des produktiven Standardkartenbilds durch Protomaps Light, bloß um Offlinefähigkeit zu erreichen.
+2. Protomaps/PMTiles bleibt eine **separate, optionale experimentelle** Alternative, nicht die automatisch bevorzugte Hauptkarte. Die z12-/z15-Teststände und das Offline-Labor werden bewahrt, nicht in die abgenommene Haupt-PWA integriert.
+3. Zuerst unabhängigen Kartenanbieter-/Schema-Vergleich: OpenStreetMap-Carto-Informationsfülle, mögliche MapLibre-Rasterkarte mit gleicher OSM-Darstellung, OpenMapTiles/OSM-Carto-inspirierter Vektor-Stil bzw. vollständigerer eigener OSM-Datenausschnitt. Hausnummern, Sehenswürdigkeiten, Geschäfte, Fußwege, Flächennutzung und Straßenlabel werden am selben Ausschnitt und derselben Zoomstufe verglichen. <https://openmaptiles.org/> <https://github.com/openmaptiles/openmaptiles/blob/master/style/README.md>.
+4. Nur wenn ein Offline-Datensatz die als wesentlich bewerteten Klassen tatsächlich enthält und seine Beschriftung ausreichend gut ist, wird die Offline-Umstellung erneut als Hauptkartenoption zur Entscheidung gestellt. Andernfalls bleibt die informationsreiche Karte primär und Offline sekundär.
+5. Erneuter Flugmodus-Test des bisherigen Protomaps-Light-Labors ist **nicht** die nächste Priorität; erst Detailtreue untersuchen.
+
+Kein Commit in `main` oder Referenzzweigen; dies ist ausschließlich eine dokumentierte Qualitätsanforderung im Entwicklungszweig.
