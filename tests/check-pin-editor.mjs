@@ -5,7 +5,9 @@ const PinEditorView=require("../ui/pin-editor.js");
 function element(){
  const classes=new Set(["hidden"]);
  return {
-  value:"",textContent:"",
+  value:"",textContent:"",title:"",attributes:{},
+  setAttribute(name,value){this.attributes[name]=String(value);},
+  getAttribute(name){return this.attributes[name];},
   classList:{
    add:s=>classes.add(s),remove:s=>classes.delete(s),
    contains:s=>classes.has(s),
@@ -31,7 +33,8 @@ assert.equal(nodes.pinName.value,"Aussichtspunkt");
 assert.equal(nodes.pinLayer.value,"private");
 assert.equal(nodes.pinCoords.textContent,"Koordinaten: 48.775800, 9.182900");
 assert.equal(nodes.pinHiddenInfo.classList.contains("hidden"),true);
-assert.equal(nodes.movePin.textContent,"Pin verschieben");
+assert.equal(nodes.movePin.getAttribute("aria-label"),"Pin verschieben");
+assert.equal(nodes.movePin.title,"Pin verschieben");
 assert.equal(layouts,1);
 doc.activeElement=nodes.pinName;
 nodes.pinName.value="Laufende Eingabe";
@@ -44,5 +47,6 @@ assert.equal(body.classList.contains("pin-open"),false);
 assert.equal(nodes.pinDialogTip.classList.contains("hidden"),true);
 view.render({pin,moving:true,layerVisible:true,onLayout:()=>{}});
 assert.equal(nodes.pinPanel.classList.contains("hidden"),true);
-assert.equal(nodes.movePin.textContent,"Verschieben abbrechen");
+assert.equal(nodes.movePin.getAttribute("aria-label"),"Verschieben abbrechen");
+assert.equal(nodes.movePin.title,"Verschieben abbrechen");
 console.log("Pin editor view: rendering, focus preservation, hidden layers, and move state pass");
