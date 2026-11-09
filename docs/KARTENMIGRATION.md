@@ -285,3 +285,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - `scripts/check-offline-package.mjs` validiert nach der Paketmontage alle erwarteten lokalen Dateien gegen den Service-Worker-Cache und `manifest.json` einschließlich SHA-256. Das Preview-Actions-Workflow-Skript startet diesen Test vor dem Artifact-Upload.
 - Die vorhandene Protomaps-Glyph-Lizenz `fonts/OFL.txt` und die Upstream-Herkunftshinweise der Sprites werden mitgeführt; es wird keine nicht existente Datei `sprites/LICENSE.txt` mehr erwartet.
 - Script-Syntax und Workflow-Einbindung geprüft. Tatsächlicher GitHub-Actions-Status und vollständige Geräte-Offlinefähigkeit **noch unbestätigt**. Separate PMTiles-Speicherprobe und gesicherte PWA bleiben unverändert.
+
+## Inkrement 22: Eigenständiges Offline-Labor in Preview-Repository veröffentlicht (2026-11-09)
+
+- GitHub Actions kann nach bestandener Paketprüfung ausschließlich die Unterstruktur `pin2map-maplibre-preview/main:offline-stuttgart-lab/` aktualisieren, ohne andere Vorschauseiten oder gesicherte Referenzen zu verändern.
+- GitHub-Dateiprüfung bestätigt die **tatsächliche Existenz** der isolierten Offline-Site-Dateien einschließlich Service Worker und Manifest; 1040 Dateien, 18,19 MiB, davon 1024 Schriftkachel-Dateien. Service-Worker-Precache: 1039 Dateien; Version `pin2map-stuttgart-lab-67a476a99139ee27`.
+- Neue sichtbare Bereitschaftsanzeige trennt lokal gecachte Programm-/Stilressourcen von der separat gespeicherten PMTiles-Datei.
+- **Noch keine Geräte-Offline-Abnahme:** Öffentliche Pages-Erreichbarkeit und erfolgreicher iOS-/Brave-Cache-Install sowie Flugmodus-Start sind noch separat zu testen. PMTiles-Datei bleibt nur in der isolierten IndexedDB-Testdatenbank, niemals in bestehenden Pin-Datenbanken.
