@@ -33,8 +33,8 @@
       positions.forEach(p=>b.extend([p.lng,p.lat]));
       this.map.fitBounds(b,options);
     }
-    zoomIn(){this.map.zoomIn();}
-    zoomOut(){this.map.zoomOut();}
+    zoomIn(){this.map.zoomIn({duration:120});}
+    zoomOut(){this.map.zoomOut({duration:120});}
     zoomAround(position,zoom){
       // A fixed pixel anchor is preserved using the geographic position as camera anchor.
       const p=ll(position);this.map.jumpTo({zoom,around:[p.lng,p.lat]});
