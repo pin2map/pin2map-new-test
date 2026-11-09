@@ -279,3 +279,9 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Der Browser-Service-Worker `offline-stuttgart-sw.js` darf ausschließlich den vorgesehenen Test-Unterordner der eigenen Origin bearbeiten. Er versucht dort die App-Shell und die übrigen lokalen Ressourcen bei der Installation komplett zwischenzuspeichern; die PMTiles-Datei bleibt als Browser-`File` in IndexedDB und wird nicht dupliziert.
 - Die Ausgabe ist ein auf maximal 100 MiB begrenztes, prüfbares Paket mit Dateihashes; der Workflow `package-offline-map-assets.yml` lädt das Paket weiterhin nur als **Artefakt**, ohne eine bestehende PWA umzuschalten. `tests/check-pmtiles-offline-package.mjs` ist in der Entwicklungs-CI ergänzt.
 - **Keine Offline-Freigabe:** Tatsächlicher Build-Erfolg, vollständige Asset-Abdeckung, Hosting unter eigenem Unterpfad und Flugmodus-Test fehlen noch. Die bereits abgenommenen MapLibre- und Leaflet-Referenzen sind unverändert.
+
+## Inkrement 21: Offline-Ressourcenpaket mit Vollständigkeits- und Hash-Prüfung (2026-11-09)
+
+- `scripts/check-offline-package.mjs` validiert nach der Paketmontage alle erwarteten lokalen Dateien gegen den Service-Worker-Cache und `manifest.json` einschließlich SHA-256. Das Preview-Actions-Workflow-Skript startet diesen Test vor dem Artifact-Upload.
+- Die vorhandene Protomaps-Glyph-Lizenz `fonts/OFL.txt` und die Upstream-Herkunftshinweise der Sprites werden mitgeführt; es wird keine nicht existente Datei `sprites/LICENSE.txt` mehr erwartet.
+- Script-Syntax und Workflow-Einbindung geprüft. Tatsächlicher GitHub-Actions-Status und vollständige Geräte-Offlinefähigkeit **noch unbestätigt**. Separate PMTiles-Speicherprobe und gesicherte PWA bleiben unverändert.
