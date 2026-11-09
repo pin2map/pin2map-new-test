@@ -85,7 +85,8 @@ def main() -> None:
             raise SystemExit(f"Missing offline resource: {item}")
 
     register = """// Scope stays inside the separately hosted lab directory.
-if ("serviceWorker" in navigator && location.protocol === "https:") {
+if ("serviceWorker" in navigator && location.protocol === "https:" &&
+    location.pathname.includes("/offline-stuttgart-lab/")) {
   navigator.serviceWorker.register("./offline-stuttgart-sw.js",
     {scope:"./", updateViaCache:"none"}).catch(error => {
       const status=document.getElementById("status");
@@ -103,8 +104,15 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
         if p.is_file() and p.name not in ("offline-stuttgart-sw.js", "manifest.json")
     )
     all_paths = ["./" + p for p in existing]
+    # Content-address the SW cache to force safe rotation with each build.
+    version_hash = hashlib.sha256()
+    for relpath in existing:
+        path = OUTPUT / relpath
+        version_hash.update(relpath.encode("utf-8"))
+        version_hash.update(hashlib.sha256(path.read_bytes()).digest())
+    cache_version = "pin2map-stuttgart-lab-" + version_hash.hexdigest()[:16]
     worker = """/* Isolated offline lab shell. No tile interception, no sync. */
-const VERSION="pin2map-stuttgart-lab-v1";
+const VERSION="""" + cache_version + """";
 const RESOURCES=""" + json.dumps(all_paths, ensure_ascii=False) + """;
 self.addEventListener("install",event=>{
   event.waitUntil((async()=>{
@@ -129,9 +137,17 @@ self.addEventListener("fetch",event=>{
   if(url.origin!==self.location.origin || !url.pathname.startsWith(new URL("./",self.location).pathname))
     return;
   event.respondWith((async()=>{
-    const cached=await caches.match(event.request);
+    const cache=await caches.open(VERSION);
+    // A directory URL is not identical to ./index.html in Cache Storage.
+    // Keep the test application startable from /offline-stuttgart-lab/
+    // after it has been installed online at least once.
+    if(event.request.mode==="navigate"){
+      const document=await cache.match("./index.html");
+      if(document)return document;
+    }
+    const cached=await cache.match(event.request);
     if(cached)return cached;
-    // No fallback cache for PMTiles bytes; selected archive stays in IndexedDB.
+    // Never synthesize map tiles; the selected archive stays in IndexedDB.
     return fetch(event.request);
   })());
 });
