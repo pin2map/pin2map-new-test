@@ -522,15 +522,12 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* Compact layer selector occupies the middle of the footer, NOT a
    separate full-width row. The label floats across its upper border. */
 #pinPanel .pin-actions .pin-layer-picker{
-  position:relative;flex:1 1 auto;width:auto;min-width:0;
-  margin:0 2px;isolation:isolate;
+  position:relative;flex:1 1 0%;width:100%;min-width:0;
+  margin:0;isolation:isolate;
 }
-#pinPanel .pin-layer-picker > label{
-  position:absolute;z-index:2;top:-8px;left:11px;
-  display:block;width:auto;margin:0!important;padding:0 5px;
-  background:#fff;color:#617287;
-  font-size:11px!important;line-height:14px;font-weight:500!important;
-  pointer-events:none;
+/* No visible label above the selector; its accessible name stays in DOM. */
+#pinPanel .pin-layer-picker > .sr-only{
+  position:absolute;left:-9999px;
 }
 #pinPanel .pin-layer-native-select{display:none!important}
 #pinPanel .pin-layer-trigger,
@@ -616,3 +613,16 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* The editor's pointer triangle belongs to the pin, not to the open menu.
    Hide it while choosing a layer, restore it immediately on closing. */
 #pinPanel.pin-layer-open + #pinDialogTip{display:none!important}
+
+/* Stretch the picker across all remaining space on the same baseline as
+   the two 32px circular controls. Only the two small flex gaps are retained. */
+#pinPanel .pin-actions{
+  display:flex;flex-wrap:nowrap;
+  align-items:center;justify-content:space-between;
+  gap:6px!important;width:100%;
+}
+#pinPanel .pin-actions .pin-layer-trigger{
+  width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+}
