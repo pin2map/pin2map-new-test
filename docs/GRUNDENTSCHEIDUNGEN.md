@@ -1814,3 +1814,14 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 5. **Pin verschieben** bleibt eine bewusst aktivierte Funktion aus dem Pin-Dialog mit separater Vorschau und Bestätigung. Während dieses Modus gilt der normale Fokusmodus des *geöffneten Bearbeitungsdialogs* nicht; dessen Steuerelemente dürfen für den Verschiebeablauf entsprechend sichtbar sein.
 6. Die frühere Entscheidung, den Dialog beim Verlassen des sichtbaren Bildfelds vorübergehend auszublenden bzw. an Bildschirmränder zu klemmen, ist **aufgehoben**.
 7. Der Qualitätsgrundsatz bleibt verbindlich: Code-, CSS- und Regressionstests sind vor Statusmeldungen vorzunehmen; ein echter Browser-/iPhone-Test darf nicht ohne Durchführung als erledigt bezeichnet werden.
+
+
+## UI-Präzisierung – Popup-Abstand, Spitze und Refresh (2026-11-09)
+
+**Verbindliche Übernahme aus dem Original `pin2map/pin2map`:**
+
+1. Für den Pin-Bearbeitungsdialog wird der in der Vorgänger-App ausgewiesene **Abstand von 76px** vom Pin-Anker bis zur unteren Kante des Dialogs verwendet (Originalregel: `#mapScreen .leaflet-popup:has(.p2m-popup){margin-bottom:76px!important}`).
+2. Der Pin-Dialog erhält eine **kleine, nach unten zum Pin gerichtete dreieckige Spitze**, mittig an der Unterkante. Die Spitze liegt außerhalb der scrollbaren Dialogfläche, damit kein `overflow` sie abschneidet. Sie folgt während Kartenbewegung und Zoom synchron dem Pin, auch außerhalb des sichtbaren Bereichs.
+3. In der oberen Bedienleiste erscheint eine **Refresh-Schaltfläche „Neueste Version laden“ (⟳)**. Sie schreibt ausstehende lokale Änderungen nach IndexedDB, bittet die registrierte PWA-Service-Worker-Version um Aktualisierung und navigiert anschließend zur aktuellen Seite mit frischem Versionsparameter. Vorhandene Pins/Ebenen werden durch Refresh nicht absichtlich gelöscht. Schlägt das Schreiben der lokalen Daten fehl, wird der Reload abgebrochen und eine Meldung gezeigt.
+4. Solange der normale Pin-Dialog geöffnet ist, wird auch der Refresh-Button wie alle übrigen Karten-Bedienelemente ausgeblendet. Nach Schließen erscheint er wieder.
+5. Für beide Änderungen gelten die verbindlichen CSS-, Code-, Regressionstest- und echten Browser-Testkriterien. Nicht durchgeführte Browser-/iPhone-Tests sind als offen zu kennzeichnen.
