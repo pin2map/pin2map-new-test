@@ -27,7 +27,7 @@
         del.className="layer-delete";
         const isPrivate=layer.id==="private";
         del.textContent=isPrivate?"⌫":"✕";
-        root.Pin2MapIcons?.mount(del,"trash-2");
+        root.Pin2MapIcons?.mount(del,"trash");
         del.title=isPrivate?"Alle Pins in Privat löschen":"Ebene mit Pins löschen";
         del.setAttribute("aria-label",del.title);
         del.disabled=isPrivate&&(counts[layer.id]||0)===0;
