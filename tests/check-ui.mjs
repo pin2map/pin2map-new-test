@@ -23,9 +23,9 @@ check(js.includes('bar.classList.contains("hidden")'),'bubble is not positioned 
 check(js.includes('moveMode=true;removeMovePreview();') && js.includes('$("moveBar").classList.add("hidden");'),'no instruction dialog at start of moving');
 check(!js.includes('Neue Stelle antippen') && !js.includes('Alte und neue Position prüfen'),'obsolete move instructions removed');
 check(!js.includes('showNotice("Neue Position') && !js.includes('showNotice("Neue Stelle'),'no extra move instruction toast');
-check(js.includes('map.on("move",scheduleMapOverlayUpdate)'), 'dialog tracks the map continuously, not only at moveend');
+check(js.includes('mapAdapter.on("move",scheduleMapOverlayUpdate)'), 'dialog tracks the map continuously, not only at moveend');
 check(js.includes('mapOverlayFrame=requestAnimationFrame'), 'live dialog updates are throttled per animation frame');
-check(js.includes('map.latLngToContainerPoint([pin.lat,pin.lng])'), 'dialog follows the selected pin coordinates');
+check(js.includes('mapAdapter.project({lat:pin.lat,lng:pin.lng})'), 'dialog follows the selected pin coordinates');
 check(js.includes('panel.style.visibility="visible"') && !js.includes('panel.style.visibility="hidden"'), 'open pin editor never hides when pin goes offscreen');
 check(js.includes('panel.style.left=(x-width/2)+"px"') && js.includes('panel.style.top=(y-height-30)+"px"'), 'dialog position follows pin without clamping');
 check(!js.includes('if(!onScreen)') && !js.includes('Math.max(minTop,y-height-30)'), 'no offscreen or edge clamp remains');
@@ -48,12 +48,12 @@ check(js.includes('panel.style.top=(y-height-76)+"px"'), 'pin-dialog clearance m
 check(js.includes('tip.style.top=(y-76)+"px"') && js.includes('tip.style.left=x+"px"'), 'pointer follows map-anchored dialog');
 check(css.includes('.pin-dialog-tip{') && css.includes('border-top:15px solid #fff'), 'white downward triangle is styled');
 check(js.includes('$("pinDialogTip").classList.toggle("hidden",!pin||moveMode)'), 'pointer disappears when editor closes or moving starts');
-check(js.includes('function keepSelectedAbovePanel(){') && js.includes('map.panBy([-dx,-dy],{animate:false})'), 'opening an edge pin moves the map rather than the pin');
+check(js.includes('function keepSelectedAbovePanel(){') && js.includes('mapAdapter.panBy({x:-dx,y:-dy},{animate:false})'), 'opening an edge pin moves the map rather than the pin');
 check(js.includes('const lowest=Math.max(rect.bottom,tip.bottom)'), 'entire dialog including tip is considered');
 check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<minY?'), 'all viewport edges considered');
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel);\n      if (layerById(PRIVATE_ID).visible)'), 'search-created pin gets fitted after map zoom');
-check(!js.includes('map.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
+check(!js.includes('mapAdapter.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
 check(sw.includes("const CACHE='pin2map-new-v18'"), 'new cache-aware app shell version deployed');
 check(sw.includes("const TILE_CACHE='pin2map-viewed-osm-tiles-v1'"), 'OSM tiles retained separately from app shell updates');
 check(sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js') &&
@@ -74,4 +74,11 @@ check(sw.includes("const response=await fetch(request); // default HTTP cache"),
 check(sw.includes('return entry?.response || Response.error()'), 'expired cached tile remains available offline');
 check(sw.includes('meta.delete(tileMetadataKey(request))'), 'no-store removes previously cached tile and metadata');
 check(sw.includes('if(!record)return {response:cached,fresh:false}'), 'old V17 tiles are retained but revalidated');
+
+check(html.includes('src="./map-adapter-leaflet.js"'), 'Leaflet adapter loaded before application');
+check(js.includes('mapAdapter=new window.Pin2MapLeafletAdapter(map)'), 'Leaflet adapter instantiated');
+check(js.includes('mapAdapter.getViewport()'), 'viewport data goes through adapter');
+check(js.includes('mapAdapter.unproject('), 'map click coordinates use adapter');
+check(js.includes('mapAdapter.setView('), 'search and one-pin center use adapter');
+check(js.includes('mapAdapter.on("zoomend"'), 'zoom events use adapter');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
