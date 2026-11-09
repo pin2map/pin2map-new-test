@@ -12,6 +12,7 @@ function fixture(){
     {id:"b",lat:49,lng:10,name:"B",layerId:"private"});
   const uiState=new UIState();
   let candidate=null,clearCount=0,shown=0,entered=0,exited=0,commits=0;
+  const exitReasons=[];
   const preview={
     clear(){candidate=null;clearCount++;},
     show(pos,pin){candidate={...pos};shown++;},
@@ -20,9 +21,9 @@ function fixture(){
   const controller=new PinMoveController({
     uiState,getProject:()=>project,getSelectedPin:()=>pins.findPin(project,uiState.selectedPinId),
     pinOperations:pins,validatePosition:model.position,preview,
-    onEnter:()=>entered++,onExit:()=>exited++,onCommitted:()=>commits++
+    onEnter:()=>entered++,onExit:info=>{exited++;exitReasons.push(info);},onCommitted:()=>commits++
   });
-  return {project,uiState,controller,preview,stats:()=>({shown,clearCount,entered,exited,commits})};
+  return {project,uiState,controller,preview,stats:()=>({shown,clearCount,entered,exited,commits,exitReasons})};
 }
 test("starting requires selected pin and leaves data untouched",()=>{
   const f=fixture();
@@ -48,6 +49,7 @@ test("cancel discards preview, resets mode and never calls commit",()=>{
   assert.equal(f.controller.cancel(),true);
   assert.equal(f.uiState.moveMode,false);
   assert.equal(f.preview.current(),null);
+  assert.deepEqual(f.stats().exitReasons,[{committed:false}]);
   assert.equal(f.stats().commits,0);
   assert.deepEqual([f.project.pins[0].lat,f.project.pins[0].lng],[48,9]);
   assert.equal(f.controller.confirm(),null);
@@ -68,6 +70,8 @@ test("confirm updates only selected pin via domain operation and notifies once",
   assert.equal(f.uiState.moveMode,false);
   assert.equal(f.preview.current(),null);
   assert.equal(f.stats().commits,1);
+  assert.deepEqual(f.stats().exitReasons,[{committed:true}],
+    "UI receives explicit successful-completion reason to close the editor");
   assert.equal(f.controller.confirm(),null);
   assert.equal(f.stats().commits,1);
 });
