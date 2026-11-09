@@ -18,7 +18,7 @@ check(js.includes('const desiredBelow=y+30') && js.includes('desiredBelow+height
 check(js.includes('Math.max(visibleTop+margin,desiredAbove)'),'fallback placement remains on screen');
 check(js.includes('bar.style.left=(centerX-width/2-appRect.left)'),'bubble centered at new position');
 check(js.includes('moveMarker.on("drag",e=>previewMove(e.target.getLatLng()))'),'bubble tracks dragged preview');
-check(js.includes('map.on("moveend", () =>') && js.includes('updatePanelLayout();positionMoveBar();'),'bubble tracks map changes');
+check(js.includes('mapAdapter.on("moveend", () =>') && js.includes('scheduleMapOverlayUpdate();'), 'move confirmation tracks map changes');
 check(js.includes('bar.classList.contains("hidden")'),'bubble is not positioned before display');
 check(js.includes('moveMode=true;removeMovePreview();') && js.includes('$("moveBar").classList.add("hidden");'),'no instruction dialog at start of moving');
 check(!js.includes('Neue Stelle antippen') && !js.includes('Alte und neue Position prüfen'),'obsolete move instructions removed');
@@ -27,7 +27,7 @@ check(js.includes('mapAdapter.on("move",scheduleMapOverlayUpdate)'), 'dialog tra
 check(js.includes('mapOverlayFrame=requestAnimationFrame'), 'live dialog updates are throttled per animation frame');
 check(js.includes('mapAdapter.project({lat:pin.lat,lng:pin.lng})'), 'dialog follows the selected pin coordinates');
 check(js.includes('panel.style.visibility="visible"') && !js.includes('panel.style.visibility="hidden"'), 'open pin editor never hides when pin goes offscreen');
-check(js.includes('panel.style.left=(x-width/2)+"px"') && js.includes('panel.style.top=(y-height-30)+"px"'), 'dialog position follows pin without clamping');
+check(js.includes('panel.style.left=(x-width/2)+"px"') && js.includes('panel.style.top=(y-height-76)+"px"'), 'dialog follows pin without clamping at predecessor 76px offset');
 check(!js.includes('if(!onScreen)') && !js.includes('Math.max(minTop,y-height-30)'), 'no offscreen or edge clamp remains');
 check(js.includes('document.body.classList.toggle("pin-open",!!pin&&!moveMode)'), 'pin editor enables focused UI mode immediately');
 check(css.includes('body.pin-open .topbar') && css.includes('body.pin-open .labels-toggle') && css.includes('body.pin-open .layers-bottom-button') && css.includes('body.pin-open .pin-zoom-buttons'), 'all primary map controls hidden while editor open');
@@ -52,7 +52,7 @@ check(js.includes('function keepSelectedAbovePanel(){') && js.includes('mapAdapt
 check(js.includes('const lowest=Math.max(rect.bottom,tip.bottom)'), 'entire dialog including tip is considered');
 check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<minY?'), 'all viewport edges considered');
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
-check(js.includes('requestAnimationFrame(keepSelectedAbovePanel);\n      if (layerById(PRIVATE_ID).visible)'), 'search-created pin gets fitted after map zoom');
+check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)') && js.includes('if (layerById(PRIVATE_ID).visible) renderMarkers()'), 'search-created pin selection and marker render paths preserved');
 check(!js.includes('mapAdapter.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
 check(sw.includes("const CACHE='pin2map-new-v19'"), 'new cache-aware app shell version deployed');
 check(sw.includes("const TILE_CACHE='pin2map-viewed-osm-tiles-v1'"), 'OSM tiles retained separately from app shell updates');
