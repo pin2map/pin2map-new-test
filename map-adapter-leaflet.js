@@ -142,6 +142,12 @@
     }
     isPanEnabled() { return this.map.dragging.enabled(); }
     setPanEnabled(enabled) { if(enabled)this.map.dragging.enable();else this.map.dragging.disable(); }
+    // Only the renderer knows which DOM descendants are map chrome,
+    // marker elements or popups. This keeps gesture filtering out of app.js.
+    isMapSurface(target) {
+      if(!target || typeof target.closest!=="function")return false;
+      return !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, button, input");
+    }
     stopMarkerEventPropagation(element) {
       window.L.DomEvent.disableClickPropagation(element);
       window.L.DomEvent.on(element,"mousedown touchstart",window.L.DomEvent.stopPropagation);
