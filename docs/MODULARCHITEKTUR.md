@@ -148,9 +148,19 @@ Der verbindliche Funktions- und Modulabgleich ist in **`docs/VORGAENGER_APP_MODU
 Die folgenden **fachlichen Reservierungen** ergänzen die verbindliche Modularchitektur:
 - `application/watercourse-service.js` kapselt den künftigen Ablauf „Gewässer finden → Kandidaten entscheiden → OSM-Geometrie auflösen“. Künftig getrennte Domain für Wasserlaufobjekte und Topologie/Segmentzusammenbau; weder Map-Renderer noch Import-/Exportlogik gehören hinein.
 - `application/geographic-information-service.js` reserviert getrennte Datenprovider für Wetter, Höhen, Sonnenzeiten/Tageslänge und weitere geografische Kontextdaten, ohne jetzt APIs, Berechnung, Aktualisierungsregeln oder UI festzulegen. **Diese beiden Reservierungen sind nicht in der PWA aktiv.**
-- Das bestehende `application/routing-service.js` bleibt providerneutral; die Vorgänger-App weist zusätzlich **Fahrradrouting** nach. Es ist deshalb im Funktionsinventar vermerkt, aber keine weitere Transportmodus-Implementierung ohne separate Entscheidung.
+- Das bestehende `application/routing-service.js` bleibt providerneutral; die Vorgänger-App weist zusätzlich **Fahrradrouting** nach. Der Modus ist daher als inaktive Option im Koordinator reserviert; keine Anbieteranbindung oder tatsächliche Routenberechnung.
 - Referenz-Funktionen werden **nicht** per Copy-and-Paste in NEW übertragen: erst Fachmodell, Provider-/Speicherports, UI und unabhängige Tests, dann Einzelfunktionsabnahme.
 
-Die ermittelten Moduldefizite sind kein Grund, die Oberflächenentwicklung zu blockieren: **Als Nächstes wird die Ebenenverwaltung in `application/layer-operations` und `ui/layers-panel` getrennt**, ohne die bisherige Bedienung zu verändern. Fluss-, Wetter- und Routingfunktionalität folgen erst in der vorgesehenen Funktionsphase; jetzt werden ausschließlich ihre Grenzen gesichert.
+Die ermittelten Moduldefizite sind kein Grund, die Oberflächenentwicklung zu blockieren: **Die Ebenenverwaltung ist inzwischen in `application/layer-operations.js` und `ui/layer-view.js` getrennt**; als Nächstes folgt die sichtbare UI-Arbeit mit Vergleich zur Vorgänger-App. Fluss-, Wetter- und Routingfunktionalität folgen erst in der vorgesehenen Funktionsphase; jetzt werden ausschließlich ihre Grenzen gesichert.
 
 `tests/check-future-services.mjs` und die CI-Datei `.github/workflows/leaflet-modular.yml` prüfen die Reservierungsports. Der vollständige Actions- und iPhone-Lauf bleibt gesondert zu bestätigen.
+
+## Inkrement 9: Architekturaufnahme abgeschlossen, UI-Gate vorbereitet (2026-11-09)
+
+Die systematische Vorgänger-Inventur ist in `docs/VORGAENGER_APP_MODUL_AUDIT.md` aktualisiert. **Die ausdrücklich gestrichene Screenshotfunktion wird nicht übernommen; Fotos sind nicht geplant.** Filterziele bleiben unentschieden. Der historische Fahrrad-Routingmodus ist als nicht aktivierter Providerplatz in `application/routing-service.js` erfasst.
+
+Die bereits vorhandene Trennung von Ebenenoperationen (`application/layer-operations.js`) und Ebenenansicht (`ui/layer-view.js`) ist in die Architekturkontrolle aufgenommen. Ihre isolierten Regressionstests sind `tests/check-layer-operations.mjs` und `tests/check-layer-view.mjs`. Der tatsächliche Browser-/iPhone-Test und ein bestätigter GitHub-Actions-Gesamtlauf stehen weiterhin aus.
+
+**Einheitliche Bezeichnungen für spätere Fachbereiche:** `application/geographic-information-service.js` und `application/watercourse-service.js` sind die einzigen kanonischen Providergrenzen. Keine konkurrierenden Parallelmodule für „environment“, „location-context“, „river“ oder „watercourse“ anlegen. Diese Ports sind noch nicht mit der PWA verbunden. Ihre späteren inneren Komponenten (OSM-Suche, Topologie, Cache, Wetterprovider, Höhenprovider, Sonnenberechnung, Zeitzone, Anzeige) bleiben unabhängig.
+
+**Nächster Schritt:** Benutzeroberfläche in kleinen, abnehmbaren Schritten an der Vorgänger-App messen, beginnend mit Shell/Bedienkontrollen und Pin-Dialog. Ein sichtbarer UI-Schritt darf keine ungetesteten Änderungen an Pin-Domain, Filterregeln, Persistenz oder Routing enthalten.
