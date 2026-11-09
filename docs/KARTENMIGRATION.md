@@ -299,3 +299,9 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Ursache: Die MapLibre-6-ESM-Bibliothek wurde zunächst **ohne** die zwingend erforderliche separate `maplibre-gl-worker.mjs` ausgeliefert. Das ergänzende `maplibre-gl-shared.mjs` wird ebenfalls in das Paket aufgenommen. Die bereits erfolgreich getestete lokale Stuttgart-PMTiles-Datei selbst ist dadurch nicht widerlegt.
 - Build und Paketvalidierung im Preview-Repository ergänzt: Worker-/Shared-Bundles lokal abrufen, Vollständigkeit verlangen, eigene Worker-URL über `setWorkerUrl` setzen und im SW-Precache verifizieren.
 - Bei letzter Prüfung waren die Worker-Dateien in der veröffentlichten GitHub-Pages-Struktur **noch nicht vorhanden**. Neuer Build/Deployment und anschließender Browser-Test stehen aus. Gesicherte Haupt-PWA/Referenzen unverändert.
+
+## Inkrement 24: Fehlenden MapLibre-Worker ergänzt und erneutes Deployment bestätigt (2026-11-09)
+
+- GitHub-Dateiprüfung bestätigt `offline-stuttgart-lab/vendor/maplibre-gl-worker.mjs` (519.372 Bytes), explizite `setWorkerUrl`-Anweisung in veröffentlichter `pmtiles-persistent-lab-v1.js` und 1.041 Manifest-Dateien mit Worker. Der ursprüngliche Offline-Renderingfehler durch fehlenden Worker ist im Deployment behoben.
+- **Versionsspezifischer Befund:** MapLibre 6.16.0 benötigt keine separate `maplibre-gl-shared.mjs`. Diese Datei ist bewusst weder im Manifest noch als zwingende Build-Abhängigkeit enthalten.
+- Reale Kartendarstellung und Flugmodus-Start mit aktualisiertem Cache müssen weiterhin auf dem iPhone überprüft werden; bestehende Haupt-PWA und Referenzen unangetastet.
