@@ -54,12 +54,19 @@ async function longPress(page,x,y,ms=725){
     step("cancellation retains original coordinates");
     await page.locator("#movePin").click();
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    assert.equal(await page.locator("#map").evaluate(el=>getComputedStyle(el).cursor),"crosshair");
+    await page.waitForFunction(()=>document.querySelector(".pin-relocation-source"));
+    const hover={x:box.x+box.width*.60,y:box.y+box.height*.65};
+    await page.mouse.move(hover.x,hover.y);
+    await page.waitForFunction(()=>document.querySelectorAll(".leaflet-overlay-pane path").length>0);
     // Deliberately click immediately after long-press-created selection:
     // the prior 850 ms click suppression must NOT block a move target.
     const first={x:box.x+box.width*.70,y:box.y+box.height*.72};
     await page.mouse.click(first.x,first.y);
     await page.locator("#confirmMove").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#confirmMove").isEnabled(),true);
+    assert.equal(await page.locator(".pin-relocation-source").count(),0);
+    assert.equal(await page.locator("body.pin-relocation-picking").count(),0);
     await page.locator("#cancelMove").click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinCoords").textContent(),coordsBefore);
@@ -68,11 +75,17 @@ async function longPress(page,x,y,ms=725){
     const second={x:box.x+box.width*.72,y:box.y+box.height*.73};
     await page.mouse.click(second.x,second.y);
     await page.locator("#confirmMove").click();
-    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
-    assert.notEqual(await page.locator("#pinCoords").textContent(),coordsBefore);
+    await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     assert.equal(await page.locator(".pin-marker").count(),1);
+    assert.equal(await page.locator(".pin-relocation-source").count(),0);
+    assert.equal(await page.locator("body.pin-relocation-picking").count(),0);
     step("update is persisted after reload");
+    // A completed relocation intentionally clears selection; reopen only to
+    // read back the new position, not as part of the move workflow.
+    await page.locator(".leaflet-marker-icon").first().click({force:true});
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     const coordsAfter=await page.locator("#pinCoords").textContent();
+    assert.notEqual(coordsAfter,coordsBefore);
     await page.waitForTimeout(650); // Debounced IndexedDB save.
     await page.reload({waitUntil:"domcontentloaded"});
     await assertReady(page);
