@@ -25,7 +25,11 @@ check(!js.includes('showNotice("Neue Position') && !js.includes('showNotice("Neu
 check(js.includes('map.on("move",scheduleMapOverlayUpdate)'), 'dialog tracks the map continuously, not only at moveend');
 check(js.includes('mapOverlayFrame=requestAnimationFrame'), 'live dialog updates are throttled per animation frame');
 check(js.includes('map.latLngToContainerPoint([pin.lat,pin.lng])'), 'dialog follows the selected pin coordinates');
-check(js.includes('panel.style.visibility="hidden"') && js.includes('panel.style.visibility="visible"'), 'dialog hides when pin leaves view and reappears on return');
-check(js.includes('if(!onScreen){'), 'dialog does not remain frozen at the screen edge');
+check(js.includes('panel.style.visibility="visible"') && !js.includes('panel.style.visibility="hidden"'), 'open pin editor never hides when pin goes offscreen');
+check(js.includes('panel.style.left=(x-width/2)+"px"') && js.includes('panel.style.top=(y-height-30)+"px"'), 'dialog position follows pin without clamping');
+check(!js.includes('if(!onScreen)') && !js.includes('Math.max(minTop,y-height-30)'), 'no offscreen or edge clamp remains');
+check(js.includes('document.body.classList.toggle("pin-open",!!pin&&!moveMode)'), 'pin editor enables focused UI mode immediately');
+check(css.includes('body.pin-open .topbar') && css.includes('body.pin-open .labels-toggle') && css.includes('body.pin-open .layers-bottom-button') && css.includes('body.pin-open .pin-zoom-buttons'), 'all primary map controls hidden while editor open');
+check(css.includes('.leaflet-control:not(.leaflet-control-attribution)'), 'tile attribution remains visible');
 check(js.includes('scheduleMapOverlayUpdate();'), 'map movement and resize trigger layout updates');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
