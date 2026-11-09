@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 const js=readFileSync(new URL('../app.js',import.meta.url),'utf8');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
+const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
 function check(ok,description){assert.ok(ok,description);console.log('OK',description);}
 check((css.match(/\.move-bar\s*\{/g)||[]).length===1,'exactly one CSS declaration for the move confirmation container');
 check((css.match(/\.move-bar span\s*\{/g)||[]).length===1,'exactly one CSS declaration for its label');
@@ -53,4 +54,15 @@ check(js.includes('const dx=rect.left<minX?') && js.includes('const dy=rect.top<
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel)'), 'initial dialog selection triggers map fitting');
 check(js.includes('requestAnimationFrame(keepSelectedAbovePanel);\n      if (layerById(PRIVATE_ID).visible)'), 'search-created pin gets fitted after map zoom');
 check(!js.includes('map.on("move",keepSelectedAbovePanel)'), 'manual map movement never auto-fits the editor again');
+check(sw.includes("const CACHE='pin2map-new-v17'"), 'new offline shell version deployed');
+check(sw.includes("const TILE_CACHE='pin2map-viewed-osm-tiles-v1'"), 'OSM tiles retained separately from app shell updates');
+check(sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js') &&
+  sw.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'), 'both Leaflet runtime assets precached');
+check(sw.includes("mode:'cors',cache:'reload'") && sw.includes('if(!response.ok)throw Error'), 'offline shell install rejects incomplete dependencies');
+check(sw.includes('if(LEAFLET.includes(url.href))') && sw.includes('if(cached)return cached'), 'offline Leaflet loads from local PWA cache');
+check(sw.includes('if(isOsmTile(url))') && sw.includes('await tiles.put(request,response.clone())'), 'only requested OSM tiles become cached');
+check(sw.includes('const cached=await tiles.match(request)') && sw.includes('if(cached)return cached'), 'previously viewed OSM tile can be read offline');
+check(!sw.includes('tile.openstreetmap.org/{') && !sw.includes('prefetchTiles('), 'no proactive tile download mechanism');
+check(sw.includes("name.startsWith('pin2map-new-')&&name!==CACHE"), 'app-shell cleanup retains viewed tile cache');
+check(sw.includes("event.data?.type==='GET_VERSION'"), 'worker version remains compatible with verified refresh');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
