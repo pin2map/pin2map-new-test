@@ -21,6 +21,8 @@ jobs:
       - name: Syntax checks for active Leaflet application and pure domain
         run: |
           node --check domain/project-model.js
+          node --check domain/pin-filter.js
+          node --check application/pin-operations.js
           node --check adapters/storage/indexeddb-project-store.js
           node --check ui/shell.js
           node --check ui/search-results.js
@@ -35,6 +37,8 @@ jobs:
           node --check tests/check-search-results.mjs
           node --check tests/check-ui-state.mjs
           node --check tests/check-pin-editor.mjs
+          node --check tests/check-pin-filter.mjs
+          node --check tests/check-pin-operations.mjs
       - name: Pure domain contract tests
         run: node tests/check-project-model.mjs
       - name: Existing database schema remains stable
@@ -47,5 +51,9 @@ jobs:
         run: |
           node tests/check-ui-state.mjs
           node tests/check-pin-editor.mjs
+      - name: Pin operations and composed layer/content filters
+        run: |
+          node tests/check-pin-filter.mjs
+          node tests/check-pin-operations.mjs
       - name: Layer dependency contract
         run: node tests/check-architecture.mjs
