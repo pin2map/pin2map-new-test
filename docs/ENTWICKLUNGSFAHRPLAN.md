@@ -92,6 +92,10 @@ Jede Domänenfunktion erhält Unit-Tests ohne Kartenbibliothek; UI- und Kartenin
 
 Die Ebenensichtbarkeit wird ab sofort als **erste Filterbedingung** behandelt, nicht als Spezialfall des Karten-Renderers. Die Module `domain/pin-filter.js` und `application/filter-operations.js` sind angelegt und in den Entwicklungszweig integriert.
 
-Sobald die Oberfläche modular ist, kommt eine eigenständige **Filter-UI** hinzu: zunächst Ebenen ein-/ausblenden, danach lokale Filter nach Pinname und textuellen Inhalten; später können zusätzlich fachlich definierte Felder und weitere Objektarten folgen. Diese Filter werden logisch kombiniert und verändern keine Projektdaten. Ein versteckter Layer bleibt auch bei passendem Inhalt verborgen.
+Sobald die Oberfläche modular ist, kommt eine eigenständige **Filter-UI** hinzu: zunächst Ebenen ein-/ausblenden, danach nach einer späteren eigenständigen Anforderungsentscheidung weitere Filtermöglichkeiten; welche Inhalte und Felder betroffen sind, ist derzeit ausdrücklich offen. Eine mögliche Kombination mit Ebenen wird erst bei der detaillierten Filterentscheidung verbindlich definiert; Filter dürfen keine Projektdaten verändern. Aktuell werden Pins aus unsichtbaren Ebenen nicht angezeigt.
 
-Vor einem sichtbaren neuen Textfilter müssen wir dessen Benutzerführung an der Vorgänger-App und auf iPhone testen. Die bestehende Nominatim-Ortssuche bleibt unabhängig davon. Damit können beide Suchaufgaben später nebeneinander existieren: **Ort finden** vs. **meine Projektobjekte filtern**.
+Vor einem sichtbaren neuen Textfilter müssen wir dessen Benutzerführung an der Vorgänger-App und auf iPhone testen. Die bestehende Nominatim-Ortssuche bleibt technisch unabhängig von künftig möglichen Projektfiltern.
+
+## Vorbereitendes Routingmodul – 2026-11-09
+
+Auto-, Fußgänger- und ÖPNV-Routing werden als **eigenständiger, austauschbarer Routingbereich** geplant. Ein providerneutraler Koordinator (`application/routing-service.js`) existiert mit Tests, ist aber noch nicht in die aktive PWA eingebunden. Verkehrsmittel sind lediglich Kategorien zur späteren getrennten Anbieteranbindung. Weder konkrete Anbieter, Optionen, Routenvarianten und Datenschemata noch der genaue Funktionsumfang sind entschieden. Es wird weiterhin keine Synchronisation vorgezogen.
