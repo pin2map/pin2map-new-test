@@ -105,3 +105,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - MapLibre v6 verlangt WebGL2. Echte Geräteprüfung, Rendering, Pin-Gesten, Dialog und Offline-/PMTiles-Test stehen aus. Dies ist bewusst kein funktionsgleicher Ersatz für die bisherige PWA.
 - GitHub Pages zeigt weiterhin `main`. Die neue `maplibre-prototype.html` liegt nur im Entwicklungszweig und ist **noch nicht über einen eigenen GitHub-Pages-Testlink veröffentlicht**. Daher noch keine Nutzerprüfung anfordern.
 - Nächster Schritt: isolierten Preview-Deploy einrichten, dann gezielte iPhone-Prüfung; anschließend Protomaps/PMTiles und verschiebbare Vorschau integrieren.
+
+## Inkrement 6: Unabhängige Preview-Paketierung (2026-11-09)
+
+- Neuer GitHub-Actions-Workflow `.github/workflows/maplibre-prototype.yml` nur für `feature/maplibre-protomaps`: prüft Syntax und drei bestehende Testskripte; bündelt bei Erfolg `maplibre-prototype.html` als `index.html` sowie `maplibre-prototype.js` und `map-adapter-maplibre.js` zum statischen Artifact `maplibre-isolated-preview` (14 Tage Aufbewahrung).
+- Das Workflow-Artifact ist ein **bereitstellbares Dateipaket**, kein öffentlich erreichbarer Web-Link. Ein Hosting-Ziel ist noch nicht konfiguriert und darf keinesfalls die GitHub-Pages-Quelle von `main` ersetzen. Ein separater Preview-Host beziehungsweise ein eigenes Test-Repository ist vor einem iPhone-Test erforderlich.
+- Workflow wurde eingecheckt; ein abgeschlossener GitHub-Actions-Lauf konnte im Chat nicht bestätigt werden. Die vorherigen 17 isolierten MapLibre-Vertragsprüfungen bleiben der aktuell dokumentierte letzte Testnachweis.
+- Der Prototyp lädt extern MapLibre 6.16.0 und MapLibre-Demokacheln, ist damit nur online testbar und öffnet **keine** bestehenden IndexedDB-Daten.
