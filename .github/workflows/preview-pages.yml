@@ -1,0 +1,127 @@
+name: Deploy modular development preview alongside stable site
+
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths-ignore:
+      - 'docs/**'
+      - 'tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Share the GitHub Pages deployment lock with the main-site workflow.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}preview/
+    steps:
+      - name: Check out unchanged published main site
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site-root
+          persist-credentials: false
+
+      - name: Check out modular development code
+        uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+          path: preview-source
+          persist-credentials: false
+
+      - name: Validate development code before publishing
+        working-directory: preview-source
+        run: |
+          find domain application adapters ui -name '*.js' -print0 | xargs -0 -n1 node --check
+          node --check app.js
+          node --check sw.js
+          node --test tests/*.test.js
+          for test_file in tests/check-*.mjs; do node "$test_file"; done
+
+      - name: Copy only the preview app under a separate URL
+        run: |
+          mkdir -p site-root/preview
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='tests' \
+            --exclude='docs' \
+            preview-source/ site-root/preview/
+
+      - name: Isolate preview IndexedDB, service worker caches and app identity
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+
+          preview = Path("site-root/preview")
+          def replace_exact(name, old, new):
+              path = preview / name
+              before = path.read_text(encoding="utf-8")
+              if old not in before:
+                  raise RuntimeError(f"Expected preview isolation target missing: {name}: {old}")
+              path.write_text(before.replace(old, new), encoding="utf-8")
+
+          # Browser IndexedDB is shared by origin, not pathname.
+          # Never allow preview mutations to touch the stable PWA's database.
+          replace_exact("adapters/storage/indexeddb-project-store.js",
+                        '"pin2map-new-v1"', '"pin2map-new-preview-v1"')
+
+          # Scope caches by preview: the preview worker must not purge the
+          # existing root worker's offline app shell on activation.
+          replace_exact("sw.js", "pin2map-new-v", "pin2map-preview-v")
+          replace_exact("sw.js", "pin2map-new-", "pin2map-preview-")
+          replace_exact("sw.js", "pin2map-viewed-osm-tiles-v1",
+                        "pin2map-preview-viewed-osm-tiles-v1")
+          replace_exact("sw.js", "pin2map-viewed-osm-tile-metadata-v1",
+                        "pin2map-preview-viewed-osm-tile-metadata-v1")
+
+          manifest = preview / "manifest.webmanifest"
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          data["name"] = "pin2map NEW – Entwicklungsvorschau"
+          data["short_name"] = "pin2map DEV"
+          manifest.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                              encoding="utf-8")
+
+          replace_exact("index.html", "<title>pin2map NEW · Testversion</title>",
+                        "<title>pin2map NEW · Entwicklungsvorschau</title>")
+          PY
+
+      - name: Check preview isolation and unchanged stable entrypoint
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          main = Path("site-root/index.html").read_bytes()
+          source = Path("preview-source/index.html").read_bytes()
+          preview = Path("site-root/preview/index.html").read_text(encoding="utf-8")
+          assert main != b"", "Missing stable application"
+          assert source != b"", "Missing development application"
+          assert "Entwicklungsvorschau" in preview
+          sw = Path("site-root/preview/sw.js").read_text(encoding="utf-8")
+          assert "name.startsWith('pin2map-preview-')" in sw
+          assert "name.startsWith('pin2map-new-')" not in sw
+          assert "pin2map-preview-viewed-osm-tiles-v1" in sw
+          store = Path("site-root/preview/adapters/storage/indexeddb-project-store.js").read_text(encoding="utf-8")
+          assert '"pin2map-new-preview-v1"' in store
+          assert '"pin2map-new-v1"' not in store
+          print("Preview is isolated; stable root is checked out from main.")
+          PY
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site-root
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
