@@ -163,3 +163,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Neue eigenständige Vorschau `https://pin2map.github.io/pin2map-maplibre-preview/test-v9.html`: Beim erstmaligen Öffnen wird weiterhin der benötigte Pixelversatz des Dialogs ermittelt. Der neue Kartenmittelpunkt wird jedoch ausdrücklich mit `unproject(centerPixel.x - dx, centerPixel.y - dy)` bestimmt und durch `setView` ohne Animation gesetzt. Damit wird nicht mehr die möglicherweise falsch verstandene `panBy`-Richtung verwendet; eine reine Kamerabewegung verändert keine Pin-Koordinaten.
 - Einfache Projektions-Mocks für links, rechts, oben und unten bestätigen das gewünschte Pixelvorzeichen. JavaScript-Syntax und eigenständige Version-9-Dateireferenzen geprüft. **iPhone-Randtest steht noch aus.**
 - Frühere MapLibre-Versionen und Leaflet-PWA `main` sowie Referenz-V18 bleiben unverändert.
+
+## iPhone-Abnahme der Randdialog-Korrektur v9 (2026-11-09)
+
+- Nach anfänglichem HTTP-404 aufgrund noch ausstehender GitHub-Pages-Builds konnte der Nutzer die Version 9 aufrufen und bestätigte anschließend **„Funktioniert“**.
+- Die Korrektur des falschen Kartenversatzes beim Öffnen randnaher Pins gilt damit auf dem getesteten iPhone als funktional abgenommen; die übrigen Funktionen von v8 hatte der Nutzer bereits als gut bewertet.
+- Die temporäre Veröffentlichungsschwierigkeit war kein fehlender Repository-Inhalt: `test-v9.html` und die zugehörigen JS-Dateien lagen in `main` des Preview-Repositories; der Nutzer zeigte ausstehende Pages-Builds.
+- Nächste Etappe: MapLibre-Adapter und eigentliche PWA schrittweise integrieren, ohne den abgenommenen Leaflet-Referenzstand oder die öffentliche Haupt-PWA zu verändern. Offline-/Protomaps-Funktionen bleiben noch gesondert zu implementieren und zu testen.
