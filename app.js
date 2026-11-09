@@ -18,6 +18,12 @@
   const selectedPin = () => state.pins.find(p => p.id === selected);
   const cleanText = projectModel.cleanText;
   const uiShell = new window.Pin2MapUIShell({getElement:$});
+  const searchView = new window.Pin2MapSearchResultsView({
+    container:$("searchResults"),document,
+    onChoose:result=>choosePlace(result),
+    titleOf:result=>placeTitle(result),
+    detailOf:result=>placeDetail(result)
+  });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -447,17 +453,8 @@
     });
   }
   const togglePanel = id => uiShell.togglePanel(id);
-  function resultHead() {
-    const head = document.createElement("div"); head.className = "results-head";
-    const close = document.createElement("button"); close.type = "button"; close.textContent = "×"; close.title = "Trefferliste schließen";
-    close.addEventListener("click", hideResults); head.append(close); return head;
-  }
-  function hideResults() { $("searchResults").classList.add("hidden"); $("searchResults").replaceChildren(); }
-  function searchMessage(msg) {
-    const box = $("searchResults"); box.replaceChildren(resultHead());
-    const p = document.createElement("div"); p.className = "message"; p.textContent = msg; box.append(p);
-    box.classList.remove("hidden");
-  }
+  const hideResults = () => searchView.hide();
+  const searchMessage = msg => searchView.message(msg);
   function placeTitle(r) {
     const a = r.address || {};
     return a.city || a.town || a.village || a.hamlet || a.municipality || a.suburb || a.county || r.name || String(r.display_name || "").split(",")[0];
@@ -481,14 +478,7 @@
   function renderResults(list) {
     if (!list.length) { searchMessage("Kein Ort gefunden"); return; }
     if (list.length === 1) { choosePlace(list[0]); return; }
-    const box = $("searchResults"); box.replaceChildren(resultHead());
-    for (const r of list) {
-      const item = document.createElement("button"); item.type = "button"; item.className = "result";
-      const title = document.createElement("strong"); title.textContent = placeTitle(r);
-      const detail = document.createElement("small"); detail.textContent = placeDetail(r);
-      item.append(title, detail); item.addEventListener("click", () => choosePlace(r)); box.append(item);
-    }
-    box.classList.remove("hidden");
+    searchView.show(list);
   }
   function cacheKey(s) { return s.trim().replace(/\s+/g," ").toLocaleLowerCase("de"); }
   function cleanupCache() {
