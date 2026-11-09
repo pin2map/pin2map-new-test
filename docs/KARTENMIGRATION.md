@@ -112,3 +112,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Das Workflow-Artifact ist ein **bereitstellbares Dateipaket**, kein öffentlich erreichbarer Web-Link. Ein Hosting-Ziel ist noch nicht konfiguriert und darf keinesfalls die GitHub-Pages-Quelle von `main` ersetzen. Ein separater Preview-Host beziehungsweise ein eigenes Test-Repository ist vor einem iPhone-Test erforderlich.
 - Workflow wurde eingecheckt; ein abgeschlossener GitHub-Actions-Lauf konnte im Chat nicht bestätigt werden. Die vorherigen 17 isolierten MapLibre-Vertragsprüfungen bleiben der aktuell dokumentierte letzte Testnachweis.
 - Der Prototyp lädt extern MapLibre 6.16.0 und MapLibre-Demokacheln, ist damit nur online testbar und öffnet **keine** bestehenden IndexedDB-Daten.
+
+## iPhone-Abnahme: isolierter MapLibre-Prototyp v4 (2026-11-09)
+
+- Anwenderprüfung auf dem iPhone: Karte sichtbar, alle drei Test-Pins sichtbar und antippbar, Ein-Finger-Verschieben, Zwei-Finger-Zoom und Zoom-Schaltflächen funktionieren.
+- Im ersten Test wurde der automatische Fit-Zoom als langsam erlebt; Doppeltipp auf die blaue Kopfzeile vergrößerte die ganze Webseite. Die zwischenzeitlichen Änderungen in den ursprünglichen URLs wurden offenbar nicht geladen (alte Statusmeldung im Screenshot).
+- Unter dem neuen, cache-unabhängigen Einstieg `https://pin2map.github.io/pin2map-maplibre-preview/test-v4.html` mit eigenen v4-Dateinamen wurden die Änderungen vom Nutzer mit „funktioniert einwandfrei“ bestätigt. Damit gelten Doppeltipp-Verhalten und Zoomgeschwindigkeit **für den separaten v4-Prototyp auf dem getesteten iPhone** als abgenommen.
+- Keine Aussage über allgemeine Gerätekompatibilität, Offline-Fähigkeit, bestehende Pin-Dialoge oder Datenmigration. `main` und die Leaflet-V18-Referenz wurden dafür nicht verändert.
+- Nächster Entwicklungsschritt: bestehende Pin-Dialoge, Langdruck-Zoom und explizit bestätigte Verschiebevorschau über den MapLibre-Adapter herstellen; neue Funktionen zunächst nur im separaten Preview erproben.
