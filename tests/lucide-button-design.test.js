@@ -56,3 +56,23 @@ test("all icon controls use central circular styling and remain offline",()=>{
   assert.ok(html.includes('src="./ui/lucide-icons.js"'));
   assert.ok(!html.includes('https://unpkg.com/lucide'));
 });
+
+
+test("pin relocate composite renders two colored pins and dashed neutral connector",()=>{
+  const svg=Icons.svg("pin-relocate",documentStub());
+  assert.equal(svg.attributes.viewBox,"0 0 36 24");
+  assert.equal(svg.attributes["aria-hidden"],"true");
+  const paths=svg.children.filter(n=>n.name==="path");
+  const circles=svg.children.filter(n=>n.name==="circle");
+  assert.equal(paths.length,3);
+  assert.equal(circles.length,2);
+  assert.equal(paths[0].attributes.stroke,"#78838c");
+  assert.equal(paths[0].attributes["stroke-dasharray"],"2 3");
+  assert.equal(paths[1].attributes.stroke,"#cf3444");
+  assert.equal(paths[2].attributes.stroke,"#16864f");
+  const html=read("index.html"),css=read("styles.css");
+  assert.match(html,/<button id="movePin"[^>]*data-pin-icon="pin-relocate"[^>]*aria-label="Pin verschieben"/);
+  assert.match(css,/#movePin\.p2m-icon-control\s*\{/);
+  assert.match(css,/#movePin \.p2m-relocate-icon\s*\{/);
+  assert.ok(!html.includes('id="movePin" class="secondary">Pin verschieben</button>'));
+});
