@@ -310,3 +310,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 
 - Nutzer-Screenshot bestätigt Rendering der Datei `stuttgart-z12.pmtiles` mit lokal bereitgestelltem Protomaps-Stil, MapLibre-Worker-Korrektur und erfolgreicher Meldung `Programm und Kartenstil lokal verfügbar` des isolierten Service Workers.
 - Noch offen und vor Offline-Abnahme zwingend: iPhone-Flugmodus-Test nach vollständigem Neustart bzw. Neuaufruf, Kontrolle der in IndexedDB gespeicherten Region, Symbol-/Beschriftungsprüfung. Bestehende PWA und Referenzen unverändert.
+
+## Inkrement 26: Detailarme Karte – z15-Daten und Straßennamenvergleich (2026-11-09)
+
+- Nutzer-Screenshot mit stark vergrößertem Stuttgarter Straßennetz zeigt fehlende Beschriftungen und begrenzte Detailtiefe. **Kartenqualität noch nicht abgenommen**; vor Flugmodus-Abnahme erst Daten- und Stilqualität untersuchen.
+- Bestehender geprüfter Stuttgart-Ausschnitt enthält nur Datenzoom 0–12; über Zoom 12 findet Vector-Overzoom statt. Protomaps-v4-Kartendaten selbst sind teilweise zoomabhängig, beispielsweise individuelle Gebäude ab z15. Der Standard-Light-Stil kann verfügbare Straßennamen wegen Priorisierung und Textkollisionen ausblenden.
+- Separater Workflow `pin2map-maplibre-preview/.github/workflows/build-stuttgart-detailed-pmtiles.yml` für **`stuttgart-z15.pmtiles`**, BBox wie vorher, Datenzoom 0–15 und Höchstgröße 200 MiB angelegt; alte z12-Datei, bisheriger Workflow, Referenzen und PWA bleiben erhalten. Workflow-Erfolg/Dateigröße des neuen Archivs noch nicht bestätigt.
+- In isoliertem Offline-Labor neue Checkbox **„Mehr Straßennamen (Test)“** (ab Kartenzoom 13), ergänzende symbolbasierte Beschriftung aus Protomaps-v4-`roads`-Ebene mit `name:de`/ `name`-Fallback. Sie verändert die Protomaps-Standardebenen nicht und verhindert Textüberschneidungen weiterhin. Der Vergleichsmodus ist im Preview-Repository als veröffentlichte Datei nachgewiesen, aber sein visueller Effekt noch nicht getestet.
+- Die isolierte PMTiles-Import-Grenze wurde für das z15-Experiment von 40 auf 200 MiB erhöht. Das ist keine Produktempfehlung für offline gespeicherte Regionen; iOS-Speicherverfügbarkeit bleibt gesondert zu prüfen.
