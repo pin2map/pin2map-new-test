@@ -25,6 +25,8 @@ jobs:
           node --check application/pin-operations.js
           node --check application/filter-operations.js
           node --check application/routing-service.js
+          node --check application/location-context-service.js
+          node --check application/river-service.js
           node --check application/geographic-information-service.js
           node --check application/watercourse-service.js
           node --check adapters/storage/indexeddb-project-store.js
@@ -45,6 +47,8 @@ jobs:
           node --check tests/check-pin-operations.mjs
           node --check tests/check-filter-operations.mjs
           node --check tests/check-routing-service.mjs
+          node --check tests/check-location-context-service.mjs
+          node --check tests/check-river-service.mjs
           node --check tests/check-future-services.mjs
       - name: Pure domain contract tests
         run: node tests/check-project-model.mjs
@@ -67,5 +71,9 @@ jobs:
         run: node tests/check-routing-service.mjs
       - name: Geographic information and watercourse port contracts
         run: node tests/check-future-services.mjs
+      - name: Reserved location and river module contracts
+        run: |
+          node tests/check-location-context-service.mjs
+          node tests/check-river-service.mjs
       - name: Layer dependency contract
         run: node tests/check-architecture.mjs
