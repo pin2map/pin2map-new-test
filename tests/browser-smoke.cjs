@@ -44,6 +44,9 @@ async function longPress(page,x,y,ms=725){
     step("long-press creates and selects a private pin");
     await longPress(page,center.x,center.y);
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
+    // Surface any incidental error from the initial long-press separately
+    // from a later preview error, rather than hiding it in a final count.
+    if(errors.length)console.error("[browser] errors after initial pin:",errors.join(" | "));
     const coordsBefore=await page.locator("#pinCoords").textContent();
     assert.match(coordsBefore,/Koordinaten:/);
     assert.equal(await page.locator(".pin-marker").count(),1);
@@ -51,6 +54,8 @@ async function longPress(page,x,y,ms=725){
     step("cancellation retains original coordinates");
     await page.locator("#movePin").click();
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    // Deliberately click immediately after long-press-created selection:
+    // the prior 850 ms click suppression must NOT block a move target.
     const first={x:box.x+box.width*.70,y:box.y+box.height*.72};
     await page.mouse.click(first.x,first.y);
     await page.locator("#confirmMove").waitFor({state:"visible",timeout});
