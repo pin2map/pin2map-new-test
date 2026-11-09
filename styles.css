@@ -265,3 +265,111 @@ body.pin-open #pinPanel{visibility:visible}
   filter:drop-shadow(0 2px 1px #293a4d45);
 }
 body.pin-open .pin-dialog-tip:not(.hidden){display:block}
+
+
+/* pin2map design trial C – 2026-11-09
+   Central circular icon-buttons: white fill, thin neutral grey border.
+   Text actions stay accessible as rounded pills, not distorted circles. */
+:root{
+  --p2m-button-bg:#fff;
+  --p2m-button-border:#c2c9d1;
+  --p2m-button-ink:#253a4b;
+  --p2m-button-size:42px;
+  --p2m-icon-size:21px;
+  --p2m-button-shadow:0 2px 7px #162c3e1c;
+}
+.p2m-lucide{
+  display:block;width:var(--p2m-icon-size);height:var(--p2m-icon-size);
+  flex:none;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;
+  pointer-events:none
+}
+button.p2m-icon-control{
+  appearance:none;display:inline-flex;align-items:center;justify-content:center;
+  width:var(--p2m-button-size);height:var(--p2m-button-size);
+  min-width:var(--p2m-button-size);min-height:var(--p2m-button-size);
+  padding:0;border-radius:50%!important;
+  border:1px solid var(--p2m-button-border)!important;
+  background:var(--p2m-button-bg)!important;color:var(--p2m-button-ink)!important;
+  box-shadow:var(--p2m-button-shadow);line-height:1
+}
+button.p2m-icon-control:hover{background:#f5f8fa!important}
+button.p2m-icon-control:active{background:#e9eff4!important}
+button.p2m-icon-control:focus-visible{outline:3px solid #8bb8ec;outline-offset:2px}
+button.p2m-icon-control:disabled{opacity:.45;cursor:not-allowed}
+button:not(.p2m-icon-control):not(.result):not(.inline-button){
+  border-radius:999px;
+}
+/* A white floating search bar instead of a mixture of blue rectangles. */
+.topbar{
+  background:#fff!important;border:1px solid #d7dde3;
+  border-radius:999px!important;box-shadow:0 3px 14px #192f4233!important;
+}
+.topbar .search{
+  background:#fff!important;border:1px solid #e0e4e8;
+  border-radius:999px!important;overflow:hidden;
+}
+.topbar .search input{background:transparent!important}
+.topbar .search button.p2m-icon-control{
+  --p2m-button-size:33px;
+  width:33px!important;height:33px!important;min-width:33px;min-height:33px;
+  flex:0 0 33px!important;margin:0 1px 0 0;
+  box-shadow:none;border-color:#dee3e8!important
+}
+.topbar .topbtn.p2m-icon-control{
+  --p2m-button-size:35px;
+  width:35px!important;height:35px!important;
+  min-width:35px!important;min-height:35px!important;
+  flex:0 0 35px!important;font-size:inherit!important;
+}
+.pin-zoom-buttons{gap:8px!important}
+button.pin-zoom-button.p2m-icon-control{
+  --p2m-button-size:42px;
+  width:42px!important;height:42px!important;
+  font-size:inherit!important;font-weight:normal!important;
+}
+button.layers-bottom-button.p2m-icon-control{
+  --p2m-button-size:46px;
+  width:46px;height:46px;min-width:46px;min-height:46px;
+  font-size:inherit;line-height:1
+}
+button.labels-toggle.p2m-icon-control{
+  --p2m-button-size:42px;
+  width:42px;height:42px;min-width:42px;min-height:42px;
+  font-family:inherit;font-size:inherit
+}
+button.close.p2m-icon-control,button.layer-delete.p2m-icon-control,
+.results-head button.p2m-icon-control{
+  --p2m-button-size:32px;
+  width:32px!important;height:32px!important;
+  min-width:32px!important;min-height:32px!important;
+  padding:0!important;font-size:inherit!important;
+}
+button.layer-delete.p2m-icon-control{color:#ad3540!important}
+#moveBar button.p2m-icon-control{
+  --p2m-button-size:36px;
+  width:36px!important;height:36px!important;
+  min-width:36px!important;min-height:36px!important;
+  flex:0 0 36px!important;font-size:inherit!important;
+}
+#confirmMove.p2m-icon-control{background:#fff!important;color:#187b45!important}
+#cancelMove.p2m-icon-control{background:#fff!important;color:#b7353d!important}
+#moveBar{border:1px solid var(--p2m-button-border)}
+.pin-actions button,#addLayer,.dialog-actions button{
+  border:1px solid var(--p2m-button-border);
+  border-radius:999px!important;background:#fff;color:var(--p2m-button-ink);
+}
+.pin-actions button:hover,#addLayer:hover,.dialog-actions button:hover{background:#f5f8fa}
+#deletePin,.dialog-actions .danger{color:#aa2e3b}
+@media(max-width:630px){
+  button.pin-zoom-button.p2m-icon-control{
+    --p2m-button-size:40px;width:40px!important;height:40px!important
+  }
+  button.layers-bottom-button.p2m-icon-control{
+    --p2m-button-size:44px;width:44px;height:44px;min-width:44px;min-height:44px
+  }
+  .topbar .topbtn.p2m-icon-control{
+    --p2m-button-size:34px;width:34px!important;height:34px!important;
+    min-width:34px!important;min-height:34px!important;flex:0 0 34px!important
+  }
+}
