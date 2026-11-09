@@ -574,7 +574,7 @@
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
-    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
+    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
