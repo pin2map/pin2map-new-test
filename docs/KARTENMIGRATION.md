@@ -135,3 +135,10 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Ursache: MapLibre `jumpTo({zoom,around})` interpretiert den Anker `around` nicht als Teil seiner JumpToOptions. Stattdessen nutzt der v6-Adapter `zoomTo(zoom,{around:[lng,lat],duration:0,animate:false})`, das den geografischen Punkt am Bildschirmanker hält.
 - Isolierte neue Dateien in `pin2map-maplibre-preview`: `test-v6.html`, `maplibre-prototype-v6.js`, `map-adapter-maplibre-v6.js`; entsprechende Kopien im Entwicklungszweig. Die abgenommene v4 und v5 bleiben erhalten. Kein Eingriff in `main` der Leaflet-PWA.
 - Syntax von Adapter und Prototype sowie die Ankerargumente (Zoom 18/14; Koordinatenreihenfolge [lng,lat]) in einem JavaScript-Mock geprüft. Die tatsächliche iPhone-Bestätigung des Ankerverhaltens ist noch offen.
+
+## Inkrement 9: iPhone-Diagnose für Pin-Zoomanker (2026-11-09)
+
+- Nutzer: v6 scheint den Pin bei Langdruck-Zoom zu halten, ist auf flächig gefärbter Karte aber schwer optisch einzuschätzen. Noch keine eindeutige pixelgenaue Abnahme.
+- Separater Diagnose-Prototyp: `https://pin2map.github.io/pin2map-maplibre-preview/test-v7.html` mit eigenen Version-7-Dateinamen. Gelbes, an der Ausgangs-Bildschirmposition feststehendes Fadenkreuz und Anzeige des Abstands zwischen Pin-Projektion vor und nach dem Zoom in Pixeln (Ziel nahe 0 px).
+- Verwendet weiterhin `zoomTo(zoom,{around:[lng,lat],duration:0,animate:false})`; keine bestehenden PWA-Pins, Ebenen, IndexedDB oder Service Worker.
+- JavaScript-Syntax und statische Verbindungen der Diagnosekomponenten kontrolliert. Noch keine iPhone-Abnahme von v7; Ergebnis muss auf dem Gerät bestätigt werden.
