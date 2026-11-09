@@ -77,7 +77,7 @@ check(sw.includes('if(!record)return {response:cached,fresh:false}'), 'old V17 t
 
 check(sw.includes("'./map-adapter-leaflet.js'"), 'Leaflet adapter available during offline start');
 check(html.includes('src="./map-adapter-leaflet.js"'), 'Leaflet adapter loaded before application');
-check(js.includes('mapAdapter=new window.Pin2MapLeafletAdapter(map)'), 'Leaflet adapter instantiated');
+check(js.includes('mapAdapter=window.Pin2MapLeafletAdapter.mount('), 'Leaflet adapter mounts the map');
 check(js.includes('mapAdapter.getViewport()'), 'viewport data goes through adapter');
 check(js.includes('mapAdapter.unproject('), 'map click coordinates use adapter');
 check(js.includes('mapAdapter.setView('), 'search and one-pin center use adapter');
@@ -86,4 +86,10 @@ check(js.includes('mapAdapter.createMarker(') && js.includes('mapAdapter.setMark
 check(js.includes('mapAdapter.createLine(') && js.includes('mapAdapter.setLinePositions('),'move preview uses adapter');
 check(js.includes('mapAdapter.stopMarkerEventPropagation(element)') && js.includes('mapAdapter.setPanEnabled(false)'),'pin gestures use adapter for pointer event isolation');
 check(!js.includes('L.marker(') && !js.includes('L.polyline(') && !js.includes('L.divIcon('),'no direct Leaflet marker or preview creation remains in app');
+check(js.includes('mapAdapter.setBasemap(state.basemap)'), 'basemap selection routed through adapter');
+check(js.includes('mapAdapter.addZoomControls({onFitAll:fitAllPins})'), 'zoom controls routed through adapter');
+check(js.includes('mapAdapter.onMapClick(position =>'), 'map clicks return neutral coordinates');
+check(js.includes('mapAdapter.fitBounds(pts,'), 'fit all pins routed through adapter');
+check(js.includes('mapAdapter.on("dragstart zoomstart", cancelLongPress)'), 'map gestures cancel pin creation hold through adapter');
+check(!/\\b(?:L|map)\\./.test(js), 'app no longer calls Leaflet or raw map directly');
 console.log('All static UI checks passed. Browser/touch interaction still needs a real-device test.');
