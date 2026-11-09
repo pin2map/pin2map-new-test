@@ -7,6 +7,9 @@
   const PRIVATE_ID = projectModel.PRIVATE_ID;
   const COLORS = projectModel.DEFAULT_COLORS;
   const defaults = projectModel.defaultProject;
+  const pinOps = window.Pin2MapPinOperations;
+  const pinFilter = window.Pin2MapPinFilter;
+  const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markers = new Map();
   const uiState = new window.Pin2MapUIState();
   let saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0;
@@ -16,7 +19,7 @@
   let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
-  const selectedPin = () => state.pins.find(p => p.id === uiState.selectedPinId);
+  const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
   const cleanText = projectModel.cleanText;
   const uiShell = new window.Pin2MapUIShell({getElement:$});
   const pinEditorView = new window.Pin2MapPinEditorView({
@@ -55,9 +58,8 @@
   function renderMarkers() {
     if(!mapAdapter)return;
     const shown=new Set(),occupied=[];
-    const sorted=[...state.pins].sort((a,b)=>Number(b.id===uiState.selectedPinId)-Number(a.id===uiState.selectedPinId));
+    const sorted=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter).sort((a,b)=>Number(b.id===uiState.selectedPinId)-Number(a.id===uiState.selectedPinId));
     for(const pin of sorted){
-      if(!layerById(pin.layerId)?.visible)continue;
       shown.add(pin.id);
       let marker=markers.get(pin.id);
       if(!marker){
@@ -255,12 +257,13 @@
   }
   function confirmMove(){
     const pin=selectedPin();if(!pin||!movePreview)return;
-    pin.lat=movePreview.lat;pin.lng=movePreview.lng;
+    pinOps.movePin(state,pin.id,movePreview,{validatePosition:projectModel.position});
     endMove();save();renderMarkers();renderPinPanel();showNotice("Position gespeichert");
   }
   function renderLayers() {
     const list = $("layersList");
     list.replaceChildren();
+    const layerCounts=pinFilter.countByLayer(state.pins,state.layers);
     for (const layer of state.layers) {
       const row = document.createElement("div"); row.className = "layer-row";
       const eye = document.createElement("input"); eye.type = "checkbox"; eye.checked = layer.visible; eye.title = "Ebene sichtbar"; eye.setAttribute("aria-label", layer.name + " sichtbar");
@@ -268,7 +271,7 @@
       const dot = document.createElement("span"); dot.className = "layer-color"; dot.style.background = layer.color;
       const label = document.createElement("div"); label.className = "layer-name";
       const name = document.createElement("strong"); name.textContent = layer.name;
-      const count = document.createElement("small"); count.textContent = state.pins.filter(p => p.layerId === layer.id).length + " Pins";
+      const count = document.createElement("small"); count.textContent = layerCounts[layer.id] + " Pins";
       label.append(name, count);
       row.append(eye,dot,label);
       const del=document.createElement("button");
@@ -349,7 +352,7 @@
     }
   }
   function fitAllPins(){
-    const pts=state.pins.filter(p=>layerById(p.layerId)?.visible).map(p=>[p.lat,p.lng]);
+    const pts=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter).map(p=>[p.lat,p.lng]);
     if(!pts.length){showNotice("Keine sichtbaren Pins vorhanden");return;}
     if(pts.length===1)mapAdapter.setView({center:{lat:pts[0][0],lng:pts[0][1]},zoom:Math.max(mapAdapter.getViewport().zoom,13)},{animate:false});
     else mapAdapter.fitBounds(pts,{padding:[35,35],maxZoom:15,animate:false});
@@ -378,8 +381,9 @@
   function addPin(lat, lng, name) {
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
     const layerId=PRIVATE_ID;
-    const pin = { id: uid(), lat, lng, name: cleanText(name), layerId };
-    state.pins.push(pin); save(); selectPin(pin.id);
+    const pin = pinOps.createPin(state,{id:uid(),lat,lng,name,layerId},
+      {validatePosition:projectModel.position,cleanText});
+    save(); selectPin(pin.id);
     const layer = layerById(layerId);
     if (!layer.visible) showNotice("Pin in ausgeblendeter Ebene „" + layer.name + "“ gespeichert");
     return pin;
@@ -616,11 +620,11 @@
       renderLayers();save();
     });
 
-    $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){p.name=cleanText(e.target.value);save();renderMarkers();} });
+    $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){pinOps.renamePin(state,p.id,e.target.value,{cleanText});save();renderMarkers();} });
     $("pinName").addEventListener("blur", e => {e.target.value=cleanText(e.target.value);});
     $("pinLayer").addEventListener("change", e => {
       const p=selectedPin(); if(!p || !layerById(e.target.value))return;
-      p.layerId=e.target.value; save();renderLayers();renderMarkers();renderPinPanel();
+      pinOps.assignLayer(state,p.id,e.target.value); save();renderLayers();renderMarkers();renderPinPanel();
       if(!layerById(p.layerId).visible) showNotice("Pin liegt jetzt in einer ausgeblendeten Ebene");
     });
     $("showPinLayer").addEventListener("click", () => {
@@ -633,7 +637,7 @@
     $("deletePin").addEventListener("click", () => { if(selectedPin())$("deleteDialog").showModal(); });
     $("deleteDialog").addEventListener("close", () => {
       if($("deleteDialog").returnValue!=="confirm")return;
-      state.pins=state.pins.filter(p=>p.id!==uiState.selectedPinId);uiState.selectedPinId=null;uiState.moveMode=false;
+      pinOps.deletePin(state,uiState.selectedPinId);uiState.clearSelection();
       save();renderMarkers();renderLayers();renderPinPanel();updateModeUI();showNotice("Pin gelöscht");
     });
     document.addEventListener("pointerdown", e => {
