@@ -44,7 +44,10 @@ assert.equal(nodes.notice.classList.contains("hidden"),false);
 ui.showNotice("Nächste Meldung");
 assert.equal(nodes.notice.textContent,"Nächste Meldung");
 assert.equal(pending.size,1,"Old notice timeout must be cancelled");
-pending.get(timers.at(-1))();
+const fired=timers.at(-1);
+const fire=pending.get(fired);
+pending.delete(fired);
+fire();
 assert.equal(nodes.notice.classList.contains("hidden"),true);
 
 ui.togglePanel("layersPanel");
