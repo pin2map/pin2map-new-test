@@ -120,3 +120,11 @@ Koordinatenkonvention: Anwendungs-Pins haben `lat,lng` als Zahlen. Der Adapter b
 - Unter dem neuen, cache-unabhängigen Einstieg `https://pin2map.github.io/pin2map-maplibre-preview/test-v4.html` mit eigenen v4-Dateinamen wurden die Änderungen vom Nutzer mit „funktioniert einwandfrei“ bestätigt. Damit gelten Doppeltipp-Verhalten und Zoomgeschwindigkeit **für den separaten v4-Prototyp auf dem getesteten iPhone** als abgenommen.
 - Keine Aussage über allgemeine Gerätekompatibilität, Offline-Fähigkeit, bestehende Pin-Dialoge oder Datenmigration. `main` und die Leaflet-V18-Referenz wurden dafür nicht verändert.
 - Nächster Entwicklungsschritt: bestehende Pin-Dialoge, Langdruck-Zoom und explizit bestätigte Verschiebevorschau über den MapLibre-Adapter herstellen; neue Funktionen zunächst nur im separaten Preview erproben.
+
+## Inkrement 7: MapLibre-Testversion 5 – Pin-Interaktion (2026-11-09)
+
+- Separates Preview: `https://pin2map.github.io/pin2map-maplibre-preview/test-v5.html`. Die zuvor abgenommene v4 bleibt unverändert abrufbar.
+- `test-v5.html` und `maplibre-prototype-v5.js` im öffentlichen Preview-Repository; Quellkopien `maplibre-prototype-v5.html` / `maplibre-prototype-v5.js` im Entwicklungszweig.
+- Test-Pins: Antippen öffnet/schließt den am Pin verankerten Bearbeitungsdialog. Name ist während der Sitzung änderbar. Pin-Langdruck ab 550 ms mit 11-px-Abbruchschwelle schaltet 18/14 am Pin um. Verschieben setzt zunächst nur einen separaten, per Karte oder Drag verschiebbaren Vorschau-Pin mit Verbindungslinie; erst ✓ ändert die Position, × verwirft die Vorschau.
+- Diese Version ist **nur ein flüchtiger Interaktionstest**: drei fest programmierte Pins, keine IndexedDB, keine Ebenenverwaltung, keine Synchronisation, keine PMTiles-Karten und kein Offline-Betrieb. V5 ist noch **nicht funktionsgleich** mit der Leaflet-PWA; insbesondere sind die Dialog-Autoausrichtung an Bildschirmrändern und vollständig identische iOS-Pointer-Gesten noch zu prüfen.
+- JavaScript-Syntax geprüft; 14 v5-spezifische statische Assertions bestanden. Echter Browser-/iPhone-Test der neuen Pin-Gesten **noch offen**. Keine Freigabe zur Migration auf `main`.
