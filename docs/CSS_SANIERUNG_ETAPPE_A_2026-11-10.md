@@ -464,3 +464,10 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Bestehende Schutztests `tests/css-search-button-size-ownership.test.js` und `tests/css-search-capsule-ownership.test.js` wurden entsprechend angepasst. **`!important`-Bestand weiterhin 299**; keine neue pauschale Override-Schicht.
 - PWA-Quellrelease **v85**. Quelltextbedingungen werden geprüft; unabhängig bestätigte Auslieferung, GitHub-Actions-Erfolg und aktive Version am Testgerät stehen noch aus.
 - **Abnahme offen:** Auf dem iPhone beurteilen, ob der Kreis jetzt erkennbar kleiner und optisch vom Suchblock getrennt ist; das Lupensymbol selbst soll unverändert wirken. Die vorherigen Aussagen „keine Änderung“ sind keine Abnahme von v83/v84.
+
+## Diagnose B25d – v85 weiterhin ohne sichtbare Wirkung
+
+- Der Auftraggeber meldete nach v85 erneut **„keine Änderung“**. Die visuelle Korrektur des Suchbuttonkreises ist ausdrücklich **weiterhin nicht abgenommen**.
+- Keine weitere experimentelle Änderung an Kreisgröße, Symbol, Hintergrund oder CSS-Kaskade vor gesicherter Versionsfeststellung. Der Quellstand v85 enthält einen Suchbutton-Kreis von 30px, ein 18px-Lupensymbol und eine abgesetzte Kreisfläche; ob genau dieser Stand im betroffenen Browser geladen ist, bleibt offen.
+- Die externe öffentliche Preview und die dedizierte Diagnoseseite sind aus der verfügbaren Web-/Containerumgebung nicht abrufbar. Commitstatus und die über GitHub verfügbaren PR-Workflow-Abfragen liefern keinen verlässlichen Nachweis einer erfolgreichen Pages-Bereitstellung. Ein Fehler des GitHub-Workflows ist möglich, aber **nicht bestätigt**.
+- **Nächster zwingender Nachweis:** Die im Browser direkt geöffnete URL `https://pin2map.github.io/pin2map-new-test/preview/diagnostics.html` muss eine Seite mit der Überschrift „pin2map · Versionsprüfung“ und den tatsächlich ausgelieferten Tokenwerten anzeigen. Ein Screenshot der Kartenansicht ersetzt diese Auslieferungsdiagnose nicht. Alternativ kann der Auftraggeber den GitHub-Actions-Status des Preview-Workflows mitteilen.
