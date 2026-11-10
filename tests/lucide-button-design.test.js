@@ -227,7 +227,7 @@ test("Leaflet and OSM attribution is horizontally centered at the screen bottom"
   assert.ok(!rule.includes("58px"),"Attribution must no longer float above map button");
 });
 
-test("iPhone only: top scroll haze suppressed, bottom controls lowered, attribution flush",()=>{
+test("iPhone only: top scroll haze suppressed, shared bottom clearance and attribution flush",()=>{
   const css=read("styles.css");
   const start=css.lastIndexOf("/* iPhone viewport corrections (2026-11-10).");
   assert.ok(start>=0,"Expected iPhone-only adjustments");
@@ -242,11 +242,30 @@ test("iPhone only: top scroll haze suppressed, bottom controls lowered, attribut
   assert.ok(section.includes("#app #layersButton.layers-bottom-button,"));
   assert.ok(section.includes("#app #labelsToggle.labels-toggle,"));
   assert.ok(section.includes("#app #basemapButton.basemap-map-button.p2m-icon-control{"));
-  assert.ok(section.includes("bottom:calc(2px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(section.includes("bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important"));
   assert.ok(section.includes("#map .leaflet-bottom.leaflet-left .pin-zoom-buttons{"));
   assert.ok(section.includes("#map .leaflet-bottom.leaflet-right{\n    bottom:0!important"));
   assert.ok(section.includes("#app #basemapMenu.basemap-menu{"));
-  assert.ok(section.includes("bottom:calc(52px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(section.includes("bottom:calc(var(--p2m-bottom-control-clearance) + 50px + env(safe-area-inset-bottom,0px))!important"));
   assert.ok(css.slice(0,start).includes("bottom:env(safe-area-inset-bottom,0px)!important"),
     "Non-iPhone positioning unchanged");
+});
+
+test("bottom buttons clear centered map credits in browser and installed PWA",()=>{
+  const css=read("styles.css");
+  const start=css.lastIndexOf("/* BOTTOM ROW CLEARANCE CONTRACT");
+  assert.ok(start>=0,"Bottom clearance must be centrally documented");
+  const rule=css.slice(start);
+  assert.ok(rule.includes("--p2m-bottom-control-clearance:24px"));
+  for(const selector of [
+    "#app #layersButton.layers-bottom-button",
+    "#app #labelsToggle.labels-toggle",
+    "#app #basemapButton.basemap-map-button.p2m-icon-control",
+    "#map .leaflet-bottom.leaflet-left .pin-zoom-buttons"
+  ])assert.ok(rule.includes(selector),"Shared baseline: "+selector);
+  assert.ok(rule.includes("bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(rule.includes("margin-bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(rule.includes("#app #basemapMenu.basemap-menu"));
+  assert.ok(rule.includes("bottom:calc(var(--p2m-bottom-control-clearance) + 50px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(!rule.includes("leaflet-control-attribution"),"Credits remain at screen bottom");
 });
