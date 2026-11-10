@@ -11,12 +11,9 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .map-controls{bottom:calc(var(--pin-panel-height,0px) + 20px);max-width:calc(100% - 24px);flex-wrap:wrap}
 #fitPins{white-space:nowrap}
 @media(max-width:630px){
-  .topbar{display:grid;grid-template-columns:minmax(0,1fr) 42px 42px;grid-template-rows:35px 43px;gap:4px 7px;padding:calc(6px + env(safe-area-inset-top,0px)) 9px 7px;align-items:center}
   .brand{grid-column:1;grid-row:1;font-size:18px;overflow:hidden;text-overflow:ellipsis}
-  #layersButton{grid-column:2;grid-row:1}
-  #settingsButton{grid-column:3;grid-row:1}
   .topbtn{width:42px;height:35px;padding:2px 4px;font-size:19px}
-  .search{grid-column:1/-1;grid-row:2;width:100%;height:43px;max-width:none;margin:0;min-width:0}
+  .search{width:100%;height:43px;max-width:none;margin:0;min-width:0}
   .search input{font-size:16px;padding:9px 11px;min-width:0}
   .search button{flex-basis:46px}
   #map{top:calc(91px + env(safe-area-inset-top,0px))}
@@ -41,15 +38,14 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 :root{--header-height:48px}
 .topbar{
   display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:stretch;
-  grid-template-columns:none;grid-template-rows:none;
   height:calc(var(--header-height) + env(safe-area-inset-top,0px));
   padding:calc(5px + env(safe-area-inset-top,0px)) 8px 5px;
   gap:7px;width:100%;min-width:0
 }
-.topbar .search{display:flex;flex:1 1 auto;grid-column:auto;grid-row:auto;width:auto;min-width:0;max-width:none;height:38px;margin:0;border-radius:9px}
+.topbar .search{display:flex;flex:1 1 auto;width:auto;min-width:0;max-width:none;height:38px;margin:0;border-radius:9px}
 .topbar .search input{width:0;flex:1 1 auto;min-width:0;padding:7px 10px;font-size:16px;line-height:22px}
 .topbar .search button{flex:0 0 40px;padding:0;font-size:22px;line-height:38px}
-.topbar .topbtn{grid-column:auto;grid-row:auto;flex:0 0 38px;width:38px;height:38px;padding:0;border-radius:8px;font-size:19px}
+.topbar .topbtn{flex:0 0 38px;width:38px;height:38px;padding:0;border-radius:8px;font-size:19px}
 #map{top:calc(var(--header-height) + env(safe-area-inset-top,0px))}
 .search-results{top:calc(var(--header-height) + env(safe-area-inset-top,0px))}
 .panel{top:calc(var(--header-height) + 9px + env(safe-area-inset-top,0px))}
@@ -73,7 +69,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 @media(max-width:630px){
   :root{--header-height:46px}
   .topbar{
-    display:flex;grid-template-columns:none;grid-template-rows:none;
+    display:flex;
     height:calc(var(--header-height) + env(safe-area-inset-top,0px));
     padding:calc(4px + env(safe-area-inset-top,0px)) 6px 4px;gap:5px
   }
@@ -102,10 +98,10 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   gap:4px!important;border-radius:13px;
   background:#172b49;box-shadow:0 3px 15px #12253b33
 }
-.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;height:35px!important;grid-row:auto;grid-column:auto;border-radius:9px;margin:0!important}
+.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;height:35px!important;border-radius:9px;margin:0!important}
 .topbar .search input{font-size:16px!important;padding:5px 8px!important;min-width:0;max-width:100%;height:35px}
 .topbar .search button{flex:0 0 34px!important;height:35px;padding:0!important;font-size:20px!important}
-.topbar .topbtn{grid-row:auto;grid-column:auto;flex:0 0 34px!important;width:34px!important;height:35px!important;padding:0!important;font-size:18px!important}
+.topbar .topbtn{flex:0 0 34px!important;width:34px!important;height:35px!important;padding:0!important;font-size:18px!important}
 .search-results{
   top:calc(53px + env(safe-area-inset-top,0px))!important;
   left:50%!important;right:auto!important;transform:translateX(-50%)!important;
