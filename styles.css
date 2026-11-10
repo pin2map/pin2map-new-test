@@ -411,17 +411,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
    Single shared token prevents later size divergence across mobile CSS. */
 .pin-panel{--p2m-pin-dialog-action-size:32px}
 /* Destructive action sits left of the name and matches the OK diameter. */
+/* Shared dimensions are owned by #pinPanel button:is(...) below.
+   Keep only this destructive action's colors and border. */
 .pin-panel .pin-editor-head #deletePin.p2m-icon-control{
-  --p2m-button-size:var(--p2m-pin-dialog-action-size);
-  width:var(--p2m-pin-dialog-action-size)!important;
-  height:var(--p2m-pin-dialog-action-size)!important;
-  min-width:var(--p2m-pin-dialog-action-size)!important;
-  min-height:var(--p2m-pin-dialog-action-size)!important;
-  max-width:var(--p2m-pin-dialog-action-size)!important;
-  max-height:var(--p2m-pin-dialog-action-size)!important;
-  flex:0 0 var(--p2m-pin-dialog-action-size)!important;padding:0!important;
   background:#bc2837!important;color:#fff!important;
-  border:1px solid #a81f2e!important;border-radius:50%!important;
+  border:1px solid #a81f2e!important;
 }
 .pin-panel .pin-editor-head #deletePin .p2m-lucide{
   width:18px;height:18px;
@@ -437,19 +431,10 @@ body.pin-relocation-picking #map .leaflet-interactive{
   display:flex;align-items:center;justify-content:space-between;
 }
 .pin-panel .pin-actions #closePin.pin-ok-button{
-  appearance:none;display:inline-flex;align-items:center;justify-content:center;
-  width:var(--p2m-pin-dialog-action-size)!important;
-  height:var(--p2m-pin-dialog-action-size)!important;
-  min-width:var(--p2m-pin-dialog-action-size)!important;
-  min-height:var(--p2m-pin-dialog-action-size)!important;
-  max-width:var(--p2m-pin-dialog-action-size)!important;
-  max-height:var(--p2m-pin-dialog-action-size)!important;
-  flex:0 0 var(--p2m-pin-dialog-action-size)!important;padding:0!important;
-  border-radius:50%!important;
+  appearance:none;
   border:1px solid #a6ceaa!important;
   background:#c9eecb!important;color:#245b30!important;
   font-size:14px!important;font-weight:750!important;
-  line-height:1!important;
   box-shadow:var(--p2m-button-shadow);
 }
 .pin-panel .pin-actions #closePin.pin-ok-button:hover{
