@@ -62,6 +62,43 @@ jobs:
             --exclude='docs' \
             preview-source/ site-root/preview/
 
+      - name: Vendor pinned Leaflet into the published preview
+        run: |
+          set -euo pipefail
+          mkdir -p site-root/preview/vendor/leaflet/images
+          base="https://unpkg.com/leaflet@1.9.4/dist"
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 \
+            "$base/leaflet.js" -o site-root/preview/vendor/leaflet/leaflet.js
+          curl --fail --location --silent --show-error --retry 4 --retry-delay 2 \
+            "$base/leaflet.css" -o site-root/preview/vendor/leaflet/leaflet.css
+          for image in marker-icon.png marker-icon-2x.png marker-shadow.png layers.png layers-2x.png; do
+            curl --fail --location --silent --show-error --retry 4 --retry-delay 2 \
+              "$base/images/$image" -o "site-root/preview/vendor/leaflet/images/$image"
+          done
+          python3 - <<'PY'
+          import base64,hashlib,re
+          from pathlib import Path
+          root=Path("site-root/preview")
+          html=(root/"index.html").read_text(encoding="utf-8")
+          version="https://unpkg.com/leaflet@1.9.4/dist/"
+          for filename in ("leaflet.css","leaflet.js"):
+              signature=re.search(re.escape(version+filename) +
+                                  r'[^>]*integrity="sha256-([^"]+)"',html)
+              if not signature:raise SystemExit("Missing Leaflet integrity: "+filename)
+              body=(root/"vendor/leaflet"/filename).read_bytes()
+              actual=base64.b64encode(hashlib.sha256(body).digest()).decode()
+              if actual!=signature.group(1):
+                  raise SystemExit("Leaflet integrity mismatch: "+filename)
+              html=html.replace(version+filename,"./vendor/leaflet/"+filename)
+          (root/"index.html").write_text(html,encoding="utf-8")
+          worker=root/"sw.js"
+          sw=worker.read_text(encoding="utf-8")
+          for filename in ("leaflet.css","leaflet.js"):
+              sw=sw.replace(version+filename,"./vendor/leaflet/"+filename)
+          worker.write_text(sw,encoding="utf-8")
+          print("Vendored SRI-verified Leaflet; no external CDN needed at runtime")
+          PY
+
       - name: Isolate preview IndexedDB, service worker caches and app identity
         run: |
           python3 - <<'PY'
