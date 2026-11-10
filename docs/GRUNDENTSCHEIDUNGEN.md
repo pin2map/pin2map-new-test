@@ -18,6 +18,8 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 
 ## Grundentscheidung 3 – Reihenfolge der lokalen Basisversion und Serveranbindung
 
+> **HISTORISCH / IN DER ZEITPLANUNG ERSETZT (10.11.2026):** Die frühere Pflicht zur **frühzeitigen** Serveranbindung und zum frühen Zwei-Geräte-Synchronisationstest ist aufgehoben. Verbindlich ist die unten dokumentierte neue Vorrangentscheidung vom 10.11.2026. Die weiterhin sinnvollen Grundlagen wie gekapselte Persistenz, stabile IDs und genau eine Ebene pro Pin bleiben bestehen.
+
 **Beschlossen (Variante A):** Zuerst wird eine **stabile lokale Basisversion** entwickelt und getestet. **Danach wird frühzeitig die Serveranbindung integriert und mit zwei Geräten praktisch getestet.**
 
 **Konsequenzen:**
@@ -1896,3 +1898,16 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 7. **Bestandsschutz:** Stable/main, Nutzerbestände und geschützte reference-Zweige nicht ohne ausdrückliche Freigabe ändern.
 
 **Vorrang:** Ergänzt und verschärft den Qualitätsgrundsatz vom 2026-11-09; gilt für künftige Änderungen an pin2map NEW. Reine Dokumentationsaufträge erfordern nachgewiesene Dokumentänderungen, jedoch keine App-Neuveröffentlichung.
+
+## Vorrangentscheidung – Lokale App weit entwickeln; Serveranbindung erst danach (2026-11-10)
+
+**Verbindlich beschlossen:** pin2map NEW wird **zunächst als lokal nutzbare, architektonisch saubere und funktional weit entwickelte Anwendung** aufgebaut und mit ihren wesentlichen Funktionen geprüft. Erst **danach** beginnt eine konkrete Serveranbindung und geräteübergreifende Synchronisation. Die in **Grundentscheidung 3** ehemals vorgesehene *frühe* Serverintegration, einschließlich eines frühen Zwei-Geräte-Tests, ist ausdrücklich **hinfällig**. Kein früher Synchronisations-Prototyp ist erforderlich.
+
+**Vorrang:** Diese Entscheidung ersetzt ausschließlich die zeitliche Reihenfolge der Server-/Synchronisationsintegration in Grundentscheidung 3 und allen damit unvereinbaren älteren Planungsangaben. Grundentscheidungen zu Datenhaltung, Datenverlustschutz, Berechtigungen und späterer Synchronisation behalten ihren fachlichen Charakter, werden aber erst im passenden späteren Bauabschnitt umgesetzt.
+
+**Konsequenzen:**
+- Zuerst die gegenwärtige **lokale Architektur stabilisieren**, insbesondere CSS-Kaskade/Layoutregeln, danach die verbliebenen Modul- und Zustandsgrenzen.
+- Danach lokale Funktionsparität mit den vereinbarten Funktionen der Vorgänger-App, inklusive lokaler Persistenz, geeigneter Import-/Export-/Recovery-Funktionen und funktionaler Tests schrittweise ausbauen.
+- Verbindlicher Übergangspunkt ist der **Entwicklungsfahrplan: Gate 3 vor Etappe 4 (Synchronisation)**; keine vorgezogene Server-/Auth-/Sync-Implementierung.
+- Daten- und Schnittstellenentscheidungen dürfen den späteren Sync ermöglichen, ohne ihn schon einzubauen; keine vorzeitigen technischen Abhängigkeiten.
+- Jede Änderung wird nach der Regel vom 10.11.2026 erst nach Prüfung, erfolgreicher Veröffentlichung und Live-Test als abgeschlossen gemeldet.
