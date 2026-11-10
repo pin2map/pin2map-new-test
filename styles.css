@@ -55,6 +55,7 @@ dialog h2{font-size:18px;margin:0 0 24px}
 .pin-marker{width:24px;height:24px;border:3px solid white;border-radius:50% 50% 50% 3px;transform:rotate(-45deg);box-shadow:0 1px 5px #0008}
 .pin-marker.selected{width:30px;height:30px;border-width:4px;outline:2px solid #172b49}
 .leaflet-div-icon{background:none;border:none}
+@media(max-width:630px){
 .panel{right:8px}
 
 .pin-panel{bottom:12px}
