@@ -345,3 +345,9 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 - **`!important`: 314 → 312** (ursprünglich 402). Das Schuldenbudget ist auf 312 gesenkt. Neuer Test `tests/css-search-capsule-ownership.test.js` überwacht die endgültigen Maße und verhindert die Rückkehr der überholten Werte.
 - PWA-Quellrelease: **v73**. Die Quelldateien wurden in GitHub aktualisiert; eine tatsächliche Node-Testausführung, eine erfolgreiche CI-/Pages-Veröffentlichung und die Auslieferung der identischen Dateien sind noch nicht unabhängig bestätigt.
 - **Manuelle Abnahme offen:** Suchleiste und Suchbutton auf dem iPhone nach Refresh, sowie die abschließende Desktop-/iPad-Regression. Kein Eingriff in Anwendungslogik oder lokale Pin-Daten.
+
+## Manuelle iPhone-Abnahme der Suchleiste nach B15 (v73)
+
+Der Auftraggeber bestätigte nach der gezielten Prüfaufforderung für **Suchleiste und Suchbutton** auf dem iPhone am 10.11.2026 mit **„alles gut“**, dass Darstellung und Funktion weiterhin wie erwartet sind. Eine dazwischenliegende Nachricht **„ok“** war zuvor ausdrücklich als Zustimmung zum Fortfahren und nicht als Testergebnis behandelt worden; die spätere explizite Bestätigung wird hier als manuelle Sicht-/Funktionsabnahme für die vom Nutzer geprüfte Vorschau festgehalten.
+
+**Abgrenzung:** Die Rückmeldung weist nicht unabhängig nach, welche Service-Worker-Version auf dem Gerät aktiv war, ob GitHub Actions erfolgreich war oder ob die v73-Assets vollständig und identisch ausgeliefert wurden. Ebenso bleiben die Desktop-/iPad-Regression und die technische Live-Veröffentlichungsprüfung offen.
