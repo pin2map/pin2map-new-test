@@ -146,16 +146,24 @@ jobs:
           python3 - <<'PY'
           import os
           import time
+          import re
           import urllib.request
+          from pathlib import Path
           from urllib.parse import urljoin
 
           base = os.environ["PAGES_BASE"].rstrip("/") + "/preview/"
+          source_sw = Path("preview-source/sw.js").read_text(encoding="utf-8")
+          source_version = re.search(r"const CACHE='pin2map-new-v(\\d+)'", source_sw)
+          if not source_version:
+              raise SystemExit("FAIL: cannot determine source worker version")
+          expected_version = "pin2map-preview-v" + source_version.group(1)
           expected = {
-              "index.html": ("text/html", "Entwicklungsvorschau"),
+              "index.html": ("text/html", "ui/pwa-refresh.js"),
               "styles.css": ("text/css", ".pin-panel"),
-              "app.js": ("javascript", "Pin2MapProjectModel"),
+              "app.js": ("javascript", "Pin2MapPwaRefresh.refresh"),
               "ui/pin-layer-picker.js": ("javascript", "class PinLayerPicker"),
-              "sw.js": ("javascript", "pin2map-preview-v"),
+              "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
+              "sw.js": ("javascript", expected_version),
           }
           print("Checking live preview assets at:", base, flush=True)
           for attempt in range(1, 13):
