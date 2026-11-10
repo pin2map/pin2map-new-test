@@ -213,3 +213,16 @@ test("settings moved out of search block, map picker lives bottom right with str
   const common=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),[\s\S]*?\}/)?.[0]||"";
   assert.ok(common.includes("width:var(--p2m-map-circle-size)!important"));
 });
+
+test("Leaflet and OSM attribution is horizontally centered at the screen bottom",()=>{
+  const css=read("styles.css");
+  const rule=css.match(/#map \.leaflet-bottom\.leaflet-right\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(rule.includes("left:50%!important"));
+  assert.ok(rule.includes("right:auto!important"));
+  assert.ok(rule.includes("bottom:env(safe-area-inset-bottom,0px)!important"));
+  assert.ok(rule.includes("transform:translateX(-50%)!important"));
+  const attribution=css.match(/#map \.leaflet-bottom\.leaflet-right \.leaflet-control-attribution\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(attribution.includes("text-align:center"));
+  assert.ok(attribution.includes("margin:0!important"));
+  assert.ok(!rule.includes("58px"),"Attribution must no longer float above map button");
+});
