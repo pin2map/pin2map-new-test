@@ -18,7 +18,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .leaflet-top.leaflet-left{top:12px}
 .leaflet-bottom.leaflet-right{bottom:5px}
 .leaflet-control-attribution{font-size:10px!important}
-.search-results{position:absolute;z-index:1300;top:59px;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
+.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
 .result{display:block;width:100%;text-align:left;border-radius:0;border-bottom:1px solid #edf1f5;background:white;color:#183454;padding:12px}
 .result:hover{background:#edf6ff}
 .result strong{display:block;font-size:14px}
@@ -26,7 +26,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .results-head{display:flex;justify-content:flex-end;padding:4px;background:#f4f7fa}
 .results-head button{background:transparent;color:#3e5974;padding:3px 9px;font-size:18px}
 .message{padding:13px;font-size:14px;color:#4a5870}
-.panel{position:absolute;right:12px;top:70px;z-index:1250;background:white;border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--shadow);width:min(350px,calc(100% - 24px));max-height:70vh;overflow-y:auto}
+.panel{position:absolute;right:12px;z-index:1250;background:white;border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--shadow);width:min(350px,calc(100% - 24px));max-height:70vh;overflow-y:auto}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
 .panel-head h2{margin:0;font-size:19px}
 .close{background:transparent;color:#61738b;font-size:24px;padding:0 4px}
@@ -58,8 +58,8 @@ dialog h2{font-size:18px;margin:0 0 24px}
 @media(max-width:630px){.topbar{padding:7px;gap:6px}
 .search input{font-size:13px;padding:11px 7px}
 .search button{padding:3px 10px}
-.panel{top:61px;right:8px}
-.search-results{top:55px}
+.panel{right:8px}
+
 .pin-panel{bottom:12px}
 
 }
