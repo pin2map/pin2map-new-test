@@ -13,7 +13,7 @@ Die derzeitige Datei `styles.css` ist noch ein Übergangszustand und enthält hi
 | Bereich | Zentrale Festlegung | Erlaubte Ausnahmen |
 | --- | --- | --- |
 | Runde Kartenbuttons | `--p2m-map-circle-size` und gemeinsamer Map-Control-Vertrag | Buttonposition, semantische Farben; keine eigenen Durchmesser |
-| Suchbutton innerhalb der Suchkapsel | `--p2m-search-button-size:32px` und `--p2m-search-icon-size:18px`; eigener `#app #searchButton.p2m-icon-control`-Vertrag | Bewusst kleiner als die 42px-Kartenbuttons; kein Mitglied des allgemeinen Map-Button-Selectors |
+| Suchbutton innerhalb der Suchkapsel | `--p2m-search-button-size:30px` und `--p2m-search-icon-size:18px`; eigener `#app #searchButton.p2m-icon-control`-Vertrag, getrennte Füllung `--p2m-button-bg:#eef3f8` und sichtbare Kontur | Bewusst kleiner als die 42px-Kartenbuttons; kein Mitglied des allgemeinen Map-Button-Selectors |
 | Untere Kartenbuttons | `--p2m-bottom-control-baseline` | Seitlicher Abstand und eigenständiges Karten-Credit-Layout |
 | Obere Eckbuttons | `--p2m-top-corner-inset`, `--p2m-top-corner-offset` | Mobile Werte desselben Tokens |
 | Suchkapsel zwischen Eckbuttons | `--p2m-top-search-clearance` | Inhalt, Suchergebnisse |
