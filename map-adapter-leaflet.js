@@ -71,7 +71,7 @@
     }
     addZoomControls({onFitAll}) {
       const adapter=this;
-      const control=window.L.control({position:"topleft"});
+      const control=window.L.control({position:"bottomleft"});
       control.onAdd=function(){
         const holder=window.L.DomUtil.create("div","pin-zoom-buttons leaflet-bar");
         const add=(symbol,title,action)=>{
