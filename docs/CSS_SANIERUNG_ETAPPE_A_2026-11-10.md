@@ -306,3 +306,12 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 - Neu: `tests/css-design-token-ownership.test.js` sichert sechs zentrale Design-Tokens gegen mehrfache Definitionen und kontrolliert acht gemeinsame CSS-Größen-/Positionsregeln sowie fünf entfernte harte Altwerte. Alle auf dem erneut aus GitHub gelesenen CSS-Stand überprüften Quelltextbedingungen erfüllen die erwarteten Invarianten.
 - **Keine Änderung an `styles.css`, `sw.js` oder der App-Laufzeit** in diesem Inkrement. Version bleibt **v70**, `!important`-Schuldenbudget bleibt **314**. Für diese reine Test-/Dokumentationsänderung ist keine neue Geräteabnahme erforderlich.
 - Die tatsächliche Ausführung der neuen Node-Tests in GitHub Actions und die unabhängige Live-/Desktop-/iPad-Verifizierung sind **weiter offen**. Ein GitHub-Commit allein ist kein bestandener CI-Lauf.
+
+## Inkrement B13 – Ebenenbutton erhält ausschließlich gemeinsame Kartenbutton-Gestaltung (v71)
+
+- Die ältere Sondergestaltung von `.layers-bottom-button` wurde um die bereits überholten festen Maße (46px normal, 44px mobil), eigene Rahmen-, Hintergrund-, Schatten-, Farbangaben und die pixelgebundene Zeilenhöhe bereinigt.
+- **Maßgeblich** bleiben der gemeinsame 42px-Kartensteuerungsvertrag `:is(#app > button, #app #map .leaflet-control button)` und die separaten, zuvor abgenommenen Positionen des oberen rechten Layers-Buttons. Nur Symboltypografie und Stacking bleiben am spezifischen Button.
+- Neu: `tests/css-layers-button-ownership.test.js` bewacht die klare Zuständigkeit und das Ausbleiben des alten mobilen 44px-Overrides.
+- **`!important` unverändert: 314.** Auch redundante Deklarationen *ohne* `!important` zählen zum CSS-Chaos und werden schrittweise entfernt.
+- Service-Worker-Quellversion auf **v71** angehoben. Alle Quelltextbedingungen sind gezielt zu kontrollieren; ein unabhängiger erfolgreicher CI-Lauf und die öffentliche Auslieferung der v71-Assets sind damit nicht nachgewiesen.
+- **Manuelle Abnahme v71 offen:** Ebenenbutton oben rechts und Ebenenliste auf iPhone sowie breitere Browser-/Tablet-/Desktop-Regressionsprüfung. Die früheren Nutzerfreigaben dienen weiterhin als Sollreferenz.
