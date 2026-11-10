@@ -330,3 +330,11 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 - Die bestehende und bereits abgenommene **42px-Kartenbutton-Gestaltung** sowie die spätere **Info-Position über dem Kartenwahlbutton rechts unten** bleiben unverändert maßgeblich. Lokale Regeln enthalten nur Positionierungsart, Stacking und Schriftgewicht.
 - Neuer Schutztest: `tests/css-info-button-ownership.test.js`, der das Zurückkehren der alten Angaben verhindern soll. Der CSS-`!important`-Bestand bleibt **314**, weil ausschließlich ältere normale Deklarationen entfernt wurden.
 - Quellversion **v72**. Quelltextkontrolle, Node-Testausführung, veröffentlichte Preview und visuelle Geräteprüfung sind getrennte Gates; insbesondere die Live-Darstellung nach v72 wurde noch nicht unabhängig bestätigt.
+
+## Manuelle iPhone-Abnahme des Info-Buttons nach B14 (v72)
+
+Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren und den **Info-Button (i) unten rechts** hinsichtlich unveränderter Darstellung, Position und funktionierendem Menü zu kontrollieren, bestätigte der Auftraggeber am 10.11.2026 ausdrücklich: **„alles gut“**.
+
+**Manuell abgenommen:** Der auf dem iPhone überprüfte Info-Button entspricht nach der Bereinigung B14 weiterhin der freigegebenen optischen und funktionalen Referenz. Für diese konkrete Sichtprüfung ist keine weitere Rückfrage erforderlich.
+
+**Eigenständig offen:** Eine aktive v72-Service-Worker-Version am Gerät, ein erfolgreicher GitHub-Actions-Lauf, die exakt identische Auslieferung der v72-Assets und die aktuelle Desktop-/iPad-Regression sind dadurch nicht unabhängig nachgewiesen. Diese technischen Abschlussprüfungen bleiben offen.
