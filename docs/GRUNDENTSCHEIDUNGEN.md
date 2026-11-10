@@ -1882,3 +1882,17 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - **Speicherdauer:** Keine feste Löschfrist und keine unnötige LRU-Löschung; Browser-/iOS-Speicherbereinigung oder ausdrückliche Nutzerlöschung bleiben möglich.
 - **Anbietergrenzen:** Keine Vorausladung, kein gezielter Offline-Gebietsdownload. `OpenTopoMap` erhält weiterhin keinen eigenen Kachelcache. Maßgebend ist die offizielle OSMF Tile Usage Policy: https://operations.osmfoundation.org/policies/tiles/
 - **Prüfpflicht:** Automatische Tests für Gültigkeit, Netzwerkfehler, alte Einträge und Ablaufregeln ergänzen; echter iPhone-/Flugmodus-Test bleibt gesondert erforderlich.
+
+## Verbindliche Arbeitsregel – Ein Auftrag endet erst mit nachgewiesener Veröffentlichung und Prüfung (2026-11-10)
+
+**Beschlossen:** Ein Anwendungsauftrag ist nicht mit Codeänderung, Commit oder Auslösen eines Workflows abgeschlossen. Der gesamte Auftrag umfasst **Implementierung → technische Prüfungen → Browser-/Regressionstest → Veröffentlichung → Prüfung der tatsächlich ausgelieferten Version**.
+
+1. **Ende-zu-Ende:** Implementierung, Prüfung und Veröffentlichung gehören zusammen. Keine vorzeitige Fertigmeldung nach einem Commit oder während eines noch unbekannten Deployments.
+2. **Tests:** Relevante Syntax-, Modul-, Integrations- und Browserprüfungen durchführen. Betroffene Bedienung und Regressionen auf passenden mobilen und Desktop-Viewports prüfen; spezifisches iPhone-Touchverhalten nur nach entsprechendem Gerätetest als „auf iPhone getestet“ ausweisen.
+3. **Deploymentnachweis:** Erfolg des zuständigen GitHub-Actions-Workflows verifizieren. Die veröffentlichte URL muss die richtige Version und die geänderten Dateien ausliefern; bei PWA-Änderungen Service Worker, Reload und Cache-Aktualisierung prüfen.
+4. **Live-Funktion:** Die konkrete Änderung auf der **veröffentlichten URL** im echten Browser bedienen und prüfen, nicht nur lokal oder im Quellcode. Wichtige bestehende Funktionen dürfen nicht unbeabsichtigt beeinträchtigt werden.
+5. **Abschlussmeldung:** „Fertig / getestet und veröffentlicht“ nur mit nachgewiesenen Ergebnissen. Version, Umgebung, URL, Commit, Tests und Einschränkungen nennen. Push ≠ erfolgreicher Deploy ≠ geprüfter Live-Betrieb.
+6. **Blockade:** Bei fehlendem Zugriff, fehlerhaftem Deployment oder unmöglicher Live-Prüfung weiter nach Lösungen suchen; sofern nicht lösbar, den Auftrag ausdrücklich als **offen / blockiert** mit den verbleibenden Schritten ausweisen. Keine ungeprüften Erfolge behaupten.
+7. **Bestandsschutz:** Stable/main, Nutzerbestände und geschützte reference-Zweige nicht ohne ausdrückliche Freigabe ändern.
+
+**Vorrang:** Ergänzt und verschärft den Qualitätsgrundsatz vom 2026-11-09; gilt für künftige Änderungen an pin2map NEW. Reine Dokumentationsaufträge erfordern nachgewiesene Dokumentänderungen, jedoch keine App-Neuveröffentlichung.
