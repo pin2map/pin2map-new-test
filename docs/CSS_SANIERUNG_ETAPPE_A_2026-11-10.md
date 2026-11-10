@@ -283,3 +283,11 @@ Der Auftraggeber bestätigte am 10.11.2026 nach Aufforderung zum Refresh der Pre
 **Manuell abgenommen:** Die beiden konkret geprüften Bedienelemente entsprechen hinsichtlich Darstellung und Bedienbarkeit weiterhin dem bisherigen Referenzzustand. Die CSS-Bereinigung v69 ist für diese iPhone-Sichtprüfung akzeptiert.
 
 **Technische Abgrenzung:** Die Nutzerbestätigung ist kein unabhängiger Beleg für die aktive Service-Worker-Version, den erfolgreichen GitHub-Actions-Lauf, die identische öffentliche Auslieferung aller v69-Dateien oder die aktuelle Desktop-/iPad-Regression. Diese Prüfungen bleiben offene Freigabebedingungen.
+
+## Inkrement B11 – eindeutiger Eigentümer der mobilen Suchleiste (v70)
+
+- Der ältere mobile `#app .topbar`-Block mit `left:60px; right:8px; width:calc(100% - 68px)` und `transform:none` wurde entfernt. Seine Werte waren durch die spätere mobile, ebenso spezifische Suchleistenregel mit dem gemeinsamen `--p2m-top-search-clearance`-Token überholt.
+- Die identische zweite Definition von `--p2m-top-search-clearance:60px` innerhalb des Mobil-Media-Blocks wurde entfernt. Es verbleibt eine einzige zentrale Definition, die für Desktop und Mobilgeräte gilt; die mobilen Eckabstände von 10px bleiben bewusst erhalten.
+- Neuer Schutztest `tests/css-header-ownership.test.js` kontrolliert die Einmaligkeit des Tokens und die mobile Suchleistenposition. Die gezielten Quellcodebedingungen wurden anhand erneut aus GitHub gelesener Dateien überprüft. **Ein tatsächlicher Node-Testlauf wurde nicht ausgeführt.**
+- CSS-`!important`-Bestand: **319 → 314** (ursprünglich 402). Das Übergangsbudget wurde entsprechend auf 314 gesenkt.
+- PWA-Quellversion: **v70**. **Abnahme offen:** erfolgreicher GitHub-Actions-Lauf, veröffentlichte Preview-Dateien und visuelle Mobile-/Tablet-/Desktop-Prüfung der Suchleiste und der Eckbuttons. Vorherige iPhone-Abnahmen sind der zu bewahrende Referenzzustand, aber kein Nachweis der aktuellen Auslieferung.
