@@ -107,3 +107,11 @@ Folgende Elemente werden **als bestehende, zu bewahrende Darstellung** festgehal
 - Der aktuelle Quellcode-Service-Worker ist auf **v60** gesetzt und löst durch den Push eine neue Preview-Veröffentlichung aus.
 - **Abnahme-Gate noch offen:** Erfolgreichen GitHub-Actions-Lauf, HTTPS-Auslieferung von v60 sowie tatsächliche mobile/weite Browser-Interaktion und PWA-Refresh prüfen. Die im Vorfeld vom Nutzer bestätigten Screenshots gelten als Soll-Zustand, sind **keine** Abnahme von v60.
 - Keine neue CSS-Dateiaufteilung und keine Veränderung der Fachlogik; die nächste Migration bleibt auf eine kontrollierte CSS-Domäne begrenzt.
+
+## Sicherungs-Gate nach Nutzerfreigabe – Live-Layout auf mehreren Viewports (2026-11-10)
+
+Der vor der Sanierung vom Nutzer abgenommene Screenshotstand bleibt der visuelle Vertrag. Der veröffentlichte Browser-Smoke-Test (\`tests/preview-live-smoke.cjs\`) wurde nun so erweitert, dass er **390×844 (Telefon), 820×1180 (Tablet) und 1280×800 (Desktop)** sowie einen Telefonaufruf mit Tracking-Query prüft. Kontrolliert werden Kartenstart, gleiche obere Höhe von Einstellungen/Ebenen, überschneidungsfreies Suchfeld, Info über Kartenwahl, sichtbare Attribution, Ebenendialog samt Ein-/Ausblenden und Reload mit Service Worker.
+
+Der Preview-Workflow reagiert künftig auch auf **Testdateiänderungen**; zuvor waren \`tests/**\` aus den Push-Auslösern ausgenommen. Dadurch können neue Live-Gates nicht unbemerkt auf dem Entwicklungszweig liegenbleiben, ohne dass der Veröffentlichungsworkflow sie ausführt.
+
+**Status:** Quellcodeänderung an Test und Workflow in GitHub vorhanden und geprüft. Ein erfolgreicher GitHub-Actions-Lauf und die tatsächliche HTTPS-Auslieferung von v60 konnten mit den verfügbaren Tools nicht nachgewiesen werden. Browser- oder Nutzerabnahme von v60 darf deshalb noch nicht behauptet werden. Nächster zwingender Schritt vor weiteren Layoutänderungen: tatsächlichen Workflowstatus und die ausgelieferte Preview kontrollieren; bei weiterhin fehlendem direkten Zugriff gezielte Geräteprüfung durch den Nutzer anfordern.
