@@ -335,7 +335,9 @@ button:not(.p2m-icon-control):not(.result):not(.inline-button){
 }
 .topbar .search input{background:transparent!important}
 .topbar .search button.p2m-icon-control{
-  box-shadow:none;border-color:#dee3e8!important
+  box-shadow:none;
+  border-color:#aebfce!important;
+  background:#eef3f8!important;
 }
 .pin-zoom-buttons{gap:8px!important}
 button.pin-zoom-button.p2m-icon-control{
@@ -632,7 +634,7 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
 /* The search action belongs to the 42px-high input, not the 42px
    standalone map controls. Own circle and glyph sizing in one component. */
 :root{
-  --p2m-search-button-size:32px;
+  --p2m-search-button-size:30px;
   --p2m-search-icon-size:18px;
 }
 #app #searchButton.p2m-icon-control{
@@ -669,7 +671,7 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
   height:40px!important;
 }
 #app .topbar .search button.p2m-icon-control{
-  margin:0!important;
+  margin:0 4px 0 0!important;
 }
 /* Former bottom-center Layers / left-of-Layers Info positioning removed.
    Current positions are owned by the upper-corner and bottom-right rules below. */
