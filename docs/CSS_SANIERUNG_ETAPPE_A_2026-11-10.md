@@ -415,3 +415,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Test `tests/css-floating-panel-search-ownership.test.js` kontrolliert genau einen Panel-Top-Anker und zwei beabsichtigte, responsive Top-Anker der Suchergebnisse.
 - `!important` unverändert **300** (ursprünglich 402). Quellversion der PWA **v80**.
 - GitHub-Quelltextprüfung ersetzt nicht den vollständigen Node-Testsuite- und Browserlauf. Unabhängige CI-/Pages-Ergebnisse, öffentliche Dateiversion und abschließende iPhone-/iPad-/Desktop-Regression bleiben gesondert offen. Da die wirksamen CSS-Anker nicht geändert wurden, ist derzeit kein neuer Nutzertest erforderlich.
+
+## Inkrement B23 – veraltetes Header-Höhentoken stillgelegt (v81)
+
+- Das frühere globale `--header-height`-Konzept (48px normal / 46px mobil) und seine **zwei veralteten `.topbar`-Höhenberechnungen** wurden vollständig entfernt. Der aktuelle schwebende Header verwendet bereits die spezifischere feste `#app .topbar{height:52px!important}`-Regel; die Karte bleibt mit `top:0!important` bildschirmfüllend.
+- **Vier überholte Deklarationen/Definitionen** entfernt, ohne die gültigen 52px der Suchkapsel, 42px des Suchbereichs oder die Geometrie der Kartenansicht anzutasten.
+- Der neue Test `tests/css-header-height-ownership.test.js` verhindert das Zurückkehren des alten Tokens und sichert die geltenden Header-/Kartenmaße.
+- Der Bestand beträgt weiterhin **300 `!important`-Deklarationen** (402 ursprünglich), weil nur überholte Normaldeklarationen entfernt wurden. Service-Worker-Quellversion **v81**.
+- Die auf GitHub gelesenen Quelltextbedingungen werden gezielt kontrolliert. Vollständige Node-Testausführung, GitHub-Actions-/Pages-Erfolg, öffentliche Auslieferung und abschließende iPhone-/iPad-/Desktop-Regression bleiben getrennt nachzuweisen. Ein neuer manueller Gerätetest ist derzeit nicht nötig, da die geltende Regel unverändert ist.
