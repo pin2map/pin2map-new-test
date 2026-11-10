@@ -210,3 +210,10 @@ Nach Aufforderung zur Aktualisierung der Vorschau und Prüfung der Ebenenliste a
 - Der PWA-Quellstand enthält nun `pin2map-new-v65`. Die öffentliche HTTPS-Preview war über den verfügbaren Webzugang nicht erreichbar; der erfolgreiche Workflowlauf bzw. die Auslieferung von v65 konnte daher nicht unabhängig geprüft werden.
 - Die zuletzt vom Nutzer abgenommene Darstellung, insbesondere die Zoom-/Fit-Schaltflächen links unten, die Kartenwahl rechts unten und die frei sichtbare Attribution, bleibt der zu bewahrende visuelle Vertrag. **v65 ist bis zu erneuter Geräte- und CI-/Live-Prüfung nicht vollständig abgenommen.**
 
+## Manuelle iPhone-Abnahme der unteren Kartensteuerung nach B6 (v65)
+
+Nach der Aufforderung, die Preview auf dem iPhone zu aktualisieren und speziell Zoom/Fit links unten, Kartenwahl rechts unten und die sichtbaren Kartenhinweise am unteren Rand zu prüfen, antwortete der Auftraggeber am 10.11.2026 ausdrücklich: **„alles gut“**.
+
+**Manuell abgenommen:** Die überprüfte untere Kartensteuerung entspricht auf dem iPhone weiterhin der verbindlichen visuellen Referenz. Die im Inkrement B6 bereinigten Baseline-/Größentoken-Regeln verursachen für den Nutzer dort keine erkennbare Regression.
+
+**Abgrenzung:** Die genaue am Gerät aktive PWA-/Service-Worker-Version, ein erfolgreicher GitHub-Actions-Lauf, identische über HTTPS ausgelieferte Assets sowie die erneute Desktop-/iPad-Prüfung sind dadurch nicht unabhängig nachgewiesen. Diese automatischen und breiteren Live-Abschlussprüfungen bleiben offen.
