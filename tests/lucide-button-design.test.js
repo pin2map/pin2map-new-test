@@ -140,15 +140,28 @@ test("refresh is a separate circular map control at 35% screen height",()=>{
     "Existing service-worker update handler must remain unchanged");
 });
 
-test("info toggle sits immediately right of the bottom layers button",()=>{
+test("info control is left of centered Layers with matching bottom alignment",()=>{
   const html=read("index.html"),css=read("styles.css");
-  assert.ok(html.includes('id="layersButton"'));
-  assert.ok(html.includes('id="labelsToggle"'));
-  const rule=css.match(/#labelsToggle\.labels-toggle\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(rule.includes("left:calc(50% + 23px + 8px)!important"));
+  for(const id of ["layersButton","labelsToggle"]){
+    assert.ok(html.includes('id="'+id+'"'));
+  }
+  const rule=css.match(/#app #labelsToggle\.labels-toggle\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(rule.includes("left:calc(50% - var(--p2m-map-circle-size) / 2 - 8px - var(--p2m-map-circle-size))!important"));
   assert.ok(rule.includes("bottom:calc(10px + env(safe-area-inset-bottom,0px))!important"));
-  const mobile=css.match(/@media\(max-width:630px\)\{\s*#labelsToggle\.labels-toggle\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(mobile.includes("left:calc(50% + 22px + 8px)!important"));
-  assert.ok(mobile.includes("bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"));
-  assert.ok(css.includes("body.pin-open .labels-toggle"),"i toggle still hides during pin editing");
+  const layers=css.match(/#app #layersButton\.layers-bottom-button\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(layers.includes("left:50%!important"));
+  assert.ok(layers.includes("transform:translateX(-50%)!important"));
+  assert.ok(css.includes("body.pin-open #app button:is(#refreshButton,#layersButton,#labelsToggle)"));
+});
+test("every free map and header circular button uses one 42px diameter",()=>{
+  const css=read("styles.css");
+  const rule=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle\),\s*#app button\.pin-zoom-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(css.includes(":root{--p2m-map-circle-size:42px}"));
+  for(const prop of ["width","height","min-width","min-height","max-width","max-height"]){
+    assert.ok(rule.includes(prop+":var(--p2m-map-circle-size)!important"),prop+" should use shared size");
+  }
+  assert.ok(rule.includes("border-radius:50%!important"));
+  assert.ok(css.includes("#app .topbar{\n  height:52px!important"));
+  assert.ok(css.includes("bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"),"Both bottom buttons align in mobile mode");
+  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"),"Editor buttons keep their separate size");
 });
