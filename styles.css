@@ -794,9 +794,24 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   }
 }
 
-/* Avoid covering mandatory Leaflet/OpenStreetMap attribution with Map icon. */
+/* The provider attribution belongs at the very bottom of the visible
+   map, horizontally centered, independently of the map selector button.
+   Respect the installed PWA's safe area without hiding the legal links. */
 #map .leaflet-bottom.leaflet-right{
-  bottom:calc(58px + env(safe-area-inset-bottom,0px))!important;
+  left:50%!important;
+  right:auto!important;
+  bottom:env(safe-area-inset-bottom,0px)!important;
+  transform:translateX(-50%)!important;
+  width:max-content;
+  max-width:calc(100% - 12px);
+}
+#map .leaflet-bottom.leaflet-right .leaflet-control-attribution{
+  float:none!important;
+  margin:0!important;
+  max-width:100%;
+  text-align:center;
+  font-size:10px!important;
+  line-height:1.15;
 }
 
 
