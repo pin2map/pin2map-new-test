@@ -647,10 +647,8 @@ body.pin-relocation-picking #map .leaflet-interactive{
 body.pin-open #refreshButton.refresh-map-button{display:none!important}
 
 
-/* Unified diameter for the circular controls OUTSIDE pin and layer dialogs.
-   Search, Settings, Refresh, Zoom/Fit, Layers and Info share one token on
-   phones and desktops. Dialog-specific 32px actions remain independent. */
-:root{--p2m-map-circle-size:42px}
+/* Unified diameter for circular map controls. The shared size token is
+   defined once in the final map-control design contract below. */
 #app button:is(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton),
 #app button.pin-zoom-button.p2m-icon-control{
   --p2m-button-size:var(--p2m-map-circle-size)!important;
@@ -689,16 +687,10 @@ body.pin-open #app #basemapMenu,
 body.pin-open #app .topbar,
 body.pin-open #app .pin-zoom-buttons{display:none!important}
 
-/* Leaflet zoom/fit group is anchored to the bottom-left viewport corner.
-   Keep its bottom baseline aligned with Info/Layers and respect iOS safe area.
-   The trio is vertically stacked and continues to use the common 42px size. */
+/* Leaflet zoom/fit group: retain its left margin and no top/right margin.
+   Its bottom margin is owned solely by --p2m-bottom-control-baseline below. */
 #map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
-  margin:0 0 calc(10px + env(safe-area-inset-bottom,0px)) 10px!important;
-}
-@media(max-width:630px){
-  #map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
-    margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
-  }
+  margin:0 0 0 10px!important;
 }
 
 /* Independent top-left Settings button. It leaves the search capsule and
@@ -716,7 +708,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   position:absolute!important;z-index:1190;
   right:12px!important;left:auto!important;
   top:auto!important;
-  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
   transform:none!important;
 }
 
@@ -753,7 +744,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   }
   #app #basemapButton.basemap-map-button.p2m-icon-control{
     right:10px!important;
-    bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
   }
   #app #basemapMenu.basemap-menu{
     right:10px;
