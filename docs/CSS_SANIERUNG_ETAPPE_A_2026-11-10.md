@@ -351,3 +351,11 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 Der Auftraggeber bestätigte nach der gezielten Prüfaufforderung für **Suchleiste und Suchbutton** auf dem iPhone am 10.11.2026 mit **„alles gut“**, dass Darstellung und Funktion weiterhin wie erwartet sind. Eine dazwischenliegende Nachricht **„ok“** war zuvor ausdrücklich als Zustimmung zum Fortfahren und nicht als Testergebnis behandelt worden; die spätere explizite Bestätigung wird hier als manuelle Sicht-/Funktionsabnahme für die vom Nutzer geprüfte Vorschau festgehalten.
 
 **Abgrenzung:** Die Rückmeldung weist nicht unabhängig nach, welche Service-Worker-Version auf dem Gerät aktiv war, ob GitHub Actions erfolgreich war oder ob die v73-Assets vollständig und identisch ausgeliefert wurden. Ebenso bleiben die Desktop-/iPad-Regression und die technische Live-Veröffentlichungsprüfung offen.
+
+## Inkrement B16 – nicht mehr existierender Headerbutton bereinigt (v74)
+
+- Der aktuelle HTML-Header enthält ausschließlich die Suchform mit Suchbutton; ein Element mit der alten Klasse `.topbtn` kommt dort nicht mehr vor. Auch die geprüften aktuellen Controller-/UI-Module referenzieren sie nicht.
+- **Acht verbliebene `.topbtn`-CSS-Regelstellen** einschließlich älterer mobiler Größen- und Priority-Overrides wurden vollständig entfernt. Die tatsächlich angezeigte Suche und ihre bestehenden Klassen `.topbar` / `.search` bleiben unverändert.
+- Der neue Test `tests/css-unused-header-control.test.js` überprüft, dass die tote Klasse weder im Stylesheet noch im aktuellen HTML auftaucht und dass die Suchform und ihr Button vorhanden bleiben.
+- `!important`-Deklarationen: **312 → 301** (anfänglich 402). Budget entsprechend 301. PWA-Quellversion **v74**.
+- **Wichtig:** Trotz entferntem unbenutztem CSS ist dies eine Quellcodeänderung mit offenem technischen Abschluss: unabhängiger Node-Testlauf, GitHub-Actions/Pages-Erfolg, Abgleich der öffentlich ausgelieferten Version und Browserregressionen auf Desktop/iPad. Eine erneute iPhone-Sichtprüfung der Suchleiste ist empfohlen; das bisherige manuelle v73-OK bleibt die Sollreferenz.
