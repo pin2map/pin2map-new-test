@@ -156,3 +156,12 @@ Für die vorläufige Monolith-CSS-Datei existiert jetzt `tests/css-debt-budget.t
 **Bewertung:** Die vom Nutzer geprüfte iPhone-Darstellung hat nach der Bereinigung des alten Header-Grids keine erkennbaren visuellen Regressionen. Dies ist die **manuelle Sichtabnahme** für Inkrement B2; das zuvor bestätigte Erscheinungsbild bleibt die Referenz für die weitere CSS-Sanierung.
 
 **Nicht nachgewiesen:** Aus der Rückmeldung allein folgen weder die exakte auf dem Endgerät aktive Service-Worker-Versionskennung noch ein erfolgreicher GitHub-Actions-Lauf oder die Desktop-/iPad-Regression von v61. Diese Nachweise bleiben eigene Abschlusskriterien. Keine pauschale vollständige technische Freigabe behaupten.
+
+## Inkrement B3 – überholte Suchergebnis-Positionierungen entfernt (v62)
+
+- Aus der früheren mobilen Header-Anordnung wurden die durch spätere spezifische Regeln überschriebenen `top`-, `left`-, `right`-, `width`- und `transform`-Deklarationen für `.search-results` entfernt.
+- Die mobile Höhenbegrenzung `max-height:42dvh` bleibt ausdrücklich bestehen. Die aktuellen übergeordneten Anker für Suchergebnisse (Desktop und mobil) wurden nicht verändert.
+- Neuer Schutztest: `tests/css-search-results-contract.test.js`; seine fünf Quelltextbedingungen wurden gegen den von GitHub erneut gelesenen Stylesheet-Inhalt einzeln geprüft.
+- `!important` bleibt bei 382; diese Etappe entfernt überschattete Normaldeklarationen und reduziert nicht den numerischen Override-Bestand.
+- Cache-/Releasekennung auf `pin2map-new-v62` angehoben.
+- **Noch offen:** vollständiger CI-/GitHub-Actions-Erfolgsnachweis, tatsächliche HTTPS-Auslieferung, Live-Browsertest sowie iPhone-Sichtprüfung für v62. Der öffentliche Abruf war über die verfügbare Webschnittstelle nicht möglich. Bis dahin keine Aussage „v62 vollständig getestet und veröffentlicht“.
