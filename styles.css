@@ -861,3 +861,62 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   background:var(--p2m-map-control-pressed)!important;
   color:var(--p2m-map-control-ink)!important;
 }
+
+/* iPhone viewport corrections (2026-11-10).
+   Do not change desktop / iPad mini. iOS WebKit can render a translucent
+   scroll-edge wash when the page itself, rather than only Leaflet, scrolls.
+   Fix the outer document to its visual viewport; actual content scrolling
+   remains available inside dialogs and panels. */
+@media (max-width:430px) and (hover:none) and (pointer:coarse){
+  html,body{
+    height:100%!important;
+    width:100%!important;
+    margin:0!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    background:transparent!important;
+  }
+  #app{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    height:100%!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    background:transparent!important;
+  }
+  /* No decorative overlay, mask, blur or gradient over the top map area. */
+  #app::before,#app::after{
+    content:none!important;
+    background:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  /* Map tiles now extend uninterrupted to the top edge underneath the
+     native iOS status area; the search capsule is an ordinary opaque UI. */
+  #app .topbar{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    background:#fff!important;
+  }
+  /* Align all lower map buttons with the iPhone home-indicator safe area,
+     7px below their previous 9px baseline. */
+  #app #layersButton.layers-bottom-button,
+  #app #labelsToggle.labels-toggle,
+  #app #basemapButton.basemap-map-button.p2m-icon-control{
+    bottom:calc(2px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
+    margin-bottom:calc(2px + env(safe-area-inset-bottom,0px))!important;
+  }
+  #app #basemapMenu.basemap-menu{
+    bottom:calc(52px + env(safe-area-inset-bottom,0px))!important;
+  }
+  /* Attribution is a legal credit, not an interactive map button.
+     It sits flush against the actual lower screen edge, centered. */
+  #map .leaflet-bottom.leaflet-right{
+    bottom:0!important;
+  }
+}
