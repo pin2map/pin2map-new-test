@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v45';
+const CACHE='pin2map-new-v46';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -108,16 +108,25 @@ self.addEventListener('install',event=>{
     const cache=await caches.open(CACHE);
     // An install either caches the complete offline shell (including Leaflet)
     // or fails, leaving the previous service worker available.
-    for(const path of CORE){
-      const response=await fetch(new Request(path,{cache:'no-store'}));
-      if(!response.ok)throw Error('Offline app asset failed: '+path);
-      await cache.put(path,response);
-    }
-    for(const url of LEAFLET){
-      const response=await fetch(new Request(url,{mode:'cors',cache:'reload'}));
-      if(!response.ok)throw Error('Leaflet offline asset failed: '+url);
-      await cache.put(url,response);
-    }
+    // Use a small bounded parallel pool: serial downloads can exceed the
+    // refresh activation timeout on mobile networks. The install still fails
+    // atomically if any required asset cannot be cached.
+    const assets=[
+      ...CORE.map(path=>({url:path,leaflet:false})),
+      ...LEAFLET.map(url=>({url,leaflet:true}))
+    ];
+    let next=0;
+    await Promise.all(Array.from({length:Math.min(6,assets.length)},async()=>{
+      while(next<assets.length){
+        const {url,leaflet}=assets[next++];
+        const request=leaflet
+          ?new Request(url,{mode:'cors',cache:'reload'})
+          :new Request(url,{cache:'no-store'});
+        const response=await fetch(request);
+        if(!response.ok)throw Error('Offline app asset failed: '+url);
+        await cache.put(url,response);
+      }
+    }));
     await self.skipWaiting();
   })());
 });
