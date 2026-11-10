@@ -239,6 +239,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 /* Predecessor-style focused pin editing. All map UI controls disappear while
    the editor is open. Attribution remains visible for tile-license compliance. */
 body.pin-open .topbar,
+body.pin-open #refreshButton,
 body.pin-open .labels-toggle,
 body.pin-open .layers-bottom-button,
 body.pin-open .pin-zoom-buttons,
@@ -626,3 +627,35 @@ body.pin-relocation-picking #map .leaflet-interactive{
   box-sizing:border-box!important;
   margin:0!important;
 }
+
+
+/* Independent refresh control, anchored to the viewport instead of the
+   floating search header. 65% is measured from the visible screen height.
+   This remains the same on narrow screens and in the installed PWA. */
+#refreshButton.refresh-map-button.p2m-icon-control{
+  --p2m-button-size:42px;
+  position:fixed!important;
+  z-index:1095;
+  left:12px!important;right:auto!important;
+  top:65%!important;top:65dvh!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+  display:inline-flex!important;align-items:center;justify-content:center;
+  width:42px!important;height:42px!important;
+  min-width:42px!important;min-height:42px!important;
+  max-width:42px!important;max-height:42px!important;
+  padding:0!important;flex:none!important;
+  border-radius:50%!important;
+  background:#fff!important;
+  border:1px solid var(--p2m-button-border)!important;
+  color:var(--p2m-button-ink)!important;
+  box-shadow:var(--p2m-button-shadow);
+}
+@media(max-width:630px){
+  #refreshButton.refresh-map-button.p2m-icon-control{
+    left:10px!important;
+  }
+}
+/* Pin editing hides map controls, including refresh, without disabling
+   refresh elsewhere. More specific than the base refresh display rule. */
+body.pin-open #refreshButton.refresh-map-button{display:none!important}
