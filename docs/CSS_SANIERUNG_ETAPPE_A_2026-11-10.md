@@ -233,3 +233,11 @@ Nach der Aufforderung, die Preview auf dem iPhone zu aktualisieren und die **bei
 **Manuell abgenommen:** Die auf dem iPhone geprüften Bedienelemente entsprechen nach dem CSS-Inkrement B7 weiterhin dem visuellen und funktionalen Referenzzustand. Für diese konkrete Sichtprüfung ist keine weitere Rückfrage erforderlich.
 
 **Weiterhin offen:** Die Rückmeldung allein bestätigt weder die genaue aktive Service-Worker-Version auf dem Endgerät noch den Status der GitHub-Actions-Ausführung, den Vergleich der tatsächlich ausgelieferten Assets oder die Desktop-/iPad-Regression nach v66. Diese technischen Prüfungen bleiben eigenständige Abschlussbedingungen.
+
+## Inkrement B8 – veraltete individuelle Kartentastengrößen entfernt (v67)
+
+- Alte Größenfestlegungen für Suche, Zoom/Fit, Ebenen und Info mit teils 33/35/40/42/44/46 Pixeln wurden aus den früheren Style-Blöcken entfernt, sofern sie vom späteren, höher priorisierten **gemeinsamen 42px-Kartensteuerungsvertrag** überschrieben waren. Die weiterhin maßgeblichen globalen 42px-Regeln in `#app button:is(...)` und `:is(#app > button, #app #map .leaflet-control button)` bleiben bestehen.
+- Nicht entfernt: semantische Text-/Iconregeln sowie die **32px-Buttons in Dialogen**, insbesondere Pin-Dialog und Ebenenaktionen.
+- Die Zahl der `!important`-Deklarationen sank **371 → 359** (initial 402). Der CSS-Schuldenbudget-Test wurde auf **359** gesenkt. Neuer Test: `tests/css-map-button-size-contract.test.js` für den gemeinsamen Größenvertrag und Dialog-Ausnahmen.
+- Die Quelltext-Invarianten wurden gegen den aus GitHub gelesenen Stylesheet-Stand kontrolliert. Dies ersetzt keinen tatsächlich ausgeführten Node-/Browser-Testlauf.
+- Der neue Quellstand trägt die Service-Worker-Version **v67**. **Noch nicht vollständig abgenommen:** Erfolgreicher GitHub-Actions-Lauf, öffentlich ausgelieferte v67-Assets, Live-Browsertest und eine gezielte Sichtprüfung der Kartenbuttons nach Refresh auf dem iPhone. Auch Desktop und iPad sind für diesen Stand erneut zu prüfen.
