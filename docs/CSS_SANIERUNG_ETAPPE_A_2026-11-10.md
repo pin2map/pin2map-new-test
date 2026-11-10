@@ -528,3 +528,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Test `tests/css-search-input-typography-ownership.test.js` stellt sicher, dass keine ältere Schriftgröße erneut mit dem 16px-Eigentümer konkurriert. Die 16px-Größe ist auch auf iOS wichtig, weil kleinere Suchfeldeingaben beim Fokussieren zu unerwünschter Vergrößerung führen können.
 - Schuldenstand weiterhin **299 `!important`-Deklarationen**, weil ausschließlich normale Altdeklarationen entfernt wurden. PWA-Quellrelease **v88**.
 - GitHub-Codeprüfung und gezielte Tests sind von einem erfolgreichen GitHub-Actions-/Pages-Deploy und der tatsächlichen Browser-Auslieferung getrennt zu bewerten. Mangels Änderung der geltenden Schriftgröße ist für B26 kein zusätzlicher Nutzertest erforderlich.
+
+## Inkrement B27 – überholte Suchbutton-Schriftgrößen entfernt (v89)
+
+- Die CSS-Sanierung wurde nach v88 ohne weitere Änderung am zuletzt korrigierten Suchbutton-Außenkreis fortgesetzt.
+- Drei obsolete Schriftgrößen-Deklarationen für den Suchbutton wurden aus älteren Regelabschnitten entfernt: `font-size:24px` in `.search button`, `font-size:22px` in `.topbar .search button` und `font-size:21px` in der früheren mobilen `.topbar .search button`-Regel. Alle wurden durch die bestehende `font-size:20px!important`-Regel für die tatsächlich verschachtelte Suchaktion verdrängt. Das Lupen-SVG bezieht seine Größe unverändert aus `--p2m-search-icon-size:18px`, nicht aus diesen alten Textgrößen.
+- Der neue Test `tests/css-search-button-typography-ownership.test.js` kontrolliert, dass die obsolete Schriftgrößen-Kaskade nicht wieder auftaucht und die ausdrückliche Lucide-Größe erhalten bleibt.
+- Keine Änderung an der 30px-Sichtkreislinie, der 42px-Antippfläche, der Positionierung oder den übrigen Kartenbuttons. `!important` weiterhin **299** gegenüber ursprünglich 402. PWA-Quellrelease **v89**.
+- Die Änderungen sind Quelltextbereinigungen; Node-/GitHub-Actions-/Pages-Ergebnisse und die tatsächlich ausgelieferten v89-Assets sind davon unabhängig zu bestätigen. Keine zusätzliche manuelle iPhone-Prüfung erforderlich, da die geltenden Regeln unverändert bleiben.
