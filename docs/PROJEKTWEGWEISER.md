@@ -57,3 +57,7 @@ Für einen Anwendungsauftrag sind **Implementierung, technische Tests, wirkliche
 1. Ältere README- und Übergabetexte enthalten teils inzwischen überholte Phasenangaben. Nicht als aktuelle Wahrheit behandeln; bei Gelegenheit mit Links auf diesen Wegweiser versehen.
 2. Vollständigkeit der Dokumente in den historischen Repositories noch separat rekursiv inventarisieren, falls dafür eine geeignete Tree/List-Schnittstelle vorhanden wird.
 3. Browser- und Deploy-Gate für jede konkrete Version nachweisen. Ein GitHub-Commit beweist keinen erfolgreichen laufenden Preview-Deploy.
+
+## Aktuelle Prioritätsentscheidung (2026-11-10)
+
+**Lokale App zuerst:** Die frühe Serveranbindung aus der ursprünglichen Grundentscheidung 3 ist aufgehoben. Vorrang hat die saubere lokale Architektur, zuerst die dauerhafte Bereinigung der CSS-/Layoutregeln, danach die weiteren Modulgrenzen und der weitgehende lokale Funktionsausbau. Server/Synchronisation erst nach **Gate 3**, wie im Entwicklungsfahrplan vorgesehen. Die ergänzte Vorrangentscheidung in docs/GRUNDENTSCHEIDUNGEN.md ist maßgeblich; frühere gegenteilige Aussagen sind historisch.
