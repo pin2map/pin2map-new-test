@@ -299,3 +299,10 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 **Manuell abgenommen:** Die vom Nutzer geprüfte iPhone-Darstellung der Suchleiste und oberen Eckbuttons entspricht nach der CSS-Bereinigung B11 weiterhin dem freigegebenen visuellen Referenzzustand. Für diesen einzelnen Schritt ist keine weitere Nutzerprüfung erforderlich.
 
 **Separat offen:** Diese Bestätigung weist weder die genaue aktive Service-Worker-Version noch einen erfolgreichen GitHub-Actions-Lauf, eine unabhängig bestätigte HTTPS-Auslieferung der v70-Dateien oder die aktuelle Desktop-/iPad-Regression nach. Diese Abschlussprüfungen bleiben bestehen.
+
+## Inkrement B12 – CSS-Architekturvertrag und automatische Token-Wächter (v70 unverändert)
+
+- Neu: `docs/CSS_ARCHITEKTURREGELN.md` als verbindliche Definition für CSS-Zuständigkeiten, Token, Ausnahmen, Änderungsprozess, Regressionstests und Abschlussgates vor der geplanten `app.js`-Bereinigung.
+- Neu: `tests/css-design-token-ownership.test.js` sichert sechs zentrale Design-Tokens gegen mehrfache Definitionen und kontrolliert acht gemeinsame CSS-Größen-/Positionsregeln sowie fünf entfernte harte Altwerte. Alle auf dem erneut aus GitHub gelesenen CSS-Stand überprüften Quelltextbedingungen erfüllen die erwarteten Invarianten.
+- **Keine Änderung an `styles.css`, `sw.js` oder der App-Laufzeit** in diesem Inkrement. Version bleibt **v70**, `!important`-Schuldenbudget bleibt **314**. Für diese reine Test-/Dokumentationsänderung ist keine neue Geräteabnahme erforderlich.
+- Die tatsächliche Ausführung der neuen Node-Tests in GitHub Actions und die unabhängige Live-/Desktop-/iPad-Verifizierung sind **weiter offen**. Ein GitHub-Commit allein ist kein bestandener CI-Lauf.
