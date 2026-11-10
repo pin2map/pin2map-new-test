@@ -584,6 +584,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
   top:35%!important;top:35dvh!important;
   bottom:auto!important;
   transform:translateY(-50%)!important;
+  /* Keep the existing white refresh surface; sizing remains shared. */
+  background:#fff!important;
+  border:1px solid var(--p2m-button-border)!important;
+  color:var(--p2m-button-ink)!important;
+  box-shadow:var(--p2m-button-shadow);
 }
 @media(max-width:630px){
   #refreshButton.refresh-map-button.p2m-icon-control{
