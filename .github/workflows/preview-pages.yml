@@ -145,9 +145,17 @@ jobs:
           if not version:
               raise RuntimeError("Missing preview release version")
           html = preview / "index.html"
-          html.write_text(html.read_text(encoding="utf-8").replace(
+          source=html.read_text(encoding="utf-8")
+          # One immutable URL per release for every app-owned JS/CSS resource.
+          # This prevents Safari's HTTP cache from mixing old and new modules.
+          import re
+          source=re.sub(
+              r'((?:src|href)="\./(?:vendor/leaflet/|domain/|application/|adapters/|ui/|map-adapter-leaflet\.js|app\.js|styles\.css)[^"?]+)(?=")',
+              lambda match:match.group(1)+"?__p2m_release="+version.group(1),source)
+          source=source.replace(
               "</head>", '<meta name="pin2map-preview-version" content="' +
-              version.group(1) + '">\n</head>'), encoding="utf-8")
+              version.group(1) + '">\n</head>')
+          html.write_text(source,encoding="utf-8")
           PY
 
       - name: Check preview isolation and unchanged stable entrypoint
