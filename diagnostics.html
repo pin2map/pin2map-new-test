@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>pin2map Vorschau · Versionsprüfung</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#193047;background:#f7fafc}
+body{max-width:640px;margin:28px auto;padding:0 20px}
+h1{font-size:1.4rem}p{line-height:1.45}
+section{padding:14px;margin:14px 0;border-radius:12px;background:white;border:1px solid #d7e1eb;overflow-wrap:anywhere}
+strong{display:block;margin-bottom:5px}
+pre{white-space:pre-wrap;font-size:13px}
+small{color:#53677b}
+</style>
+</head>
+<body>
+<h1>pin2map · Versionsprüfung</h1>
+<p>Diese Seite prüft ausschließlich, welche Dateien GitHub Pages gerade ausliefert. Sie ändert keine Pins, Projekte, Caches oder Einstellungen.</p>
+<section><strong>Diagnoseseite</strong><span>Version 1 · v84-Prüfung</span></section>
+<section><strong>Ausgelieferte CSS-Größen</strong><pre id="css">Wird geprüft …</pre></section>
+<section><strong>Ausgelieferter Service Worker</strong><pre id="worker">Wird geprüft …</pre></section>
+<section><strong>Steuerung dieser Browserseite</strong><pre id="controller">Wird geprüft …</pre></section>
+<small>Wenn die Diagnose weiterhin alte Werte meldet, ist die neue Vorschau noch nicht korrekt ausgeliefert. In diesem Fall bitte keine weiteren Cache-Löschungen durchführen.</small>
+<script>
+(async()=>{
+ const bust=Date.now().toString(36);
+ async function get(relative){
+   const response=await fetch(relative+"?__p2m_probe="+bust,{cache:"no-store"});
+   if(!response.ok)throw new Error("HTTP "+response.status);
+   return response.text();
+ }
+ try{
+   const css=await get("./styles.css");
+   const token=css.match(/--p2m-search-button-size\s*:\s*([\d.]+px)/);
+   const glyph=css.match(/--p2m-search-icon-size\s*:\s*([\d.]+px)/);
+   const circle=token?token[1]:"nicht vorhanden";
+   const icon=glyph?glyph[1]:"nicht vorhanden";
+   const message="Suchbutton: "+circle+"\nLupe: "+icon+
+     "\nErwartet für v84: 32px / 18px\n"+(circle==="32px"&&icon==="18px"?"CSS v84 vorhanden":"Neue CSS-Version NICHT nachgewiesen");
+   document.getElementById("css").textContent=message;
+ }catch(error){document.getElementById("css").textContent="CSS nicht prüfbar: "+error.message}
+ try{
+   const sw=await get("./sw.js");
+   const version=sw.match(/const CACHE='([^']+)'/);
+   document.getElementById("worker").textContent=version?version[1]:"Versionskennung nicht gefunden";
+ }catch(error){document.getElementById("worker").textContent="Worker nicht prüfbar: "+error.message}
+ try{
+   const controller=navigator.serviceWorker&&navigator.serviceWorker.controller;
+   const registration=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration("./");
+   document.getElementById("controller").textContent=
+     "Aktiver Controller: "+(controller?controller.scriptURL:"keiner")+
+     "\nRegistrierter Worker: "+(registration&&registration.active?registration.active.scriptURL:"keiner");
+ }catch(error){document.getElementById("controller").textContent="Worker-Status nicht prüfbar: "+error.message}
+})();
+</script>
+</body>
+</html>
