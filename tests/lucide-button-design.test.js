@@ -151,7 +151,9 @@ test("Layers occupies the upper-right corner while Info stays above the lower-ri
   for(const id of ["layersButton","labelsToggle","basemapButton"]){
     assert.ok(html.includes('id="'+id+'"'));
   }
-  const layers=css.match(/#app #layersButton\.layers-bottom-button\s*\{([^}]+)\}/)?.[1]||"";
+  const layerAt=css.lastIndexOf("#app #layersButton.layers-bottom-button{");
+  assert.ok(layerAt>=0);
+  const layers=css.slice(layerAt,css.indexOf("}",layerAt));
   assert.ok(layers.includes("left:auto!important"));
   assert.ok(layers.includes("right:var(--p2m-top-corner-inset)!important"));
   const info=css.match(/#app #labelsToggle\.labels-toggle\s*\{([^}]+)\}/)?.[1]||"";
