@@ -423,3 +423,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Der neue Test `tests/css-header-height-ownership.test.js` verhindert das Zurückkehren des alten Tokens und sichert die geltenden Header-/Kartenmaße.
 - Der Bestand beträgt weiterhin **300 `!important`-Deklarationen** (402 ursprünglich), weil nur überholte Normaldeklarationen entfernt wurden. Service-Worker-Quellversion **v81**.
 - Die auf GitHub gelesenen Quelltextbedingungen werden gezielt kontrolliert. Vollständige Node-Testausführung, GitHub-Actions-/Pages-Erfolg, öffentliche Auslieferung und abschließende iPhone-/iPad-/Desktop-Regression bleiben getrennt nachzuweisen. Ein neuer manueller Gerätetest ist derzeit nicht nötig, da die geltende Regel unverändert ist.
+
+## Inkrement B24 – Suchbutton-Größe ausschließlich im gemeinsamen Kartenbutton-Vertrag (v82)
+
+- Fünf ältere Flex-/Größenfestlegungen für den Suchbutton wurden entfernt: `flex:0 0 48px`, `flex-basis:46px`, `flex:0 0 40px`, `flex-basis:37px` sowie das späte `flex:0 0 34px!important` und `height:35px` im gleichen Regelblock.
+- Der geltende gemeinsame CSS-Vertrag `#app button:is(#searchButton,...)` setzt weiterhin mit höherer Spezifität `width`, `height` und `flex-basis` auf `--p2m-map-circle-size` (= 42px) und wird nicht verändert. Suchbutton-Icon/Typografie und bestehende `padding:0!important` bleiben erhalten.
+- Neuer Test `tests/css-search-button-size-ownership.test.js` bewacht die Abwesenheit fester Flex- und Höhenwerte für die allgemeinen Suchbutton-Regeln und das Bestehen des gemeinsamen Größenvertrags.
+- `!important`-Bestand **300 → 299** (ursprünglich 402), Debt-Budget auf **299** reduziert. PWA-Quellrelease **v82**.
+- Die Quelltextbedingungen werden separat geprüft. **Unabhängige Node-Testausführung, CI-/Pages-Lauf, öffentliche v82-Auslieferung und iPhone-/iPad-/Desktop-Regression sind weiterhin offen.** Wegen Änderung an Regeln des sichtbaren Suchbuttons ist eine erneute gezielte iPhone-Sichtprüfung sinnvoll.
