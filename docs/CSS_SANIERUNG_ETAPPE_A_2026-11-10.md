@@ -291,3 +291,11 @@ Der Auftraggeber bestätigte am 10.11.2026 nach Aufforderung zum Refresh der Pre
 - Neuer Schutztest `tests/css-header-ownership.test.js` kontrolliert die Einmaligkeit des Tokens und die mobile Suchleistenposition. Die gezielten Quellcodebedingungen wurden anhand erneut aus GitHub gelesener Dateien überprüft. **Ein tatsächlicher Node-Testlauf wurde nicht ausgeführt.**
 - CSS-`!important`-Bestand: **319 → 314** (ursprünglich 402). Das Übergangsbudget wurde entsprechend auf 314 gesenkt.
 - PWA-Quellversion: **v70**. **Abnahme offen:** erfolgreicher GitHub-Actions-Lauf, veröffentlichte Preview-Dateien und visuelle Mobile-/Tablet-/Desktop-Prüfung der Suchleiste und der Eckbuttons. Vorherige iPhone-Abnahmen sind der zu bewahrende Referenzzustand, aber kein Nachweis der aktuellen Auslieferung.
+
+## Manuelle iPhone-Abnahme der mobilen Suchleiste nach B11 (v70)
+
+Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren und gezielt die **Suchleiste sowie die beiden oberen Eckbuttons** auf unveränderte Darstellung zu prüfen, bestätigte der Auftraggeber am 10.11.2026: **„alles gut“**.
+
+**Manuell abgenommen:** Die vom Nutzer geprüfte iPhone-Darstellung der Suchleiste und oberen Eckbuttons entspricht nach der CSS-Bereinigung B11 weiterhin dem freigegebenen visuellen Referenzzustand. Für diesen einzelnen Schritt ist keine weitere Nutzerprüfung erforderlich.
+
+**Separat offen:** Diese Bestätigung weist weder die genaue aktive Service-Worker-Version noch einen erfolgreichen GitHub-Actions-Lauf, eine unabhängig bestätigte HTTPS-Auslieferung der v70-Dateien oder die aktuelle Desktop-/iPad-Regression nach. Diese Abschlussprüfungen bleiben bestehen.
