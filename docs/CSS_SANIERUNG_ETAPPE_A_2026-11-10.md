@@ -198,3 +198,15 @@ Der Auftraggeber wurde gebeten, die Preview auf dem iPhone zu aktualisieren und 
 Nach Aufforderung zur Aktualisierung der Vorschau und Prüfung der Ebenenliste auf dem iPhone hat der Auftraggeber am 10.11.2026 ausdrücklich **„alles gut“** zurückgemeldet. Damit ist die Ebenenliste in der vom Nutzer geprüften Vorschau **visuell und hinsichtlich der Bedienbarkeit manuell abgenommen**. Die bestehende Vier-Spalten-Anordnung bleibt die verbindliche Referenz für spätere CSS-Arbeiten.
 
 **Abgrenzung:** Eine konkrete am Gerät aktive Service-Worker-Versionskennung ist nicht bestätigt; die Rückmeldung ist kein selbständiger Nachweis für erfolgreichen GitHub-Actions-Lauf, identische ausgelieferte Assets oder die Desktop-/iPad-Regression von v64. Diese technischen Prüfungen bleiben für eine umfassende Freigabe offen.
+
+
+## Inkrement B6 – gemeinsame Kartensteuerungs-Tokens und vertikale Unterkante (v65)
+
+- Die bisher doppelte Festlegung `--p2m-map-circle-size:42px` wurde auf **eine maßgebliche Definition** im Map-Control-Designvertrag reduziert. Der Wert selbst ist unverändert.
+- Die älteren unteren Zoom-Button-Abstände (10px + Safe Area, auf Telefon 9px + Safe Area) wurden aus dem früheren Regelblock entfernt. Ihre **gemeinsame aktuelle Unterkante** bleibt `--p2m-bottom-control-baseline` – dieselbe Quelle wie beim Kartenwahl-Button; der linke Zoom-Abstand von 10px bleibt erhalten.
+- Die zuvor überschriebenen vertikalen Basemap-Button-Positionierungen wurden entfernt; die bereits vorhandene gemeinsame Baseline-Regel bleibt erhalten.
+- Der `!important`-Bestand wurde **382 → 379** reduziert. `tests/css-debt-budget.test.js` enthält ab jetzt den strengeren Höchstwert **379**; `tests/css-bottom-control-ownership.test.js` prüft den einmaligen Größentoken und die Baseline-Zuständigkeiten.
+- Alle acht gezielten Quelltextinvarianten wurden gegen die aus GitHub nachgelesenen Dateien geprüft. Damit ist **noch kein vollständiger Node-Testlauf** und **noch keine visuelle Browserprüfung** nachgewiesen.
+- Der PWA-Quellstand enthält nun `pin2map-new-v65`. Die öffentliche HTTPS-Preview war über den verfügbaren Webzugang nicht erreichbar; der erfolgreiche Workflowlauf bzw. die Auslieferung von v65 konnte daher nicht unabhängig geprüft werden.
+- Die zuletzt vom Nutzer abgenommene Darstellung, insbesondere die Zoom-/Fit-Schaltflächen links unten, die Kartenwahl rechts unten und die frei sichtbare Attribution, bleibt der zu bewahrende visuelle Vertrag. **v65 ist bis zu erneuter Geräte- und CI-/Live-Prüfung nicht vollständig abgenommen.**
+
