@@ -102,6 +102,15 @@ jobs:
 
           replace_exact("index.html", "<title>pin2map NEW · Testversion</title>",
                         "<title>pin2map NEW · Entwicklungsvorschau</title>")
+          import re
+          sw = (preview / "sw.js").read_text(encoding="utf-8")
+          version = re.search(r"const CACHE='(pin2map-preview-v\\d+)'", sw)
+          if not version:
+              raise RuntimeError("Missing preview release version")
+          html = preview / "index.html"
+          html.write_text(html.read_text(encoding="utf-8").replace(
+              "</head>", '<meta name="pin2map-preview-version" content="' +
+              version.group(1) + '">\\n</head>'), encoding="utf-8")
           PY
 
       - name: Check preview isolation and unchanged stable entrypoint
@@ -158,14 +167,19 @@ jobs:
               raise SystemExit("FAIL: cannot determine source worker version")
           expected_version = "pin2map-preview-v" + source_version.group(1)
           expected = {
-              "index.html": ("text/html", "ui/pwa-refresh.js"),
+              "index.html": ("text/html", expected_version),
               "styles.css": ("text/css", ".pin-panel"),
               "app.js": ("javascript", "Pin2MapPwaRefresh.refresh"),
               "ui/pin-layer-picker.js": ("javascript", "class PinLayerPicker"),
               "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
               "sw.js": ("javascript", expected_version),
           }
-          print("Checking live preview assets at:", base, flush=True)
+          # Compare both canonical and cache-busted entrypoints: GitHub Pages
+          # must serve the same release even if clients have visited /preview/
+          # for months. A query string is not a separate application.
+          expected[""] = ("text/html", expected_version)
+          expected["?__p2m_release=" + expected_version] = ("text/html", expected_version)
+          print("Checking clean and release-keyed preview URLs:", base, flush=True)
           for attempt in range(1, 13):
               problems = []
               for relative, (content_type, signature) in expected.items():
