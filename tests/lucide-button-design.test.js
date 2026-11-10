@@ -139,3 +139,16 @@ test("refresh is a separate circular map control at 35% screen height",()=>{
   assert.ok(app.includes('$(\"refreshButton\").addEventListener("click"'),
     "Existing service-worker update handler must remain unchanged");
 });
+
+test("info toggle sits immediately right of the bottom layers button",()=>{
+  const html=read("index.html"),css=read("styles.css");
+  assert.ok(html.includes('id="layersButton"'));
+  assert.ok(html.includes('id="labelsToggle"'));
+  const rule=css.match(/#labelsToggle\.labels-toggle\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(rule.includes("left:calc(50% + 23px + 8px)!important"));
+  assert.ok(rule.includes("bottom:calc(10px + env(safe-area-inset-bottom,0px))!important"));
+  const mobile=css.match(/@media\(max-width:630px\)\{\s*#labelsToggle\.labels-toggle\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(mobile.includes("left:calc(50% + 22px + 8px)!important"));
+  assert.ok(mobile.includes("bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(css.includes("body.pin-open .labels-toggle"),"i toggle still hides during pin editing");
+});
