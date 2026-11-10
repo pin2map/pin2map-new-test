@@ -117,3 +117,9 @@ Die vollständige statische **Funktions-/Modulinventur** ist unter [VORGAENGER_A
 **Jetzt UI-Phase fortsetzen:** zuerst Grundlayout, Kopfzeile, Bedienkontrollen, Pin-Dialog und Ebenenpanel mit der Vorgänger-App vergleichen. Jeder Schritt bekommt einen kleinen eigenständigen UI-Test und anschließend einen realen iPhone-Abgleich; keine Vermischung mit künftigen Wetter-/Fluss-/Routing-Funktionen. Danach die weiteren Fachfunktionen gemäß Audit schrittweise implementieren, Synchronisation erst nach Funktionsparität.
 
 **Offenes Gate:** Vollständiger GitHub-Actions-Lauf, reale Browserregression und iPhone-Abnahme sind noch nicht bestätigt. Keine Änderung an `main` oder gesicherten Referenzständen.
+
+## Verbindliches Fertigstellungs-Gate (2026-11-10)
+
+Jeder Anwendungsauftrag umfasst Implementierung, Tests, tatsächliches Deployment und Live-Browser-Prüfung. Ein Commit oder gestarteter Workflow ist nur Zwischenstand. Die ausgelieferte Version und die gewünschte Bedienung müssen verifiziert sein; spezifische iPhone-Gesten benötigen einen geeigneten zusätzlichen Gerätetest. Fehlt ein Nachweis, bleibt der Auftrag offen/blockiert, statt vorzeitig als fertig zu gelten.
+
+Ausführliche Kriterien: docs/GRUNDENTSCHEIDUNGEN.md (Arbeitsregel 2026-11-10) und docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md (Abschluss-Gate). Keine ungeprüften Merges auf main; Referenzstände bleiben unverändert.
