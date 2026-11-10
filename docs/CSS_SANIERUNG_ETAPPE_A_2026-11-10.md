@@ -523,7 +523,7 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 ## Inkrement B26 – Suchfeld-Typografie: überholte Schriftgrößen entfernt (v88)
 
 - Nach der Suchbutton-Korrektur v87 wird die normale CSS-Sanierung fortgesetzt. Die letzte optische Feinjustierung des Suchbuttonkreises wurde nicht ausdrücklich abschließend vom Auftraggeber abgenommen; **v87 bleibt dafür Referenz**, keine weitere Veränderung am Kreis in diesem Inkrement.
-- **Vier obsolete Schriftgrößen** in der alten Suchfeld-Grundschicht bzw. älteren responsiven `.search input`-/`.topbar .search input`-Regeln entfernt: 15px, 13px und zweimal 16px ohne `!important`.
+- **Fünf obsolete Schriftgrößen** in der alten Suchfeld-Grundschicht bzw. älteren responsiven `.search input`-/`.topbar .search input`-Regeln entfernt: 15px, 13px und dreimal 16px ohne `!important`. Die fünfte Angabe wurde bei der gezielten Ausführung des neuen Schutztests entdeckt und anschließend ebenfalls entfernt.
 - Der aktuelle, höher spezifische Vertrag `.topbar .search input{font-size:16px!important;...}` und die 16px-Absicherung für schmale Bildschirme bleiben unverändert. Ebenso unangetastet: Suchbutton, Suchkapsel, Abstände, Bildschirmgeometrie, Anwendungslogik und gespeicherte Daten.
 - Neuer Test `tests/css-search-input-typography-ownership.test.js` stellt sicher, dass keine ältere Schriftgröße erneut mit dem 16px-Eigentümer konkurriert. Die 16px-Größe ist auch auf iOS wichtig, weil kleinere Suchfeldeingaben beim Fokussieren zu unerwünschter Vergrößerung führen können.
 - Schuldenstand weiterhin **299 `!important`-Deklarationen**, weil ausschließlich normale Altdeklarationen entfernt wurden. PWA-Quellrelease **v88**.
