@@ -137,13 +137,12 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-side-label.highlighted{font-weight:750;background:#ffffff;border-color:#1c538f;box-shadow:0 2px 7px #0003}
 .pin-marker{position:relative;z-index:1}
 .pin-icon:has(.pin-side-label){z-index:auto}
-/* Labelling control – direct map control rather than a hidden setting. */
+/* Info: keep only local stacking and typography. The shared map-control
+   contract owns its diameter/surface, and the bottom-right contract owns
+   its final position. */
 .labels-toggle{
-  position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));
-  z-index:1100;width:38px;height:38px;border-radius:50%;padding:0;
-  color:#1c497a;background:#fff;border:1px solid #9badbe;
-  font-size:22px;font-family:Georgia,serif;font-weight:700;
-  box-shadow:0 2px 8px #0003
+  position:absolute;z-index:1100;
+  font-weight:700;
 }
 
 @media(max-width:630px){
