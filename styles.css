@@ -298,31 +298,20 @@ button:not(.p2m-icon-control):not(.result):not(.inline-button){
 }
 .topbar .search input{background:transparent!important}
 .topbar .search button.p2m-icon-control{
-  --p2m-button-size:33px;
-  width:33px!important;height:33px!important;min-width:33px;min-height:33px;
-  flex:0 0 33px!important;margin:0 1px 0 0;
+  margin:0 1px 0 0;
   box-shadow:none;border-color:#dee3e8!important
 }
 .topbar .topbtn.p2m-icon-control{
-  --p2m-button-size:35px;
-  width:35px!important;height:35px!important;
-  min-width:35px!important;min-height:35px!important;
-  flex:0 0 35px!important;font-size:inherit!important;
+  font-size:inherit!important;
 }
 .pin-zoom-buttons{gap:8px!important}
 button.pin-zoom-button.p2m-icon-control{
-  --p2m-button-size:42px;
-  width:42px!important;height:42px!important;
   font-size:inherit!important;font-weight:normal!important;
 }
 button.layers-bottom-button.p2m-icon-control{
-  --p2m-button-size:46px;
-  width:46px;height:46px;min-width:46px;min-height:46px;
   font-size:inherit;line-height:1
 }
 button.labels-toggle.p2m-icon-control{
-  --p2m-button-size:42px;
-  width:42px;height:42px;min-width:42px;min-height:42px;
   font-family:inherit;font-size:inherit
 }
 button.close.p2m-icon-control,button.layer-delete.p2m-icon-control,
@@ -349,12 +338,6 @@ button.layer-delete.p2m-icon-control{color:#ad3540!important}
 .pin-actions button:hover,#addLayer:hover,.dialog-actions button:hover{background:#f5f8fa}
 #deletePin,.dialog-actions .danger{color:#aa2e3b}
 @media(max-width:630px){
-  button.pin-zoom-button.p2m-icon-control{
-    --p2m-button-size:40px;width:40px!important;height:40px!important
-  }
-  button.layers-bottom-button.p2m-icon-control{
-    --p2m-button-size:44px;width:44px;height:44px;min-width:44px;min-height:44px
-  }
   .topbar .topbtn.p2m-icon-control{
     --p2m-button-size:34px;width:34px!important;height:34px!important;
     min-width:34px!important;min-height:34px!important;flex:0 0 34px!important
