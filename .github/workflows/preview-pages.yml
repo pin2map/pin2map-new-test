@@ -150,7 +150,7 @@ jobs:
           # This prevents Safari's HTTP cache from mixing old and new modules.
           import re
           source=re.sub(
-              r'((?:src|href)="\./(?:vendor/leaflet/|domain/|application/|adapters/|ui/|map-adapter-leaflet\.js|app\.js|styles\.css)[^"?]+)(?=")',
+              r'((?:src|href)="\./(?:vendor/leaflet/|domain/|application/|adapters/|ui/|map-adapter-leaflet\.js|app\.js|styles\.css)[^"?]*)(?=")',
               lambda match:match.group(1)+"?__p2m_release="+version.group(1),source)
           source=source.replace(
               "</head>", '<meta name="pin2map-preview-version" content="' +
