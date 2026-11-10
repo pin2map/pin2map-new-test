@@ -338,3 +338,10 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 **Manuell abgenommen:** Der auf dem iPhone überprüfte Info-Button entspricht nach der Bereinigung B14 weiterhin der freigegebenen optischen und funktionalen Referenz. Für diese konkrete Sichtprüfung ist keine weitere Rückfrage erforderlich.
 
 **Eigenständig offen:** Eine aktive v72-Service-Worker-Version am Gerät, ein erfolgreicher GitHub-Actions-Lauf, die exakt identische Auslieferung der v72-Assets und die aktuelle Desktop-/iPad-Regression sind dadurch nicht unabhängig nachgewiesen. Diese technischen Abschlussprüfungen bleiben offen.
+
+## Inkrement B15 – Suchkapsel-Höhen und Button-Abstand eindeutig zugeordnet (v73)
+
+- Im früheren Suchleistenblock wurden überholte Höhenangaben für `.topbar` (44px), `.topbar .search` (35px) und das Such-Eingabefeld (35px) entfernt. Maßgeblich bleiben die bereits vorhandenen, höher spezifischen `#app`-Regeln mit **52px / 42px / 40px**. Ebenso entfernt wurde der frühere Randabstand `margin:0 1px 0 0` des Suchbuttons; die spätere, geltende `margin:0!important`-Regel bleibt erhalten.
+- **`!important`: 314 → 312** (ursprünglich 402). Das Schuldenbudget ist auf 312 gesenkt. Neuer Test `tests/css-search-capsule-ownership.test.js` überwacht die endgültigen Maße und verhindert die Rückkehr der überholten Werte.
+- PWA-Quellrelease: **v73**. Die Quelldateien wurden in GitHub aktualisiert; eine tatsächliche Node-Testausführung, eine erfolgreiche CI-/Pages-Veröffentlichung und die Auslieferung der identischen Dateien sind noch nicht unabhängig bestätigt.
+- **Manuelle Abnahme offen:** Suchleiste und Suchbutton auf dem iPhone nach Refresh, sowie die abschließende Desktop-/iPad-Regression. Kein Eingriff in Anwendungslogik oder lokale Pin-Daten.
