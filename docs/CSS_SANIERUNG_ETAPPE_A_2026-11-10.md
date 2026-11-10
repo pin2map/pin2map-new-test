@@ -399,3 +399,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neu: `tests/css-map-full-viewport-ownership.test.js` verhindert das erneute Einführen älterer Header-Versätze für `#map` und prüft die weiterhin vorhandene, bildschirmfüllende Hauptregel.
 - `!important`-Schuldenstand bleibt **300** (402 ursprünglich); es wurden ausschließlich überholte normal-priorisierte Angaben entfernt. Service-Worker-Quellrelease **v78**.
 - Die konkrete Quelltextkonsistenz wird erneut geprüft; vollständige Testausführung, GitHub-Actions-/Pages-Erfolg, öffentliche Auslieferung und abschließende Geräte-Regressionen bleiben unabhängige Nachweise. Da die wirksame CSS-Regel nicht geändert wurde, wird derzeit kein gesonderter Nutzertest verlangt.
+
+## Inkrement B21 – eindeutige Position der Hinweisleiste (v79)
+
+- Für `.notice` wurden fünf überholte `top`-Angaben aus älteren normalen und mobilen Header-Layouts entfernt: 72px, 62px, 100px plus Safe Area und zwei Varianten mit `--header-height`. Sie standen in Konkurrenz zur späteren, bereits gültigen `.notice{top:calc(56px + env(safe-area-inset-top,0px))!important}`-Regel.
+- Bestehende Eigenschaften der Hinweisleiste wie Positionierungsart, Stacking, Darstellung und mobile Maximalbreite bleiben unangetastet. Die **wirksame vertikale Position** wurde nicht geändert.
+- Neuer Test `tests/css-notice-position-ownership.test.js` schützt die einzelne Höhenzuständigkeit und die weiterhin gültige mobile Breitenanpassung.
+- `!important`-Bestand **300** (ursprünglich 402), unverändert, weil nur redundante nicht priorisierte Deklarationen entfernt wurden. PWA-Quellrelease **v79**.
+- Die Quelltextbedingungen werden überprüft; tatsächlicher CI-Testlauf, GitHub Pages-Auslieferung und Geräte-/Browserregressionen bleiben gesonderte Nachweise. Ein neuer manueller Gerätetest ist wegen unveränderter geltender CSS-Regel derzeit nicht erforderlich.
