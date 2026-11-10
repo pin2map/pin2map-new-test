@@ -13,18 +13,16 @@ function scenario({online=true,activate=true,saveFails=false,expected="pin2map-p
     state:"activated",
     postMessage(message,ports){
       assert.equal(message.type,"GET_VERSION");
-      ports[0].onmessage?.({data:{version}});
+      ports[0].send(version);
     }
   });
   // MessageChannel in a browser: posted port2 delivers to port1.
   class MessageChannel{
     constructor(){
       this.port1={onmessage:null,close(){}};
-      this.port2={
-        _receiver:this.port1,
-        set onmessage(fn){queueMicrotask(()=>this._receiver.onmessage?.({data:{version:fn.version}}));},
-        get onmessage(){return null;}
-      };
+      this.port2={send:version=>{
+        queueMicrotask(()=>this.port1.onmessage?.({data:{version}}));
+      }};
     }
   }
   const active=workerVersion(expected);
