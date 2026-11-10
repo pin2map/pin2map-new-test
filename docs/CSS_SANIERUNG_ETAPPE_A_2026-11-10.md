@@ -315,3 +315,11 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 - **`!important` unverändert: 314.** Auch redundante Deklarationen *ohne* `!important` zählen zum CSS-Chaos und werden schrittweise entfernt.
 - Service-Worker-Quellversion auf **v71** angehoben. Alle Quelltextbedingungen sind gezielt zu kontrollieren; ein unabhängiger erfolgreicher CI-Lauf und die öffentliche Auslieferung der v71-Assets sind damit nicht nachgewiesen.
 - **Manuelle Abnahme v71 offen:** Ebenenbutton oben rechts und Ebenenliste auf iPhone sowie breitere Browser-/Tablet-/Desktop-Regressionsprüfung. Die früheren Nutzerfreigaben dienen weiterhin als Sollreferenz.
+
+## Manuelle iPhone-Abnahme des Ebenenbuttons nach B13 (v71)
+
+Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren und gezielt den **Ebenenbutton oben rechts** sowie das **Öffnen und Bedienen der Ebenenliste** auf unveränderte Darstellung und Funktion zu prüfen, bestätigte der Auftraggeber am 10.11.2026 ausdrücklich: **„alles gut“**.
+
+**Manuell abgenommen:** Die beiden überprüften UI-Funktionen entsprechen nach der Bereinigung B13 weiterhin dem bisherigen iPhone-Referenzzustand. Für diese konkrete Sicht- und Bedienprüfung ist keine weitere Nutzerabnahme erforderlich.
+
+**Technisch offen:** Die Rückmeldung belegt weder die exakte aktive Service-Worker-Version noch den erfolgreichen GitHub-Actions-Lauf, die unveränderte HTTPS-Auslieferung der v71-Dateien oder die aktuelle Desktop-/iPad-Regression. Diese Abschlussnachweise sind weiterhin gesondert zu erbringen.
