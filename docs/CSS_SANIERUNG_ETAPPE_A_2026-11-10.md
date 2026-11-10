@@ -391,3 +391,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neu: `tests/css-base-readability-contract.test.js` prüft die Grundschicht auf separate Regeln, überschaubare Zeilenlängen und die erhaltenen wichtigsten Abschnittsmarker; die vorhandenen CSS-Vertragstests und das Debt-Budget bleiben erhalten.
 - Unverändert **300 `!important`-Deklarationen** gegenüber 402 zu Beginn. Service-Worker-Quellversion **v77**.
 - Die Änderung ist formatierend, ohne beabsichtigte visuelle Wirkung. Quelltextprüfung ist getrennt von tatsächlich bestandenen Node-Tests, erfolgreich ausgelieferter Preview und abschließender iPhone-/iPad-/Desktop-Regression; diese technischen Nachweise sind weiterhin offen.
+
+## Inkrement B20 – Kartenoberkante hat eine einzige Zuständigkeit (v78)
+
+- In der bereits lesbar gemachten CSS-Grundschicht und den historischen mobilen Header-Layouts wurden **fünf frühere `#map top`-Deklarationen** entfernt: 58px, 54px, 91px plus Safe-Area sowie zwei Varianten der früheren `--header-height`-Verschiebung. Diese wurden von der späteren verbindlichen `#map{inset:0;top:0!important;right:0;bottom:0;left:0}`-Regel überschrieben.
+- Die Karte bleibt damit als Hintergrund **bis an den oberen Bildschirmrand** gezogen; Suchkapsel und andere Bedienelemente sind überlagerte Controls. **Die aktive `top:0!important`-Regel ist unverändert.**
+- Neu: `tests/css-map-full-viewport-ownership.test.js` verhindert das erneute Einführen älterer Header-Versätze für `#map` und prüft die weiterhin vorhandene, bildschirmfüllende Hauptregel.
+- `!important`-Schuldenstand bleibt **300** (402 ursprünglich); es wurden ausschließlich überholte normal-priorisierte Angaben entfernt. Service-Worker-Quellrelease **v78**.
+- Die konkrete Quelltextkonsistenz wird erneut geprüft; vollständige Testausführung, GitHub-Actions-/Pages-Erfolg, öffentliche Auslieferung und abschließende Geräte-Regressionen bleiben unabhängige Nachweise. Da die wirksame CSS-Regel nicht geändert wurde, wird derzeit kein gesonderter Nutzertest verlangt.
