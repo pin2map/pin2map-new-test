@@ -720,3 +720,15 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
     bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
   }
 }
+
+/* Leaflet zoom/fit group is anchored to the bottom-left viewport corner.
+   Keep its bottom baseline aligned with Info/Layers and respect iOS safe area.
+   The trio is vertically stacked and continues to use the common 42px size. */
+#map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
+  margin:0 0 calc(10px + env(safe-area-inset-bottom,0px)) 10px!important;
+}
+@media(max-width:630px){
+  #map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
+    margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
