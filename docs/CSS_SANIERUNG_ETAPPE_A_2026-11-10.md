@@ -217,3 +217,11 @@ Nach der Aufforderung, die Preview auf dem iPhone zu aktualisieren und speziell 
 **Manuell abgenommen:** Die überprüfte untere Kartensteuerung entspricht auf dem iPhone weiterhin der verbindlichen visuellen Referenz. Die im Inkrement B6 bereinigten Baseline-/Größentoken-Regeln verursachen für den Nutzer dort keine erkennbare Regression.
 
 **Abgrenzung:** Die genaue am Gerät aktive PWA-/Service-Worker-Version, ein erfolgreicher GitHub-Actions-Lauf, identische über HTTPS ausgelieferte Assets sowie die erneute Desktop-/iPad-Prüfung sind dadurch nicht unabhängig nachgewiesen. Diese automatischen und breiteren Live-Abschlussprüfungen bleiben offen.
+
+## Inkrement B7 – einheitliche Positionseigentümer für Eckbuttons und Kartenwahl (v66)
+
+- Die zuvor mehrfach und teils mobil speziell festgelegten oberen Positionen des Einstellungsbuttons sind aus älteren CSS-Blöcken entfernt worden. Sein `z-index:1100` bleibt erhalten; die für die freigegebene Darstellung maßgebliche Position gehört ausschließlich dem gemeinsamen `--p2m-top-corner-*`-Vertrag am Ende von `styles.css`.
+- Alte `bottom:60px`-/`59px`-Berechnungen des Kartenwahlmenüs wurden entfernt; die bereits vorhandene spätere `--p2m-bottom-control-baseline + 50px`-Regel ist alleiniger Eigentümer der vertikalen Menüposition. Das mobile `right:10px` bleibt erhalten.
+- Zahl der `!important`-Deklarationen: **379 → 371** (zu Beginn 402). Die Budget-Prüfung wurde auf 371 gesenkt. Neuer Schutztest: `tests/css-top-corner-ownership.test.js`.
+- Quellcode-Stand des Service Workers: `pin2map-new-v66`. Alle gezielten Quellen-Invarianten wurden gegen die erneut aus GitHub gelesenen Dateien geprüft. Ein tatsächlicher Node-/Browserlauf sowie ein erfolgreicher veröffentlichter Preview-Workflow können damit **nicht** behauptet werden.
+- **Visuelle Abnahme v66 offen:** Die zuvor freigegebenen iPhone-/iPad-/Desktopansichten sind weiterhin Soll-Vorgabe. Vor einer vollständigen Freigabe sind die tatsächlich ausgelieferten Assets und die Button-/Menüpositionen im Browser erneut zu prüfen.
