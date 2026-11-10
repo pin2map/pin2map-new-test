@@ -115,3 +115,11 @@ Der vor der Sanierung vom Nutzer abgenommene Screenshotstand bleibt der visuelle
 Der Preview-Workflow reagiert künftig auch auf **Testdateiänderungen**; zuvor waren \`tests/**\` aus den Push-Auslösern ausgenommen. Dadurch können neue Live-Gates nicht unbemerkt auf dem Entwicklungszweig liegenbleiben, ohne dass der Veröffentlichungsworkflow sie ausführt.
 
 **Status:** Quellcodeänderung an Test und Workflow in GitHub vorhanden und geprüft. Ein erfolgreicher GitHub-Actions-Lauf und die tatsächliche HTTPS-Auslieferung von v60 konnten mit den verfügbaren Tools nicht nachgewiesen werden. Browser- oder Nutzerabnahme von v60 darf deshalb noch nicht behauptet werden. Nächster zwingender Schritt vor weiteren Layoutänderungen: tatsächlichen Workflowstatus und die ausgelieferte Preview kontrollieren; bei weiterhin fehlendem direkten Zugriff gezielte Geräteprüfung durch den Nutzer anfordern.
+
+## Nutzerprüfung nach Refresh – iPhone Safari (2026-11-10)
+
+Der Auftraggeber hat die Entwicklungsvorschau auf einem iPhone in Safari nach der Bitte um Refresh erneut angesehen und einen Screenshot der Kartenansicht übermittelt. Seine ausdrückliche Rückmeldung lautet: **„unverändert, alles gut“**.
+
+**Damit bestätigt:** Die sichtbare Kartenoberfläche nach Refresh entspricht weiterhin der zuvor freigegebenen Referenz. Im Screenshot befinden sich Zahnrad und Ebenen-Button oben auf gleicher Höhe, die Suchleiste dazwischen, Zoom/Fit links unten, Info über Kartenwahl rechts unten und die Leaflet-/OpenStreetMap-Attribution am unteren Rand.
+
+**Grenzen:** Ein geöffneter Ebenendialog ist im neuen Screenshot nicht enthalten; dessen vorherige visuelle Abnahme gilt als Vergleichsgrundlage. Weder die genaue auf dem Gerät ausgelieferte Service-Worker-Versionskennung noch ein erfolgreicher GitHub-Actions-Lauf lassen sich aus dem Screenshot ableiten. Ebenso sind Desktop-/iPad-Regressionen nach den jüngsten CSS-Bereinigungen damit nicht erneut geprüft. Die vollständige Live- und CI-Abnahme bleibt bis zu diesen Nachweisen offen.
