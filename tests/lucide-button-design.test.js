@@ -165,3 +165,19 @@ test("every free map and header circular button uses one 42px diameter",()=>{
   assert.ok(css.includes("bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"),"Both bottom buttons align in mobile mode");
   assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"),"Editor buttons keep their separate size");
 });
+
+test("three equal-size zoom controls are docked bottom-left without touching dialog controls",()=>{
+  const css=read("styles.css"),map=read("map-adapter-leaflet.js");
+  assert.ok(map.includes('L.control({position:"bottomleft"})'),
+    "Zoom controls must be a bottom-left Leaflet control");
+  assert.ok(!map.includes('L.control({position:"topleft"})'),
+    "Obsolete top-left placement must be absent");
+  assert.match(map,/add\("\+","Vergrößern"/);
+  assert.match(map,/add\("−","Verkleinern"/);
+  assert.match(map,/add\("◎","Alle sichtbaren Pins anzeigen"/);
+  assert.ok(css.includes("#map .leaflet-bottom.leaflet-left .pin-zoom-buttons{"));
+  assert.ok(css.includes("margin:0 0 calc(10px + env(safe-area-inset-bottom,0px)) 10px!important"));
+  assert.ok(css.includes("margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(css.includes("#app button.pin-zoom-button.p2m-icon-control"),
+    "Zoom controls retain the shared 42px size token");
+});
