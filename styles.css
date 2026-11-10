@@ -693,13 +693,10 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   margin:0 0 0 10px!important;
 }
 
-/* Independent top-left Settings button. It leaves the search capsule and
-   uses the same shared size as every round control outside dialogs. */
+/* The settings control has its own stacking level. Final coordinates
+   are owned exclusively by the shared top-corner contract below. */
 #app #settingsButton.settings-map-button.p2m-icon-control{
-  position:absolute!important;z-index:1100;
-  left:12px!important;right:auto!important;
-  top:calc(12px + env(safe-area-inset-top,0px))!important;
-  bottom:auto!important;transform:none!important;
+  z-index:1100;
 }
 /* Standalone bottom-right Map selection, aligned with the bottom buttons.
    Menu floats above its trigger and does not resize the map or obscure
@@ -714,7 +711,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #basemapMenu.basemap-menu{
   position:absolute;z-index:1200;
   right:12px;left:auto;top:auto;
-  bottom:calc(60px + env(safe-area-inset-bottom,0px));
   width:min(220px,calc(100% - 24px));
   padding:7px;border:1px solid var(--p2m-button-border);
   border-radius:11px;background:#fff;box-shadow:var(--shadow);
@@ -739,15 +735,11 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
     left:60px!important;right:8px!important;transform:none!important;
     width:calc(100% - 68px)!important;max-width:none!important;
   }
-  #app #settingsButton.settings-map-button.p2m-icon-control{
-    left:10px!important;top:calc(10px + env(safe-area-inset-top,0px))!important;
-  }
   #app #basemapButton.basemap-map-button.p2m-icon-control{
     right:10px!important;
   }
   #app #basemapMenu.basemap-menu{
     right:10px;
-    bottom:calc(59px + env(safe-area-inset-bottom,0px));
   }
 }
 
