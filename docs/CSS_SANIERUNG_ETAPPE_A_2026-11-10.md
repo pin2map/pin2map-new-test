@@ -148,3 +148,11 @@ Für die vorläufige Monolith-CSS-Datei existiert jetzt `tests/css-debt-budget.t
 - **Offen:** GitHub-Actions-Erfolg, Auslieferung der v61-Assets, Live-Browser-/PWA-Regression sowie optionaler iPhone-Abgleich. Der direkte HTTPS-Abruf schlug in dieser Arbeitsumgebung an gesperrtem Webzugriff beziehungsweise fehlender DNS-Auflösung fehl. Diese Einschränkung beweist **keinen** Fehler der veröffentlichten Anwendung.
 
 **Gate:** Die vorherige iPhone-Nutzerabnahme gilt als visuelles Soll, nicht als automatische Abnahme von v61. Weitere eingreifende CSS-Umstrukturierung erst nach gesichertem Live-Stand.
+
+## iPhone-Sichtabnahme nach Inkrement B2 (v61)
+
+**Nutzerbestätigung vom 10.11.2026:** Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren und Suchleiste, obere Buttons sowie Ebenendialog mit der freigegebenen Darstellung zu vergleichen, meldete der Auftraggeber ausdrücklich: **„unverändert“**.
+
+**Bewertung:** Die vom Nutzer geprüfte iPhone-Darstellung hat nach der Bereinigung des alten Header-Grids keine erkennbaren visuellen Regressionen. Dies ist die **manuelle Sichtabnahme** für Inkrement B2; das zuvor bestätigte Erscheinungsbild bleibt die Referenz für die weitere CSS-Sanierung.
+
+**Nicht nachgewiesen:** Aus der Rückmeldung allein folgen weder die exakte auf dem Endgerät aktive Service-Worker-Versionskennung noch ein erfolgreicher GitHub-Actions-Lauf oder die Desktop-/iPad-Regression von v61. Diese Nachweise bleiben eigene Abschlusskriterien. Keine pauschale vollständige technische Freigabe behaupten.
