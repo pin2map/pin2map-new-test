@@ -207,63 +207,11 @@
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
-    $("refreshButton").addEventListener("click",async()=>{
-      const button=$("refreshButton");
-      if(button.disabled)return;
-      button.disabled=true;button.setAttribute("aria-busy","true");
-      const fail=message=>{
-        showNotice(message);
-        button.disabled=false;button.removeAttribute("aria-busy");
-      };
-      // Do not risk losing locally changed pins or layers during an update.
-      clearTimeout(saveTimer);
-      try{await dbWrite();}
-      catch(e){fail("Speichern fehlgeschlagen – Aktualisierung abgebrochen");return;}
-      if(!navigator.onLine){fail("Offline – Aktualisierung benötigt Internet");return;}
-      try{
-        // First verify that the server can supply the new worker version.
-        const workerURL=new URL("./sw.js",location.href);
-        const networkResponse=await fetch(workerURL.href+"?refresh="+Date.now(),{cache:"no-store"});
-        if(!networkResponse.ok)throw Error("SW HTTP "+networkResponse.status);
-        const match=(await networkResponse.text()).match(/const CACHE=['"]([^'"]+)['"]/);
-        if(!match)throw Error("Version nicht lesbar");
-        const expectedVersion=match[1];
-        if("serviceWorker" in navigator){
-          const registration=await navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"});
-          await registration.update();
-          if(registration.waiting)registration.waiting.postMessage({type:"SKIP_WAITING"});
-          const getActiveVersion=()=>new Promise(resolve=>{
-            const active=registration.active;
-            if(!active || active.state!=="activated"){resolve(null);return;}
-            const channel=new MessageChannel();
-            const timeout=setTimeout(()=>resolve(null),450);
-            channel.port1.onmessage=event=>{
-              clearTimeout(timeout);channel.port1.close();
-              resolve(event.data?.version||null);
-            };
-            active.postMessage({type:"GET_VERSION"},[channel.port2]);
-          });
-          // register().update() can finish before installation and activation.
-          // Keep the old page in place until the intended worker is active.
-          let activated=false;
-          const until=Date.now()+12000;
-          while(Date.now()<until){
-            if(registration.waiting)registration.waiting.postMessage({type:"SKIP_WAITING"});
-            if(await getActiveVersion()===expectedVersion){activated=true;break;}
-            await new Promise(resolve=>setTimeout(resolve,250));
-          }
-          if(!activated)throw Error("Neue Version noch nicht aktiviert");
-        }
-        // Don't preserve stale ?v= parameters in the navigation history.
-        const target=new URL(location.href);
-        target.searchParams.set("v",expectedVersion);
-        target.searchParams.set("loaded",String(Date.now()));
-        location.replace(target.href);
-      }catch(error){
-        fail("Neue Version nicht geladen – Verbindung prüfen und erneut versuchen");
-        console.warn("PWA refresh:",error);
-      }
-    });
+    $("refreshButton").addEventListener("click",()=>window.Pin2MapPwaRefresh.refresh({
+      button:$("refreshButton"),
+      save:async()=>{clearTimeout(saveTimer);await dbWrite();},
+      showNotice
+    }));
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}uiShell.closePanel(b.dataset.close);}));
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
     $("allowGeocode").checked = state.allowGeocode;
