@@ -407,3 +407,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Test `tests/css-notice-position-ownership.test.js` schützt die einzelne Höhenzuständigkeit und die weiterhin gültige mobile Breitenanpassung.
 - `!important`-Bestand **300** (ursprünglich 402), unverändert, weil nur redundante nicht priorisierte Deklarationen entfernt wurden. PWA-Quellrelease **v79**.
 - Die Quelltextbedingungen werden überprüft; tatsächlicher CI-Testlauf, GitHub Pages-Auslieferung und Geräte-/Browserregressionen bleiben gesonderte Nachweise. Ein neuer manueller Gerätetest ist wegen unveränderter geltender CSS-Regel derzeit nicht erforderlich.
+
+## Inkrement B22 – eindeutige obere Anker für Panels und Suchergebnisse (v80)
+
+- Vier überholte, normal priorisierte Höhenangaben für `.panel` und `.search-results` wurden entfernt: `top:70px` (Panel), `top:61px` (mobil), `top:59px` (Suchergebnisse) und `top:55px` (mobil). Sie wurden bereits von den neueren `!important`-Ankern überschrieben.
+- **Wirksame Positionen unverändert:** Panel `top:calc(56px + env(safe-area-inset-top,0px))!important`; Suchergebnisse allgemein 53px plus Safe-Area und bei schmalem Bildschirm 51px plus Safe-Area. Mobile Rand- und Höhenlimits bleiben bestehen.
+- Neuer Test `tests/css-floating-panel-search-ownership.test.js` kontrolliert genau einen Panel-Top-Anker und zwei beabsichtigte, responsive Top-Anker der Suchergebnisse.
+- `!important` unverändert **300** (ursprünglich 402). Quellversion der PWA **v80**.
+- GitHub-Quelltextprüfung ersetzt nicht den vollständigen Node-Testsuite- und Browserlauf. Unabhängige CI-/Pages-Ergebnisse, öffentliche Dateiversion und abschließende iPhone-/iPad-/Desktop-Regression bleiben gesondert offen. Da die wirksamen CSS-Anker nicht geändert wurden, ist derzeit kein neuer Nutzertest erforderlich.
