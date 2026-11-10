@@ -13,7 +13,7 @@ test("search capsule sizing belongs to final specific #app owner",()=>{
   assert.doesNotMatch(css,/max-width:100%;height:35px/);
 });
 test("search button margin and visual styling have separate owners",()=>{
-  assert.match(css,/#app \.topbar \.search button\.p2m-icon-control\{\s*margin:0!important;/);
-  assert.match(css,/\.topbar \.search button\.p2m-icon-control\{\s*box-shadow:none;border-color:#dee3e8!important/);
+  assert.match(css,/#app \.topbar \.search button\.p2m-icon-control\{\s*margin:0 4px 0 0!important;/);
+  assert.match(css,/\.topbar \.search button\.p2m-icon-control\{\s*box-shadow:none;\s*border-color:#aebfce!important;\s*--p2m-button-bg:#eef3f8;/);
   assert.doesNotMatch(css,/margin:0 1px 0 0;/);
 });
