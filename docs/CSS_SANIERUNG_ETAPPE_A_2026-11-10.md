@@ -359,3 +359,11 @@ Der Auftraggeber bestätigte nach der gezielten Prüfaufforderung für **Suchlei
 - Der neue Test `tests/css-unused-header-control.test.js` überprüft, dass die tote Klasse weder im Stylesheet noch im aktuellen HTML auftaucht und dass die Suchform und ihr Button vorhanden bleiben.
 - `!important`-Deklarationen: **312 → 301** (anfänglich 402). Budget entsprechend 301. PWA-Quellversion **v74**.
 - **Wichtig:** Trotz entferntem unbenutztem CSS ist dies eine Quellcodeänderung mit offenem technischen Abschluss: unabhängiger Node-Testlauf, GitHub-Actions/Pages-Erfolg, Abgleich der öffentlich ausgelieferten Version und Browserregressionen auf Desktop/iPad. Eine erneute iPhone-Sichtprüfung der Suchleiste ist empfohlen; das bisherige manuelle v73-OK bleibt die Sollreferenz.
+
+## Manuelle iPhone-Abnahme des Headers nach B16 (v74)
+
+Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchleiste sowie obere Buttons** nach der Entfernung der nicht mehr verwendeten `.topbtn`-Regeln auf unveränderte Darstellung und Funktion zu prüfen, bestätigte der Auftraggeber am 10.11.2026 ausdrücklich: **„alles gut“**.
+
+**Manuell abgenommen:** Der überprüfte iPhone-Header entspricht weiterhin der zuvor freigegebenen Darstellung und Bedienbarkeit. Für dieses Inkrement ist die konkrete iPhone-Sichtprüfung abgeschlossen.
+
+**Technische Abgrenzung:** Die Rückmeldung belegt weder die am Gerät aktive Service-Worker-Version noch einen erfolgreichen GitHub-Actions-Lauf, die exakte öffentliche Auslieferung aller v74-Dateien oder die Desktop-/iPad-Regression. Diese technischen Abschlussgates bleiben offen.
