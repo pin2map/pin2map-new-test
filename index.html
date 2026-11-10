@@ -7,6 +7,40 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <link rel="stylesheet" href="./styles.css">
+<!-- Startup guard runs even if the application scripts or Leaflet fail to load.
+     One automatic cache-keyed recovery is safe; never reset project data. -->
+<script>
+(function(){
+  var key="pin2map-preview-start-recovered";
+  var failures=[];
+  window.addEventListener("error",function(event){
+    var src=event.filename||event.target&&event.target.src||"";
+    if(src)failures.push(String(src).split("/").slice(-2).join("/"));
+  },true);
+  window.addEventListener("load",function(){
+    setTimeout(function(){
+      var ready=!!window.L&&!!document.querySelector("#map.leaflet-container")&&
+        !!document.querySelector(".pin-zoom-buttons");
+      if(ready){try{sessionStorage.removeItem(key);}catch(e){}return;}
+      var recovered=false;
+      try{recovered=sessionStorage.getItem(key)==="1";}catch(e){}
+      if(!recovered){
+        try{sessionStorage.setItem(key,"1");}catch(e){}
+        var url=new URL(location.href);
+        url.searchParams.set("__p2m_recover",String(Date.now()));
+        location.replace(url.href);
+        return;
+      }
+      var notice=document.getElementById("notice");
+      if(notice){
+        notice.textContent="Kartenstart fehlgeschlagen. Bitte Verbindung prüfen und erneut öffnen."+
+          (failures.length?" Fehlende Datei: "+failures[0]:"");
+        notice.classList.remove("hidden");
+      }
+    },4500);
+  });
+})();
+</script>
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script defer src="./domain/project-model.js"></script>
 <script defer src="./domain/pin-filter.js"></script>
