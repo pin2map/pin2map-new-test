@@ -121,7 +121,7 @@ test("all four pin-dialog buttons use one shared 32px size token",()=>{
   assert.ok(css.includes("#pinPanel #movePin .p2m-relocate-icon{width:28px!important;height:19px!important}"));
 });
 
-test("refresh is a separate circular map control at 65% screen height",()=>{
+test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
   const header=html.match(/<header class="topbar">([\s\S]*?)<\/header>/)?.[1]||"";
   assert.ok(!header.includes('id="refreshButton"'),"Refresh must not be inside search header");
@@ -132,7 +132,7 @@ test("refresh is a separate circular map control at 65% screen height",()=>{
   const styles=css.match(/#refreshButton\.refresh-map-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(styles.includes("position:fixed!important"));
   assert.ok(styles.includes("left:12px!important"));
-  assert.ok(styles.includes("top:65dvh!important"));
+  assert.ok(styles.includes("top:35dvh!important"));
   assert.ok(styles.includes("border-radius:50%!important"));
   assert.ok(styles.includes("width:42px!important;height:42px!important"));
   assert.ok(css.includes("body.pin-open #refreshButton.refresh-map-button{display:none!important}"));
