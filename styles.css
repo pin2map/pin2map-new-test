@@ -12,8 +12,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .full{width:100%;margin-top:14px}
 .topbar{position:absolute;z-index:1100;top:0;left:0;right:0;display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--navy);color:white;box-shadow:var(--shadow)}
 .search{display:flex;flex:1;max-width:520px;min-width:0;margin:auto;background:white;border-radius:10px;overflow:hidden}
-.search input{width:100%;min-width:0;padding:11px 12px;border:0;outline:0;background:white}
-.search button{border-radius:0;background:#e8f1fc;color:#14385c;padding:3px 15px}
+.search input{width:100%;min-width:0;border:0;outline:0;background:white}
+.search button{border-radius:0;background:#e8f1fc;color:#14385c}
 #map{position:absolute;inset:0}
 .leaflet-top.leaflet-left{top:12px}
 .leaflet-bottom.leaflet-right{bottom:5px}
@@ -56,8 +56,6 @@ dialog h2{font-size:18px;margin:0 0 24px}
 .pin-marker.selected{width:30px;height:30px;border-width:4px;outline:2px solid #172b49}
 .leaflet-div-icon{background:none;border:none}
 @media(max-width:630px){.topbar{padding:7px;gap:6px}
-.search input{padding:11px 7px}
-.search button{padding:3px 10px}
 .panel{right:8px}
 
 .pin-panel{bottom:12px}
@@ -73,7 +71,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 #fitPins{white-space:nowrap}
 @media(max-width:630px){
   .search{width:100%;height:43px;max-width:none;margin:0;min-width:0}
-  .search input{padding:9px 11px;min-width:0}
+  .search input{min-width:0}
   .search-results{max-height:42dvh}
   .panel{max-height:calc(100dvh - 125px)}
   .pin-panel{left:0;right:0;bottom:0;transform:none;width:100%;border-radius:18px 18px 0 0;padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));max-height:calc(100dvh - 172px);overflow-y:auto}
@@ -96,8 +94,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   gap:7px;width:100%;min-width:0
 }
 .topbar .search{display:flex;flex:1 1 auto;width:auto;min-width:0;max-width:none;height:38px;margin:0;border-radius:9px}
-.topbar .search input{width:0;flex:1 1 auto;min-width:0;padding:7px 10px;line-height:22px}
-.topbar .search button{padding:0;line-height:38px}
+.topbar .search input{width:0;flex:1 1 auto;min-width:0;line-height:22px}
+.topbar .search button{line-height:38px}
 /* Three circular Leaflet zoom buttons, including the fit-all action. */
 .pin-zoom-buttons{
   border:0!important;box-shadow:none!important;background:transparent!important;
@@ -119,7 +117,6 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
     padding:calc(4px + env(safe-area-inset-top,0px)) 6px 4px;gap:5px
   }
   .topbar .search{height:38px;min-width:0;border-radius:8px}
-  .topbar .search input{padding:7px 9px}
   .leaflet-top.leaflet-left{top:8px;left:6px}
   .pin-zoom-button{width:40px;height:40px;font-size:25px!important}
 }
