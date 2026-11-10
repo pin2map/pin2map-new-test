@@ -41,7 +41,8 @@ function scenario({online=true,activate=true,stuck=false,saveFails=false,expecte
       serviceWorker:{
         async register(path,options){
           calls.push("register");
-          assert.equal(path,"./sw.js");
+          assert.match(path,/^https:\/\/example\.test\/preview\/sw\.js\?__p2m_release=pin2map-preview-v46$/);
+          assert.equal(options.scope,"./");
           assert.equal(options.updateViaCache,"none");
           return registration;
         },
