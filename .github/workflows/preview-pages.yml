@@ -104,13 +104,13 @@ jobs:
                         "<title>pin2map NEW · Entwicklungsvorschau</title>")
           import re
           sw = (preview / "sw.js").read_text(encoding="utf-8")
-          version = re.search(r"const CACHE='(pin2map-preview-v\\d+)'", sw)
+          version = re.search(r"const CACHE='(pin2map-preview-v\d+)'", sw)
           if not version:
               raise RuntimeError("Missing preview release version")
           html = preview / "index.html"
           html.write_text(html.read_text(encoding="utf-8").replace(
               "</head>", '<meta name="pin2map-preview-version" content="' +
-              version.group(1) + '">\\n</head>'), encoding="utf-8")
+              version.group(1) + '">\n</head>'), encoding="utf-8")
           PY
 
       - name: Check preview isolation and unchanged stable entrypoint
