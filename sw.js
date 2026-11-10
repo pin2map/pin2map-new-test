@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v51';
+const CACHE='pin2map-new-v52';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -40,6 +40,14 @@ const LEAFLET=[
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 ];
+/* GitHub Pages and upstream caches may hold the unqualified /preview/
+   URL longer than the new deployment. The release tag is an app-shell
+   cache key, never appended to map tiles or third-party URLs. */
+const releaseURL=input=>{
+  const url=new URL(input,self.registration.scope);
+  if(url.origin===self.location.origin)url.searchParams.set('__p2m_release',CACHE);
+  return url.href;
+};
 const isOsmTile=url=>url.protocol==='https:' &&
   url.hostname==='tile.openstreetmap.org' &&
   /^\/\d+\/\d+\/\d+\.png$/.test(url.pathname);
@@ -123,7 +131,7 @@ self.addEventListener('install',event=>{
         const {url,leaflet}=assets[next++];
         const request=leaflet
           ?new Request(url,{mode:'cors',cache:'reload'})
-          :new Request(url,{cache:'no-store'});
+          :new Request(releaseURL(url),{cache:'no-store'});
         const response=await fetch(request);
         if(!response.ok)throw Error('Offline app asset failed: '+url);
         await cache.put(url,response);
@@ -191,7 +199,9 @@ self.addEventListener('fetch',event=>{
     const cache=await caches.open(CACHE);
     const canonical=new URL(url.pathname,self.location.origin);
     try{
-      const response=await fetch(new Request(request,{cache:'no-store'}));
+      // Force a fresh release-specific URL online, but retain the canonical
+      // offline fallback for installed PWAs and plain /preview/ visits.
+      const response=await fetch(new Request(releaseURL(request.url),request),{cache:'no-store'});
       if(!response.ok)throw Error('HTTP '+response.status);
       try{await cache.put(canonical.href,response.clone());}catch(e){}
       return response;
