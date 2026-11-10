@@ -1,19 +1,26 @@
 "use strict";
-/* Search submit button dimensions are defined by the same shared 42px
- * map-control contract as the other circular map buttons. */
+/* Nested search action is intentionally smaller than standalone map controls:
+ * a documented sizing exception, not a new trailing !important override.
+ */
 const test=require("node:test");
 const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
 const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
-test("search control owns no competing fixed flex-basis or height",()=>{
-  const rules=[...css.matchAll(/(?:^|\n)\s*(?:\.search button|\.topbar \.search button)\{([^{}]*)\}/g)].map(m=>m[1]);
-  assert.ok(rules.length>=2,"Search button rules missing");
-  for(const rule of rules){
-    assert.doesNotMatch(rule,/(?:^|;)\s*(?:flex|flex-basis|height)\s*:/,
-      "Search button sizing must use the shared control contract");
-  }
-  assert.match(css,/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\{[\s\S]*?width:var\(--p2m-map-circle-size\)!important;[\s\S]*?height:var\(--p2m-map-circle-size\)!important;[\s\S]*?flex:0 0 var\(--p2m-map-circle-size\)!important;/);
+test("search button has exactly one 36px sizing owner distinct from map controls",()=>{
+  const clean=css.replace(/\/\*[\s\S]*?\*\//g,"");
+  assert.equal((clean.match(/--p2m-search-button-size\s*:/g)||[]).length,1);
+  assert.match(clean,/:root\{--p2m-search-button-size:36px\}/);
+  assert.match(clean,/#app #searchButton\.p2m-icon-control\{\s*--p2m-button-size:var\(--p2m-search-button-size\);\s*flex:0 0 var\(--p2m-search-button-size\);\s*\}/);
+  assert.doesNotMatch(clean,/#app button:is\([^)]*#searchButton/);
+  assert.match(clean,/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),/);
   assert.match(html,/id="searchButton"/);
+});
+test("no older fixed search submit dimensions remain",()=>{
+  const rules=[...css.matchAll(/(?:^|\n)\s*(?:\.search button|\.topbar \.search button)\{([^{}]*)\}/g)].map(m=>m[1]);
+  assert.ok(rules.length>=2);
+  for(const rule of rules){
+    assert.doesNotMatch(rule,/(?:^|;)\s*(?:flex|flex-basis|height)\s*:/);
+  }
 });
