@@ -78,26 +78,29 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
     "Relocation button must have no visible text, even before SVG mounting");
 });
 
+
 test("pin dialog name replaces heading and red delete button uses official white Lucide icon",()=>{
   const html=read("index.html"),css=read("styles.css");
   const pinSection=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
   assert.ok(pinSection);
   assert.ok(!pinSection.includes("<h2>Pin bearbeiten</h2>"));
-  assert.match(pinSection,/<div class="panel-head pin-editor-head"><button id="deletePin"[^>]*data-pin-icon="map-pin-off"[^>]*aria-label="Pin löschen"><\/button><label[^>]*for="pinName"/,
-    "Small red delete icon comes BEFORE the name input");
+  assert.match(pinSection,/<div class="panel-head pin-editor-head"><button id="deletePin"[^>]*data-pin-icon="map-pin-off"[^>]*aria-label="Pin löschen"><\/button><label[^>]*for="pinName"/);
   assert.match(pinSection,/<input id="pinName"[^>]*aria-label="Pin-Name"/);
-  assert.match(pinSection,/<div class="pin-actions">[\s\S]*?<button id="closePin"[^>]*data-close="pinPanel"[^>]*>OK<\/button><\/div>/,
-    "Bottom-right OK closes pin dialog; it does not perform deletion");
+  assert.match(pinSection,/<div class="pin-actions">[\s\S]*?<button id="closePin"[^>]*data-close="pinPanel"[^>]*>OK<\/button><\/div>/);
   assert.equal((pinSection.match(/id="deletePin"/g)||[]).length,1);
   assert.match(css,/\.pin-panel\{--p2m-pin-dialog-action-size:32px\}/);
+  const shared=css.match(/#pinPanel button:is\(#movePin,#deletePin,#closePin,#showPinLayer\)\{([^}]+)\}/)?.[1]||"";
+  for(const property of ["width","height","min-width","min-height","max-width","max-height"]){
+    assert.ok(shared.includes(property+":var(--p2m-pin-dialog-action-size)!important"),property);
+  }
+  assert.ok(shared.includes("flex:0 0 var(--p2m-pin-dialog-action-size)!important"));
   const deleteStyles=css.match(/\.pin-panel \.pin-editor-head #deletePin\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
   const okStyles=css.match(/\.pin-panel \.pin-actions #closePin\.pin-ok-button\s*\{([^}]+)\}/)?.[1]||"";
-  for(const styles of [deleteStyles,okStyles]){
-    assert.ok(styles.includes("width:var(--p2m-pin-dialog-action-size)!important"));
-    assert.ok(styles.includes("height:var(--p2m-pin-dialog-action-size)!important"));
-    assert.ok(styles.includes("flex:0 0 var(--p2m-pin-dialog-action-size)!important"));
-  }
+  assert.match(deleteStyles,/background:#bc2837!important;color:#fff!important/);
   assert.match(okStyles,/background:#c9eecb!important/);
+  for(const styles of [deleteStyles,okStyles]){
+    assert.ok(!/(?:^|;)\s*(?:width|height|flex)\s*:/.test(styles),"Button-specific sizes must stay removed");
+  }
   assert.match(css,/\.pin-panel \.pin-editor-head #pinName\s*\{/);
   const icon=Icons.svg("map-pin-off",documentStub());
   assert.equal(icon.children.length,5);
@@ -121,96 +124,103 @@ test("all four pin-dialog buttons use one shared 32px size token",()=>{
   assert.ok(css.includes("#pinPanel #movePin .p2m-relocate-icon{width:28px!important;height:19px!important}"));
 });
 
+
 test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
   const header=html.match(/<header class="topbar">([\s\S]*?)<\/header>/)?.[1]||"";
-  assert.ok(!header.includes('id="refreshButton"'),"Refresh must not be inside search header");
-  const map=html.indexOf('<main id="map"');
-  const button=html.indexOf('id="refreshButton"');
-  assert.ok(button>map,"Refresh button must be a separate map overlay");
+  assert.ok(!header.includes('id="refreshButton"'));
+  assert.ok(html.indexOf('id="refreshButton"')>html.indexOf('<main id="map"'));
   assert.match(html,/<button id="refreshButton"[^>]*data-pin-icon="refresh-cw"[^>]*class="refresh-map-button"/);
   const styles=css.match(/#refreshButton\.refresh-map-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(styles.includes("position:fixed!important"));
   assert.ok(styles.includes("left:12px!important"));
   assert.ok(styles.includes("top:35dvh!important"));
-  assert.ok(styles.includes("border-radius:50%!important"));
-  assert.ok(styles.includes("width:42px!important;height:42px!important"));
+  assert.ok(styles.includes("background:#fff!important"));
+  assert.ok(!/(?:^|;)\s*(?:width|height|border-radius)\s*:/.test(styles),"Refresh dimensions are shared");
+  const owner=css.match(/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\{([^}]+)\}/)?.[1]||"";
+  assert.ok(owner.includes("width:var(--p2m-map-circle-size)!important"));
+  assert.ok(owner.includes("height:var(--p2m-map-circle-size)!important"));
+  assert.ok(owner.includes("border-radius:50%!important"));
   assert.ok(css.includes("body.pin-open #refreshButton.refresh-map-button{display:none!important}"));
-  assert.ok(app.includes('$(\"refreshButton\").addEventListener("click"'),
-    "Existing service-worker update handler must remain unchanged");
+  assert.ok(app.includes('$("refreshButton").addEventListener("click"'));
 });
 
-test("info control is left of centered Layers with matching bottom alignment",()=>{
+
+test("Layers occupies the upper-right corner while Info stays above the lower-right map picker",()=>{
   const html=read("index.html"),css=read("styles.css");
-  for(const id of ["layersButton","labelsToggle"]){
+  for(const id of ["layersButton","labelsToggle","basemapButton"]){
     assert.ok(html.includes('id="'+id+'"'));
   }
-  const rule=css.match(/#app #labelsToggle\.labels-toggle\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(rule.includes("left:calc(50% - var(--p2m-map-circle-size) / 2 - 8px - var(--p2m-map-circle-size))!important"));
-  assert.ok(rule.includes("bottom:calc(10px + env(safe-area-inset-bottom,0px))!important"));
   const layers=css.match(/#app #layersButton\.layers-bottom-button\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(layers.includes("left:50%!important"));
-  assert.ok(layers.includes("transform:translateX(-50%)!important"));
+  assert.ok(layers.includes("left:auto!important"));
+  assert.ok(layers.includes("right:var(--p2m-top-corner-inset)!important"));
+  const info=css.match(/#app #labelsToggle\.labels-toggle\s*\{([^}]+)\}/)?.[1]||"";
+  assert.ok(info.includes("left:auto!important"));
+  assert.ok(info.includes("right:var(--p2m-top-corner-inset)!important"));
+  assert.ok(info.includes("bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important"));
+  assert.ok(css.includes("#app #basemapButton.basemap-map-button.p2m-icon-control"));
+  assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
   assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton)"));
 });
-test("every free map and header circular button uses one 42px diameter",()=>{
+
+
+test("standalone map controls share 42px; search ring and editor actions stay separate",()=>{
   const css=read("styles.css");
-  const rule=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(css.includes(":root{--p2m-map-circle-size:42px}"));
+  const rule=css.match(/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
+  assert.match(css,/--p2m-map-circle-size:42px/);
   for(const prop of ["width","height","min-width","min-height","max-width","max-height"]){
-    assert.ok(rule.includes(prop+":var(--p2m-map-circle-size)!important"),prop+" should use shared size");
+    assert.ok(rule.includes(prop+":var(--p2m-map-circle-size)!important"),prop);
   }
   assert.ok(rule.includes("border-radius:50%!important"));
   assert.ok(css.includes("#app .topbar{\n  height:52px!important"));
-  assert.ok(css.includes("bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"),"Both bottom buttons align in mobile mode");
-  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"),"Editor buttons keep their separate size");
+  assert.ok(!rule.includes("#searchButton"),"Search action must not inherit the map size contract");
+  assert.match(css,/--p2m-search-tap-size:42px/);
+  assert.match(css,/--p2m-search-ring-size:30px/);
+  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"));
 });
 
-test("three equal-size zoom controls are docked bottom-left without touching dialog controls",()=>{
+
+test("three equal-size zoom controls dock bottom-left above attribution",()=>{
   const css=read("styles.css"),map=read("map-adapter-leaflet.js");
-  assert.ok(map.includes('L.control({position:"bottomleft"})'),
-    "Zoom controls must be a bottom-left Leaflet control");
-  assert.ok(!map.includes('L.control({position:"topleft"})'),
-    "Obsolete top-left placement must be absent");
+  assert.ok(map.includes('L.control({position:"bottomleft"})'));
+  assert.ok(!map.includes('L.control({position:"topleft"})'));
   assert.match(map,/add\("\+","Vergrößern"/);
   assert.match(map,/add\("−","Verkleinern"/);
   assert.match(map,/add\("◎","Alle sichtbaren Pins anzeigen"/);
   assert.ok(css.includes("#map .leaflet-bottom.leaflet-left .pin-zoom-buttons{"));
-  assert.ok(css.includes("margin:0 0 calc(10px + env(safe-area-inset-bottom,0px)) 10px!important"));
-  assert.ok(css.includes("margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"));
-  assert.ok(css.includes("#app button.pin-zoom-button.p2m-icon-control"),
-    "Zoom controls retain the shared 42px size token");
+  assert.ok(css.includes("margin:0 0 0 10px!important"));
+  assert.ok(css.includes("margin-bottom:var(--p2m-bottom-control-baseline)!important"));
+  assert.ok(css.includes("--p2m-bottom-control-baseline:max("));
+  assert.ok(css.includes("#app button.pin-zoom-button.p2m-icon-control"));
 });
 
-test("settings moved out of search block, map picker lives bottom right with street last",()=>{
+
+test("settings and Layers flank search above while map picker stays bottom-right",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
   const head=html.match(/<header class="topbar">([\s\S]*?)<\/header>/)?.[1]||"";
   const settings=html.match(/<button id="settingsButton"[^>]*>/)?.[0]||"";
   assert.ok(settings.includes('class="settings-map-button"'));
-  assert.ok(!head.includes('id="settingsButton"'),"Gear cannot remain inside the search capsule");
+  assert.ok(!head.includes('id="settingsButton"'));
   assert.ok(html.indexOf('id="settingsButton"')>html.indexOf('<main id="map"'));
   assert.ok(css.includes("#app #settingsButton.settings-map-button.p2m-icon-control"));
-  assert.ok(css.includes("top:calc(12px + env(safe-area-inset-top,0px))!important"));
-  assert.ok(css.includes("left:60px!important;right:8px!important;transform:none!important"),
-    "Mobile search must not overlap Settings");
+  assert.ok(css.includes("top:calc(var(--p2m-top-corner-offset) + env(safe-area-inset-top,0px))!important"));
+  assert.ok(css.includes("left:var(--p2m-top-search-clearance)!important"));
+  assert.ok(css.includes("right:var(--p2m-top-search-clearance)!important"));
   const menu=html.match(/<section id="basemapMenu"[\s\S]*?<\/section>/)?.[0]||"";
   assert.ok(menu.includes(">Darstellung</div>"));
-  assert.ok(menu.indexOf('data-basemap="topo"')<menu.indexOf('data-basemap="street"'),
-    "Street map must be final item");
+  assert.ok(menu.indexOf('data-basemap="topo"')<menu.indexOf('data-basemap="street"'));
   assert.ok(html.includes('id="basemapButton" data-pin-icon="map"'));
   const settingsPanel=html.match(/<aside id="settingsPanel"[\s\S]*?<\/aside>/)?.[0]||"";
-  assert.ok(!settingsPanel.includes("Kartendarstellung"),"Map picker removed from Settings");
-  assert.ok(!html.includes('id="basemapSelect"'),"Obsolete map dropdown removed");
+  assert.ok(!settingsPanel.includes("Kartendarstellung"));
+  assert.ok(!html.includes('id="basemapSelect"'));
   assert.ok(css.includes("#app #basemapButton.basemap-map-button.p2m-icon-control"));
-  assert.ok(css.includes("bottom:calc(10px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
   assert.ok(css.includes("#app #basemapMenu.basemap-menu"));
   assert.ok(app.includes('document.querySelectorAll("#basemapMenu [data-basemap]")'));
-  assert.ok(app.includes("state.basemap=value;setTileLayer();save()"),
-    "Basemap selections must still persist through existing state");
-  assert.ok(app.includes('event.key==="Escape"'),"Escape closes map picker");
-  assert.ok(css.includes("body.pin-open #app #basemapMenu"),
-    "Map menu must be hidden while editing a pin");
-  const common=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),[\s\S]*?\}/)?.[0]||"";
+  assert.ok(app.includes("state.basemap=value;setTileLayer();save()"));
+  assert.ok(app.includes('event.key==="Escape"'));
+  assert.ok(css.includes("body.pin-open #app #basemapMenu"));
+  const common=css.match(/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),[\s\S]*?\}/)?.[0]||"";
   assert.ok(common.includes("width:var(--p2m-map-circle-size)!important"));
 });
 
