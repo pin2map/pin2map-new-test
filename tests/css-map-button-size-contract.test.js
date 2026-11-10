@@ -4,8 +4,8 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const css=fs.readFileSync(path.join(__dirname,"..","styles.css"),"utf8");
-test("map buttons share exactly one authoritative 42px size contract",()=>{
-  assert.match(css,/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\{\s*--p2m-button-size:var\(--p2m-map-circle-size\)!important;/);
+test("standalone map buttons share exactly one authoritative 42px size contract",()=>{
+  assert.match(css,/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\{\s*--p2m-button-size:var\(--p2m-map-circle-size\)!important;/);
   assert.match(css,/:is\(#app > button, #app #map \.leaflet-control button\)\{\s*--p2m-button-size:var\(--p2m-map-circle-size\)!important;/);
   assert.equal((css.match(/--p2m-map-circle-size:42px/g)||[]).length,1);
   for(const stale of [
