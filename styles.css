@@ -901,22 +901,40 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
     -webkit-backdrop-filter:none!important;
     background:#fff!important;
   }
-  /* Align all lower map buttons with the iPhone home-indicator safe area,
-     7px below their previous 9px baseline. */
+  /* Keep lower controls above the centered Leaflet/OSM attribution.
+     Also respect the home-indicator safe area in standalone mode. */
   #app #layersButton.layers-bottom-button,
   #app #labelsToggle.labels-toggle,
   #app #basemapButton.basemap-map-button.p2m-icon-control{
-    bottom:calc(2px + env(safe-area-inset-bottom,0px))!important;
+    bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important;
   }
   #map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
-    margin-bottom:calc(2px + env(safe-area-inset-bottom,0px))!important;
+    margin-bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important;
   }
   #app #basemapMenu.basemap-menu{
-    bottom:calc(52px + env(safe-area-inset-bottom,0px))!important;
+    bottom:calc(var(--p2m-bottom-control-clearance) + 50px + env(safe-area-inset-bottom,0px))!important;
   }
   /* Attribution is a legal credit, not an interactive map button.
      It sits flush against the actual lower screen edge, centered. */
   #map .leaflet-bottom.leaflet-right{
     bottom:0!important;
   }
+}
+
+/* BOTTOM ROW CLEARANCE CONTRACT (2026-11-10)
+   Leaflet/OSM credits remain flush at the bottom, while all bottom
+   circular map controls share one baseline ABOVE the credit's text.
+   Applied in Safari tabs, standalone PWAs, iPads and desktop alike.
+   Future bottom controls should use this same clearance token. */
+:root{--p2m-bottom-control-clearance:24px}
+#app #layersButton.layers-bottom-button,
+#app #labelsToggle.labels-toggle,
+#app #basemapButton.basemap-map-button.p2m-icon-control{
+  bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important;
+}
+#map .leaflet-bottom.leaflet-left .pin-zoom-buttons{
+  margin-bottom:calc(var(--p2m-bottom-control-clearance) + env(safe-area-inset-bottom,0px))!important;
+}
+#app #basemapMenu.basemap-menu{
+  bottom:calc(var(--p2m-bottom-control-clearance) + 50px + env(safe-area-inset-bottom,0px))!important;
 }
