@@ -266,3 +266,12 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren,
 **Manuelle Sicht- und Bedienabnahme:** Beide geprüften Pin-Dialog-Aktionen entsprechen nach der Größenregel-Bereinigung in v68 weiterhin dem bisherigen, freigegebenen Zustand. Für diesen einzelnen iPhone-Test ist keine erneute Nutzerprüfung erforderlich.
 
 **Weiterhin offen:** Die Rückmeldung belegt nicht die tatsächlich aktive PWA-/Service-Worker-Version auf dem Gerät, einen erfolgreichen GitHub-Actions-Lauf, die exakte HTTPS-Auslieferung von v68 oder eine aktuelle Desktop-/iPad-Regression. Diese Nachweise bleiben vor einer umfassenden technischen CSS-Freigabe zu erbringen.
+
+## Inkrement B10 – gemeinsame Größen für Pin-Verschieben und Refresh (v69)
+
+- Die veralteten individuellen Größenregeln für `#movePin` einschließlich des alten 44px-Mobil-Overrides wurden entfernt. Größe und Form bleiben über `#pinPanel button:is(#movePin,#deletePin,#closePin,#showPinLayer)` und die gemeinsame **32px-Pin-Aktionsvariable** definiert; die Gestaltung mit weißem Hintergrund bleibt unverändert.
+- Die individuellen Größen-, Ausrichtungs- und Form-Overrides des Refresh-Buttons wurden entfernt. Größe und runde Form werden durch den bestehenden **42px-Kartensteuerungsvertrag** festgelegt. Eigene Position (`top:35dvh` mit Prozent-Fallback) und Z-Reihenfolge bleiben erhalten.
+- Wichtige visuelle Ausnahme: Weißer Refresh-Hintergrund, Rahmenfarbe, Schriftfarbe und Schatten wurden **ausdrücklich erhalten**, damit der Refresh-Button bei Verwendung des allgemeinen Kartensteuerungsvertrags keine abweichende Oberfläche erhält.
+- Die Zahl der `!important`-Deklarationen sank von **340 auf 319** (Ausgangsstand 402). Der Budgettest ist auf 319 verschärft; neuer Regressionstest: `tests/css-map-and-move-button-ownership.test.js`.
+- GitHub-Quellstand: **v69** (`pin2map-new-v69`). Gezielt geprüfte CSS-Quelltextbedingungen stimmen; vollständiger Node-Testlauf und verifizierter öffentlicher Preview-Deploy/Browsertest wurden dadurch **nicht** nachgewiesen.
+- **Abnahme offen:** Die tatsächliche iPhone-Darstellung von Pin-Verschieben und Refresh sowie die Desktop-/iPad-Regressionsprüfung für v69. Keine Änderung der Pin-Daten oder Anwendungslogik.
