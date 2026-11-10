@@ -26,6 +26,45 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        // Verify actual rendered mobile layout, not just CSS source rules.
+        const geometry=await page.evaluate(()=>{
+          const rect=id=>{
+            const node=document.getElementById(id);
+            const box=node.getBoundingClientRect();
+            return {x:box.x,y:box.y,right:box.right,bottom:box.bottom,
+                    width:box.width,height:box.height};
+          };
+          return {
+            settings:rect("settingsButton"),layers:rect("layersButton"),
+            search:rect("searchForm"),info:rect("labelsToggle"),
+            basemap:rect("basemapButton")
+          };
+        });
+        assert.ok(Math.abs(geometry.settings.y-geometry.layers.y)<=2,
+          "Settings and Layers must share the top baseline: "+JSON.stringify(geometry));
+        assert.ok(geometry.settings.right<=geometry.search.x+2,
+          "Search must not overlap Settings: "+JSON.stringify(geometry));
+        assert.ok(geometry.search.right<=geometry.layers.x+2,
+          "Search must not overlap Layers: "+JSON.stringify(geometry));
+        assert.ok(Math.abs(geometry.info.x-geometry.basemap.x)<=2,
+          "Info and Map must be stacked at the same right position");
+        assert.ok(geometry.info.bottom<=geometry.basemap.y-4,
+          "Info must sit above Map, without overlap");
+        await page.locator("#layersButton").click();
+        await assert.equal(await page.locator("#layersPanel").isVisible(),true);
+        const panelPosition=await page.evaluate(()=>{
+          const panel=document.getElementById("layersPanel").getBoundingClientRect();
+          const button=document.getElementById("layersButton").getBoundingClientRect();
+          return {panelY:panel.y,buttonBottom:button.bottom,
+                  panelRight:panel.right,buttonRight:button.right};
+        });
+        assert.ok(panelPosition.panelY>=panelPosition.buttonBottom,
+          "Layers panel must open below its trigger");
+        assert.ok(Math.abs(panelPosition.panelRight-panelPosition.buttonRight)<=2,
+          "Layers panel must align to the trigger's right edge");
+        await page.locator("#layersButton").click();
+        assert.equal(await page.locator("#layersPanel").isVisible(),false);
+
         const sw=await page.evaluate(async()=>{
           const registration=await navigator.serviceWorker.ready;
           return !!registration.active;
