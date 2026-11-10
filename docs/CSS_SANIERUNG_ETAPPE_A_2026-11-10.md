@@ -129,3 +129,11 @@ Der Auftraggeber hat die Entwicklungsvorschau auf einem iPhone in Safari nach de
 Der Preview-Workflow prüft jetzt zusätzlich zu Content-Type und Markern den **SHA-256-Inhaltsvergleich** zwischen der tatsächlich über HTTPS ausgelieferten `/preview/styles.css` und der Datei `preview-source/styles.css` des laufenden Builds. Ein alter CSS-Stand mit demselben allgemeinen Textmarker kann damit nicht mehr fälschlich als aktuelle Veröffentlichung durchgehen. Die Browser-Smoke-Tests folgen erst nach diesem Prüfschritt.
 
 **Status:** Workflowänderung im Entwicklungszweig gespeichert. Ob GitHub Actions diesen konkreten Lauf erfolgreich ausgeführt hat und v60 veröffentlicht ist, bleibt gesondert nachzuweisen; der Quellcode-Nachweis ersetzt nicht die Live-Prüfung. Die Bildschirmanordnung wurde durch diese Workflowänderung nicht verändert.
+
+## CSS-Schuldenbudget als CI-Schutz (2026-11-10)
+
+Für die vorläufige Monolith-CSS-Datei existiert jetzt `tests/css-debt-budget.test.js` als zusätzlicher automatischer Wächter. Er erlaubt **höchstens 382 aktive `!important`-Vorkommen** (gemessener v60-Stand gegenüber 402 zu Beginn) und schützt vor der Wiederaufnahme der entfernten unten-mittigen Ebenenpositionierung. Der Test liegt unter `tests/*.test.js` und wird dadurch von der vorhandenen Node-Testsuite im CI-Workflow erfasst.
+
+**Anwendungsregel:** Bei weiteren Aufräumarbeiten den Grenzwert nach bestätigter Reduktion senken; nicht bloß erhöhen, um neue CSS-Overrides zu ermöglichen. Der Grenzwert ist eine **Übergangskontrolle**, kein langfristiger Qualitätsmaßstab und kein Ersatz für AST-/Ownership-Prüfungen oder die visuelle Browserabnahme.
+
+**Prüfstand:** Die Quelltexte wurden gegen die beiden Testinvarianten geprüft (382, alte Positionsblöcke entfernt). Ein tatsächlich erfolgreicher Node-/CI-Lauf und die live ausgelieferte Preview-Version sind mit dem aktuellen Zugang weiterhin nicht nachgewiesen. Die Darstellung selbst wurde in diesem Schritt nicht geändert.
