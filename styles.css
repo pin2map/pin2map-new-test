@@ -776,6 +776,11 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   font-weight:700;
 }
 @media(max-width:630px){
+  /* Reserve room beside the search capsule for the standalone gear. */
+  #app .topbar{
+    left:60px!important;right:8px!important;transform:none!important;
+    width:calc(100% - 68px)!important;max-width:none!important;
+  }
   #app #settingsButton.settings-map-button.p2m-icon-control{
     left:10px!important;top:calc(10px + env(safe-area-inset-top,0px))!important;
   }
