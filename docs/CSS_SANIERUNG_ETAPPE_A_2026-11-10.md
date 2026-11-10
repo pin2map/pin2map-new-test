@@ -536,3 +536,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Der neue Test `tests/css-search-button-typography-ownership.test.js` kontrolliert, dass die obsolete Schriftgrößen-Kaskade nicht wieder auftaucht und die ausdrückliche Lucide-Größe erhalten bleibt.
 - Keine Änderung an der 30px-Sichtkreislinie, der 42px-Antippfläche, der Positionierung oder den übrigen Kartenbuttons. `!important` weiterhin **299** gegenüber ursprünglich 402. PWA-Quellrelease **v89**.
 - Die Änderungen sind Quelltextbereinigungen; Node-/GitHub-Actions-/Pages-Ergebnisse und die tatsächlich ausgelieferten v89-Assets sind davon unabhängig zu bestätigen. Keine zusätzliche manuelle iPhone-Prüfung erforderlich, da die geltenden Regeln unverändert bleiben.
+
+## Inkrement B28 – Padding-Zuständigkeit von Suchfeld und Suchbutton bereinigt (v90)
+
+- Die laufende CSS-Sanierung wurde nach v89 an den alten Suchfeld- und Suchbutton-Abständen fortgesetzt. Acht ältere `padding`-Angaben aus der Basisschicht und mehreren mobilen Layoutstufen entfernt: fünf für `.search input`/`.topbar .search input` sowie drei für `.search button`/`.topbar .search button`.
+- **Wirksame Eigentümer unverändert:** Das Sucheingabefeld verwendet weiterhin `.topbar .search input{font-size:16px!important;padding:5px 8px!important;...}`, der Suchbutton `.topbar .search button{padding:0!important;font-size:20px!important}`. Diese Regeln überschrieben die entfernten historischen Angaben bereits vor B28. Der gesonderte 30px-Sichtkreis, das 18px-Lupensymbol, die 42px-Antippfläche und die Ausrichtung von v87 bleiben unverändert.
+- Neuer Test `tests/css-search-padding-ownership.test.js` prüft, dass nur noch die jeweils maßgebliche Padding-Deklaration für Sucheingabefeld und Suchaktion übrig ist. Zusammen mit den bestehenden Suchleisten- und Typografietests wurden **sechs gezielte Assertions** anhand der aktuellen Quelldateien erfolgreich ausgewertet.
+- `!important`-Stand weiterhin **299** (402 ursprünglich). Service-Worker-Quellrelease **v90**.
+- **Abgrenzung:** Die gezielte Quelltextprüfung ist kein vollständiger `node --test`-Lauf und keine unabhängige Bestätigung der GitHub-Actions-/Pages-Auslieferung. Aufgrund unveränderter geltender Layoutwerte ist keine neue manuelle iPhone-Abnahme nötig.
