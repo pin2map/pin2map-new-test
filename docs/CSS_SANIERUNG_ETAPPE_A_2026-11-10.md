@@ -137,3 +137,14 @@ Für die vorläufige Monolith-CSS-Datei existiert jetzt `tests/css-debt-budget.t
 **Anwendungsregel:** Bei weiteren Aufräumarbeiten den Grenzwert nach bestätigter Reduktion senken; nicht bloß erhöhen, um neue CSS-Overrides zu ermöglichen. Der Grenzwert ist eine **Übergangskontrolle**, kein langfristiger Qualitätsmaßstab und kein Ersatz für AST-/Ownership-Prüfungen oder die visuelle Browserabnahme.
 
 **Prüfstand:** Die Quelltexte wurden gegen die beiden Testinvarianten geprüft (382, alte Positionsblöcke entfernt). Ein tatsächlich erfolgreicher Node-/CI-Lauf und die live ausgelieferte Preview-Version sind mit dem aktuellen Zugang weiterhin nicht nachgewiesen. Die Darstellung selbst wurde in diesem Schritt nicht geändert.
+
+## Inkrement B2 – veraltetes zweizeiliges Header-Grid entfernt (2026-11-10)
+
+- Die frühere zweizeilige Rasteranordnung der Kopfzeile (Grid mit 35px/43px-Zeilen), die alten Rasterpositionen für Ebenen- und Einstellungsbutton sowie die zugehörigen Rücksetzdeklarationen in neueren Flex-Regeln sind gezielt aus \`styles.css\` entfernt.
+- Die Zahl der textuellen \`grid-column\`/\`grid-row\`/\`grid-template-*\`-Vorkommen in der CSS-Datei sank von 26 auf 6. Die Anzahl der \`!important\`-Deklarationen blieb bei 382.
+- Die heute maßgeblichen Regeln für die oben links/rechts stehenden Buttons und die Suchleiste dazwischen wurden **nicht** verändert.
+- Neu: \`tests/css-header-layout-contract.test.js\` schützt gegen die Rückkehr des Zweizeilen-Grids. Sechs Quelltextbedingungen wurden separat gegen die von GitHub gelesene Datei geprüft; das ist **keine** ausgeführte vollständige Node-/Browser-Testreihe.
+- Der Quellcode-Stand trägt nun die Service-Worker-Version **v61**; Push löst die Preview-Pipeline aus.
+- **Offen:** GitHub-Actions-Erfolg, Auslieferung der v61-Assets, Live-Browser-/PWA-Regression sowie optionaler iPhone-Abgleich. Der direkte HTTPS-Abruf schlug in dieser Arbeitsumgebung an gesperrtem Webzugriff beziehungsweise fehlender DNS-Auflösung fehl. Diese Einschränkung beweist **keinen** Fehler der veröffentlichten Anwendung.
+
+**Gate:** Die vorherige iPhone-Nutzerabnahme gilt als visuelles Soll, nicht als automatische Abnahme von v61. Weitere eingreifende CSS-Umstrukturierung erst nach gesichertem Live-Stand.
