@@ -3,7 +3,7 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 const {refresh,parseVersion}=require("../ui/pwa-refresh.js");
 
-function scenario({online=true,activate=true,saveFails=false,expected="pin2map-preview-v46"}={}){
+function scenario({online=true,activate=true,stuck=false,saveFails=false,expected="pin2map-preview-v46"}={}){
   const notices=[],calls=[],button={
     disabled:false,attrs:{},
     setAttribute(k,v){this.attrs[k]=v;},
@@ -60,7 +60,7 @@ function scenario({online=true,activate=true,saveFails=false,expected="pin2map-p
       return {ok:true,text:async()=>`const CACHE='${expected}';`};
     }
   };
-  if(!activate){
+  if(!activate&&!stuck){
     registration.update=async()=>{
       calls.push("update");
       registration.active=active;
@@ -96,4 +96,15 @@ test("failed data save prevents any update",async()=>{
   assert.equal(await refresh({...v}),false);
   assert.deepEqual(v.calls,["save"]);
   assert.equal(v.button.attrs["aria-busy"],undefined);
+});
+
+test("failed worker activation never reloads or clears local project",async()=>{
+  const v=scenario({activate:false,stuck:true});
+  const result=await refresh({...v,timeoutMs:100});
+  assert.equal(result,false);
+  assert.ok(!v.calls.includes("replace"));
+  assert.deepEqual(v.calls,["save","fetch","register","update"]);
+  assert.equal(v.button.disabled,false);
+  assert.equal(v.notices.at(-1),
+    "Aktualisierung nicht abgeschlossen – Verbindung prüfen und erneut versuchen");
 });
