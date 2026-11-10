@@ -9,7 +9,7 @@ const path=require("node:path");
 const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
 const IMPORTANT_BUDGET=382; // v60: 402 original -> 382 after Layers cleanup
 test("legacy CSS important debt must not grow during controlled migration",()=>{
-  const count=(css.match(/!important\\b/g)||[]).length;
+  const count=(css.match(/!important\b/g)||[]).length;
   assert.ok(count<=IMPORTANT_BUDGET,
     "CSS !important debt grew to "+count+" from budget "+IMPORTANT_BUDGET+
     "; update the existing owning rule instead of appending overrides");
