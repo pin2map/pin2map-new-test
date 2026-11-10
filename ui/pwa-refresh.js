@@ -47,7 +47,13 @@
       showNotice("Aktualisierung wird geprüft …");
       const serviceWorker=env.navigator.serviceWorker;
       if(!serviceWorker)throw Error("Service Worker nicht verfügbar");
-      const registration=await serviceWorker.register("./sw.js",{updateViaCache:"none"});
+      // A new script URL forces the browser and the Pages CDN to distinguish
+      // this published release from a stale unqualified worker script.
+      const scriptURL=new URL("./sw.js",env.location.href);
+      scriptURL.searchParams.set("__p2m_release",expected);
+      const registration=await serviceWorker.register(scriptURL.href,{
+        scope:"./",updateViaCache:"none"
+      });
       await registration.update();
       // New worker precaches the entire shell. Installation may take
       // substantially longer than an ordinary browser request.
