@@ -938,3 +938,42 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   line-height:var(--p2m-bottom-attribution-height)!important;
   white-space:nowrap;
 }
+
+
+/* Control relocation: info stacked over the bottom-right map selector;
+   layers in the top-right map corner, below the floating search capsule.
+   Other controls keep the shared bottom safe-area baseline. */
+#app #labelsToggle.labels-toggle{
+  left:auto!important;
+  right:12px!important;
+  top:auto!important;
+  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important;
+  transform:none!important;
+}
+#app #layersButton.layers-bottom-button{
+  left:auto!important;
+  right:12px!important;
+  top:calc(66px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  transform:none!important;
+}
+#app #layersPanel{
+  left:auto!important;
+  right:12px!important;
+  top:calc(116px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  transform:none!important;
+  max-height:min(65dvh,calc(100dvh - 128px - env(safe-area-inset-top,0px)))!important;
+}
+@media(max-width:630px){
+  #app #labelsToggle.labels-toggle{right:10px!important}
+  #app #layersButton.layers-bottom-button{
+    right:10px!important;
+    top:calc(62px + env(safe-area-inset-top,0px))!important;
+  }
+  #app #layersPanel{
+    right:10px!important;
+    top:calc(112px + env(safe-area-inset-top,0px))!important;
+    max-height:calc(100dvh - 124px - env(safe-area-inset-top,0px))!important;
+  }
+}
