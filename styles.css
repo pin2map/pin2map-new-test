@@ -659,3 +659,21 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* Pin editing hides map controls, including refresh, without disabling
    refresh elsewhere. More specific than the base refresh display rule. */
 body.pin-open #refreshButton.refresh-map-button{display:none!important}
+
+
+/* Position the information/label toggle immediately to the RIGHT of the
+   bottom-center Layers control. Both share the same bottom edge (including
+   device safe-area inset); position is relative to the Layers button itself. */
+#labelsToggle.labels-toggle.p2m-icon-control{
+  position:absolute!important;
+  left:calc(50% + 23px + 8px)!important;
+  right:auto!important;top:auto!important;
+  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  transform:none!important;
+}
+@media(max-width:630px){
+  #labelsToggle.labels-toggle.p2m-icon-control{
+    left:calc(50% + 22px + 8px)!important;
+    bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
+  }
+}
