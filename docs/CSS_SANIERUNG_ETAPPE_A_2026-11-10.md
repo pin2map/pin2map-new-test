@@ -544,3 +544,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Test `tests/css-search-padding-ownership.test.js` prüft, dass nur noch die jeweils maßgebliche Padding-Deklaration für Sucheingabefeld und Suchaktion übrig ist. Zusammen mit den bestehenden Suchleisten- und Typografietests wurden **sechs gezielte Assertions** anhand der aktuellen Quelldateien erfolgreich ausgewertet.
 - `!important`-Stand weiterhin **299** (402 ursprünglich). Service-Worker-Quellrelease **v90**.
 - **Abgrenzung:** Die gezielte Quelltextprüfung ist kein vollständiger `node --test`-Lauf und keine unabhängige Bestätigung der GitHub-Actions-/Pages-Auslieferung. Aufgrund unveränderter geltender Layoutwerte ist keine neue manuelle iPhone-Abnahme nötig.
+
+## Inkrement B29 – Suchkapsel-Höhe und Rundung haben eindeutige Eigentümer (v91)
+
+- Auf Grundlage von v90 wurden sieben veraltete Angaben aus früheren Suchleisten-Layoutstufen entfernt: **drei Höhenangaben** (43px in der mobilen `.search`-Grundregel und zweimal 38px in den späteren `.topbar .search`-Regeln) sowie **vier Rundungsangaben** (10px, 9px, 8px und nochmals 9px).
+- **Wirksame Werte bleiben gleich:** `#app .topbar .search{height:42px!important}` für die Höhe und `.topbar .search{...border-radius:999px!important;overflow:hidden}` für die abgerundete Suchkapsel. Die Kapsel selbst, die 30px-Suchringlinie, das 18px-Lupensymbol und die 42px-Antippfläche aus v87 wurden nicht geändert.
+- Neuer Vertragstest `tests/css-search-capsule-geometry-ownership.test.js` stellt sicher, dass für die Suchkapsel keine historischen Höhen oder Radien mehr konkurrieren. Zusammen mit dem bestehenden Kapseltest bestanden **vier gezielte Assertions** gegen die aktuelle GitHub-Quelle.
+- Stand unverändert **299 `!important`** (ursprünglich 402), weil nur normal priorisierte überholte Deklarationen entfielen. Service-Worker-Quellrelease **v91**.
+- **Offene Prüfungen:** Vollständiger Node-22-Testlauf und GitHub-Actions-/Pages-Ergebnis sowie die tatsächlich ausgelieferte Version wurden hier nicht unabhängig nachgewiesen. Da die geltenden Layoutwerte unverändert bleiben, ist für diese reine Altregelbereinigung kein zusätzlicher Nutzertest erforderlich.
