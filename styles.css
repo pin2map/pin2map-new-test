@@ -629,11 +629,15 @@ body.pin-relocation-picking #map .leaflet-interactive{
 body.pin-open #refreshButton.refresh-map-button{display:none!important}
 
 
-/* Search submit button is nested in the search capsule, unlike the
-   standalone 42px map buttons. Its diameter is intentionally smaller. */
-:root{--p2m-search-button-size:36px}
+/* The search action belongs to the 42px-high input, not the 42px
+   standalone map controls. Own circle and glyph sizing in one component. */
+:root{
+  --p2m-search-button-size:32px;
+  --p2m-search-icon-size:18px;
+}
 #app #searchButton.p2m-icon-control{
   --p2m-button-size:var(--p2m-search-button-size);
+  --p2m-icon-size:var(--p2m-search-icon-size);
   flex:0 0 var(--p2m-search-button-size);
 }
 /* Unified diameter for circular map controls. The shared size token is
