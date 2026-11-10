@@ -92,10 +92,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 
 
 /* 2026-11 mobile usability correction: one compact header row, no branding. */
-:root{--header-height:48px}
 .topbar{
   display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:stretch;
-  height:calc(var(--header-height) + env(safe-area-inset-top,0px));
   padding:calc(5px + env(safe-area-inset-top,0px)) 8px 5px;
   gap:7px;width:100%;min-width:0
 }
@@ -118,10 +116,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-zoom-button:last-child{font-size:25px!important}
 .pin-zoom-button:active{background:#e6f0ff!important}
 @media(max-width:630px){
-  :root{--header-height:46px}
   .topbar{
     display:flex;
-    height:calc(var(--header-height) + env(safe-area-inset-top,0px));
     padding:calc(4px + env(safe-area-inset-top,0px)) 6px 4px;gap:5px
   }
   .topbar .search{height:38px;min-width:0;border-radius:8px}
