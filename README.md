@@ -1,5 +1,8 @@
 # pin2map NEW – erste PWA-Testversion
 
+> **Aktueller Einstieg für pin2map NEW (2026-11-10):** [Projektwegweiser](docs/PROJEKTWEGWEISER.md) und [AGENTS.md](AGENTS.md) lesen. Die unten stehende Beschreibung einer „ersten PWA-Testversion“ dokumentiert einen historischen Entwicklungsstand. Aktive modulare Quelle ist feature/leaflet-modular-core; die unveränderte stabile App liegt unter /, die Entwicklungsvorschau unter /preview/. Für Änderungen gilt: **erst nach nachgewiesenen Tests, erfolgreicher Veröffentlichung und Live-Prüfung fertig melden** (siehe [Grundentscheidungen](docs/GRUNDENTSCHEIDUNGEN.md)). Ein Commit allein ist kein Abschluss.
+
+
 **Entwicklungsstand:** Erste browserbasierte Implementierung. Noch **nicht end-to-end im Browser verifiziert**. Sie setzt die Basisentscheidungen 1–142 im zunächst relevanten Kern um.
 
 ## Testen
