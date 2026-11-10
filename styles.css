@@ -89,13 +89,13 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   top:calc(7px + env(safe-area-inset-top,0px));left:50%;right:auto;
   transform:translateX(-50%);
   width:min(410px,calc(100% - 14px));max-width:410px;
-  height:44px!important;padding:4px 5px!important;
+  padding:4px 5px!important;
   display:flex!important;flex-direction:row!important;
   gap:4px!important;border-radius:13px;
   background:#172b49;box-shadow:0 3px 15px #12253b33
 }
-.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;height:35px!important;border-radius:9px;margin:0!important}
-.topbar .search input{font-size:16px!important;padding:5px 8px!important;min-width:0;max-width:100%;height:35px}
+.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;border-radius:9px;margin:0!important}
+.topbar .search input{font-size:16px!important;padding:5px 8px!important;min-width:0;max-width:100%}
 .topbar .search button{flex:0 0 34px!important;height:35px;padding:0!important;font-size:20px!important}
 .topbar .topbtn{flex:0 0 34px!important;width:34px!important;height:35px!important;padding:0!important;font-size:18px!important}
 .search-results{
@@ -292,7 +292,6 @@ button:not(.p2m-icon-control):not(.result):not(.inline-button){
 }
 .topbar .search input{background:transparent!important}
 .topbar .search button.p2m-icon-control{
-  margin:0 1px 0 0;
   box-shadow:none;border-color:#dee3e8!important
 }
 .topbar .topbtn.p2m-icon-control{
