@@ -82,3 +82,19 @@ Die **genaue** Aufteilung folgt erst nach vollständiger Inventur, insbesondere 
 ## Zweites Architekturthema nach CSS-Abnahme
 
 Die weitere Bereinigung von `app.js` (Kompositionswurzel, UI-Events, Zustands- und Persistenzkoordination) folgt **erst nachdem die CSS-Sanierung vollständig abgenommen ist**. Das Thema ist als nächste Priorität vorgemerkt; während CSS-Etappen keine ungeprüfte gleichzeitige Umstrukturierung der Anwendungssteuerung.
+
+## Sichtabnahme der bisherigen Darstellung durch den Auftraggeber (2026-11-10)
+
+**Befund: visuelle Referenz ausdrücklich bestätigt.** Der Auftraggeber hat vier Screenshots der Entwicklungsvorschau unter https://pin2map.github.io/pin2map-new-test/preview/ für Desktop, iPhone und iPad bereitgestellt und erklärt: „Ja, auf allen Geräten entspricht die Darstellung meinen Vorstellungen.“
+
+Folgende Elemente werden **als bestehende, zu bewahrende Darstellung** festgehalten:
+
+- **Oben:** Einstellungs-Button links; Suchfeld dazwischen; Ebenen-Button rechts. Zahnrad und Ebenen-Button befinden sich auf derselben Höhe.
+- **Ebenenpanel:** Rechtsbündig zum Auslöser; auf kleineren mobilen Viewports ausreichend breit und innerhalb der sichtbaren Kartenfläche, mit weißem Hintergrund, Schließen-Schaltfläche, Ebenenliste und „Neue Ebene“.
+- **Unten:** Zoom-/Fit-Tasten links; Info-Taste oberhalb der Kartenwahl rechts; Leaflet-/OSM-Attribution sichtbar am Kartenrand.
+- **Unterschiedliche Viewports:** Breite Desktopansicht, iPhone-Safari, iPhone ohne sichtbare Safari-Browserleisten (PWA-/Vollbildansicht) und iPad-Ansicht. Der Wechsel zwischen Straßen- und Topografiekarte ist visuell kompatibel.
+- **Wichtig:** Unterschiede in angezeigten Pins und Kartenausschnitten auf den Screenshots stammen von unterschiedlichen lokalen Datensätzen bzw. Viewport-Ständen und sind **keine** CSS-Zielvorgabe.
+
+**Abnahmeumfang:** Dies ist eine **manuelle, visuelle Freigabe** des vom Nutzer gesehenen Layouts. Nicht belegt sind die exakte ausgelieferte Service-Worker-Version, der Erfolg eines aktuellen GitHub-Actions-Laufs, eine automatisierte Live-Prüfung aller Interaktionen oder die Zukunftssicherheit der CSS-Regeln. Diese Nachweise werden nicht aus Screenshots abgeleitet.
+
+**Konsequenz für Etappe B:** Die Sanierung verändert *nicht* die gewünschten Positionen, Farben, Buttonmaße oder Dialoggrößen. Jede Abweichung bedarf einer ausdrücklichen neuen Entscheidung. Vor einem größeren Abbau von Overrides die aktuellen Positionen in Chromium als tatsächliche Geometrie erfassen; für iPhone-spezifische WebKit-Effekte bleibt die obige Nutzerabnahme maßgeblich.
