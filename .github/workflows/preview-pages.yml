@@ -5,7 +5,6 @@ on:
     branches: [feature/leaflet-modular-core]
     paths-ignore:
       - 'docs/**'
-      - 'tests/**'
   workflow_dispatch:
 
 permissions:
