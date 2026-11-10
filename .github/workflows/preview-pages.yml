@@ -14,10 +14,11 @@ permissions:
   id-token: write
 
 # Share the GitHub Pages deployment lock with the main-site workflow.
-# Never queue an older preview behind a newer source update.
-# Shared Pages lock remains intact: the stable site is still protected.
+# Preview deployments must not be blocked by a stale Pages concurrency
+# holder. The deploy artifact still contains the unchanged checked-out main
+# site at its root and only overlays the development app under /preview/.
 concurrency:
-  group: pages
+  group: pin2map-modular-preview
   cancel-in-progress: true
 
 jobs:
