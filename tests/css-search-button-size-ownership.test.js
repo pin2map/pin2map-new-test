@@ -8,14 +8,17 @@ const fs=require("node:fs");
 const path=require("node:path");
 const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
 const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
-test("search button has exactly one 32px sizing owner distinct from map controls",()=>{
+test("search button has exactly one 30px sizing owner distinct from map controls",()=>{
   const clean=css.replace(/\/\*[\s\S]*?\*\//g,"");
   assert.equal((clean.match(/--p2m-search-button-size\s*:/g)||[]).length,1);
   assert.equal((clean.match(/--p2m-search-icon-size\s*:/g)||[]).length,1);
-  assert.match(clean,/:root\{\s*--p2m-search-button-size:32px;\s*--p2m-search-icon-size:18px;/);
+  assert.match(clean,/:root\{\s*--p2m-search-button-size:30px;\s*--p2m-search-icon-size:18px;/);
   assert.match(clean,/#app #searchButton\.p2m-icon-control\{\s*--p2m-button-size:var\(--p2m-search-button-size\);\s*--p2m-icon-size:var\(--p2m-search-icon-size\);\s*flex:0 0 var\(--p2m-search-button-size\);\s*\}/);
   assert.doesNotMatch(clean,/#app button:is\([^)]*#searchButton/);
   assert.match(clean,/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),/);
+  assert.match(clean,/\.topbar \.search button\.p2m-icon-control\{\s*box-shadow:none;\s*border-color:#aebfce!important;\s*--p2m-button-bg:#eef3f8;/);
+  assert.match(clean,/#app \.topbar \.search button\.p2m-icon-control\{\s*margin:0 4px 0 0!important;/);
+  assert.match(clean,/--p2m-search-icon-size:18px;/);
   assert.match(html,/id="searchButton"/);
 });
 test("no older fixed search submit dimensions remain",()=>{
