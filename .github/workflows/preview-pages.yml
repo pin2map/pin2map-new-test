@@ -168,9 +168,11 @@ jobs:
           assert main != b"", "Missing stable application"
           assert source != b"", "Missing development application"
           assert "Entwicklungsvorschau" in preview
-          assert 'src="./vendor/leaflet/leaflet.js"' in preview
-          assert 'href="./vendor/leaflet/leaflet.css"' in preview
+          assert 'src="./vendor/leaflet/leaflet.js?__p2m_release=' in preview
+          assert 'href="./vendor/leaflet/leaflet.css?__p2m_release=' in preview
           assert 'https://unpkg.com/leaflet' not in preview
+          assert 'src="./app.js?__p2m_release=' in preview
+          assert 'href="./styles.css?__p2m_release=' in preview
           assert (Path("site-root/preview/styles.css").stat().st_size > 1000), "Preview stylesheet missing"
           assert (Path("site-root/preview/app.js").stat().st_size > 1000), "Preview app.js missing"
           # Custom layer selector must be in the published bundle, not only CI.
