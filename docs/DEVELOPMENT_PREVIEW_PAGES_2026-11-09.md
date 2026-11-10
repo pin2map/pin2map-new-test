@@ -35,3 +35,18 @@ Ein erfolgreicher Workflowlauf und ein echter HTTPS-Aufruf der Vorschau müssen 
 ## Danach
 
 Für die Oberflächenentwicklung ausschließlich `feature/leaflet-modular-core` ändern, mobil mit `/preview/` testen, das stabile `main` unangetastet lassen. Zuerst Sichtprüfung (Pin-Dialoge, Ebenenbutton, Marker und Labels, Kartensteuerung, Mobil-Viewport), dann gestufte Wiederherstellung der gewünschten Vorgänger-App-Funktionen.
+
+## Verbindliches Abschluss-Gate (ergänzt 2026-11-10)
+
+Maßgeblich ist die Arbeitsregel in docs/GRUNDENTSCHEIDUNGEN.md („Ein Auftrag endet erst mit nachgewiesener Veröffentlichung und Prüfung“).
+
+- Änderung eingecheckt und bei auslieferungsrelevanten PWA-Änderungen Cache-/Versionskennung fortgeschrieben.
+- Syntax, betroffene Modul- und Regressionstests erfolgreich.
+- GitHub-Actions-Workflow .github/workflows/preview-pages.yml nachweislich erfolgreich, nicht nur ausgelöst.
+- Die HTTPS-Adresse /preview/ liefert die erwartete Version und aktualisierten Assets; Reload, Service Worker und Aktualisierung werden geprüft.
+- Die konkrete Funktion auf der **veröffentlichten Preview** in einem echten Browser getestet, mit relevantem mobilem und weitem Viewport sowie Regression bestehender Funktionen.
+- Abschlussmeldung mit Version, Commit, URL, tatsächlichen Tests und nicht nachgewiesenen Geräteprüfungen. Bei fehlendem Deployment-/Live-Nachweis bleibt der Auftrag offen.
+
+**Aktualisierung einer früheren Aussage:** Der Preview-Workflow umfasst inzwischen nach Deployment HTTPS-Asset-Kontrollen und den Chromium-Browserstarttest tests/preview-live-smoke.cjs. Die oben stehende ältere Aussage, er führe keinen Chromium-Test im selben Job aus, ist daher **überholt**. Ein UI-Auftrag erfordert darüber hinaus einen passenden konkreten Interaktions-/Geometrietest.
+
+**Umgebungen:** Stable/main unter /, modulare Entwicklung aus feature/leaflet-modular-core unter /preview/, unveränderliche reference/*-Branches als Rücksetzpunkte. Ein Preview-Deploy ist keine Main-Freigabe. Leere PR-Workflow-Ergebnisse belegen weder Erfolg noch Fehlschlag eines Push-Deployments.
