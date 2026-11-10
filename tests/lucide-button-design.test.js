@@ -18,7 +18,7 @@ function documentStub(){
   };
 }
 test("all selected control icons are available as offline Lucide SVG geometry",()=>{
-  for(const name of ["search","refresh-cw","settings","layers","info","plus","minus","scan","x","check","trash","map-pin-off"]){
+  for(const name of ["search","refresh-cw","settings","map","layers","info","plus","minus","scan","x","check","trash","map-pin-off"]){
     const icon=Icons.svg(name,documentStub());
     assert.equal(icon.name,"svg");
     assert.equal(icon.attributes.viewBox,"0 0 24 24");
@@ -180,4 +180,36 @@ test("three equal-size zoom controls are docked bottom-left without touching dia
   assert.ok(css.includes("margin-bottom:calc(9px + env(safe-area-inset-bottom,0px))!important"));
   assert.ok(css.includes("#app button.pin-zoom-button.p2m-icon-control"),
     "Zoom controls retain the shared 42px size token");
+});
+
+test("settings moved out of search block, map picker lives bottom right with street last",()=>{
+  const html=read("index.html"),css=read("styles.css"),app=read("app.js");
+  const head=html.match(/<header class="topbar">([\s\S]*?)<\/header>/)?.[1]||"";
+  const settings=html.match(/<button id="settingsButton"[^>]*>/)?.[0]||"";
+  assert.ok(settings.includes('class="settings-map-button"'));
+  assert.ok(!head.includes('id="settingsButton"'),"Gear cannot remain inside the search capsule");
+  assert.ok(html.indexOf('id="settingsButton"')>html.indexOf('<main id="map"'));
+  assert.ok(css.includes("#app #settingsButton.settings-map-button.p2m-icon-control"));
+  assert.ok(css.includes("top:calc(12px + env(safe-area-inset-top,0px))!important"));
+  assert.ok(css.includes("left:60px!important;right:8px!important;transform:none!important"),
+    "Mobile search must not overlap Settings");
+  const menu=html.match(/<section id="basemapMenu"[\s\S]*?<\/section>/)?.[0]||"";
+  assert.ok(menu.includes(">Darstellung</div>"));
+  assert.ok(menu.indexOf('data-basemap="topo"')<menu.indexOf('data-basemap="street"'),
+    "Street map must be final item");
+  assert.ok(html.includes('id="basemapButton" data-pin-icon="map"'));
+  const settingsPanel=html.match(/<aside id="settingsPanel"[\s\S]*?<\/aside>/)?.[0]||"";
+  assert.ok(!settingsPanel.includes("Kartendarstellung"),"Map picker removed from Settings");
+  assert.ok(!html.includes('id="basemapSelect"'),"Obsolete map dropdown removed");
+  assert.ok(css.includes("#app #basemapButton.basemap-map-button.p2m-icon-control"));
+  assert.ok(css.includes("bottom:calc(10px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(css.includes("#app #basemapMenu.basemap-menu"));
+  assert.ok(app.includes('document.querySelectorAll("#basemapMenu [data-basemap]")'));
+  assert.ok(app.includes("state.basemap=value;setTileLayer();save()"),
+    "Basemap selections must still persist through existing state");
+  assert.ok(app.includes('event.key==="Escape"'),"Escape closes map picker");
+  assert.ok(css.includes("body.pin-open #app #basemapMenu"),
+    "Map menu must be hidden while editing a pin");
+  const common=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),[\s\S]*?\}/)?.[0]||"";
+  assert.ok(common.includes("width:var(--p2m-map-circle-size)!important"));
 });
