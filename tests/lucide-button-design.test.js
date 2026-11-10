@@ -226,3 +226,27 @@ test("Leaflet and OSM attribution is horizontally centered at the screen bottom"
   assert.ok(attribution.includes("margin:0!important"));
   assert.ok(!rule.includes("58px"),"Attribution must no longer float above map button");
 });
+
+test("iPhone only: top scroll haze suppressed, bottom controls lowered, attribution flush",()=>{
+  const css=read("styles.css");
+  const start=css.lastIndexOf("/* iPhone viewport corrections (2026-11-10).");
+  assert.ok(start>=0,"Expected iPhone-only adjustments");
+  const section=css.slice(start);
+  assert.ok(section.includes("@media (max-width:430px) and (hover:none) and (pointer:coarse)"));
+  assert.ok(section.includes("overflow:hidden!important"));
+  assert.ok(section.includes("overscroll-behavior:none!important"));
+  assert.ok(section.includes("backdrop-filter:none!important"));
+  assert.ok(section.includes("-webkit-backdrop-filter:none!important"));
+  assert.ok(section.includes("#app .topbar{"));
+  assert.ok(section.includes("background:#fff!important"));
+  assert.ok(section.includes("#app #layersButton.layers-bottom-button,"));
+  assert.ok(section.includes("#app #labelsToggle.labels-toggle,"));
+  assert.ok(section.includes("#app #basemapButton.basemap-map-button.p2m-icon-control{"));
+  assert.ok(section.includes("bottom:calc(2px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(section.includes("#map .leaflet-bottom.leaflet-left .pin-zoom-buttons{"));
+  assert.ok(section.includes("#map .leaflet-bottom.leaflet-right{\n    bottom:0!important"));
+  assert.ok(section.includes("#app #basemapMenu.basemap-menu{"));
+  assert.ok(section.includes("bottom:calc(52px + env(safe-area-inset-bottom,0px))!important"));
+  assert.ok(css.slice(0,start).includes("bottom:env(safe-area-inset-bottom,0px)!important"),
+    "Non-iPhone positioning unchanged");
+});
