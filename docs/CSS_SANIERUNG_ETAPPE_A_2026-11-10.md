@@ -98,3 +98,12 @@ Folgende Elemente werden **als bestehende, zu bewahrende Darstellung** festgehal
 **Abnahmeumfang:** Dies ist eine **manuelle, visuelle Freigabe** des vom Nutzer gesehenen Layouts. Nicht belegt sind die exakte ausgelieferte Service-Worker-Version, der Erfolg eines aktuellen GitHub-Actions-Laufs, eine automatisierte Live-Prüfung aller Interaktionen oder die Zukunftssicherheit der CSS-Regeln. Diese Nachweise werden nicht aus Screenshots abgeleitet.
 
 **Konsequenz für Etappe B:** Die Sanierung verändert *nicht* die gewünschten Positionen, Farben, Buttonmaße oder Dialoggrößen. Jede Abweichung bedarf einer ausdrücklichen neuen Entscheidung. Vor einem größeren Abbau von Overrides die aktuellen Positionen in Chromium als tatsächliche Geometrie erfassen; für iPhone-spezifische WebKit-Effekte bleibt die obige Nutzerabnahme maßgeblich.
+
+## Inkrement B1 – historische Ebenenpositionierung bereinigt (2026-11-10)
+
+- Quellcodeänderungen: CSS-Regeln der ehemaligen **unten mittigen** Ebenensteuerung und links daneben positionierten Info-Taste gezielt entfernt. Auch die ursprünglichen veralteten \`#layersPanel\`-Anker wurden entfernt. Die derzeit gültige Anordnung (oben rechts / Info rechts unten) bleibt in den späteren aktiven Regeln enthalten.
+- Im Ausgangs-Stylesheet wurden im ersten Schritt 12, im zweiten Schritt weitere 8 \`!important\` entfernt (402 → 382). Das sind strukturelle Textbefunde, **kein Nachweis identischer visueller Berechnung**.
+- In \`tests/css-corner-position-contract.test.js\` sind Schutzbehauptungen gegen die entfernten alten Positionierungen ergänzt.
+- Der aktuelle Quellcode-Service-Worker ist auf **v60** gesetzt und löst durch den Push eine neue Preview-Veröffentlichung aus.
+- **Abnahme-Gate noch offen:** Erfolgreichen GitHub-Actions-Lauf, HTTPS-Auslieferung von v60 sowie tatsächliche mobile/weite Browser-Interaktion und PWA-Refresh prüfen. Die im Vorfeld vom Nutzer bestätigten Screenshots gelten als Soll-Zustand, sind **keine** Abnahme von v60.
+- Keine neue CSS-Dateiaufteilung und keine Veränderung der Fachlogik; die nächste Migration bleibt auf eine kontrollierte CSS-Domäne begrenzt.
