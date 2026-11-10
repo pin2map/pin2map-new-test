@@ -431,3 +431,12 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Test `tests/css-search-button-size-ownership.test.js` bewacht die Abwesenheit fester Flex- und Höhenwerte für die allgemeinen Suchbutton-Regeln und das Bestehen des gemeinsamen Größenvertrags.
 - `!important`-Bestand **300 → 299** (ursprünglich 402), Debt-Budget auf **299** reduziert. PWA-Quellrelease **v82**.
 - Die Quelltextbedingungen werden separat geprüft. **Unabhängige Node-Testausführung, CI-/Pages-Lauf, öffentliche v82-Auslieferung und iPhone-/iPad-/Desktop-Regression sind weiterhin offen.** Wegen Änderung an Regeln des sichtbaren Suchbuttons ist eine erneute gezielte iPhone-Sichtprüfung sinnvoll.
+
+## Inkrement B25 – visuelle Korrektur Suchbutton: eigener 36px-Vertrag (v83)
+
+- **Anlass:** Der Auftraggeber zeigte einen iPhone-Screenshot, auf dem der Suchbutton im Verhältnis zur Suchkapsel optisch zu groß wirkt; nach eigener Prüfung bestand der Zustand schon seit einer älteren Version und wird deshalb **nicht automatisch v82 als Regression zugeschrieben**. Die v82-Abnahme ist hierfür ausdrücklich nicht erteilt.
+- **Bewusste visuelle Korrektur:** Der im Suchformular verschachtelte `#searchButton` ist aus dem gemeinsamen 42px-`#app button:is(...)`-Kartenbutton-Selektor herausgenommen. Der vorhandene `button.p2m-icon-control`-Vertrag nutzt für ihn nun lokal `--p2m-button-size:var(--p2m-search-button-size)` mit **36px**; dieselbe Variable bestimmt die Flexbasis. Dies ist eine **explizit dokumentierte Komponentenausnahme**, keine neue `!important`-Überlagerung.
+- **Unverändert:** Die 42px-Größe der eigenständigen Kartenbuttons, die 52px-Suchkapsel, die 42px-Suchform sowie Ortssuche/Anwendungslogik. Die CSS-Schuld bleibt **299 `!important`** gegenüber ursprünglich 402.
+- Die vorhandenen Tests `tests/css-map-button-size-contract.test.js` und `tests/css-search-button-size-ownership.test.js` wurden für die klare Trennung aktualisiert. `docs/CSS_ARCHITEKTURREGELN.md` benennt diese Suchbutton-Ausnahme verbindlich.
+- Service-Worker-Quellstand **v83**. Die gezielten Quelltextbedingungen werden überprüft; vollständige Node-/CI-Ausführung und öffentliche Auslieferung sind nicht allein durch GitHub-Commits nachgewiesen.
+- **Manuelle iPhone-Abnahme v83 erforderlich:** Nach Refresh Größe und Zentrierung des Suchbuttons sowie weiterhin funktionierende Ortssuche prüfen. Der zuvor gezeigte Screenshot ist die visuelle Vorher-Referenz. Desktop-/iPad-Endregression bleibt offen.
