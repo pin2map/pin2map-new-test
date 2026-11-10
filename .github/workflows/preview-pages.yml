@@ -160,6 +160,9 @@ jobs:
           assert main != b"", "Missing stable application"
           assert source != b"", "Missing development application"
           assert "Entwicklungsvorschau" in preview
+          assert 'src="./vendor/leaflet/leaflet.js"' in preview
+          assert 'href="./vendor/leaflet/leaflet.css"' in preview
+          assert 'https://unpkg.com/leaflet' not in preview
           assert (Path("site-root/preview/styles.css").stat().st_size > 1000), "Preview stylesheet missing"
           assert (Path("site-root/preview/app.js").stat().st_size > 1000), "Preview app.js missing"
           # Custom layer selector must be in the published bundle, not only CI.
@@ -169,6 +172,8 @@ jobs:
           assert ".pin-layer-trigger" in Path("site-root/preview/styles.css").read_text(encoding="utf-8")
           sw = Path("site-root/preview/sw.js").read_text(encoding="utf-8")
           assert "name.startsWith('pin2map-preview-')" in sw
+          assert "'./vendor/leaflet/leaflet.js'" in sw
+          assert "'./vendor/leaflet/leaflet.css'" in sw
           assert "name.startsWith('pin2map-new-')" not in sw
           assert "pin2map-preview-viewed-osm-tiles-v1" in sw
           store = Path("site-root/preview/adapters/storage/indexeddb-project-store.js").read_text(encoding="utf-8")
@@ -205,6 +210,8 @@ jobs:
           expected_version = "pin2map-preview-v" + source_version.group(1)
           expected = {
               "index.html": ("text/html", expected_version),
+              "vendor/leaflet/leaflet.js": ("javascript", "Leaflet"),
+              "vendor/leaflet/leaflet.css": ("text/css", ".leaflet-container"),
               "styles.css": ("text/css", ".pin-panel"),
               "app.js": ("javascript", "Pin2MapPwaRefresh.refresh"),
               "ui/pin-layer-picker.js": ("javascript", "class PinLayerPicker"),
