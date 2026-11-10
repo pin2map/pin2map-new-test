@@ -165,3 +165,14 @@ Für die vorläufige Monolith-CSS-Datei existiert jetzt `tests/css-debt-budget.t
 - `!important` bleibt bei 382; diese Etappe entfernt überschattete Normaldeklarationen und reduziert nicht den numerischen Override-Bestand.
 - Cache-/Releasekennung auf `pin2map-new-v62` angehoben.
 - **Noch offen:** vollständiger CI-/GitHub-Actions-Erfolgsnachweis, tatsächliche HTTPS-Auslieferung, Live-Browsertest sowie iPhone-Sichtprüfung für v62. Der öffentliche Abruf war über die verfügbare Webschnittstelle nicht möglich. Bis dahin keine Aussage „v62 vollständig getestet und veröffentlicht“.
+
+
+## Inkrement B4 – ältere Panel-Offsets entfernt (v63, 2026-11-10)
+
+- Drei überholte `.panel`-Positionierungen wurden entfernt: mobiler früherer Top-Abstand (99px + Safe Area) und zwei später überschattete offsets auf Basis von `--header-height`. Die heute wirksame `.panel`-Regel mit `top:calc(56px + env(safe-area-inset-top,0px))!important` bleibt bestehen. Das Ebenenpanel hat seine separate rechtsbündige `#app #layersPanel`-Regel.
+- Der bisherige mobile `max-height:calc(100dvh - 125px)`-Wert wurde ausdrücklich erhalten. Keine beabsichtigte Layoutänderung.
+- Neu: `tests/css-panel-position-contract.test.js`. Fünf Quelltextbedingungen wurden gegen die in GitHub gespeicherte CSS-Datei kontrolliert. Sie ersetzen keinen tatsächlichen Node-/Browserlauf.
+- `!important`-Budget unverändert 382. Service-Worker-Version des Quellstands auf `pin2map-new-v63` gesetzt.
+- **Noch offen:** Nachweis erfolgreich gelaufener GitHub Actions, öffentliche Auslieferung der v63-Dateien, Browser- und Gerätetest. Der direkte Preview-Webabruf liefert in dieser Arbeitsumgebung `DisabledError`. Eine erfolgreiche Veröffentlichung darf daraus nicht abgeleitet werden.
+
+**Nächster Schritt:** Nicht weitere CSS-Domänen gleichzeitig umstellen, solange die Live-Prüfung offen ist. Vor einem größeren Panel-Refactoring die bereits bestätigte mobile Referenz mit der tatsächlich ausgelieferten v63 vergleichen.
