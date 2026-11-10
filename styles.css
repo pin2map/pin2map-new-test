@@ -11,7 +11,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .danger{background:#b13232}
 .full{width:100%;margin-top:14px}
 .topbar{position:absolute;z-index:1100;top:0;left:0;right:0;display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--navy);color:white;box-shadow:var(--shadow)}
-.search{display:flex;flex:1;max-width:520px;min-width:0;margin:auto;background:white;border-radius:10px;overflow:hidden}
+.search{display:flex;flex:1;max-width:520px;min-width:0;margin:auto;background:white;overflow:hidden}
 .search input{width:100%;min-width:0;border:0;outline:0;background:white}
 .search button{border-radius:0;background:#e8f1fc;color:#14385c}
 #map{position:absolute;inset:0}
@@ -70,7 +70,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-panel{max-height:calc(100dvh - 125px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 #fitPins{white-space:nowrap}
 @media(max-width:630px){
-  .search{width:100%;height:43px;max-width:none;margin:0;min-width:0}
+  .search{width:100%;max-width:none;margin:0;min-width:0}
   .search input{min-width:0}
   .search-results{max-height:42dvh}
   .panel{max-height:calc(100dvh - 125px)}
@@ -93,7 +93,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   padding:calc(5px + env(safe-area-inset-top,0px)) 8px 5px;
   gap:7px;width:100%;min-width:0
 }
-.topbar .search{display:flex;flex:1 1 auto;width:auto;min-width:0;max-width:none;height:38px;margin:0;border-radius:9px}
+.topbar .search{display:flex;flex:1 1 auto;width:auto;min-width:0;max-width:none;margin:0}
 .topbar .search input{width:0;flex:1 1 auto;min-width:0;line-height:22px}
 .topbar .search button{line-height:38px}
 /* Three circular Leaflet zoom buttons, including the fit-all action. */
@@ -116,7 +116,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
     display:flex;
     padding:calc(4px + env(safe-area-inset-top,0px)) 6px 4px;gap:5px
   }
-  .topbar .search{height:38px;min-width:0;border-radius:8px}
+  .topbar .search{min-width:0}
   .leaflet-top.leaflet-left{top:8px;left:6px}
   .pin-zoom-button{width:40px;height:40px;font-size:25px!important}
 }
@@ -134,7 +134,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   gap:4px!important;border-radius:13px;
   background:#172b49;box-shadow:0 3px 15px #12253b33
 }
-.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;border-radius:9px;margin:0!important}
+.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;margin:0!important}
 .topbar .search input{font-size:16px!important;padding:5px 8px!important;min-width:0;max-width:100%}
 .topbar .search button{padding:0!important;font-size:20px!important}
 .search-results{
