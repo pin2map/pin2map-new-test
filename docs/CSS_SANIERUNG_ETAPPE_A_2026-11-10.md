@@ -192,3 +192,9 @@ Der Auftraggeber wurde gebeten, die Preview auf dem iPhone zu aktualisieren und 
 - Der neue Test `tests/css-layer-row-contract.test.js` schützt die Vier-Spalten-Verteilung auf beiden Viewportklassen und den Lösch-Button-Stil. Alle vier Quelltextbedingungen wurden gegen die erneut aus GitHub gelesene CSS-Datei geprüft, aber kein vollständiger Node-/Browser-Testlauf durchgeführt.
 - `!important` bleibt bei 382; `grid-template-columns`-Vorkommen sinken von 4 auf 3. Version der PWA-App-Shell auf **v64** gesetzt.
 - **Abnahme offen:** GitHub-Actions-Veröffentlichung, per HTTPS ausgelieferte v64-Dateien und echte Browser-/Geräteprüfung. Frühere Nutzerfreigaben gelten als Soll-Referenz, nicht als Beleg, dass v64 bereits ausgeliefert wurde.
+
+## Manuelle iPhone-Abnahme der Ebenenliste nach Inkrement B5 (v64)
+
+Nach Aufforderung zur Aktualisierung der Vorschau und Prüfung der Ebenenliste auf dem iPhone hat der Auftraggeber am 10.11.2026 ausdrücklich **„alles gut“** zurückgemeldet. Damit ist die Ebenenliste in der vom Nutzer geprüften Vorschau **visuell und hinsichtlich der Bedienbarkeit manuell abgenommen**. Die bestehende Vier-Spalten-Anordnung bleibt die verbindliche Referenz für spätere CSS-Arbeiten.
+
+**Abgrenzung:** Eine konkrete am Gerät aktive Service-Worker-Versionskennung ist nicht bestätigt; die Rückmeldung ist kein selbständiger Nachweis für erfolgreichen GitHub-Actions-Lauf, identische ausgelieferte Assets oder die Desktop-/iPad-Regression von v64. Diese technischen Prüfungen bleiben für eine umfassende Freigabe offen.
