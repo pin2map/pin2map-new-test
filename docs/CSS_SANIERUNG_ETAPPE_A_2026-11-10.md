@@ -123,3 +123,9 @@ Der Auftraggeber hat die Entwicklungsvorschau auf einem iPhone in Safari nach de
 **Damit bestätigt:** Die sichtbare Kartenoberfläche nach Refresh entspricht weiterhin der zuvor freigegebenen Referenz. Im Screenshot befinden sich Zahnrad und Ebenen-Button oben auf gleicher Höhe, die Suchleiste dazwischen, Zoom/Fit links unten, Info über Kartenwahl rechts unten und die Leaflet-/OpenStreetMap-Attribution am unteren Rand.
 
 **Grenzen:** Ein geöffneter Ebenendialog ist im neuen Screenshot nicht enthalten; dessen vorherige visuelle Abnahme gilt als Vergleichsgrundlage. Weder die genaue auf dem Gerät ausgelieferte Service-Worker-Versionskennung noch ein erfolgreicher GitHub-Actions-Lauf lassen sich aus dem Screenshot ableiten. Ebenso sind Desktop-/iPad-Regressionen nach den jüngsten CSS-Bereinigungen damit nicht erneut geprüft. Die vollständige Live- und CI-Abnahme bleibt bis zu diesen Nachweisen offen.
+
+## Veröffentlichungsintegrität der CSS-Datei (2026-11-10)
+
+Der Preview-Workflow prüft jetzt zusätzlich zu Content-Type und Markern den **SHA-256-Inhaltsvergleich** zwischen der tatsächlich über HTTPS ausgelieferten `/preview/styles.css` und der Datei `preview-source/styles.css` des laufenden Builds. Ein alter CSS-Stand mit demselben allgemeinen Textmarker kann damit nicht mehr fälschlich als aktuelle Veröffentlichung durchgehen. Die Browser-Smoke-Tests folgen erst nach diesem Prüfschritt.
+
+**Status:** Workflowänderung im Entwicklungszweig gespeichert. Ob GitHub Actions diesen konkreten Lauf erfolgreich ausgeführt hat und v60 veröffentlicht ist, bleibt gesondert nachzuweisen; der Quellcode-Nachweis ersetzt nicht die Live-Prüfung. Die Bildschirmanordnung wurde durch diese Workflowänderung nicht verändert.
