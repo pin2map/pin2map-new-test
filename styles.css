@@ -661,19 +661,62 @@ body.pin-relocation-picking #map .leaflet-interactive{
 body.pin-open #refreshButton.refresh-map-button{display:none!important}
 
 
-/* Position the information/label toggle immediately to the RIGHT of the
-   bottom-center Layers control. Both share the same bottom edge (including
-   device safe-area inset); position is relative to the Layers button itself. */
-#labelsToggle.labels-toggle.p2m-icon-control{
+/* Unified diameter for the circular controls OUTSIDE pin and layer dialogs.
+   Search, Settings, Refresh, Zoom/Fit, Layers and Info share one token on
+   phones and desktops. Dialog-specific 32px actions remain independent. */
+:root{--p2m-map-circle-size:42px}
+#app button:is(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle),
+#app button.pin-zoom-button.p2m-icon-control{
+  --p2m-button-size:var(--p2m-map-circle-size)!important;
+  box-sizing:border-box!important;
+  width:var(--p2m-map-circle-size)!important;
+  height:var(--p2m-map-circle-size)!important;
+  min-width:var(--p2m-map-circle-size)!important;
+  min-height:var(--p2m-map-circle-size)!important;
+  max-width:var(--p2m-map-circle-size)!important;
+  max-height:var(--p2m-map-circle-size)!important;
+  flex:0 0 var(--p2m-map-circle-size)!important;
+  padding:0!important;border-radius:50%!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+}
+/* Expand the floating search capsule slightly to accommodate the two
+   full-size, 42px circular header controls without squeezing or clipping. */
+#app .topbar{
+  height:52px!important;
+  padding:4px 5px!important;
+}
+#app .topbar .search{
+  height:42px!important;
+}
+#app .topbar .search input{
+  height:40px!important;
+}
+#app .topbar .search button.p2m-icon-control{
+  margin:0!important;
+}
+/* Keep Layers centered and anchor Info immediately to its left with an
+   8px gap, all aligned by one bottom edge (safe area included). */
+#app #layersButton.layers-bottom-button{
+  left:50%!important;right:auto!important;
+  transform:translateX(-50%)!important;
+  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
+  line-height:1!important;
+}
+#app #labelsToggle.labels-toggle{
   position:absolute!important;
-  left:calc(50% + 23px + 8px)!important;
+  left:calc(50% - var(--p2m-map-circle-size) / 2 - 8px - var(--p2m-map-circle-size))!important;
   right:auto!important;top:auto!important;
   bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
   transform:none!important;
 }
+/* Existing focused-pin editor should continue hiding all map controls,
+   despite the explicit inline-flex declarations above. */
+body.pin-open #app button:is(#refreshButton,#layersButton,#labelsToggle),
+body.pin-open #app .topbar,
+body.pin-open #app .pin-zoom-buttons{display:none!important}
 @media(max-width:630px){
-  #labelsToggle.labels-toggle.p2m-icon-control{
-    left:calc(50% + 22px + 8px)!important;
+  #app #layersButton.layers-bottom-button,
+  #app #labelsToggle.labels-toggle{
     bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
   }
 }
