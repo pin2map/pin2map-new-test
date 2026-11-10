@@ -123,3 +123,9 @@ Die vollständige statische **Funktions-/Modulinventur** ist unter [VORGAENGER_A
 Jeder Anwendungsauftrag umfasst Implementierung, Tests, tatsächliches Deployment und Live-Browser-Prüfung. Ein Commit oder gestarteter Workflow ist nur Zwischenstand. Die ausgelieferte Version und die gewünschte Bedienung müssen verifiziert sein; spezifische iPhone-Gesten benötigen einen geeigneten zusätzlichen Gerätetest. Fehlt ein Nachweis, bleibt der Auftrag offen/blockiert, statt vorzeitig als fertig zu gelten.
 
 Ausführliche Kriterien: docs/GRUNDENTSCHEIDUNGEN.md (Arbeitsregel 2026-11-10) und docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md (Abschluss-Gate). Keine ungeprüften Merges auf main; Referenzstände bleiben unverändert.
+
+## Präzisierung zur Reihenfolge – ausdrücklich bestätigter Vorrang (2026-11-10)
+
+**Verbindlich:** Der vorhandene Fahrplan mit **Etappe 4 (Synchronisation erst nach Gate 3)** ist bestätigt. Grundentscheidung 3 mit der ursprünglich geplanten *frühen* Serveranbindung und frühem Zwei-Geräte-Test ist **insoweit aufgehoben**. Zunächst wird die lokale Anwendung architektonisch bereinigt und anschließend funktional weit ausgebaut. Erst nach Gate 3 beginnen konkrete Server-/Sync-Arbeiten. Eine frühzeitige technische Vorbereitung durch saubere Schnittstellen bleibt erlaubt, eine vorgezogene Implementierung nicht.
+
+**Unmittelbare Reihenfolge:** (1) CSS-/Layoutarchitektur konsolidieren und gegen Regressionen absichern, (2) übrige offene Modul-/Zustandsgrenzen bereinigen, (3) lokale Funktionen weiterentwickeln und abnehmen, (4) später Gate 3 und erst dann Server-/Sync-Etappe. Die CSS-Sanierung erfolgt inkrementell mit getesteten, tatsächlich veröffentlichten Preview-Zwischenständen; main und Referenzzweige bleiben unverändert.
