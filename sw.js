@@ -21,6 +21,7 @@ const CORE=[
   "./adapters/storage/indexeddb-project-store.js",
   "./ui/shell.js",
   "./ui/lucide-icons.js",
+  "./ui/pwa-refresh.js",
   "./ui/search-results.js",
   "./ui/ui-state.js",
   "./ui/pin-editor.js",
