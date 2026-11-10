@@ -151,11 +151,11 @@ test("info control is left of centered Layers with matching bottom alignment",()
   const layers=css.match(/#app #layersButton\.layers-bottom-button\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(layers.includes("left:50%!important"));
   assert.ok(layers.includes("transform:translateX(-50%)!important"));
-  assert.ok(css.includes("body.pin-open #app button:is(#refreshButton,#layersButton,#labelsToggle)"));
+  assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton)"));
 });
 test("every free map and header circular button uses one 42px diameter",()=>{
   const css=read("styles.css");
-  const rule=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle\),\s*#app button\.pin-zoom-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
+  const rule=css.match(/#app button:is\(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),\s*#app button\.pin-zoom-button\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(css.includes(":root{--p2m-map-circle-size:42px}"));
   for(const prop of ["width","height","min-width","min-height","max-width","max-height"]){
     assert.ok(rule.includes(prop+":var(--p2m-map-circle-size)!important"),prop+" should use shared size");
