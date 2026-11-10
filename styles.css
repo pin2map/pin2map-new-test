@@ -630,14 +630,14 @@ body.pin-relocation-picking #map .leaflet-interactive{
 
 
 /* Independent refresh control, anchored to the viewport instead of the
-   floating search header. 65% is measured from the visible screen height.
+   floating search header. 35% is measured from the visible screen height.
    This remains the same on narrow screens and in the installed PWA. */
 #refreshButton.refresh-map-button.p2m-icon-control{
   --p2m-button-size:42px;
   position:fixed!important;
   z-index:1095;
   left:12px!important;right:auto!important;
-  top:65%!important;top:65dvh!important;
+  top:35%!important;top:35dvh!important;
   bottom:auto!important;
   transform:translateY(-50%)!important;
   display:inline-flex!important;align-items:center;justify-content:center;
