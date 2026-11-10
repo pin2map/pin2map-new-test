@@ -241,3 +241,11 @@ Nach der Aufforderung, die Preview auf dem iPhone zu aktualisieren und die **bei
 - Die Zahl der `!important`-Deklarationen sank **371 → 359** (initial 402). Der CSS-Schuldenbudget-Test wurde auf **359** gesenkt. Neuer Test: `tests/css-map-button-size-contract.test.js` für den gemeinsamen Größenvertrag und Dialog-Ausnahmen.
 - Die Quelltext-Invarianten wurden gegen den aus GitHub gelesenen Stylesheet-Stand kontrolliert. Dies ersetzt keinen tatsächlich ausgeführten Node-/Browser-Testlauf.
 - Der neue Quellstand trägt die Service-Worker-Version **v67**. **Noch nicht vollständig abgenommen:** Erfolgreicher GitHub-Actions-Lauf, öffentlich ausgelieferte v67-Assets, Live-Browsertest und eine gezielte Sichtprüfung der Kartenbuttons nach Refresh auf dem iPhone. Auch Desktop und iPad sind für diesen Stand erneut zu prüfen.
+
+## Manuelle iPhone-Abnahme der Kartenbuttons und Dialogaktionen nach B8 (v67)
+
+Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren und ausdrücklich **die Kartenbuttons sowie die kleineren Schaltflächen im Ebenendialog** zu prüfen, bestätigte der Auftraggeber am 10.11.2026: **„alles gut“**.
+
+**Manuelle Abnahme:** Die visuelle Darstellung und Bedienbarkeit der geprüften Elemente auf dem iPhone entsprechen nach Inkrement B8 weiterhin der verbindlichen Referenz. Damit ist diese konkrete iPhone-Sichtprüfung erledigt; für denselben Schritt ist keine erneute Rückfrage erforderlich.
+
+**Unabhängig offen:** Die Rückmeldung belegt nicht die aktive Service-Worker-Version, einen erfolgreichen GitHub-Actions-Lauf, die Auslieferung der identischen v67-Dateien oder die Desktop-/iPad-Regression. Diese Nachweise bleiben Voraussetzungen für eine vollständige technische CSS-Freigabe.
