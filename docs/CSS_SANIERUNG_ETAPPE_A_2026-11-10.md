@@ -249,3 +249,12 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 **Manuelle Abnahme:** Die visuelle Darstellung und Bedienbarkeit der geprüften Elemente auf dem iPhone entsprechen nach Inkrement B8 weiterhin der verbindlichen Referenz. Damit ist diese konkrete iPhone-Sichtprüfung erledigt; für denselben Schritt ist keine erneute Rückfrage erforderlich.
 
 **Unabhängig offen:** Die Rückmeldung belegt nicht die aktive Service-Worker-Version, einen erfolgreichen GitHub-Actions-Lauf, die Auslieferung der identischen v67-Dateien oder die Desktop-/iPad-Regression. Diese Nachweise bleiben Voraussetzungen für eine vollständige technische CSS-Freigabe.
+
+## Inkrement B9 – Pin-Dialog-Aktionsgrößen vereinheitlicht (v68)
+
+- Die veralteten und redundant wiederholten Größenangaben (width/height/min-/max-, flex, padding, border-radius und teils Ausrichtung) in den spezifischen Regeln für den roten **Löschen**-Button und den grünen **OK**-Button wurden entfernt.
+- Maßgeblich bleibt die bereits vorhandene, höher priorisierte gemeinsame Pin-Dialog-Regel `#pinPanel button:is(#movePin,#deletePin,#closePin,#showPinLayer)` mit `--p2m-pin-dialog-action-size:32px`. Die jeweiligen Farb-, Rahmen- und Hover-/Active-Stile bleiben erhalten.
+- `!important` von **359 auf 340** reduziert (ursprünglich 402). Übergangsbudget auf 340 gesenkt. Neuer Schutztest: `tests/css-pin-dialog-action-ownership.test.js`.
+- Acht Quelltextbedingungen wurden gegen die erneut aus GitHub gelesenen Dateien geprüft und waren erfüllt. Ein tatsächlicher Node- oder Live-Browsertest wurde damit **nicht** nachgewiesen.
+- Die neue Quellcode-Releasekennung ist `pin2map-new-v68`. CI-/Pages-Deploy und exakte Live-Auslieferung sowie die iPhone-/iPad-/Desktop-Sichtprüfung für diesen Stand bleiben **offen**.
+- Die vom Auftraggeber zuvor freigegebenen Größen, Farben und Positionen der Dialogaktionen sind ausdrücklich der zu bewahrende Sollzustand. Keine Änderungen an Pin-Daten, App-Logik oder Referenzbranches.
