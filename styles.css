@@ -793,3 +793,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
     bottom:calc(59px + env(safe-area-inset-bottom,0px));
   }
 }
+
+/* Avoid covering mandatory Leaflet/OpenStreetMap attribution with Map icon. */
+#map .leaflet-bottom.leaflet-right{
+  bottom:calc(58px + env(safe-area-inset-bottom,0px))!important;
+}
