@@ -27,5 +27,5 @@ test("refresh retains position and unique white visual surface but not local siz
   assert.ok(refresh.includes("background:#fff!important;"));
   assert.ok(refresh.includes("border:1px solid var(--p2m-button-border)!important;"));
   assert.ok(refresh.includes("color:var(--p2m-button-ink)!important;"));
-  assert.ok(css.includes("#app button:is(#searchButton,#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton)"));
+  assert.ok(css.includes("#app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton)"));
 });
