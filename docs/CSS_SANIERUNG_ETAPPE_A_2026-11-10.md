@@ -383,3 +383,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Vertragstest `tests/css-obsolete-map-toolbar.test.js`: Die nicht mehr vorhandene Klasse darf weder im aktuellen HTML noch als CSS-Selektor wieder eingeführt werden. Aktuelle Kartensteuerungsselektoren müssen weiterhin vorhanden sein.
 - Schuldenbudget: **301 → 300 `!important`** (Ausgangswert 402). PWA-Quellversion **v76**.
 - Die gezielten Quelltextbedingungen werden nach dem Commit geprüft. Die Ausführung der vollständigen Node-Tests, der GitHub-Actions-/Pages-Erfolg, die ausgelieferten Assets und iPhone-/iPad-/Desktop-Regressionen sind eigenständig nachzuweisen. Da ausschließlich historisches CSS für eine nicht vorhandene Klasse entfernt wurde, ist **kein unmittelbarer erneuter Nutzer-Gerätetest** erforderlich.
+
+## Inkrement B19 – CSS-Grundschicht lesbar gemacht, unveränderte Kaskade (v77)
+
+- Die bisherige etwa **4.719 Zeichen lange erste Zeile** der ursprünglichen CSS-Grundschicht wurde rein durch Einfügen von Zeilenumbrüchen nach vorhandenen schließenden geschweiften Klammern auf **66 lesbare Zeilen** verteilt. Selektoren, Deklarationen, `!important`, Reihenfolge und Media-Query-Klammerung wurden nicht verändert.
+- Der direkte Quelltextvergleich vor und nach der Änderung ergab **Bytegleichheit nach Entfernung der zusätzlich eingefügten Zeilenumbrüche**. Diese Maßnahme ist deshalb ausdrücklich **keine** bereits abgeschlossene Bereinigung der verbliebenen konkurrierenden Grundregeln, sondern die Vorbereitung für deren sicherere Prüfung.
+- Neu: `tests/css-base-readability-contract.test.js` prüft die Grundschicht auf separate Regeln, überschaubare Zeilenlängen und die erhaltenen wichtigsten Abschnittsmarker; die vorhandenen CSS-Vertragstests und das Debt-Budget bleiben erhalten.
+- Unverändert **300 `!important`-Deklarationen** gegenüber 402 zu Beginn. Service-Worker-Quellversion **v77**.
+- Die Änderung ist formatierend, ohne beabsichtigte visuelle Wirkung. Quelltextprüfung ist getrennt von tatsächlich bestandenen Node-Tests, erfolgreich ausgelieferter Preview und abschließender iPhone-/iPad-/Desktop-Regression; diese technischen Nachweise sind weiterhin offen.
