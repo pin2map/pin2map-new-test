@@ -21,7 +21,7 @@ test("search action has independent tap size, ring size and unchanged magnifier"
 });
 test("only the pseudo-element draws the small outer circle",()=>{
   assert.match(clean,/\.topbar \.search button\.p2m-icon-control\{\s*position:relative;\s*box-shadow:none;\s*border-color:transparent!important;\s*--p2m-button-bg:transparent;/);
-  assert.match(clean,/\.topbar \.search button\.p2m-icon-control::before\{[\s\S]*?width:var\(--p2m-search-ring-size\);[\s\S]*?height:var\(--p2m-search-ring-size\);[\s\S]*?border:1px solid #aebfce;[\s\S]*?pointer-events:none;/);
+  assert.match(clean,/\.topbar \.search button\.p2m-icon-control::before\{[\s\S]*?top:50%;left:50%;\s*transform:translate\(-50%,-50%\);\s*box-sizing:border-box;[\s\S]*?width:var\(--p2m-search-ring-size\);[\s\S]*?height:var\(--p2m-search-ring-size\);[\s\S]*?border:1px solid #aebfce;[\s\S]*?pointer-events:none;/);
   assert.match(clean,/\.topbar \.search button\.p2m-icon-control \.p2m-lucide\{\s*position:relative;\s*z-index:1;/);
 });
 test("no historical fixed submit button flex or height competes",()=>{
