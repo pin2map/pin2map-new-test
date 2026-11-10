@@ -258,3 +258,11 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 - Acht Quelltextbedingungen wurden gegen die erneut aus GitHub gelesenen Dateien geprüft und waren erfüllt. Ein tatsächlicher Node- oder Live-Browsertest wurde damit **nicht** nachgewiesen.
 - Die neue Quellcode-Releasekennung ist `pin2map-new-v68`. CI-/Pages-Deploy und exakte Live-Auslieferung sowie die iPhone-/iPad-/Desktop-Sichtprüfung für diesen Stand bleiben **offen**.
 - Die vom Auftraggeber zuvor freigegebenen Größen, Farben und Positionen der Dialogaktionen sind ausdrücklich der zu bewahrende Sollzustand. Keine Änderungen an Pin-Daten, App-Logik oder Referenzbranches.
+
+## Manuelle iPhone-Abnahme der Pin-Dialog-Aktionen nach B9 (v68)
+
+Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren, einen Pin zu öffnen und den **roten Löschen-Button sowie den grünen OK-Button** auf unveränderte Darstellung und Funktion zu prüfen, antwortete der Auftraggeber am 10.11.2026 ausdrücklich: **„alles gut“**.
+
+**Manuelle Sicht- und Bedienabnahme:** Beide geprüften Pin-Dialog-Aktionen entsprechen nach der Größenregel-Bereinigung in v68 weiterhin dem bisherigen, freigegebenen Zustand. Für diesen einzelnen iPhone-Test ist keine erneute Nutzerprüfung erforderlich.
+
+**Weiterhin offen:** Die Rückmeldung belegt nicht die tatsächlich aktive PWA-/Service-Worker-Version auf dem Gerät, einen erfolgreichen GitHub-Actions-Lauf, die exakte HTTPS-Auslieferung von v68 oder eine aktuelle Desktop-/iPad-Regression. Diese Nachweise bleiben vor einer umfassenden technischen CSS-Freigabe zu erbringen.
