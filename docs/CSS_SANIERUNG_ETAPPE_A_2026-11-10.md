@@ -225,3 +225,11 @@ Nach der Aufforderung, die Preview auf dem iPhone zu aktualisieren und speziell 
 - Zahl der `!important`-Deklarationen: **379 → 371** (zu Beginn 402). Die Budget-Prüfung wurde auf 371 gesenkt. Neuer Schutztest: `tests/css-top-corner-ownership.test.js`.
 - Quellcode-Stand des Service Workers: `pin2map-new-v66`. Alle gezielten Quellen-Invarianten wurden gegen die erneut aus GitHub gelesenen Dateien geprüft. Ein tatsächlicher Node-/Browserlauf sowie ein erfolgreicher veröffentlichter Preview-Workflow können damit **nicht** behauptet werden.
 - **Visuelle Abnahme v66 offen:** Die zuvor freigegebenen iPhone-/iPad-/Desktopansichten sind weiterhin Soll-Vorgabe. Vor einer vollständigen Freigabe sind die tatsächlich ausgelieferten Assets und die Button-/Menüpositionen im Browser erneut zu prüfen.
+
+## Manuelle iPhone-Abnahme der Eckbuttons und Kartenwahl nach B7 (v66)
+
+Nach der Aufforderung, die Preview auf dem iPhone zu aktualisieren und die **beiden oberen Buttons sowie das Kartenwahlmenü unten rechts** auf unveränderte Darstellung und Funktion zu prüfen, bestätigte der Auftraggeber am 10.11.2026 ausdrücklich: **„alles gut“**.
+
+**Manuell abgenommen:** Die auf dem iPhone geprüften Bedienelemente entsprechen nach dem CSS-Inkrement B7 weiterhin dem visuellen und funktionalen Referenzzustand. Für diese konkrete Sichtprüfung ist keine weitere Rückfrage erforderlich.
+
+**Weiterhin offen:** Die Rückmeldung allein bestätigt weder die genaue aktive Service-Worker-Version auf dem Endgerät noch den Status der GitHub-Actions-Ausführung, den Vergleich der tatsächlich ausgelieferten Assets oder die Desktop-/iPad-Regression nach v66. Diese technischen Prüfungen bleiben eigenständige Abschlussbedingungen.
