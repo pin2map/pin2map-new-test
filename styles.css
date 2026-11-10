@@ -337,7 +337,7 @@ button:not(.p2m-icon-control):not(.result):not(.inline-button){
 .topbar .search button.p2m-icon-control{
   box-shadow:none;
   border-color:#aebfce!important;
-  background:#eef3f8!important;
+  --p2m-button-bg:#eef3f8;
 }
 .pin-zoom-buttons{gap:8px!important}
 button.pin-zoom-button.p2m-icon-control{
