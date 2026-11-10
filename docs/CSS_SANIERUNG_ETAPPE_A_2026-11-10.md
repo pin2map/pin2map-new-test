@@ -375,3 +375,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - `tests/css-removed-brand-contract.test.js` schützt die Abwesenheit der ehemaligen Klasse und kontrolliert den weiterhin vorhandenen Such-Header. Eine mögliche zukünftige Branding-Anforderung erfordert eine bewusste Änderung statt Alt-CSS-Reaktivierung.
 - Bestand **301 `!important`-Deklarationen**, unverändert. Service-Worker-Quellstand **v75**.
 - GitHub-Quellprüfung kann den Browser- bzw. CI-Erfolg nicht ersetzen: tatsächliche Testausführung, Pages-Auslieferung und abgeschlossene Regressionen für iPhone/iPad/Desktop bleiben gesonderte Prüfpunkte. Die iPhone-Abnahme der vorherigen Version v74 ist weiterhin dokumentiert.
+
+## Inkrement B18 – historische map-controls-Leiste vollständig entfernt (v76)
+
+- Die früher verwendete Leiste `.map-controls` ist weder im aktuellen `index.html` noch in den geprüften UI- und Hauptanwendungsmodulen vorhanden. Stattdessen werden Kartensteuerungen über die Leaflet-Zoomgruppe und eigenständige Kartenbuttons abgebildet.
+- **Sechs alte CSS-Regelstellen** wurden entfernt: Grundposition, ursprünglicher mobiler Versatz, nachträgliche Positionsanpassung, erneute mobile Positionsanpassung, zugehörige Button-Gestaltung und die überholte Ausblendregel `display:none!important`. Kein aktives Kartensteuerelement wurde geändert.
+- Neuer Vertragstest `tests/css-obsolete-map-toolbar.test.js`: Die nicht mehr vorhandene Klasse darf weder im aktuellen HTML noch als CSS-Selektor wieder eingeführt werden. Aktuelle Kartensteuerungsselektoren müssen weiterhin vorhanden sein.
+- Schuldenbudget: **301 → 300 `!important`** (Ausgangswert 402). PWA-Quellversion **v76**.
+- Die gezielten Quelltextbedingungen werden nach dem Commit geprüft. Die Ausführung der vollständigen Node-Tests, der GitHub-Actions-/Pages-Erfolg, die ausgelieferten Assets und iPhone-/iPad-/Desktop-Regressionen sind eigenständig nachzuweisen. Da ausschließlich historisches CSS für eine nicht vorhandene Klasse entfernt wurde, ist **kein unmittelbarer erneuter Nutzer-Gerätetest** erforderlich.
