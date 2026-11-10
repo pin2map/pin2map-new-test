@@ -334,10 +334,27 @@ button:not(.p2m-icon-control):not(.result):not(.inline-button){
   border-radius:999px!important;overflow:hidden;
 }
 .topbar .search input{background:transparent!important}
+/* Search action: the button retains a generous tap area. Only the
+   visible ring is smaller; it is not the clickable element's border. */
 .topbar .search button.p2m-icon-control{
+  position:relative;
   box-shadow:none;
-  border-color:#aebfce!important;
-  --p2m-button-bg:#eef3f8;
+  border-color:transparent!important;
+  --p2m-button-bg:transparent;
+}
+.topbar .search button.p2m-icon-control::before{
+  content:"";
+  position:absolute;
+  width:var(--p2m-search-ring-size);
+  height:var(--p2m-search-ring-size);
+  border:1px solid #aebfce;
+  border-radius:50%;
+  background:#eef3f8;
+  pointer-events:none;
+}
+.topbar .search button.p2m-icon-control .p2m-lucide{
+  position:relative;
+  z-index:1;
 }
 .pin-zoom-buttons{gap:8px!important}
 button.pin-zoom-button.p2m-icon-control{
@@ -631,16 +648,17 @@ body.pin-relocation-picking #map .leaflet-interactive{
 body.pin-open #refreshButton.refresh-map-button{display:none!important}
 
 
-/* The search action belongs to the 42px-high input, not the 42px
-   standalone map controls. Own circle and glyph sizing in one component. */
+/* Search action: 42px tap target, independent 30px visible ring.
+   This explicitly separates the hit area, circle and magnifier. */
 :root{
-  --p2m-search-button-size:30px;
+  --p2m-search-tap-size:42px;
+  --p2m-search-ring-size:30px;
   --p2m-search-icon-size:18px;
 }
 #app #searchButton.p2m-icon-control{
-  --p2m-button-size:var(--p2m-search-button-size);
+  --p2m-button-size:var(--p2m-search-tap-size);
   --p2m-icon-size:var(--p2m-search-icon-size);
-  flex:0 0 var(--p2m-search-button-size);
+  flex:0 0 var(--p2m-search-tap-size);
 }
 /* Unified diameter for circular map controls. The shared size token is
    defined once in the final map-control design contract below. */
