@@ -694,33 +694,14 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
 #app .topbar .search button.p2m-icon-control{
   margin:0!important;
 }
-/* Keep Layers centered and anchor Info immediately to its left with an
-   8px gap, all aligned by one bottom edge (safe area included). */
-#app #layersButton.layers-bottom-button{
-  left:50%!important;right:auto!important;
-  transform:translateX(-50%)!important;
-  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
-  line-height:1!important;
-}
-#app #labelsToggle.labels-toggle{
-  position:absolute!important;
-  left:calc(50% - var(--p2m-map-circle-size) / 2 - 8px - var(--p2m-map-circle-size))!important;
-  right:auto!important;top:auto!important;
-  bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;
-  transform:none!important;
-}
+/* Former bottom-center Layers / left-of-Layers Info positioning removed.
+   Current positions are owned by the upper-corner and bottom-right rules below. */
 /* Existing focused-pin editor should continue hiding all map controls,
    despite the explicit inline-flex declarations above. */
 body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton),
 body.pin-open #app #basemapMenu,
 body.pin-open #app .topbar,
 body.pin-open #app .pin-zoom-buttons{display:none!important}
-@media(max-width:630px){
-  #app #layersButton.layers-bottom-button,
-  #app #labelsToggle.labels-toggle{
-    bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
-  }
-}
 
 /* Leaflet zoom/fit group is anchored to the bottom-left viewport corner.
    Keep its bottom baseline aligned with Info/Layers and respect iOS safe area.
@@ -917,8 +898,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
     env(safe-area-inset-bottom,0px)
   );
 }
-#app #layersButton.layers-bottom-button,
-#app #labelsToggle.labels-toggle,
 #app #basemapButton.basemap-map-button.p2m-icon-control{
   bottom:var(--p2m-bottom-control-baseline)!important;
 }
