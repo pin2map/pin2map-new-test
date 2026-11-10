@@ -184,3 +184,11 @@ Der Auftraggeber wurde gebeten, die Preview auf dem iPhone zu aktualisieren und 
 **Damit manuell abgenommen:** Die vom Auftraggeber geprüften beiden Panels entsprechen nach Inkrement B4 weiterhin dem freigegebenen Zustand und sind auf seinem iPhone bedienbar. Kein weiterer Gerätetest für denselben v63-Schritt erforderlich.
 
 **Abgrenzung:** Die Nutzerrückmeldung belegt weder die genaue am Gerät aktive Service-Worker-Version noch erfolgreich abgeschlossene GitHub-Actions-Läufe oder eine erneute Desktop-/iPad-Prüfung. Diese technischen Nachweise bleiben gesondert offen und sind vor einer umfassenden Freigabe zu erledigen.
+
+## Inkrement B5 – Ebenenliste mit einheitlichem Vier-Spalten-Layout (v64)
+
+- Eine ältere CSS-Definition für `.layer-row` mit **fünf Spalten** (`25px 20px minmax(0,1fr) auto 30px`) wurde entfernt. Bereits davor existierte eine spätere, allgemein gültige **Vier-Spalten-Definition** (`25px 20px minmax(0,1fr) 30px`), für Mobilgeräte weiterhin `23px 15px minmax(0,1fr) 28px`. Die sichtbare Darstellung soll sich daher nicht verändern.
+- Der Stil für den Löschen-Button und die geschützte private Ebene bleibt bestehen.
+- Der neue Test `tests/css-layer-row-contract.test.js` schützt die Vier-Spalten-Verteilung auf beiden Viewportklassen und den Lösch-Button-Stil. Alle vier Quelltextbedingungen wurden gegen die erneut aus GitHub gelesene CSS-Datei geprüft, aber kein vollständiger Node-/Browser-Testlauf durchgeführt.
+- `!important` bleibt bei 382; `grid-template-columns`-Vorkommen sinken von 4 auf 3. Version der PWA-App-Shell auf **v64** gesetzt.
+- **Abnahme offen:** GitHub-Actions-Veröffentlichung, per HTTPS ausgelieferte v64-Dateien und echte Browser-/Geräteprüfung. Frühere Nutzerfreigaben gelten als Soll-Referenz, nicht als Beleg, dass v64 bereits ausgeliefert wurde.
