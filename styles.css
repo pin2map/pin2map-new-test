@@ -349,23 +349,12 @@ button.layer-delete.p2m-icon-control{color:#ad3540!important}
 
 
 /* Special pin2map action: two colored pins, dashed connection, no visible text. */
+/* Size is owned by the shared #pinPanel action contract. */
 #movePin.p2m-icon-control{
-  --p2m-button-size:44px;
-  width:44px!important;height:44px!important;
-  min-width:44px!important;min-height:44px!important;
-  flex:0 0 44px!important;padding:0!important;
-  border-radius:50%!important;
   background:#fff!important;color:var(--p2m-button-ink)!important;
 }
 #movePin .p2m-relocate-icon{
   width:34px;height:23px;max-width:none;
-}
-@media(max-width:630px){
-  #movePin.p2m-icon-control{
-    --p2m-button-size:44px;
-    width:44px!important;height:44px!important;
-    min-width:44px!important;min-height:44px!important;
-  }
 }
 
 
@@ -586,24 +575,15 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* Independent refresh control, anchored to the viewport instead of the
    floating search header. 35% is measured from the visible screen height.
    This remains the same on narrow screens and in the installed PWA. */
+/* Size, shape and surface are owned by shared map-controls contract.
+   This rule owns only refresh location and stacking order. */
 #refreshButton.refresh-map-button.p2m-icon-control{
-  --p2m-button-size:42px;
   position:fixed!important;
   z-index:1095;
   left:12px!important;right:auto!important;
   top:35%!important;top:35dvh!important;
   bottom:auto!important;
   transform:translateY(-50%)!important;
-  display:inline-flex!important;align-items:center;justify-content:center;
-  width:42px!important;height:42px!important;
-  min-width:42px!important;min-height:42px!important;
-  max-width:42px!important;max-height:42px!important;
-  padding:0!important;flex:none!important;
-  border-radius:50%!important;
-  background:#fff!important;
-  border:1px solid var(--p2m-button-border)!important;
-  color:var(--p2m-button-ink)!important;
-  box-shadow:var(--p2m-button-shadow);
 }
 @media(max-width:630px){
   #refreshButton.refresh-map-button.p2m-icon-control{
