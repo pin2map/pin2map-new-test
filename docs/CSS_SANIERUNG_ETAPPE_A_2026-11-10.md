@@ -367,3 +367,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 **Manuell abgenommen:** Der überprüfte iPhone-Header entspricht weiterhin der zuvor freigegebenen Darstellung und Bedienbarkeit. Für dieses Inkrement ist die konkrete iPhone-Sichtprüfung abgeschlossen.
 
 **Technische Abgrenzung:** Die Rückmeldung belegt weder die am Gerät aktive Service-Worker-Version noch einen erfolgreichen GitHub-Actions-Lauf, die exakte öffentliche Auslieferung aller v74-Dateien oder die Desktop-/iPad-Regression. Diese technischen Abschlussgates bleiben offen.
+
+## Inkrement B17 – nicht mehr verwendete Header-Branding-Regeln entfernt (v75)
+
+- Nach Prüfung des tatsächlich gerenderten `index.html`-Headers sowie der einschlägigen aktiven UI-/App-Module sind die Branding-Selektoren `.brand`, `.brand span`, `.brand small` und `.topbar .brand` ohne Element im aktuellen Such-Header.
+- Sieben obsolete CSS-Selektorvorkommen einschließlich der mobilen Varianten aus der kompakten CSS-Grundschicht wurden entfernt. Die Suchform selbst, der Kartenbereich und die tatsächlichen Buttons wurden nicht geändert.
+- `tests/css-removed-brand-contract.test.js` schützt die Abwesenheit der ehemaligen Klasse und kontrolliert den weiterhin vorhandenen Such-Header. Eine mögliche zukünftige Branding-Anforderung erfordert eine bewusste Änderung statt Alt-CSS-Reaktivierung.
+- Bestand **301 `!important`-Deklarationen**, unverändert. Service-Worker-Quellstand **v75**.
+- GitHub-Quellprüfung kann den Browser- bzw. CI-Erfolg nicht ersetzen: tatsächliche Testausführung, Pages-Auslieferung und abgeschlossene Regressionen für iPhone/iPad/Desktop bleiben gesonderte Prüfpunkte. Die iPhone-Abnahme der vorherigen Version v74 ist weiterhin dokumentiert.
