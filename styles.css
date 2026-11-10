@@ -940,40 +940,59 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 
 
-/* Control relocation: info stacked over the bottom-right map selector;
-   layers in the top-right map corner, below the floating search capsule.
-   Other controls keep the shared bottom safe-area baseline. */
-#app #labelsToggle.labels-toggle{
-  left:auto!important;
-  right:12px!important;
-  top:auto!important;
-  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important;
+/* Upper map controls: Settings and Layers are symmetrical peers beside
+   the search bar. A shared top offset prevents the former two-row layout. */
+:root{
+  --p2m-top-corner-inset:12px;
+  --p2m-top-corner-offset:12px;
+  --p2m-top-search-clearance:60px;
+}
+#app #settingsButton.settings-map-button.p2m-icon-control,
+#app #layersButton.layers-bottom-button{
+  position:absolute!important;
+  top:calc(var(--p2m-top-corner-offset) + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
   transform:none!important;
+}
+#app #settingsButton.settings-map-button.p2m-icon-control{
+  left:var(--p2m-top-corner-inset)!important;
+  right:auto!important;
 }
 #app #layersButton.layers-bottom-button{
   left:auto!important;
-  right:12px!important;
-  top:calc(66px + env(safe-area-inset-top,0px))!important;
-  bottom:auto!important;
-  transform:none!important;
+  right:var(--p2m-top-corner-inset)!important;
+  z-index:1190!important;
 }
+/* On narrow screens the search input occupies the space between the two
+   corner controls rather than overlapping the layers button. */
+@media(max-width:630px){
+  :root{
+    --p2m-top-corner-inset:10px;
+    --p2m-top-corner-offset:10px;
+    --p2m-top-search-clearance:60px;
+  }
+  #app .topbar{
+    left:var(--p2m-top-search-clearance)!important;
+    right:var(--p2m-top-search-clearance)!important;
+    width:calc(100% - 2 * var(--p2m-top-search-clearance))!important;
+    max-width:none!important;
+    transform:none!important;
+  }
+}
+/* Layers panel opens immediately below its top-right trigger. */
 #app #layersPanel{
   left:auto!important;
-  right:12px!important;
-  top:calc(116px + env(safe-area-inset-top,0px))!important;
+  right:var(--p2m-top-corner-inset)!important;
+  top:calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px))!important;
   bottom:auto!important;
   transform:none!important;
-  max-height:min(65dvh,calc(100dvh - 128px - env(safe-area-inset-top,0px)))!important;
+  max-height:min(65dvh,calc(100dvh - 85px - env(safe-area-inset-top,0px)))!important;
 }
-@media(max-width:630px){
-  #app #labelsToggle.labels-toggle{right:10px!important}
-  #app #layersButton.layers-bottom-button{
-    right:10px!important;
-    top:calc(62px + env(safe-area-inset-top,0px))!important;
-  }
-  #app #layersPanel{
-    right:10px!important;
-    top:calc(112px + env(safe-area-inset-top,0px))!important;
-    max-height:calc(100dvh - 124px - env(safe-area-inset-top,0px))!important;
-  }
+/* Info remains stacked above the bottom-right map selector. */
+#app #labelsToggle.labels-toggle{
+  left:auto!important;
+  right:var(--p2m-top-corner-inset)!important;
+  top:auto!important;
+  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important;
+  transform:none!important;
 }
