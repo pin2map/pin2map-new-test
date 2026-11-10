@@ -275,3 +275,11 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren,
 - Die Zahl der `!important`-Deklarationen sank von **340 auf 319** (Ausgangsstand 402). Der Budgettest ist auf 319 verschärft; neuer Regressionstest: `tests/css-map-and-move-button-ownership.test.js`.
 - GitHub-Quellstand: **v69** (`pin2map-new-v69`). Gezielt geprüfte CSS-Quelltextbedingungen stimmen; vollständiger Node-Testlauf und verifizierter öffentlicher Preview-Deploy/Browsertest wurden dadurch **nicht** nachgewiesen.
 - **Abnahme offen:** Die tatsächliche iPhone-Darstellung von Pin-Verschieben und Refresh sowie die Desktop-/iPad-Regressionsprüfung für v69. Keine Änderung der Pin-Daten oder Anwendungslogik.
+
+## Manuelle iPhone-Abnahme von Refresh und Pin-Verschieben nach B10 (v69)
+
+Der Auftraggeber bestätigte am 10.11.2026 nach Aufforderung zum Refresh der Preview und zur Prüfung des **Refresh-Buttons sowie des Verschieben-Buttons im Pin-Dialog** auf dem iPhone ausdrücklich: **„alles gut“**.
+
+**Manuell abgenommen:** Die beiden konkret geprüften Bedienelemente entsprechen hinsichtlich Darstellung und Bedienbarkeit weiterhin dem bisherigen Referenzzustand. Die CSS-Bereinigung v69 ist für diese iPhone-Sichtprüfung akzeptiert.
+
+**Technische Abgrenzung:** Die Nutzerbestätigung ist kein unabhängiger Beleg für die aktive Service-Worker-Version, den erfolgreichen GitHub-Actions-Lauf, die identische öffentliche Auslieferung aller v69-Dateien oder die aktuelle Desktop-/iPad-Regression. Diese Prüfungen bleiben offene Freigabebedingungen.
