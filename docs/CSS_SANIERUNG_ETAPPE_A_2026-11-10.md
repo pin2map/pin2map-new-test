@@ -323,3 +323,10 @@ Nach der Aufforderung, die Entwicklungsvorschau auf dem iPhone zu aktualisieren 
 **Manuell abgenommen:** Die beiden überprüften UI-Funktionen entsprechen nach der Bereinigung B13 weiterhin dem bisherigen iPhone-Referenzzustand. Für diese konkrete Sicht- und Bedienprüfung ist keine weitere Nutzerabnahme erforderlich.
 
 **Technisch offen:** Die Rückmeldung belegt weder die exakte aktive Service-Worker-Version noch den erfolgreichen GitHub-Actions-Lauf, die unveränderte HTTPS-Auslieferung der v71-Dateien oder die aktuelle Desktop-/iPad-Regression. Diese Abschlussnachweise sind weiterhin gesondert zu erbringen.
+
+## Inkrement B14 – Info-Button: visuelle Gestaltung und Position haben eindeutige Eigentümer (v72)
+
+- Die alte `.labels-toggle`-Sondergestaltung wurde um inzwischen überholte feste Größen (38px), Positionswerte (links/unten), separate Rahmen-/Hintergrund-/Farb-/Schattenwerte und Schriftfamilie/-größe bereinigt.
+- Die bestehende und bereits abgenommene **42px-Kartenbutton-Gestaltung** sowie die spätere **Info-Position über dem Kartenwahlbutton rechts unten** bleiben unverändert maßgeblich. Lokale Regeln enthalten nur Positionierungsart, Stacking und Schriftgewicht.
+- Neuer Schutztest: `tests/css-info-button-ownership.test.js`, der das Zurückkehren der alten Angaben verhindern soll. Der CSS-`!important`-Bestand bleibt **314**, weil ausschließlich ältere normale Deklarationen entfernt wurden.
+- Quellversion **v72**. Quelltextkontrolle, Node-Testausführung, veröffentlichte Preview und visuelle Geräteprüfung sind getrennte Gates; insbesondere die Live-Darstellung nach v72 wurde noch nicht unabhängig bestätigt.
