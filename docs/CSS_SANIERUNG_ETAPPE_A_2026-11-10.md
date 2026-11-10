@@ -552,3 +552,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Vertragstest `tests/css-search-capsule-geometry-ownership.test.js` stellt sicher, dass für die Suchkapsel keine historischen Höhen oder Radien mehr konkurrieren. Zusammen mit dem bestehenden Kapseltest bestanden **vier gezielte Assertions** gegen die aktuelle GitHub-Quelle.
 - Stand unverändert **299 `!important`** (ursprünglich 402), weil nur normal priorisierte überholte Deklarationen entfielen. Service-Worker-Quellrelease **v91**.
 - **Offene Prüfungen:** Vollständiger Node-22-Testlauf und GitHub-Actions-/Pages-Ergebnis sowie die tatsächlich ausgelieferte Version wurden hier nicht unabhängig nachgewiesen. Da die geltenden Layoutwerte unverändert bleiben, ist für diese reine Altregelbereinigung kein zusätzlicher Nutzertest erforderlich.
+
+## Inkrement B30 – eindeutige Abstände der schwebenden Suchkapsel (v92)
+
+- Historische `.topbar`-Abstandsangaben aus der frühen Grundschicht und späteren responsiven Varianten wurden entfernt: `gap:9px`, `gap:6px`, `gap:7px`, `gap:5px` sowie mehrere überholte `padding`-Werte. Zusätzlich entfiel der **redundante**, schwächer spezifische `padding:4px 5px!important`-Eintrag im allgemeinen `.topbar`-Block. Der frühere mobile `@media(max-width:630px)`-Block mit seinen Panel-Regeln bleibt ausdrücklich erhalten.
+- **Gültige CSS-Eigentümer unverändert:** `.topbar` mit `gap:4px!important` und `#app .topbar` mit `padding:4px 5px!important`. Die Suchkapsel bleibt 52px hoch, das Suchformular 42px, und die 30px-Sichtkreislinie und 18px-Lupe aus v87 wurden nicht verändert.
+- Neuer Test `tests/css-header-spacing-ownership.test.js` fordert genau einen finalen Gap-/Padding-Eigentümer und schützt die mobile Media-Query-Klammerung. Zusammen mit den bereits vorhandenen Header-/CSS-Budget-Verträgen bestanden **sechs gezielt ausgewertete Assertionen** gegen die aktuelle GitHub-Quelle.
+- `!important`-Bestand **299 → 298** gegenüber anfangs 402. Das CSS-Debt-Budget ist auf 298 gesetzt. PWA-Quellrelease **v92**.
+- Abgrenzung: Isolierte Quelltextassertionen sind kein vollständiger Node-22-Testlauf. GitHub-Actions-/Pages-Veröffentlichung und ausgelieferte Browserdateien müssen eigenständig geprüft werden. Da die wirksamen Abstände unverändert sind, ist für B30 kein neuer Gerätetest nötig.
