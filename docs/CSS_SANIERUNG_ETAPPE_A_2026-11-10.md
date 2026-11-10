@@ -176,3 +176,11 @@ Für die vorläufige Monolith-CSS-Datei existiert jetzt `tests/css-debt-budget.t
 - **Noch offen:** Nachweis erfolgreich gelaufener GitHub Actions, öffentliche Auslieferung der v63-Dateien, Browser- und Gerätetest. Der direkte Preview-Webabruf liefert in dieser Arbeitsumgebung `DisabledError`. Eine erfolgreiche Veröffentlichung darf daraus nicht abgeleitet werden.
 
 **Nächster Schritt:** Nicht weitere CSS-Domänen gleichzeitig umstellen, solange die Live-Prüfung offen ist. Vor einem größeren Panel-Refactoring die bereits bestätigte mobile Referenz mit der tatsächlich ausgelieferten v63 vergleichen.
+
+## Manuelle iPhone-Panel-Abnahme nach Inkrement B4 (v63)
+
+Der Auftraggeber wurde gebeten, die Preview auf dem iPhone zu aktualisieren und sowohl den Ebenendialog als auch die Einstellungen zu öffnen und auf unveränderte Darstellung sowie Bedienbarkeit zu prüfen. Die ausdrückliche Rückmeldung vom 10.11.2026 lautet: **„alles gut“**.
+
+**Damit manuell abgenommen:** Die vom Auftraggeber geprüften beiden Panels entsprechen nach Inkrement B4 weiterhin dem freigegebenen Zustand und sind auf seinem iPhone bedienbar. Kein weiterer Gerätetest für denselben v63-Schritt erforderlich.
+
+**Abgrenzung:** Die Nutzerrückmeldung belegt weder die genaue am Gerät aktive Service-Worker-Version noch erfolgreich abgeschlossene GitHub-Actions-Läufe oder eine erneute Desktop-/iPad-Prüfung. Diese technischen Nachweise bleiben gesondert offen und sind vor einer umfassenden Freigabe zu erledigen.
