@@ -345,6 +345,9 @@ button:not(.p2m-icon-control):not(.result):not(.inline-button){
 .topbar .search button.p2m-icon-control::before{
   content:"";
   position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  box-sizing:border-box;
   width:var(--p2m-search-ring-size);
   height:var(--p2m-search-ring-size);
   border:1px solid #aebfce;
@@ -692,7 +695,7 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
   height:40px!important;
 }
 #app .topbar .search button.p2m-icon-control{
-  margin:0 4px 0 0!important;
+  margin:0!important;
 }
 /* Former bottom-center Layers / left-of-Layers Info positioning removed.
    Current positions are owned by the upper-corner and bottom-right rules below. */
