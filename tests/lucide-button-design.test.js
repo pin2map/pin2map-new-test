@@ -18,7 +18,7 @@ function documentStub(){
   };
 }
 test("all selected control icons are available as offline Lucide SVG geometry",()=>{
-  for(const name of ["search","refresh-cw","settings","map","layers","tags","tags-off","info","plus","minus","scan","x","check","trash","map-pin-off"]){
+  for(const name of ["search","refresh-cw","settings","map","layers","tags","tags-off","message-circle-exclamation-point","message-circle-exclamation-point-off","info","plus","minus","scan","x","check","trash","map-pin-off"]){
     const icon=Icons.svg(name,documentStub());
     assert.equal(icon.name,"svg");
     assert.equal(icon.attributes.viewBox,"0 0 24 24");
@@ -28,6 +28,18 @@ test("all selected control icons are available as offline Lucide SVG geometry",(
   }
   assert.throws(()=>Icons.svg("unsupported",documentStub()),RangeError);
 });
+test("information icon retains exact Lucide shape and adds one rising slash only when Off",()=>{
+  const enabled=Icons.svg("message-circle-exclamation-point",documentStub());
+  const disabled=Icons.svg("message-circle-exclamation-point-off",documentStub());
+  assert.equal(enabled.children.length,3);
+  assert.equal(disabled.children.length,4);
+  assert.deepEqual(disabled.children.slice(0,3).map(node=>({name:node.name,attributes:node.attributes})),
+    enabled.children.map(node=>({name:node.name,attributes:node.attributes})));
+  assert.equal(disabled.children[3].attributes.d,"M2 22 22 2");
+  const html=read("index.html");
+  assert.match(html,/<button id="pinInfoButton" data-pin-icon="message-circle-exclamation-point-off"/);
+});
+
 test("crossed tags state retains exact icon geometry and draws one diagonal slash",()=>{
   const normal=Icons.svg("tags",documentStub());
   const crossed=Icons.svg("tags-off",documentStub());
