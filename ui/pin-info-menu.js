@@ -3,14 +3,16 @@
  * Mode callbacks are injected: no project, weather, Leaflet, persistence. */
 (function(root){
   class PinInfoMenu {
-    constructor({getElement,document:doc,onSelect,onOpening=()=>{},icons}){
+    constructor({getElement,document:doc,onSelect,onPeriodChange=()=>{},onOpening=()=>{},icons}){
       this.element=getElement;this.document=doc;this.onSelect=onSelect;
-      this.onOpening=onOpening;this.icons=icons;this.listeners=[];
+      this.onOpening=onOpening;this.onPeriodChange=onPeriodChange;this.icons=icons;this.listeners=[];
     }
     get button(){return this.element("pinInfoButton");}
     get menu(){return this.element("pinInfoMenu");}
     isOpen(){return !this.menu.classList.contains("hidden");}
-    render(mode){
+    render(mode,period="today"){
+      const input=this.element("pinInfoPeriod");
+      if(input)input.value=period;
       this.document.querySelectorAll("#pinInfoMenu [data-pin-info-mode]").forEach(el=>{
         const selected=el.dataset.pinInfoMode===mode;
         el.classList.toggle("is-selected",selected);
@@ -26,6 +28,8 @@
       if(this.listeners.length)return;
       const listen=(el,type,fn)=>{el.addEventListener(type,fn);this.listeners.push({el,type,fn});};
       listen(this.button,"click",()=>this.isOpen()?this.close():this.open());
+      const selector=this.element("pinInfoPeriod");
+      if(selector)listen(selector,"change",()=>this.onPeriodChange(selector.value));
       this.document.querySelectorAll("#pinInfoMenu [data-pin-info-mode]").forEach(el=>
         listen(el,"click",()=>{
           this.onSelect(el.dataset.pinInfoMode);
