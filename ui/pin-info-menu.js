@@ -27,6 +27,12 @@
       this.button.setAttribute("aria-label","Pin-Informationen auswählen");
       this.button.title="Pin-Informationen auswählen";
     }
+    setLoading(loading){
+      const active=Boolean(loading);
+      this.button.classList.toggle("is-loading",active);
+      this.button.setAttribute("aria-busy",String(active));
+      this.button.title=active?"Pin-Informationen werden geladen":"Pin-Informationen auswählen";
+    }
     close(){this.menu.classList.add("hidden");this.button.setAttribute("aria-expanded","false");}
     open(){this.onOpening();this.menu.classList.remove("hidden");this.button.setAttribute("aria-expanded","true");}
     bind(){
