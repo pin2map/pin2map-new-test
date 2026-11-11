@@ -23,8 +23,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .result:hover{background:#edf6ff}
 .result strong{display:block;font-size:14px}
 .result small{font-size:12px;color:#66788b}
-.results-head{display:flex;justify-content:flex-end;padding:4px;background:#f4f7fa}
-.results-head button{background:transparent;color:#3e5974;padding:3px 9px;font-size:18px}
+.results-footer{display:flex;justify-content:center;padding:8px 12px;border-top:1px solid #edf1f5;background:#fff}
+.results-footer .results-cancel{padding:8px 20px;color:#3e5974;background:#edf1f5;border:1px solid #d7dde3;border-radius:999px;font-size:14px;cursor:pointer}
 .message{padding:13px;font-size:14px;color:#4a5870}
 .panel{position:absolute;right:12px;z-index:1250;background:white;border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--shadow);width:min(350px,calc(100% - 24px));max-height:70vh;overflow-y:auto}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
@@ -131,7 +131,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .search-results{
   top:calc(53px + env(safe-area-inset-top,0px))!important;
   left:50%!important;right:auto!important;transform:translateX(-50%)!important;
-  width:min(405px,calc(100% - 18px))!important
+  width:min(398px,calc(100% - 24px))!important
 }
 .panel{top:calc(56px + env(safe-area-inset-top,0px))!important}
 .notice{top:calc(56px + env(safe-area-inset-top,0px))!important}
@@ -356,8 +356,7 @@ button.layers-bottom-button.p2m-icon-control{
 button.labels-toggle.p2m-icon-control{
   font-family:inherit;font-size:inherit
 }
-button.close.p2m-icon-control,button.layer-delete.p2m-icon-control,
-.results-head button.p2m-icon-control{
+button.close.p2m-icon-control,button.layer-delete.p2m-icon-control{
   --p2m-button-size:32px;
   width:32px!important;height:32px!important;
   min-width:32px!important;min-height:32px!important;
