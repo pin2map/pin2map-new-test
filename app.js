@@ -52,6 +52,23 @@
   const bulkDeleteDialog = new window.Pin2MapBulkDeleteDialog({
     getElement:$,onConfirm:id=>confirmBulkDeletion(id)
   });
+  const pinEditorActions = new window.Pin2MapPinEditorActions({
+    getElement:$,cleanText,
+    onNameChange:value=>{
+      const p=selectedPin();
+      if(p){pinOps.renamePin(state,p.id,value,{cleanText});save();renderMarkers();}
+    },
+    onLayerChange:id=>{
+      const p=selectedPin();if(!p||!layerById(id))return;
+      pinOps.assignLayer(state,p.id,id);save();renderLayers();renderMarkers();renderPinPanel();
+      if(!layerById(p.layerId).visible)showNotice("Pin liegt jetzt in einer ausgeblendeten Ebene");
+    },
+    onShowLayer:()=>{
+      const p=selectedPin();if(!p)return;
+      filterOps.setLayerVisible(state,p.layerId,true);
+      save();renderLayers();renderMarkers();renderPinPanel();
+    }
+  });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -224,17 +241,7 @@
       renderLayers();save();
     });
 
-    $("pinName").addEventListener("input", e => { const p=selectedPin(); if(p){pinOps.renamePin(state,p.id,e.target.value,{cleanText});save();renderMarkers();} });
-    $("pinName").addEventListener("blur", e => {e.target.value=cleanText(e.target.value);});
-    $("pinLayer").addEventListener("change", e => {
-      const p=selectedPin(); if(!p || !layerById(e.target.value))return;
-      pinOps.assignLayer(state,p.id,e.target.value); save();renderLayers();renderMarkers();renderPinPanel();
-      if(!layerById(p.layerId).visible) showNotice("Pin liegt jetzt in einer ausgeblendeten Ebene");
-    });
-    $("showPinLayer").addEventListener("click", () => {
-      const p=selectedPin();if(!p)return;filterOps.setLayerVisible(state,p.layerId,true);
-      save();renderLayers();renderMarkers();renderPinPanel();
-    });
+    pinEditorActions.bind();
     $("movePin").addEventListener("click",()=>moveController.begin());
     $("cancelMove").addEventListener("click",()=>moveController.cancel());
     $("confirmMove").addEventListener("click",()=>moveController.confirm());
