@@ -23,7 +23,7 @@
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
 - **Besonders geschützter Suchbutton:** 42px Antippfläche, 30px sichtbarer Ring, 18px Lupe. Kein unbeabsichtigtes Umgestalten von Kreis, Suchkapsel oder Ausrichtung.
 - **Technische Bausteine:** Leaflet-Karte, Pin-/Ebenenverwaltung, IndexedDB-Persistenz, Suche, UI-Module, Service Worker und Offline-App-Shell; maßgeblichen tatsächlichen Implementierungsstand in den jeweiligen Dateien prüfen, nicht allein aus dieser Kurzliste ableiten.
-- **Architekturphase:** Erst CSS-Kaskaden und Zuständigkeiten konsolidieren und abnehmen, **danach `app.js` strukturell überarbeiten**. Keine gleichzeitige große Umstellung von CSS und App-Steuerung.
+- **Architekturphase (Beschluss 2026-11-11):** CSS-Stabilisierung bei **B38/v100 pausiert**, nicht als CSS-Endabnahme abgeschlossen. Weiteres kosmetisches Altregel-Abtragen (B39 ff.) zurückgestellt. Nach Prüfung der technischen Baseline folgt die schrittweise Entflechtung von `app.js` nach `docs/MODULARCHITEKTUR.md`, ohne CSS zugleich groß umzubauen.
 
 ## 3. Verbindliche Entscheidungen und Arbeitsweise
 
@@ -38,24 +38,24 @@
 - Kein erneuter iPhone-/iPad-Gerätetest bei rein interner Bereinigung ohne erwartete sichtbare Änderung. Bei UI-Änderungen die vorher abgenommene Darstellung gezielt vergleichen.
 - **„ok“** ist eine Fortsetzungsanweisung, keine Testabnahme.
 
-## 4. Letztes Inkrement und Nachweisstand
+## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
-**B38 – v100 (2026-11-11):**
-- `styles.css`: ursprüngliche überholte `min-width:0`-Angabe aus der Basisregel `.search input` entfernt. Die späteren Flex- und `.topbar .search input`-Eigentümer behalten den gleichen Mindestbreitenwert.
-- Bestehenden B37-Test `tests/css-search-input-base-width-ownership.test.js` an die neue Basisregel angepasst; neuer Test `tests/css-search-input-base-minwidth-ownership.test.js` für den wirksamen Mindestbreiten-/Kapselvertrag.
-- `sw.js`: Quellversion v99 → v100. `!important` unverändert 298.
-- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B38 dokumentiert.
-- **Gezielt statisch kontrolliert:** eindeutige alte Deklaration, endgültige Mindestbreiten, Header-Geometrie, Testmuster; nach Commit GitHub-Dateien erneut prüfen.
-- **Unabhängig offen:** `node --test tests/*.test.js` und `tests/check-*.mjs`, erfolgreicher GitHub-Actions-/Pages-Lauf, ausgelieferte Preview v100 und Live-Browser-Smoke. Keine erneute iPhone-/iPad-Prüfung notwendig, weil die wirksame Kaskade gleich bleibt.
+**CSS-Pause beschlossen am 2026-11-11; Quellstand B38/v100 bleibt unverändert.**
+
+- `styles.css`: 947 Zeilen, rund 40 KB, **298 `!important`** (anfangs 402); 36 mehrfach vorkommende Selektoren in einer groben Quelltext-Inventur. Wiederholungen können berechtigte Media-Query-/Zustandsunterschiede sein und sind nicht automatisch Fehler. CSS bleibt technischer **Übergangszustand**, keine architektonisch abgeschlossene Komponentenkaskade.
+- Letzte konkrete Bereinigung: **B38** (ursprüngliche doppelte `min-width:0` im Suchfeld), dokumentiert in `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`. CSS, JavaScript, Worker und Datenmodell werden durch diese **Dokumentationsentscheidung nicht verändert**; SW-Quellkennung bleibt `pin2map-new-v100`.
+- Geltender Schutzvertrag: keine neuen pauschalen `!important`-Overrides; CSS-Budget **298** nicht erhöhen; vorhandene Designtokens und Eigentümer respektieren; den abgenommenen Suchbutton (42px Antippfläche, 30px Sichtkreis, 18px Lupe) nicht beiläufig verändern.
+- Bewusst **zurückgestellt**, nicht erledigt: umfassende CSS-Kaskadenkonsolidierung, konkurrierende Eigentümer, langfristige Aufteilung nach Komponenten, Stylelint-/AST-Infrastruktur und spätere Desktop-/iPad-/iPhone-CSS-Abnahme. **B39 wird nicht automatisch gestartet.**
+- **Quelltext geprüft:** Feature-Branch `styles.css`, CSS-Architekturvertrag, Fahrplan, Projektstatus und Preview-Workflow wurden gelesen. Die Workflowdefinition führt u. a. `node --test tests/*.test.js` und `tests/check-*.mjs` vor einem geplanten Pages-Deploy aus; eine Konfiguration beweist keinen erfolgreichen Lauf.
+- **Unabhängig offen:** vollständiger Node-22-Testlauf gegen den vollständigen Branch, GitHub-Actions-Laufresultat des relevanten Pushes, veröffentlichte `/preview/`-Assets und SW v100 über HTTPS, Browser-Smoke und erneute Geräteabnahme. Der Container konnte `github.com` und `pin2map.github.io` nicht per DNS auflösen; die Web-Abrufe waren nicht erfolgreich. Verfügbare Commit-Status-/PR-Workflow-Quellen haben für die bisherigen Commits keine belastbaren Push-Run-Ergebnisse geliefert.
+- **Schutzregel:** vor weiteren **Anwendungsänderungen** die technischen Gates nach Möglichkeit nachholen; fehlen die Belege weiterhin, ausdrücklich offen lassen und keine erfolgreich getestete/ausgelieferte Version behaupten. Nicht ungeprüft nach `main` übernehmen.
 
 ## 5. Nächste konkrete Schritte
 
-1. **B39:** erneut eine eindeutig überholte CSS-Deklaration samt betroffenem Testinventar identifizieren.
-2. Kleine Änderung samt Regressionstest, CSS-Sanierungsprotokoll, PWA-Quellversion und zentralem Projektstatus durchführen.
-3. Vollständige Node-/Actions-/Pages-/Live-Gates nach Möglichkeit tatsächlich verifizieren, nicht nur statische Quelltextchecks.
-4. Nach vollständiger CSS-Abnahme die geplante `app.js`-Modularisierung beginnen.
-
-**Noch offen:** CSS-Komponentenzuständigkeiten vollständig konsolidieren, Stylelint-/AST-Schutz, unabhängige Browser-/Desktop-/Tablet-Regressionen.
+1. **Qualitäts-Baseline v100 nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
+2. **`app.js`-Entflechtung vorbereiten:** vorhandene Verantwortlichkeiten und importierte UI-/Application-/Domain-/Adapter-Module inventarisieren; eine kleine risikoarme vertikale Extraktion anhand `docs/MODULARCHITEKTUR.md` festlegen. Noch keine gleichzeitige große CSS-Umgestaltung.
+3. Anschließend erste kleine `app.js`-Extraktion mit passenden Unit-/Integrations-/Browser-Regressionen und nachvollziehbarer Preview-Freigabe durchführen.
+4. CSS-Komplettsanierung später wieder aufnehmen, wenn Änderungen konkrete Kaskadenprobleme offenbaren oder die Architektur-/UI-Abnahme ansteht. B39 bleibt bis dahin **pausiert**.
 
 ## 6. Maßgebliche Dokumente
 
