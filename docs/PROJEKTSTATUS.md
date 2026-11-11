@@ -17,9 +17,9 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v98**, nach CSS-Inkrement **B36**. Quelle: `sw.js`, `const CACHE='pin2map-new-v98'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v98` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
-- **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B36 entfernte `display:flex` aus der ursprünglichen `.topbar`-Grundregel; der gültige wichtige Flex-Eigentümer bleibt bestehen.
-- **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B36 sind dort erläutert.
+- **Quellversion:** **v99**, nach CSS-Inkrement **B37**. Quelle: `sw.js`, `const CACHE='pin2map-new-v99'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v99` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B37 entfernte das überholte `width:100%` im ursprünglichen `.search input`; die späteren Flex-/Breiten-Eigentümer bleiben gültig.
+- **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B37 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
 - **Besonders geschützter Suchbutton:** 42px Antippfläche, 30px sichtbarer Ring, 18px Lupe. Kein unbeabsichtigtes Umgestalten von Kreis, Suchkapsel oder Ausrichtung.
 - **Technische Bausteine:** Leaflet-Karte, Pin-/Ebenenverwaltung, IndexedDB-Persistenz, Suche, UI-Module, Service Worker und Offline-App-Shell; maßgeblichen tatsächlichen Implementierungsstand in den jeweiligen Dateien prüfen, nicht allein aus dieser Kurzliste ableiten.
@@ -40,22 +40,22 @@
 
 ## 4. Letztes Inkrement und Nachweisstand
 
-**B36 – v98 (2026-11-11):**
-- `styles.css`: `display:flex` aus der frühen `.topbar`-Grundregel entfernt; das finale `display:flex!important;flex-direction:row!important` bleibt unverändert maßgeblich.
-- `tests/css-header-base-display-ownership.test.js`: neuer Schutztest für alte Grundregel und spätere Flex-/Headergrößen-Zuständigkeit.
-- `sw.js`: Quellversion v97 → v98; CSS-`!important`-Zahl bleibt 298.
-- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B36 dokumentiert.
-- **Statische Kontrollen:** genau eine Zielstelle, Beibehaltung der finalen Flex- und Padding-Geometrie, keine Änderung am Suchring.
-- **Unabhängig offen:** vollständige Node-Testsuite und `tests/check-*.mjs`, GitHub-Actions-/Pages-Push-Lauf, HTTPS-Auslieferung v98 und Browser-Smoke. Keine zusätzliche manuelle Geräteprüfung vorgesehen, da die entfernte Regel bereits übersteuert wurde.
+**B37 – v99 (2026-11-11):**
+- `styles.css`: altes `width:100%` in ursprünglicher `.search input`-Regel entfernt; spätere `width:0`- und Flex-Eigentümer unverändert.
+- `tests/css-search-input-base-width-ownership.test.js`: neuer Regressionstest für ursprüngliche Eingabefeld-Eigenschaften, spätere Breiten-/Flex-Steuerung und 16px-/Padding-Vertrag.
+- `sw.js`: Quellversion v98 → v99; `!important` unverändert 298.
+- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B37 protokolliert.
+- **Statisch geprüft:** einmalige Zielstelle, spätere gültige Regeln und Testmuster anhand GitHub-Quelltext. Nach Commit Dateien erneut prüfen.
+- **Unabhängig offen:** volle Node-Testsuite plus `tests/check-*.mjs`, erfolgreicher GitHub-Actions-/Pages-Lauf, öffentliche HTTPS-Auslieferung v99 und Browser-Smoke. Kein neuer Gerätetest nötig, weil nur eine überholte Normaldeklaration entfiel.
 
 ## 5. Nächste konkrete Schritte
 
-1. **B37:** eine weitere eindeutig überholte CSS-Deklaration nach CSS-Kaskade und vorhandenen Tests untersuchen.
-2. Kleine gezielte Bereinigung, Regressionstest und Projektstatus-/Sanierungsprotokollfortschreibung; bei CSS-Änderung PWA-Quellversion erhöhen.
-3. Automatische Tests, GitHub-Actions-/Pages-Deploy und ausgelieferte Preview nach Möglichkeit wirklich verifizieren; sonst offen ausweisen.
-4. Nach CSS-Abnahme `app.js` strukturell überarbeiten.
+1. **B38:** nächste eindeutig überschriebene CSS-Deklaration anhand des Feature-Branch-Iststands und der vorhandenen CSS-Tests identifizieren.
+2. Klein und gezielt entfernen, Regressionstest und Dokumentation aktualisieren, bei CSS-Änderung PWA-Quellversion fortschreiben.
+3. Unabhängige Node-/Actions-/Pages-/Live-Gates nach Möglichkeit tatsächlich prüfen; andernfalls weiter ausdrücklich offen halten.
+4. Nach Abschluss der CSS-Abnahme die `app.js`-Modularisierung beginnen.
 
-**Noch offen:** CSS-Eigentümer vollständig klären, Stylelint-/AST-Qualitätsschutz und unabhängige Desktop-/Tablet-/Browserregressionen.
+**Noch offen:** Komponenteneigentümer vollständig klären, Stylelint-/AST-Kontrollen und unabhängige Desktop-/Tablet-/Browserregressionen.
 
 ## 6. Maßgebliche Dokumente
 
