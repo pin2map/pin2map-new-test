@@ -568,3 +568,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Regressionstest: `tests/css-mobile-header-display-ownership.test.js` prüft den gültigen Flex-Eigentümer, die Abwesenheit der Altregel und die benachbarten mobilen Regeln.
 - CSS-`!important`-Zahl unverändert **298** (ursprünglich 402); es wurde eine überholte normale Deklaration entfernt. Die 42px-Such-Antippfläche, 30px-Sichtkreislinie, 18px-Lupe und alle Suchbutton-Eigenschaften bleiben unangetastet.
 - PWA-Quellkennung auf **v93** angehoben. Statische Invarianten wurden gegen die GitHub-Quelldatei ausgewertet; ein vollständiger Node-Testlauf, ein erfolgreicher GitHub-Actions-/Pages-Lauf und die tatsächliche HTTPS-Auslieferung werden dadurch **nicht** nachgewiesen. Keine neue manuelle Geräteprüfung nötig, weil keine sichtbare Änderung zu erwarten ist.
+
+
+## Inkrement B32 – überholte Flex-Header-Definition bereinigt (v94, 2026-11-11)
+
+- In der früheren `.topbar`-Einzeilen-Korrektur ausschließlich die normal priorisierten `display:flex` und `flex-direction:row` entfernt. Der spätere gültige Eigentümer `.topbar` mit `display:flex!important;flex-direction:row!important` wurde nicht geändert. `flex-wrap:nowrap`, Ausrichtung, Breite und die übrigen Header-/Suchbutton-Regeln bleiben erhalten.
+- Neu: `tests/css-header-flex-direction-ownership.test.js` schützt den verbleibenden historischen Block vor erneuter Doppeldefinition und kontrolliert den gültigen Flex- und Headergrößenvertrag.
+- `!important` bleibt bei **298** gegenüber ursprünglich 402; zwei redundante **normale** CSS-Deklarationen weniger. PWA-Quellstand **v94**; keine beabsichtigte Darstellungänderung, kein zusätzlicher Nutzer-Gerätetest erforderlich.
+- Gezielte Quellcodeinvarianten vor Commit gegen GitHub-Dateien geprüft. **Nicht nachgewiesen:** vollständiger Node-Testlauf, erfolgreicher GitHub-Actions-Push-Lauf, erfolgreiche Pages-Veröffentlichung und tatsächlich ausgelieferte v94-Assets/Browser-Smoke. Kein erfolgreicher CI-/Live-Test wird daraus abgeleitet.
