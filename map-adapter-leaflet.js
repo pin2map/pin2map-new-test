@@ -58,20 +58,17 @@
     }
     // Provider catalog lives inside the renderer adapter: no Leaflet tile details
     // escape into application, UI, domain or project storage.
-    setSatelliteAppearance({brightness=100,contrast=100}={}){
-      // Only the Esri World Imagery tile container is filtered.
-      // Pins, tooltips, overlays and map controls are separate Leaflet layers.
-      const bounded=(value,low,high)=>{
-        const number=Number(value);
-        return Number.isFinite(number)?Math.min(high,Math.max(low,number)):100;
-      };
-      const b=bounded(brightness,70,140),k=bounded(contrast,60,140);
-      this.satelliteAppearance={brightness:b,contrast:k};
+    setSatelliteAppearance({brightness=140}={}){
+      // The filter belongs to the Esri satellite tile layer only.
+      // Pins, tooltips, overlays and map controls remain untouched.
+      const number=Number(brightness);
+      const bounded=Number.isFinite(number)?Math.min(180,Math.max(70,number)):140;
+      this.satelliteAppearance={brightness:bounded};
       if(this.activeBasemap!=="satellite"||!this.basemapLayer)return;
       const tiles=this.basemapLayer.getContainer();
-      if(tiles)tiles.style.filter="brightness("+(b/100)+") contrast("+(k/100)+")";
+      if(tiles)tiles.style.filter="brightness("+(bounded/100)+")";
     }
-    setBasemap(id,{esriRelief=false,satelliteBrightness=100,satelliteContrast=100}={}) {
+    setBasemap(id,{esriRelief=false,satelliteBrightness=140}={}) {
       const sources={
         street:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",maxZoom:19,
           attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'},
@@ -91,7 +88,7 @@
       this.basemapLayer=window.L.tileLayer(source.url,{
         maxZoom:source.maxZoom,crossOrigin:true,attribution:source.attribution
       }).addTo(this.map);
-      this.setSatelliteAppearance({brightness:satelliteBrightness,contrast:satelliteContrast});
+      this.setSatelliteAppearance({brightness:satelliteBrightness});
       // Historical relief composite still applies to non-satellite basemaps.
       // Do not override user brightness/contrast for satellite tiles.
       if(esriRelief){
