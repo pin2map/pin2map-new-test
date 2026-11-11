@@ -259,7 +259,8 @@ test("settings and Layers flank search above while map picker stays bottom-right
   assert.ok(menu.indexOf('data-basemap="humanitarian"')<menu.indexOf('data-basemap="satellite"'),
     "Satellite is last basemap above the relief divider");
   assert.ok(menu.indexOf('data-basemap="satellite"')<menu.indexOf('id="satelliteBrightness"'));
-  assert.ok(menu.indexOf('id="satelliteContrast"')<menu.indexOf('id="esriReliefToggle"'));
+  assert.ok(menu.indexOf('id="satelliteBrightness"')<menu.indexOf('id="esriReliefToggle"'));
+  assert.ok(!menu.includes('id="satelliteContrast"'));
   assert.ok(html.includes('id="basemapButton" data-pin-icon="map"'));
   const settingsPanel=html.match(/<aside id="settingsPanel"[\s\S]*?<\/aside>/)?.[0]||"";
   assert.ok(!settingsPanel.includes("Kartendarstellung"));
