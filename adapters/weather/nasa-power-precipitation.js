@@ -21,7 +21,7 @@
       if(cached&&this.now()-cached.at>=0&&this.now()-cached.at<TTL)return cached.data;
       if(this.pending.has(id))return this.pending.get(id);
       const params=new URLSearchParams({
-        parameters:"IMERG_PRECTOT",community:"AG",
+        parameters:"IMERG_PRECTOT",community:"HY",
         latitude:String(pin.lat),longitude:String(pin.lng),format:"JSON"
       });
       const task=(async()=>{
