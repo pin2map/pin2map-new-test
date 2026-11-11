@@ -16,6 +16,7 @@ Für Chatwechsel und die nächste konkrete Aufgabe zuerst [PROJEKTSTATUS.md](PRO
 4. **docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md** – Veröffentlichungsumgebung, stabile/Preview-Trennung, Deployment-Nachweis.
 5. **docs/UI_CONTROLS_AND_PWA_REFRESH_2026-11-10.md** – Gestaltung der Kartenbuttons, Refresh und PWA-Updatevertrag.
 6. **docs/VORGAENGER_APP_MODUL_AUDIT.md** – Funktionsinventar der Vorgänger-App; Referenz für Verhalten, keine kopierbare Zielarchitektur.
+7. **docs/ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md** – Abschluss der app.js-Entflechtung auf v116 und priorisierte NEW-Funktions-/UX-Gaps; für nächste UX-/Feature-Aufgabe zusammen mit Projektstatus lesen.
 7. **docs/BROWSER_REGRESSION_GATE_2026-11-09.md**, **docs/REGRESSION_CHECKPOINT_2026-11-09.md** – Prüfinfrastruktur und ausdrücklich als historisch datierte Prüfergebnisse.
 
 Die unter 1–6 genannten Dokumente sind maßgeblich für ihren jeweiligen Bereich. Bei scheinbaren Widersprüchen neuere ausdrücklich beschlossene Regeln und deren Geltungsbereich beachten, nie stillschweigend historische Vorgaben erneut aktivieren.
