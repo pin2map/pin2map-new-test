@@ -112,6 +112,28 @@ async function longPress(page,x,y,ms=725){
     console.log("[browser] PASS – basemap toggle, street/topo, ARIA, focus, Escape, outside click, panels, persistence");
     const box=await page.locator("#map").boundingBox();
     assert.ok(box&&box.width>300&&box.height>300,"Map viewport is present");
+
+    step("viewport persistence: map pan survives reload through repository");
+    const readViewport=()=>page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject())?.viewport;}finally{store.close();}
+    });
+    const viewBefore=await readViewport();
+    assert.ok(viewBefore&&Number.isFinite(viewBefore.zoom),"Project viewport exists in storage");
+    const dragX=box.x+box.width*.47,dragY=box.y+box.height*.55;
+    await page.mouse.move(dragX,dragY);
+    await page.mouse.down();
+    await page.mouse.move(dragX+135,dragY-85,{steps:8});
+    await page.mouse.up();
+    await page.waitForTimeout(750); // moveend + 300 ms debounced write.
+    const viewAfter=await readViewport();
+    assert.ok(viewAfter&&Math.abs(viewAfter.lng-viewBefore.lng)>0.0001,
+      "Moving the map must write the updated viewport");
+    await page.reload({waitUntil:"domcontentloaded"});
+    await assertReady(page);
+    const viewReloaded=await readViewport();
+    assert.deepEqual(viewReloaded,viewAfter,"Viewport must survive reload");
+    console.log("[browser] PASS – viewport moveend persistence and reload");
     const center={x:box.x+box.width*.5,y:box.y+box.height*.57};
     step("long-press creates and selects a private pin");
     await longPress(page,center.x,center.y);
