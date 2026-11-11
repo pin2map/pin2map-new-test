@@ -210,7 +210,10 @@ test("settings and Layers flank search above while map picker stays bottom-right
   assert.ok(css.includes("right:var(--p2m-top-search-clearance)!important"));
   const menu=html.match(/<section id="basemapMenu"[\s\S]*?<\/section>/)?.[0]||"";
   assert.ok(menu.includes(">Darstellung</div>"));
-  assert.ok(menu.indexOf('data-basemap="topo"')<menu.indexOf('data-basemap="street"'));
+  assert.ok(menu.indexOf('data-basemap="international"')<menu.indexOf('data-basemap="street"'));
+  assert.ok(menu.indexOf('data-basemap="street"')<menu.indexOf('data-basemap="topo"'));
+  assert.ok(menu.indexOf('data-basemap="topo"')<menu.indexOf('data-basemap="satellite"'));
+  assert.ok(menu.indexOf('data-basemap="satellite"')<menu.indexOf('data-basemap="humanitarian"'));
   assert.ok(html.includes('id="basemapButton" data-pin-icon="map"'));
   const settingsPanel=html.match(/<aside id="settingsPanel"[\s\S]*?<\/aside>/)?.[0]||"";
   assert.ok(!settingsPanel.includes("Kartendarstellung"));
