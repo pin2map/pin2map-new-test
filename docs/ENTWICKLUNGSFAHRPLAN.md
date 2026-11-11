@@ -71,6 +71,12 @@ Jede Domänenfunktion erhält Unit-Tests ohne Kartenbibliothek; UI- und Kartenin
 
 **Gate 4:** Reproduzierbarer Sync über mehrere Geräte ohne unbemerkten Datenverlust, einschließlich Konfliktfällen.
 
+## Aktuelle Priorisierung – 2026-11-11
+
+**Vorläufige CSS-Pause nach B38/v100.** Die kontrollierte Altregelbereinigung wird nicht fortlaufend mit B39 ff. fortgesetzt; es handelt sich ausdrücklich **nicht** um eine vollständige CSS-Endabnahme. Die Schutzverträge in `docs/CSS_ARCHITEKTURREGELN.md` und das `!important`-Budget 298 bleiben gültig. Die vollständige Kaskaden-/Komponentenbereinigung und entsprechende Geräte-Abnahme werden für einen späteren Zeitpunkt offen geführt.
+
+**Reihenfolge ab jetzt:** (1) technische v100-Baseline einschließlich Node-/CI-/Pages-/HTTPS-/Browser-Gates verifizieren und unbelegte Gates offen dokumentieren; (2) Verantwortlichkeiten in `app.js` inventarisieren; (3) kleine vertikale Extraktionen in bereits vorhandene oder klar abgegrenzte Module gemäß `docs/MODULARCHITEKTUR.md`, jeweils mit Tests und Live-Abnahme. Keine große gleichzeitige CSS-/JS-Umgestaltung; `main` und Referenzstände bleiben geschützt. Der Entwicklungsfahrplan und seine Gates 0–4 bleiben ansonsten unverändert.
+
 ## Fortlaufende Regeln
 
 - Keine ungeprüften Änderungen auf `main`; Entwicklungszweig `feature/leaflet-modular-core` und gesicherte Referenzen getrennt.
