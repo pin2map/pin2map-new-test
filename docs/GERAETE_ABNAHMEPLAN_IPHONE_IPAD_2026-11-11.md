@@ -1,6 +1,6 @@
 # Geräte-Abnahmeprotokoll – lokale Basisversion v116 (iPhone / iPad)
 
-**Erstellt:** 2026-11-11 · **Stand:** Geräteabnahme läuft; **A01–A06 laut Nutzerrückmeldung bestanden**, weitere Fälle offen · **Ziel:** Gate 2 / konkrete UX-Parität zur Vorgänger-App, ohne alten Code zu übernehmen.
+**Erstellt:** 2026-11-11 · **Stand:** **Alle 21 nummerierten iPhone-Safari-Testfälle laut Nutzerrückmeldung bestanden**; iPad/Home-Screen-PWA separat offen · **Ziel:** Gate 2 / konkrete UX-Parität zur Vorgänger-App, ohne alten Code zu übernehmen.
 
 ## 1. Ausgangspunkt und Belegstatus
 
@@ -9,14 +9,14 @@
 - **Entwicklungsquelle:** `pin2map/pin2map-new-test`, `feature/leaflet-modular-core`.
 - **Quellversion:** v116, SW-Quelle `pin2map-new-v116`, Preview-Variante `pin2map-preview-v116`. Die installierte/aktivierte Version auf einem bestimmten Nutzergerät ist **nicht automatisch nachgewiesen**.
 - **Bereits automatisiert geprüft:** Node+Chromium <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550>, Architektur <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996>, Pages-/HTTPS-Live-Start <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529>. Diese Prüfläufe ersetzen **keinen echten Safari-/Touch-/Flugmodus-Test**.
-- **Manueller Ergebnisstand:** **A01–A06 laut Nutzerrückmeldung auf iPhone/Safari OK** (11.11.2026); A07–A08, B01–B08 und C01–C05 sowie iPad weiterhin offen. Ein früheres „funktioniert“ für OpenTopoMap v104 ist kein umfassendes v116-Gate.
+- **Manueller Ergebnisstand:** **A01–A08, B01–B08 und C01–C05 laut Nutzerrückmeldung auf iPhone/Safari OK** (11.11.2026). A07–C05 wurden in einem einzigen Sammelergebnis „alle Tests erfolgreich bestanden!“ bestätigt. Details zu optionalen/bedingten Schritten (Brave privat, Vergleich mit Vorgänger, installierte PWA/Flugmodus) wurden nicht gesondert genannt und sind dadurch nicht unabhängig nachgewiesen. iPad/Home-Screen-PWA bleiben separat offen. Ein früheres „funktioniert“ für OpenTopoMap v104 ist kein umfassendes v116-Gate.
 - **Sicherheit:** Tests nach Möglichkeit mit **einem eigens angelegten Testpin und einer Testebene**. Vorhandene persönliche Pins/Ebenen nicht löschen; auch bei einer Test-Löschung nur den explizit erstellten Testpin verwenden. **Browserdaten, Website-Speicher, Service Worker und PWA nicht löschen oder zurücksetzen.** Bei Fehlern zuerst Screenshot und genaue Schritte erfassen.
 
 ## 2. Prüfgeräte und Ergebniserfassung
 
 | Gerät / Umgebung | Prüfstatus | Ergebnis / Browser-/iOS-Version |
 | --- | --- | --- |
-| iPhone – Safari-Tab, bestehende frühere Preview-Nutzung | A01–A06 OK, übrige offen | Nutzerrückmeldung 11.11.2026; iOS-/Safari-Version nicht mitgeteilt |
+| iPhone – Safari-Tab, bestehende frühere Preview-Nutzung | A01–A08, B01–B08, C01–C05 OK laut Nutzer | Sammelrückmeldung 11.11.2026; OS-/Safari-Version und Details bedingter Tests offen | Nutzerrückmeldung 11.11.2026; iOS-/Safari-Version nicht mitgeteilt |
 | iPhone – installierte PWA (nur falls bereits installiert) | offen | – |
 | iPad – Safari-Tab | offen | – |
 | iPad – installierte PWA (nur falls bereits installiert) | offen | – |
@@ -34,8 +34,8 @@ Ergebnis je Fall: **OK**, **Fehler**, **nicht ausführbar** oder **nicht geprüf
 | A04 | Testpin auswählen, Verschieben aktivieren, Vorschau auf andere Stelle bewegen, **Abbrechen** | Ursprüngliche Pin-Position bleibt unverändert; keine versehentliche Pin-Erstellung oder Verschiebung | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
 | A05 | Verschieben erneut aktivieren, Zielposition wählen, **Bestätigen** | Genau derselbe Pin (ID) hat neue Position; nach Reload bleibt diese gespeichert | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
 | A06 | Karte so verschieben, dass ein Pin nahe linkem, rechtem, oberem und unterem Bildschirmrand liegt; jeweils Editor öffnen | Einmalige Kartenkorrektur macht **vollständigen Dialog inkl. Spitze** sichtbar; Pin-Koordinaten bleiben gleich | OK – alle vier Ränder (iPhone Safari, Nutzerrückmeldung 11.11.2026) |
-| A07 | Bei geöffnetem Pin-Editor die Karte frei verschieben und zoomen | Dialog bleibt am Pin verankert und darf später aus dem Viewport wandern; **kein fortlaufendes erzwungenes Zurückschwenken** | offen |
-| A08 | Den Testpin erneut antippen oder Dialog-Schließen verwenden, freie Karte berühren | Dialog schließt zuverlässig; Bedienelemente werden wieder sichtbar; keine versteckten blockierenden Overlays | offen |
+| A07 | Bei geöffnetem Pin-Editor die Karte frei verschieben und zoomen | Dialog bleibt am Pin verankert und darf später aus dem Viewport wandern; **kein fortlaufendes erzwungenes Zurückschwenken** | OK – Sammelrückmeldung iPhone/Safari, Test 7 (11.11.2026) |
+| A08 | Den Testpin erneut antippen oder Dialog-Schließen verwenden, freie Karte berühren | Dialog schließt zuverlässig; Bedienelemente werden wieder sichtbar; keine versteckten blockierenden Overlays | OK – Sammelrückmeldung iPhone/Safari, Test 8 (11.11.2026) |
 
 **Spezifische historische Regression:** A06–A07 schützen den 76px-Pin-Dialogabstand, die Spitze und den einmaligen statt dauerhaften Sichtbarkeits-Pan; dies ist nicht allein durch allgemeine Desktop-Smokes abgenommen.
 
@@ -43,14 +43,14 @@ Ergebnis je Fall: **OK**, **Fehler**, **nicht ausführbar** oder **nicht geprüf
 
 | ID | Bedienfolge | Erwartetes Ergebnis | Status |
 | --- | --- | --- | --- |
-| B01 | Ebenen öffnen, zusätzliche **Testebene** anlegen; Privat umschalten, wieder einschalten | Reihenfolge Privat vor weiteren Ebenen, Sichtbarkeit korrekt und nach Reload erhalten; vorhandene Pins unverändert | offen |
-| B02 | Testpin im Editor einer Testebene zuordnen; Ebene aus-/einblenden | Pin besitzt genau eine Ebenenzugehörigkeit; bei ausgeblendeter Ebene verschwindet er nur aus der Karte, nicht aus dem Speicher | offen |
-| B03 | Ortsnamensuche nur mit bewusst aktivierter Berechtigung nutzen; nach Ort suchen, ggf. Treffer wählen | Trefferliste/Einzeltreffer benutzbar; neuer Ortssuch-Pin in Privat, Karte zentriert; bei Netzproblemen klare Meldung | offen |
-| B04 | Kartenwahl öffnen, **Straßenkarte → Topografie → Straßenkarte**; Kartenausschnitt dabei bewegen | Beide Hintergrundkarten sichtbar; Topokacheln laden (in Safari **und** gegebenenfalls Brave); kein dauerhaft grauer Hintergrund | offen |
-| B05 | Suchbutton vergrößert ansehen; Suchfeld öffnen/schließen, Tastatur erscheinen lassen | **30px sichtbarer Ring**, **18px Lupe**, **42px Antippfläche**, kein übergroßer grauer Ring, kein Abschneiden/Überdecken der Suche | offen |
-| B06 | Unten links/rechts Zoom-/Label-/Kartenbuttons betrachten; Hoch-/Querformat wechseln | Untere Bedienreihe hat ergonomischen Randabstand; **Leaflet-/OSM-Attribution bleibt sichtbar und nicht von Buttons verdeckt**; kein Abrutschen in Safe Area | offen |
-| B07 | Label-Optionen und Einstellungen öffnen/schließen, zwischen Panels wechseln | Kein gleichzeitiges blockierendes Panel; Buttons und Schließen funktionieren, keine unerwartete dauerhafte Aktiv-Markierung | offen |
-| B08 | Im Vergleich zur vorhandenen Vorgänger-App dieselben Basis-Buttons/Dialoge ansehen | Sichtbare Unterschiede/Abweichungen konkret notieren; Abnahme **nicht** automatisch wegen Designähnlichkeit | offen |
+| B01 | Ebenen öffnen, zusätzliche **Testebene** anlegen; Privat umschalten, wieder einschalten | Reihenfolge Privat vor weiteren Ebenen, Sichtbarkeit korrekt und nach Reload erhalten; vorhandene Pins unverändert | OK – Sammelrückmeldung iPhone/Safari, Test 9 (11.11.2026) |
+| B02 | Testpin im Editor einer Testebene zuordnen; Ebene aus-/einblenden | Pin besitzt genau eine Ebenenzugehörigkeit; bei ausgeblendeter Ebene verschwindet er nur aus der Karte, nicht aus dem Speicher | OK – Sammelrückmeldung iPhone/Safari, Test 10 (11.11.2026) |
+| B03 | Ortsnamensuche nur mit bewusst aktivierter Berechtigung nutzen; nach Ort suchen, ggf. Treffer wählen | Trefferliste/Einzeltreffer benutzbar; neuer Ortssuch-Pin in Privat, Karte zentriert; bei Netzproblemen klare Meldung | OK – Sammelrückmeldung iPhone/Safari, Test 11 (11.11.2026) |
+| B04 | Kartenwahl öffnen, **Straßenkarte → Topografie → Straßenkarte**; Kartenausschnitt dabei bewegen | Beide Hintergrundkarten sichtbar; Topokacheln laden (in Safari **und** gegebenenfalls Brave); kein dauerhaft grauer Hintergrund | OK – Sammelrückmeldung iPhone/Safari, Test 12 (11.11.2026) |
+| B05 | Suchbutton vergrößert ansehen; Suchfeld öffnen/schließen, Tastatur erscheinen lassen | **30px sichtbarer Ring**, **18px Lupe**, **42px Antippfläche**, kein übergroßer grauer Ring, kein Abschneiden/Überdecken der Suche | OK – Sammelrückmeldung iPhone/Safari, Test 13 (11.11.2026) |
+| B06 | Unten links/rechts Zoom-/Label-/Kartenbuttons betrachten; Hoch-/Querformat wechseln | Untere Bedienreihe hat ergonomischen Randabstand; **Leaflet-/OSM-Attribution bleibt sichtbar und nicht von Buttons verdeckt**; kein Abrutschen in Safe Area | OK – Sammelrückmeldung iPhone/Safari, Test 14 (11.11.2026) |
+| B07 | Label-Optionen und Einstellungen öffnen/schließen, zwischen Panels wechseln | Kein gleichzeitiges blockierendes Panel; Buttons und Schließen funktionieren, keine unerwartete dauerhafte Aktiv-Markierung | OK – Sammelrückmeldung iPhone/Safari, Test 15 (11.11.2026) |
+| B08 | Im Vergleich zur vorhandenen Vorgänger-App dieselben Basis-Buttons/Dialoge ansehen | Sichtbare Unterschiede/Abweichungen konkret notieren; Abnahme **nicht** automatisch wegen Designähnlichkeit | OK – Sammelrückmeldung iPhone/Safari, Test 16 (11.11.2026) |
 
 **Schutz:** B05/B06 sind die bereits früher gemeldeten Suchbutton- und Unterkantenprobleme. Keine neue CSS-Abnahme behaupten; B38 mit 298 `!important` bleibt offen. B03 ist bei fehlender expliziter Geocoder-Berechtigung **nicht ausführbar**, kein Fehler.
 
@@ -58,11 +58,11 @@ Ergebnis je Fall: **OK**, **Fehler**, **nicht ausführbar** oder **nicht geprüf
 
 | ID | Bedienfolge | Erwartetes Ergebnis | Status |
 | --- | --- | --- | --- |
-| C01 | In bereits benutztem Safari-Tab Preview öffnen, vorhandenen **Testpin** bearbeiten, anschließend oben **Refresh** verwenden | Änderungen vor Reload gespeichert; richtige neu verfügbare App-Version wird aktiviert oder verständlicher Fehler angezeigt; keine alte/leere App | offen |
-| C02 | Dieselbe Vorschau in Safari normal und alternativ in Brave privat aufrufen | Ein Browser darf nicht dauerhaft alte/falsche HTML-/SW-Routen liefern; bei 404 genaue URL + Browser dokumentieren, **keinen Cache/Daten löschen** | offen |
-| C03 | Online Straßenkarte in einem kleinen Bereich und einer Zoomstufe betrachten; PWA/Tab schließen, Flugmodus einschalten, erneut starten | Bereits installierte App-Shell startet offline; lokale Testpins/Ebenen erhalten; **nur zuvor betrachtete OSM-Kacheln derselben Zoomstufe** müssen ggf. vorhanden sein | offen |
-| C04 | Im Flugmodus Karte in neuen Bereich oder andere Zoomstufe bewegen; anschließend wieder online | Fehlende Kacheln dürfen offline leer bleiben; Pins/Kartenzentrum nicht verlieren; online wird Anzeige wiederhergestellt | offen |
-| C05 | Nach Offline-Bearbeitung Testpin erneut online laden und prüfen | Kein stiller Datenverlust oder doppelter Pin; vorherige Änderung dauerhaft gespeichert | offen |
+| C01 | In bereits benutztem Safari-Tab Preview öffnen, vorhandenen **Testpin** bearbeiten, anschließend oben **Refresh** verwenden | Änderungen vor Reload gespeichert; richtige neu verfügbare App-Version wird aktiviert oder verständlicher Fehler angezeigt; keine alte/leere App | OK – Sammelrückmeldung iPhone/Safari, Test 17 (11.11.2026) |
+| C02 | Dieselbe Vorschau in Safari normal und alternativ in Brave privat aufrufen | Ein Browser darf nicht dauerhaft alte/falsche HTML-/SW-Routen liefern; bei 404 genaue URL + Browser dokumentieren, **keinen Cache/Daten löschen** | OK – Sammelrückmeldung iPhone/Safari, Test 18 (11.11.2026) |
+| C03 | Online Straßenkarte in einem kleinen Bereich und einer Zoomstufe betrachten; PWA/Tab schließen, Flugmodus einschalten, erneut starten | Bereits installierte App-Shell startet offline; lokale Testpins/Ebenen erhalten; **nur zuvor betrachtete OSM-Kacheln derselben Zoomstufe** müssen ggf. vorhanden sein | OK – Sammelrückmeldung iPhone/Safari, Test 19 (11.11.2026) |
+| C04 | Im Flugmodus Karte in neuen Bereich oder andere Zoomstufe bewegen; anschließend wieder online | Fehlende Kacheln dürfen offline leer bleiben; Pins/Kartenzentrum nicht verlieren; online wird Anzeige wiederhergestellt | OK – Sammelrückmeldung iPhone/Safari, Test 20 (11.11.2026) |
+| C05 | Nach Offline-Bearbeitung Testpin erneut online laden und prüfen | Kein stiller Datenverlust oder doppelter Pin; vorherige Änderung dauerhaft gespeichert | OK – Sammelrückmeldung iPhone/Safari, Test 21 (11.11.2026) |
 
 **Hinweise:** Die Topokarten-Kacheln gehören derzeit nicht zum eigenen Offline-Tile-Cache. C03 ist nur möglich, wenn die PWA zuvor online vollständig installiert/initialisiert wurde. Safari-Tab und Home-Screen-PWA sind getrennt zu protokollieren. Nicht auf **„Website-Daten löschen“**, PWA deinstallieren oder SW abmelden ausweichen, weil das gespeicherte Pins vernichten kann.
 
@@ -96,6 +96,10 @@ Wiederholbar: ja / nein
 - **Technische Baseline:** v116 unverändert, keine neue Live-Abnahme aus der Erstellung dieses Dokuments ableiten. `main`, Referenzen, IndexedDB-Daten, CSS/Tile-Server bleiben geschützt.
 
 ## Laufende Geräte-Ergebnisse
+
+- **2026-11-11 – iPhone/Safari, alle verbleibenden nummerierten Tests 7–21: OK als pauschale Nutzerrückmeldung.** Der Nutzer schreibt „alle Tests erfolgreich bestanden!“ als Antwort auf die vollständige nummerierte Liste 7–21. Zuordnung: 7=A07, 8=A08, 9=B01, 10=B02, 11=B03, 12=B04, 13=B05, 14=B06, 15=B07, 16=B08, 17=C01, 18=C02, 19=C03, 20=C04, 21=C05. Deshalb sind die 15 Fälle als **laut Nutzer erfolgreich** protokolliert. Keine pro Test erhobenen Screenshots, iOS-Version, PWA-Installationsangabe, Brave-Details oder Flugmodus-Protokolle. **Keine Behauptung eines eigenen unabhängigen Tests auf Brave, installierter Home-Screen-PWA oder iPad.** Fehlermeldungen: keine.
+- **Ergebnis des iPhone-Safari-Abnahmeblocks v116:** A01–A08 + B01–B08 + C01–C05 = 21 von 21 Fällen als **nutzerbestätigt** eingetragen. Die formale gesamte Gate-2-Parität der Vorgänger-App und sonstiger Geräte ist damit **nicht** automatisch nachgewiesen; App-Quellversion bleibt v116.
+
 
 - **2026-11-11 – iPhone/Safari, Test A06: OK laut Nutzerrückmeldung.** Nutzer bestätigt „es funktioniert alles wie gewünscht“ nach der Anweisung, die vier Ränder zu prüfen. Damit sind obere, untere, linke und rechte Dialog-Randposition beim Öffnen als beobachtet OK eingetragen; keine neue Screenshot-/iOS-Version angegeben.
 - **Beschleunigte Fortsetzung:** Nutzer wünscht ausdrücklich weniger einzelne Abfragen. Nächster Prüfblock fasst A07, A08, B04, B05 und B06 zusammen. Übrige Fälle (B01–B03, B07–B08, C01–C05 sowie iPad) bleiben offen und werden weder stillschweigend bestanden noch verpflichtend sofort einzeln eingefordert.
