@@ -38,6 +38,14 @@ async function longPress(page,x,y,ms=725){
     step("load application");
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await assertReady(page);
+    step("search form: disabled geocoder message without network");
+    assert.equal(await page.locator("#allowGeocode").isChecked(),false);
+    await page.locator("#searchInput").fill("Berlin");
+    await page.locator("#searchInput").press("Enter");
+    await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
+    assert.match(await page.locator("#searchResults .message").textContent(),/Ortssuche im Test noch nicht aktiviert/);
+    await page.locator("#searchResults .results-head button").click();
+    assert.equal(await page.locator("#searchResults").isHidden(),true);
     step("basemap menu: switch, aria states, Escape, outside click and persistence");
     const picker=page.locator("#basemapButton");
     const menu=page.locator("#basemapMenu");
