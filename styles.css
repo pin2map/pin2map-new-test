@@ -947,15 +947,17 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #pinInfoButton.pin-info-button.p2m-icon-control{
   position:absolute;z-index:1190;
   right:var(--p2m-top-corner-inset);left:auto;top:auto;
-  bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px));
+  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + var(--p2m-map-circle-size) + 16px);
   --p2m-button-size:var(--p2m-map-circle-size);
 }
 #app #pinInfoMenu.pin-info-menu{
   position:absolute;z-index:1200;
   right:calc(var(--p2m-top-corner-inset) + var(--p2m-map-circle-size) + 8px);
-  bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px) - 4px);
+  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + var(--p2m-map-circle-size) + 12px);
   width:min(230px,calc(100% - 74px));
   max-height:min(75dvh,360px);overflow-y:auto;
+  padding:7px;border:1px solid var(--p2m-button-border);
+  border-radius:11px;background:#fff;box-shadow:var(--shadow);
 }
 body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 
