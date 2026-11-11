@@ -2,11 +2,12 @@
 /* Provider composition only. Monthly and today routes never mix data sources. */
 (function(root){
   class PinInfoProvider{
-    constructor({forecast,climatology,sunTimes}){
-      if(!forecast||!climatology||!sunTimes)throw new TypeError("All providers required");
-      this.forecast=forecast;this.climatology=climatology;this.sunTimes=sunTimes;
+    constructor({forecast,climatology,sunTimes,precipitation}){
+      if(!forecast||!climatology||!sunTimes||!precipitation)throw new TypeError("All providers required");
+      this.forecast=forecast;this.climatology=climatology;this.sunTimes=sunTimes;this.precipitation=precipitation;
     }
     request(mode,pins,period="today"){
+      if(mode==="precipitation"&&period!=="today")return this.precipitation.request(pins,period);
       if((mode==="daily"||mode==="sun")&&period!=="today"){
         if(mode==="daily")return this.climatology.request(pins,period);
         return this.sunTimes.request(pins,period);
