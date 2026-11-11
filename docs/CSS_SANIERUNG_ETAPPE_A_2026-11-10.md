@@ -600,3 +600,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Regressionstest `tests/css-mobile-search-input-minwidth-ownership.test.js` schützt gegen die Rückkehr der Doppelregel und kontrolliert die tatsächlich relevanten Mindestbreiten-, Flex-, 16px-Typografie- und Padding-Eigentümer. Bestehende Tests `tests/css-search-input-typography-ownership.test.js` und `tests/css-search-padding-ownership.test.js` auf Quelltextanzahl/Annahmen kontrolliert: Die Typografie-Inventur umfasst weiterhin sechs passende Regelblöcke und erfüllt deren Mindestanzahl (fünf); keine notwendige Testanpassung.
 - `!important` weiter **298** (ursprünglich 402), da nur normales historisches CSS entfiel. PWA-Quellversion **v97**. Keine beabsichtigte sichtbare Änderung; Suchbutton-Ring, Symbol und Antippfläche bleiben unverändert.
 - Statische Kontrollen der neuen CSS-Quellfassung erfolgreich. Vollständige Node-/CI-Testausführung, GitHub-Actions-/Pages-Erfolg, tatsächliche HTTPS-Auslieferung von v97 und Live-Browser-Regressionsprüfung werden **nicht** allein durch die Commits nachgewiesen. Kein zusätzlicher Gerätetest bei dieser internen Bereinigung erforderlich.
+
+
+## Inkrement B36 – alte Flex-Display-Grunddeklaration entfernt (v98, 2026-11-11)
+
+- In der ursprünglichen `.topbar`-Grundregel ausschließlich `display:flex` entfernt. Das später gültige `.topbar{...display:flex!important;flex-direction:row!important;...}` bleibt alleiniger Eigentümer für diese Flex-Darstellung. Die ursprünglichen Positionierungs-, Ausrichtungs- und Farbwerte bleiben unberührt.
+- Neuer Regressionstest `tests/css-header-base-display-ownership.test.js` schützt die Grundregel und die maßgeblichen Flex-, Headergrößen- und Padding-Verträge. B31/B32/B33-Verträge bleiben in ihrer Bedeutung erhalten.
+- Nur eine normal priorisierte Altdeklaration beseitigt; `!important` bleibt **298** (anfänglich 402). PWA-Quellrelease **v98**. Kein Eingriff in 30px-Suchring, 42px-Antippfläche, 18px-Lupe oder Kartendarstellung beabsichtigt.
+- Statische Quelltextverträge wurden vor dem Schreiben gegen die aktuelle GitHub-Quelle geprüft. **Offen bleiben:** vollständiger Node-Testlauf, GitHub-Actions-/Pages-Erfolg, ausgelieferte v98-Assets und Live-Browser-Smoke. Ein Gerätetest ist für diese nicht wirksame Deklaration nicht erforderlich.
