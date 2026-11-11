@@ -118,6 +118,8 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".pin-marker").count(),1);
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
     step("bulk delete confirmation cancels without removing a private pin");
+    await page.locator("#closePin").click();
+    await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator("#layersButton").click();
     await page.locator('#layersList .layer-delete[aria-label="Alle Pins in Privat löschen"]').click();
     await page.locator("#bulkDialog").waitFor({state:"visible",timeout});
@@ -127,6 +129,8 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#bulkDialog").waitFor({state:"hidden",timeout});
     assert.equal(await page.locator(".pin-marker").count(),1,"Cancel must preserve the existing private pin");
     await page.locator("#layersButton").click();
+    await page.locator(".leaflet-marker-icon").first().click({force:true});
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     console.log("[browser] PASS – private bulk-delete cancel preserves the pin");
 
     step("cancellation retains original coordinates");
