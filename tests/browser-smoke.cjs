@@ -447,6 +447,12 @@ async function longPress(page,x,y,ms=725){
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
     assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),6);
+    assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
+      ["zone","sun","daily","temperature","elevation","off"]);
+    assert.equal(await infoMenu.locator("#pinInfoPeriod").inputValue(),"today");
+    assert.equal(await infoMenu.locator(".pin-info-credit").count(),0);
+    assert.equal(await infoMenu.locator(".pin-info-period-box [data-pin-info-mode]").count(),2);
+    assert.equal(await page.locator(".elevation-label-wrap").count(),0);
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===1,
       null,{timeout:6000});
@@ -461,6 +467,25 @@ async function longPress(page,x,y,ms=725){
     assert.equal(forecastRequests.length,2,"Newly visible pins load after layer reveal");
     assert.equal(forecastRequests[1].count,1);
     await page.locator("#layersButton").click();
+    // Historical monthly normals are NOT forecasts. Mock both provider contracts.
+    const climateRequests=[],sunRequests=[];
+    await page.route("https://power.larc.nasa.gov/api/temporal/climatology/point**",async route=>{
+      const q=new URL(route.request().url()).searchParams;
+      climateRequests.push(q);
+      const lows={JAN:3.2,FEB:4.5},highs={JAN:11.6,FEB:13.7};
+      await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
+        properties:{parameter:{T2M_MIN_AVG:lows,T2M_MAX_AVG:highs}}
+      })});
+    });
+    await page.route("https://api.sunrise-sunset.org/v2**",async route=>{
+      const q=new URL(route.request().url()).searchParams;
+      sunRequests.push(q);
+      const mo=q.get("date").slice(5,7);
+      await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
+        sunrise:"2026-"+mo+"-21T06:35:00+01:00",
+        sunset:"2026-"+mo+"-21T18:20:00+01:00"
+      })});
+    });
     const nextMode=async(mode,match)=>{
       await infoButton.click();
       await infoMenu.locator('[data-pin-info-mode="'+mode+'"]').click();
@@ -473,6 +498,37 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".p2m-label-min").count(),2);
     await nextMode("sun","07:30");
     assert.equal(await page.locator(".p2m-label-rise").count(),2);
+    // Shared seasonal picker: active sun month shows 21st, monthly daily normal
+    // uses NASA average daily minima/maxima, never weather forecast or records.
+    await infoButton.click();
+    await infoMenu.locator("#pinInfoPeriod").selectOption("01");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-sun-label"))
+      .some(el=>el.textContent.includes("Jan")&&el.textContent.includes("06:35")),
+      null,{timeout:6000});
+    assert.equal(sunRequests.length,2);
+    assert.ok(sunRequests.every(q=>q.get("date")==="2026-01-21"));
+    assert.equal(await page.locator('.p2m-info-month-prefix svg').count(),2);
+    await nextMode("daily","12 °C");
+    assert.equal(climateRequests.length,2);
+    assert.ok(climateRequests.every(q=>q.get("parameters")==="T2M_MIN_AVG,T2M_MAX_AVG"));
+    assert.equal(await page.locator('.p2m-info-month-prefix svg').count(),2);
+    assert.equal(await page.locator('.p2m-info-month-prefix').first().innerText(),"");
+    await infoButton.click();
+    await infoMenu.locator("#pinInfoPeriod").selectOption("02");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-daily-label"))
+      .some(el=>el.textContent.includes("14 °C")),null,{timeout:6000});
+    assert.equal(climateRequests.length,2,"Second month reuses 12-month NASA responses");
+    await nextMode("sun","06:35");
+    assert.ok(await page.locator('.p2m-info-month-prefix').first().innerText().then(t=>t.includes("Feb")));
+    assert.ok(sunRequests.every(q=>q.get("date")?.endsWith("-21")));
+    await infoButton.click();
+    await infoMenu.locator("#pinInfoPeriod").selectOption("today");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-sun-label"))
+      .some(el=>el.textContent.includes("07:30")),null,{timeout:6000});
+    assert.equal(await page.locator('.p2m-info-month-prefix').count(),0);
     await nextMode("zone","Δ ");
     await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="off"]').click();
