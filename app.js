@@ -87,6 +87,17 @@
       save();renderMarkers();renderLayers();renderPinPanel();updateModeUI();showNotice("Pin gelöscht");
     }
   });
+  const pinSession = new window.Pin2MapPinSession({
+    getProject:()=>state,getSelectedPinId:()=>uiState.selectedPinId,
+    uiState,pinOps,privateLayerId:PRIVATE_ID,createId:uid,
+    validatePosition:projectModel.position,cleanText,getLayer:layerById,
+    overlays:overlayCoordinator,cancelMove:()=>moveController.cancel(),
+    onModeChange:()=>updateModeUI(),
+    onRenderMarkers:()=>renderMarkers(),onRenderLayers:()=>renderLayers(),
+    onRenderPanel:()=>renderPinPanel(),
+    scheduleSelectionLayout:()=>requestAnimationFrame(keepSelectedAbovePanel),
+    onSave:()=>save(),onNotice:message=>showNotice(message)
+  });
   const showNotice = message => uiShell.showNotice(message);
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
@@ -158,30 +169,13 @@
     if(pin)pinLayerPicker.render({layers:state.layers,selectedLayerId:pin.layerId});
     else pinLayerPicker.setOpen(false);
   }
-  function selectPin(id) {
-    if (uiState.selectedPinId === id) { overlayCoordinator.closeAll(); return; }
-    // A pin tap replaces other map overlays with the selected pin editor.
-    overlayCoordinator.preparePinSelection();
-    moveController.cancel();
-    uiState.selectPin(id); updateModeUI();
-    renderMarkers(); renderLayers(); renderPinPanel();
-    requestAnimationFrame(keepSelectedAbovePanel);
-  }
+  function selectPin(id){pinSession.select(id);}
   function updateModeUI() {
     const picking=uiState.moveMode&&!moveView.current();
     document.body.classList.toggle("pin-relocation-picking",picking);
     mapAdapter.getContainer().style.cursor = picking ? "crosshair" : "";
   }
-  function addPin(lat, lng, name) {
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-    const layerId=PRIVATE_ID;
-    const pin = pinOps.createPin(state,{id:uid(),lat,lng,name,layerId},
-      {validatePosition:projectModel.position,cleanText});
-    save(); selectPin(pin.id);
-    const layer = layerById(layerId);
-    if (!layer.visible) showNotice("Pin in ausgeblendeter Ebene „" + layer.name + "“ gespeichert");
-    return pin;
-  }
+  function addPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
   const hideResults = () => searchView.hide();
   const searchMessage = msg => searchView.message(msg);
