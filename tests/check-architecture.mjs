@@ -47,7 +47,12 @@ assert.match(app,/Pin2MapProjectModel/,"Domain model must be used by app");
 assert.match(app,/projectModel\.defaultProject/);
 assert.doesNotMatch(app,/\bindexedDB\s*\.|\bindexedDB\.open\s*\(/,"Application must not access IndexedDB directly");
 assert.match(app,/Pin2MapIndexedDBProjectStore\.open/);
-assert.match(app,/projectStore\.saveProject/);
+assert.match(app,/new window\.Pin2MapProjectPersistence/);
+const persistence=source("application/project-persistence.js");
+assert.match(persistence,/store\.saveProject\(this\.getProject\(\)\)/,
+  "Project persistence use case must call the injected repository port");
+assert.doesNotMatch(app,/projectStore\.saveProject/,
+  "Project write orchestration belongs to the application use case");
 assert.match(app,/Pin2MapSearchResultsView/,"App must use independent search presentation");
 assert.match(app,/Pin2MapUIState/,"App must use isolated UI state");
 assert.match(app,/Pin2MapPinEditorView/,"App must use pin editor view");
