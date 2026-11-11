@@ -32,6 +32,43 @@ test("NASA corrected climatology converts valid daily mean into monthly total in
  assert.equal(urls[0].searchParams.get("community"),"AG");
  await assert.rejects(()=>nasa.request([pin],"13"),RangeError);
 });
+test("Annual precipitation sums all 12 valid monthly normals with no extra NASA request",async()=>{
+ const months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+ const all=Object.fromEntries(months.map(m=>[m,m==="JAN"?2:m==="FEB"?1.5:1]));
+ let calls=0;
+ const nasa=new NasaRain({fetchImpl:async()=>{calls++;return {ok:true,json:async()=>({
+  properties:{parameter:{PRECTOTCORR:all}}
+ })}}});
+ const jan=(await nasa.request([pin],"01"))[0];
+ const annual=(await nasa.request([pin],"year"))[0];
+ assert.equal(jan.value,62);
+ assert.deepEqual(annual,{value:410.375,normal:true,annual:true});
+ assert.equal(calls,1,"Same location's months and year share a 12-month NASA result");
+});
+test("Incomplete annual normals cannot be mistaken for a real whole year",async()=>{
+ const nasa=new NasaRain({fetchImpl:async()=>({ok:true,json:async()=>({
+  properties:{parameter:{PRECTOTCORR:{JAN:2,FEB:3}}}
+ })})});
+ assert.deepEqual(await nasa.request([pin],"year"),[null]);
+});
+test("Monthly and annual precipitation display whole millimeters, today retains tenths",async()=>{
+ const service=new PinInfoService({provider:{request:async(mode,pins,period)=>pins.map(()=>({
+  value:period==="today"?1.8:period==="year"?410.375:42.375
+ }))}});
+ service.setVisiblePins([pin]);
+ service.setMode("precipitation","today");await tick();
+ assert.equal(service.label(pin).text,"1,8 mm");
+ service.setMode("precipitation","02");await tick();
+ assert.equal(service.label(pin).text,"42 mm");
+ const feb=labelMarkup(service.label(pin));
+ assert.match(feb,/Ø Feb/);
+ assert.match(feb,/p2m-precipitation-value/);
+ service.setMode("precipitation","year");await tick();
+ assert.equal(service.label(pin).text,"410 mm");
+ assert.match(labelMarkup(service.label(pin)),/Ø Jahr/);
+ service.setMode("off");
+ await assert.rejects(async()=>service.setMode("sun","year"),RangeError);
+});
 test("provider routes monthly precipitation to NASA and today to Open-Meteo",async()=>{
  const calls=[];
  const provider=new PinInfoProvider({
