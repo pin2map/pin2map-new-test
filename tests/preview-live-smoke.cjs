@@ -34,6 +34,43 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        // Real published basemap menu: slider icons, imagery-only live
+        // adjustment, and non-satellite map isolation on every viewport.
+        const chooser=page.locator("#basemapButton");
+        const mapMenu=page.locator("#basemapMenu");
+        const ordered=await mapMenu.locator("[data-basemap]").evaluateAll(items=>
+          items.map(item=>item.dataset.basemap));
+        assert.equal(ordered.at(-1),"satellite");
+        await chooser.click();
+        await mapMenu.locator('[data-basemap="satellite"]').click();
+        await chooser.click();
+        const sun=mapMenu.locator("#satelliteBrightness"),contrast=mapMenu.locator("#satelliteContrast");
+        assert.equal(await sun.isEnabled(),true);
+        assert.equal(await contrast.isEnabled(),true);
+        assert.equal(await mapMenu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
+        assert.equal(await mapMenu.locator('.basemap-slider-icon[data-pin-icon="contrast"] svg').count(),1);
+        await sun.evaluate(el=>{
+          el.value="115";el.dispatchEvent(new Event("input",{bubbles:true}));
+          el.dispatchEvent(new Event("change",{bubbles:true}));
+        });
+        await contrast.evaluate(el=>{
+          el.value="70";el.dispatchEvent(new Event("input",{bubbles:true}));
+          el.dispatchEvent(new Event("change",{bubbles:true}));
+        });
+        assert.equal(await mapMenu.isVisible(),true);
+        const liveFilter=await page.evaluate(()=>{
+          const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
+          return {tile:img?.closest(".leaflet-layer")?.style.filter,
+            markers:getComputedStyle(document.querySelector(".leaflet-marker-pane")).filter};
+        });
+        assert.equal(liveFilter.tile,"brightness(1.15) contrast(0.7)",JSON.stringify(liveFilter));
+        assert.equal(liveFilter.markers,"none");
+        await mapMenu.locator('[data-basemap="street"]').click();
+        const cleanFilter=await page.evaluate(()=>{
+          const img=document.querySelector('.leaflet-tile-pane img[src*="tile.openstreetmap.org"]');
+          return img?.closest(".leaflet-layer")?.style.filter;
+        });
+        assert.ok(!cleanFilter,"Street map must be untouched: "+cleanFilter);
         // Published geocoder contract: the number of pin results is not
         // device-dependent and the old 8-hit cache is revalidated with consent.
         const limitContract=await page.evaluate(async()=>{
