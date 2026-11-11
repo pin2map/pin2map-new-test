@@ -48,7 +48,7 @@ test("historical Esri hillshade compositing, draw order, and clean off/on transi
   x.adapter.setBasemap("street",{esriRelief:true});
   const base=x.adapter.basemapLayer,relief=x.adapter.reliefOverlay,pane=x.panes.p2mEsriReliefPane;
   assert.equal(base.style.filter,"saturate(0.68) contrast(0.94) brightness(1.04)");
-  assert.match(relief.url,/Elevation\\/World_Hillshade/);
+  assert.ok(relief.url.includes("Elevation/World_Hillshade"));
   assert.equal(relief.options.pane,"p2mEsriReliefPane");
   assert.equal(relief.options.minZoom,1);
   assert.equal(relief.options.maxNativeZoom,15);
@@ -73,6 +73,6 @@ test("UI exposes all five choices and an independently persisted overlay setting
     assert.match(html,new RegExp('data-basemap="'+id+'"'));
   assert.match(html,/id="esriReliefToggle"/);
   assert.match(app,/onReliefChange:enabled/);
-  assert.match(app,/state\\.esriRelief=enabled;setTileLayer\\(\\);save\\(\\)/);
+  assert.ok(app.includes("state.esriRelief=enabled;setTileLayer();save()"));
   assert.match(domain,/esriRelief:false/);
 });
