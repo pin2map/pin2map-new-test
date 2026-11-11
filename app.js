@@ -190,31 +190,19 @@
     if (list.length === 1) { choosePlace(list[0]); return; }
     searchView.show(list);
   }
-  async function runSearch(event) {
-    if(event)event.preventDefault();
-    const query=$("searchInput").value.trim();
-    if(!query)return;
-    // Search service owns cache, throttling, cancellation and provider calls.
-    const btn=$("searchButton");
-    btn.disabled=false;
-    const result=await placeSearch.search(query,{
+
+  const searchForm = new window.Pin2MapSearchFormController({
+    getElement:$,
+    search:(query,hooks)=>placeSearch.search(query,{
       state,allowed:state.allowGeocode,
-      onStart:()=>{btn.disabled=true;searchMessage("Ort wird gesucht …");},
-      onFinish:()=>{btn.disabled=false;},
-      onCacheWrite:save
-    });
-    switch(result.kind){
-      case "results":renderResults(result.results);break;
-      case "disabled":searchMessage("Ortssuche im Test noch nicht aktiviert. Bitte in ⚙ Einstellungen nach Prüfung der Nominatim-Richtlinie aktivieren.");break;
-      case "throttled":searchMessage("Bitte kurz warten und die Suche erneut starten.");break;
-      case "error":searchMessage("Ortssuche derzeit nicht verfügbar. Bitte Verbindung prüfen und erneut suchen.");break;
-      // A superseded or cancelled request must never change the UI.
-      case "stale":break;
-    }
-  }
+      ...hooks,onCacheWrite:save
+    }),
+    onResults:renderResults,
+    onMessage:searchMessage
+  });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
-    $("searchForm").addEventListener("submit", runSearch);
+    searchForm.bind();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
