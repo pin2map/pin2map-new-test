@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v116: Kartenbewegungs-/Overlay-Layout-Koordination extrahiert; Tests/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v116 unverändert: Composition-Root-Abschlussinventur und Funktionsabgleich dokumentiert; letzter App-CI-/Pages-Lauf grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -195,6 +195,14 @@
 - **Final bestätigte CI-/Live-Gates für Code/Test-Commit `16e74034e5c97fa0251ab3595c2cbf33d38d0ff9`:** [Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996) erfolgreich, [Pages/HTTPS/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529) erfolgreich. Preview-Gate **214 Node-Tests/0 Fehler**, exakte v116-SW-/Assetversion; Live-Start auf Phone-, Tablet- und Desktop-Viewport erfolgreich.
 - **Schutz:** `main`, Referenzen, CSS B38/298 `!important`, `a.tile.opentopomap.org`, IndexedDB-Schema, Pins und gespeicherte Nutzerdaten unverändert. Automatischer Chromium-Smoke bestätigt Pin-Auswahl, Verschiebeziel/Abbruch/Bestätigung, Panel-/Marker-Zustand, Persistenz und Offline-Reload. Kein zusätzlicher persönlicher Gerätetest für v116 notwendig; reale iOS-Gesten damit nicht gesondert nachgewiesen.
 
+## 4s. Architekturabschluss / Funktionsabgleich – nur Dokumentation (2026-11-11)
+
+- Die Abschlussprüfung von `app.js` nach 14 Extraktionen ist in [`docs/ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md`](ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md) dokumentiert. **Aktuelle Moduleinbindung ausreichend entflochten**: verbliebene Komposition, Render-/Start-/Buttonverdrahtung darf bewusst im Composition Root verbleiben. Keine künstliche Extraktion Nr. 15; weitere Trennung nur bei echtem Anlass im jeweiligen Feature.
+- Die Vorgänger-App-Funktionsinventur und neueren Grundentscheidungen sind in einer **Statusmatrix** abgeglichen: technische Basis automatisiert geprüft, reale iPhone-UX-Abnahmen offen; Pinnotizen/Links, erweiterte Labels, Flächen/Linien, Gewässer, Routing, GPX und Projekt-Transfer noch nicht funktionsgleich; Pin-Liste in der ersten Basisversion bewusst zurückgestellt, Fotos und PNG-Kartenexport nicht vorgesehen.
+- Historische Widersprüche bereinigt: ältere `activeLayer`-/„Pin hinzufügen“-Modus-Regeln wurden durch spätere Grundentscheidungen ersetzt; **kein** neues aktives-Ebenen-/Modus-Feature daraus ableiten. Server/Sync weiterhin erst nach Gate 3.
+- **Versionsstand bleibt v116**, keine Änderung an `app.js`, `sw.js`, Styles, Kartenanbietern oder IndexedDB. Letzte belegte App-Gates unverändert: [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996), [Pages/HTTPS](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529). Dokumentationscommits sind kein neuer App-/Live-Test.
+- **Nächste Aufgabe:** konkrete, reproduzierbare UX-Abnahmefälle für iPhone/iPad samt Vorgänger-Vergleich festhalten; danach priorisierte funktionale Erweiterung, unter Schutz von Daten und stabilen Karten-/Pin-Abläufen. Ein Geräte-Test wird erst bei ausdrücklicher Anforderung mit Schritten fällig.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -209,10 +217,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Abschlussinventur des Composition Root:** Nach v116 Karten-/Overlay-Lebenszyklus und `app.js` erneut systematisch prüfen: Was sind legitime Port-Verdrahtung, Render-Koordination und Startinitialisierung, und welche fachlichen Schichten fehlen wirklich noch? Keine weitere Extraktion allein zur Reduzierung der Zeichenmenge.
-2. **Funktionale Basisversion gegen die Vorgänger-App und Grundentscheidungen abgleichen:** fehlende, geplante Funktionen priorisiert dokumentieren, ohne chaotische Altarchitektur oder ungeprüfte UI-Änderungen zu übernehmen. CSS B38/298 bleibt separat und pausiert.
-3. Jede spätere App-Änderung mit Node-, Architektur-, Chromium- und Pages-/HTTPS-Live-Gates prüfen. Die bestätigte Topokartenquelle `a.tile.opentopomap.org` und persistierte Pins schützen.
-4. **Erforderliche manuelle Gerätetests ausdrücklich mit URL und Schritten anfordern**. Für v116 aktuell kein zusätzlicher Test. `main`, `reference/*` und IndexedDB-Schema unverändert lassen.
+1. **UX-/Basis-Abnahmeplan erstellen:** Auf Grundlage des [Architekturabschlusses und Funktionsabgleichs](ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md) iPhone-/iPad-Szenarien und erwartete Ergebnisse für Kartengesten, randnahe Pin-Dialoge, Pin-Verschieben, Ebenen, Suche, Basiskarten, untere Buttons/OSM-Hinweise, Refresh und Offline-Persistenz konkretisieren. Den Nutzer nur bei notwendiger realer Geräteprüfung **ausdrücklich mit Vorschau-URL und Testschritten** einbeziehen.
+2. **Danach ersten funktionalen Ausbau priorisieren:** fehlende, fachlich beschlossene Funktionen anhand Vorgänger-Audit/Grundentscheidungen auswählen. Datenverlustschutz (Projekt-Export/Backup/Wiederherstellung) und Pinnotizen/Links als Kandidaten prüfen; keine neue implizite Fachentscheidung. Eine optionale Pin-Liste nicht als Basisdefekt behandeln.
+3. `app.js` nicht weiter mechanisch zerlegen. Reine Komposition/Render-/Startverdrahtung ist ausreichend getrennt; neue Features fachlich modular entwickeln. CSS B38/298 bleibt pausiert, Topo-Host `a.tile.opentopomap.org` beibehalten.
+4. Jede zukünftige **App-Änderung** mit Node-, Architektur-, Chromium- und tatsächlich verifizierten Pages-/HTTPS-Live-Gates prüfen. `main`, Referenzzweige, IndexedDB und Nutzerpins schützen. Für diese rein dokumentarische Runde **kein Gerätetest erforderlich**.
 
 ## 6. Maßgebliche Dokumente
 
@@ -221,6 +229,7 @@
 - `docs/GRUNDENTSCHEIDUNGEN.md` – Fachentscheidungen; neuere ausdrücklich beschlossene Präzisierungen beachten.
 - `docs/MODULARCHITEKTUR.md` und `docs/ENTWICKLUNGSFAHRPLAN.md` – Modulgrenzen und Etappen.
 - `docs/APP_JS_ENTFLECHTUNG_BESTAND_2026-11-11.md` – aktuelle `app.js`-Verantwortlichkeiten, Schnittstelle und erster UI-Extraktionsvorschlag.
+- `docs/ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md` – abgeschlossene Composition-Root-Prüfung, aktuelle Funktionslücken, Regelhierarchie und nächster UX-/Feature-Schritt.
 - `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md` – vollständiger Verlauf der CSS-Inkremente.
 - `docs/CSS_ARCHITEKTURREGELN.md` – aktive CSS-Eigentümer und Abnahmeregeln.
 - `docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md` – Preview- und GitHub-Pages-Vertrag.
