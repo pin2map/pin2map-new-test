@@ -89,19 +89,14 @@
     },
     onSatelliteReset:()=>{
       if(state.basemap!=="satellite")return;
-      state.satelliteBrightness=100;
-      state.satelliteContrast=100;
-      mapAdapter.setSatelliteAppearance({brightness:100,contrast:100});
+      state.satelliteBrightness=140;
+      mapAdapter.setSatelliteAppearance({brightness:140});
       save();
     },
     onSatelliteAdjust:(key,value,commit)=>{
-      if(state.basemap!=="satellite")return;
-      const field=key==="brightness"?"satelliteBrightness":key==="contrast"?"satelliteContrast":null;
-      if(!field)return;
-      state[field]=value;
-      mapAdapter.setSatelliteAppearance({
-        brightness:state.satelliteBrightness,contrast:state.satelliteContrast
-      });
+      if(state.basemap!=="satellite"||key!=="brightness")return;
+      state.satelliteBrightness=value;
+      mapAdapter.setSatelliteAppearance({brightness:value});
       if(commit)save();
     }
   });
@@ -212,11 +207,10 @@
   function setTileLayer() {
     mapAdapter.setBasemap(state.basemap,{
       esriRelief:!!state.esriRelief,
-      satelliteBrightness:state.satelliteBrightness,
-      satelliteContrast:state.satelliteContrast
+      satelliteBrightness:state.satelliteBrightness
     });
     basemapMenu.render(state.basemap,!!state.esriRelief,{
-      brightness:state.satelliteBrightness,contrast:state.satelliteContrast
+      brightness:state.satelliteBrightness
     });
   }
   function renderMarkers(){
