@@ -37,14 +37,16 @@ test("status message is followed by cancel button",()=>{
 });
 test("results use measured search pill width, also after viewport changes",()=>{
   let width=258;
-  const anchor={getBoundingClientRect:()=>({width})};
+  const anchor={getBoundingClientRect:()=>({width,height:42})};
   const container=new Element("div");container.style={};
   const doc={createElement:tag=>new Element(tag),getElementById:id=>id==="searchForm"?anchor:null};
   const view=new SearchResultsView({container,document:doc,onChoose:()=>{},
     titleOf:r=>r.name,detailOf:r=>r.place});
   view.show([{name:"Stuttgart",place:"Deutschland"}]);
-  assert.equal(container.style.width,"258px");
+  // The straight horizontal segments of the 42px-tall pill exclude
+  // its 21px rounded end cap on each side.
+  assert.equal(container.style.width,"216px");
   width=305;
   view.message("Neue Suche");
-  assert.equal(container.style.width,"305px");
+  assert.equal(container.style.width,"263px");
 });
