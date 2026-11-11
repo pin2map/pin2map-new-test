@@ -71,7 +71,7 @@
 - **Wahrscheinlicher externer Grund:** `map-adapter-leaflet.js` bezog Topo-Kacheln bisher über `https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png`. Der OpenTopoMap-Betreiber dokumentiert in `der-stefan/OpenTopoMap#399` WebKit/Safari-Verbindungsprobleme mit diesem Host und nennt `https://tile.top-o-map.de/{z}/{x}/{y}.png` als funktionierende alternative Betreiber-Domain. Das ist eine plausible Ursache, nicht bereits die individuelle Browser-Netzwerkdiagnose.
 - **Korrektur auf Feature-Branch:** allein der Topo-Tile-Host wird auf `tile.top-o-map.de` geändert. Straßenkarte, Pin-Zustand, Filter, Autozoom, CSS und IndexedDB unverändert. SW-App-Shell-Version **v103**, neues `tests/topographic-tile-source.test.js`.
 - **Testlücke präzisiert:** Der bisherige Chromium-Test bestätigte nur Auswahl-/ARIA-/Persistenzzustand, nicht tatsächliche Bildauslieferung. Ein neuer externer `naturalWidth>0`-Test zeigte in GitHub Actions **Timeout**, weil der Runner keine Topo-Bilder über die Ersatz-Domain empfing. Das beweist keinen iOS-Erfolg und keinen Defekt des lokalen Menü-Controllers. Für CI bleibt deshalb ein deterministischer Host-/Menüvertrag verpflichtend, eine kurz begrenzte Bildauslieferungsprobe wird diagnostisch protokolliert, aber ein Fremdserver-Ausfall blockiert die Anwendungstests nicht. **Der echte Topo-Erfolg muss im Safari-/iPad-/iPhone-Gerätetest überprüft werden.**
-- **Offen:** finale grüne CI-/Pages-Ergebnisse für den aktuellen Test-Commit `388c86a2697af690e3f359b1c2db55b8d95730aa`, anschließend sichtbare Topografie in Safari testen; Versionsnummern und Dokumentation nach tatsächlicher Workflow-Bestätigung abschließend ergänzen. Kein Merge nach `main`.
+- **CI/Pages inzwischen bestätigt:** Für den Test-Commit `388c86a2697af690e3f359b1c2db55b8d95730aa` sind `Modular core checks` (Node und Chromium), Architektur-Gate und Preview-Deployment erfolgreich: [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42983369204), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42983369159), [Pages/HTTPS](https://github.com/pin2map/pin2map-new-test/actions/runs/42983369172). Die Live-Startprüfung testet **nicht** die echte Topo-Auslieferung in Safari, und die externe CI-Kachelprobe hat keinen Bildempfang nachgewiesen. **Safari-Gerätetest ist jetzt nötig.** Kein Merge nach `main`.
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
@@ -87,7 +87,7 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **v103-Gates abschließen:** GitHub-Actions-Läufe für Node, Architektur, Chromium und Preview-/HTTPS-Verifikation am finalen Commit belegen, ohne Fremd-Kachelserver-Verfügbarkeit als App-Erfolg auszugeben.
+1. **v103-CI-/Pages-Gates bestanden:** Node, Architektur, Chromium, Preview/HTTPS und Live-Kartenstart wurden für den v103-Test-Commit bestätigt. Externe Topo-Kachelverfügbarkeit in Safari bleibt ausdrücklich unbewiesen.
 2. **Nutzergerätetest ausdrücklich anfordern:** Vorschau auf dem betroffenen iPhone/iPad in Safari mit v103 öffnen (ggf. PWA-Refresh), Topografische Karte auswählen und prüfen, ob echte Kartenkacheln statt grauer Fläche sichtbar sind; anschließend Straßenkarte kontrollieren. Falls weiterhin grau: Browser-/Netzwerkdiagnose statt weiterer CSS-/app.js-Refactorings.
 3. „Alle sichtbaren Pins anzeigen“ ist durch Nutzerbefund positiv bestätigt; danach nächste kleine `app.js`-Verantwortlichkeit nur fortsetzen, wenn die Topo-Störung geklärt ist.
 4. `main`, Referenzen, IndexedDB und vorhandene Pins geschützt lassen; CSS-B38/298 bleibt pausiert.
