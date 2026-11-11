@@ -27,7 +27,9 @@ const nodes=Object.fromEntries(ids.map(id=>[id,element()]));
 let nextId=0;
 const pending=new Map();
 const timers=[];
+const iconCalls=[];
 const ui=new UIShell({
+ mountLabelIcon:(button,name)=>{assert.equal(button,nodes.labelsToggle);iconCalls.push(name);},
  getElement:id=>{
    assert.ok(nodes[id],"Unknown element "+id);
    return nodes[id];
@@ -68,10 +70,15 @@ ui.updateLabelButton(true);
 assert.equal(nodes.labelsToggle.getAttribute("aria-pressed"),"true");
 assert.equal(nodes.labelsToggle.classList.contains("is-off"),false);
 assert.match(nodes.labelsToggle.title,/ausblenden/);
+assert.equal(iconCalls.at(-1),"tags");
 ui.updateLabelButton(false);
 assert.equal(nodes.labelsToggle.getAttribute("aria-pressed"),"false");
 assert.equal(nodes.labelsToggle.classList.contains("is-off"),true);
 assert.match(nodes.labelsToggle.title,/einblenden/);
+assert.deepEqual(iconCalls,["tags","tags-off"]);
+ui.updateLabelButton(true);
+assert.deepEqual(iconCalls,["tags","tags-off","tags"]);
+assert.equal(nodes.labelsToggle.getAttribute("aria-pressed"),"true");
 
 ui.showNotice("Kurz");
 ui.hideNotice();
