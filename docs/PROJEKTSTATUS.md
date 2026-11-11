@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v106: Löschbestätigungsdialog modularisiert; Node/Architektur/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v107: Pin-Editor-Eingaben modularisiert; Node/Architektur/Chromium/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v106**, nach vierter `app.js`-Entflechtung (Bestätigung zum Ebenen-/Privatpin-Löschen). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v106'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v106` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v107**, nach fünfter `app.js`-Entflechtung (Pin-Editor-Ereignisse). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v107'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v107` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -107,6 +107,15 @@
 - **Finale GitHub-Actions-Gates nach Test-Commit `fc6c9b060f101b594104e1a667643b25f14902f8`:** [Node+Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42987360761) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42987360727) erfolgreich, [Pages-/HTTPS-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/42987360733) erfolgreich. Die Preview-Assets wurden im Workflow real ausgeliefert und geprüft.
 - **Manueller Gerätetest:** für diese UI-Abgrenzung nicht erforderlich, da echte Browser-Abbruchprüfung und vollständige CI-/Preview-Gates grün sind. Für künftige Bedienänderungen bei Bedarf ausdrücklich mit Testschritten anfordern.
 
+## 4i. Fünfte `app.js`-Entflechtung – Pin-Editor-Eingabesteuerung (v107, 2026-11-11)
+
+- Neues `ui/pin-editor-actions.js`: übernimmt ausschließlich die DOM-Listener für `pinName` (`input`/`blur`), `pinLayer` (`change`) und `showPinLayer` (`click`), mit injizierten Callbacks sowie `bind()`/`dispose()`. Keine Persistenz, Leaflet- oder Pin-/Ebenenregeln im UI-Modul.
+- `app.js` behält `pinOps.renamePin`, `pinOps.assignLayer`, `filterOps.setLayerVisible`, `save()`, Notizen und erneutes Rendern. Alte direkte DOM-Bindings durch `pinEditorActions.bind()` ersetzt. **16.167 → 16.096 Zeichen**, bei klarerem Zuständigkeitsvertrag. `index.html` und `sw.js`-`CORE` um UI-Modul ergänzt, Quellversion **v107**.
+- Neuer `tests/pin-editor-actions.test.js`: Raw-Input/Blur-Textbereinigung, Ebenewechsel, Ebene anzeigen, doppeltes Binden, `dispose`, App-/Script-/PWA-Vertrag. `tests/browser-smoke.cjs` erweitert: Pin-Namen bearbeiten, beim Blur trimmen und **gespeicherten Namen nach tatsächlichem Reload wiederfinden**. Bisherige Pin-Move-, Privat-Löschabbruch-, Basiskarten-, Offline-/Persistenztests bleiben grün.
+- **Bestätigter finaler Test-Commit:** `283ac61fefea7fec03aafbad8eb956590f24d27a`. [Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42987990734) erfolgreich; [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42987990728) erfolgreich; [Pages/HTTPS und Live-Kartenstart](https://github.com/pin2map/pin2map-new-test/actions/runs/42987990743) erfolgreich.
+- **Schutzbereiche:** Topo-Host `a.tile.opentopomap.org` unverändert, CSS weiter B38/298, Pins und IndexedDB-Schema sowie `main` und Referenzzweige nicht verändert.
+- **Kein zusätzlicher manueller Gerätetest** für diese kleine Modulgrenzen-Änderung nötig; automatisches Chromium prüft Umbenennen und Speichern tatsächlich. Weiterhin ausdrücklich melden, wenn ein Gerätetest erforderlich wird.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -121,10 +130,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Nächste fachlich sinnvolle `app.js`-Verantwortlichkeit bestimmen:** v106-Quellen und Architekturgrenzen neu prüfen, eine klar abgrenzbare UI-/Application-Aufgabe wählen. Bestehende Topo-/Such-/Löschdialog-Module nicht grundlos erneut anfassen.
-2. Jede neue App-Änderung mit Node-, Architektur-, Chromium- und GitHub-Pages-/HTTPS-Gates bis zur erfolgreichen tatsächlichen Live-Veröffentlichung begleiten.
-3. **Erforderliche Nutzergerätetests ausdrücklich und konkret ankündigen**, mit URL und genauen Schritten. Für v106 sind keine weiteren Nutzeraktionen nötig.
-4. CSS-B38/298 bleibt pausiert. `main`, Referenzzweige, IndexedDB und persistierte Pins schützen.
+1. **Nächste eigenständige `app.js`-Verantwortlichkeit identifizieren:** v107-Stand und Modulgrenzen lesen; sinnvoll zusammenhängende Verantwortung bevorzugen, statt kleinstmöglicher Zeilenersparnis. Insbesondere `app.js`-Verbleib in UI-Overlay-Steuerung, Einzelpin-Löschdialog und Speicherevents bewerten.
+2. Vollständige Node-/Architektur-/Chromium-Gates sowie echte Preview-/HTTPS-Veröffentlichung nach **jeder** Anwendungsänderung prüfen. Einen grünen Commit nicht allein als Live-Freigabe werten.
+3. **Nutzergerätetests ausdrücklich ankündigen**, wenn nötig, mit konkreten Anweisungen. v107 erfordert derzeit keinen zusätzlichen persönlichen Test.
+4. CSS-B38/298 bleibt pausiert. Erfolgreiche Topo-Quelle `a.tile.opentopomap.org` beibehalten. `main`, Referenzen, IndexedDB-Schema und persistierte Pins schützen.
 
 ## 6. Maßgebliche Dokumente
 
