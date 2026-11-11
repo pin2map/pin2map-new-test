@@ -64,6 +64,23 @@ async function longPress(page,x,y,ms=725){
       "Results should align with horizontal search capsule edges: "+JSON.stringify(widths));
     await footer.locator("button").getByText("Abbrechen").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
+    step("search results: multi-result footer is last and cancel closes without selecting");
+    await page.evaluate(()=>{
+      window.__searchChooseCalls=0;
+      const view=new window.Pin2MapSearchResultsView({
+        container:document.getElementById("searchResults"),document,
+        onChoose:()=>{window.__searchChooseCalls++;},
+        titleOf:r=>r.name,detailOf:r=>r.detail
+      });
+      view.show([{name:"Berlin",detail:"Deutschland"},{name:"Bonn",detail:"Deutschland"}]);
+    });
+    assert.equal(await page.locator("#searchResults .result").count(),2);
+    assert.equal(await page.locator("#searchResults .results-head").count(),0);
+    assert.equal(await page.locator("#searchResults").evaluate(el=>el.lastElementChild?.className),"results-footer");
+    await page.locator("#searchResults .results-cancel").click();
+    assert.equal(await page.locator("#searchResults").isHidden(),true);
+    assert.equal(await page.evaluate(()=>window.__searchChooseCalls),0);
+
     step("basemap menu: switch, aria states, Escape, outside click and persistence");
     const picker=page.locator("#basemapButton");
     const menu=page.locator("#basemapMenu");
