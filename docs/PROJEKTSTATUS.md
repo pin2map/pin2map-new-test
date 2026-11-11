@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v107: Pin-Editor-Eingaben modularisiert; Node/Architektur/Chromium/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v108: Karten-Overlay-Koordination modularisiert; Node/Architektur/Chromium/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v107**, nach fünfter `app.js`-Entflechtung (Pin-Editor-Ereignisse). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v107'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v107` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v108**, nach sechster `app.js`-Entflechtung (Karten-Overlay-Lebenszyklus). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v108'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v108` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -116,6 +116,15 @@
 - **Schutzbereiche:** Topo-Host `a.tile.opentopomap.org` unverändert, CSS weiter B38/298, Pins und IndexedDB-Schema sowie `main` und Referenzzweige nicht verändert.
 - **Kein zusätzlicher manueller Gerätetest** für diese kleine Modulgrenzen-Änderung nötig; automatisches Chromium prüft Umbenennen und Speichern tatsächlich. Weiterhin ausdrücklich melden, wenn ein Gerätetest erforderlich wird.
 
+## 4j. Sechste `app.js`-Entflechtung – Karten-Overlay-Koordination (v108, 2026-11-11)
+
+- Neues zusammenhängendes UI-Modul `ui/map-overlay-coordinator.js` übernimmt das **Vorbereiten einer Pin-Auswahl**, das **Schließen aller Overlays**, **Ebenen-/Einstellungs-Panel-Wechsel**, `data-close`-Button-Bindings und das **Schließen von Suchtreffern beim Außenklick**. `bind()` ist idempotent; `dispose()` löst die eigenen Listener. Das Modul enthält weder Leaflet, IndexedDB noch Pin-/Ebenen-Mutationen.
+- Die Anwendungssteuerung `app.js` besitzt weiterhin Auswahl-/Move-State, Move-Abbruch, Geschäftsregeln und Render-Aufrufe. Diese werden über injizierte Callbacks aufgerufen. Reihenfolge beim Schließen (Suche → Panels → Basiskarte → Mitteilung → offener Einzelpin-Dialog → Move-Abbruch → Selektion zurücksetzen → Fokus entfernen) sowie die Unterscheidung zwischen Pin-Auswahl und allgemeinem Schließen wurden absichtlich erhalten.
+- `app.js` von **16.096 auf 15.442 Zeichen** verkürzt, zugleich mehrere verstreute direkt angebundene DOM-/Klick-Verantwortlichkeiten entfernt. `index.html` lädt das Modul vor `app.js`; `sw.js`-`CORE` enthält es in **v108**.
+- Neuer `tests/map-overlay-coordinator.test.js`: Pin-Auswahl-Vorbereitung, Abbrechen im Move-Modus, sicheres Schließen des Löschdialogs, Rücksetzen der Auswahl, Panelwechsel, Außenklick, `data-close`, `bind`/`dispose` und App-Shell-Integration. `tests/browser-smoke.cjs` erweitert: Suchtreffer werden beim Klick auf die Karte geschlossen; danach bleibt der Suchdialog regulär benutzbar. Bestehende Pin-/Move-, Basiskarten-, Dialog-, Speicherung- und Offline-Tests grün.
+- **Gates für finalen Test-Commit `bb8b4a9195e3e6c53fcb577b96d5d53e38ed5c3e` nachgewiesen:** [Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42988644999) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42988645024) erfolgreich, [Pages/HTTPS/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42988644995) erfolgreich. GitHub-Quellversion `pin2map-new-v108` wird von der Preview-Pipeline als `pin2map-preview-v108` ausgeliefert.
+- **Schutz:** CSS unverändert B38/298 `!important`, Topo-Host `a.tile.opentopomap.org`, Pin-/Ebenenschema, IndexedDB, `main` und Referenzzweige unverändert. **Für v108 kein zusätzlicher manueller Nutzergerätetest erforderlich**, da Browser-/Offline-/Overlay-Regression erfolgreich. Bei Bedarf weiterhin explizit anfordern.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -130,10 +139,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Nächste eigenständige `app.js`-Verantwortlichkeit identifizieren:** v107-Stand und Modulgrenzen lesen; sinnvoll zusammenhängende Verantwortung bevorzugen, statt kleinstmöglicher Zeilenersparnis. Insbesondere `app.js`-Verbleib in UI-Overlay-Steuerung, Einzelpin-Löschdialog und Speicherevents bewerten.
-2. Vollständige Node-/Architektur-/Chromium-Gates sowie echte Preview-/HTTPS-Veröffentlichung nach **jeder** Anwendungsänderung prüfen. Einen grünen Commit nicht allein als Live-Freigabe werten.
-3. **Nutzergerätetests ausdrücklich ankündigen**, wenn nötig, mit konkreten Anweisungen. v107 erfordert derzeit keinen zusätzlichen persönlichen Test.
-4. CSS-B38/298 bleibt pausiert. Erfolgreiche Topo-Quelle `a.tile.opentopomap.org` beibehalten. `main`, Referenzen, IndexedDB-Schema und persistierte Pins schützen.
+1. **Nächste zusammenhängende `app.js`-Verantwortlichkeit wählen:** v108-Zustand prüfen; Schwerpunkt auf der **einzelnen Pin-Löschbestätigung** mit Dialog-Lebenszyklus und sicherer fachlicher Zuständigkeit oder auf der verbleibenden Speicher-/Viewport-Koordination. Nicht wieder nur kosmetische Einzelzeilen auslagern.
+2. Bei künftigen Änderungen alle Node-/Architektur-/Chromium-Tests und das erfolgreiche GitHub-Pages-/HTTPS-Live-Gate tatsächlich nachweisen. Bestehende Overlay-Verträge sowie `a.tile.opentopomap.org` nicht unbegründet verändern.
+3. **Erforderliche Nutzergerätetests ausdrücklich ankündigen**, mit genauer Vorschau-URL, Schritten und erwartetem Ergebnis. Für v108 ist keine Nutzerprüfung notwendig.
+4. CSS-Sanierung B38/298 bleibt pausiert. `main`, Referenzen, IndexedDB-Schema und persistierte Pins schützen.
 
 ## 6. Maßgebliche Dokumente
 
