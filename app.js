@@ -114,6 +114,17 @@
     isPrivateLayerVisible:()=>layerById(PRIVATE_ID).visible,
     onRenderMarkers:()=>renderMarkers()
   });
+  const mapClickCoordinator = new window.Pin2MapMapClickCoordinator({
+    isMoveMode:()=>uiState.moveMode,
+    previewMove:position=>moveController.previewAt(position),
+    isSuppressed:()=>gestures.isSuppressed(),
+    onTargetAccepted:()=>{
+      moveGuide.stop();
+      markerView.setRelocationSource(null);
+      updateModeUI();
+    },
+    onOrdinaryClick:()=>overlayCoordinator.closeAll()
+  });
   const showNotice = message => uiShell.showNotice(message);
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
@@ -229,20 +240,7 @@
     $("confirmMove").addEventListener("click",()=>moveController.confirm());
     pinDeleteDialog.bind();
 
-    mapAdapter.onMapClick(position => {
-      // A deliberate relocation target is not an accidental follow-up click
-      // to the preceding long press. Process move mode before suppression.
-      if (uiState.moveMode) {
-        if(moveController.previewAt(position)){
-          moveGuide.stop();
-          markerView.setRelocationSource(null);
-          updateModeUI();
-        }
-        return;
-      }
-      if (gestures.isSuppressed()) return;
-      overlayCoordinator.closeAll();
-    });
+    mapAdapter.onMapClick(position=>mapClickCoordinator.handle(position));
 
     gestures.attachLongPress();
     // Leaflet fires move continuously while dragging/pinching, unlike moveend.
