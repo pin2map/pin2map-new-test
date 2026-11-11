@@ -58,17 +58,17 @@
     }
     // Provider catalog lives inside the renderer adapter: no Leaflet tile details
     // escape into application, UI, domain or project storage.
-    setSatelliteAppearance({brightness=140}={}){
+    setSatelliteAppearance({brightness=120}={}){
       // The filter belongs to the Esri satellite tile layer only.
       // Pins, tooltips, overlays and map controls remain untouched.
       const number=Number(brightness);
-      const bounded=Number.isFinite(number)?Math.min(180,Math.max(70,number)):140;
+      const bounded=Number.isFinite(number)?Math.min(180,Math.max(70,number)):120;
       this.satelliteAppearance={brightness:bounded};
       if(this.activeBasemap!=="satellite"||!this.basemapLayer)return;
       const tiles=this.basemapLayer.getContainer();
       if(tiles)tiles.style.filter="brightness("+(bounded/100)+")";
     }
-    setBasemap(id,{esriRelief=false,satelliteBrightness=140}={}) {
+    setBasemap(id,{esriRelief=false,satelliteBrightness=120}={}) {
       const sources={
         street:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",maxZoom:19,
           attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'},
