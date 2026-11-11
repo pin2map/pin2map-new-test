@@ -312,7 +312,9 @@
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
       getInfoLabel:pin=>pinInfoService.label(pin),
-      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info),
+      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info,{
+        getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
+      }),
       onInfoClick:id=>selectPin(id),
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;selectPin(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
