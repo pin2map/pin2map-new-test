@@ -410,6 +410,14 @@ async function longPress(page,x,y,ms=725){
 
     step("pin information: six-menu selection and visible-layer-only lazy weather requests");
     const forecastRequests=[];
+    let holdTemperature=true;
+    const temperatureReleases=[];
+    const releaseNextTemperature=async()=>{
+      for(let attempt=0;attempt<300&&!temperatureReleases.length;attempt++)
+        await new Promise(resolve=>setTimeout(resolve,10));
+      assert.ok(temperatureReleases.length,"Expected a held visible-pin weather request");
+      temperatureReleases.shift()();
+    };
     await page.route("https://api.open-meteo.com/v1/**",async route=>{
       const url=new URL(route.request().url());
       const count=url.searchParams.get("latitude").split(",").length;
@@ -429,6 +437,8 @@ async function longPress(page,x,y,ms=725){
         values=count===1?row():Array.from({length:count},row);
       }
       forecastRequests.push({count,url:route.request().url()});
+      if(holdTemperature&&url.searchParams.get("current")==="temperature_2m")
+        await new Promise(resolve=>temperatureReleases.push(resolve));
       await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(values)});
     });
     await page.evaluate(async()=>{
@@ -446,13 +456,16 @@ async function longPress(page,x,y,ms=725){
     const infoButton=page.locator("#pinInfoButton");
     const infoMenu=page.locator("#pinInfoMenu");
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
+    assert.equal(await infoButton.getAttribute("aria-busy"),"false","Off starts idle");
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
     assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),7);
     assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
       ["off","elevation","temperature","daily","precipitation","sun","zone"]);
     assert.equal(await infoMenu.locator(".basemap-menu-title").count(),0,"Menu has no headline");
-    assert.equal(await infoMenu.locator(".pin-info-separator").count(),6);
+    assert.equal(await infoMenu.locator(".pin-info-separator").count(),5);
+    assert.equal(await infoMenu.locator('button[data-pin-info-mode="zone"] + hr.pin-info-separator').count(),0,
+      "Zone must have no trailing separator");
     assert.equal(await infoMenu.locator('[data-pin-info-mode="daily"] + hr.pin-info-separator + [data-pin-info-mode="precipitation"]').count(),1,"Divider separates min/max and precipitation");
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
@@ -481,7 +494,22 @@ async function longPress(page,x,y,ms=725){
     await page.locator('#settingsPanel [data-close="settingsPanel"]').click();
     await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
-    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===1,
+    await page.waitForFunction(()=>document.querySelector("#pinInfoButton")?.classList.contains("is-loading"),
+      null,{timeout:6000});
+    assert.equal(await infoButton.getAttribute("aria-busy"),"true");
+    const spinner=await infoButton.evaluate(el=>({
+      name:getComputedStyle(el,"::after").animationName,
+      content:getComputedStyle(el,"::after").content,
+      size:getComputedStyle(el,"::after").width
+    }));
+    assert.match(spinner.name,/p2m-pin-info-spin/);
+    assert.notEqual(spinner.content,"none");
+    assert.equal(spinner.size,"14px");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point",
+      "Loading must not replace Lucide mode icon");
+    await releaseNextTemperature();
+    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===1
+      &&document.querySelector("#pinInfoButton")?.getAttribute("aria-busy")==="false",
       null,{timeout:6000});
     assert.equal(forecastRequests.length,1,"Only the visible pin must be queried");
     assert.equal(forecastRequests[0].count,1);
@@ -489,7 +517,14 @@ async function longPress(page,x,y,ms=725){
     assert.match(await page.locator(".elevation-label").first().textContent(),/19 °C/);
     await page.locator("#layersButton").click();
     await page.locator('#layersList input[aria-label="Wettertest sichtbar"]').check();
-    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===2,
+    await page.waitForFunction(()=>document.querySelector("#pinInfoButton")?.getAttribute("aria-busy")==="true",
+      null,{timeout:6000});
+    assert.equal(await page.locator(".elevation-label.p2m-temperature-label").count(),2,
+      "First pin stays drawn and second pin has a temporary placeholder");
+    await releaseNextTemperature();
+    holdTemperature=false;
+    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===2
+      &&document.querySelector("#pinInfoButton")?.getAttribute("aria-busy")==="false",
       null,{timeout:6000});
     assert.equal(forecastRequests.length,2,"Newly visible pins load after layer reveal");
     assert.equal(forecastRequests[1].count,1);
