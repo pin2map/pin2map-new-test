@@ -42,13 +42,19 @@
       try{return await task;}finally{this.pending.delete(id);}
     }
     async request(pins,period){
-      if(!/^(0[1-9]|1[0-2])$/.test(period))throw new RangeError("Month expected 01–12");
+      if(period!=="year"&&!/^(0[1-9]|1[0-2])$/.test(period))throw new RangeError("Period expected 01–12 or year");
       const result=[];
       // One HTTP request per visible coordinate; cached 12-month responses
       // survive month switches without repeat requests.
       for(const pin of pins){
         const values=await this.climatology(pin);
-        result.push(values[Number(period)-1]);
+        if(period==="year"){
+          // Sum twelve monthly mean totals, never the daily mean rates.
+          // An incomplete year is unavailable, not an invented amount.
+          result.push(values.every(Boolean)
+            ?{value:Number(values.reduce((sum,item)=>sum+item.value,0).toFixed(3)),normal:true,annual:true}
+            :null);
+        }else result.push(values[Number(period)-1]);
       }
       return result;
     }
