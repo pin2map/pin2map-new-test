@@ -24,11 +24,12 @@
     });
   }
   class PinMarkerView{
-    constructor({mapAdapter,onSelect,attachGesture,cleanText,defaultColor}){
+    constructor({mapAdapter,onSelect,attachGesture,cleanText,defaultColor,getInfoLabel=()=>null,formatInfo=()=>"",onInfoClick=()=>{}}){
       if(!mapAdapter||typeof onSelect!=="function"||typeof attachGesture!=="function")
         throw new TypeError("Pin marker adapter and callbacks required");
       this.map=mapAdapter;this.onSelect=onSelect;this.attachGesture=attachGesture;
       this.cleanText=cleanText;this.defaultColor=defaultColor;this.markers=new Map();
+      this.getInfoLabel=getInfoLabel;this.formatInfo=formatInfo;this.onInfoClick=onInfoClick;
       this.relocationSourceId=null;
     }
     setRelocationSource(id){
@@ -56,6 +57,7 @@
         this.map.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
         this.map.setMarkerAppearance(marker,look);
         this.map.setMarkerLabel(marker,label);
+        this.map.setMarkerInfo?.(marker,this.formatInfo(this.getInfoLabel(pin)),()=>this.onInfoClick(pin.id));
         this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pin.id===this.relocationSourceId);
         this.attachGesture(marker,pin.id);
       }
