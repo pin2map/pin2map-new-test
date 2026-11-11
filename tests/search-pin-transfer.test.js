@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const Transfer=require("../application/search-pin-transfer.js");
-function fixture({zoom=9,privateVisible=true,addResult={id:"pin-1"}}={}){
+function fixture({zoom=9,privateVisible=true,addResult={id:"pin-1"},nameOf=r=>r.name}={}){
   const events=[];const view={center:{lat:40,lng:5},zoom};
   const searchView={
     message:text=>events.push(["message",text]),
@@ -16,7 +16,7 @@ function fixture({zoom=9,privateVisible=true,addResult={id:"pin-1"}}={}){
     setView:(target,options)=>events.push(["view",target,options])
   };
   const transfer=new Transfer({
-    searchView,titleOf:r=>r.name,
+    searchView,titleOf:nameOf,
     addPin:(lat,lng,name)=>{events.push(["add",lat,lng,name]);return addResult;},
     mapPort,onLayout:()=>events.push("layout"),
     isPrivateLayerVisible:()=>privateVisible,
@@ -61,12 +61,22 @@ test("failed pin creation does not shift map or request layout",()=>{
   assert.equal(x.transfer.choose({lat:47,lon:8,name:"X"}),null);
   assert.deepEqual(x.events,["hide",["add",47,8,"X"]]);
 });
+test("search selection transfers full street and house number into newly created pin",()=>{
+  const placeDomain=require("../domain/place-search.js");
+  const x=fixture({nameOf:placeDomain.pinName});
+  x.transfer.choose({lat:53.55,lon:10,name:"49",
+    display_name:"49, Bilser Str., Hamburg, Deutschland",
+    address:{road:"Bilser Str.",house_number:"49",city:"Hamburg"}});
+  assert.deepEqual(x.events[0],"hide");
+  assert.deepEqual(x.events[1],["add",53.55,10,"Bilser Str. 49"]);
+});
 test("script, app composition, offline shell and Leaflet boundary",()=>{
   const read=file=>fs.readFileSync(path.resolve(__dirname,"..",file),"utf8");
   const app=read("app.js"),html=read("index.html"),sw=read("sw.js");
   assert.match(app,/new window\.Pin2MapSearchPinTransfer/);
   assert.match(app,/searchPinTransfer\.choose\(result\)/);
   assert.match(app,/searchPinTransfer\.present\(list\)/);
+  assert.match(app,/searchView,titleOf:result=>placeDomain\.pinName\(result\)/);
   assert.doesNotMatch(app,/function choosePlace\(r\)/);
   assert.ok(html.indexOf("./application/search-pin-transfer.js")>html.indexOf("./application/place-search-service.js"));
   assert.ok(html.indexOf("./application/search-pin-transfer.js")<html.indexOf("./app.js"));
