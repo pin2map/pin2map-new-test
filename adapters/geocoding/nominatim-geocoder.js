@@ -7,6 +7,7 @@
     constructor({fetchImpl,language="de",endpoint="https://nominatim.openstreetmap.org/search"}={}){
       if(typeof fetchImpl!=="function")throw new TypeError("fetchImpl required");
       this.fetchImpl=fetchImpl;this.language=language;this.endpoint=endpoint;
+      this.resultLimit=25;
     }
     async search(query,{signal}={}){
       const url=new URL(this.endpoint);
@@ -14,7 +15,7 @@
       url.searchParams.set("format","jsonv2");
       url.searchParams.set("addressdetails","1");
       url.searchParams.set("accept-language",this.language||"de");
-      url.searchParams.set("limit","8");
+      url.searchParams.set("limit",String(this.resultLimit));
       const response=await this.fetchImpl(url.toString(),{
         method:"GET",signal,headers:{Accept:"application/json"}
       });
