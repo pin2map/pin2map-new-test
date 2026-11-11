@@ -46,3 +46,14 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 5. Erst nach erfolgreichen tatsächlichen Tests und verifizierter `/preview/`-Auslieferung als fertig und sichtbar abgenommen markieren.
 
 **Nächste Implementierungsaufgabe:** kleine Extraktion des Basiskarten-Menüs nach `ui/basemap-menu.js`, **nur wenn Qualitäts-Baseline/Prüfzugriff eine verlässliche Validierung erlauben**. Das ist keine Freigabe zum ungeprüften Merge nach `main`.
+
+
+## 4. Erste Umsetzung – Basiskarten-Menü in eigenem UI-Modul (v101, 2026-11-11)
+
+- **Im Feature-Branch implementiert:** `ui/basemap-menu.js` (DOM-/ARIA-only, `render`, `open`, `close`, `toggle`, `bind`, `dispose`, Tastatur/Escape, Klick außerhalb, Fokus, Auswahl). Die Auswahl und die `onOpening`-Aktion werden mittels injizierter Callbacks an `app.js` weitergegeben; keine Kartendaten oder IndexedDB im UI-Modul.
+- `app.js`: Basiskarten-Menü-Events und direkte ARIA-/Menü-DOM-Steuerung ersetzt; `mapAdapter.setBasemap(state.basemap)`, Projektzustand und `save()` bleiben ausdrücklich im Kompositionscode. Die übrigen Ereignis-/Pin-/Ebenen-Flows unverändert.
+- `index.html`: `ui/basemap-menu.js` nach `ui/shell.js` und vor `app.js` geladen. `sw.js`: neue Datei im App-Shell-`CORE`, Release **pin2map-new-v101** (im Preview-Workflow zu pin2map-preview-v101 umbenannt, tatsächliche Auslieferung nicht belegt).
+- Neuer `tests/basemap-menu.test.js`: isolierte DOM-Fakes für Auswahl, Zustand/ARIA, ungültige Werte, Offen/Schließen, Escape, Außenklick, Fokus, Listener-`dispose` sowie HTML-/SW-/Kompositionsverdrahtung.
+- **Nach dem Commit erneut statisch aus GitHub gelesen:** Modul, Delegation, fehlende alte Menühörer, Skriptreihenfolge, `CORE` und v101. `app.js` schrumpfte von 18.536 auf 17.467 Zeichen. CSS und persistierte Daten unverändert; `main` nicht geändert.
+- **Noch NICHT unabhängig nachgewiesen:** vollständiger `node --test tests/*.test.js`, `tests/check-*.mjs`, erfolgreicher Preview-Push-Workflow, öffentliche v101-HTTPS-Auslieferung, echter Browserwechsel der Basiskarte (inklusive gespeichertem Zustand) und mobile Abnahme. Die Quelldatei ist vorhanden, aber eine vollständig getestete/live freigegebene Anwendung wird hieraus nicht abgeleitet.
+- **Nächster Schritt:** technischen Validierungsrückstand schließen. Erst danach nächste `app.js`-Verantwortlichkeit auswählen. CSS-Pause bleibt unverändert.
