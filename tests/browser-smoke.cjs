@@ -117,6 +117,18 @@ async function longPress(page,x,y,ms=725){
     assert.match(coordsBefore,/Koordinaten:/);
     assert.equal(await page.locator(".pin-marker").count(),1);
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
+    step("bulk delete confirmation cancels without removing a private pin");
+    await page.locator("#layersButton").click();
+    await page.locator('#layersList .layer-delete[aria-label="Alle Pins in Privat löschen"]').click();
+    await page.locator("#bulkDialog").waitFor({state:"visible",timeout});
+    assert.equal(await page.locator("#bulkTitle").textContent(),"Alle Pins in Privat löschen?");
+    assert.match(await page.locator("#bulkDescription").textContent(),/1 Pins werden gelöscht\./);
+    await page.locator('#bulkDialog button[value="cancel"]').click();
+    await page.locator("#bulkDialog").waitFor({state:"hidden",timeout});
+    assert.equal(await page.locator(".pin-marker").count(),1,"Cancel must preserve the existing private pin");
+    await page.locator("#layersButton").click();
+    console.log("[browser] PASS – private bulk-delete cancel preserves the pin");
+
     step("cancellation retains original coordinates");
     await page.locator("#movePin").click();
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
