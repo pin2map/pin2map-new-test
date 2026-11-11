@@ -8,7 +8,7 @@
   const key=(pin,month,year)=>Number(pin.lat).toFixed(5)+","+Number(pin.lng).toFixed(5)+":"+year+"-"+month;
   function localClock(value){
     if(typeof value!=="string")return null;
-    const hit=value.match(/T(\\d\\d:\\d\\d):\\d\\d(?:[+-]\\d\\d:\\d\\d|Z)$/);
+    const hit=value.match(/T(\d\d:\d\d):\d\d(?:[+-]\d\d:\d\d|Z)$/);
     return hit?hit[1]:null;
   }
   class MonthlySunTimes{
