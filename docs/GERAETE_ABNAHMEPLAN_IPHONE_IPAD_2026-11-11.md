@@ -1,6 +1,6 @@
 # Geräte-Abnahmeprotokoll – lokale Basisversion v116 (iPhone / iPad)
 
-**Erstellt:** 2026-11-11 · **Stand:** Geräteabnahme läuft; **A01–A05 laut Nutzerrückmeldung bestanden**, weitere Fälle offen · **Ziel:** Gate 2 / konkrete UX-Parität zur Vorgänger-App, ohne alten Code zu übernehmen.
+**Erstellt:** 2026-11-11 · **Stand:** Geräteabnahme läuft; **A01–A06 laut Nutzerrückmeldung bestanden**, weitere Fälle offen · **Ziel:** Gate 2 / konkrete UX-Parität zur Vorgänger-App, ohne alten Code zu übernehmen.
 
 ## 1. Ausgangspunkt und Belegstatus
 
@@ -9,14 +9,14 @@
 - **Entwicklungsquelle:** `pin2map/pin2map-new-test`, `feature/leaflet-modular-core`.
 - **Quellversion:** v116, SW-Quelle `pin2map-new-v116`, Preview-Variante `pin2map-preview-v116`. Die installierte/aktivierte Version auf einem bestimmten Nutzergerät ist **nicht automatisch nachgewiesen**.
 - **Bereits automatisiert geprüft:** Node+Chromium <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550>, Architektur <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996>, Pages-/HTTPS-Live-Start <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529>. Diese Prüfläufe ersetzen **keinen echten Safari-/Touch-/Flugmodus-Test**.
-- **Manueller Ergebnisstand:** **A01–A05 laut Nutzerrückmeldung auf iPhone/Safari OK** (11.11.2026); A06–A08, B01–B08 und C01–C05 sowie iPad weiterhin offen. Ein früheres „funktioniert“ für OpenTopoMap v104 ist kein umfassendes v116-Gate.
+- **Manueller Ergebnisstand:** **A01–A06 laut Nutzerrückmeldung auf iPhone/Safari OK** (11.11.2026); A07–A08, B01–B08 und C01–C05 sowie iPad weiterhin offen. Ein früheres „funktioniert“ für OpenTopoMap v104 ist kein umfassendes v116-Gate.
 - **Sicherheit:** Tests nach Möglichkeit mit **einem eigens angelegten Testpin und einer Testebene**. Vorhandene persönliche Pins/Ebenen nicht löschen; auch bei einer Test-Löschung nur den explizit erstellten Testpin verwenden. **Browserdaten, Website-Speicher, Service Worker und PWA nicht löschen oder zurücksetzen.** Bei Fehlern zuerst Screenshot und genaue Schritte erfassen.
 
 ## 2. Prüfgeräte und Ergebniserfassung
 
 | Gerät / Umgebung | Prüfstatus | Ergebnis / Browser-/iOS-Version |
 | --- | --- | --- |
-| iPhone – Safari-Tab, bestehende frühere Preview-Nutzung | A01–A05 OK, übrige offen | Nutzerrückmeldung 11.11.2026; iOS-/Safari-Version nicht mitgeteilt |
+| iPhone – Safari-Tab, bestehende frühere Preview-Nutzung | A01–A06 OK, übrige offen | Nutzerrückmeldung 11.11.2026; iOS-/Safari-Version nicht mitgeteilt |
 | iPhone – installierte PWA (nur falls bereits installiert) | offen | – |
 | iPad – Safari-Tab | offen | – |
 | iPad – installierte PWA (nur falls bereits installiert) | offen | – |
@@ -33,7 +33,7 @@ Ergebnis je Fall: **OK**, **Fehler**, **nicht ausführbar** oder **nicht geprüf
 | A03 | Testpin antippen, Namen bearbeiten, Editor schließen und Pin erneut öffnen | Pin-Auswahl/Editor reagieren; Name bleibt sichtbar und nach Reload gespeichert | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
 | A04 | Testpin auswählen, Verschieben aktivieren, Vorschau auf andere Stelle bewegen, **Abbrechen** | Ursprüngliche Pin-Position bleibt unverändert; keine versehentliche Pin-Erstellung oder Verschiebung | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
 | A05 | Verschieben erneut aktivieren, Zielposition wählen, **Bestätigen** | Genau derselbe Pin (ID) hat neue Position; nach Reload bleibt diese gespeichert | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
-| A06 | Karte so verschieben, dass ein Pin nahe linkem, rechtem, oberem und unterem Bildschirmrand liegt; jeweils Editor öffnen | Einmalige Kartenkorrektur macht **vollständigen Dialog inkl. Spitze** sichtbar; Pin-Koordinaten bleiben gleich | offen |
+| A06 | Karte so verschieben, dass ein Pin nahe linkem, rechtem, oberem und unterem Bildschirmrand liegt; jeweils Editor öffnen | Einmalige Kartenkorrektur macht **vollständigen Dialog inkl. Spitze** sichtbar; Pin-Koordinaten bleiben gleich | OK – alle vier Ränder (iPhone Safari, Nutzerrückmeldung 11.11.2026) |
 | A07 | Bei geöffnetem Pin-Editor die Karte frei verschieben und zoomen | Dialog bleibt am Pin verankert und darf später aus dem Viewport wandern; **kein fortlaufendes erzwungenes Zurückschwenken** | offen |
 | A08 | Den Testpin erneut antippen oder Dialog-Schließen verwenden, freie Karte berühren | Dialog schließt zuverlässig; Bedienelemente werden wieder sichtbar; keine versteckten blockierenden Overlays | offen |
 
@@ -96,6 +96,10 @@ Wiederholbar: ja / nein
 - **Technische Baseline:** v116 unverändert, keine neue Live-Abnahme aus der Erstellung dieses Dokuments ableiten. `main`, Referenzen, IndexedDB-Daten, CSS/Tile-Server bleiben geschützt.
 
 ## Laufende Geräte-Ergebnisse
+
+- **2026-11-11 – iPhone/Safari, Test A06: OK laut Nutzerrückmeldung.** Nutzer bestätigt „es funktioniert alles wie gewünscht“ nach der Anweisung, die vier Ränder zu prüfen. Damit sind obere, untere, linke und rechte Dialog-Randposition beim Öffnen als beobachtet OK eingetragen; keine neue Screenshot-/iOS-Version angegeben.
+- **Beschleunigte Fortsetzung:** Nutzer wünscht ausdrücklich weniger einzelne Abfragen. Nächster Prüfblock fasst A07, A08, B04, B05 und B06 zusammen. Übrige Fälle (B01–B03, B07–B08, C01–C05 sowie iPad) bleiben offen und werden weder stillschweigend bestanden noch verpflichtend sofort einzeln eingefordert.
+
 
 - **2026-11-11 – iPhone/Safari, Test A05: OK.** Nutzer meldet ausdrücklich „Test A05: Alles funktioniert wie beschrieben.“ Damit sind bewusstes Übernehmen des neuen Verschiebeziels, unveränderte Pin-Identität/Name und gespeicherte neue Koordinaten über Reload gemäß Testfolge auf dem iPhone bestätigt. Nächster Fall A06: einmalige Dialog-Randkorrektur an allen vier Bildschirmrändern. iOS-Version nicht mitgeteilt.
 
