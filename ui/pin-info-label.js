@@ -11,7 +11,8 @@
       t<=12?"p2m-wx-darkgreen":t<=18?"p2m-wx-lightgreen":
       t<=26?"p2m-wx-warm":t<=32?"p2m-wx-hot":"p2m-wx-veryhot";
   }
-  function labelMarkup(data){
+  const MONTH_NAMES=Object.freeze(["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"]);
+  function labelMarkup(data,{monthIcon=""}={}){
     if(!data||!data.mode||data.mode==="off"||data.text==="")return "";
     const type=data.mode;
     let content=escapeHtml(data.text??"");
@@ -19,6 +20,13 @@
     if((type==="daily"||type==="sun")&&Array.isArray(data.parts)){
       const classes=type==="daily"?["p2m-label-min","p2m-label-max"]:["p2m-label-rise","p2m-label-set"];
       content=data.parts.map((value,i)=>'<span class="p2m-label-half '+classes[i]+'">'+escapeHtml(value)+'</span>').join("");
+    }
+    if((type==="daily"||type==="sun")&&data.period&&data.period!=="today"){
+      const period=Number(data.period);
+      // monthIcon comes from the trusted bundled Lucide SVG catalog, never user input.
+      const monthLabel=type==="sun"?MONTH_NAMES[period-1]||"":"";
+      content='<span class="p2m-info-month-prefix">'+monthIcon+
+        (monthLabel?'<span>'+escapeHtml(monthLabel)+'</span>':"")+'</span>'+content;
     }
     const kind=type==="temperature"?" p2m-temperature-label":type==="daily"?" p2m-daily-label":type==="sun"?" p2m-sun-label":"";
     return '<span class="elevation-label'+kind+'">'+content+'</span>';
