@@ -57,3 +57,7 @@ Weder `main`, `reference/*`, CSS (298 `!important`), Topo-Quelle `a.tile.opentop
 - `ui/map-overlay-layout.js` übernimmt `move`, `moveend`, `zoomend`, Resize und ein gemeinsam geplantes Layout-Frame. Die reinen Geometrie- und Einmal-Pan-Verträge verbleiben ausdrücklich in `ui/pin-panel-positioner.js` und `ui/pin-move-preview.js`.
 - Unit-Tests plus bestehender Chromium-Smoke sichern Abbruch/Bestätigung von Verschiebungen, Pin-Editor und gespeicherten Viewport. Final grüne Gates: <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529>.
 - Nächster Architekturauftrag: Composition-Root-Abschlussinventur; zugehörige Fachprioritäten gegen Vorgänger-App/Grundentscheidungen bestimmen, statt rein mechanischer weiterer Extraktionen.
+
+## Abschlussinventur v116 (2026-11-11)
+
+Nach 14 Entflechtungen wurde `app.js` erneut direkt geprüft: Die verbleibenden Aufgaben sind größtenteils legitime Modul-/Port-Komposition, Start, Renderer-Verdrahtung und kleine UI-Aktions-Callbacks. **Keine weitere pauschale Extraktion erforderlich.** Einzelne Callback-Regeln nur bei konkretem Feature-/Testbedarf überarbeiten. Der verbindliche aktuelle Abschluss mit Vorgänger-Abgleich, Abgrenzung zu ersetzten Grundentscheidungen, offenen Funktionsgruppen und nächstem UX-Gate steht in [`ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md`](ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md). **App-Quellversion unverändert v116.**
