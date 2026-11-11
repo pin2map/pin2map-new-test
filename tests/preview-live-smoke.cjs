@@ -62,6 +62,30 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.deepEqual(limitContract,{requestedLimit:25,calls:1,offlineLength:8,
           updatedLength:25,cachedLength:25,marker:25},
           "Published pin-search count/cache contract: "+JSON.stringify(limitContract));
+        // The published search-to-pin port must not name a house-number pin "49".
+        // All ports are fakes; this does not create or persist user pins.
+        const pinNameContract=await page.evaluate(()=>{
+          const address={name:"49",
+            display_name:"49, Bilser Str., Hamburg, Deutschland",
+            address:{road:"Bilser Str.",house_number:"49",city:"Hamburg"},
+            lat:"53.55",lon:"10"};
+          const domain=window.Pin2MapPlaceSearch;
+          let captured=null;
+          const transfer=new window.Pin2MapSearchPinTransfer({
+            searchView:{hide:()=>{},message:()=>{}},
+            titleOf:domain.pinName,
+            addPin:(lat,lng,name)=>{captured={lat,lng,name};return {id:"synthetic"};},
+            mapPort:{getViewport:()=>({zoom:13}),setView:()=>{}},
+            onLayout:()=>{},isPrivateLayerVisible:()=>false,
+            onRenderMarkers:()=>{}
+          });
+          transfer.choose(address);
+          return {listTitle:domain.title(address),pinName:captured?.name,
+            lat:captured?.lat,lng:captured?.lng};
+        });
+        assert.deepEqual(pinNameContract,{listTitle:"49",
+          pinName:"Bilser Str. 49",lat:53.55,lng:10},
+          "Published search must transfer street and house number into pin name");
         // Live acceptance of the search-results UI, not just a successful map start.
         // Use a local view instance: no geocoder requests or persisted pin changes.
         const searchContract=await page.evaluate(()=>{
