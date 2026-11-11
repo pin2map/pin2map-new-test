@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v108: Karten-Overlay-Koordination modularisiert; Node/Architektur/Chromium/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v109: Einzelpin-Löschbestätigung modularisiert, Offline-Löschtest grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v108**, nach sechster `app.js`-Entflechtung (Karten-Overlay-Lebenszyklus). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v108'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v108` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v109**, nach siebter `app.js`-Entflechtung (Einzelpin-Löschdialog). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v109'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v109` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -125,6 +125,15 @@
 - **Gates für finalen Test-Commit `bb8b4a9195e3e6c53fcb577b96d5d53e38ed5c3e` nachgewiesen:** [Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42988644999) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42988645024) erfolgreich, [Pages/HTTPS/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42988644995) erfolgreich. GitHub-Quellversion `pin2map-new-v108` wird von der Preview-Pipeline als `pin2map-preview-v108` ausgeliefert.
 - **Schutz:** CSS unverändert B38/298 `!important`, Topo-Host `a.tile.opentopomap.org`, Pin-/Ebenenschema, IndexedDB, `main` und Referenzzweige unverändert. **Für v108 kein zusätzlicher manueller Nutzergerätetest erforderlich**, da Browser-/Offline-/Overlay-Regression erfolgreich. Bei Bedarf weiterhin explizit anfordern.
 
+## 4k. Siebte `app.js`-Entflechtung – Einzelpin-Löschdialog (v109, 2026-11-11)
+
+- Neues `ui/pin-delete-dialog.js`: Präsentations- und Ereignislebenszyklus für den Einzelpin-Dialog, einschließlich sicherem `cancel`/Escape, `confirm`, idempotentem `bind` und `dispose`. Wichtig: Die beim **Öffnen** gewählte Pin-ID wird erfasst und bei späterer Bestätigung an die Anwendung zurückgegeben; kein unbeabsichtigtes Löschen eines inzwischen anders ausgewählten Pins.
+- `app.js` übergibt `getSelectedPinId` und `onConfirm`-Callback; fachliche Löschung über `pinOps.deletePin(state,id)`, zustandsabhängige Selektion, Speicherung, Rendering und Bestätigungsmeldung bleiben außerhalb von `ui/`. Der alte direkte `deleteDialog`-`close`-Listener entfällt. `app.js` 15.442 → **15.433 Zeichen**; Hauptgewinn ist die klare Sicherheits-/UI-Grenze.
+- `index.html` und `sw.js`-`CORE` enthalten das neue Modul; Service-Worker-Version **v109**. Neuer `tests/pin-delete-dialog.test.js` deckt gesicherte ID, Abbrechen, Mehrfachklick, fehlende Auswahl, Event-Lifecycle und Script-/Cache-Verträge ab.
+- `tests/browser-smoke.cjs` prüft nach dem bisherigen Offline- und Pin-Persistenzlauf nun eine **wirkliche Einzelpin-Löschung**: Abbrechen erhält den Pin; Bestätigen entfernt ihn; nach erneutem **Offline-Neuladen** bleibt er gelöscht. Bestehende Karte, Suche, Ebenen, Basiskarte, Pin-Move, Löschabbruch und Offline-Funktionen weiterhin grün.
+- **GitHub Actions tatsächlich erfolgreich (finaler Test-Commit `f0294eb24c789f04d8164a3561ecf527bbd5b71f`):** [Node und Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42989242321), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42989242227), [Pages/HTTPS-Preview und Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42989242295). Die Preview wird mit `pin2map-preview-v109` ausgeliefert.
+- **Schutz:** Topo-Host `a.tile.opentopomap.org`, CSS B38 mit 298 `!important`, IndexedDB-Schema, Nutzerdaten und `main` nicht geändert. **Kein persönlicher Gerätetest erforderlich** für v109; tatsächlicher Chromium-Test einschließlich Datenpersistenz erfolgreich.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -139,10 +148,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Nächste zusammenhängende `app.js`-Verantwortlichkeit wählen:** v108-Zustand prüfen; Schwerpunkt auf der **einzelnen Pin-Löschbestätigung** mit Dialog-Lebenszyklus und sicherer fachlicher Zuständigkeit oder auf der verbleibenden Speicher-/Viewport-Koordination. Nicht wieder nur kosmetische Einzelzeilen auslagern.
-2. Bei künftigen Änderungen alle Node-/Architektur-/Chromium-Tests und das erfolgreiche GitHub-Pages-/HTTPS-Live-Gate tatsächlich nachweisen. Bestehende Overlay-Verträge sowie `a.tile.opentopomap.org` nicht unbegründet verändern.
-3. **Erforderliche Nutzergerätetests ausdrücklich ankündigen**, mit genauer Vorschau-URL, Schritten und erwartetem Ergebnis. Für v108 ist keine Nutzerprüfung notwendig.
-4. CSS-Sanierung B38/298 bleibt pausiert. `main`, Referenzen, IndexedDB-Schema und persistierte Pins schützen.
+1. **Nächste größere, fachlich kohärente `app.js`-Verantwortlichkeit beurteilen:** verbleibende **Speicher-/Viewport-Koordination** oder Pin-Erzeugung/-Auswahl als eigenen Anwendungsfall prüfen. Modulgrenzen und seit v109 getrennte UI-Dialoge erhalten; nicht nur nach Zeichenersparnis optimieren.
+2. Jede neue Anwendungsänderung mit vollständigem Node-/Architektur-/Chromium-Lauf und echtem GitHub-Pages-/HTTPS-Preview-Gate bestätigen; externe Topokarten-Quelle `a.tile.opentopomap.org` unverändert beibehalten.
+3. Erforderliche **Nutzergerätetests ausdrücklich ankündigen** mit URL, Schritten und erwartetem Ergebnis. Für v109 ist kein persönlicher Test notwendig.
+4. CSS B38/298 bleibt pausiert. `main`, `reference/*`, IndexedDB-Schema und Nutzerpins schützen.
 
 ## 6. Maßgebliche Dokumente
 
