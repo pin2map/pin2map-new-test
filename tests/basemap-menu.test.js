@@ -128,6 +128,7 @@ test("satellite menu markup has requested order, Lucide icons and neutral fallba
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteReset"'));
   assert.ok(section.indexOf('id="satelliteReset"')<section.indexOf('id="satelliteBrightness"'));
   assert.match(section,/aria-label="Helligkeit auf 140 % zurücksetzen"/);
+  assert.match(section,/id="satelliteReset"[^>]*><span data-pin-icon="refresh-cw"><\/span><span>Standard<\/span><\/button>/);
   assert.equal(model.defaultProject().satelliteBrightness,140);
   assert.equal(Object.hasOwn(model.defaultProject(),"satelliteContrast"),false);
   const icons=fs.readFileSync(path.join(__dirname,"../ui/lucide-icons.js"),"utf8");
