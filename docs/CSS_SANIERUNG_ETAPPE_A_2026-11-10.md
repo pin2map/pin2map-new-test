@@ -560,3 +560,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Test `tests/css-header-spacing-ownership.test.js` fordert genau einen finalen Gap-/Padding-Eigentümer und schützt die mobile Media-Query-Klammerung. Zusammen mit den bereits vorhandenen Header-/CSS-Budget-Verträgen bestanden **sechs gezielt ausgewertete Assertionen** gegen die aktuelle GitHub-Quelle.
 - `!important`-Bestand **299 → 298** gegenüber anfangs 402. Das CSS-Debt-Budget ist auf 298 gesetzt. PWA-Quellrelease **v92**.
 - Abgrenzung: Isolierte Quelltextassertionen sind kein vollständiger Node-22-Testlauf. GitHub-Actions-/Pages-Veröffentlichung und ausgelieferte Browserdateien müssen eigenständig geprüft werden. Da die wirksamen Abstände unverändert sind, ist für B30 kein neuer Gerätetest nötig.
+
+
+## Inkrement B31 – redundant mobile Header-Display entfernt (v93, 2026-11-11)
+
+- In der älteren mobilen `@media(max-width:630px)`-Stufe wurde ausschließlich die isolierte `.topbar{display:flex}`-Regel entfernt. Die spätere globale `.topbar`-Regel mit `display:flex!important;flex-direction:row!important` bleibt unverändert maßgeblich; ebenso bleiben die mobilen Suchfeld-, Zoom- und Leaflet-Positionierungsregeln erhalten.
+- Neuer Regressionstest: `tests/css-mobile-header-display-ownership.test.js` prüft den gültigen Flex-Eigentümer, die Abwesenheit der Altregel und die benachbarten mobilen Regeln.
+- CSS-`!important`-Zahl unverändert **298** (ursprünglich 402); es wurde eine überholte normale Deklaration entfernt. Die 42px-Such-Antippfläche, 30px-Sichtkreislinie, 18px-Lupe und alle Suchbutton-Eigenschaften bleiben unangetastet.
+- PWA-Quellkennung auf **v93** angehoben. Statische Invarianten wurden gegen die GitHub-Quelldatei ausgewertet; ein vollständiger Node-Testlauf, ein erfolgreicher GitHub-Actions-/Pages-Lauf und die tatsächliche HTTPS-Auslieferung werden dadurch **nicht** nachgewiesen. Keine neue manuelle Geräteprüfung nötig, weil keine sichtbare Änderung zu erwarten ist.
