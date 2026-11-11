@@ -151,22 +151,19 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-panel input,.pin-panel select{padding:7px 8px!important;font-size:15px!important;margin-top:3px}
 .pin-panel .muted{margin:7px 0;font-size:11px}
 .pin-panel .pin-actions button{font-size:12px!important;padding:8px!important}
-/* Noninteractive, one-line text always placed left or right of the pin. */
-.pin-icon{background:none!important;border:none!important;overflow:visible!important}
-.pin-side-label{
-  position:absolute;top:-5px;display:block;box-sizing:border-box;
-  max-width:min(175px,40vw);min-width:0;overflow:hidden;text-overflow:ellipsis;
-  white-space:nowrap;padding:3px 6px;border-radius:5px;
-  color:#162d49;background:rgba(255,255,255,.92);
-  border:1px solid rgba(55,76,99,.35);
-  box-shadow:0 1px 4px #0002;font-size:12px;font-weight:500;
-  line-height:18px;pointer-events:none;user-select:none;
+/* Vorgänger-Namenslabels: permanente Leaflet-Tooltips, rechts am Pin.
+   Leaflet owns their position; no generic marker/collision CSS overrides. */
+#map .leaflet-tooltip.address-label{
+  background:rgba(255,255,255,.94);
+  border:1px solid #777;
+  border-radius:5px;
+  color:#111;
+  font-weight:600;
+  padding:3px 6px;
+  white-space:nowrap;
+  pointer-events:none;
 }
-.pin-side-label.right{left:34px}
-.pin-side-label.left{right:34px}
-.pin-side-label.highlighted{font-weight:750;background:#ffffff;border-color:#1c538f;box-shadow:0 2px 7px #0003}
 .pin-marker{position:relative;z-index:1}
-.pin-icon:has(.pin-side-label){z-index:auto}
 /* Info: keep only local stacking and typography. The shared map-control
    contract owns its diameter/surface, and the bottom-right contract owns
    its final position. */
