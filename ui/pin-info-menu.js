@@ -11,8 +11,8 @@
     get menu(){return this.element("pinInfoMenu");}
     isOpen(){return !this.menu.classList.contains("hidden");}
     render(mode,periods={daily:"today",sun:"today"}){
-      for(const selectedMode of ["daily","sun"]){
-        const select=this.element(selectedMode==="daily"?"pinInfoDailyPeriod":"pinInfoSunPeriod");
+      for(const selectedMode of ["daily","precipitation","sun"]){
+        const select=this.element(selectedMode==="daily"?"pinInfoDailyPeriod":selectedMode==="sun"?"pinInfoSunPeriod":"pinInfoPrecipitationPeriod");
         if(select)select.value=periods[selectedMode];
       }
       this.document.querySelectorAll("#pinInfoMenu .pin-info-mode-row").forEach(row=>{
@@ -33,7 +33,7 @@
       if(this.listeners.length)return;
       const listen=(el,type,fn)=>{el.addEventListener(type,fn);this.listeners.push({el,type,fn});};
       listen(this.button,"click",()=>this.isOpen()?this.close():this.open());
-      for(const [mode,id] of [["daily","pinInfoDailyPeriod"],["sun","pinInfoSunPeriod"]]){
+      for(const [mode,id] of [["daily","pinInfoDailyPeriod"],["precipitation","pinInfoPrecipitationPeriod"],["sun","pinInfoSunPeriod"]]){
         const selector=this.element(id);
         if(!selector)continue;
         // A focus/click selects the row even when the current option is "Heute".
