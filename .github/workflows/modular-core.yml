@@ -33,8 +33,14 @@ jobs:
           node-version: '22'
       - name: Install Playwright for this smoke test
         run: npm install --no-save playwright@1.56.1
-      - name: Install headless Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Use preinstalled Google Chrome on the GitHub runner
+        run: |
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || true)
+          if [ -z "$CHROME" ]; then
+            echo "No system Chrome found on runner" >&2
+            exit 1
+          fi
+          echo "PIN2MAP_CHROMIUM_EXECUTABLE=$CHROME" >> "$GITHUB_ENV"
       - name: Serve development checkout on localhost
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/pin2map-server.log 2>&1 &
