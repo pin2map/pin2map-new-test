@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v102: zweiter `app.js`-Extraktionsschritt; CI-/Preview-Endergebnis bei Statusfortschreibung noch offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v102 erfolgreich in CI/Pages und Preview; manueller Einpass-Test auf Gerät angefordert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -61,7 +61,7 @@
 
 - Neues `application/fit-visible-pins.js`: unabhängiger Anwendungsfall für die Option „Alle sichtbaren Pins anzeigen“; nutzt injizierten `pinFilter` und `mapPort` statt Leaflet/DOM/IndexedDB. Erhält leeren Zustand mit Meldungs-Callback ohne Kartenbewegung, Einzelpin mit Zoom mindestens 13, Mehrfach-Pins mit Padding [35,35]/maxZoom 15 und anschließender UI-Layout-Aktualisierung.
 - `app.js` delegiert ausschließlich diesen Anwendungsfall über `fitVisiblePins(...)`; der Kartenadapter und Pin-/Ebenenzustand bleiben an ihren bisherigen Verantwortlichkeiten. `index.html` lädt das Modul vor `app.js`; `sw.js` nimmt es in den Offline-App-Shell-`CORE` auf, Quellversion `pin2map-new-v102`.
-- Neuer `tests/fit-visible-pins.test.js` prüft 0/1/mehrere sichtbare Pins und die Integration mit HTML/App-Shell. Beim ersten v102-Run zunächst **140/141 Node-Tests bestanden**: der ältere Basiskarten-Test hatte den SW-Release-String noch hart auf v101 festgelegt. Diese versionsabhängige Altannahme wurde in `tests/basemap-menu.test.js` durch einen versionstoleranten App-Shell-Vertrag ersetzt (Commit `02c96fdb73ced077258f7e9f4b8fd1042627e43c`). Der aktuelle **Node-Job ist danach grün**, Architekturprüfungen ebenfalls; der vollständige Chromium- und Pages-Lauf wird separat nachgehalten.
+- Neuer `tests/fit-visible-pins.test.js` prüft 0/1/mehrere sichtbare Pins und die Integration mit HTML/App-Shell. Beim ersten v102-Run zunächst **140/141 Node-Tests bestanden**: der ältere Basiskarten-Test hatte den SW-Release-String noch hart auf v101 festgelegt. Diese versionsabhängige Altannahme wurde in `tests/basemap-menu.test.js` durch einen versionstoleranten App-Shell-Vertrag ersetzt (Commit `02c96fdb73ced077258f7e9f4b8fd1042627e43c`). Der erneute **Node-Job, der Chromium-Smoke, die Architekturprüfung und das GitHub-Pages-Deployment sind inzwischen erfolgreich bestätigt**. <https://github.com/pin2map/pin2map-new-test/actions/runs/42982337850> · <https://github.com/pin2map/pin2map-new-test/actions/runs/42982337852> · <https://github.com/pin2map/pin2map-new-test/actions/runs/42982337887>. Die veröffentlichte v102-Preview ist in GitHub Actions per HTTPS-Version-/Asset-Check und Live-Start geprüft; manueller Gerätetest „Alle sichtbaren Pins anzeigen“ bleibt offen.
 - `styles.css` und das CSS-Budget 298 bleiben unverändert. Keine Änderung an IndexedDB, Pin-Datenschema, `main` oder Referenzzweigen.
 - **Nutzergerätetest:** noch nicht erforderlich, solange die gezielten automatischen Tests und Browser-/Live-Gates laufen. Falls ein Layout-/Interaktionsregressionsverdacht entsteht, wird eine konkrete Testanleitung für die Preview gegeben.
 
@@ -79,7 +79,7 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **v102-Verifikation abschließen:** Nach dem korrigierten versionsgebundenen Alt-Test sind Node- und Architekturläufe grün. Chromium-Smoke, Preview-Deployment und die tatsächlich gelieferten HTTPS-Assets bis zum Ergebnis nachweisen; keine Freigabe ohne Endresultat.
+1. **Manuellen v102-Sichtbarkeitstest durchführen:** auf der Preview am iPhone/iPad einen sichtbaren Pin anlegen, Karte wegschieben und „Alle sichtbaren Pins anzeigen“ (Ziel-/◎-Schaltfläche bei den Zoomkontrollen) drücken; der Pin muss ins Kartenbild zurückkehren. Bei einem vollständig leeren Projekt muss stattdessen „Keine sichtbaren Pins vorhanden“ erscheinen. Wenn mehrere Pins vorhanden sind, müssen diese gemeinsam sichtbar werden; das ist eine separate optionale Prüfung. Automatische CI-/Pages-/Browser-Gates sind bereits erfolgreich.
 2. **Bedienung „Alle sichtbaren Pins anzeigen“ abnehmen:** zunächst automatische Browserabdeckung für leere Ansicht sowie Einzel-/Mehrfach-Pin-Einpassen sicherstellen. Eine manuelle iPhone-/iPad-Prüfung nur bei konkretem Bedarf ausdrücklich anfordern, mit URL und Schritten.
 3. Anschließend nächste sinnvolle `app.js`-Verantwortlichkeit auswählen und wieder genau eine kleine Extraktion umsetzen; CSS-Konsolidierung B39 bleibt pausiert.
 4. `main`, Referenzen, IndexedDB und persistierte Nutzerpins geschützt lassen.
