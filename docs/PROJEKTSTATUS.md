@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v116 unverändert: iPhone/Safari A01–A06 laut Nutzer bestanden, übrige Gerätefälle offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v116 unverändert: 21/21 iPhone-Safari-Testfälle laut Nutzer bestanden; iPad/sonstige Geräte separat offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -219,7 +219,8 @@
 - **A04 laut Nutzerrückmeldung bestanden:** „Test A04: Alles funktioniert wie beschrieben.“ Verschiebevorschau lässt sich abbrechen, ohne den Testpin zu verschieben. Nächster Fall A05: Verschiebeziel bestätigen und nach Reload prüfen.
 - **A05 laut Nutzerrückmeldung bestanden:** „Test A05: Alles funktioniert wie beschrieben.“ Der Testpin wurde bewusst verschoben; Name, Identität und neue Position bleiben über Reload erhalten. Fortsetzung: A06, vollständige Sichtbarkeit des Pin-Dialogs beim Öffnen nahe jedem Kartenrand.
 - **A06 laut Nutzerrückmeldung bestanden:** „es funktioniert alles wie gewünscht“ nach Prüfung des vollständigen Pin-Dialogs an oberem, unterem, linkem und rechtem Kartenrand. Nutzer bittet um beschleunigte weitere Abnahme. Nächster Block: A07/A08 und B04–B06 gemeinsam, anschließend übrige Fälle gezielt nach Risiko statt je einzeln.
-- Protokoll in [`docs/GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md`](GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md) aktualisiert. **A07–A08, B01–B08, C01–C05 und iPad-Tests offen**. Fortsetzung: A07/A08/B04–B06 als Sammelblock, ohne andere Benutzerdaten zu verändern.
+- **Sammelrückmeldung des Nutzers:** „alle Tests erfolgreich bestanden!“ als Antwort auf die komplett nummerierte Liste **7–21**. Diese Liste deckte **A07–A08, B01–B08 und C01–C05** ab. Alle **21/21** iPhone-Safari-Testfälle A01–C05 sind damit als **laut Nutzer bestanden** im Geräteplan markiert. Die optionale Brave-Prüfung, der bedingte installierte-PWA-/Flugmodus-Test und der Vorgänger-Vergleich wurden in der pauschalen Antwort nicht einzeln belegt; daher **keine eigenständige technische Bestätigung** dieser Umgebungen beanspruchen. iPad-/Home-Screen-PWA-Tests bleiben offen.
+- Protokoll in [`docs/GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md`](GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md) aktualisiert. **iPhone/Safari laut Nutzer 21/21 abgeschlossen**, iPad und separat installierte Home-Screen-PWA noch offen. Nächster Schritt: nächstes lokales Feature mit Sicherheits-/Datenverlustschutz und bestehenden Grundentscheidungen vorbereiten, ohne andere Benutzerdaten zu verändern.
 - Keine App-, CSS-, SW- oder IndexedDB-Änderung; v116 unverändert. Geräteteststatus ist Nutzerbeobachtung, kein neuer CI-/Deployment-Nachweis.
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
@@ -236,10 +237,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Kleine reale iPhone-Abnahme ausdrücklich beauftragen:** [Geräte-Abnahmeplan](GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md) verwenden, zunächst A01–A08 im Safari-Tab an der exakten Preview-URL, dann regressionsanfällige B04–B06. Einen Testpin verwenden, niemals reale Pins/Browserdaten löschen. **„ok“ allein ist noch keine Abnahme.** Nutzer erhält beim Beginn konkrete Schritte; Ergebnisse je Fall nachhalten.
-2. **Abweichungen gezielt reparieren**, mit vorhandenen Node-/Architektur-/Chromium-Gates sowie tatsächlicher Pages-/HTTPS-Verifikation. Bestehende Darstellung/Map-/Pin-Verträge und den Status der CSS-Pause schützen.
-3. **Nach Basis-UX-Abnahme** die nächste funktionale Ergänzung aus Grundentscheidungen und [Funktionsabgleich](ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md) wählen: zunächst Datenverlustschutz durch lokales Export-/Backup-/Wiederherstellungskonzept oder Pinnotizen/Links; nichts stillschweigend beschließen. Synchronisation erst nach Gate 3.
-4. Quellversion bleibt **v116**; weitere mechanische `app.js`-Extraktionen sind nicht geplant. `main`, `reference/*`, IndexedDB-Schema/Nutzerdaten, Topo `a.tile.opentopomap.org` und CSS B38/298 schützen.
+1. **iPhone-Safari-Abnahme als Nutzerrückmeldung abschließen:** 21/21 nummerierte v116-Testfälle als OK gemeldet; Geräteprotokoll hat die genaue Zuordnung 7–21 → A07–C05. Keine erneute Einzelabfrage derselben Testfälle. Beim nächsten Gespräch nur neue konkrete Auffälligkeiten oder abweichende Umgebungen behandeln.
+2. **Nächsten lokalen Funktionsausbau fachlich eingrenzen:** Nach dem architektonischen Abschluss v116 und der positiven iPhone-Basisrückmeldung ist **Datenverlustschutz durch lokalen Projekt-Export/Backup** der erste zu prüfende Kandidat, anschließend sichere Wiederherstellung/Import und Pinnotizen/Links. Vor dem Codieren bestehende Grundentscheidungen zu Format, Datei, Ersetzen/Hinzufügen, Importkonflikten, Datenprüfung und Datenverlustschutz lesen. Keine neue Datenmigration oder automatische Löschung.
+3. **Übrige Geräte-/Feature-Gates unterscheiden:** Die pauschale Nutzerrückmeldung beweist nicht selbstständig Brave privat, eine installierte Home-Screen-PWA, Offline-Flugmodus-Details oder iPad. Gezielte zusätzliche Gerätetests nur bei relevantem Feature oder explizitem Bedarf; keine pauschale volle Vorgänger-Parität behaupten. CSS B38/298 bleibt separat pausiert.
+4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktuell **v116 unverändert**.
 
 ## 6. Maßgebliche Dokumente
 
