@@ -64,7 +64,6 @@ dialog h2{font-size:18px;margin:0 0 24px}
 /* Mobile layout – keep controls on screen in iOS Safari */
 html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 #app{height:100%;height:100dvh;position:relative;overflow:hidden}
-.topbar{min-width:0}
 .search{flex:1 1 0;min-width:0;max-width:min(520px,100%)}
 .search input{flex:1 1 0;width:0;min-width:0;text-overflow:ellipsis}
 .pin-panel{max-height:calc(100dvh - 125px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
