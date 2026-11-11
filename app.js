@@ -13,7 +13,7 @@
   const placeDomain = window.Pin2MapPlaceSearch;
   const placeSearch = new window.Pin2MapPlaceSearchService({
     domain:placeDomain,
-    geocoder:new window.Pin2MapNominatimGeocoder({fetchImpl:(...args)=>fetch(...args),language:navigator.language||"de"})
+    geocoder:new window.Pin2MapNominatimGeocoder({fetchImpl:(...args)=>fetch(...args),language:"de"})
   });
   const layerOps = window.Pin2MapLayerOperations;
   const currentPinFilter = pinFilter.createFilter();
@@ -31,8 +31,11 @@
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
     onChoose:result=>choosePlace(result),
+    onCancel:()=>searchForm.cancel(),
     titleOf:result=>placeDomain.title(result),
-    detailOf:result=>placeDomain.detail(result)
+    detailOf:result=>placeDomain.detail(result),
+    kindOf:result=>placeDomain.kind(result),
+    duplicateCoordinates:results=>placeDomain.duplicateCoordinates(results)
   });
   const layerView = new window.Pin2MapLayerView({
     getElement:$,document,
@@ -261,7 +264,9 @@
       ...hooks,onCacheWrite:save
     }),
     onResults:renderResults,
-    onMessage:searchMessage
+    onMessage:searchMessage,
+    onInputChange:()=>searchView.hide(),
+    cancelSearch:()=>placeSearch.cancel()
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
