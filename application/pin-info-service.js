@@ -35,6 +35,8 @@
     }
     setMode(mode,period=this.period){
       if(!MODES.includes(mode))throw new RangeError("Unknown mode: "+mode);
+      // Off is a mode, not a calendar period; clear an inherited annual value.
+      if(mode==="off"&&period==="year")period="today";
       if(!PERIODS.includes(period)||(period==="year"&&mode!=="precipitation"))throw new RangeError("Unknown period: "+period);
       if(this.mode===mode&&this.period===period)return;
       const effectiveChange=this.mode!==mode||(monthMode(mode)&&this.period!==period);
@@ -92,11 +94,16 @@
         return record?Math.max(1000,TTL[cacheMode(this.mode,this.period)]-(now-record.at)):null;
       }).filter(v=>v!==null);
       if(!expirations.length)return;
-      const delay=Math.max(1000,Math.min(...expirations));
+      // Browser timers accept at most 2^31-1 ms; monthly/yearly TTLs
+      // otherwise overflow to a 1ms loop on Chromium/Safari.
+      const delay=Math.min(2147483647,Math.max(1000,Math.min(...expirations)));
       this.timer=this.schedule(()=>{
         this.timer=null;
         if(this.mode==="off")return;
-        this.onUpdate(); // Stale weather becomes a placeholder immediately.
+        const stale=this.visible.some(pin=>!this.isFresh(
+          this.cache.get(key(pin,this.mode,this.period)),this.mode,this.now(),this.period));
+        if(!stale){this.armRefresh();return;}
+        this.onUpdate(); // Stale values are placeholders until refetched.
         this.refresh();
       },delay);
       this.timer?.unref?.(); // Node regression runs must not be held by timers.
