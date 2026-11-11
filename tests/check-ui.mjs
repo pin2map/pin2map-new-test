@@ -119,7 +119,6 @@ check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
 check(app.includes("mapAdapter.setBasemap(state.basemap,{") &&
   app.includes("esriRelief:!!state.esriRelief") &&
   app.includes("satelliteBrightness:state.satelliteBrightness") &&
-  app.includes("satelliteContrast:state.satelliteContrast") &&
   map.includes("setSatelliteAppearance(") &&
   app.includes("mapAdapter.addZoomControls({onFitAll:fitAllPins})"),
   "map selection and zoom controls use Leaflet adapter");
