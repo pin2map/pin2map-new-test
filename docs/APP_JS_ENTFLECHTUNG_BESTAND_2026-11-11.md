@@ -121,3 +121,9 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 - Quellversion `pin2map-new-v104`, angepasste Bildquellen- und Chromium-Contracts; CSS, `app.js`, Nutzerdaten und `main` unangetastet.
 - **CI vollständig grün**: <https://github.com/pin2map/pin2map-new-test/actions/runs/42984307184> (Node+Chromium), <https://github.com/pin2map/pin2map-new-test/actions/runs/42984305834> (Architektur), <https://github.com/pin2map/pin2map-new-test/actions/runs/42984305659> (Pages/HTTPS).
 - **Offenes reales Gate:** Topo-Kacheln müssen auf Safari und Brave tatsächlich sichtbar werden. Nicht als erledigt markieren, bevor der Nutzer es bestätigt. Bei erneutem Ausfall zuerst HTTP-/TLS-/Tile-Diagnostik statt weiterer spekulativer Providerwechsel.
+
+## 13. v104 – erfolgreiche manuelle Bestätigung (2026-11-11)
+
+- Nach der Änderung auf `https://a.tile.opentopomap.org/{z}/{x}/{y}.png` meldet der Nutzer auf die konkrete erneute Geräteprüfung **„funktioniert“**. Damit ist die zuvor graue Topografische Karte im v104-Test erfolgreich sichtbar geworden. Die kurze Rückmeldung nennt nicht ausdrücklich getrennte Ergebnisse für Safari und Brave; beide daher nicht einzeln als bestätigt ausweisen.
+- Die vorherigen v104-CI-/Pages-/HTTPS-Ergebnisse bleiben erfolgreich; zusammen mit dem positiven manuellen Befund ist diese Störung für die aktuelle v104-Konfiguration behoben. Die dauerhafte Verfügbarkeit des externen Anbieters ist nicht garantiert.
+- Die Topografie-Hostadresse zunächst nicht ändern. Nächster Entwicklungsschwerpunkt wieder `app.js`-Modularisierung, CSS-Sanierung bleibt pausiert. Bei künftig erforderlichen manuellen Abnahmen den Nutzer klar und konkret informieren.
