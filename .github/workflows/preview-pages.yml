@@ -5,6 +5,9 @@ on:
     branches: [feature/leaflet-modular-core]
     paths-ignore:
       - 'docs/**'
+  # Temporary isolated release diagnosis; only our QA branch can deploy.
+  pull_request:
+    branches: [feature/leaflet-modular-core]
   workflow_dispatch:
 
 permissions:
@@ -22,6 +25,7 @@ concurrency:
 
 jobs:
   preview:
+    if: github.event_name != 'pull_request' || github.head_ref == 'qa/search-results-v132-ci'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
