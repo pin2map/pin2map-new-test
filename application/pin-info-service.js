@@ -4,11 +4,11 @@
  * coordinate, mode and freshness; never stored in the user's project.
  */
 (function(root){
-  const MODES=Object.freeze(["off","elevation","temperature","daily","sun","zone"]);
-  const TTL=Object.freeze({elevation:30*86400000,temperature:10*60000,daily:15*60000,sun:15*60000,zone:24*3600000,monthlyDaily:60*86400000,monthlySun:365*86400000});
+  const MODES=Object.freeze(["off","elevation","temperature","daily","sun","precipitation","zone"]);
+  const TTL=Object.freeze({elevation:30*86400000,temperature:10*60000,daily:15*60000,sun:15*60000,zone:24*3600000,precipitation:15*60000,monthlyPrecipitation:60*86400000,monthlyDaily:60*86400000,monthlySun:365*86400000});
   const PERIODS=Object.freeze(["today",...Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0"))]);
-  const monthMode=mode=>mode==="daily"||mode==="sun";
-  const cacheMode=(mode,period)=>monthMode(mode)&&period!=="today"?(mode==="daily"?"monthlyDaily":"monthlySun"):mode;
+  const monthMode=mode=>mode==="daily"||mode==="sun"||mode==="precipitation";
+  const cacheMode=(mode,period)=>monthMode(mode)&&period!=="today"?(mode==="daily"?"monthlyDaily":mode==="sun"?"monthlySun":"monthlyPrecipitation"):mode;
   function localDate(zone,now){
     try{return new Intl.DateTimeFormat("en-CA",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(now));}
     catch(e){return "";}
@@ -60,7 +60,7 @@
     isFresh(record,mode,now,period=this.period){
       const type=cacheMode(mode,period);
       if(!record||now-record.at<0||now-record.at>=TTL[type])return false;
-      if(period==="today"&&(mode==="sun"||mode==="daily")&&record.data?.zone){
+      if(period==="today"&&(mode==="sun"||mode==="daily"||mode==="precipitation")&&record.data?.zone){
         const date=localDate(record.data.zone,now);
         if(date&&record.data.date!==date)return false;
       }
@@ -78,6 +78,7 @@
       if(mode==="temperature")return {mode,text:data?Math.round(data.value)+" °C":"– °C",value:data?.value};
       if(mode==="daily")return {mode,period:this.period,climatology:this.period!=="today",parts:data?[Math.round(data.min)+"°",Math.round(data.max)+" °C"]:["–°","– °C"]};
       if(mode==="sun")return {mode,period:this.period,month:this.period!=="today"?this.period:null,parts:data?[data.rise,data.set]:["–:–","–:–"]};
+      if(mode==="precipitation")return {mode,period:this.period,normal:this.period!=="today",text:data?Number(data.value.toFixed(1)).toLocaleString("de-DE")+" mm":"– mm"};
       return {mode,text:data?zoneDelta(data,this.now()):"Δ …"};
     }
     armRefresh(){
