@@ -163,3 +163,17 @@ test("provider responses over 25 are capped and cached with request limit",async
   assert.equal(state.geoCache.paris.results.length,25);
   assert.equal(state.geoCache.paris.requestLimit,25);
 });
+
+test("pin name prefers full street and house number, not standalone house number",()=>{
+  const street={
+    name:"49",display_name:"49, Bilser Str., Hamburg, Deutschland",
+    address:{house_number:"49",road:"Bilser Str.",city:"Hamburg"}
+  };
+  assert.equal(domain.title(street),"49","search list legacy title unchanged");
+  assert.equal(domain.pinName(street),"Bilser Str. 49");
+  assert.equal(domain.pinName({name:"49",address:{house_number:"49",pedestrian:"Bilser Str."}}),"Bilser Str. 49");
+  assert.equal(domain.pinName({name:"49",display_name:"49, Bilser Str., Hamburg, Deutschland",address:{house_number:"49",city:"Hamburg"}}),"Bilser Str. 49");
+  assert.equal(domain.pinName({name:"49",display_name:"49, Hamburg, Deutschland",address:{house_number:"49",city:"Hamburg"}}),"49");
+  assert.equal(domain.pinName({name:"Hamburg",address:{city:"Hamburg"}}),"Hamburg");
+  assert.equal(domain.pinName({name:"Bilser Str.",address:{road:"Bilser Str."}}),"Bilser Str.");
+});
