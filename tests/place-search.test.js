@@ -6,9 +6,9 @@ const SearchService=require("../application/place-search-service.js");
 const Nominatim=require("../adapters/geocoding/nominatim-geocoder.js");
 
 test("place labels and cache keys are pure and retain historic display rules",()=>{
-  const item={address:{city:"Stuttgart",state:"Baden-Württemberg",country:"Deutschland"},lat:"48.77",lon:"9.18"};
+  const item={name:"Stuttgart",display_name:"Stuttgart, Baden-Württemberg, Deutschland",address:{city:"Stuttgart",state:"Baden-Württemberg",country:"Deutschland"},lat:"48.77",lon:"9.18"};
   assert.equal(domain.title(item),"Stuttgart");
-  assert.equal(domain.detail(item),"");
+  assert.equal(domain.detail(item),"Stuttgart, Baden-Württemberg, Deutschland");
   assert.equal(domain.kind({addresstype:"city",class:"place",osm_type:"node"}).label,"Stadt · Ortsmittelpunkt");
   assert.equal(domain.kind({addresstype:"city",class:"boundary",osm_type:"relation"}).label,"Stadt · Gebiet");
   assert.equal(domain.cacheKey("  STUTTGART   Mitte "),"stuttgart mitte");
