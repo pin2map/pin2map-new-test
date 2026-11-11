@@ -6,7 +6,7 @@ const {chromium}=require("playwright");
 const base=(process.env.PIN2MAP_LIVE_PREVIEW||"").replace(/\/+$/,"")+"/";
 if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
 (async()=>{
-  const browser=await chromium.launch({headless:true});
+  const browser=await chromium.launch({headless:true,...(process.env.PIN2MAP_CHROMIUM_EXECUTABLE?{executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE}:{})});
   try{
     // Approved reference covers phone, tablet and desktop. Each is checked
     // against the *published* app; tracking-query reload is checked on phone.
