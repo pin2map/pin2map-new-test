@@ -508,6 +508,10 @@ async function longPress(page,x,y,ms=725){
       assert.equal(await infoMenu.isVisible(),true,id+" select activation must not dismiss menu");
       assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
     }
+    // Restore the initial Off state after selector-activation coverage.
+    // Focus events intentionally change the active information mode.
+    await infoMenu.locator('button[data-pin-info-mode="off"]').click();
+    await infoButton.click();
 
     assert.equal(await infoMenu.locator(".pin-info-credit").count(),0,
       "No source/explanation block belongs in the pin-info menu");
