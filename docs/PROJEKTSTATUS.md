@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v115: Kartenklick-/Verschiebeziel-Entscheidung extrahiert; Tests/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v116: Kartenbewegungs-/Overlay-Layout-Koordination extrahiert; Tests/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v115**, nach dreizehnter `app.js`-Entflechtung (Kartenklick-Koordination). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v115'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v115` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v116**, nach vierzehnter `app.js`-Entflechtung (Kartenbewegungs- und Overlay-Layout-Koordination). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v116'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v116` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -186,6 +186,15 @@
 - Echte Chromium-Regression bestätigt Langdruck-Pin-Erzeugung, Move-Ziel, Cancel/Confirm, Marker-/Dialog-Zustand, Speichern und Offline-Reload. **Keine gesonderte iOS-Touch-Gestenabnahme**, deshalb nicht als auf iPhone geprüft bezeichnen.
 - **Geschützt:** `main`, Referenzen, CSS B38/298 `!important`, Topografie `a.tile.opentopomap.org`, IndexedDB-Schema und persistierte Nutzerdaten. Kein zusätzlicher Gerätetest für v115 zwingend erforderlich, weil die ausgegliederte Prioritätsregel samt Move-Regression in Chromium geprüft wurde.
 
+## 4r. Vierzehnte `app.js`-Entflechtung – Kartenbewegungs- und Overlay-Layout-Lebenszyklus (v116, 2026-11-11)
+
+- Neues `ui/map-overlay-layout.js` übernimmt die kohärente UI-Verantwortung **Kartenbewegung, Zoom, Größenänderung und Frame-gebündeltes Nachführen von Pin-Panel und Verschiebe-Bestätigungsleiste**. Die bestehende Geometrie verbleibt unverändert in `ui/pin-panel-positioner.js` und `ui/pin-move-preview.js`. Keine Leaflet-/IndexedDB- oder Pin-Datenmutationen im UI-Modul.
+- `move`: ein `requestAnimationFrame` für mehrere Ereignisse; `moveend`: zuerst Viewport speichern, Marker nur ohne aktiven Marker-Langdruck aktualisieren, dann Overlay-Layout; `zoomend`: gleicher Marker-Schutz ohne zusätzliche Viewport-Speicherung; Resize: Kartenadapter invalidieren, Marker rendern und Layout einplanen. **Nur bei erstem Pin-Öffnen** `keepVisibleAtOpen` verwenden – kein erneutes Karten-Pan bei fortlaufender Bewegung.
+- `app.js` delegiert Layout über `mapOverlayLayout.layout()`/`schedule()`/`keepVisibleAtOpen()` und bindet die Kartenereignisse über `mapOverlayLayout.bind()`. Größe **14.694 → 14.726 Zeichen**; der kleine Zuwachs resultiert aus expliziten injizierten Ports und ist bewusst keine neue Fachlast.
+- `tests/map-overlay-layout.test.js` prüft Frame-Deduplikation, Reihenfolge von Viewport-/Marker-Effekten, Long-Press-Schutz, Zoom/Resize, einmalige Eröffnungskorrektur, idempotentes Binden und sicheres `dispose()`. Der historische `tests/check-ui.mjs`-Strukturvertrag wurde auf den neuen Eigentümer der Move-Overlay-Funktion umgestellt. Der erste v116-Preview-Lauf war wegen des alten Prüfpfads rot; der nachfolgende korrigierte Lauf ist erfolgreich.
+- **Final bestätigte CI-/Live-Gates für Code/Test-Commit `16e74034e5c97fa0251ab3595c2cbf33d38d0ff9`:** [Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996) erfolgreich, [Pages/HTTPS/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529) erfolgreich. Preview-Gate **214 Node-Tests/0 Fehler**, exakte v116-SW-/Assetversion; Live-Start auf Phone-, Tablet- und Desktop-Viewport erfolgreich.
+- **Schutz:** `main`, Referenzen, CSS B38/298 `!important`, `a.tile.opentopomap.org`, IndexedDB-Schema, Pins und gespeicherte Nutzerdaten unverändert. Automatischer Chromium-Smoke bestätigt Pin-Auswahl, Verschiebeziel/Abbruch/Bestätigung, Panel-/Marker-Zustand, Persistenz und Offline-Reload. Kein zusätzlicher persönlicher Gerätetest für v116 notwendig; reale iOS-Gesten damit nicht gesondert nachgewiesen.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -200,10 +209,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Verbleibendes Karten-/Overlay-Layout bewerten:** `move`, `moveend`, `zoomend`, Resize, `scheduleMapOverlayUpdate()`, `keepSelectedAbovePanel()` auf zusammenhängende UI-Verantwortung untersuchen, vor einer Extraktion aber die Gesten-/Pin-Dialog-Geometrie aus der Vorgänger-App und bestehenden Tests schützen. Nicht das gelöste Kartenklick-Präzedenzproblem erneut öffnen.
-2. **Composition Root respektieren:** `app.js` muss Module, Ports, View-Renderer und Karteninitialisierung verbinden dürfen. Weitere Extraktion nur bei echter separater Verantwortung und automatisiertem Regressionstest.
-3. Nach jeder Änderung Node-/Architektur-/Chromium- und Pages-/HTTPS-Live-Gates bis zum Ergebnis prüfen. Topo-Host und CSS B38/298 nicht ändern.
-4. **Nutzergerätetests ausdrücklich mit URL/Schritten anfordern**, wenn erforderlich. Für v115 ist kein zusätzlicher persönlicher Test notwendig. `main`, Referenzen und Nutzerdaten schützen.
+1. **Abschlussinventur des Composition Root:** Nach v116 Karten-/Overlay-Lebenszyklus und `app.js` erneut systematisch prüfen: Was sind legitime Port-Verdrahtung, Render-Koordination und Startinitialisierung, und welche fachlichen Schichten fehlen wirklich noch? Keine weitere Extraktion allein zur Reduzierung der Zeichenmenge.
+2. **Funktionale Basisversion gegen die Vorgänger-App und Grundentscheidungen abgleichen:** fehlende, geplante Funktionen priorisiert dokumentieren, ohne chaotische Altarchitektur oder ungeprüfte UI-Änderungen zu übernehmen. CSS B38/298 bleibt separat und pausiert.
+3. Jede spätere App-Änderung mit Node-, Architektur-, Chromium- und Pages-/HTTPS-Live-Gates prüfen. Die bestätigte Topokartenquelle `a.tile.opentopomap.org` und persistierte Pins schützen.
+4. **Erforderliche manuelle Gerätetests ausdrücklich mit URL und Schritten anfordern**. Für v116 aktuell kein zusätzlicher Test. `main`, `reference/*` und IndexedDB-Schema unverändert lassen.
 
 ## 6. Maßgebliche Dokumente
 
