@@ -38,6 +38,14 @@
 - Kein erneuter iPhone-/iPad-Gerätetest bei rein interner Bereinigung ohne erwartete sichtbare Änderung. Bei UI-Änderungen die vorher abgenommene Darstellung gezielt vergleichen.
 - **„ok“** ist eine Fortsetzungsanweisung, keine Testabnahme.
 
+## 4a. v101-Prüfrunde – isolierte JavaScript-Ausführung (2026-11-11)
+
+- **12 tatsächliche isolierte JavaScript-Prüfungen bestanden:** den exakten in GitHub gespeicherten `ui/basemap-menu.js`-Quelltext in einer separaten V8-Laufzeit mit DOM-Doubles ausgeführt. Bestätigt: ARIA-/Auswahl-Rendern, einmalige Öffnung, Auswahl/Schließen/Fokus, ungültige Auswahl ignorieren, Innen-/Außenklick, Escape, andere Tasten, Entfernen der Event-Listener. Zusätzlich Zusammensetzung `app.js`, Skriptreihenfolge in `index.html` sowie Offline-`CORE` und Quellversion v101 kontrolliert.
+- **Genaue Abgrenzung:** Dies ist **nicht** die tatsächliche Node-Testsuite `node --test tests/*.test.js`, kein Lauf der `tests/check-*.mjs`, keine vollständige Browser-DOM-/Leaflet-Integration und keine Geräteabnahme. Der in GitHub abgelegte Regressionstest `tests/basemap-menu.test.js` wurde dadurch nicht als Node-Test ausgeführt.
+- **CI-Nachweise:** GitHub-Abfrage des v101-Test-Commits `809d6d8f3a12a6f2ee08c2326a73257ddc2cf31f` gab leere Commit-Statuses und leere **PR-gefilterte** Workflow-Runs zurück. Diese API kann einen push-getriggerten Workflow **nicht ausschließen** und beweist keinen Erfolg.
+- **HTTPS-Preview nicht nachgewiesen:** Web-Abrufe von `/preview/`, `/preview/sw.js` und `/preview/ui/basemap-menu.js` wurden durch die verfügbare Web-Umgebung abgewiesen; direkter Git-Zugriff scheiterte an DNS-Auflösung. Keine Behauptung, v101 sei öffentlich aktiv.
+- **Ergebnis:** isoliertes UI-Modul funktional geprüft; **End-to-End-Gates offen**. Weder CSS-/App-Quellen noch Nutzerdaten wurden für diese Prüfung geändert.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. Das ist **noch keine durch CI/Pages/Browser bestätigte Freigabe**.
@@ -52,7 +60,7 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Qualitäts-Baseline und v101-Regression nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien samt `ui/basemap-menu.js` und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
+1. **Offene v101-End-to-End-Gates nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien samt `ui/basemap-menu.js` und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
 2. **Erste `app.js`-Extraktion umgesetzt (Quellstand v101):** `ui/basemap-menu.js` steuert DOM/ARIA/Escape/Außenklick; `app.js` behält Basiskartenwechsel und Speicherung. `index.html` und SW-`CORE` enthalten die neue Datei; `tests/basemap-menu.test.js` wurde neu angelegt. CSS unangetastet.
 3. **Ersten Refactoring-Schnitt technisch freigeben:** `tests/basemap-menu.test.js` und volle Node-Suite sowie `tests/check-*.mjs` ausführen, CI/Pages und live geladenes `ui/basemap-menu.js` (v101) verifizieren, Basiskartenwechsel, ARIA/Escape/Außenklick und Persistenz im Browser prüfen. Bis dahin **Implementierung vorhanden, Freigabe offen**.
 4. CSS-Komplettsanierung später wieder aufnehmen, wenn Änderungen konkrete Kaskadenprobleme offenbaren oder die Architektur-/UI-Abnahme ansteht. B39 bleibt bis dahin **pausiert**.
