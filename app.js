@@ -89,7 +89,7 @@
     }
   });
   const overlayCoordinator = new window.Pin2MapMapOverlayCoordinator({
-    getElement:$,document,searchView,uiShell,basemapMenu,
+    getElement:$,document,searchView,uiShell,basemapMenu,pinInfoMenu,
     getMoveMode:()=>uiState.moveMode,
     getSelectedPinId:()=>uiState.selectedPinId,
     onCancelMove:()=>moveController.cancel(),
