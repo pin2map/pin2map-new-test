@@ -75,3 +75,14 @@ test("integration boundary and packaging preserve existing repository schema",()
   assert.match(db,/const DATABASE="pin2map-new-v1"/);
   assert.match(db,/const VERSION=1/);
 });
+
+test("optional satellite appearance fields hydrate without a storage schema change",()=>{
+  const initial=run({layers:[{id:"private",name:"Privat"}],pins:[],basemap:"satellite",
+    satelliteBrightness:115,satelliteContrast:75});
+  assert.equal(initial.satelliteBrightness,115);
+  assert.equal(initial.satelliteContrast,75);
+  const previous=run({layers:[{id:"private",name:"Privat"}],pins:[],basemap:"satellite"});
+  assert.equal(previous.satelliteBrightness,100);
+  assert.equal(previous.satelliteContrast,100);
+  assert.deepEqual(previous.pins,[]);
+});
