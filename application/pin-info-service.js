@@ -86,7 +86,7 @@
       // Structured zone presentation: the UI owns all SVG rendering.
       const delta=data?zoneDelta(data,this.now()):"Δ …";
       const value=delta.slice(2);
-      return {mode,text:value,icon:!data||value==="…"?null:
+      return {mode,text:value==="0"?"":value,icon:!data||value==="…"?null:
         value.startsWith("+")?"rotate-cw-clock":
         value.startsWith("-")?"rotate-ccw-clock":"clock-check"};
     }
