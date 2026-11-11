@@ -3,12 +3,13 @@
  * are supplied as callbacks; no pin mutation, persistence or Leaflet here. */
 (function(root){
   class MapOverlayCoordinator{
-    constructor({getElement,document:doc,searchView,uiShell,basemapMenu,getMoveMode,getSelectedPinId,onCancelMove,onClearSelection}){
+    constructor({getElement,document:doc,searchView,uiShell,basemapMenu,pinInfoMenu=null,getMoveMode,getSelectedPinId,onCancelMove,onClearSelection}){
       if(typeof getElement!=="function"||!doc||!searchView||!uiShell||!basemapMenu||
          [getMoveMode,getSelectedPinId,onCancelMove,onClearSelection].some(fn=>typeof fn!=="function"))
         throw new TypeError("Map overlay coordinator dependencies required");
       this.element=getElement;this.document=doc;
       this.searchView=searchView;this.uiShell=uiShell;this.basemapMenu=basemapMenu;
+      this.pinInfoMenu=pinInfoMenu;
       this.getMoveMode=getMoveMode;this.getSelectedPinId=getSelectedPinId;
       this.onCancelMove=onCancelMove;this.onClearSelection=onClearSelection;
       this.listeners=[];
@@ -19,6 +20,7 @@
       this.element("layersPanel").classList.add("hidden");
       this.element("settingsPanel").classList.add("hidden");
       this.basemapMenu.close();
+      this.pinInfoMenu?.close();
     }
     closeAll(){
       this.searchView.hide();
