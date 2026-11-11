@@ -50,8 +50,10 @@ check(app.includes("moveController.previewAt(position)") &&
   app.includes("moveController.confirm()") &&
   app.includes("moveController.cancel()"),
   "map and buttons delegate the move workflow");
-check(app.includes('mapAdapter.on("move",scheduleMapOverlayUpdate)') &&
-  app.includes("moveView.positionBar()"),
+const overlayLayout=read("ui/map-overlay-layout.js");
+check(app.includes("mapOverlayLayout.bind()") &&
+  overlayLayout.includes('this.map.on("move",this.onMove)') &&
+  overlayLayout.includes("this.preview.positionBar()"),
   "confirmation bar tracks map changes");
 check(!app.includes("Neue Stelle antippen") &&
   !app.includes("Alte und neue Position prüfen"),
