@@ -44,6 +44,12 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#searchInput").press("Enter");
     await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
     assert.match(await page.locator("#searchResults .message").textContent(),/Ortssuche im Test noch nicht aktiviert/);
+    step("overlay coordination: outside map pointer closes search results");
+    await page.locator("#map").click({position:{x:75,y:95}});
+    assert.equal(await page.locator("#searchResults").isHidden(),true,
+      "Map pointerdown dismisses search results without submitting or changing pins");
+    await page.locator("#searchInput").press("Enter");
+    await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
     await page.locator("#searchResults .results-head button").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     step("basemap menu: switch, aria states, Escape, outside click and persistence");
