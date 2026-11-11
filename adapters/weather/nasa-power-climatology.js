@@ -39,7 +39,7 @@
     }
     async request(pins,period){
       const month=Number(period);
-      if(!/^0[1-9]|1[0-2]$/.test(period)||!Number.isInteger(month))
+      if(!/^(0[1-9]|1[0-2])$/.test(period)||!Number.isInteger(month))
         throw new RangeError("Expected month 01–12");
       const result=[];
       // Serial requests avoid overwhelming the provider when a large layer is enabled.
