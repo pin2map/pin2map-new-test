@@ -131,7 +131,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .search-results{
   top:calc(53px + env(safe-area-inset-top,0px))!important;
   left:50%!important;right:auto!important;transform:translateX(-50%)!important;
-  width:min(398px,calc(100% - 24px))!important
+  /* Width is now measured from #searchForm by ui/search-results.js. */
 }
 .panel{top:calc(56px + env(safe-area-inset-top,0px))!important}
 .notice{top:calc(56px + env(safe-area-inset-top,0px))!important}
