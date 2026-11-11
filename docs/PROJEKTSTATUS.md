@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v116 unverändert: iPhone/Safari A01–A04 laut Nutzer bestanden, übrige Gerätefälle offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v116 unverändert: iPhone/Safari A01–A05 laut Nutzer bestanden, übrige Gerätefälle offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -217,7 +217,8 @@
 - **A01–A03 bestanden laut ausdrücklicher Nutzerrückmeldung:** „Test A01–A02: Alles funktioniert wie beschrieben.“ Damit sind Kartenpan/Zoom sowie keine Pin-Erzeugung bei kurzem Tipp und eine Pin-Erzeugung per Langdruck mit Auswahl in der privaten Ebene auf dem iPhone bestätigt. Gerätedetails/iOS-Version nicht genannt.
 - **A03 laut Nutzerrückmeldung ebenfalls bestanden:** „Test A03: Alles funktioniert wie beschrieben.“ Namensänderung, Schließen/erneutes Öffnen und Persistenz über Safari-Neuladen geprüft.
 - **A04 laut Nutzerrückmeldung bestanden:** „Test A04: Alles funktioniert wie beschrieben.“ Verschiebevorschau lässt sich abbrechen, ohne den Testpin zu verschieben. Nächster Fall A05: Verschiebeziel bestätigen und nach Reload prüfen.
-- Protokoll in [`docs/GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md`](GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md) aktualisiert. **A05–A08, B01–B08, C01–C05 und iPad-Tests offen**. Fortsetzung: A05 mit vorhandenem Testpin, ohne andere Benutzerdaten zu verändern.
+- **A05 laut Nutzerrückmeldung bestanden:** „Test A05: Alles funktioniert wie beschrieben.“ Der Testpin wurde bewusst verschoben; Name, Identität und neue Position bleiben über Reload erhalten. Fortsetzung: A06, vollständige Sichtbarkeit des Pin-Dialogs beim Öffnen nahe jedem Kartenrand.
+- Protokoll in [`docs/GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md`](GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md) aktualisiert. **A06–A08, B01–B08, C01–C05 und iPad-Tests offen**. Fortsetzung: A06 mit vorhandenem Testpin, ohne andere Benutzerdaten zu verändern.
 - Keine App-, CSS-, SW- oder IndexedDB-Änderung; v116 unverändert. Geräteteststatus ist Nutzerbeobachtung, kein neuer CI-/Deployment-Nachweis.
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
