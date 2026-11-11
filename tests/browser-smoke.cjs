@@ -385,7 +385,11 @@ async function longPress(page,x,y,ms=725){
     const labelToggle=page.locator("#labelsToggle");
     assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags");
     assert.equal(await labelToggle.getAttribute("aria-pressed"),"true");
+    const tooltip=page.locator(".leaflet-tooltip.address-label");
+    assert.ok(await tooltip.count()>0,"Visible named pins show permanent right-hand tooltips");
+    assert.equal(await tooltip.first().evaluate(el=>el.classList.contains("leaflet-tooltip-right")),true);
     await labelToggle.click();
+    assert.equal(await tooltip.count(),0,"Global toggle hides all names");
     assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags-off");
     assert.equal(await labelToggle.getAttribute("aria-pressed"),"false");
     assert.equal(await labelToggle.locator("svg path").last().getAttribute("d"),"M2 22 22 2");
