@@ -10,9 +10,14 @@
     get button(){return this.element("pinInfoButton");}
     get menu(){return this.element("pinInfoMenu");}
     isOpen(){return !this.menu.classList.contains("hidden");}
-    render(mode,period="today"){
-      const input=this.element("pinInfoPeriod");
-      if(input)input.value=period;
+    render(mode,periods={daily:"today",sun:"today"}){
+      for(const selectedMode of ["daily","sun"]){
+        const select=this.element(selectedMode==="daily"?"pinInfoDailyPeriod":"pinInfoSunPeriod");
+        if(select)select.value=periods[selectedMode];
+      }
+      this.document.querySelectorAll("#pinInfoMenu .pin-info-mode-row").forEach(row=>{
+        row.classList.toggle("is-selected",row.dataset.pinInfoMode===mode);
+      });
       this.document.querySelectorAll("#pinInfoMenu [data-pin-info-mode]").forEach(el=>{
         const selected=el.dataset.pinInfoMode===mode;
         el.classList.toggle("is-selected",selected);
@@ -28,8 +33,13 @@
       if(this.listeners.length)return;
       const listen=(el,type,fn)=>{el.addEventListener(type,fn);this.listeners.push({el,type,fn});};
       listen(this.button,"click",()=>this.isOpen()?this.close():this.open());
-      const selector=this.element("pinInfoPeriod");
-      if(selector)listen(selector,"change",()=>this.onPeriodChange(selector.value));
+      for(const [mode,id] of [["daily","pinInfoDailyPeriod"],["sun","pinInfoSunPeriod"]]){
+        const selector=this.element(id);
+        if(!selector)continue;
+        // A focus/click selects the row even when the current option is "Heute".
+        listen(selector,"focus",()=>this.onPeriodChange(mode,selector.value));
+        listen(selector,"change",()=>this.onPeriodChange(mode,selector.value));
+      }
       this.document.querySelectorAll("#pinInfoMenu [data-pin-info-mode]").forEach(el=>
         listen(el,"click",()=>{
           this.onSelect(el.dataset.pinInfoMode);
