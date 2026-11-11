@@ -87,6 +87,13 @@
     onReliefChange:enabled=>{
       if(!!state.esriRelief!==enabled){state.esriRelief=enabled;setTileLayer();save();}
     },
+    onSatelliteReset:()=>{
+      if(state.basemap!=="satellite")return;
+      state.satelliteBrightness=100;
+      state.satelliteContrast=100;
+      mapAdapter.setSatelliteAppearance({brightness:100,contrast:100});
+      save();
+    },
     onSatelliteAdjust:(key,value,commit)=>{
       if(state.basemap!=="satellite")return;
       const field=key==="brightness"?"satelliteBrightness":key==="contrast"?"satelliteContrast":null;
