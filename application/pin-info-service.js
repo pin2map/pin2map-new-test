@@ -47,8 +47,7 @@
       this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode,period)));
       if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
       this.pending=new Set(); // Old in-flight replies cannot remove new-generation keys.
-      this.syncLoading();
-      this.refresh();
+      this.refresh(); // Update busy state atomically; do not flicker during a mode change.
     }
     setPeriod(period){
       this.setMode(this.mode,period);
@@ -59,8 +58,7 @@
       const changed=next.size!==this.activeKeys.size||[...next].some(k=>!this.activeKeys.has(k));
       this.activeKeys=next;
       if(changed){this.generation++;this.pending=new Set();}
-      this.syncLoading();
-      this.refresh();
+      this.refresh(); // Recompute active loading after replacing the visible layer set.
     }
     isFresh(record,mode,now,period=this.period){
       const type=cacheMode(mode,period);
