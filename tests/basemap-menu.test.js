@@ -29,6 +29,8 @@ function setup(){
   const street=fakeElement("street"),topo=fakeElement("topo"),invalid=fakeElement("invalid");
   street.dataset.basemap="street";topo.dataset.basemap="topo";invalid.dataset.basemap="other";
   const brightness=fakeElement("satelliteBrightness"),contrast=fakeElement("satelliteContrast");
+  const controls=fakeElement("satelliteControls"),reset=fakeElement("satelliteReset");
+  brightness.closest=()=>controls;
   const brightnessValue=fakeElement("satelliteBrightnessValue"),
     contrastValue=fakeElement("satelliteContrastValue");
   const doc=fakeElement("document");
@@ -36,16 +38,18 @@ function setup(){
     assert.equal(selector,"#basemapMenu [data-basemap]");
     return [street,topo,invalid];
   };
-  const selected=[],opened=[],adjusted=[];
+  const selected=[],opened=[],adjusted=[],resets=[];
   const view=new BasemapMenu({
     getElement:id=>({basemapMenu:menu,basemapButton:button,
       satelliteBrightness:brightness,satelliteContrast:contrast,
+      satelliteReset:reset,
       satelliteBrightnessValue:brightnessValue,satelliteContrastValue:contrastValue})[id],
     document:doc,onSelect:value=>selected.push(value),
     onSatelliteAdjust:(key,value,commit)=>adjusted.push({key,value,commit}),
+    onSatelliteReset:()=>resets.push(true),
     onOpening:()=>opened.push(true)
   });
-  return {view,menu,button,street,topo,invalid,doc,selected,opened,adjusted,
+  return {view,menu,button,street,topo,invalid,doc,selected,opened,adjusted,resets,controls,reset,
     brightness,contrast,brightnessValue,contrastValue};
 }
 test("render synchronizes selected option aria and classes",()=>{
@@ -132,9 +136,43 @@ test("satellite menu markup has requested order, Lucide icons and neutral fallba
   assert.ok(section.indexOf('id="satelliteContrast"')<section.indexOf('id="esriReliefToggle"'));
   assert.match(section,/data-pin-icon="sun-medium"/);
   assert.match(section,/data-pin-icon="contrast"/);
+  assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteReset"'));
+  assert.ok(section.indexOf('id="satelliteReset"')<section.indexOf('id="satelliteBrightness"'));
+  assert.match(section,/aria-label="Helligkeit und Kontrast auf 100 % zurücksetzen"/);
   assert.equal(model.defaultProject().satelliteBrightness,100);
   assert.equal(model.defaultProject().satelliteContrast,100);
   const icons=fs.readFileSync(path.join(__dirname,"../ui/lucide-icons.js"),"utf8");
   assert.match(icons,/"sun-medium":/);
   assert.match(icons,/"contrast":/);
+});
+
+test("reset button restores BOTH values atomically and keeps dialog open",()=>{
+  const x=setup();x.view.bind();x.view.render("satellite",false,{brightness:125,contrast:70});
+  x.view.open();
+  assert.equal(x.reset.disabled,false);
+  assert.equal(x.controls.classList.contains("is-inactive"),false);
+  x.reset.emit("click");
+  assert.deepEqual(x.resets,[true]);
+  assert.equal(x.brightness.value,"100");
+  assert.equal(x.contrast.value,"100");
+  assert.equal(x.brightnessValue.textContent,"100 %");
+  assert.equal(x.contrastValue.textContent,"100 %");
+  assert.equal(x.reset.disabled,true);
+  assert.equal(x.view.isOpen(),true);
+  x.reset.emit("click");
+  assert.equal(x.resets.length,1);
+  x.contrast.value="80";x.contrast.emit("input");
+  assert.equal(x.reset.disabled,false);
+});
+test("inactive satellite options are muted and cannot be reset",()=>{
+  const x=setup();x.view.bind();x.view.render("street",false,{brightness:120,contrast:75});
+  assert.equal(x.controls.classList.contains("is-inactive"),true);
+  assert.equal(x.brightness.disabled,true);
+  assert.equal(x.contrast.disabled,true);
+  assert.equal(x.reset.disabled,true);
+  x.reset.emit("click");
+  assert.deepEqual(x.resets,[]);
+  x.view.render("satellite",false,{brightness:120,contrast:75});
+  assert.equal(x.controls.classList.contains("is-inactive"),false);
+  assert.equal(x.reset.disabled,false);
 });
