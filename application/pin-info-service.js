@@ -6,7 +6,7 @@
 (function(root){
   const MODES=Object.freeze(["off","elevation","temperature","daily","sun","precipitation","zone"]);
   const TTL=Object.freeze({elevation:30*86400000,temperature:10*60000,daily:15*60000,sun:15*60000,zone:24*3600000,precipitation:15*60000,monthlyPrecipitation:60*86400000,monthlyDaily:60*86400000,monthlySun:365*86400000});
-  const PERIODS=Object.freeze(["today",...Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0"))]);
+  const PERIODS=Object.freeze(["today","year",...Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0"))]);
   const monthMode=mode=>mode==="daily"||mode==="sun"||mode==="precipitation";
   const cacheMode=(mode,period)=>monthMode(mode)&&period!=="today"?(mode==="daily"?"monthlyDaily":mode==="sun"?"monthlySun":"monthlyPrecipitation"):mode;
   function localDate(zone,now){
@@ -35,7 +35,7 @@
     }
     setMode(mode,period=this.period){
       if(!MODES.includes(mode))throw new RangeError("Unknown mode: "+mode);
-      if(!PERIODS.includes(period))throw new RangeError("Unknown period: "+period);
+      if(!PERIODS.includes(period)||(period==="year"&&mode!=="precipitation"))throw new RangeError("Unknown period: "+period);
       if(this.mode===mode&&this.period===period)return;
       const effectiveChange=this.mode!==mode||(monthMode(mode)&&this.period!==period);
       this.mode=mode;this.period=period;
@@ -78,7 +78,9 @@
       if(mode==="temperature")return {mode,text:data?Math.round(data.value)+" °C":"– °C",value:data?.value};
       if(mode==="daily")return {mode,period:this.period,climatology:this.period!=="today",parts:data?[Math.round(data.min)+"°",Math.round(data.max)+" °C"]:["–°","– °C"]};
       if(mode==="sun")return {mode,period:this.period,month:this.period!=="today"?this.period:null,parts:data?[data.rise,data.set]:["–:–","–:–"]};
-      if(mode==="precipitation")return {mode,period:this.period,normal:this.period!=="today",text:data?Number(data.value.toFixed(1)).toLocaleString("de-DE")+" mm":"– mm"};
+      if(mode==="precipitation")return {mode,period:this.period,normal:this.period!=="today",
+        text:data?(this.period==="today"?Number(data.value.toFixed(1)).toLocaleString("de-DE"):
+          Math.round(data.value).toLocaleString("de-DE"))+" mm":"– mm"};
       return {mode,text:data?zoneDelta(data,this.now()):"Δ …"};
     }
     armRefresh(){
