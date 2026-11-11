@@ -46,7 +46,8 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           const search=document.getElementById("searchForm").getBoundingClientRect();
           const list=host.getBoundingClientRect();
           const result={
-            searchWidth:search.width,listWidth:list.width,
+            searchWidth:search.width,searchHeight:search.height,listWidth:list.width,
+            searchX:search.x,listX:list.x,
             hasHeader:!!host.querySelector(".results-head"),
             footerLast:host.lastElementChild?.classList.contains("results-footer"),
             cancelText:host.querySelector(".results-footer button")?.textContent,
@@ -59,8 +60,11 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(searchContract.footerLast,true,"Published cancel must be last in results");
         assert.equal(searchContract.cancelText,"Abbrechen");
         assert.equal(searchContract.count,2);
-        assert.ok(Math.abs(searchContract.searchWidth-searchContract.listWidth)<=3,
-          "Published results must match search pill width: "+JSON.stringify(searchContract));
+        const endcap=Math.min(searchContract.searchWidth,searchContract.searchHeight)/2;
+        assert.ok(Math.abs((searchContract.searchWidth-2*endcap)-searchContract.listWidth)<=3,
+          "Published results must match straight horizontal lines of pill: "+JSON.stringify(searchContract));
+        assert.ok(Math.abs((searchContract.searchX+endcap)-searchContract.listX)<=3,
+          "Results must begin at left straight-line endpoint: "+JSON.stringify(searchContract));
 
         // Verify actual rendered mobile layout, not just CSS source rules.
         const geometry=await page.evaluate(()=>{
