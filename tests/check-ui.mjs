@@ -107,7 +107,7 @@ check(css.includes(".leaflet-control:not(.leaflet-control-attribution)"),
 check(gestures.includes("attachMarkerLongPress") &&
   gestures.includes("attachLongPress"),
   "touch, mouse and marker gestures live in dedicated controller");
-const mapClick=source("application/map-click-coordinator.js");
+const mapClick=read("application/map-click-coordinator.js");
 check(map.includes("onMapClick(callback)") &&
   app.includes("mapAdapter.onMapClick(position=>mapClickCoordinator.handle(position))") &&
   mapClick.includes("handle(position)") && mapClick.includes("this.previewMove(position)"),
