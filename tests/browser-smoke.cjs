@@ -50,7 +50,19 @@ async function longPress(page,x,y,ms=725){
       "Map pointerdown dismisses search results without submitting or changing pins");
     await page.locator("#searchInput").press("Enter");
     await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
-    await page.locator("#searchResults .results-head button").click();
+    assert.equal(await page.locator("#searchResults .results-head").count(),0,
+      "Search results no longer have a gray header row");
+    const footer=page.locator("#searchResults .results-footer");
+    assert.equal(await footer.count(),1);
+    assert.equal(await page.locator("#searchResults").evaluate(el=>el.lastElementChild?.className),"results-footer",
+      "Cancel belongs at the bottom of the result list");
+    const widths=await page.evaluate(()=>({
+      search:document.querySelector("#searchForm").getBoundingClientRect().width,
+      results:document.querySelector("#searchResults").getBoundingClientRect().width
+    }));
+    assert.ok(Math.abs(widths.search-widths.results)<=3,
+      "Results should align with horizontal search capsule edges: "+JSON.stringify(widths));
+    await footer.locator("button").getByText("Abbrechen").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     step("basemap menu: switch, aria states, Escape, outside click and persistence");
     const picker=page.locator("#basemapButton");
