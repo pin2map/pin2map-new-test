@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v116 unverändert: 21/21 iPhone-Safari-Testfälle laut Nutzer bestanden; iPad/sonstige Geräte separat offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (aktueller Entwicklungs-/Preview-Stand **v134**; technische Live-Abnahme erfolgreich, gezielte iPhone-Breitenabnahme offen; die älteren 21/21 iPhone-Safari-Basistests bleiben bestanden) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v116**, nach vierzehnter `app.js`-Entflechtung (Kartenbewegungs- und Overlay-Layout-Koordination). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v116'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v116` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Historischer Architektur-Basisstand:** **v116**, nach vierzehnter `app.js`-Entflechtung (Kartenbewegungs- und Overlay-Layout-Koordination). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v116'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v116` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -414,6 +414,16 @@
 - **Geräteprüfung:** Noch offen sind ausschließlich zwei gezielte persönliche Tests der neuen Ergebnislistenbreite und des unteren Abbrechen-Buttons. Keine Wiederholung bereits bestandener Pin-/Ebenen-/Info-Tests. Die vorigen fehlgeschlagenen v132-Mobiltests bleiben als ursprünglicher Befund dokumentiert, nicht als aktueller v133-Status. `main`, `reference/*`, Nutzerdaten, IndexedDB und Offline-Kacheln bleiben geschützt. Der temporäre QA-PR #1 dient nur zur technischen Verifikation; nicht mergen.
 
 
+
+## 4an. v134 – Suchergebnisliste an den geraden Pillenlinien (2026-11-11; technische Abnahme abgeschlossen)
+
+- **Nutzerbefund:** Screenshot zeigt, dass die in v133 verwendete volle `#searchForm`-Breite noch zu breit ist. Gewünscht ist ausdrücklich nur der gerade **horizontale Linienabschnitt** zwischen den beiden gerundeten Endkappen des inneren Such-Pillenfelds, nicht die gesamte abgerundete Bounding-Box. v133-Vorabnahme insoweit unzureichend.
+- **Eigentümergerechte Umsetzung:** Nur `ui/search-results.js` berechnet für die bereits vorhandene geometrische Breitenanpassung `width = searchForm.width - 2 * min(searchForm.height/2, searchForm.width/2)`. Die Ergebnisliste bleibt horizontal zentriert; CSS wird **nicht** mit einem zusätzlichen Override überlagert. `tests/search-results-footer.test.js` prüft 258×42 px ⇒ 216 px und Größenänderung; `tests/browser-smoke.cjs` und `tests/preview-live-smoke.cjs` prüfen die tatsächlichen geraden Endpunkte und Breiten. Service-Worker-Quellversion `pin2map-new-v134`, auf der Preview `pin2map-preview-v134`.
+- **Reale technische Nachweise:** [Modular core/Node/Chromium sowie unabhängige HTTPS-Live-Abnahme 43068478436](https://github.com/pin2map/pin2map-new-test/actions/runs/43068478436) **alle erfolgreich**. [Reguläre Pages-Veröffentlichung 43068566122](https://github.com/pin2map/pin2map-new-test/actions/runs/43068566122) **erfolgreich**. HTTPS-Log bestätigt ausdrücklich `PASS published preview files: pin2map-preview-v134`; Live-Chromium: Phone, Phone mit Tracking-URL, Tablet und Desktop inklusive UI-Geometrie **alle PASS**. Die graue Kopfzeile fehlt und `Abbrechen` steht am Ende der Trefferliste. URL: https://pin2map.github.io/pin2map-new-test/preview/ .
+- **Hygiene:** Temporärer QA-PR #2 ohne Merge geschlossen. Die temporär für die Diagnose eingeführten privilegierten `dispatch-preview`-/`published-preview-acceptance`-Jobs wurden aus `.github/workflows/modular-core.yml` wieder entfernt; regulärer GitHub-Pages-Workflow enthält bereits die Live-Abnahme. Keine Entscheidung im Regelwerk geändert. `main`, `reference/*`, IndexedDB, Nutzerpins und Offline-Kacheln nicht verändert.
+- **Offen:** gezielte persönliche iPhone-Abnahme allein der nun verschmälerten Ergebnisliste. Bereits geprüfte alte Funktionen nicht wiederholen.
+
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -431,7 +441,7 @@
 1. **iPhone-Safari-Abnahme als Nutzerrückmeldung abschließen:** 21/21 nummerierte v116-Testfälle als OK gemeldet; Geräteprotokoll hat die genaue Zuordnung 7–21 → A07–C05. Keine erneute Einzelabfrage derselben Testfälle. Beim nächsten Gespräch nur neue konkrete Auffälligkeiten oder abweichende Umgebungen behandeln.
 2. **v123 Info-Menü gemäß § 4ac technisch veröffentlicht; v124 Info-Button nach § 4ad vollständig prüfen und auf iPhone abnehmen; Niederschlagsdaten bisher nur Machbarkeitsfrage, noch kein Implementierungsauftrag:** Nach dem architektonischen Abschluss v116 und der positiven iPhone-Basisrückmeldung ist **Datenverlustschutz durch lokalen Projekt-Export/Backup** der erste zu prüfende Kandidat, anschließend sichere Wiederherstellung/Import und Pinnotizen/Links. Vor dem Codieren bestehende Grundentscheidungen zu Format, Datei, Ersetzen/Hinzufügen, Importkonflikten, Datenprüfung und Datenverlustschutz lesen. Keine neue Datenmigration oder automatische Löschung.
 3. **Übrige Geräte-/Feature-Gates unterscheiden:** Die pauschale Nutzerrückmeldung beweist nicht selbstständig Brave privat, eine installierte Home-Screen-PWA, Offline-Flugmodus-Details oder iPad. Gezielte zusätzliche Gerätetests nur bei relevantem Feature oder explizitem Bedarf; keine pauschale volle Vorgänger-Parität behaupten. CSS B38/298 bleibt separat pausiert.
-4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktueller Entwicklungsquellstand **v133** (Suchergebnisliste auf gemessene Suchfeldbreite ausgerichtet, Abbrechen am Listenende; Node/Chromium/Architektur/Pages/echter HTTPS-Live-Browser erfolgreich gemäß § 4am; persönliche Mobilabnahme offen).
+4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktueller Entwicklungsquellstand **v134** (Suchergebnisliste an geraden Linien der Suchpille ausgerichtet, Abbrechen am Listenende; technische Node-/Chromium-/Pages-/HTTPS-Live-Gates bestanden gemäß § 4an; gezielte persönliche Mobilabnahme offen).
 
 ## 6. Maßgebliche Dokumente
 
