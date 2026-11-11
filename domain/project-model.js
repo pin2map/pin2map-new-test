@@ -19,7 +19,7 @@
       ],
       pins:[],
       viewport:{lat:48.7758,lng:9.1829,zoom:6},
-      basemap:"street",labelsVisible:true,allowGeocode:false,geoCache:{}
+      basemap:"street",esriRelief:false,labelsVisible:true,allowGeocode:false,geoCache:{}
     };
   }
   function position(lat,lng){
