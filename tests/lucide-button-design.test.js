@@ -28,6 +28,24 @@ test("all selected control icons are available as offline Lucide SVG geometry",(
   }
   assert.throws(()=>Icons.svg("unsupported",documentStub()),RangeError);
 });
+test("time zone chooser and value labels use exact bundled Lucide geometries",()=>{
+  const html=read("index.html"),css=read("styles.css");
+  const catalog={
+    "rotate-cw-clock":["M12 7v5l4 2","M16 8h5V3","m21 8-2.3-2.3A9.7 9.7 0 0012 3a9 9 0 109 9"],
+    "rotate-ccw-clock":["M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8","M3 3v5h5","M12 7v5l4 2"],
+    "clock-check":["M21.95 13a10 10 0 1 0-8.685 8.92","M12 6v6l4 2","m16 19 2 2 4-4"]
+  };
+  for(const [iconName,paths] of Object.entries(catalog)){
+    const svg=Icons.svg(iconName,documentStub());
+    assert.deepEqual(svg.children.map(item=>item.attributes.d),paths,iconName);
+  }
+  assert.match(html,/<button[^>]*data-pin-info-mode="zone"[^>]*><span data-pin-icon="rotate-cw-clock"><\/span><span>Zeitzone<\/span><\/button>/);
+  const menu=html.split('<section id="pinInfoMenu"')[1].split("</section>")[0];
+  assert.ok(menu.indexOf('data-pin-info-mode="zone"')>menu.indexOf('id="pinInfoSunPeriod"'));
+  assert.ok(menu.indexOf('data-pin-info-mode="zone"')<menu.indexOf('class="pin-info-credit"'));
+  assert.match(css,/#map \.elevation-label \.p2m-zone-information svg/);
+});
+
 test("information icon retains exact Lucide shape and adds one rising slash only when Off",()=>{
   const enabled=Icons.svg("message-circle-exclamation-point",documentStub());
   const disabled=Icons.svg("message-circle-exclamation-point-off",documentStub());
