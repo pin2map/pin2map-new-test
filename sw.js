@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v121';
+const CACHE='pin2map-new-v122';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -24,6 +24,9 @@ const CORE=[
   "./application/place-search-service.js",
   "./application/search-pin-transfer.js",
   "./adapters/weather/open-meteo-pin-info.js",
+  "./adapters/weather/nasa-power-climatology.js",
+  "./adapters/weather/monthly-sun-times.js",
+  "./adapters/weather/pin-info-provider.js",
   "./application/pin-info-service.js",
   "./ui/pin-info-label.js",
   "./ui/pin-info-menu.js",
