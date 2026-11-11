@@ -76,14 +76,10 @@ jobs:
         run: |
           set -euo pipefail
           repo=pin2map/pin2map-new-test
-          gh workflow run preview-pages.yml --ref feature/leaflet-modular-core -R "$repo"
-          for attempt in $(seq 1 20); do
-            id=$(gh run list -R "$repo" --workflow=preview-pages.yml --branch=feature/leaflet-modular-core --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')
-            if [ -n "$id" ]; then break; fi
-            sleep 3
-          done
-          test -n "${id:-}"
-          echo "Feature-branch Pages run: https://github.com/$repo/actions/runs/$id"
+          run_url=$(gh workflow run preview-pages.yml --ref feature/leaflet-modular-core -R "$repo")
+          id="${run_url##*/}"
+          [[ "$id" =~ ^[0-9]+$ ]] || { echo "Unexpected dispatch response: $run_url"; exit 1; }
+          echo "Feature-branch Pages run: $run_url"
           gh run watch "$id" -R "$repo" --exit-status
 
   published-preview-acceptance:
