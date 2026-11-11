@@ -254,12 +254,12 @@
   }
   async function init() {
     if(!window.L){$("notice").textContent="Die Kartenbibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen."; $("notice").classList.remove("hidden");return;}
-    try {projectStore=await window.Pin2MapIndexedDBProjectStore.open();const saved=await projectStore.loadProject();if(saved && Array.isArray(saved.layers) && Array.isArray(saved.pins))state={...defaults(),...saved};}
+    let savedProject;
+    try {projectStore=await window.Pin2MapIndexedDBProjectStore.open();savedProject=await projectStore.loadProject();}
     catch(e){showNotice("IndexedDB nicht verfügbar – Änderungen können verloren gehen");}
-    if(!layerById(PRIVATE_ID))state.layers.unshift(defaults().layers[0]);
-    // Obsolete active-layer selection is deliberately discarded on load.
-    delete state.activeLayer;
-    placeSearch.cleanup(state);
+    state=window.Pin2MapProjectHydration.hydrate(savedProject,{
+      defaults,privateLayerId:PRIVATE_ID,cleanupSearch:project=>placeSearch.cleanup(project)
+    });
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
     gestures=window.Pin2MapMapGestureController({
       mapAdapter,
