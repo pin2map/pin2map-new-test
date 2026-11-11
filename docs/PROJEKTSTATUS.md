@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v102 erfolgreich in CI/Pages und Preview; manueller Einpass-Test auf Gerät angefordert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v103 Topo-Kachelserver-Korrektur; manuelle Safari-Abnahme ausdrücklich erforderlich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v102**, nach zweiter `app.js`-Modulentflechtung; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v102'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v102` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v103**, nach Korrektur der topografischen Tile-Quelle. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v103'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v103` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -65,6 +65,14 @@
 - `styles.css` und das CSS-Budget 298 bleiben unverändert. Keine Änderung an IndexedDB, Pin-Datenschema, `main` oder Referenzzweigen.
 - **Nutzergerätetest:** noch nicht erforderlich, solange die gezielten automatischen Tests und Browser-/Live-Gates laufen. Falls ein Layout-/Interaktionsregressionsverdacht entsteht, wird eine konkrete Testanleitung für die Preview gegeben.
 
+## 4d. Manuell gemeldeter Topo-Tile-Ausfall und v103-Korrektur (2026-11-11)
+
+- **Nutzerbefund:** „Alle sichtbaren Pins anzeigen“ funktioniert bei mehreren vorhandenen Pins. Auswahl „Topografische Karte“ erzeugte dagegen auf dem Gerät nur graue Kacheln bei weiterhin sichtbaren Pins; Rückwechsel auf „Straßenkarte“ zeigt die normalen Kartenkacheln. Screenshot dokumentiert. Das ist **ein echter manueller Regressionsbefund** und keine erfolgreiche Topo-Abnahme.
+- **Wahrscheinlicher externer Grund:** `map-adapter-leaflet.js` bezog Topo-Kacheln bisher über `https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png`. Der OpenTopoMap-Betreiber dokumentiert in `der-stefan/OpenTopoMap#399` WebKit/Safari-Verbindungsprobleme mit diesem Host und nennt `https://tile.top-o-map.de/{z}/{x}/{y}.png` als funktionierende alternative Betreiber-Domain. Das ist eine plausible Ursache, nicht bereits die individuelle Browser-Netzwerkdiagnose.
+- **Korrektur auf Feature-Branch:** allein der Topo-Tile-Host wird auf `tile.top-o-map.de` geändert. Straßenkarte, Pin-Zustand, Filter, Autozoom, CSS und IndexedDB unverändert. SW-App-Shell-Version **v103**, neues `tests/topographic-tile-source.test.js`.
+- **Testlücke präzisiert:** Der bisherige Chromium-Test bestätigte nur Auswahl-/ARIA-/Persistenzzustand, nicht tatsächliche Bildauslieferung. Ein neuer externer `naturalWidth>0`-Test zeigte in GitHub Actions **Timeout**, weil der Runner keine Topo-Bilder über die Ersatz-Domain empfing. Das beweist keinen iOS-Erfolg und keinen Defekt des lokalen Menü-Controllers. Für CI bleibt deshalb ein deterministischer Host-/Menüvertrag verpflichtend, eine kurz begrenzte Bildauslieferungsprobe wird diagnostisch protokolliert, aber ein Fremdserver-Ausfall blockiert die Anwendungstests nicht. **Der echte Topo-Erfolg muss im Safari-/iPad-/iPhone-Gerätetest überprüft werden.**
+- **Offen:** finale grüne CI-/Pages-Ergebnisse für den aktuellen Test-Commit `388c86a2697af690e3f359b1c2db55b8d95730aa`, anschließend sichtbare Topografie in Safari testen; Versionsnummern und Dokumentation nach tatsächlicher Workflow-Bestätigung abschließend ergänzen. Kein Merge nach `main`.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -79,10 +87,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Manuellen v102-Sichtbarkeitstest durchführen:** auf der Preview am iPhone/iPad einen sichtbaren Pin anlegen, Karte wegschieben und „Alle sichtbaren Pins anzeigen“ (Ziel-/◎-Schaltfläche bei den Zoomkontrollen) drücken; der Pin muss ins Kartenbild zurückkehren. Bei einem vollständig leeren Projekt muss stattdessen „Keine sichtbaren Pins vorhanden“ erscheinen. Wenn mehrere Pins vorhanden sind, müssen diese gemeinsam sichtbar werden; das ist eine separate optionale Prüfung. Automatische CI-/Pages-/Browser-Gates sind bereits erfolgreich.
-2. **Bedienung „Alle sichtbaren Pins anzeigen“ abnehmen:** zunächst automatische Browserabdeckung für leere Ansicht sowie Einzel-/Mehrfach-Pin-Einpassen sicherstellen. Eine manuelle iPhone-/iPad-Prüfung nur bei konkretem Bedarf ausdrücklich anfordern, mit URL und Schritten.
-3. Anschließend nächste sinnvolle `app.js`-Verantwortlichkeit auswählen und wieder genau eine kleine Extraktion umsetzen; CSS-Konsolidierung B39 bleibt pausiert.
-4. `main`, Referenzen, IndexedDB und persistierte Nutzerpins geschützt lassen.
+1. **v103-Gates abschließen:** GitHub-Actions-Läufe für Node, Architektur, Chromium und Preview-/HTTPS-Verifikation am finalen Commit belegen, ohne Fremd-Kachelserver-Verfügbarkeit als App-Erfolg auszugeben.
+2. **Nutzergerätetest ausdrücklich anfordern:** Vorschau auf dem betroffenen iPhone/iPad in Safari mit v103 öffnen (ggf. PWA-Refresh), Topografische Karte auswählen und prüfen, ob echte Kartenkacheln statt grauer Fläche sichtbar sind; anschließend Straßenkarte kontrollieren. Falls weiterhin grau: Browser-/Netzwerkdiagnose statt weiterer CSS-/app.js-Refactorings.
+3. „Alle sichtbaren Pins anzeigen“ ist durch Nutzerbefund positiv bestätigt; danach nächste kleine `app.js`-Verantwortlichkeit nur fortsetzen, wenn die Topo-Störung geklärt ist.
+4. `main`, Referenzen, IndexedDB und vorhandene Pins geschützt lassen; CSS-B38/298 bleibt pausiert.
 
 ## 6. Maßgebliche Dokumente
 
