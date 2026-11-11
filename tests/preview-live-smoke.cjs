@@ -34,6 +34,34 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        // Published geocoder contract: the number of pin results is not
+        // device-dependent and the old 8-hit cache is revalidated with consent.
+        const limitContract=await page.evaluate(async()=>{
+          let requestedLimit=null,calls=0;
+          const geocoder=new window.Pin2MapNominatimGeocoder({
+            fetchImpl:async url=>{
+              requestedLimit=Number(new URL(url).searchParams.get("limit"));
+              calls++;
+              return {ok:true,json:async()=>Array.from({length:25},(_,i)=>({
+                lat:String(48+i/1000),lon:"9"
+              }))};
+            },language:"de"
+          });
+          const service=new window.Pin2MapPlaceSearchService({
+            geocoder,domain:window.Pin2MapPlaceSearch,now:()=>200000000
+          });
+          const state={geoCache:{stuttgart:{time:200000000,
+            results:Array.from({length:8},(_,i)=>({lat:String(i),lon:"8"}))}}};
+          const oldOffline=await service.search("Stuttgart",{state,allowed:false});
+          const updated=await service.search("Stuttgart",{state,allowed:true});
+          const onlineAgain=await service.search("Stuttgart",{state,allowed:true});
+          return {requestedLimit,calls,offlineLength:oldOffline.results.length,
+            updatedLength:updated.results.length,cachedLength:onlineAgain.results.length,
+            marker:state.geoCache.stuttgart.requestLimit};
+        });
+        assert.deepEqual(limitContract,{requestedLimit:25,calls:1,offlineLength:8,
+          updatedLength:25,cachedLength:25,marker:25},
+          "Published pin-search count/cache contract: "+JSON.stringify(limitContract));
         // Live acceptance of the search-results UI, not just a successful map start.
         // Use a local view instance: no geocoder requests or persisted pin changes.
         const searchContract=await page.evaluate(()=>{
