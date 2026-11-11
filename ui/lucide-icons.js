@@ -12,6 +12,21 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    "sun-medium": [
+      ["circle",{"cx":"12","cy":"12","r":"4"}],
+      ["path",{"d":"M12 2v2"}],
+      ["path",{"d":"M12 20v2"}],
+      ["path",{"d":"m4.93 4.93 1.42 1.42"}],
+      ["path",{"d":"m17.65 17.65 1.42 1.42"}],
+      ["path",{"d":"M2 12h2"}],
+      ["path",{"d":"M20 12h2"}],
+      ["path",{"d":"m6.35 17.65-1.42 1.42"}],
+      ["path",{"d":"m19.07 4.93-1.42 1.42"}]
+    ],
+    "contrast": [
+      ["circle",{"cx":"12","cy":"12","r":"10"}],
+      ["path",{"d":"M12 2a10 10 0 0 1 0 20Z"}]
+    ],
     "search": [
       [
         "path",
