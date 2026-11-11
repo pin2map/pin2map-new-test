@@ -1064,6 +1064,35 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 #map .p2m-temperature-label .p2m-wx-hot{color:#f04438}
 #map .p2m-temperature-label .p2m-wx-veryhot{color:#a344d2}
 
+/* Satellite sliders: basemap menu owns presentation; map adapter owns tile filters.
+   No CSS override and no changes to the global map or marker panes. */
+#app #basemapMenu.basemap-menu{
+  max-height:calc(100dvh - 88px - env(safe-area-inset-top,0px));
+  overflow-y:auto;overscroll-behavior:contain;
+}
+#app .basemap-satellite-controls{
+  display:grid;grid-template-columns:minmax(0,1fr);
+  gap:5px;padding:7px 12px 11px;
+}
+#app .basemap-satellite-slider{
+  display:flex;align-items:center;gap:7px;
+  color:#253a4b;font-size:12px;font-weight:600;
+}
+#app .basemap-satellite-slider .basemap-slider-icon{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;
+}
+#app .basemap-satellite-slider .p2m-lucide{width:17px;height:17px}
+#app .basemap-satellite-slider output{
+  margin-left:auto;font-size:11px;color:#617287;font-variant-numeric:tabular-nums;
+}
+#app .basemap-satellite-controls input[type="range"]{
+  width:100%;min-width:0;height:22px;margin:0 0 4px;
+  accent-color:#235b9a;cursor:pointer;
+}
+#app .basemap-satellite-controls input[type="range"]:disabled{
+  opacity:.45;cursor:not-allowed;
+}
+
 /* Basemap menu extension: scoped style; B38 cascade budget unchanged. */
 #app .basemap-relief-toggle{
   display:flex;align-items:center;gap:8px;padding:10px 12px;
