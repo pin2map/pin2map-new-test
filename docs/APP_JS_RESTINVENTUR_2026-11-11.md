@@ -1,6 +1,6 @@
 # Restinventur von `app.js` – nach v112
 
-**Stand:** 2026-11-11 · **Branch:** `feature/leaflet-modular-core` · **Quellstand:** v113 (Fortschreibung der v112-Restinventur)
+**Stand:** 2026-11-11 · **Branch:** `feature/leaflet-modular-core` · **Quellstand:** v114 (Fortschreibung der v112-Restinventur)
 
 ## Auftrag und Maßstab
 
@@ -10,7 +10,7 @@ Nach zehn Schritten zur Entflechtung von `app.js` wurde dessen Restfunktion entl
 
 | Bereich | Aktueller Verbleib | Architekturentscheidung |
 | --- | --- | --- |
-| Projekt laden, Altwert `activeLayer` verwerfen, private Ebene sicherstellen, Suchcache bereinigen | `init()` in `app.js` | **Kandidat: Projekt-Hydrierung** als eigener Anwendungsfall, erst mit Tests für fehlerhaftes/teilweise vorhandenes gespeichertes Projekt |
+| Projekt laden, Altwert `activeLayer` verwerfen, private Ebene sicherstellen, Suchcache bereinigen | Seit v114 `application/project-hydration.js` (Laden über Storage-Adapter weiterhin `init()`) | **In v114 umgesetzt und bestätigt:** vollständige/teilweise/ungültige Daten, gespeicherte Pins und fehlende private Ebene, ohne Migration |
 | Nominatim-Treffer validieren und als Pin übernehmen; Karte auf Ergebnis zentrieren; einen oder mehrere Treffer unterscheiden | Seit v113 `application/search-pin-transfer.js`, Aufrufports in `app.js` | **In v113 umgesetzt und bestätigt:** 0/1/mehrere Treffer, ungültige Koordinaten, Zoom, Pin- und Viewport-Persistenz ohne Nominatim-Netzwerk |
 | Ebenen hinzufügen: Benutzereingabe, Domänenprüfung, Meldungen und Render/Save | Bis v111 inline im `bind()` | **In v112 umgesetzt:** `application/layer-creation.js`; Prompt als injizierter UI-Port, Mutation bleibt `application/layer-operations.js` |
 | Pin-Editor-Eingaben, Ebenensichtbarkeit und Einzelpin-Löschung | Rückrufe in `app.js` an bestehende `ui/`-Module | **Anwendungsverdrahtung vorerst beibehalten**; Regeln sind Eigentum von `pin-operations`, `filter-operations` und `layer-operations`. Nur bei wiederholten fachlichen Mustern erneut extrahieren |
@@ -39,3 +39,9 @@ Weder `main`, `reference/*`, CSS (298 `!important`), Topo-Quelle `a.tile.opentop
 - `application/search-pin-transfer.js` ist Eigentümer des 0/1/Mehrfach-Treffer-Workflows, der Datenvalidierung, der Übergabe an Pin-Erzeugung und des Karten-Port-Zentrierens. `app.js` bleibt Composition Root. `application/place-search-service.js`, Such-Ergebnisview, Leaflet-Adapter und IndexedDB-Schema wurden nicht geändert.
 - Browser-Smoke testet offline den bereits vorhandenen Suchcache (ohne Nominatim), Auswahl aus mehreren Treffern, automatische Einzeltreffer-Übernahme, zwei gespeicherte Pins und zentrierten Viewport nach Reload.
 - Bestätigte Gates: <https://github.com/pin2map/pin2map-new-test/actions/runs/42992796747>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42992796879>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42992796882>. Nächster Kandidat: Hydrierung des gespeicherten Projekts mit besonderem Schutz vor Migration/Änderung der bisherigen Datenstruktur.
+
+## v114 – Projekthydrierung abgeschlossen
+
+- `application/project-hydration.js` erhält exakt die ursprünglichen Startregeln (gespeicherte Pins und Ebenen nur bei zwei Arrays akzeptieren; private Ebene bei Fehlen per `unshift` ergänzen; historisches `activeLayer` im Arbeitszustand entfernen; Search-Cache bereinigen). `app.js` behält die Datenbank-/Ladeport-Verdrahtung.
+- Neue Unit-Tests und echter Chromium-Regressionstest sichern gültige, ungültige sowie unvollständige Datensätze, Schutz der Pins, private Ebene und persistierte Altwertbereinigung. Kein Schemawechsel, keine Migration.
+- Grüne Gates: <https://github.com/pin2map/pin2map-new-test/actions/runs/42994178691>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42994178638>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42994178685>. Nächste Prüfung: Map-Klick-/Move- und Overlay-Lebenszyklus, nur bei sicherer Modulgrenze extrahieren.
