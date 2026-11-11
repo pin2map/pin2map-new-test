@@ -6,6 +6,24 @@
     return String(result?.name||String(result?.display_name||"").split(",")[0]||"").trim();
   }
   function detail(result){return String(result?.display_name||"").trim();}
+  function pinName(result){
+    const address=result?.address||{};
+    const road=String(address.road||address.pedestrian||address.residential||
+      address.footway||address.path||address.street||"").trim();
+    const number=String(address.house_number||"").trim();
+    // Nominatim may set "name" to just the house number. Prefer the full
+    // street address for new pin names; keep settlement-only names intact.
+    if(road&&number)return road+" "+number;
+    if(road)return road;
+    const name=title(result);
+    if(number&&name===number){
+      const parts=String(result?.display_name||"").split(",").map(s=>s.trim()).filter(Boolean);
+      // Fallback for provider records lacking a structured road field:
+      // "49, Bilser Str., Hamburg, ..." -> "Bilser Str. 49".
+      if(parts[0]===number&&parts[1])return parts[1]+" "+number;
+    }
+    return name;
+  }
   function kind(result){
     const type=String(result?.addresstype||result?.type||"").toLowerCase();
     const category=String(result?.class||result?.category||"").toLowerCase();
@@ -50,7 +68,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({title,detail,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({title,detail,pinName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
