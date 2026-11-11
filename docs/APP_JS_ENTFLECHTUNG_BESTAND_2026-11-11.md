@@ -57,3 +57,11 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 - **Nach dem Commit erneut statisch aus GitHub gelesen:** Modul, Delegation, fehlende alte Menühörer, Skriptreihenfolge, `CORE` und v101. `app.js` schrumpfte von 18.536 auf 17.467 Zeichen. CSS und persistierte Daten unverändert; `main` nicht geändert.
 - **Noch NICHT unabhängig nachgewiesen:** vollständiger `node --test tests/*.test.js`, `tests/check-*.mjs`, erfolgreicher Preview-Push-Workflow, öffentliche v101-HTTPS-Auslieferung, echter Browserwechsel der Basiskarte (inklusive gespeichertem Zustand) und mobile Abnahme. Die Quelldatei ist vorhanden, aber eine vollständig getestete/live freigegebene Anwendung wird hieraus nicht abgeleitet.
 - **Nächster Schritt:** technischen Validierungsrückstand schließen. Erst danach nächste `app.js`-Verantwortlichkeit auswählen. CSS-Pause bleibt unverändert.
+
+
+## 5. Prüfrunde v101 – isolierte Ausführung, offene Gates (2026-11-11)
+
+- Aus dem aktuellen Feature-Branch wurde `ui/basemap-menu.js` bezogen und in einem getrennten JavaScript-V8-Kontext mit DOM-Doubles tatsächlich ausgeführt. **12 Checks bestanden:** ARIA, Auswahl-Rendern, Klick/Toggle, gültige/ungültige Auswahl, Fokus, Innen-/Außenklick, Escape, Enter, Listener-Entfernung sowie statische Integrationsverträge für `app.js`, `index.html` und `sw.js`.
+- Dies ist ausdrücklich **nicht** `node --test tests/*.test.js`; die vollständige Node-22-Suite und `tests/check-*.mjs` bleiben ungetestet. Ebenso nicht durchgeführt: echter Browser-/Leaflet-/Speicher-Smoke oder Endgeräteprüfung.
+- GitHub-Abfragen zum Code-Test-Commit `809d6d8f3a12a6f2ee08c2326a73257ddc2cf31f` lieferten keine Commit-Statuses und keine PR-gefilterten Workflow-Runs; damit ist kein push-getriggerter Pages-Erfolg belegt oder widerlegt. HTTP(S)-Abrufe der Preview-URL und der v101-Assets waren aus der verfügbaren Umgebung nicht erfolgreich, direkter git-Zugriff scheiterte an DNS.
+- **Status:** Modulfunktion isoliert positiv, veröffentlichte Gesamtanwendung **weiterhin nicht freigegeben**. Keine Quellcode-Änderungen, kein Merge, keine Datenoperationen.
