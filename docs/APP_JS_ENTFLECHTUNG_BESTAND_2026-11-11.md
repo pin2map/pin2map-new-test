@@ -91,3 +91,9 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 - `index.html`-Skriptreihenfolge und `sw.js`-`CORE` erweitert; Quellkennung **v102**. Der neue `tests/fit-visible-pins.test.js` schützt 0/1/mehrere Treffer, Zoom, Optionen und Packaging.
 - **Sichtbare Gestaltung, CSS, persistierte Daten und `main` unverändert.** Zum Zeitpunkt der Dokumentation laufen Node-, Browser-, Architektur- und Pages-Jobs noch; ein erfolgreiches Deployment muss separat belegt werden.
 - **Persönlicher Testbedarf:** Kein Gerätetest für diesen Schritt angefordert, solange die automatisch nachgewiesenen Port- und Browser-Szenarien ausreichen. Wenn eine echte mobile Bedienungsprüfung nötig wird, ausdrücklich und konkret ankündigen.
+
+## 9. v102-Regression – historischer Release-Test korrigiert (2026-11-11)
+
+- Erster v102-`Modular core checks`-Lauf <https://github.com/pin2map/pin2map-new-test/actions/runs/42982200374> schlug mit **140 bestanden, 1 fehlgeschlagen** fehl: `tests/basemap-menu.test.js` verlangte noch exakt `pin2map-new-v101` statt eine gültige fortlaufende Release-Kennung. Das war eine veraltete Testannahme, keine Änderung am Basiskarten-Feature. Das anfängliche Preview-Deployment <https://github.com/pin2map/pin2map-new-test/actions/runs/42982200384> wurde dadurch beim Vorabtest gestoppt.
+- Alter Regressionstest wurde gegen `pin2map-new-v\\d+` verallgemeinert (Commit `02c96fdb73ced077258f7e9f4b8fd1042627e43c`); künftige v103+-Releases benötigen dafür keinen Test-Edit. Weder `app.js`, Kartenadapter, CSS noch SW wurden bei der Reparatur verändert.
+- Im aktualisierten Commit lief der Node-Job erfolgreich und das Architektur-Gate <https://github.com/pin2map/pin2map-new-test/actions/runs/42982337852> war erfolgreich. Chromium- und Pages-Endergebnis zum Zeitpunkt dieser Notiz noch offen: <https://github.com/pin2map/pin2map-new-test/actions/runs/42982337850> und <https://github.com/pin2map/pin2map-new-test/actions/runs/42982337887>.
