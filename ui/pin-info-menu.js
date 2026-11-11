@@ -23,7 +23,7 @@
         el.classList.toggle("is-selected",selected);
         el.setAttribute("aria-pressed",String(selected));
       });
-      this.icons.mount(this.button,mode==="off"?"circle-letter-i-off":"circle-letter-i");
+      this.icons.mount(this.button,mode==="off"?"message-circle-exclamation-point-off":"message-circle-exclamation-point");
       this.button.setAttribute("aria-label","Pin-Informationen auswählen");
       this.button.title="Pin-Informationen auswählen";
     }
