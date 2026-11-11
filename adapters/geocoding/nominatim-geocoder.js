@@ -14,7 +14,7 @@
       url.searchParams.set("format","jsonv2");
       url.searchParams.set("addressdetails","1");
       url.searchParams.set("accept-language",this.language||"de");
-      url.searchParams.set("limit","40");
+      url.searchParams.set("limit","8");
       const response=await this.fetchImpl(url.toString(),{
         method:"GET",signal,headers:{Accept:"application/json"}
       });
