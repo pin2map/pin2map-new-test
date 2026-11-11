@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v101; Basiskarten-Browser-Regression und CI/Pages erfolgreich, manuelle Geräteabnahme offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v102: zweiter `app.js`-Extraktionsschritt; CI-/Preview-Endergebnis bei Statusfortschreibung noch offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v101**, nach erster `app.js`-Modulentflechtung; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v101'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v101` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v102**, nach zweiter `app.js`-Modulentflechtung; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v102'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v102` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -57,6 +57,14 @@
 - **Pages-Preview erneut erfolgreich bereitgestellt:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727136>; unveränderte v101-Assets über HTTPS und automatisierter Live-Start-/Reload-Test im Preview-Workflow bestanden. Die neue gezielte Menü-Browser-Regression fand dagegen im **localhost-Chromium-Job** statt, nicht im publizierten Live-Smoke.
 - **Weiter offen:** explizite manuelle iPhone-/iPad-/Desktop-Bedienabnahme; weitere `app.js`-Modularisierung und spätere vollständige CSS-Konsolidierung. Kein Merge nach `main` ohne Freigabe.
 
+## 4c. Zweite `app.js`-Extraktion – sichtbare Pins einpassen (v102, 2026-11-11)
+
+- Neues `application/fit-visible-pins.js`: unabhängiger Anwendungsfall für die Option „Alle sichtbaren Pins anzeigen“; nutzt injizierten `pinFilter` und `mapPort` statt Leaflet/DOM/IndexedDB. Erhält leeren Zustand mit Meldungs-Callback ohne Kartenbewegung, Einzelpin mit Zoom mindestens 13, Mehrfach-Pins mit Padding [35,35]/maxZoom 15 und anschließender UI-Layout-Aktualisierung.
+- `app.js` delegiert ausschließlich diesen Anwendungsfall über `fitVisiblePins(...)`; der Kartenadapter und Pin-/Ebenenzustand bleiben an ihren bisherigen Verantwortlichkeiten. `index.html` lädt das Modul vor `app.js`; `sw.js` nimmt es in den Offline-App-Shell-`CORE` auf, Quellversion `pin2map-new-v102`.
+- Neuer `tests/fit-visible-pins.test.js` prüft 0/1/mehrere sichtbare Pins und die Integration mit HTML/App-Shell. **Statische GitHub-Checks erfolgreich**, aber die neuen Node-/Chromium-/Pages-Workflows wurden bei Erstellung dieser Statusnotiz erst gestartet. Erfolg erst nach tatsächlicher GitHub-Actions-Prüfung behaupten.
+- `styles.css` und das CSS-Budget 298 bleiben unverändert. Keine Änderung an IndexedDB, Pin-Datenschema, `main` oder Referenzzweigen.
+- **Nutzergerätetest:** noch nicht erforderlich, solange die gezielten automatischen Tests und Browser-/Live-Gates laufen. Falls ein Layout-/Interaktionsregressionsverdacht entsteht, wird eine konkrete Testanleitung für die Preview gegeben.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -71,10 +79,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Nächste `app.js`-Verantwortlichkeit auswählen:** Quellstand v101 neu lesen und eine kleine, fachlich sinnvolle Extraktion in `application/` oder `ui/` planen. Die bereits per Chromium geprüfte Basiskarten-Bedienung ist dabei nicht erneut umzubauen.
-2. Vor der nächsten Implementierung aktuelle Module, Testabdeckung, Persistenz-/UI-Schnittstellen und reale GitHub-Actions-/Preview-Gates prüfen; danach genau eine vertikale, testbare Änderung durchführen.
-3. Manuelle iPhone-/iPad-/Desktop-Bedienabnahme nicht mit den automatischen Browser-Smokes verwechseln. Vollständige CSS-Kaskadenkonsolidierung bleibt pausiert (B38/298 `!important`, B39 nicht gestartet).
-4. `main`, Referenzzweige, persistierte Pins und IndexedDB-Schema weiterhin schützen. Ein GitHub-Commit ersetzt keine erfolgreiche Veröffentlichung.
+1. **v102 technisch verifizieren:** vollständige GitHub-Actions-`Modular core checks`, Architekturchecks, Preview-/HTTPS-Assets und automatisierte Browser-Smokes wirklich prüfen; mögliche Testfehler vor dem nächsten Architekturschnitt beheben.
+2. **Bedienung „Alle sichtbaren Pins anzeigen“ abnehmen:** zunächst automatische Browserabdeckung für leere Ansicht sowie Einzel-/Mehrfach-Pin-Einpassen sicherstellen. Eine manuelle iPhone-/iPad-Prüfung nur bei konkretem Bedarf ausdrücklich anfordern, mit URL und Schritten.
+3. Anschließend nächste sinnvolle `app.js`-Verantwortlichkeit auswählen und wieder genau eine kleine Extraktion umsetzen; CSS-Konsolidierung B39 bleibt pausiert.
+4. `main`, Referenzen, IndexedDB und persistierte Nutzerpins geschützt lassen.
 
 ## 6. Maßgebliche Dokumente
 
