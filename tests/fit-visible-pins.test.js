@@ -36,5 +36,5 @@ test("wiring: composition delegates to application and offline shell includes mo
   assert.match(app,/fitVisiblePins\(\{/);
   assert.ok(html.indexOf("./application/fit-visible-pins.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/application\/fit-visible-pins\.js"/);
-  assert.match(sw,/const CACHE='pin2map-new-v102'/);
+  assert.match(sw,/const CACHE='pin2map-new-v\d+'/); // Versioned app shell, not a fixed release.
 });
