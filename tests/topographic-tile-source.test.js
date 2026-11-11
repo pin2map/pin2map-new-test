@@ -8,7 +8,8 @@ test("topographic tile source pins one historically used working server; street 
   assert.match(source,/https:\/\/a\.tile\.opentopomap\.org\/\{z\}\/\{x\}\/\{y\}\.png/);
   assert.doesNotMatch(source,/\{s\}\.tile\.opentopomap\.org/);
   assert.match(source,/https:\/\/tile\.openstreetmap\.org\/\{z\}\/\{x\}\/\{y\}\.png/);
-  assert.match(source,/maxZoom:topo\?17:19/);
+  assert.match(source,/topo:\{url:.*maxZoom:17/);
+  assert.match(source,/street:\{url:.*maxZoom:19/);
   assert.match(source,/opentopomap\.org/);
 });
 test("live Chromium test checks actual topographic tile image decode, not menu alone",()=>{
