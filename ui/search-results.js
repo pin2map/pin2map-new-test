@@ -21,8 +21,8 @@
       this.duplicateCoordinates=duplicateCoordinates;
       this.onCancel=onCancel;
       // Presentation geometry only: the results sheet is attached to the
-      // OUTER search block, extends behind its lower rounded half and stops
-      // at the TOP of the lowest map controls. No domain/state ownership.
+      // OUTER search block, appears below the outer block and can extend
+      // to the BOTTOM baseline of the lowest map controls. No domain/state ownership.
       this.searchAnchor=doc.getElementById?.("searchForm")||null;
       this.outerSearch=this.searchAnchor?.closest?.(".topbar")||this.searchAnchor;
       this.bottomControl=doc.getElementById?.("basemapButton")||null;
@@ -45,9 +45,9 @@
       // The predecessor's choice dialog is a separate framed panel, not
       // a visually attached drawer. Keep its top below the OUTER search block.
       const sheetTop=box.bottom-origin+8;
-      const bottomTop=this.bottomControl?.getBoundingClientRect?.().top;
+      const bottomEdge=this.bottomControl?.getBoundingClientRect?.().bottom;
       const appBottom=this.appRoot?.getBoundingClientRect?.().bottom;
-      const limit=Number.isFinite(bottomTop)?bottomTop:appBottom;
+      const limit=Number.isFinite(bottomEdge)?bottomEdge:appBottom;
       this.container.style.width=box.width+"px";
       this.container.style.top=sheetTop+"px";
       if(Number.isFinite(limit))
