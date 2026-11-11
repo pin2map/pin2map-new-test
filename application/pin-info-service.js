@@ -5,7 +5,10 @@
  */
 (function(root){
   const MODES=Object.freeze(["off","elevation","temperature","daily","sun","zone"]);
-  const TTL=Object.freeze({elevation:30*86400000,temperature:10*60000,daily:15*60000,sun:15*60000,zone:24*3600000});
+  const TTL=Object.freeze({elevation:30*86400000,temperature:10*60000,daily:15*60000,sun:15*60000,zone:24*3600000,monthlyDaily:60*86400000,monthlySun:365*86400000});
+  const PERIODS=Object.freeze(["today",...Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0"))]);
+  const monthMode=mode=>mode==="daily"||mode==="sun";
+  const cacheMode=(mode,period)=>monthMode(mode)&&period!=="today"?(mode==="daily"?"monthlyDaily":"monthlySun"):mode;
   function localDate(zone,now){
     try{return new Intl.DateTimeFormat("en-CA",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(now));}
     catch(e){return "";}
@@ -21,12 +24,12 @@
     const diff=(minutes+new Date(now).getTimezoneOffset())/60;
     return Number.isFinite(diff)?"Δ "+(diff>0?"+":"")+String(Math.round(diff*100)/100).replace(".",","):"Δ …";
   }
-  function key(pin,mode){return mode+":"+Number(pin.lat).toFixed(5)+","+Number(pin.lng).toFixed(5);}
+  function key(pin,mode,period="today"){return cacheMode(mode,period)+":"+(monthMode(mode)?period+":":"")+Number(pin.lat).toFixed(5)+","+Number(pin.lng).toFixed(5);}
   class PinInfoService{
     constructor({provider,onUpdate=()=>{},onError=()=>{},now=()=>Date.now(),schedule=(fn,delay)=>root.setTimeout(fn,delay),cancel=id=>root.clearTimeout(id)}){
       if(!provider||typeof provider.request!=="function")throw new TypeError("Pin information provider required");
       this.provider=provider;this.onUpdate=onUpdate;this.onError=onError;this.now=now;
-      this.mode="off";this.cache=new Map();this.pending=new Set();this.generation=0;
+      this.mode="off";this.period="today";this.cache=new Map();this.pending=new Set();this.generation=0;
       this.schedule=schedule;this.cancel=cancel;this.timer=null;
       this.visible=[];this.activeKeys=new Set();
     }
@@ -34,21 +37,32 @@
       if(!MODES.includes(mode))throw new RangeError("Unknown mode: "+mode);
       if(this.mode===mode)return;
       this.mode=mode;this.generation++;
-      this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode)));
+      this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode,this.period)));
+      if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
+      this.pending.clear();this.refresh();
+    }
+    setPeriod(period){
+      if(!PERIODS.includes(period))throw new RangeError("Unknown period: "+period);
+      if(this.period===period)return;
+      this.period=period;
+      if(!monthMode(this.mode))return; // Neither height nor current temperature depends on month.
+      this.generation++;
+      this.activeKeys=new Set(this.visible.map(pin=>key(pin,this.mode,period)));
       if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
       this.pending.clear();this.refresh();
     }
     setVisiblePins(pins){
       this.visible=pins.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng)).map(p=>({id:p.id,lat:p.lat,lng:p.lng}));
-      const next=new Set(this.visible.map(p=>key(p,this.mode)));
+      const next=new Set(this.visible.map(p=>key(p,this.mode,this.period)));
       const changed=next.size!==this.activeKeys.size||[...next].some(k=>!this.activeKeys.has(k));
       this.activeKeys=next;
       if(changed){this.generation++;this.pending.clear();}
       this.refresh();
     }
-    isFresh(record,mode,now){
-      if(!record||now-record.at<0||now-record.at>=TTL[mode])return false;
-      if((mode==="sun"||mode==="daily")&&record.data?.zone){
+    isFresh(record,mode,now,period=this.period){
+      const type=cacheMode(mode,period);
+      if(!record||now-record.at<0||now-record.at>=TTL[type])return false;
+      if(period==="today"&&(mode==="sun"||mode==="daily")&&record.data?.zone){
         const date=localDate(record.data.zone,now);
         if(date&&record.data.date!==date)return false;
       }
@@ -56,7 +70,7 @@
     }
     get(pin,mode=this.mode){
       if(mode==="off")return null;
-      const record=this.cache.get(key(pin,mode));
+      const record=this.cache.get(key(pin,mode,this.period));
       return this.isFresh(record,mode,this.now())?record.data:null;
     }
     label(pin){
@@ -64,8 +78,8 @@
       if(mode==="off")return null;
       if(mode==="elevation")return {mode,text:data?Math.round(data.value)+" m":""};
       if(mode==="temperature")return {mode,text:data?Math.round(data.value)+" °C":"– °C",value:data?.value};
-      if(mode==="daily")return {mode,parts:data?[Math.round(data.min)+"°",Math.round(data.max)+" °C"]:["–°","– °C"]};
-      if(mode==="sun")return {mode,parts:data?[data.rise,data.set]:["–:–","–:–"]};
+      if(mode==="daily")return {mode,period:this.period,climatology:this.period!=="today",parts:data?[Math.round(data.min)+"°",Math.round(data.max)+" °C"]:["–°","– °C"]};
+      if(mode==="sun")return {mode,period:this.period,month:this.period!=="today"?this.period:null,parts:data?[data.rise,data.set]:["–:–","–:–"]};
       return {mode,text:data?zoneDelta(data,this.now()):"Δ …"};
     }
     armRefresh(){
@@ -73,8 +87,8 @@
       if(this.mode==="off"||!this.visible.length)return;
       const now=this.now();
       const expirations=this.visible.map(pin=>{
-        const record=this.cache.get(key(pin,this.mode));
-        return record?Math.max(1000,TTL[this.mode]-(now-record.at)):null;
+        const record=this.cache.get(key(pin,this.mode,this.period));
+        return record?Math.max(1000,TTL[cacheMode(this.mode,this.period)]-(now-record.at)):null;
       }).filter(v=>v!==null);
       if(!expirations.length)return;
       const delay=Math.max(1000,Math.min(...expirations));
@@ -89,7 +103,8 @@
     refresh(){
       const mode=this.mode;
       if(mode==="off")return;
-      const unfilled=this.visible.filter(pin=>!this.isFresh(this.cache.get(key(pin,mode)),mode,this.now())&&!this.pending.has(key(pin,mode)));
+      const period=this.period;
+      const unfilled=this.visible.filter(pin=>!this.isFresh(this.cache.get(key(pin,mode,period)),mode,this.now(),period)&&!this.pending.has(key(pin,mode,period)));
       if(!unfilled.length)return;
       const generation=this.generation;
       const batches=[];
@@ -97,26 +112,26 @@
       // One batch at a time, low request pressure. Each batch is only visible pins.
       const next=async()=>{
         for(const batch of batches){
-          if(this.generation!==generation||this.mode!==mode)return;
-          batch.forEach(pin=>this.pending.add(key(pin,mode)));
+          if(this.generation!==generation||this.mode!==mode||this.period!==period)return;
+          batch.forEach(pin=>this.pending.add(key(pin,mode,period)));
           try{
-            const rows=await this.provider.request(mode,batch);
-            if(this.generation===generation&&this.mode===mode){
-              rows.forEach((data,i)=>{this.cache.set(key(batch[i],mode),{data,at:this.now()});});
+            const rows=await this.provider.request(mode,batch,period);
+            if(this.generation===generation&&this.mode===mode&&this.period===period){
+              rows.forEach((data,i)=>{this.cache.set(key(batch[i],mode,period),{data,at:this.now()});});
               this.onUpdate();
             }
           }catch(error){if(this.generation===generation){
-            batch.forEach(pin=>this.cache.set(key(pin,mode),{data:null,at:this.now()}));
+            batch.forEach(pin=>this.cache.set(key(pin,mode,period),{data:null,at:this.now()}));
             this.onError(error);
           }}
-          finally{batch.forEach(pin=>this.pending.delete(key(pin,mode)));}
+          finally{batch.forEach(pin=>this.pending.delete(key(pin,mode,period)));}
         }
         if(this.generation===generation)this.armRefresh();
       };
       void next();
     }
   }
-  const api=Object.freeze({MODES,TTL,localDate,zoneDelta,PinInfoService});
+  const api=Object.freeze({MODES,PERIODS,TTL,localDate,zoneDelta,PinInfoService});
   root.Pin2MapPinInfoService=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
