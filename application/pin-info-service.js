@@ -83,7 +83,12 @@
       if(mode==="precipitation")return {mode,period:this.period,normal:this.period!=="today",
         text:data?(this.period==="today"?Number(data.value.toFixed(1)).toLocaleString("de-DE"):
           Math.round(data.value).toLocaleString("de-DE"))+" mm":"– mm"};
-      return {mode,text:data?zoneDelta(data,this.now()):"Δ …"};
+      // Structured zone presentation: the UI owns all SVG rendering.
+      const delta=data?zoneDelta(data,this.now()):"Δ …";
+      const value=delta.slice(2);
+      return {mode,text:value,icon:!data||value==="…"?null:
+        value.startsWith("+")?"rotate-cw-clock":
+        value.startsWith("-")?"rotate-ccw-clock":"clock-check"};
     }
     armRefresh(){
       if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
