@@ -5,7 +5,7 @@ const SearchResultsView=require("../ui/search-results.js");
 class Element {
   constructor(tag){
     this.tagName=tag;this.children=[];this.className="";this.type="";this.textContent="";
-    this.listeners={};const classes=new Set(["hidden"]);
+    this.listeners={};this.style={};const classes=new Set(["hidden"]);
     this.classList={contains:key=>classes.has(key),add:key=>classes.add(key),remove:key=>classes.delete(key)};
   }
   append(...items){this.children.push(...items);}
@@ -37,22 +37,29 @@ test("status message is followed by cancel button",()=>{
   container.children.at(-1).children[0].click();
   assert.equal(view.isVisible(),false);
 });
-test("results use measured search pill width, also after viewport changes",()=>{
-  let width=258;
-  const anchor={getBoundingClientRect:()=>({width,height:42})};
+test("result sheet follows OUTER search block from mid-rounding to bottom controls",()=>{
+  let width=410,outerTop=8,bottomTop=780;
+  const outer={getBoundingClientRect:()=>({width,height:52,top:outerTop,bottom:outerTop+52})};
+  const search={closest:selector=>selector===".topbar"?outer:null};
+  const bottom={getBoundingClientRect:()=>({top:bottomTop})};
+  const app={getBoundingClientRect:()=>({top:0,bottom:844})};
   const container=new Element("div");container.style={};
-  const doc={createElement:tag=>new Element(tag),getElementById:id=>id==="searchForm"?anchor:null};
+  container.querySelector=()=>container.children[0];
+  const doc={createElement:tag=>new Element(tag),getElementById:id=>({
+    searchForm:search,basemapButton:bottom,app})[id]||null};
   const view=new SearchResultsView({container,document:doc,onChoose:()=>{},
     titleOf:r=>r.name,detailOf:r=>r.place});
   view.show([{name:"Stuttgart",place:"Deutschland"}]);
-  // The straight horizontal segments of the 42px-tall pill exclude
-  // its 21px rounded end cap on each side.
-  assert.equal(container.style.width,"216px");
-  width=305;
+  assert.equal(container.style.width,"410px");
+  assert.equal(container.style.top,"34px");
+  assert.equal(container.style.maxHeight,"746px");
+  assert.equal(container.children[0].style.paddingTop,"38px");
+  width=280;outerTop=12;bottomTop=700;
   view.message("Neue Suche");
-  assert.equal(container.style.width,"263px");
+  assert.equal(container.style.width,"280px");
+  assert.equal(container.style.top,"38px");
+  assert.equal(container.style.maxHeight,"662px");
 });
-
 test("legacy type badges and duplicate coordinate details stay in scrolling items",()=>{
   const Domain=require("../domain/place-search.js");
   const container=new Element("div"),doc={createElement:tag=>new Element(tag)};
