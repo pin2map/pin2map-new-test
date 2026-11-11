@@ -46,7 +46,8 @@
         listen(selector,"focus",()=>this.onPeriodChange(mode,selector.value));
         listen(selector,"change",()=>this.onPeriodChange(mode,selector.value));
       }
-      this.document.querySelectorAll("#pinInfoMenu [data-pin-info-mode]").forEach(el=>
+      // Only actionable mode buttons dismiss the menu. Native select labels must stay open.
+      this.document.querySelectorAll("#pinInfoMenu button[data-pin-info-mode]").forEach(el=>
         listen(el,"click",()=>{
           this.onSelect(el.dataset.pinInfoMode);
           this.close();
