@@ -58,10 +58,12 @@ async function longPress(page,x,y,ms=725){
       "Cancel belongs at the bottom of the result list");
     const widths=await page.evaluate(()=>({
       search:document.querySelector("#searchForm").getBoundingClientRect().width,
+      height:document.querySelector("#searchForm").getBoundingClientRect().height,
       results:document.querySelector("#searchResults").getBoundingClientRect().width
     }));
-    assert.ok(Math.abs(widths.search-widths.results)<=3,
-      "Results should align with horizontal search capsule edges: "+JSON.stringify(widths));
+    const expectedLineWidth=widths.search-Math.min(widths.search,widths.height);
+    assert.ok(Math.abs(expectedLineWidth-widths.results)<=3,
+      "Results should match straight horizontal lines between pill endcaps: "+JSON.stringify(widths));
     await footer.locator("button").getByText("Abbrechen").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     step("search results: multi-result footer is last and cancel closes without selecting");
