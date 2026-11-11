@@ -107,6 +107,10 @@
       ["circle",{"cx":"10.5","cy":"6.5","r":".5","fill":"currentColor"}],
       ["path",{"d":"M2 22 22 2"}]
     ],
+    "circle-slash-2": [
+      ["circle",{"cx":"12","cy":"12","r":"10"}],
+      ["path",{"d":"M22 2 2 22"}]
+    ],
     "circle-letter-i": [
       ["circle",{"cx":"12","cy":"12","r":"10"}],
       ["path",{"d":"M10 9h4"}],
