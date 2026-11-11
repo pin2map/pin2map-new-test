@@ -18,7 +18,7 @@
       this.document.querySelectorAll("#pinInfoMenu .pin-info-mode-row").forEach(row=>{
         row.classList.toggle("is-selected",row.dataset.pinInfoMode===mode);
       });
-      this.document.querySelectorAll("#pinInfoMenu [data-pin-info-mode]").forEach(el=>{
+      this.document.querySelectorAll("#pinInfoMenu button[data-pin-info-mode]").forEach(el=>{
         const selected=el.dataset.pinInfoMode===mode;
         el.classList.toggle("is-selected",selected);
         el.setAttribute("aria-pressed",String(selected));
