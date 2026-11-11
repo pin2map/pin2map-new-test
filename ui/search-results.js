@@ -20,23 +20,35 @@
       this.kindOf=kindOf;
       this.duplicateCoordinates=duplicateCoordinates;
       this.onCancel=onCancel;
-      // Search results follow the actual inner search-pill width across viewports.
-      // Only presentation geometry is read; no application state is modified.
+      // Presentation geometry only: the results sheet is attached to the
+      // OUTER search block, extends behind its lower rounded half and stops
+      // at the TOP of the lowest map controls. No domain/state ownership.
       this.searchAnchor=doc.getElementById?.("searchForm")||null;
-      if(this.searchAnchor&&root.ResizeObserver){
+      this.outerSearch=this.searchAnchor?.closest?.(".topbar")||this.searchAnchor;
+      this.bottomControl=doc.getElementById?.("basemapButton")||null;
+      this.appRoot=doc.getElementById?.("app")||null;
+      if(this.outerSearch&&root.ResizeObserver){
         this.widthObserver=new root.ResizeObserver(()=>this.syncWidth());
-        this.widthObserver.observe(this.searchAnchor);
+        this.widthObserver.observe(this.outerSearch);
+        if(this.bottomControl)this.widthObserver.observe(this.bottomControl);
       }
     }
     syncWidth(){
-      const box=this.searchAnchor?.getBoundingClientRect?.();
+      const box=this.outerSearch?.getBoundingClientRect?.();
       if(!box||!this.container.style)return;
-      // A pill's straight horizontal top/bottom edges start after its
-      // semicircular ends. The results align to those edges, not the
-      // outer rounded bounding box. No duplicate CSS width override.
-      const radius=Math.min(box.height/2,box.width/2);
-      const lineWidth=box.width-2*radius;
-      if(lineWidth>0)this.container.style.width=lineWidth+"px";
+      const origin=this.appRoot?.getBoundingClientRect?.().top||0;
+      const sheetTop=box.top-origin+box.height/2;
+      const bottomTop=this.bottomControl?.getBoundingClientRect?.().top;
+      const appBottom=this.appRoot?.getBoundingClientRect?.().bottom;
+      const limit=Number.isFinite(bottomTop)?bottomTop:appBottom;
+      this.container.style.width=box.width+"px";
+      this.container.style.top=sheetTop+"px";
+      if(Number.isFinite(limit))
+        this.container.style.maxHeight=Math.max(0,limit-origin-sheetTop)+"px";
+      // The background starts behind the rounded search block, but the first
+      // TEXT begins after the outside bottom edge with 12px breathing room.
+      const items=this.container.querySelector?.(".results-items");
+      if(items?.style)items.style.paddingTop=Math.max(0,box.height/2+12)+"px";
     }
     isVisible(){return !this.container.classList.contains("hidden");}
     hide(){
