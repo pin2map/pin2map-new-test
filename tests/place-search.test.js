@@ -8,7 +8,9 @@ const Nominatim=require("../adapters/geocoding/nominatim-geocoder.js");
 test("place labels and cache keys are pure and retain historic display rules",()=>{
   const item={address:{city:"Stuttgart",state:"Baden-Württemberg",country:"Deutschland"},lat:"48.77",lon:"9.18"};
   assert.equal(domain.title(item),"Stuttgart");
-  assert.equal(domain.detail(item),"Baden-Württemberg, Deutschland");
+  assert.equal(domain.detail(item),"");
+  assert.equal(domain.kind({addresstype:"city",class:"place",osm_type:"node"}).label,"Stadt · Ortsmittelpunkt");
+  assert.equal(domain.kind({addresstype:"city",class:"boundary",osm_type:"relation"}).label,"Stadt · Gebiet");
   assert.equal(domain.cacheKey("  STUTTGART   Mitte "),"stuttgart mitte");
 });
 test("expired and malformed cache entries disappear; recent entries survive",()=>{
@@ -27,7 +29,7 @@ test("geocoder constructs identical provider query and validates results",async(
   const result=await geocoder.search("Stuttgart & Umgebung",{signal});
   assert.equal(request.url.searchParams.get("q"),"Stuttgart & Umgebung");
   assert.equal(request.url.searchParams.get("addressdetails"),"1");
-  assert.equal(request.url.searchParams.get("limit"),"40");
+  assert.equal(request.url.searchParams.get("limit"),"8");
   assert.equal(request.options.signal,signal);
   assert.equal(result.length,2);
 });
@@ -81,4 +83,36 @@ test("errors are reported without caching invalid provider results",async()=>{
   const state={geoCache:{}};
   assert.equal((await search.search("failed",{state,allowed:true})).kind,"error");
   assert.deepEqual(state.geoCache,{});
+});
+
+test("legacy pin result names, full addresses, type symbols, and duplicate coordinates",()=>{
+  const rows=[
+    {name:"Stuttgart",display_name:"Stuttgart, Baden-Württemberg, Deutschland",
+      addresstype:"city",class:"place",osm_type:"node",lat:"48.77777",lon:"9.11111"},
+    {name:"Stuttgart",display_name:"Stuttgart, Baden-Württemberg, Deutschland",
+      addresstype:"city",class:"boundary",osm_type:"relation",lat:"48.88888",lon:"9.22222"},
+    {name:"Berlin",display_name:"Berlin, Deutschland",addresstype:"city",class:"place",osm_type:"node",lat:"52.5",lon:"13.4"}
+  ];
+  assert.equal(domain.title(rows[0]),"Stuttgart");
+  assert.equal(domain.detail(rows[0]),"Stuttgart, Baden-Württemberg, Deutschland");
+  assert.deepEqual(domain.kind(rows[0]),{label:"Stadt · Ortsmittelpunkt",symbol:"●"});
+  assert.deepEqual(domain.kind(rows[1]),{label:"Stadt · Gebiet",symbol:"▧"});
+  assert.deepEqual(domain.duplicateCoordinates(rows),[
+    "Position: 48.77777, 9.11111","Position: 48.88888, 9.22222",""
+  ]);
+});
+test("explicit service cancel invalidates outstanding results",async()=>{
+  let resolveOld,aborted=false;
+  const service=new SearchService({
+    geocoder:{search:(_,{signal})=>new Promise(resolve=>{
+      resolveOld=resolve;signal.addEventListener("abort",()=>aborted=true);
+    })},
+    domain,now:()=>200000000
+  });
+  const state={geoCache:{}},pending=service.search("Alt",{state,allowed:true});
+  service.cancel();
+  resolveOld([{lat:"48",lon:"9"}]);
+  assert.equal((await pending).kind,"stale");
+  assert.equal(aborted,true);
+  assert.equal(state.geoCache.alt,undefined);
 });
