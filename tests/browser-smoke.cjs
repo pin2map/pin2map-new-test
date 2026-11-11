@@ -606,7 +606,7 @@ async function longPress(page,x,y,ms=725){
       null,{timeout:6000});
     assert.equal(await page.locator(".p2m-zone-information svg").first().locator("path").first().getAttribute("d"),
       "M12 7v5l4 2","Live timezone displays official clockwise Lucide geometry");
-    assert.match(await page.locator(".p2m-zone-information").first().innerText(),/\\+[0-9]/);
+    assert.match(await page.locator(".p2m-zone-information").first().innerText(),/\+[0-9]/);
     const iconMarkup=await page.evaluate(()=>{
       const f=window.Pin2MapPinInfoLabel.labelMarkup,shapes=window.Pin2MapIcons;
       const svg=name=>shapes.svg(name,document).outerHTML;
@@ -617,7 +617,7 @@ async function longPress(page,x,y,ms=725){
       };
     });
     assert.match(iconMarkup.positive,/M12 7v5l4 2/);
-    assert.match(iconMarkup.positive,/\\+2/);
+    assert.match(iconMarkup.positive,/\+2/);
     assert.match(iconMarkup.negative,/M3 12a9 9 0 1 0 9-9/);
     assert.match(iconMarkup.negative,/-3/);
     assert.match(iconMarkup.equal,/m16 19 2 2 4-4/);
