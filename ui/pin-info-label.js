@@ -12,7 +12,7 @@
       t<=26?"p2m-wx-warm":t<=32?"p2m-wx-hot":"p2m-wx-veryhot";
   }
   const MONTH_NAMES=Object.freeze(["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"]);
-  function labelMarkup(data){
+  function labelMarkup(data,{getIconSvg=()=>""}={}){
     if(!data||!data.mode||data.mode==="off"||data.text==="")return "";
     const type=data.mode;
     let content=escapeHtml(data.text??"");
@@ -37,6 +37,14 @@
         ?'<span class="p2m-info-month-prefix">Ø '+escapeHtml(data.period==="year"?"Jahr":MONTH_NAMES[Number(data.period)-1]||"")+'</span>'
         :"";
       content=prefix+'<span class="p2m-precipitation-value">'+numberText+'</span>';
+    }
+    if(type==="zone"&&data.icon){
+      // SVG is produced only by the bundled, trusted offline Lucide catalog.
+      const safeIcons=["rotate-cw-clock","rotate-ccw-clock","clock-check"];
+      if(safeIcons.includes(data.icon)){
+        content='<span class="p2m-zone-information">'+
+          getIconSvg(data.icon)+'<span>'+escapeHtml(data.text??"")+'</span></span>';
+      }
     }
     const kind=type==="temperature"?" p2m-temperature-label":type==="daily"?" p2m-daily-label":type==="sun"?" p2m-sun-label":type==="precipitation"?" p2m-precipitation-label":"";
     return '<span class="elevation-label'+kind+'">'+content+'</span>';
