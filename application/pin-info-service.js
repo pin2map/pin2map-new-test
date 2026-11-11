@@ -14,7 +14,7 @@
     let minutes=NaN;
     try{
       const name=new Intl.DateTimeFormat("en-US",{timeZone:record.zone,timeZoneName:"shortOffset"}).formatToParts(new Date(now)).find(x=>x.type==="timeZoneName")?.value;
-      const match=name?.match(/(?:GMT|UTC)([+-])(\\d{1,2})(?::(\\d{2}))?/);
+      const match=name?.match(/(?:GMT|UTC)([+-])(\d{1,2})(?::(\d{2}))?/);
       minutes=(name==="GMT"||name==="UTC")?0:match?(match[1]==="-"?-1:1)*(Number(match[2])*60+Number(match[3]||0)):NaN;
     }catch(e){}
     if(!Number.isFinite(minutes))minutes=record.fallback/60;
