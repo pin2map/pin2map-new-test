@@ -86,6 +86,16 @@
     },
     onReliefChange:enabled=>{
       if(!!state.esriRelief!==enabled){state.esriRelief=enabled;setTileLayer();save();}
+    },
+    onSatelliteAdjust:(key,value,commit)=>{
+      if(state.basemap!=="satellite")return;
+      const field=key==="brightness"?"satelliteBrightness":key==="contrast"?"satelliteContrast":null;
+      if(!field)return;
+      state[field]=value;
+      mapAdapter.setSatelliteAppearance({
+        brightness:state.satelliteBrightness,contrast:state.satelliteContrast
+      });
+      if(commit)save();
     }
   });
   const bulkDeleteDialog = new window.Pin2MapBulkDeleteDialog({
@@ -193,8 +203,14 @@
     persistence.saveViewport(mapAdapter.getViewport());
   }
   function setTileLayer() {
-    mapAdapter.setBasemap(state.basemap,{esriRelief:!!state.esriRelief});
-    basemapMenu.render(state.basemap,!!state.esriRelief);
+    mapAdapter.setBasemap(state.basemap,{
+      esriRelief:!!state.esriRelief,
+      satelliteBrightness:state.satelliteBrightness,
+      satelliteContrast:state.satelliteContrast
+    });
+    basemapMenu.render(state.basemap,!!state.esriRelief,{
+      brightness:state.satelliteBrightness,contrast:state.satelliteContrast
+    });
   }
   function renderMarkers(){
     if(!markerView)return;
