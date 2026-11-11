@@ -382,7 +382,16 @@ async function longPress(page,x,y,ms=725){
     assert.ok(await page.locator("#layersList").getByText("Privat").count()>0);
     assert.ok(await page.locator("#layersList").getByText("Reisen").count()>0);
     await page.locator("#layersButton").click();
-    await page.locator("#labelsToggle").click();
+    const labelToggle=page.locator("#labelsToggle");
+    assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags");
+    assert.equal(await labelToggle.getAttribute("aria-pressed"),"true");
+    await labelToggle.click();
+    assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags-off");
+    assert.equal(await labelToggle.getAttribute("aria-pressed"),"false");
+    assert.equal(await labelToggle.locator("svg path").last().getAttribute("d"),"M2 2 22 22");
+    await labelToggle.click();
+    assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags");
+    assert.equal(await labelToggle.getAttribute("aria-pressed"),"true");
     await page.waitForTimeout(650);
     const repaired=await page.evaluate(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
