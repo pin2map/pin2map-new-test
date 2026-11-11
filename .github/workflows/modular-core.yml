@@ -63,3 +63,68 @@ jobs:
 
 
 
+
+  qa-v140-pages:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-reset-v140'
+    needs: [node-tests, chromium-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Dispatch and verify approved feature Pages workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo=pin2map/pin2map-new-test
+          run_url=$(gh workflow run preview-pages.yml --ref feature/leaflet-modular-core -R "$repo")
+          id="${run_url##*/}"
+          [[ "$id" =~ ^[0-9]+$ ]] || { echo "Unexpected dispatch: $run_url"; exit 1; }
+          echo "Feature Pages run: $run_url"
+          for attempt in $(seq 1 12); do
+            if gh run watch "$id" -R "$repo" --exit-status; then exit 0; fi
+            if gh run view "$id" -R "$repo" --json status,conclusion --jq '.status+":"+(.conclusion//"")' | grep -q '^completed:'; then
+              echo "Pages run completed unsuccessfully"; exit 1
+            fi
+            echo "Transient workflow API failure; retry $attempt"
+            sleep 5
+          done
+          exit 1
+
+  qa-v140-live:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-reset-v140'
+    needs: [qa-v140-pages]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check actual published v140 assets
+        run: |
+          python3 - <<'PY'
+          import re,urllib.request
+          from pathlib import Path
+          base="https://pin2map.github.io/pin2map-new-test/preview/"
+          match=re.search(r"const CACHE='pin2map-new-v(\d+)'",Path("sw.js").read_text())
+          assert match
+          version="pin2map-preview-v"+match.group(1)
+          expected={"sw.js":version,"index.html":version,
+            "ui/basemap-menu.js":"onSatelliteReset",
+            "styles.css":".basemap-satellite-controls.is-inactive",
+            "app.js":"onSatelliteReset"}
+          for path,marker in expected.items():
+            request=urllib.request.Request(base+path,headers={"Cache-Control":"no-cache"})
+            with urllib.request.urlopen(request,timeout=15) as response:
+              content=response.read().decode("utf-8")
+            assert marker in content,path+" missing new v140 code"
+          print("PASS published HTTPS assets:",version)
+          PY
+      - name: Verify live reset and inactive labels on real phone tablet desktop
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable)
+          PIN2MAP_CHROMIUM_EXECUTABLE="$CHROME" PIN2MAP_LIVE_PREVIEW="https://pin2map.github.io/pin2map-new-test/preview/" node tests/preview-live-smoke.cjs
