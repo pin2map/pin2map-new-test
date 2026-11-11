@@ -237,7 +237,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await brightness.isEnabled(),true);
     assert.equal(await menu.locator("#satelliteContrast").count(),0);
     assert.equal(await menu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
-    assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 140 % zurücksetzen");
+    assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 120 % zurücksetzen");
     assert.equal((await reset.innerText()).trim(),"Standard");
     await brightness.evaluate(el=>{
       el.value="165";el.dispatchEvent(new Event("input",{bubbles:true}));
@@ -283,16 +283,16 @@ async function longPress(page,x,y,ms=725){
     await reset.click();
     assert.equal(await menu.isVisible(),true);
     assert.equal(await reset.isDisabled(),true);
-    assert.equal(await brightness.inputValue(),"140");
+    assert.equal(await brightness.inputValue(),"120");
     assert.equal(await page.evaluate(()=>{
       const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
       return img?.closest(".leaflet-layer")?.style.filter;
-    }),"brightness(1.4)");
+    }),"brightness(1.2)");
     await page.waitForTimeout(650);
     await page.reload({waitUntil:"domcontentloaded"});
     await assertReady(page);
     await picker.click();
-    assert.equal(await brightness.inputValue(),"140");
+    assert.equal(await brightness.inputValue(),"120");
     const reliefToggle=page.locator("#esriReliefToggle");
     await reliefToggle.check();
     assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
