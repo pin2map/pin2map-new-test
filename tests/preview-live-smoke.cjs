@@ -79,6 +79,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await chooser.click();
         assert.equal(await reset.isEnabled(),true);
         assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 140 % zurücksetzen");
+    assert.equal((await reset.innerText()).trim(),"Standard");
         await reset.click();
         assert.equal(await mapMenu.isVisible(),true);
         assert.equal(await reset.isDisabled(),true);
