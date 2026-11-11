@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (erste `app.js`-Extraktion, Quellversion v101) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v100**, nach CSS-Inkrement **B38**. Quelle: `sw.js`, `const CACHE='pin2map-new-v100'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v100` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v101**, nach erster `app.js`-Modulentflechtung; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v101'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v101` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -40,21 +40,21 @@
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
-**CSS-Pause beschlossen am 2026-11-11; Quellstand B38/v100 bleibt unverändert.** Die Istaufnahme von `app.js` am selben Tag hat noch keine Programmänderung ausgelöst.
+**CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. Das ist **noch keine durch CI/Pages/Browser bestätigte Freigabe**.
 
 - `styles.css`: 947 Zeilen, rund 40 KB, **298 `!important`** (anfangs 402); 36 mehrfach vorkommende Selektoren in einer groben Quelltext-Inventur. Wiederholungen können berechtigte Media-Query-/Zustandsunterschiede sein und sind nicht automatisch Fehler. CSS bleibt technischer **Übergangszustand**, keine architektonisch abgeschlossene Komponentenkaskade.
-- Letzte konkrete Bereinigung: **B38** (ursprüngliche doppelte `min-width:0` im Suchfeld), dokumentiert in `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`. CSS, JavaScript, Worker und Datenmodell werden durch diese **Dokumentationsentscheidung nicht verändert**; SW-Quellkennung bleibt `pin2map-new-v100`.
+- Letzte konkrete Bereinigung: **B38** (ursprüngliche doppelte `min-width:0` im Suchfeld), dokumentiert in `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`. CSS, JavaScript, Worker und Datenmodell werden durch diese **Dokumentationsentscheidung nicht verändert**; CSS-Quellinhalt bleibt gleich; durch die neue App-Shell-Datei wird die SW-Quellkennung auf `pin2map-new-v101` angehoben.
 - Geltender Schutzvertrag: keine neuen pauschalen `!important`-Overrides; CSS-Budget **298** nicht erhöhen; vorhandene Designtokens und Eigentümer respektieren; den abgenommenen Suchbutton (42px Antippfläche, 30px Sichtkreis, 18px Lupe) nicht beiläufig verändern.
 - Bewusst **zurückgestellt**, nicht erledigt: umfassende CSS-Kaskadenkonsolidierung, konkurrierende Eigentümer, langfristige Aufteilung nach Komponenten, Stylelint-/AST-Infrastruktur und spätere Desktop-/iPad-/iPhone-CSS-Abnahme. **B39 wird nicht automatisch gestartet.**
 - **Quelltext geprüft:** Feature-Branch `styles.css`, CSS-Architekturvertrag, Fahrplan, Projektstatus und Preview-Workflow wurden gelesen. Die Workflowdefinition führt u. a. `node --test tests/*.test.js` und `tests/check-*.mjs` vor einem geplanten Pages-Deploy aus; eine Konfiguration beweist keinen erfolgreichen Lauf.
-- **Unabhängig offen:** vollständiger Node-22-Testlauf gegen den vollständigen Branch, GitHub-Actions-Laufresultat des relevanten Pushes, veröffentlichte `/preview/`-Assets und SW v100 über HTTPS, Browser-Smoke und erneute Geräteabnahme. Der Container konnte `github.com` und `pin2map.github.io` nicht per DNS auflösen; die Web-Abrufe waren nicht erfolgreich. Verfügbare Commit-Status-/PR-Workflow-Quellen haben für die bisherigen Commits keine belastbaren Push-Run-Ergebnisse geliefert.
+- **Unabhängig offen:** vollständiger Node-22-Testlauf einschließlich des neuen Basiskarten-Menü-Tests, GitHub-Actions-Laufresultat des relevanten Pushes, veröffentlichte `/preview/`-Assets und SW **v101** über HTTPS, Browser-Smoke inklusive Basiskartenwechsel, Escape/Außenklick, Fokus und Speichern sowie nötige Geräteabnahme. Der Container konnte `github.com` und `pin2map.github.io` nicht per DNS auflösen; die Web-Abrufe waren nicht erfolgreich. Verfügbare Commit-Status-/PR-Workflow-Quellen haben für die bisherigen Commits keine belastbaren Push-Run-Ergebnisse geliefert.
 - **Schutzregel:** vor weiteren **Anwendungsänderungen** die technischen Gates nach Möglichkeit nachholen; fehlen die Belege weiterhin, ausdrücklich offen lassen und keine erfolgreich getestete/ausgelieferte Version behaupten. Nicht ungeprüft nach `main` übernehmen.
 
 ## 5. Nächste konkrete Schritte
 
-1. **Qualitäts-Baseline v100 nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
-2. **`app.js`-Entflechtung vorbereitet (2026-11-11):** Iststand und vorhandene Module in `docs/APP_JS_ENTFLECHTUNG_BESTAND_2026-11-11.md` inventarisiert. Als erste kleine Extraktion ist das **Basiskarten-Menü** in ein reines `ui/basemap-menu.js` vorgesehen. Vorerst keine Programm-/CSS-Änderung.
-3. Basiskarten-Menü aus `app.js` herauslösen (nur UI/ARIA/Interaktion; Karte, Projektzustand und Speichern bleiben außerhalb des UI-Moduls), mit gezieltem DOM-Unit-/Integrations-/Browser-Test und verifizierter Preview-Freigabe.
+1. **Qualitäts-Baseline und v101-Regression nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien samt `ui/basemap-menu.js` und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
+2. **Erste `app.js`-Extraktion umgesetzt (Quellstand v101):** `ui/basemap-menu.js` steuert DOM/ARIA/Escape/Außenklick; `app.js` behält Basiskartenwechsel und Speicherung. `index.html` und SW-`CORE` enthalten die neue Datei; `tests/basemap-menu.test.js` wurde neu angelegt. CSS unangetastet.
+3. **Ersten Refactoring-Schnitt technisch freigeben:** `tests/basemap-menu.test.js` und volle Node-Suite sowie `tests/check-*.mjs` ausführen, CI/Pages und live geladenes `ui/basemap-menu.js` (v101) verifizieren, Basiskartenwechsel, ARIA/Escape/Außenklick und Persistenz im Browser prüfen. Bis dahin **Implementierung vorhanden, Freigabe offen**.
 4. CSS-Komplettsanierung später wieder aufnehmen, wenn Änderungen konkrete Kaskadenprobleme offenbaren oder die Architektur-/UI-Abnahme ansteht. B39 bleibt bis dahin **pausiert**.
 
 ## 6. Maßgebliche Dokumente
