@@ -483,7 +483,7 @@ async function longPress(page,x,y,ms=725){
       climateRequests.push(q);
       const lows={JAN:3.2,FEB:4.5},highs={JAN:11.6,FEB:13.7};
       const parameter=q.get("parameters")==="PRECTOTCORR"
-        ?{PRECTOTCORR:{JAN:2,FEB:1.5}}
+        ?{PRECTOTCORR:{JAN:2,FEB:1.5,MAR:1,APR:1,MAY:1,JUN:1,JUL:1,AUG:1,SEP:1,OCT:1,NOV:1,DEC:1}}
         :{T2M_MIN_AVG:lows,T2M_MAX_AVG:highs};
       await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
         properties:{parameter}
@@ -579,8 +579,20 @@ async function longPress(page,x,y,ms=725){
     await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("02");
     await infoButton.click();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
-      .some(el=>el.textContent.includes("Ø Feb")&&el.textContent.includes("42,4 mm")),null,{timeout:6000});
-    assert.equal(climateRequests.length,precipClimateBefore+2,"Feb reuses fetched 12-month IMERG normal");
+      .some(el=>el.textContent.includes("Ø Feb")&&el.textContent.includes("42 mm")),null,{timeout:6000});
+    assert.equal(climateRequests.length,precipClimateBefore+2,"Feb reuses fetched 12-month corrected NASA normal");
+    await infoButton.click();
+    assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod option[value=year]").textContent(),"Jahr");
+    await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("year");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
+      .some(el=>el.textContent.includes("Ø Jahr")&&el.textContent.includes("410 mm")),null,{timeout:6000});
+    assert.equal(climateRequests.length,precipClimateBefore+2,"Year reuses cached twelve-month NASA data");
+    const spacing=await page.locator(".p2m-precipitation-value").first().evaluate(el=>{
+      const p=getComputedStyle(el);
+      return {left:parseFloat(p.paddingLeft),right:parseFloat(p.paddingRight)};
+    });
+    assert.ok(spacing.left>=8&&spacing.right>=8,"Rain amount has legible spacing inside blue segment");
     await infoButton.click();
     await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("today");
     await infoButton.click();
