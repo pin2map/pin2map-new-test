@@ -59,3 +59,54 @@ jobs:
           name: chromium-failure-screenshot
           path: browser-smoke-failure.png
           if-no-files-found: ignore
+
+  published-preview-acceptance:
+    # PR against the development branch provides a readable independent HTTPS gate.
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core'
+    needs: [node-tests, chromium-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify actual published preview files and version over HTTPS
+        run: |
+          python3 - <<'PY'
+          import re,time,urllib.request
+          from pathlib import Path
+          base="https://pin2map.github.io/pin2map-new-test/preview/"
+          source=Path("sw.js").read_text()
+          match=re.search(r"const CACHE='pin2map-new-v(\\d+)'",source)
+          assert match,"Missing source version"
+          expected="pin2map-preview-v"+match.group(1)
+          assets={
+            "sw.js":expected,
+            "index.html":expected,
+            "ui/search-results.js":"results-footer",
+            "styles.css":".results-footer"
+          }
+          for attempt in range(12):
+            failures=[]
+            for path,marker in assets.items():
+              request=urllib.request.Request(base+path,headers={"Cache-Control":"no-cache"})
+              try:
+                with urllib.request.urlopen(request,timeout=15) as response:
+                  content=response.read().decode("utf-8")
+                if marker not in content: failures.append(path+": missing "+marker)
+                if path=="ui/search-results.js" and "results-head" in content:
+                  failures.append(path+": old header still in published module")
+              except Exception as error: failures.append(path+": "+str(error))
+            if not failures:
+              print("PASS published preview files:",expected)
+              break
+            print("Attempt",attempt+1,failures,flush=True)
+            if attempt==11: raise SystemExit("Published preview is not updated")
+            time.sleep(10)
+          PY
+      - name: Use system Chrome and test real published search results
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable)
+          PIN2MAP_CHROMIUM_EXECUTABLE="$CHROME" PIN2MAP_LIVE_PREVIEW="https://pin2map.github.io/pin2map-new-test/preview/" node tests/preview-live-smoke.cjs
