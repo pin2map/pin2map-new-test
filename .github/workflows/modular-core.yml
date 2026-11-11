@@ -60,10 +60,36 @@ jobs:
           path: browser-smoke-failure.png
           if-no-files-found: ignore
 
+  dispatch-preview:
+    # Safe diagnostics only for this repository's isolated QA PR.
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/search-results-v132-ci'
+    needs: [node-tests, chromium-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Trigger standard feature-branch Pages deployment and await result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo=pin2map/pin2map-new-test
+          gh workflow run preview-pages.yml --ref feature/leaflet-modular-core -R "$repo"
+          for attempt in $(seq 1 20); do
+            id=$(gh run list -R "$repo" --workflow=preview-pages.yml --branch=feature/leaflet-modular-core --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$id" ]; then break; fi
+            sleep 3
+          done
+          test -n "${id:-}"
+          echo "Feature-branch Pages run: https://github.com/$repo/actions/runs/$id"
+          gh run watch "$id" -R "$repo" --exit-status
+
   published-preview-acceptance:
     # PR against the development branch provides a readable independent HTTPS gate.
     if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core'
-    needs: [node-tests, chromium-smoke]
+    needs: [dispatch-preview]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
