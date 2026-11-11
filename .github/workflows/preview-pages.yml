@@ -225,6 +225,7 @@ jobs:
               "styles.css": ("text/css", ".pin-panel"),
               "app.js": ("javascript", "Pin2MapPwaRefresh.refresh"),
               "ui/pin-layer-picker.js": ("javascript", "class PinLayerPicker"),
+              "ui/search-results.js": ("javascript", "results-footer"),
               "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
               "sw.js": ("javascript", expected_version),
           }
