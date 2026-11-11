@@ -83,3 +83,11 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 - **Architektur-Gate grün:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727121>.
 - **GitHub Pages v101 grün:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727136>, einschließlich vorgelagerter Node- und Vertragschecks sowie HTTPS-/Live-Kartenstart-Prüfung. **Einordnung:** Der Menüinteraktions-Test lief gegen die lokal in CI gehostete Entwicklungsfassung, nicht direkt gegen die publizierte HTTPS-Preview. Die veröffentlichte v101-Preview wurde unabhängig vom Workflow auf Version/Assets/Start/Reload geprüft.
 - Für dieses Testinkrement keine Änderung an `app.js`, `styles.css`, `sw.js`, den UI-Modulen oder der Persistenz; PWA-Quelle v101 unverändert. Manuelle Gerätebedienung und CSS-Endabnahme bleiben offen.
+
+## 8. Zweite Extraktion – sichtbare Pins einpassen (v102, 2026-11-11)
+
+- `application/fit-visible-pins.js` erhält Pins, Ebenen und aktuelle Filter, nutzt die bereits vorhandene Filteroperation und einen injizierten Karten-Port, stellt ausschließlich Viewport-Anforderungen und Rückmeldung bereit. Keine Leaflet-, DOM-, Speicher- oder UI-Text-Abhängigkeiten im Use Case.
+- Die bestehende `fitAllPins`-Callback-Funktion in `app.js` bleibt als Kompositionswrapper und gibt die alten Parameter/Callbacks an die Anwendungsschicht weiter.
+- `index.html`-Skriptreihenfolge und `sw.js`-`CORE` erweitert; Quellkennung **v102**. Der neue `tests/fit-visible-pins.test.js` schützt 0/1/mehrere Treffer, Zoom, Optionen und Packaging.
+- **Sichtbare Gestaltung, CSS, persistierte Daten und `main` unverändert.** Zum Zeitpunkt der Dokumentation laufen Node-, Browser-, Architektur- und Pages-Jobs noch; ein erfolgreiches Deployment muss separat belegt werden.
+- **Persönlicher Testbedarf:** Kein Gerätetest für diesen Schritt angefordert, solange die automatisch nachgewiesenen Port- und Browser-Szenarien ausreichen. Wenn eine echte mobile Bedienungsprüfung nötig wird, ausdrücklich und konkret ankündigen.
