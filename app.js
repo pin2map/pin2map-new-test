@@ -20,7 +20,6 @@
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures;
-  let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
@@ -125,6 +124,24 @@
     },
     onOrdinaryClick:()=>overlayCoordinator.closeAll()
   });
+  const mapOverlayLayout = new window.Pin2MapMapOverlayLayoutCoordinator({
+    mapPort:{
+      on:(event,handler)=>mapAdapter.on(event,handler),
+      off:(event,handler)=>mapAdapter.off?.(event,handler),
+      invalidateSize:()=>mapAdapter.invalidateSize()
+    },
+    windowPort:window,
+    getPin:()=>selectedPin(),isMoving:()=>uiState.moveMode,
+    isMarkerPressActive:()=>gestures.isMarkerPressActive(),
+    panelPositioner:{
+      layout:options=>panelPositioner?.layout(options),
+      keepVisibleAtOpen:options=>panelPositioner?.keepVisibleAtOpen(options)
+    },
+    movePreview:{positionBar:()=>moveView.positionBar()},
+    onPersistViewport:()=>persistViewport(),onRenderMarkers:()=>renderMarkers(),
+    requestFrame:callback=>requestAnimationFrame(callback),
+    cancelFrame:id=>cancelAnimationFrame(id)
+  });
   const showNotice = message => uiShell.showNotice(message);
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
@@ -166,20 +183,9 @@
       selectedLayerId:selectedPin()?.layerId??null
     });
   }
-  function updatePanelLayout(){
-    if(panelPositioner)panelPositioner.layout({pin:selectedPin(),moving:uiState.moveMode});
-  }
-  function scheduleMapOverlayUpdate(){
-    if(mapOverlayFrame)return;
-    mapOverlayFrame=requestAnimationFrame(()=>{
-      mapOverlayFrame=0;
-      updatePanelLayout();
-      moveView.positionBar();
-    });
-  }
-  function keepSelectedAbovePanel(){
-    if(panelPositioner)panelPositioner.keepVisibleAtOpen({pin:selectedPin(),moving:uiState.moveMode});
-  }
+  const updatePanelLayout = ()=>mapOverlayLayout.layout();
+  const scheduleMapOverlayUpdate = ()=>mapOverlayLayout.schedule();
+  const keepSelectedAbovePanel = ()=>mapOverlayLayout.keepVisibleAtOpen();
   function fitAllPins(){
     fitVisiblePins({
       pins:state.pins,layers:state.layers,filter:currentPinFilter,
@@ -243,11 +249,7 @@
     mapAdapter.onMapClick(position=>mapClickCoordinator.handle(position));
 
     gestures.attachLongPress();
-    // Leaflet fires move continuously while dragging/pinching, unlike moveend.
-    mapAdapter.on("move",scheduleMapOverlayUpdate);
-    mapAdapter.on("moveend", () => {persistViewport();if(!gestures.isMarkerPressActive())renderMarkers();scheduleMapOverlayUpdate();});
-    mapAdapter.on("zoomend", () => {if(!gestures.isMarkerPressActive())renderMarkers();scheduleMapOverlayUpdate();});
-    window.addEventListener("resize", () => { mapAdapter.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
+    mapOverlayLayout.bind();
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden")persistence.flushOnHidden(); });
   }
   async function init() {
