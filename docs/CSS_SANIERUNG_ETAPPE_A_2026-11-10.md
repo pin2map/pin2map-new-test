@@ -576,3 +576,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neu: `tests/css-header-flex-direction-ownership.test.js` schützt den verbleibenden historischen Block vor erneuter Doppeldefinition und kontrolliert den gültigen Flex- und Headergrößenvertrag.
 - `!important` bleibt bei **298** gegenüber ursprünglich 402; zwei redundante **normale** CSS-Deklarationen weniger. PWA-Quellstand **v94**; keine beabsichtigte Darstellungänderung, kein zusätzlicher Nutzer-Gerätetest erforderlich.
 - Gezielte Quellcodeinvarianten vor Commit gegen GitHub-Dateien geprüft. **Nicht nachgewiesen:** vollständiger Node-Testlauf, erfolgreicher GitHub-Actions-Push-Lauf, erfolgreiche Pages-Veröffentlichung und tatsächlich ausgelieferte v94-Assets/Browser-Smoke. Kein erfolgreicher CI-/Live-Test wird daraus abgeleitet.
+
+
+## Inkrement B33 – überflüssige isolierte Header-Mindestbreite entfernt (v95, 2026-11-11)
+
+- Die einzelne frühere `.topbar{min-width:0}`-Regel im ursprünglichen Mobile-Layout entfernt. Dieselbe Mindestbreite bleibt in der späteren `.topbar`-Einzeilen-Regel (`width:100%;min-width:0`) unverändert enthalten; die maßgeblichen Flex-, Suchkapsel- und responsiven Regeln bleiben ebenfalls erhalten.
+- Neuer Schutztest: `tests/css-header-min-width-ownership.test.js` verhindert das Wiederauftauchen dieser isolierten Doppelregel und kontrolliert die bestehenden Eigentümer für Mindestbreite, Header-Höhe, Padding und Flex.
+- `!important` unverändert **298** (anfänglich 402); genau eine alte normale Deklaration entfernt. PWA-Quellkennung **v95**; keine erwartete sichtbare Änderung, daher kein Nutzer-Gerätetest nötig.
+- Gezielte Quelltextbedingungen anhand GitHub-Dateien geprüft. **Noch nicht unabhängig nachgewiesen:** vollständiger Node-Testlauf, erfolgreicher Actions-/Pages-Lauf, ausgelieferte v95-Assets und Live-Browser-Smoketest. Ein gespeicherter Commit ist keine CI-/Veröffentlichungsabnahme.
