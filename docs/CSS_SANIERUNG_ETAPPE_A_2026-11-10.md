@@ -608,3 +608,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Regressionstest `tests/css-header-base-display-ownership.test.js` schützt die Grundregel und die maßgeblichen Flex-, Headergrößen- und Padding-Verträge. B31/B32/B33-Verträge bleiben in ihrer Bedeutung erhalten.
 - Nur eine normal priorisierte Altdeklaration beseitigt; `!important` bleibt **298** (anfänglich 402). PWA-Quellrelease **v98**. Kein Eingriff in 30px-Suchring, 42px-Antippfläche, 18px-Lupe oder Kartendarstellung beabsichtigt.
 - Statische Quelltextverträge wurden vor dem Schreiben gegen die aktuelle GitHub-Quelle geprüft. **Offen bleiben:** vollständiger Node-Testlauf, GitHub-Actions-/Pages-Erfolg, ausgelieferte v98-Assets und Live-Browser-Smoke. Ein Gerätetest ist für diese nicht wirksame Deklaration nicht erforderlich.
+
+
+## Inkrement B37 – historischer 100%-Breitenwert im Sucheingabefeld entfernt (v99, 2026-11-11)
+
+- In der frühesten `.search input`-Basisregel ausschließlich `width:100%` entfernt. Die spätere `.search input{flex:1 1 0;width:0;...}`-Regel und die spezifischere `.topbar .search input{width:0;flex:1 1 auto;...}` behalten die wirksame Breitensteuerung. Mindestbreite, Border/Outline/Background, 16px-Typografie und Padding bleiben unverändert.
+- Neuer Regressionstest `tests/css-search-input-base-width-ownership.test.js` schützt die ursprünglichen übrigen Eigenschaften und die finalen Breiten-/Flex-Verträge.
+- Eine normal priorisierte überholte Deklaration entfernt; `!important`-Zahl weiter **298** (anfangs 402). PWA-Quellversion **v99**. 30px-Suchringlinie, 42px-Antippfläche und 18px-Lupe nicht berührt; keine sichtbare Änderung vorgesehen.
+- Quelltextinvarianten vor dem Schreiben anhand aktueller GitHub-Dateien geprüft. **Weiter offen:** vollständige Node-Testsuite, GitHub-Actions-/Pages-Push-Lauf, unabhängige HTTPS-Auslieferung und Browser-Smoke für v99. Ein Gerätetest ist für die überschriebene Altregel nicht erforderlich.
