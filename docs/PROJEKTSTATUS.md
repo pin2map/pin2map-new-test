@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v111: Pin-Erzeugung/-Auswahl modularisiert; Node/Architektur/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v112: app.js-Restinventur und Ebenenerzeugung ausgelagert; Node/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v111**, nach neunter `app.js`-Entflechtung (Pin-Erzeugung und -Auswahl). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v111'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v111` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v112**, nach zehnter `app.js`-Entflechtung (Ebenenerzeugung) und systematischer Restinventur. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v112'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v112` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -151,6 +151,14 @@
 - **Bestätigte finale Gates für Code/Test-Commit `167f18adbe8361e299d5b66f13f8c2a1e45efb7f`:** [Node und Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42990884400) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42990884406) erfolgreich, [Pages-/HTTPS-Preview und Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42990884398) erfolgreich. Chromium prüfte weiterhin echte Pin-Erzeugung durch Langdruck, Pin-Auswahl, Move, Speicherung, Offline-Reload und Löschung.
 - **Unverändert:** `main`, Referenzzweige, CSS B38/298 `!important`, Topo-Host `a.tile.opentopomap.org`, IndexedDB-Schema und persistierte Nutzerpins. **Kein zusätzlicher persönlicher Test erforderlich**; echte iPhone-Gesten dadurch nicht als geprüft bezeichnen.
 
+## 4n. Restinventur und zehnte `app.js`-Entflechtung – Ebenen anlegen (v112, 2026-11-11)
+
+- **Verbindliche Bestandsaufnahme** in [`docs/APP_JS_RESTINVENTUR_2026-11-11.md`](APP_JS_RESTINVENTUR_2026-11-11.md): verbleibende `app.js`-Abläufe als Fachaufgabe, UI-Koordination oder berechtigte Composition-Root-Verdrahtung klassifiziert. Kein pauschales Ziel, `app.js` zeilenweise leerzuräumen. Nächster priorisierter Fachfall ist die **Übernahme eines Suchtreffers als Pin**; weitere Kandidaten sind Projekthydrierung und Karten-/Move-Ereignisse.
+- **v112:** `application/layer-creation.js` neu. Die bisherige inline-Ebenenerzeugung delegiert Benutzernamen-Prompt über injizierten Callback, Namensvorschlag und -Validierung an `layerOps`, sowie Erfolg/Meldungen an Render-/Save-/Notice-Ports. Kein neues Datenmodell, keine UI- oder Datenbank-Abhängigkeit im Modul. `app.js` **15.149 → 15.003 Zeichen**.
+- `index.html` und Offline-`CORE` enthalten das Modul; `sw.js` auf **v112**. Neuer `tests/layer-creation.test.js` schützt Erfolg, Cancel, leer/dupliziert/unerwartet und Packaging. Echtes Chromium legt über das bestehende Eingabefenster **Ebene „Reisen“** an und findet sie im gespeicherten Projekt wieder.
+- **Finale Gates für `277760ee562f2081b7149ea75330788803c74178`:** [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42991543896), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42991543940), [Pages-/HTTPS-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/42991543920) alle erfolgreich. Preview-Gate bestätigte **188 Node-Tests, 0 Fehler**, SW-Version/Assets sowie Live-Kartenstart und Reload auf Phone/Tablet/Desktop.
+- **Geschützt:** `main`, Referenzen, CSS B38/298 `!important`, Topo-Host `a.tile.opentopomap.org`, IndexedDB-Schema und gespeicherte Nutzerdaten. **Kein zusätzlicher Gerätetest für v112** erforderlich.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -165,10 +173,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Verbleibende `app.js`-Komposition systematisch inventarisieren:** Nach neun Extraktionen ist der Composition Root weiter groß. Vor einer zehnten Extraktion die restlichen fachlichen Aufgaben (u. a. Ebenenerzeugung und Suchergebnis-Übernahme) gegenüber reiner Verdrahtung abgrenzen und einen größeren, stabil testbaren Schnitt auswählen. Keine Wiederholung bereits ausgelagerter Aufgaben.
-2. Vollständige Node-/Architektur-/Chromium-Gates und echte Pages-/HTTPS-Liveprüfung für Änderungen stets belegen; `a.tile.opentopomap.org` als funktionierende Topografiekarte beibehalten.
-3. **Gerätetests durch Nutzer nur bei konkretem Bedarf ausdrücklich mit URL/Schritten anfordern.** Für v111 ist kein neuer manueller Test nötig.
-4. CSS B38/298 bleibt pausiert; `main`, `reference/*`, IndexedDB-Schema und Nutzerpins schützen.
+1. **Suchtreffer → Pin:** nach [Restinventur](APP_JS_RESTINVENTUR_2026-11-11.md) als nächste eigenständige Anwendungsfunktion `choosePlace()`/`renderResults()` prüfen und extrahieren; ungültige Koordinaten, null/ein/mehrere Treffer, richtige Marker-/Viewport-Zuordnung und gespeicherte Daten absichern. Kein echter Nominatim-Netzwerktest.
+2. Danach Projekthydrierung (Default-/Saved-Project-Vertrag) und Karten-/Move-Ereignisse gegen die Architekturregeln bewerten; reine Modulinstanziierung und Rendering-Verdrahtung in `app.js` belassen.
+3. Jede Codeänderung mit Node-/Architektur-/Chromium- und tatsächlichem Pages-/HTTPS-Live-Gate nachweisen; Topo `a.tile.opentopomap.org` unverändert lassen. **Manuelle Gerätetests ausdrücklich mit URL und Schritten anfordern**, wenn benötigt; für v112 keiner erforderlich.
+4. CSS B38/298 bleibt pausiert; `main`, `reference/*`, IndexedDB und vorhandene Nutzerpins schützen.
 
 ## 6. Maßgebliche Dokumente
 
