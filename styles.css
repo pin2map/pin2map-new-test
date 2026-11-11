@@ -18,12 +18,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .leaflet-top.leaflet-left{top:12px}
 .leaflet-bottom.leaflet-right{bottom:5px}
 .leaflet-control-attribution{font-size:10px!important}
-.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;overflow:auto;background:#fff;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
+.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
 .result{display:block;width:100%;text-align:left;border-radius:0;border-bottom:1px solid #edf1f5;background:white;color:#183454;padding:12px}
+.results-items{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.result-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.result-kind{font-size:11px;font-weight:600;color:#555;background:#f0f0f2;border-radius:6px;padding:4px 7px;white-space:normal}
+.result-coordinates{display:block;font-size:11px;color:#777;margin-top:3px}
 .result:hover{background:#edf6ff}
 .result strong{display:block;font-size:14px}
 .result small{font-size:12px;color:#66788b}
-.results-footer{display:flex;justify-content:center;padding:8px 12px;border-top:1px solid #edf1f5;background:#fff}
+.results-footer{display:flex;flex:0 0 auto;justify-content:center;padding:8px 12px;border-top:1px solid #edf1f5;background:#fff}
 .results-footer .results-cancel{padding:8px 20px;color:#3e5974;background:#edf1f5;border:1px solid #d7dde3;border-radius:999px;font-size:14px;cursor:pointer}
 .message{padding:13px;font-size:14px;color:#4a5870}
 .panel{position:absolute;right:12px;z-index:1250;background:white;border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--shadow);width:min(350px,calc(100% - 24px));max-height:70vh;overflow-y:auto}
