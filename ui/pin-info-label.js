@@ -13,7 +13,7 @@
   }
   const MONTH_NAMES=Object.freeze(["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"]);
   function labelMarkup(data,{getIconSvg=()=>""}={}){
-    if(!data||!data.mode||data.mode==="off"||data.text==="")return "";
+    if(!data||!data.mode||data.mode==="off"||(data.text===""&&!data.icon))return "";
     const type=data.mode;
     let content=escapeHtml(data.text??"");
     if(type==="temperature")content='<span class="'+temperatureClass(data.value)+'">'+content+'</span>';
