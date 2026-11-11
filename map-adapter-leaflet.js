@@ -176,7 +176,7 @@
       const ll=marker.getLatLng();
       const options={interactive:true,keyboard:false,zIndexOffset:450,
         icon:window.L.divIcon({className:"elevation-label-wrap",
-          html,iconSize:[0,0],iconAnchor:[0,42]})};
+          html,iconSize:[0,0],iconAnchor:[0,34]})};
       if(!overlay){
         overlay=window.L.marker(ll,options).addTo(this.map);
         overlay.on("click",event=>{
