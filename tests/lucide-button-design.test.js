@@ -28,6 +28,16 @@ test("all selected control icons are available as offline Lucide SVG geometry",(
   }
   assert.throws(()=>Icons.svg("unsupported",documentStub()),RangeError);
 });
+test("crossed tags state retains exact icon geometry and draws one diagonal slash",()=>{
+  const normal=Icons.svg("tags",documentStub());
+  const crossed=Icons.svg("tags-off",documentStub());
+  assert.equal(normal.children.length,3);
+  assert.equal(crossed.children.length,4);
+  assert.deepEqual(crossed.children.slice(0,3),normal.children);
+  assert.equal(crossed.children[3].name,"path");
+  assert.equal(crossed.children[3].attributes.d,"M2 2 22 22");
+});
+
 test("mount replaces fallback character without changing accessible button labeling",()=>{
   const element={dataset:{},ownerDocument:documentStub(),children:[],
     classList:{add(name){this.value=name;}},
