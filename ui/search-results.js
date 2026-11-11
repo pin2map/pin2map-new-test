@@ -17,6 +17,17 @@
       this.onChoose=onChoose;
       this.titleOf=titleOf;
       this.detailOf=detailOf;
+      // Search results follow the actual inner search-pill width across viewports.
+      // Only presentation geometry is read; no application state is modified.
+      this.searchAnchor=doc.getElementById?.("searchForm")||null;
+      if(this.searchAnchor&&root.ResizeObserver){
+        this.widthObserver=new root.ResizeObserver(()=>this.syncWidth());
+        this.widthObserver.observe(this.searchAnchor);
+      }
+    }
+    syncWidth(){
+      const width=this.searchAnchor?.getBoundingClientRect?.().width;
+      if(width>0&&this.container.style)this.container.style.width=width+"px";
     }
     isVisible(){return !this.container.classList.contains("hidden");}
     hide(){
@@ -41,6 +52,7 @@
       p.textContent=String(message);
       this.container.append(p,this.cancelFooter());
       this.container.classList.remove("hidden");
+      this.syncWidth();
     }
     show(results){
       if(!Array.isArray(results))throw new TypeError("Search results must be an array");
@@ -59,6 +71,7 @@
       }
       this.container.append(this.cancelFooter());
       this.container.classList.remove("hidden");
+      this.syncWidth();
     }
   }
   root.Pin2MapSearchResultsView=SearchResultsView;
