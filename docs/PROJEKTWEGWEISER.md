@@ -4,6 +4,10 @@
 **Aktive Entwicklungsquelle:** pin2map/pin2map-new-test, Branch feature/leaflet-modular-core.  
 **Zweck:** Auffindbare zentrale Einstiegsseite; keine zweite, widersprüchliche Sammlung von Fachentscheidungen.
 
+## Zentraler tagesaktueller Arbeitsstand
+
+Für Chatwechsel und die nächste konkrete Aufgabe zuerst [PROJEKTSTATUS.md](PROJEKTSTATUS.md) lesen. Dieser Wegweiser bleibt die Quellen- und Umgebungsübersicht; Grundentscheidungen und Fachverträge bleiben an ihren bisherigen Stellen verbindlich. Den GitHub-Iststand stets erneut prüfen.
+
 ## Verbindliche Quellen – Lesereihenfolge
 
 1. **docs/GRUNDENTSCHEIDUNGEN.md** – 142 Basisentscheidungen und spätere verbindliche Umsetzungspräzisierungen; seit 2026-11-10 ausdrücklich das Gate „erst getestet UND veröffentlicht UND live geprüft = fertig“.
