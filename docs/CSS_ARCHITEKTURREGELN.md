@@ -27,7 +27,7 @@ Die derzeitige Datei `styles.css` ist noch ein Übergangszustand und enthält hi
 1. **Vorher** die aktuell wirksame CSS-Regel anhand Selektorspezifität, `!important`, Reihenfolge und Media Queries bestimmen. Gleichnamige Selektoren sind nicht automatisch gleich wirksam.
 2. Redundante Deklarationen **entfernen statt überlagern**. Bestehende Tokens benutzen, keine zweite Token-Definition erstellen. Semantische Ausnahmen explizit erhalten.
 3. Einen fokussierten Regressionstest für die geänderte Zuständigkeit hinzufügen. Bestehende CSS-Tests müssen weiter bestehen; `tests/css-design-token-ownership.test.js` schützt zentrale Token und bereits entfernte Altwerte.
-4. `tests/css-debt-budget.test.js` verbietet das stille Wachstum der `!important`-Altlasten (aktuelle Grenze: **299**). Den Grenzwert nach verifizierter Bereinigung senken; niemals nur zur Beschwichtigung eines Fehlers erhöhen.
+4. `tests/css-debt-budget.test.js` verbietet das stille Wachstum der `!important`-Altlasten (aktuelle Grenze: **298**). Den Grenzwert nach verifizierter Bereinigung senken; niemals nur zur Beschwichtigung eines Fehlers erhöhen.
 5. GitHub Actions führt `node --test tests/*.test.js` aus. Ein gespeicherter Test ist **kein Nachweis für einen erfolgreichen CI-Lauf**. Bei Änderungen an `styles.css` auch die Service-Worker-Releasekennung fortschreiben, die öffentliche Preview-Datei verifizieren und die betroffenen Geräteansichten prüfen.
 6. Manuelle iPhone-, iPad- und Desktop-Freigaben, CI-Erfolg, HTTPS-Auslieferung und aktiver Service-Worker-Stand sind **getrennt zu dokumentieren**. Das letzte iPhone-OK ersetzt keine technische Versionsermittlung.
 
