@@ -408,6 +408,80 @@ async function longPress(page,x,y,ms=725){
     assert.equal(Object.hasOwn(repaired,"activeLayer"),false);
     console.log("[browser] PASS – startup hydration preserves pins, repairs private layer and drops obsolete selection");
 
+    step("pin information: six-menu selection and visible-layer-only lazy weather requests");
+    const forecastRequests=[];
+    await page.route("https://api.open-meteo.com/v1/**",async route=>{
+      const url=new URL(route.request().url());
+      const count=url.searchParams.get("latitude").split(",").length;
+      const date=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Brussels",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+      let values;
+      if(url.pathname.includes("elevation"))values={elevation:Array(count).fill(250)};
+      else{
+        const row=()=>{
+          if(url.searchParams.get("daily")?.includes("temperature"))return {timezone:"Europe/Brussels",
+            daily:{time:[date],temperature_2m_min:[4],temperature_2m_max:[16]}};
+          if(url.searchParams.get("daily")?.includes("sunrise"))return {timezone:"Europe/Brussels",
+            daily:{time:[date],sunrise:[date+"T07:30"],sunset:[date+"T17:15"]}};
+          return {timezone:"Europe/Brussels",utc_offset_seconds:3600,current:{temperature_2m:19}};
+        };
+        values=count===1?row():Array.from({length:count},row);
+      }
+      forecastRequests.push({count,url:route.request().url()});
+      await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(values)});
+    });
+    await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{
+        const project=await store.loadProject();
+        project.layers.push({id:"info-test-hidden",name:"Wettertest",color:"#16836b",visible:false});
+        project.pins[1].layerId="info-test-hidden";
+        await store.saveProject(project);
+      }finally{store.close();}
+    });
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    assert.equal(await page.locator(".pin-marker").count(),1);
+    const infoButton=page.locator("#pinInfoButton");
+    const infoMenu=page.locator("#pinInfoMenu");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i-off");
+    await infoButton.click();
+    assert.equal(await infoMenu.isVisible(),true);
+    assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),6);
+    await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
+    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===1,
+      null,{timeout:6000});
+    assert.equal(forecastRequests.length,1,"Only the visible pin must be queried");
+    assert.equal(forecastRequests[0].count,1);
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i");
+    assert.match(await page.locator(".elevation-label").first().textContent(),/19 °C/);
+    await page.locator("#layersButton").click();
+    await page.locator('#layersList input[aria-label="Wettertest sichtbar"]').check();
+    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===2,
+      null,{timeout:6000});
+    assert.equal(forecastRequests.length,2,"Newly visible pins load after layer reveal");
+    assert.equal(forecastRequests[1].count,1);
+    await page.locator("#layersButton").click();
+    const nextMode=async(mode,match)=>{
+      await infoButton.click();
+      await infoMenu.locator('[data-pin-info-mode="'+mode+'"]').click();
+      await page.waitForFunction(value=>Array.from(document.querySelectorAll(".elevation-label"))
+        .some(el=>el.textContent.includes(value)),match,{timeout:6000});
+      assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i");
+    };
+    await nextMode("elevation","250 m");
+    await nextMode("daily","16 °C");
+    assert.equal(await page.locator(".p2m-label-min").count(),2);
+    await nextMode("sun","07:30");
+    assert.equal(await page.locator(".p2m-label-rise").count(),2);
+    await nextMode("zone","Δ ");
+    await infoButton.click();
+    await infoMenu.locator('[data-pin-info-mode="off"]').click();
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i-off");
+    assert.equal(await infoButton.locator("svg path").last().getAttribute("d"),"M2 22 22 2");
+    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label").length===0,
+      null,{timeout:6000});
+    console.log("[browser] PASS – six information modes, legacy info labels, cache and lazy hidden-layer fetch");
+
     step("startup hydration: malformed stored project uses existing default-project fallback");
     await page.evaluate(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
