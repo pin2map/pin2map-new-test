@@ -31,8 +31,12 @@ Die derzeitige Datei `styles.css` ist noch ein Übergangszustand und enthält hi
 5. GitHub Actions führt `node --test tests/*.test.js` aus. Ein gespeicherter Test ist **kein Nachweis für einen erfolgreichen CI-Lauf**. Bei Änderungen an `styles.css` auch die Service-Worker-Releasekennung fortschreiben, die öffentliche Preview-Datei verifizieren und die betroffenen Geräteansichten prüfen.
 6. Manuelle iPhone-, iPad- und Desktop-Freigaben, CI-Erfolg, HTTPS-Auslieferung und aktiver Service-Worker-Stand sind **getrennt zu dokumentieren**. Das letzte iPhone-OK ersetzt keine technische Versionsermittlung.
 
-## Abschluss der CSS-Sanierung
+## Status der CSS-Sanierung und Übergabe an die Anwendungsarchitektur
 
-Nicht allein die Anzahl `!important` entscheidet über Fertigstellung, sondern: dokumentierte Eigentümer der Komponentenregeln, keine ungeklärten konkurrierenden Regeln, bestandene automatisierte Tests, verifizierte Preview und erneut bestätigte Layouts für iPhone, iPad und Desktop. Erst danach wird die **zentrale Anwendungssteuerung `app.js`** als nächstes Architekturthema umfassend angegangen.
+**Beschluss 2026-11-11: CSS-Arbeit nach B38/v100 vorläufig pausiert, nicht als abgeschlossen bewertet.** Die bislang wirksamen Komponentenverträge, die Oberflächenreferenz und das `!important`-Budget von **298** bleiben verbindlich. Bis zur Wiederaufnahme keine neuen CSS-Overrides ohne fachlich/visuell begründete Notwendigkeit; bei Änderungen weiterhin Eigentümer-/Regressionstests und reale Preview-Freigabe.
+
+Eine **vollständige CSS-Abnahme** erfordert weiterhin: dokumentierte Eigentümer der Komponentenregeln, keine ungeklärten konkurrierenden Regeln, bestandene automatische Tests, verifizierte Preview sowie erneut bestätigte Layouts für iPhone, iPad und Desktop. Diese Bedingungen sind **noch nicht erfüllt bzw. nicht nachgewiesen**.
+
+**Geänderte Arbeitsreihenfolge:** Statt auf vollständige kosmetische CSS-Bereinigung zu warten, wird nach nachzuholender technischer Baseline-Prüfung die inkrementelle Entflechtung von `app.js` als nächstes Architekturthema aufgenommen. Die Änderbarkeit des Codes hat Vorrang; größere CSS-Umstrukturierung und `app.js`-Refactoring werden nicht gleichzeitig vorgenommen. Die CSS-Komplettsanierung bleibt ein offener späterer Arbeitsauftrag.
 
 Die Vorgänger-App dient als funktionale und visuelle Referenz, nicht als Quellcode- oder CSS-Architekturvorlage. Die stabile Anwendung auf `main` bleibt unberührt.
