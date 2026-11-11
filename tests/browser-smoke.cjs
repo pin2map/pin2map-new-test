@@ -388,7 +388,7 @@ async function longPress(page,x,y,ms=725){
     await labelToggle.click();
     assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags-off");
     assert.equal(await labelToggle.getAttribute("aria-pressed"),"false");
-    assert.equal(await labelToggle.locator("svg path").last().getAttribute("d"),"M2 2 22 22");
+    assert.equal(await labelToggle.locator("svg path").last().getAttribute("d"),"M2 22 22 2");
     await labelToggle.click();
     assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags");
     assert.equal(await labelToggle.getAttribute("aria-pressed"),"true");
