@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v114: Projekthydrierung extrahiert; Node/Architektur/Chromium/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v115: Kartenklick-/Verschiebeziel-Entscheidung extrahiert; Tests/Pages erfolgreich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v114**, nach zwölfter `app.js`-Entflechtung (Projekthydrierung). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v114'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v114` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v115**, nach dreizehnter `app.js`-Entflechtung (Kartenklick-Koordination). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v115'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v115` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -177,6 +177,15 @@
 - **Abschließende CI-/Live-Gates für Commit `59b8705f6de7990a89e663479122f2a686334d9b`:** [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42994178691) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42994178638) erfolgreich, [Pages/HTTPS/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42994178685) erfolgreich. Preview bestätigt **202 Node-Tests, 0 Fehler**, exakte Worker-/Assetversion und Live-Start auf Phone/Tablet/Desktop.
 - **Schutzbereiche unverändert:** `main`, Referenzzweige, CSS B38/298 `!important`, Topo-`a.tile.opentopomap.org`, IndexedDB-Datenbank `pin2map-new-v1`/Version 1 und persistierte Benutzerdaten. **Kein neuer Gerätetest erforderlich** für v114.
 
+## 4q. Dreizehnte `app.js`-Entflechtung – Kartenklick-/Verschiebeziel-Koordination (v115, 2026-11-11)
+
+- Neues reines Anwendungsmodul `application/map-click-coordinator.js`: Die **Reihenfolge ist sicherheits- und UX-relevant**: bei aktivem Pin-Verschieben zuerst `previewMove(position)` ausführen, bei angenommenem Ziel Voransicht/Guide über Callback aktualisieren und stets zurückkehren; nur außerhalb des Move-Modus den Langdruck-Folgeklick auf Unterdrückung prüfen; ein gewöhnlicher Kartenklick schließt die Overlays.
+- Bisheriger Inline-`mapAdapter.onMapClick`-Callback in `app.js` durch `mapClickCoordinator.handle(position)` ersetzt. Alle Karten-, Gesten-, Move-, Marker-, Dialog- und Speicheroperationen bleiben **hinter unveränderten Ports**. `app.js` **14.715 → 14.694 Zeichen**. Hauptgewinn ist die getrennt überprüfbare Prioritätsregel; Bewegungslayout (`move`/`moveend`/`zoomend`/Resize) bewusst noch im Composition Root.
+- `tests/map-click-coordinator.test.js` prüft gewöhnlichen Kartenklick, unterdrückten Klick nach Langdruck, Vorrang eines absichtlichen Move-Zielklicks **trotz Unterdrückungsflag**, abgelehntes Ziel und Script-/Offline-`CORE`-Einbindung. Historische `tests/check-ui.mjs`-Strukturprüfung auf neuen Besitzer des neutralen Kartenpositions-Portvertrags umgestellt; zwei Zwischenläufe waren wegen veralteter Testannahme bzw. eines falsch benannten Test-Helpers rot, nicht wegen App-Funktionsfehlern.
+- `index.html` und Offline-`CORE` enthalten das neue Modul mit v115. **Finale CI-/Live-Gates für `bdc218a63e79bfe6161a352e0d654337009acd4c`:** [Node+Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42995116808) erfolgreich; [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42995117164) erfolgreich; [Pages/HTTPS/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42995116869) erfolgreich. Preview: **207 Node-Tests, 0 Fehler**, exakte Service-Worker-Version/Assets und realer Start auf Phone/Tablet/Desktop.
+- Echte Chromium-Regression bestätigt Langdruck-Pin-Erzeugung, Move-Ziel, Cancel/Confirm, Marker-/Dialog-Zustand, Speichern und Offline-Reload. **Keine gesonderte iOS-Touch-Gestenabnahme**, deshalb nicht als auf iPhone geprüft bezeichnen.
+- **Geschützt:** `main`, Referenzen, CSS B38/298 `!important`, Topografie `a.tile.opentopomap.org`, IndexedDB-Schema und persistierte Nutzerdaten. Kein zusätzlicher Gerätetest für v115 zwingend erforderlich, weil die ausgegliederte Prioritätsregel samt Move-Regression in Chromium geprüft wurde.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -191,10 +200,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Karten-/Move-Ereignissteuerung bewerten:** nach v114 verbleiben in `bind()` fachliche Zweige für Kartenklick bei aktivem Verschieben und unterdrückte Folge-Klicks nach Langdruck sowie `move`/`moveend`/`zoomend`/Resize. Vor einer weiteren Auslagerung die bereits erfolgreichen Long-Press-/Move-Verträge und Overlay-Lebenszyklen gegenprüfen und nur einen testbaren zusammenhängenden Schnitt wählen.
-2. Reines Modulzusammensetzen, Renderer-Verdrahtung und Karteninitialisierung in `app.js` belassen; keine künstlichen Klassen ohne eigene Verantwortung. Weitere notwendige UI-Entflechtung nur auf begründeten Befund.
-3. Jede Codeänderung vollständig mit Node-, Architektur-, Chromium- und Pages-/HTTPS-Live-Gates abnehmen; die funktionierende Topokarte `a.tile.opentopomap.org` und CSS B38/298 schützen.
-4. **Manuelle Nutzergerätetests ausdrücklich mit Vorschau-URL und Schritten anfordern**, wenn benötigt. Für v114 kein Gerätetest. `main`, Referenzen und gespeicherte Pins nicht ändern.
+1. **Verbleibendes Karten-/Overlay-Layout bewerten:** `move`, `moveend`, `zoomend`, Resize, `scheduleMapOverlayUpdate()`, `keepSelectedAbovePanel()` auf zusammenhängende UI-Verantwortung untersuchen, vor einer Extraktion aber die Gesten-/Pin-Dialog-Geometrie aus der Vorgänger-App und bestehenden Tests schützen. Nicht das gelöste Kartenklick-Präzedenzproblem erneut öffnen.
+2. **Composition Root respektieren:** `app.js` muss Module, Ports, View-Renderer und Karteninitialisierung verbinden dürfen. Weitere Extraktion nur bei echter separater Verantwortung und automatisiertem Regressionstest.
+3. Nach jeder Änderung Node-/Architektur-/Chromium- und Pages-/HTTPS-Live-Gates bis zum Ergebnis prüfen. Topo-Host und CSS B38/298 nicht ändern.
+4. **Nutzergerätetests ausdrücklich mit URL/Schritten anfordern**, wenn erforderlich. Für v115 ist kein zusätzlicher persönlicher Test notwendig. `main`, Referenzen und Nutzerdaten schützen.
 
 ## 6. Maßgebliche Dokumente
 
