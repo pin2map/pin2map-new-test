@@ -75,3 +75,11 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 - **Architektur-Gate:** erfolgreich, <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343418>.
 - **Preview-Gate:** erfolgreich, <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343415>. Umfasst `node --test tests/*.test.js`, `tests/check-*.mjs`, Pages-Deploy, **über HTTPS geladene exakt versionierte Preview-Assets** sowie reale Chromium-Live-Start-/Reload-Checks für Telefon-, Tablet- und Desktop-Viewports einschließlich Tracking-URL. Freigegebene Preview-Quelle `pin2map-preview-v101` unter <https://pin2map.github.io/pin2map-new-test/preview/>.
 - **Weiter offen:** gezielte funktionale Basiskarten-Menü-Interaktionen (street↔topo, ARIA, Escape, Außenklick, Fokus, Persistenz) im echten Browser und manuelle Geräteabnahme. Nicht nach `main` übernehmen ohne Freigabe.
+
+## 7. Gezielte Basiskarten-Menü-Browser-Regression bestätigt (2026-11-11)
+
+- Test `tests/browser-smoke.cjs` um reale Chromium-Menüaktionen erweitert: Topografische Karte wählen und Auswahl nach Reload wiederfinden, Escape/Fokus, Außenklick, Schließen von Einstellungen, Rückwechsel zur Straßenkarte samt erneuter Persistenzkontrolle und `aria-pressed`-/`aria-expanded`-Zustände. Anschließend wurden die bereits vorhandenen Pin-/Move-/Offline-Tests im selben Browserlauf bestanden.
+- **Chromium + Node grün:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727159> (Browser-Log: `PASS – basemap toggle, street/topo, ARIA, focus, Escape, outside click, panels, persistence`).
+- **Architektur-Gate grün:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727121>.
+- **GitHub Pages v101 grün:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727136>, einschließlich vorgelagerter Node- und Vertragschecks sowie HTTPS-/Live-Kartenstart-Prüfung. **Einordnung:** Der Menüinteraktions-Test lief gegen die lokal in CI gehostete Entwicklungsfassung, nicht direkt gegen die publizierte HTTPS-Preview. Die veröffentlichte v101-Preview wurde unabhängig vom Workflow auf Version/Assets/Start/Reload geprüft.
+- Für dieses Testinkrement keine Änderung an `app.js`, `styles.css`, `sw.js`, den UI-Modulen oder der Persistenz; PWA-Quelle v101 unverändert. Manuelle Gerätebedienung und CSS-Endabnahme bleiben offen.
