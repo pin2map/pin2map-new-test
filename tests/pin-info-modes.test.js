@@ -51,6 +51,44 @@ test("upward two-tone daily/sun, temperature colors and safe text escaping",()=>
    assert.equal(temperatureClass(value),"p2m-wx-"+klass);
  assert.match(zoneDelta({zone:"Etc/UTC",fallback:0},Date.UTC(2026,0,1)),/^Δ /);
 });
+test("timezone icon semantics: positive clockwise, negative counterclockwise, equal clock-check",async()=>{
+ const at=Date.UTC(2026,0,15,12);
+ const local=Intl.DateTimeFormat().resolvedOptions().timeZone||"Etc/UTC";
+ const requests=[];
+ const provider={async request(mode,pins){requests.push({mode,ids:pins.map(p=>p.id)});
+   return pins.map(pin=>({zone:pin.lng===1?"Pacific/Kiritimati":pin.lng===2?"Pacific/Honolulu":local,fallback:0}));
+ }};
+ const svc=new PinInfoService({provider,now:()=>at});
+ const candidates=[{id:"east",lat:1,lng:1},{id:"west",lat:1,lng:2},{id:"equal",lat:1,lng:3}];
+ svc.setVisiblePins(candidates);svc.setMode("zone","today");
+ await tick();
+ const east=svc.label(candidates[0]),west=svc.label(candidates[1]),equal=svc.label(candidates[2]);
+ // CI/browser runner uses UTC. Offsets must be relative to the device, not UTC.
+ assert.equal(east.icon,"rotate-cw-clock");
+ assert.match(east.text,/^\+/);
+ assert.equal(west.icon,"rotate-ccw-clock");
+ assert.match(west.text,/^-/);
+ assert.equal(equal.icon,"clock-check");
+ assert.equal(equal.text,"","Equal time zones are represented by icon only");
+ assert.deepEqual(requests,[{mode:"zone",ids:["east","west","equal"]}]);
+ const svg=name=>'<svg data-test-icon="'+name+'"></svg>';
+ assert.match(labelMarkup(east,{getIconSvg:svg}),/data-test-icon="rotate-cw-clock"/);
+ assert.match(labelMarkup(west,{getIconSvg:svg}),/data-test-icon="rotate-ccw-clock"/);
+ assert.match(labelMarkup(equal,{getIconSvg:svg}),/data-test-icon="clock-check"/);
+ assert.match(labelMarkup(equal,{getIconSvg:svg}),/p2m-zone-information/);
+ assert.doesNotMatch(labelMarkup({mode:"zone",text:"<img src=x>",icon:"rotate-cw-clock"},{getIconSvg:svg}),/<img/);
+ assert.doesNotMatch(labelMarkup({mode:"zone",text:"0",icon:"<img>"},{getIconSvg:svg}),/<svg/);
+ svc.setMode("off");assert.equal(svc.label(candidates[0]),null);
+});
+test("zone selection remains available after precipitation annual period without adding requests when off",async()=>{
+ const calls=[];
+ const provider={request:async(mode,pins)=>{calls.push(mode);return pins.map(()=>({zone:"Etc/UTC",fallback:0}));}};
+ const svc=new PinInfoService({provider});
+ svc.setVisiblePins([visible]);svc.setMode("precipitation","year");await tick();
+ svc.setMode("zone","today");await tick();
+ assert.deepEqual(calls,["precipitation","zone"]);
+ svc.setMode("off");await tick();assert.equal(calls.length,2);
+});
 test("Open-Meteo provider creates correct batched endpoints and parses all six-mode data",async()=>{
  const requests=[];let data;
  const provider=new Provider({fetchImpl:async url=>{requests.push(url);return {ok:true,json:async()=>data};}});
