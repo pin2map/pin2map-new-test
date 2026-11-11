@@ -45,6 +45,9 @@
     onOpening:()=>{uiShell.closePanels();searchView.hide();},
     onSelect:value=>{
       if(state.basemap!==value){state.basemap=value;setTileLayer();save();}
+    },
+    onReliefChange:enabled=>{
+      if(!!state.esriRelief!==enabled){state.esriRelief=enabled;setTileLayer();save();}
     }
   });
   const bulkDeleteDialog = new window.Pin2MapBulkDeleteDialog({
@@ -152,8 +155,8 @@
     persistence.saveViewport(mapAdapter.getViewport());
   }
   function setTileLayer() {
-    mapAdapter.setBasemap(state.basemap);
-    basemapMenu.render(state.basemap);
+    mapAdapter.setBasemap(state.basemap,{esriRelief:!!state.esriRelief});
+    basemapMenu.render(state.basemap,!!state.esriRelief);
   }
   function renderMarkers(){
     if(!markerView)return;
