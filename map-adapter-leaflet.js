@@ -61,7 +61,7 @@
       if(this.basemapLayer)this.map.removeLayer(this.basemapLayer);
       const topo=id==="topo";
       this.basemapLayer=window.L.tileLayer(topo
-        ? "https://tile.top-o-map.de/{z}/{x}/{y}.png"
+        ? "https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
         : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
         maxZoom:topo?17:19,
         attribution:topo
