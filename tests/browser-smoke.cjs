@@ -24,7 +24,7 @@ async function longPress(page,x,y,ms=725){
   await page.mouse.up();
 }
 (async()=>{
-  const browser=await chromium.launch({headless:true});
+  const browser=await chromium.launch({headless:true,...(process.env.PIN2MAP_CHROMIUM_EXECUTABLE?{executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE}:{})});
   const context=await browser.newContext({viewport:{width:1100,height:780},serviceWorkers:"allow"});
   const page=await context.newPage();
   const errors=[];
