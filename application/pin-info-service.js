@@ -26,9 +26,10 @@
   }
   function key(pin,mode,period="today"){return cacheMode(mode,period)+":"+(monthMode(mode)?period+":":"")+Number(pin.lat).toFixed(5)+","+Number(pin.lng).toFixed(5);}
   class PinInfoService{
-    constructor({provider,onUpdate=()=>{},onError=()=>{},now=()=>Date.now(),schedule=(fn,delay)=>root.setTimeout(fn,delay),cancel=id=>root.clearTimeout(id)}){
+    constructor({provider,onUpdate=()=>{},onError=()=>{},onLoadingChange=()=>{},now=()=>Date.now(),schedule=(fn,delay)=>root.setTimeout(fn,delay),cancel=id=>root.clearTimeout(id)}){
       if(!provider||typeof provider.request!=="function")throw new TypeError("Pin information provider required");
-      this.provider=provider;this.onUpdate=onUpdate;this.onError=onError;this.now=now;
+      this.provider=provider;this.onUpdate=onUpdate;this.onError=onError;
+      this.onLoadingChange=onLoadingChange;this.loading=false;this.now=now;
       this.mode="off";this.period="today";this.cache=new Map();this.pending=new Set();this.generation=0;
       this.schedule=schedule;this.cancel=cancel;this.timer=null;
       this.visible=[];this.activeKeys=new Set();
@@ -45,7 +46,8 @@
       this.generation++;
       this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode,period)));
       if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
-      this.pending.clear();
+      this.pending=new Set(); // Old in-flight replies cannot remove new-generation keys.
+      this.syncLoading();
       this.refresh();
     }
     setPeriod(period){
@@ -56,7 +58,8 @@
       const next=new Set(this.visible.map(p=>key(p,this.mode,this.period)));
       const changed=next.size!==this.activeKeys.size||[...next].some(k=>!this.activeKeys.has(k));
       this.activeKeys=next;
-      if(changed){this.generation++;this.pending.clear();}
+      if(changed){this.generation++;this.pending=new Set();}
+      this.syncLoading();
       this.refresh();
     }
     isFresh(record,mode,now,period=this.period){
@@ -113,33 +116,57 @@
       },delay);
       this.timer?.unref?.(); // Node regression runs must not be held by timers.
     }
+    isLoading(){
+      return this.mode!=="off"&&this.visible.some(pin=>this.pending.has(key(pin,this.mode,this.period)));
+    }
+    syncLoading(){
+      const loading=this.isLoading();
+      if(this.loading===loading)return;
+      this.loading=loading;
+      this.onLoadingChange(loading);
+    }
     refresh(){
       const mode=this.mode;
-      if(mode==="off")return;
+      if(mode==="off"){this.syncLoading();return;}
       const period=this.period;
       const unfilled=this.visible.filter(pin=>!this.isFresh(this.cache.get(key(pin,mode,period)),mode,this.now(),period)&&!this.pending.has(key(pin,mode,period)));
-      if(!unfilled.length)return;
+      if(!unfilled.length){this.syncLoading();return;}
       const generation=this.generation;
+      const pending=this.pending; // Capture generation to prevent old requests affecting new ones.
+      // Mark ALL batches pending before starting the first network request.
+      // Intermediate renderMarkers/onUpdate calls cannot schedule duplicate batches.
+      unfilled.forEach(pin=>pending.add(key(pin,mode,period)));
+      this.syncLoading();
       const batches=[];
       for(let i=0;i<unfilled.length;i+=20)batches.push(unfilled.slice(i,i+20));
-      // One batch at a time, low request pressure. Each batch is only visible pins.
       const next=async()=>{
         for(const batch of batches){
-          if(this.generation!==generation||this.mode!==mode||this.period!==period)return;
-          batch.forEach(pin=>this.pending.add(key(pin,mode,period)));
+          if(this.generation!==generation||this.mode!==mode||this.period!==period)break;
+          let error=null;
           try{
             const rows=await this.provider.request(mode,batch,period);
             if(this.generation===generation&&this.mode===mode&&this.period===period){
               rows.forEach((data,i)=>{this.cache.set(key(batch[i],mode,period),{data,at:this.now()});});
+            }
+          }catch(reason){
+            if(this.generation===generation&&this.mode===mode&&this.period===period){
+              batch.forEach(pin=>this.cache.set(key(pin,mode,period),{data:null,at:this.now()}));
+              error=reason;
+            }
+          }finally{
+            batch.forEach(pin=>pending.delete(key(pin,mode,period)));
+            if(this.generation===generation){
+              this.syncLoading();
+              if(error)this.onError(error);
+              // Update labels only for currently relevant mode/period/visible pins.
               this.onUpdate();
             }
-          }catch(error){if(this.generation===generation){
-            batch.forEach(pin=>this.cache.set(key(pin,mode,period),{data:null,at:this.now()}));
-            this.onError(error);
-          }}
-          finally{batch.forEach(pin=>this.pending.delete(key(pin,mode,period)));}
+          }
         }
-        if(this.generation===generation)this.armRefresh();
+        if(this.generation===generation){
+          this.syncLoading();
+          this.armRefresh();
+        }
       };
       void next();
     }
