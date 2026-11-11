@@ -60,3 +60,59 @@ jobs:
           path: browser-smoke-failure.png
           if-no-files-found: ignore
 
+
+  qa-v137-pages:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/search-v137-limit'
+    needs: [node-tests, chromium-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Dispatch approved feature-only Pages workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo=pin2map/pin2map-new-test
+          run_url=$(gh workflow run preview-pages.yml --ref feature/leaflet-modular-core -R "$repo")
+          id="${run_url##*/}"
+          [[ "$id" =~ ^[0-9]+$ ]] || { echo "Unexpected response: $run_url"; exit 1; }
+          echo "Feature Pages run: $run_url"
+          gh run watch "$id" -R "$repo" --exit-status
+
+  qa-v137-live:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/search-v137-limit'
+    needs: [qa-v137-pages]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify published v137 HTTPS files
+        run: |
+          python3 - <<'PY'
+          import re,urllib.request
+          from pathlib import Path
+          base="https://pin2map.github.io/pin2map-new-test/preview/"
+          match=re.search(r"const CACHE='pin2map-new-v(\d+)'",Path("sw.js").read_text())
+          assert match
+          version="pin2map-preview-v"+match.group(1)
+          assets={"sw.js":version,"index.html":version,
+            "adapters/geocoding/nominatim-geocoder.js":"this.resultLimit=25",
+            "application/place-search-service.js":"cached.requestLimit"}
+          for path,marker in assets.items():
+            req=urllib.request.Request(base+path,headers={"Cache-Control":"no-cache"})
+            with urllib.request.urlopen(req,timeout=15) as response:
+              body=response.read().decode("utf-8")
+            assert marker in body, path+" missing expected v137 content"
+          print("PASS real HTTPS assets:",version)
+          PY
+      - name: Verify real published browser search result limit on phone tablet desktop
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable)
+          PIN2MAP_CHROMIUM_EXECUTABLE="$CHROME" PIN2MAP_LIVE_PREVIEW="https://pin2map.github.io/pin2map-new-test/preview/" node tests/preview-live-smoke.cjs
