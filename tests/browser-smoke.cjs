@@ -229,7 +229,56 @@ async function longPress(page,x,y,ms=725){
       await page.waitForFunction(part=>Array.from(document.querySelectorAll(".leaflet-tile-pane img"))
         .some(img=>img.src.includes(part)),source,{timeout:5000});
     }
+    step("satellite imagery sliders: Lucide icons, live tile filter, persistence and basemap isolation");
     await picker.click();
+    await menu.locator('[data-basemap="satellite"]').click();
+    await picker.click();
+    const brightness=menu.locator("#satelliteBrightness"),contrast=menu.locator("#satelliteContrast");
+    assert.equal(await brightness.isEnabled(),true);
+    assert.equal(await contrast.isEnabled(),true);
+    assert.equal(await menu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
+    assert.equal(await menu.locator('.basemap-slider-icon[data-pin-icon="contrast"] svg').count(),1);
+    await brightness.evaluate(el=>{
+      el.value="120";el.dispatchEvent(new Event("input",{bubbles:true}));
+      el.dispatchEvent(new Event("change",{bubbles:true}));
+    });
+    await contrast.evaluate(el=>{
+      el.value="75";el.dispatchEvent(new Event("input",{bubbles:true}));
+      el.dispatchEvent(new Event("change",{bubbles:true}));
+    });
+    assert.equal(await menu.locator("#satelliteBrightnessValue").textContent(),"120 %");
+    assert.equal(await menu.locator("#satelliteContrastValue").textContent(),"75 %");
+    assert.equal(await menu.isVisible(),true,"Sliders must not close basemap menu");
+    const satelliteFilter=await page.evaluate(()=>{
+      const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
+      return img?.closest(".leaflet-layer")?.style.filter;
+    });
+    assert.equal(satelliteFilter,"brightness(1.2) contrast(0.75)");
+    assert.equal(await page.locator("#map .leaflet-marker-pane").evaluate(el=>getComputedStyle(el).filter),"none",
+      "Pin markers must not inherit satellite contrast");
+    await page.waitForTimeout(650);
+    await page.reload({waitUntil:"domcontentloaded"});
+    await assertReady(page);
+    await picker.click();
+    assert.equal(await brightness.inputValue(),"120");
+    assert.equal(await contrast.inputValue(),"75");
+    assert.equal(await page.evaluate(()=>{
+      const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
+      return img?.closest(".leaflet-layer")?.style.filter;
+    }),"brightness(1.2) contrast(0.75)");
+    await menu.locator('[data-basemap="street"]').click();
+    const streetFilter=await page.evaluate(()=>{
+      const img=document.querySelector('.leaflet-tile-pane img[src*="tile.openstreetmap.org"]');
+      return img?.closest(".leaflet-layer")?.style.filter;
+    });
+    assert.ok(!streetFilter,"Street map must have no satellite filters: "+streetFilter);
+    await picker.click();
+    assert.equal(await brightness.isDisabled(),true);
+    assert.equal(await contrast.isDisabled(),true);
+    await menu.locator('[data-basemap="satellite"]').click();
+    await picker.click();
+    assert.equal(await brightness.inputValue(),"120","Satellite value survives switching map layers");
+    assert.equal(await contrast.inputValue(),"75");
     const reliefToggle=page.locator("#esriReliefToggle");
     await reliefToggle.check();
     assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
