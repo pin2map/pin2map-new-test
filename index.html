@@ -59,6 +59,9 @@
 <script defer src="./application/place-search-service.js"></script>
 <script defer src="./application/search-pin-transfer.js"></script>
 <script defer src="./adapters/weather/open-meteo-pin-info.js"></script>
+<script defer src="./adapters/weather/nasa-power-climatology.js"></script>
+<script defer src="./adapters/weather/monthly-sun-times.js"></script>
+<script defer src="./adapters/weather/pin-info-provider.js"></script>
 <script defer src="./application/pin-info-service.js"></script>
 <script defer src="./ui/pin-info-label.js"></script>
 <script defer src="./ui/pin-info-menu.js"></script>
@@ -101,13 +104,25 @@
   <button id="pinInfoButton" data-pin-icon="circle-letter-i-off" class="pin-info-button" type="button" title="Pin-Informationen auswählen" aria-label="Pin-Informationen auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="pinInfoMenu"></button>
   <section id="pinInfoMenu" class="basemap-menu pin-info-menu hidden" aria-label="Pin-Informationen">
     <div class="basemap-menu-title">Pin-Informationen</div>
-    <button type="button" class="basemap-choice" data-pin-info-mode="off" aria-pressed="true">Aus</button>
-    <button type="button" class="basemap-choice" data-pin-info-mode="elevation" aria-pressed="false">Höhe</button>
-    <button type="button" class="basemap-choice" data-pin-info-mode="temperature" aria-pressed="false">Temperatur</button>
-    <button type="button" class="basemap-choice" data-pin-info-mode="daily" aria-pressed="false">Tagesminimum / -maximum</button>
-    <button type="button" class="basemap-choice" data-pin-info-mode="sun" aria-pressed="false">Sonnenaufgang / -untergang</button>
     <button type="button" class="basemap-choice" data-pin-info-mode="zone" aria-pressed="false">Zeitzonenabweichung</button>
-    <p class="pin-info-credit">Daten: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · Höhe: Copernicus GLO-90. Abruf nur für sichtbare Pins und bei aktivierter Info-Anzeige.</p>
+    <div class="pin-info-period-box" role="group" aria-label="Tageswerte und Sonnenzeiten">
+      <button type="button" class="basemap-choice" data-pin-info-mode="sun" aria-pressed="false">Sonnenaufgang / -untergang</button>
+      <button type="button" class="basemap-choice" data-pin-info-mode="daily" aria-pressed="false">Tagesminimum / -maximum</button>
+      <label class="pin-info-period-row" for="pinInfoPeriod"><span>Zeitraum</span>
+        <select id="pinInfoPeriod" aria-label="Zeitraum für Tageswerte und Sonnenzeiten">
+          <option value="today">Heute</option>
+          <option value="01">Januar</option><option value="02">Februar</option>
+          <option value="03">März</option><option value="04">April</option>
+          <option value="05">Mai</option><option value="06">Juni</option>
+          <option value="07">Juli</option><option value="08">August</option>
+          <option value="09">September</option><option value="10">Oktober</option>
+          <option value="11">November</option><option value="12">Dezember</option>
+        </select>
+      </label>
+    </div>
+    <button type="button" class="basemap-choice" data-pin-info-mode="temperature" aria-pressed="false">Aktuelle Temperatur</button>
+    <button type="button" class="basemap-choice" data-pin-info-mode="elevation" aria-pressed="false">Höhe</button>
+    <button type="button" class="basemap-choice" data-pin-info-mode="off" aria-pressed="true">Aus</button>
   </section>
   <button id="labelsToggle" data-pin-icon="tags" class="labels-toggle" type="button" title="Pin-Beschriftungen ein- oder ausblenden" aria-label="Pin-Beschriftungen ein- oder ausblenden"></button>
   <button id="basemapButton" data-pin-icon="map" class="basemap-map-button" type="button" title="Kartendarstellung auswählen" aria-label="Kartendarstellung auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="basemapMenu">▱</button>
@@ -122,7 +137,7 @@
   </section>
   <div id="searchResults" class="search-results hidden" role="status" aria-live="polite"></div>
   <aside id="layersPanel" class="panel layers-panel hidden" aria-label="Ebenen"><div class="panel-head"><h2>Ebenen</h2><button class="close" data-pin-icon="x" data-close="layersPanel" aria-label="Schließen">×</button></div><div id="layersList"></div><button id="addLayer" class="secondary full p2m-text-action"><span data-pin-icon="plus"></span>Neue Ebene</button></aside>
-  <aside id="settingsPanel" class="panel settings-panel hidden" aria-label="Einstellungen"><div class="panel-head"><h2>Einstellungen</h2><button class="close" data-pin-icon="x" data-close="settingsPanel" aria-label="Schließen">×</button></div><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Nominatim-Ortssuche für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Die öffentliche Nominatim-API ist kein uneingeschränkter Produktionsdienst. Keine automatischen Suchen; maximal eine Anfrage pro Sekunde in diesem Browser. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a></p><hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></aside>
+  <aside id="settingsPanel" class="panel settings-panel hidden" aria-label="Einstellungen"><div class="panel-head"><h2>Einstellungen</h2><button class="close" data-pin-icon="x" data-close="settingsPanel" aria-label="Schließen">×</button></div><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Nominatim-Ortssuche für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Die öffentliche Nominatim-API ist kein uneingeschränkter Produktionsdienst. Keine automatischen Suchen; maximal eine Anfrage pro Sekunde in diesem Browser. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a></p><p class="small attribution">Pin-Informationen: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (Prognose/Höhe), <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a> (langjährige Monatsmittel) und <a href="https://sunrise-sunset.org/" target="_blank" rel="noopener">Sunrise-Sunset.org</a> (Sonnenzeiten am 21.). Datenabfrage nur für Pins sichtbarer Ebenen im ausgewählten Modus.</p><hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></aside>
   <section id="pinPanel" class="pin-panel hidden" aria-label="Pin-Dialog"><div class="panel-head pin-editor-head"><button id="deletePin" type="button" class="danger" data-pin-icon="map-pin-off" title="Pin löschen" aria-label="Pin löschen"></button><label class="sr-only" for="pinName">Pin-Name</label><input id="pinName" type="text" maxlength="120" placeholder="Name (optional)" aria-label="Pin-Name"></div><p id="pinCoords" class="muted small"></p><p id="pinHiddenInfo" class="muted small hidden">Dieser Pin liegt in einer ausgeblendeten Ebene. <button id="showPinLayer" type="button" data-pin-icon="eye" title="Ebene einblenden" aria-label="Ebene einblenden"></button></p><div class="pin-actions"><button id="movePin" type="button" class="secondary" data-pin-icon="pin-relocate" title="Pin verschieben" aria-label="Pin verschieben"></button><div id="pinLayerPicker" class="pin-layer-picker"><span id="pinLayerLabel" class="sr-only">Ebene auswählen</span><select id="pinLayer" class="pin-layer-native-select" aria-hidden="true" tabindex="-1"></select><button id="pinLayerTrigger" type="button" class="pin-layer-trigger" aria-labelledby="pinLayerLabel" aria-haspopup="listbox" aria-expanded="false"></button><div id="pinLayerMenu" class="pin-layer-menu hidden" role="listbox" aria-labelledby="pinLayerLabel"></div></div><button id="closePin" type="button" class="pin-ok-button" data-close="pinPanel" title="Dialog schließen" aria-label="Dialog schließen">OK</button></div></section>
   
   <div id="pinDialogTip" class="pin-dialog-tip hidden" aria-hidden="true"></div>
