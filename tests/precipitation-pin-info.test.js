@@ -29,7 +29,7 @@ test("NASA IMERG climatology converts valid daily mean into monthly total incl l
  assert.deepEqual(await nasa.request([pin],"04"),[null]);
  assert.equal(urls.length,1,"12-month normal reused without second NASA request");
  assert.equal(urls[0].searchParams.get("parameters"),"IMERG_PRECTOT");
- assert.equal(urls[0].searchParams.get("community"),"AG");
+ assert.equal(urls[0].searchParams.get("community"),"HY");
  await assert.rejects(()=>nasa.request([pin],"13"),RangeError);
 });
 test("provider routes monthly precipitation to NASA and today to Open-Meteo",async()=>{
