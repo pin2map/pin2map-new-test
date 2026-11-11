@@ -420,6 +420,8 @@ async function longPress(page,x,y,ms=725){
         const row=()=>{
           if(url.searchParams.get("daily")?.includes("temperature"))return {timezone:"Europe/Brussels",
             daily:{time:[date],temperature_2m_min:[4],temperature_2m_max:[16]}};
+          if(url.searchParams.get("daily")==="precipitation_sum")return {timezone:"Europe/Brussels",
+            daily:{time:[date],precipitation_sum:[1.8]}};
           if(url.searchParams.get("daily")?.includes("sunrise"))return {timezone:"Europe/Brussels",
             daily:{time:[date],sunrise:[date+"T07:30"],sunset:[date+"T17:15"]}};
           return {timezone:"Europe/Brussels",utc_offset_seconds:3600,current:{temperature_2m:19}};
@@ -446,16 +448,17 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
-    assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),5);
+    assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),6);
     assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
-      ["off","elevation","temperature","daily","sun"]);
+      ["off","elevation","temperature","daily","precipitation","sun"]);
     assert.equal(await infoMenu.locator(".basemap-menu-title").count(),0,"Menu has no headline");
     assert.equal(await infoMenu.locator(".pin-info-separator").count(),4);
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
+    assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
     assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/Monatsmittel/);
     assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/15\. des Monats/);
-    for(const icon of ["mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","sunrise","sunset"])
+    for(const icon of ["mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset"])
       assert.equal(await infoMenu.locator('[data-pin-icon="'+icon+'"] svg').count(),1,icon);
     assert.equal(await page.locator(".elevation-label-wrap").count(),0);
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
@@ -478,8 +481,11 @@ async function longPress(page,x,y,ms=725){
       const q=new URL(route.request().url()).searchParams;
       climateRequests.push(q);
       const lows={JAN:3.2,FEB:4.5},highs={JAN:11.6,FEB:13.7};
+      const parameter=q.get("parameters")==="IMERG_PRECTOT"
+        ?{IMERG_PRECTOT:{JAN:2,FEB:1.5}}
+        :{T2M_MIN_AVG:lows,T2M_MAX_AVG:highs};
       await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
-        properties:{parameter:{T2M_MIN_AVG:lows,T2M_MAX_AVG:highs}}
+        properties:{parameter}
       })});
     });
     await page.route("https://api.sunrise-sunset.org/v2**",async route=>{
@@ -549,6 +555,37 @@ async function longPress(page,x,y,ms=725){
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-sun-label"))
       .some(el=>el.textContent.includes("07:30")),null,{timeout:6000});
     assert.equal(await page.locator('.p2m-info-month-prefix').count(),0);
+    // New independent precipitation selector: Today = local-date forecast mm.
+    const rainRequestsBefore=forecastRequests.length;
+    await infoButton.click();
+    await infoMenu.locator("#pinInfoPrecipitationPeriod").focus();
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
+      .some(el=>el.textContent.includes("1,8 mm")),null,{timeout:6000});
+    assert.equal(forecastRequests.length,rainRequestsBefore+1);
+    assert.match(forecastRequests.at(-1).url,/daily=precipitation_sum/);
+    const precipClimateBefore=climateRequests.length;
+    await infoButton.click();
+    await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("01");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
+      .some(el=>el.textContent.includes("Ø Jan")&&el.textContent.includes("62 mm")),null,{timeout:6000});
+    assert.equal(climateRequests.length,precipClimateBefore+2,"Only two visible pins need new NASA rain data");
+    assert.ok(climateRequests.slice(precipClimateBefore).every(q=>q.get("parameters")==="IMERG_PRECTOT"));
+    await infoButton.click();
+    assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"02","Daily month retained");
+    assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today","Sun month retained");
+    await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("02");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
+      .some(el=>el.textContent.includes("Ø Feb")&&el.textContent.includes("42,4 mm")),null,{timeout:6000});
+    assert.equal(climateRequests.length,precipClimateBefore+2,"Feb reuses fetched 12-month IMERG normal");
+    await infoButton.click();
+    await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("today");
+    await infoButton.click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
+      .some(el=>el.textContent.includes("1,8 mm")),null,{timeout:6000});
+    assert.equal(climateRequests.length,precipClimateBefore+2);
     await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="off"]').click();
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
