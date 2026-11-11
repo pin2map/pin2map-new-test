@@ -1070,6 +1070,25 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
   max-height:calc(100dvh - 88px - env(safe-area-inset-top,0px));
   overflow-y:auto;overscroll-behavior:contain;
 }
+#app .basemap-satellite-choice-row{
+  display:flex;align-items:center;gap:5px;
+}
+#app .basemap-satellite-choice-row .basemap-choice{
+  flex:1 1 auto;min-width:0;width:auto;
+}
+#app .basemap-satellite-reset{
+  flex:0 0 30px;display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;padding:5px;margin:0 3px 0 0;
+  border:1px solid #c9dae9;border-radius:7px;
+  background:#fff;color:#235b9a;cursor:pointer;
+}
+#app .basemap-satellite-reset .p2m-lucide{width:17px;height:17px}
+#app .basemap-satellite-reset:disabled{
+  opacity:.38;cursor:not-allowed;
+}
+#app .basemap-satellite-reset:focus-visible{
+  outline:2px solid #235b9a;outline-offset:2px;
+}
 #app .basemap-satellite-controls{
   display:grid;grid-template-columns:minmax(0,1fr);
   gap:5px;padding:7px 12px 11px;
@@ -1088,6 +1107,13 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 #app .basemap-satellite-controls input[type="range"]{
   width:100%;min-width:0;height:22px;margin:0 0 4px;
   accent-color:#235b9a;cursor:pointer;
+}
+#app .basemap-satellite-controls.is-inactive .basemap-satellite-slider,
+#app .basemap-satellite-controls.is-inactive .basemap-satellite-slider output{
+  color:#9ca7b3;
+}
+#app .basemap-satellite-controls.is-inactive .basemap-slider-icon{
+  opacity:.48;
 }
 #app .basemap-satellite-controls input[type="range"]:disabled{
   opacity:.45;cursor:not-allowed;
