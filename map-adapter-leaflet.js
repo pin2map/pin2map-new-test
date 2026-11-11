@@ -58,7 +58,20 @@
     }
     // Provider catalog lives inside the renderer adapter: no Leaflet tile details
     // escape into application, UI, domain or project storage.
-    setBasemap(id,{esriRelief=false}={}) {
+    setSatelliteAppearance({brightness=100,contrast=100}={}){
+      // Only the Esri World Imagery tile container is filtered.
+      // Pins, tooltips, overlays and map controls are separate Leaflet layers.
+      const bounded=(value,low,high)=>{
+        const number=Number(value);
+        return Number.isFinite(number)?Math.min(high,Math.max(low,number)):100;
+      };
+      const b=bounded(brightness,70,140),k=bounded(contrast,60,140);
+      this.satelliteAppearance={brightness:b,contrast:k};
+      if(this.activeBasemap!=="satellite"||!this.basemapLayer)return;
+      const tiles=this.basemapLayer.getContainer();
+      if(tiles)tiles.style.filter="brightness("+(b/100)+") contrast("+(k/100)+")";
+    }
+    setBasemap(id,{esriRelief=false,satelliteBrightness=100,satelliteContrast=100}={}) {
       const sources={
         street:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",maxZoom:19,
           attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'},
@@ -74,14 +87,17 @@
       // Remove previous overlay first; never let its pane obscure markers or controls.
       if(this.reliefOverlay){this.map.removeLayer(this.reliefOverlay);this.reliefOverlay=null;}
       if(this.basemapLayer){this.map.removeLayer(this.basemapLayer);this.basemapLayer=null;}
+      this.activeBasemap=id;
       this.basemapLayer=window.L.tileLayer(source.url,{
         maxZoom:source.maxZoom,crossOrigin:true,attribution:source.attribution
       }).addTo(this.map);
-      // Historical v10.3.04 composite: the color adjustment affects the
-      // basemap container only, never pins or higher-level application overlays.
+      this.setSatelliteAppearance({brightness:satelliteBrightness,contrast:satelliteContrast});
+      // Historical relief composite still applies to non-satellite basemaps.
+      // Do not override user brightness/contrast for satellite tiles.
       if(esriRelief){
         const container=this.basemapLayer.getContainer();
-        if(container)container.style.filter="saturate(0.68) contrast(0.94) brightness(1.04)";
+        if(container&&id!=="satellite")
+          container.style.filter="saturate(0.68) contrast(0.94) brightness(1.04)";
         let pane=this.map.getPane("p2mEsriReliefPane");
         if(!pane)pane=this.map.createPane("p2mEsriReliefPane");
         pane.style.zIndex="250";
