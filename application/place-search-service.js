@@ -15,6 +15,11 @@
     cleanup(state){
       state.geoCache=this.domain.cleanCache(state.geoCache,this.now(),this.ttlMs);
     }
+    cancel(){
+      ++this.serial;
+      if(this.controller)this.controller.abort();
+      this.controller=null;
+    }
     async search(query,{state,allowed,onStart=()=>{},onFinish=()=>{},onCacheWrite=()=>{}}){
       const serial=++this.serial;
       if(this.controller)this.controller.abort();
