@@ -19,20 +19,18 @@
     get button(){return this.getElement("basemapButton");}
     get menu(){return this.getElement("basemapMenu");}
     options(){return this.document.querySelectorAll("#basemapMenu [data-basemap]");}
-    render(selected,esriRelief=false,{brightness=100,contrast=100}={}){
+    render(selected,esriRelief=false,{brightness=140}={}){
       const relief=this.getElement("esriReliefToggle");
       if(relief)relief.checked=!!esriRelief;
       const satelliteSelected=selected==="satellite";
       const controls=this.getElement("satelliteBrightness")?.closest?.(".basemap-satellite-controls");
       controls?.classList.toggle("is-inactive",!satelliteSelected);
       const reset=this.getElement("satelliteReset");
-      if(reset)reset.disabled=!satelliteSelected||(+brightness===100&&+contrast===100);
-      for(const [key,value] of [["Brightness",brightness],["Contrast",contrast]]){
-        const input=this.getElement("satellite"+key);
-        if(input){input.value=String(value);input.disabled=!satelliteSelected;}
-        const output=this.getElement("satellite"+key+"Value");
-        if(output)output.textContent=value+" %";
-      }
+      if(reset)reset.disabled=!satelliteSelected||Number(brightness)===140;
+      const input=this.getElement("satelliteBrightness");
+      if(input){input.value=String(brightness);input.disabled=!satelliteSelected;}
+      const output=this.getElement("satelliteBrightnessValue");
+      if(output)output.textContent=brightness+" %";
       this.options().forEach(button=>{
         const active=button.dataset.basemap===selected;
         button.setAttribute("aria-pressed",String(active));
@@ -71,24 +69,21 @@
       if(reset)this.listen(reset,"click",()=>{
         if(reset.disabled)return;
         this.onSatelliteReset();
-        this.render("satellite",!!relief?.checked,{brightness:100,contrast:100});
+        this.render("satellite",!!relief?.checked,{brightness:140});
       });
-      for(const key of ["Brightness","Contrast"]){
-        const input=this.getElement("satellite"+key);
-        if(!input)continue;
+      const brightnessInput=this.getElement("satelliteBrightness");
+      if(brightnessInput){
         const emit=commit=>{
-          const value=Number(input.value);
+          const value=Number(brightnessInput.value);
           if(!Number.isFinite(value))return;
-          const output=this.getElement("satellite"+key+"Value");
+          const output=this.getElement("satelliteBrightnessValue");
           if(output)output.textContent=value+" %";
-          this.onSatelliteAdjust(key.toLowerCase(),value,commit);
+          this.onSatelliteAdjust("brightness",value,commit);
           const reset=this.getElement("satelliteReset");
-          const b=Number(this.getElement("satelliteBrightness")?.value);
-          const c=Number(this.getElement("satelliteContrast")?.value);
-          if(reset)reset.disabled=b===100&&c===100;
+          if(reset)reset.disabled=value===140;
         };
-        this.listen(input,"input",()=>emit(false));
-        this.listen(input,"change",()=>emit(true));
+        this.listen(brightnessInput,"input",()=>emit(false));
+        this.listen(brightnessInput,"change",()=>emit(true));
       }
       this.listen(this.document,"keydown",event=>{
         if(event.key==="Escape"&&this.isOpen()){
