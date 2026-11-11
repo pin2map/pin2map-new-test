@@ -1,5 +1,5 @@
 "use strict";
-/* Solar times for the selected month's 21st at the location's civil timezone.
+/* Solar times for the selected month's 15th at the location's civil timezone.
  * Uses explicit-date Sunrise-Sunset.org v2 astronomical results, not forecasts.
  * The site requires visible attribution in app settings.
  */
@@ -19,7 +19,7 @@
       const id=key(pin,period,year),old=this.cache.get(id);
       if(old&&this.now()-old.at<365*24*HOUR)return old.data;
       if(this.pending.has(id))return this.pending.get(id);
-      const date=year+"-"+period+"-21";
+      const date=year+"-"+period+"-15";
       const q=new URLSearchParams({lat:String(pin.lat),lng:String(pin.lng),date});
       const task=(async()=>{
         const response=await this.fetch("https://api.sunrise-sunset.org/v2?"+q);
