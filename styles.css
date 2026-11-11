@@ -966,8 +966,6 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
   border:1px solid #c9dae9;border-radius:9px;
   background:#f7faff;margin:5px 0;padding:4px;
 }
-#app #pinInfoMenu .pin-info-period-box .basemap-choice{background:transparent!important}
-#app #pinInfoMenu .pin-info-period-box .basemap-choice.is-selected{background:#eaf2f9!important}
 #app #pinInfoMenu .pin-info-period-row{
   display:flex;align-items:center;justify-content:space-between;
   gap:5px;padding:6px 6px 4px;color:#253a4b;
