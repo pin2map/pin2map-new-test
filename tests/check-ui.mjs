@@ -107,9 +107,11 @@ check(css.includes(".leaflet-control:not(.leaflet-control-attribution)"),
 check(gestures.includes("attachMarkerLongPress") &&
   gestures.includes("attachLongPress"),
   "touch, mouse and marker gestures live in dedicated controller");
+const mapClick=source("application/map-click-coordinator.js");
 check(map.includes("onMapClick(callback)") &&
-  app.includes("mapAdapter.onMapClick(position =>"),
-  "map events pass neutral coordinates");
+  app.includes("mapAdapter.onMapClick(position=>mapClickCoordinator.handle(position))") &&
+  mapClick.includes("handle(position)") && mapClick.includes("this.previewMove(position)"),
+  "map events pass neutral coordinates through application coordinator");
 check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
   "application never creates raw Leaflet overlays");
 check(app.includes("mapAdapter.setBasemap(state.basemap)") &&
