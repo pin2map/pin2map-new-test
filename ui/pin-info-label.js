@@ -22,7 +22,7 @@
       content=data.parts.map((value,i)=>'<span class="p2m-label-half '+classes[i]+'">'+escapeHtml(value)+'</span>').join("");
     }
     if(type==="precipitation"&&data.period&&data.period!=="today"){
-      const month=MONTH_NAMES[Number(data.period)-1]||"";
+      const month=data.period==="year"?"Jahr":MONTH_NAMES[Number(data.period)-1]||"";
       content='<span class="p2m-info-month-prefix">Ø '+escapeHtml(month)+'</span>'+content;
     }
     if((type==="daily"||type==="sun")&&data.period&&data.period!=="today"){
@@ -30,6 +30,13 @@
       const monthLabel=MONTH_NAMES[period-1]||"";
       const prefix=type==="sun"?"15. "+monthLabel:"Ø "+monthLabel;
       content='<span class="p2m-info-month-prefix">'+escapeHtml(prefix)+'</span>'+content;
+    }
+    if(type==="precipitation"){
+      const numberText=escapeHtml(data.text??"");
+      const prefix=data.period&&data.period!=="today"
+        ?'<span class="p2m-info-month-prefix">Ø '+escapeHtml(data.period==="year"?"Jahr":MONTH_NAMES[Number(data.period)-1]||"")+'</span>'
+        :"";
+      content=prefix+'<span class="p2m-precipitation-value">'+numberText+'</span>';
     }
     const kind=type==="temperature"?" p2m-temperature-label":type==="daily"?" p2m-daily-label":type==="sun"?" p2m-sun-label":type==="precipitation"?" p2m-precipitation-label":"";
     return '<span class="elevation-label'+kind+'">'+content+'</span>';
