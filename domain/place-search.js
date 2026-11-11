@@ -20,7 +20,9 @@
       const parts=String(result?.display_name||"").split(",").map(s=>s.trim()).filter(Boolean);
       // Fallback for provider records lacking a structured road field:
       // "49, Bilser Str., Hamburg, ..." -> "Bilser Str. 49".
-      if(parts[0]===number&&parts[1])return parts[1]+" "+number;
+      const locality=String(address.city||address.town||address.village||address.municipality||"").trim();
+      if(parts[0]===number&&parts.length>=3&&parts[1]&&parts[1]!==locality)
+        return parts[1]+" "+number;
     }
     return name;
   }
