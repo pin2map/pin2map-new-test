@@ -33,23 +33,21 @@
       this.schedule=schedule;this.cancel=cancel;this.timer=null;
       this.visible=[];this.activeKeys=new Set();
     }
-    setMode(mode){
+    setMode(mode,period=this.period){
       if(!MODES.includes(mode))throw new RangeError("Unknown mode: "+mode);
-      if(this.mode===mode)return;
-      this.mode=mode;this.generation++;
-      this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode,this.period)));
+      if(!PERIODS.includes(period))throw new RangeError("Unknown period: "+period);
+      if(this.mode===mode&&this.period===period)return;
+      const effectiveChange=this.mode!==mode||(monthMode(mode)&&this.period!==period);
+      this.mode=mode;this.period=period;
+      if(!effectiveChange)return;
+      this.generation++;
+      this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode,period)));
       if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
-      this.pending.clear();this.refresh();
+      this.pending.clear();
+      this.refresh();
     }
     setPeriod(period){
-      if(!PERIODS.includes(period))throw new RangeError("Unknown period: "+period);
-      if(this.period===period)return;
-      this.period=period;
-      if(!monthMode(this.mode))return; // Neither height nor current temperature depends on month.
-      this.generation++;
-      this.activeKeys=new Set(this.visible.map(pin=>key(pin,this.mode,period)));
-      if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
-      this.pending.clear();this.refresh();
+      this.setMode(this.mode,period);
     }
     setVisiblePins(pins){
       this.visible=pins.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng)).map(p=>({id:p.id,lat:p.lat,lng:p.lng}));
