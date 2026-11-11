@@ -1029,6 +1029,12 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
   padding:3px 5px;color:#253a4b;background:rgba(255,255,255,.98);
   border-right:1px solid #b7b7b7;white-space:nowrap;line-height:1.25;
 }
+#map .elevation-label .p2m-zone-information{
+  display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+}
+#map .elevation-label .p2m-zone-information svg{
+  display:inline-block;flex:none;width:14px;height:14px;
+}
 #map .elevation-label.p2m-precipitation-label{
   display:inline-flex;align-items:stretch;padding:0;overflow:hidden;
   background:#e7f3ff;border-color:#78a6c7;color:#12466e
