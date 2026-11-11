@@ -56,18 +56,43 @@
       const pairs=bounds.map(pair=>[latLng(pair).lat,latLng(pair).lng]);
       this.map.fitBounds(pairs,options);
     }
-    setBasemap(id) {
-      if(id!=="street" && id!=="topo")throw new RangeError("Unknown basemap: "+id);
-      if(this.basemapLayer)this.map.removeLayer(this.basemapLayer);
-      const topo=id==="topo";
-      this.basemapLayer=window.L.tileLayer(topo
-        ? "https://a.tile.opentopomap.org/{z}/{x}/{y}.png"
-        : "https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
-        maxZoom:topo?17:19,
-        attribution:topo
-          ? '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://opentopomap.org/">OpenTopoMap</a>'
-          : '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    // Provider catalog lives inside the renderer adapter: no Leaflet tile details
+    // escape into application, UI, domain or project storage.
+    setBasemap(id,{esriRelief=false}={}) {
+      const sources={
+        street:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",maxZoom:19,
+          attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'},
+        topo:{url:"https://a.tile.opentopomap.org/{z}/{x}/{y}.png",maxZoom:17,
+          attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · <a href="https://opentopomap.org/">OpenTopoMap</a>'},
+        international:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",maxZoom:19,attribution:"Tiles &copy; Esri"},
+        satellite:{url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",maxZoom:19,attribution:"Tiles &copy; Esri"},
+        humanitarian:{url:"https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",maxZoom:19,
+          attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · HOT'}
+      };
+      const source=sources[id];
+      if(!source)throw new RangeError("Unknown basemap: "+id);
+      // Remove previous overlay first; never let its pane obscure markers or controls.
+      if(this.reliefOverlay){this.map.removeLayer(this.reliefOverlay);this.reliefOverlay=null;}
+      if(this.basemapLayer){this.map.removeLayer(this.basemapLayer);this.basemapLayer=null;}
+      this.basemapLayer=window.L.tileLayer(source.url,{
+        maxZoom:source.maxZoom,crossOrigin:true,attribution:source.attribution
       }).addTo(this.map);
+      // Historical v10.3.04 composite: the color adjustment affects the
+      // basemap container only, never pins or higher-level application overlays.
+      if(esriRelief){
+        const container=this.basemapLayer.getContainer();
+        if(container)container.style.filter="saturate(0.68) contrast(0.94) brightness(1.04)";
+        let pane=this.map.getPane("p2mEsriReliefPane");
+        if(!pane)pane=this.map.createPane("p2mEsriReliefPane");
+        pane.style.zIndex="250";
+        pane.style.pointerEvents="none";
+        pane.style.mixBlendMode="multiply";
+        this.reliefOverlay=window.L.tileLayer(
+          "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",{
+          pane:"p2mEsriReliefPane",minZoom:1,maxNativeZoom:15,maxZoom:19,opacity:1,
+          attribution:"Relief &copy; Esri und Datenanbieter"
+        }).addTo(this.map);
+      }
     }
     addZoomControls({onFitAll}) {
       const adapter=this;
