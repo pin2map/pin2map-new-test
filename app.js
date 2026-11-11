@@ -19,7 +19,6 @@
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
-  let saveTimer;
   let gestures;
   let mapOverlayFrame = 0;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -89,16 +88,13 @@
     }
   });
   const showNotice = message => uiShell.showNotice(message);
-  function dbWrite() {
-    return projectStore ? projectStore.saveProject(state) : Promise.resolve();
-  }
-  function save() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => dbWrite().catch(() => showNotice("Lokales Speichern fehlgeschlagen")), 300);
-  }
+  const persistence = new window.Pin2MapProjectPersistence({
+    getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
+  });
+  const save = () => persistence.save();
+  const dbWrite = () => persistence.writeNow();
   function persistViewport() {
-    const view = mapAdapter.getViewport();
-    state.viewport = { lat: view.center.lat, lng: view.center.lng, zoom: view.zoom }; save();
+    persistence.saveViewport(mapAdapter.getViewport());
   }
   function setTileLayer() {
     mapAdapter.setBasemap(state.basemap);
@@ -223,7 +219,7 @@
     $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));
     $("refreshButton").addEventListener("click",()=>window.Pin2MapPwaRefresh.refresh({
       button:$("refreshButton"),
-      save:async()=>{clearTimeout(saveTimer);await dbWrite();},
+      save:dbWrite,
       showNotice
     }));
     overlayCoordinator.bind();
@@ -269,7 +265,7 @@
     mapAdapter.on("moveend", () => {persistViewport();if(!gestures.isMarkerPressActive())renderMarkers();scheduleMapOverlayUpdate();});
     mapAdapter.on("zoomend", () => {if(!gestures.isMarkerPressActive())renderMarkers();scheduleMapOverlayUpdate();});
     window.addEventListener("resize", () => { mapAdapter.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
-    document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
+    document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden")persistence.flushOnHidden(); });
   }
   async function init() {
     if(!window.L){$("notice").textContent="Die Kartenbibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen."; $("notice").classList.remove("hidden");return;}
