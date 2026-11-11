@@ -82,6 +82,45 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#searchResults .results-cancel").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     assert.equal(await page.evaluate(()=>window.__searchChooseCalls),0);
+    step("search results: old place-kind metadata, scrolling footer and edit-to-dismiss");
+    await page.evaluate(()=>{
+      const host=document.getElementById("searchResults");
+      const domain=window.Pin2MapPlaceSearch;
+      const view=new window.Pin2MapSearchResultsView({
+        container:host,document,onChoose:()=>{},
+        titleOf:domain.title,detailOf:domain.detail,kindOf:domain.kind,
+        duplicateCoordinates:domain.duplicateCoordinates
+      });
+      const results=Array.from({length:28},(_,i)=>({
+        name:"Springfield",display_name:"Springfield, USA",
+        addresstype:"city",class:i%2?"boundary":"place",
+        osm_type:i%2?"relation":"node",lat:String(39+i/100),lon:"-89"
+      }));
+      view.show(results);
+    });
+    assert.equal(await page.locator("#searchResults .result-kind").first().textContent(),"● Stadt · Ortsmittelpunkt");
+    assert.equal(await page.locator("#searchResults .result-kind").nth(1).textContent(),"▧ Stadt · Gebiet");
+    assert.match(await page.locator("#searchResults .result-coordinates").first().textContent(),/Position: 39\.00000, -89\.00000/);
+    const fixedFooter=await page.evaluate(()=>{
+      const host=document.getElementById("searchResults");
+      const items=host.querySelector(".results-items"),footer=host.querySelector(".results-footer");
+      const before=footer.getBoundingClientRect().top;
+      items.scrollTop=items.scrollHeight;
+      return {before,after:footer.getBoundingClientRect().top,
+        canScroll:items.scrollHeight>items.clientHeight,
+        footerInView:footer.getBoundingClientRect().bottom<=host.getBoundingClientRect().bottom+2};
+    });
+    assert.equal(fixedFooter.canScroll,true,JSON.stringify(fixedFooter));
+    assert.ok(Math.abs(fixedFooter.before-fixedFooter.after)<=1,JSON.stringify(fixedFooter));
+    assert.equal(fixedFooter.footerInView,true);
+    await page.locator("#searchInput").fill("Berlin bearbeitet");
+    assert.equal(await page.locator("#searchResults").isHidden(),true,
+      "Any search input edit dismisses visible results without new search");
+    await page.locator("#searchInput").press("Enter");
+    await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
+    await page.locator("#searchInput").fill("");
+    assert.equal(await page.locator("#searchResults").isHidden(),true,
+      "Clearing via the search input closes results");
 
     step("basemap menu: switch, aria states, Escape, outside click and persistence");
     const picker=page.locator("#basemapButton");
