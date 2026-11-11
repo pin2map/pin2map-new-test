@@ -24,7 +24,7 @@
   const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
   const cleanText = projectModel.cleanText;
-  const uiShell = new window.Pin2MapUIShell({getElement:$});
+  const uiShell = new window.Pin2MapUIShell({getElement:$,mountLabelIcon:(button,name)=>window.Pin2MapIcons.mount(button,name)});
   const pinEditorView = new window.Pin2MapPinEditorView({
     getElement:$,document,scheduleFrame:callback=>window.requestAnimationFrame(callback)
   });
