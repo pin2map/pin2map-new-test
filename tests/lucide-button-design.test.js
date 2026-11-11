@@ -42,7 +42,9 @@ test("time zone chooser and value labels use exact bundled Lucide geometries",()
   assert.match(html,/<button[^>]*data-pin-info-mode="zone"[^>]*><span data-pin-icon="rotate-cw-clock"><\/span><span>Zeitzone<\/span><\/button>/);
   const menu=html.split('<section id="pinInfoMenu"')[1].split("</section>")[0];
   assert.ok(menu.indexOf('data-pin-info-mode="zone"')>menu.indexOf('id="pinInfoSunPeriod"'));
-  assert.ok(menu.indexOf('data-pin-info-mode="zone"')<menu.indexOf('class="pin-info-credit"'));
+  assert.ok(menu.indexOf('data-pin-info-mode="zone"')>=0,"Zone remains selectable");
+  assert.ok(!menu.includes('class="pin-info-credit"'),"Sources no longer belong in info menu");
+  assert.ok(html.includes('id="settingsPinInfoSources"'),"Sources belong in existing Settings");
   assert.match(css,/#map \.elevation-label \.p2m-zone-information svg/);
 });
 
