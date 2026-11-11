@@ -17,9 +17,9 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v95**, nach CSS-Inkrement **B33**. Quelle: `sw.js`, `const CACHE='pin2map-new-v95'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v95` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
-- **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B33 entfernte die redundante isolierte `min-width:0`-Regel; der spätere Eigentümer bleibt gültig.
-- **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B33 sind dort erläutert.
+- **Quellversion:** **v96**, nach CSS-Inkrement **B34**. Quelle: `sw.js`, `const CACHE='pin2map-new-v96'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v96` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B34 entfernte die redundante mobile `.topbar .search{min-width:0}`-Einzelregel; der spätere Suchleisten-Eigentümer bleibt gültig.
+- **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B34 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
 - **Besonders geschützter Suchbutton:** 42px Antippfläche, 30px sichtbarer Ring, 18px Lupe. Kein unbeabsichtigtes Umgestalten von Kreis, Suchkapsel oder Ausrichtung.
 - **Technische Bausteine:** Leaflet-Karte, Pin-/Ebenenverwaltung, IndexedDB-Persistenz, Suche, UI-Module, Service Worker und Offline-App-Shell; maßgeblichen tatsächlichen Implementierungsstand in den jeweiligen Dateien prüfen, nicht allein aus dieser Kurzliste ableiten.
@@ -40,23 +40,22 @@
 
 ## 4. Letztes Inkrement und Nachweisstand
 
-**B33 – v95 (2026-11-11):**
-- `styles.css`: die isolierte historische `.topbar{min-width:0}`-Regel entfernt, während die spätere gültige `.topbar`-Mindestbreite in der Einzeilen-Regel unangetastet bleibt.
-- `tests/css-header-min-width-ownership.test.js`: neuer Regressionstest; die gültige Header-Höhe (52px), Padding- und Flex-Regeln bleiben geschützt.
-- `sw.js`: Quellversion v94 → v95; `!important`-Schuldenstand unverändert 298.
-- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B33 protokolliert.
-- **Gezielte Quellcode-Kontrollen:** exakte einmalige Altregel, erhaltener Mindestbreiten-Eigentümer, bestehende Such-/Header-Verträge und Schuldenbudget; nach dem Schreiben erneut aus GitHub verifizieren.
-- **Offene technische Gates:** vollständiger Node-Testlauf und sonstige CI-Prüfungen, tatsächlicher erfolgreicher GitHub-Actions-/Pages-Push-Lauf, Version/Asset-Gleichheit über HTTPS und Browser-Smoke. Keine Ableitung aus bloßer Commit-Existenz.
-- **Keine manuelle Geräteabnahme erforderlich:** überholte identische Normaldeklaration entfernt; visuelle Änderung nicht vorgesehen.
+**B34 – v96 (2026-11-11):**
+- `styles.css`: ältere mobile Einzelregel `.topbar .search{min-width:0}` entfernt; spätere geltende Suchleistenregel behält `min-width:0`.
+- `tests/css-mobile-header-display-ownership.test.js`: veraltete B31-Erwartung korrigiert. Neuer Test `tests/css-mobile-search-minwidth-ownership.test.js` schützt geltende Regeln sowie mobile Leaflet-/Zoom-Nachbarn.
+- `sw.js`: Quellversion v95 → v96. `!important` unverändert 298; keine sichtbare Änderung beabsichtigt.
+- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B34 dokumentiert.
+- **Statisch geprüft:** einmalige Altregel, gültiger Eigentümer und Nachbarregeln anhand GitHub-Dateien; nach den Commits erneut lesen.
+- **Weiter offen:** vollständige Node-Testsuite einschließlich `tests/check-*.mjs`, GitHub-Actions-/Pages-Erfolg, über HTTPS ausgelieferte v96 und Live-Browser-Smoke. Kein Gerätetest nötig, da nur überlagertes CSS entfällt.
 
 ## 5. Nächste konkrete Schritte
 
-1. **B34:** eine weitere kleine redundante CSS-Stelle anhand des tatsächlichen GitHub-Stands und der Kaskade identifizieren und gegen bestehende Tests absichern.
-2. Änderung mit neuem Regressionstest, Sanierungsprotokoll und dieser Statusdatei dokumentieren; Service-Worker-Releasekennung bei CSS-Änderungen fortschreiben.
-3. Unabhängigen Node-/Actions-/Pages-/Live-Nachweis nach Möglichkeit erbringen und fehlende Gates ausdrücklich offen lassen.
-4. Nach vollständiger CSS-Abnahme erst `app.js` strukturell modularisieren.
+1. **B35:** weitere eindeutig redundante CSS-Regel anhand aktuellem Branch/Kaskade und vorhandenen Tests identifizieren.
+2. Kleine Bereinigung mit Schutztest, Sanierungsprotokoll und Statusdatei dokumentieren; CSS-Version fortschreiben.
+3. Node-/Actions-/Pages-/Live-Gates soweit möglich unabhängig nachweisen; nicht verifizierte Gates offen führen.
+4. Erst nach CSS-Abnahme `app.js` strukturell überarbeiten.
 
-**Noch offen:** CSS-Komponentenverträge vollständig konsolidieren, AST-/Stylelint-Schutz und unabhängige Browser-/Desktop-/Tablet-Regressionen.
+**Noch offen:** CSS-Eigentümer konsolidieren, AST-/Stylelint-Schutz, unabhängige Desktop-/Tablet-/Browserregressionen.
 
 ## 6. Maßgebliche Dokumente
 
