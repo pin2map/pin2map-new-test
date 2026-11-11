@@ -64,8 +64,8 @@ jobs:
 
 
 
-  qa-v140-pages:
-    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-reset-v140'
+  qa-v141-pages:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-brightness-v141'
     needs: [node-tests, chromium-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -93,9 +93,9 @@ jobs:
           done
           exit 1
 
-  qa-v140-live:
-    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-reset-v140'
-    needs: [qa-v140-pages]
+  qa-v141-live:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-brightness-v141'
+    needs: [qa-v141-pages]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -112,10 +112,11 @@ jobs:
           match=re.search(r"const CACHE='pin2map-new-v(\d+)'",Path("sw.js").read_text())
           assert match
           version="pin2map-preview-v"+match.group(1)
-          expected={"sw.js":version,"index.html":version,
-            "ui/basemap-menu.js":"onSatelliteReset",
+          expected={"sw.js":version,"index.html":"Helligkeit auf 140 % zurücksetzen",
+            "ui/basemap-menu.js":"brightness=140",
             "styles.css":".basemap-satellite-controls.is-inactive",
-            "app.js":"onSatelliteReset"}
+            "app.js":"onSatelliteReset",
+            "domain/project-model.js":"satelliteBrightness:140"}
           for path,marker in expected.items():
             request=urllib.request.Request(base+path,headers={"Cache-Control":"no-cache"})
             with urllib.request.urlopen(request,timeout=15) as response:
