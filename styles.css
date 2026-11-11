@@ -12,7 +12,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .full{width:100%;margin-top:14px}
 .topbar{position:absolute;z-index:1100;top:0;left:0;right:0;align-items:center;background:var(--navy);color:white;box-shadow:var(--shadow)}
 .search{display:flex;flex:1;max-width:520px;min-width:0;margin:auto;background:white;overflow:hidden}
-.search input{min-width:0;border:0;outline:0;background:white}
+.search input{border:0;outline:0;background:white}
 .search button{border-radius:0;background:#e8f1fc;color:#14385c}
 #map{position:absolute;inset:0}
 .leaflet-top.leaflet-left{top:12px}
