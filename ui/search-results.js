@@ -26,8 +26,14 @@
       }
     }
     syncWidth(){
-      const width=this.searchAnchor?.getBoundingClientRect?.().width;
-      if(width>0&&this.container.style)this.container.style.width=width+"px";
+      const box=this.searchAnchor?.getBoundingClientRect?.();
+      if(!box||!this.container.style)return;
+      // A pill's straight horizontal top/bottom edges start after its
+      // semicircular ends. The results align to those edges, not the
+      // outer rounded bounding box. No duplicate CSS width override.
+      const radius=Math.min(box.height/2,box.width/2);
+      const lineWidth=box.width-2*radius;
+      if(lineWidth>0)this.container.style.width=lineWidth+"px";
     }
     isVisible(){return !this.container.classList.contains("hidden");}
     hide(){
