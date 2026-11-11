@@ -238,6 +238,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await menu.locator("#satelliteContrast").count(),0);
     assert.equal(await menu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
     assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 140 % zurücksetzen");
+    assert.equal((await reset.innerText()).trim(),"Standard");
     await brightness.evaluate(el=>{
       el.value="165";el.dispatchEvent(new Event("input",{bubbles:true}));
       el.dispatchEvent(new Event("change",{bubbles:true}));
