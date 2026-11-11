@@ -56,14 +56,28 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await footer.count(),1);
     assert.equal(await page.locator("#searchResults").evaluate(el=>el.lastElementChild?.className),"results-footer",
       "Cancel belongs at the bottom of the result list");
-    const widths=await page.evaluate(()=>({
-      search:document.querySelector("#searchForm").getBoundingClientRect().width,
-      height:document.querySelector("#searchForm").getBoundingClientRect().height,
-      results:document.querySelector("#searchResults").getBoundingClientRect().width
-    }));
-    const expectedLineWidth=widths.search-Math.min(widths.search,widths.height);
-    assert.ok(Math.abs(expectedLineWidth-widths.results)<=3,
-      "Results should match straight horizontal lines between pill endcaps: "+JSON.stringify(widths));
+    const sheet=await page.evaluate(()=>{
+      const outer=document.querySelector(".topbar").getBoundingClientRect();
+      const host=document.querySelector("#searchResults").getBoundingClientRect();
+      const bottom=document.querySelector("#basemapButton").getBoundingClientRect();
+      const items=document.querySelector("#searchResults .results-items");
+      const first=items.firstElementChild.getBoundingClientRect();
+      return {outer:{x:outer.x,width:outer.width,top:outer.top,bottom:outer.bottom,height:outer.height},
+        host:{x:host.x,width:host.width,top:host.top,bottom:host.bottom,height:host.height},
+        bottomTop:bottom.top,firstTop:first.top,
+        listBackground:getComputedStyle(items).backgroundColor,
+        footerBackground:getComputedStyle(document.querySelector(".results-footer")).backgroundColor};
+    });
+    assert.ok(Math.abs(sheet.outer.width-sheet.host.width)<=3,JSON.stringify(sheet));
+    assert.ok(Math.abs(sheet.outer.x-sheet.host.x)<=3,JSON.stringify(sheet));
+    assert.ok(Math.abs(sheet.host.top-(sheet.outer.top+sheet.outer.height/2))<=3,
+      "Sheet background begins behind middle of rounded block: "+JSON.stringify(sheet));
+    assert.ok(sheet.firstTop>=sheet.outer.bottom+8,
+      "First text starts below OUTER search block: "+JSON.stringify(sheet));
+    assert.ok(sheet.host.bottom<=sheet.bottomTop+2,
+      "List must stop by lowest bottom buttons: "+JSON.stringify(sheet));
+    assert.equal(sheet.listBackground,"rgb(242, 244, 247)");
+    assert.equal(sheet.footerBackground,"rgb(223, 228, 235)");
     await footer.locator("button").getByText("Abbrechen").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     step("search results: multi-result footer is last and cancel closes without selecting");
