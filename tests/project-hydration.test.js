@@ -28,9 +28,10 @@ test("valid stored pins and layers remain in the same order, retaining custom fi
 });
 test("missing private layer is prepended while preserving pins and other layers",()=>{
   const saved={layers:[{id:"travel",name:"Reisen",visible:true}],pins:[{id:"p",layerId:"travel"}]};
+  const existingTravelLayer=saved.layers[0];
   const loaded=run(saved);
   assert.equal(loaded.layers[0].id,"private");
-  assert.equal(loaded.layers[1],saved.layers[0]);
+  assert.equal(loaded.layers[1],existingTravelLayer);
   assert.equal(loaded.pins,saved.pins);
   assert.equal(saved.layers.length,2,"Legacy startup inserted into the same layers array");
 });
