@@ -17,9 +17,9 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v93**, nach CSS-Inkrement **B31**. Quelle: `sw.js`, `const CACHE='pin2map-new-v93'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v93` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
-- **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B31 entfernte nur einen überholten mobilen `.topbar{display:flex}`-Block; das stärkere `display:flex!important` bleibt gültig.
-- **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B31 sind dort erläutert.
+- **Quellversion:** **v94**, nach CSS-Inkrement **B32**. Quelle: `sw.js`, `const CACHE='pin2map-new-v94'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v94` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B32 entfernte zwei überholte normale Header-Flex-Deklarationen (`display`, `flex-direction`); der `!important`-Eigentümer bleibt gültig.
+- **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B32 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
 - **Besonders geschützter Suchbutton:** 42px Antippfläche, 30px sichtbarer Ring, 18px Lupe. Kein unbeabsichtigtes Umgestalten von Kreis, Suchkapsel oder Ausrichtung.
 - **Technische Bausteine:** Leaflet-Karte, Pin-/Ebenenverwaltung, IndexedDB-Persistenz, Suche, UI-Module, Service Worker und Offline-App-Shell; maßgeblichen tatsächlichen Implementierungsstand in den jeweiligen Dateien prüfen, nicht allein aus dieser Kurzliste ableiten.
@@ -40,24 +40,23 @@
 
 ## 4. Letztes Inkrement und Nachweisstand
 
-**B31 – v93 (2026-11-11):**
-- `styles.css`: redundante `display:flex`-Regel in einer alten mobilen `@media(max-width:630px)`-Stufe entfernt; übrige Media-Query-Inhalte erhalten.
-- `tests/css-mobile-header-display-ownership.test.js`: neuer Test für den wirksamen Flex-Eigentümer und benachbarte mobile Regeln.
-- `sw.js`: Quellversion v92 → v93.
-- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B31 protokolliert.
-- **Gezielt verifiziert:** Vier aktualisierte Dateien erneut aus GitHub gelesen und acht Quelltext-Invarianten geprüft; darunter 298 `!important`, alter Block entfernt, Endregel vorhanden, mobile Nachbarregeln vorhanden, SW v93 und Dokumentation.
-- **Nicht als bestanden nachgewiesen:** vollständiger `node --test tests/*.test.js`-Lauf, `tests/check-*.mjs`, erfolgreicher Push-Workflow, exakte HTTPS-Pages-Auslieferung und Live-Browser-Smoke-Test. GitHub-Commit-Statusabfrage lieferte keine Statuschecks; die verfügbare Workflow-Abfrage erfasst nur PR-Runs und kann den Push-Deploy nicht bestätigen.
-- **Nutzer-Gerätetest:** für die rein interne B31-Bereinigung nicht angefordert.
+**B32 – v94 (2026-11-11):**
+- `styles.css`: Zwei historisch überlagerte normale Flex-Deklarationen (`display:flex`, `flex-direction:row`) aus einer älteren `.topbar`-Regel entfernt; Ausrichtung, Breite und finale `!important`-Eigentümer unverändert.
+- `tests/css-header-flex-direction-ownership.test.js`: neuer Regressionstest für die alte/maßgebliche Header-Regel und unveränderte Höhe/Padding.
+- `sw.js`: Quellversion v93 → v94.
+- `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`: B32 protokolliert; `!important` verbleibt bei 298.
+- **Gezielt statisch geprüft:** eindeutige Zielstelle, finale Flex-Regel und 298 `!important` sowie die Assertion-Muster gegen die GitHub-Quelle.
+- **Nicht nachgewiesen:** vollständiger Node-Testsuite-Lauf, GitHub-Actions-Push-Lauf, Pages-HTTPS-Auslieferung v94 sowie Live-Browser-Smoke. Die Arbeitsumgebung konnte GitHub für einen lokalen Klon nicht per DNS erreichen.
+- **Gerätetest:** nicht nötig, weil nur bereits überlagerte Normaldeklarationen entfernt wurden.
 
 ## 5. Nächste konkrete Schritte
 
-1. **B32:** einen weiteren kleinen überholten CSS-Block anhand der *tatsächlichen* Kaskade identifizieren; vor dem Eingriff CSS und betroffene Tests erneut aus dem Feature-Branch lesen.
-2. Nur eindeutig überschattete Deklarationen entfernen; einen gezielten Regressionstest ergänzen und vorhandene Tests auf veraltete Erwartungen überprüfen.
-3. Änderungen auf `feature/leaflet-modular-core` speichern, CSS-Budget/Protokoll/Quellversion nur nach Bedarf aktualisieren.
-4. Tests und Veröffentlichung nach Möglichkeit tatsächlich nachweisen; fehlende CI-/Pages-/Live-Gates als offen stehen lassen, nicht als Erfolg deklarieren.
-5. Nach Abschluss der CSS-Sanierung die geplante `app.js`-Modularisierung anhand des Architekturvertrags aufnehmen.
+1. **B33:** nächste kleine redundante CSS-Deklaration nach tatsächlicher Kaskade aussuchen, aktuellen Feature-Branch und vorhandene Tests erneut lesen.
+2. Gezielt entfernen, Regressionstest und Sanierungsprotokoll ergänzen, `docs/PROJEKTSTATUS.md` fortschreiben.
+3. Node-Tests, GitHub Actions, HTTPS-Auslieferung und Browser-Smoketest soweit zugänglich tatsächlich verifizieren; andernfalls getrennt offen ausweisen.
+4. Nach vollständiger CSS-Abnahme planmäßig `app.js` strukturell überarbeiten.
 
-**Weitere offene Aufgaben:** Abschluss der CSS-Komponentenverantwortlichkeiten, unabhängige Preview-/Desktop-/Tablet-Regressionen, CSS-Lint-/AST-Qualitätsschutz und anschließende `app.js`-Entflechtung. Keine pauschale CSS-Fertigstellung allein aufgrund der Zahl 298.
+**Weitere offene Aufgaben:** Abschluss CSS-Komponentenverantwortlichkeiten, unabhängige Desktop-/Tablet-Regressionen, Lint-/AST-Qualitätsschutz, später `app.js`-Entflechtung.
 
 ## 6. Maßgebliche Dokumente
 
