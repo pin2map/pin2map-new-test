@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v101 nach erfolgreichem CI-/Pages-Gate; Basiskarten-Bedienabnahme offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v101; Basiskarten-Browser-Regression und CI/Pages erfolgreich, manuelle Geräteabnahme offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -48,9 +48,18 @@
 - **Technischer Freigabestand:** v101-Quellstand über GitHub Actions inkl. HTTPS-Preview verifiziert. Manuelle iPhone-/iPad-/Desktop-Geräteabnahme und eine explizite Nutzerprüfung der Basiskarten-Auswahl inklusive deren Fokus-/Escape-Interaktion bleiben **offen**. Die automatischen Live-Smokes testen primär den Kartenstart und allgemeine Steuerung, nicht alle Menüinteraktionen. Die App nicht ohne gesonderte Freigabe nach `main` mergen.
 - **Quellstand:** weiterhin `pin2map-new-v101` / Preview `pin2map-preview-v101`; `styles.css` B38, 298 `!important`; App-/Datenmodule und Nutzerdaten unverändert durch die Testreparatur.
 
+## 4b. v101 – gezielte Basiskarten-Browser-Regression bestanden (2026-11-11)
+
+- `tests/browser-smoke.cjs` erweitert, **keine Anwendungs-, CSS-, Worker- oder Datenänderung**. Test-Commit `9d6cc153121a03fa7fa3fb02d192dd018a618ebc`.
+- Tatsächlicher headless Chromium-Test auf lokal bereitgestellter Feature-Branch-Version **bestanden**: `street`→`topo`→Reload→`street`→Reload, Auswahl und `is-selected`/`aria-pressed`, `aria-expanded`, Fokus-Rückgabe, Escape, Außenklick auf Karte, Schließen des Einstellungen-Panels und Fehlerfreiheit. Die bisherige Browser-Regression für Pin-Auswahl, Verschieben, Datenhaltung und Offline-Reload bleibt grün.
+- **Modular core checks vollständig erfolgreich**, einschließlich Node-Tests und Chromium: <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727159>.
+- **Leaflet architecture gates erfolgreich:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727121>.
+- **Pages-Preview erneut erfolgreich bereitgestellt:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981727136>; unveränderte v101-Assets über HTTPS und automatisierter Live-Start-/Reload-Test im Preview-Workflow bestanden. Die neue gezielte Menü-Browser-Regression fand dagegen im **localhost-Chromium-Job** statt, nicht im publizierten Live-Smoke.
+- **Weiter offen:** explizite manuelle iPhone-/iPad-/Desktop-Bedienabnahme; weitere `app.js`-Modularisierung und spätere vollständige CSS-Konsolidierung. Kein Merge nach `main` ohne Freigabe.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
-**CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; gesonderte Basiskarten-Menü-Bedienabnahme bleibt offen.
+**CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
 
 - `styles.css`: 947 Zeilen, rund 40 KB, **298 `!important`** (anfangs 402); 36 mehrfach vorkommende Selektoren in einer groben Quelltext-Inventur. Wiederholungen können berechtigte Media-Query-/Zustandsunterschiede sein und sind nicht automatisch Fehler. CSS bleibt technischer **Übergangszustand**, keine architektonisch abgeschlossene Komponentenkaskade.
 - Letzte konkrete Bereinigung: **B38** (ursprüngliche doppelte `min-width:0` im Suchfeld), dokumentiert in `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`. CSS, JavaScript, Worker und Datenmodell werden durch diese **Dokumentationsentscheidung nicht verändert**; CSS-Quellinhalt bleibt gleich; durch die neue App-Shell-Datei wird die SW-Quellkennung auf `pin2map-new-v101` angehoben.
@@ -62,10 +71,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Basiskarten-Menü v101 funktional gezielt abnehmen:** automatisierter/echter Browser-Test von `street`↔`topo`, Auswahlmarkierung und gespeichertem Projektzustand sowie Öffnen/Schließen, Escape, Außenklick, Tastaturfokus und Konflikten mit Suchtreffern/anderen Panels. Die bereits erfolgreichen Kartenstart-/Offline-Smokes decken diese Detailinteraktionen nicht ausdrücklich ab.
-2. Danach nächste kleine `app.js`-Verantwortlichkeit anhand `docs/MODULARCHITEKTUR.md` auswählen und mit eigenem Modultest extrahieren. `main`, Nutzerdaten und IndexedDB-Schema bleiben geschützt.
-3. Eine manuelle iPhone-/iPad-/Desktop-Abnahme und später die vollständige CSS-Kaskadenkonsolidierung nicht als bereits erledigt verbuchen; CSS-Schritt B39 bleibt pausiert.
-4. Bei jeder erneuten Anwendungsänderung GitHub-Actions-/Preview-Tests und die tatsächlich ausgelieferte Version prüfen; keine reine Commit-Abnahme.
+1. **Nächste `app.js`-Verantwortlichkeit auswählen:** Quellstand v101 neu lesen und eine kleine, fachlich sinnvolle Extraktion in `application/` oder `ui/` planen. Die bereits per Chromium geprüfte Basiskarten-Bedienung ist dabei nicht erneut umzubauen.
+2. Vor der nächsten Implementierung aktuelle Module, Testabdeckung, Persistenz-/UI-Schnittstellen und reale GitHub-Actions-/Preview-Gates prüfen; danach genau eine vertikale, testbare Änderung durchführen.
+3. Manuelle iPhone-/iPad-/Desktop-Bedienabnahme nicht mit den automatischen Browser-Smokes verwechseln. Vollständige CSS-Kaskadenkonsolidierung bleibt pausiert (B38/298 `!important`, B39 nicht gestartet).
+4. `main`, Referenzzweige, persistierte Pins und IndexedDB-Schema weiterhin schützen. Ein GitHub-Commit ersetzt keine erfolgreiche Veröffentlichung.
 
 ## 6. Maßgebliche Dokumente
 
