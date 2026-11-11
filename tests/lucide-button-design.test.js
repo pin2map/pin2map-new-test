@@ -218,9 +218,14 @@ test("settings and Layers flank search above while map picker stays bottom-right
   assert.ok(css.includes("#app #basemapButton.basemap-map-button.p2m-icon-control"));
   assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
   assert.ok(css.includes("#app #basemapMenu.basemap-menu"));
-  assert.ok(app.includes('document.querySelectorAll("#basemapMenu [data-basemap]")'));
+  const basemapUI=read("ui/basemap-menu.js");
+  assert.ok(basemapUI.includes('querySelectorAll("#basemapMenu [data-basemap]")'));
+  assert.ok(basemapUI.includes('event.key==="Escape"'));
+  assert.ok(basemapUI.includes('this.button.setAttribute("aria-expanded"'));
+  assert.ok(app.includes("new window.Pin2MapBasemapMenu"));
   assert.ok(app.includes("state.basemap=value;setTileLayer();save()"));
-  assert.ok(app.includes('event.key==="Escape"'));
+  assert.ok(app.includes("basemapMenu.bind()"));
+  assert.ok(html.indexOf('./ui/basemap-menu.js')<html.indexOf('./app.js'));
   assert.ok(css.includes("body.pin-open #app #basemapMenu"));
   const common=css.match(/#app button:is\(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton\),[\s\S]*?\}/)?.[0]||"";
   assert.ok(common.includes("width:var(--p2m-map-circle-size)!important"));
