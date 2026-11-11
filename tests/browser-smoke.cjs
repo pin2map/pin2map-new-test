@@ -57,12 +57,12 @@ async function longPress(page,x,y,ms=725){
     // Verify the correct external source is requested. Live tile availability
     // is provider/network dependent and must be checked on Safari separately.
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".leaflet-tile-pane img"))
-      .some(img=>img.src.includes("tile.top-o-map.de/")),
+      .some(img=>img.src.includes("a.tile.opentopomap.org/")),
       null,{timeout:5000});
     // This diagnostic is intentionally non-gating: GitHub runners can be unable
     // to receive tiles even while the application and browser controls work.
     const topoLoaded=await page.waitForFunction(()=>Array.from(document.querySelectorAll(".leaflet-tile-pane img"))
-      .some(img=>img.src.includes("tile.top-o-map.de/")&&img.complete&&img.naturalWidth>0),
+      .some(img=>img.src.includes("a.tile.opentopomap.org/")&&img.complete&&img.naturalWidth>0),
       null,{timeout:2500}).then(()=>true,()=>false);
     console.log("[browser] Topographic external tile decoded in CI:",topoLoaded,
       "(Safari/device network test remains required)");
