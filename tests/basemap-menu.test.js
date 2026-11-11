@@ -127,24 +127,24 @@ test("satellite menu markup has requested order, Lucide icons and neutral fallba
   assert.doesNotMatch(section,/satelliteContrast|Kontrast/);
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteReset"'));
   assert.ok(section.indexOf('id="satelliteReset"')<section.indexOf('id="satelliteBrightness"'));
-  assert.match(section,/aria-label="Helligkeit auf 140 % zurücksetzen"/);
+  assert.match(section,/aria-label="Helligkeit auf 120 % zurücksetzen"/);
   assert.match(section,/id="satelliteReset"[^>]*><span data-pin-icon="refresh-cw"><\/span><span>Standard<\/span><\/button>/);
-  assert.equal(model.defaultProject().satelliteBrightness,140);
+  assert.equal(model.defaultProject().satelliteBrightness,120);
   assert.equal(Object.hasOwn(model.defaultProject(),"satelliteContrast"),false);
   const icons=fs.readFileSync(path.join(__dirname,"../ui/lucide-icons.js"),"utf8");
   assert.match(icons,/"sun-medium":/);
 
 });
 
-test("reset restores brightness to 140 and keeps dialog open",()=>{
+test("reset restores brightness to 120 and keeps dialog open",()=>{
   const x=setup();x.view.bind();x.view.render("satellite",false,{brightness:125});
   x.view.open();
   assert.equal(x.reset.disabled,false);
   assert.equal(x.controls.classList.contains("is-inactive"),false);
   x.reset.emit("click");
   assert.deepEqual(x.resets,[true]);
-  assert.equal(x.brightness.value,"140");
-  assert.equal(x.brightnessValue.textContent,"140 %");
+  assert.equal(x.brightness.value,"120");
+  assert.equal(x.brightnessValue.textContent,"120 %");
   assert.equal(x.reset.disabled,true);
   assert.equal(x.view.isOpen(),true);
   x.reset.emit("click");
@@ -159,7 +159,7 @@ test("inactive satellite options are muted and cannot be reset",()=>{
   assert.equal(x.reset.disabled,true);
   x.reset.emit("click");
   assert.deepEqual(x.resets,[]);
-  x.view.render("satellite",false,{brightness:120});
+  x.view.render("satellite",false,{brightness:135});
   assert.equal(x.controls.classList.contains("is-inactive"),false);
   assert.equal(x.reset.disabled,false);
 });
