@@ -32,20 +32,20 @@ test("NASA rejects missing daily-average fields and missing-value sentinel",asyn
   })})});
   await assert.rejects(()=>provider.request([pin],"01"),/missing climatology values/);
 });
-test("solar API requests the 21st of chosen month in location time and caches by year",async()=>{
+test("solar API requests the 15th of chosen month in location time and caches by year",async()=>{
   const urls=[];
   const solar=new Solar({now:()=>Date.UTC(2026,10,11),fetchImpl:async url=>{
     urls.push(new URL(url));
     return {ok:true,json:async()=>({
-      sunrise:"2026-01-21T08:09:29+01:00",
-      sunset:"2026-01-21T17:23:02+01:00"
+      sunrise:"2026-01-15T08:09:29+01:00",
+      sunset:"2026-01-15T17:23:02+01:00"
     })};
   }});
   assert.deepEqual(await solar.request([pin],"01"),
-    [{rise:"08:09",set:"17:23",date:"2026-01-21",month:"01"}]);
+    [{rise:"08:09",set:"17:23",date:"2026-01-15",month:"01"}]);
   await solar.request([pin],"01");
   assert.equal(urls.length,1);
-  assert.equal(urls[0].searchParams.get("date"),"2026-01-21");
+  assert.equal(urls[0].searchParams.get("date"),"2026-01-15");
   assert.equal(urls[0].host,"api.sunrise-sunset.org");
   await assert.rejects(()=>solar.request([pin],"13"),RangeError);
 });
@@ -53,7 +53,7 @@ test("solar polar day/night are displayed as missing instead of invented times",
   const solar=new Solar({now:()=>Date.UTC(2026,10,11),
     fetchImpl:async()=>({ok:true,json:async()=>({sunrise:null,sunset:null})})});
   assert.deepEqual(await solar.request([pin],"06"),
-    [{rise:"–:–",set:"–:–",date:"2026-06-21",month:"06"}]);
+    [{rise:"–:–",set:"–:–",date:"2026-06-15",month:"06"}]);
 });
 test("season selection only fetches for visible pins and ignores old responses",async()=>{
   const asks=[];let resolveOld;
@@ -81,14 +81,29 @@ test("season selection only fetches for visible pins and ignores old responses",
   assert.ok(PERIODS.includes("today")&&PERIODS.includes("12"));
   service.setMode("off");
 });
-test("month icon uses catalog-produced SVG with Jan prefix only for solar modes",()=>{
-  const icon='<svg data-pin-icon="circle-slash-2"><circle cx="12"/></svg>';
-  const daily=labelMarkup({mode:"daily",period:"01",parts:["1°","8 °C"]},{monthIcon:icon});
-  const sun=labelMarkup({mode:"sun",period:"02",parts:["07:02","18:45"]},{monthIcon:icon});
-  assert.match(daily,/circle-slash-2/);
-  assert.doesNotMatch(daily,/>Jan</);
-  assert.match(sun,/>Feb</);
+test("month labels display Ø Jan average and 15. Feb sunrise/sunset prefixes",()=>{
+  const daily=labelMarkup({mode:"daily",period:"01",parts:["1°","8 °C"]});
+  const sun=labelMarkup({mode:"sun",period:"02",parts:["07:02","18:45"]});
+  assert.match(daily,/>Ø Jan</);
+  assert.doesNotMatch(daily,/circle-slash-2/);
+  assert.match(sun,/>15\. Feb</);
   assert.match(sun,/p2m-label-rise/);
-  assert.doesNotMatch(labelMarkup({mode:"daily",period:"today",parts:["1°","8 °C"]},{monthIcon:icon}),/circle-slash-2/);
-  assert.equal(labelMarkup({mode:"sun",period:"01",parts:["<img>","18:00"]},{monthIcon:icon}).includes("<img>"),false);
+  assert.doesNotMatch(labelMarkup({mode:"daily",period:"today",parts:["1°","8 °C"]}),/p2m-info-month-prefix/);
+  assert.equal(labelMarkup({mode:"sun",period:"01",parts:["<img>","18:00"]}).includes("<img>"),false);
+});
+test("independent day and sun selections switch atomically without duplicate outdated requests",async()=>{
+  const requests=[];
+  const service=new PinInfoService({provider:{
+    async request(mode,pins,period){requests.push({mode,period,pins:pins.map(p=>p.id)});
+      return pins.map(()=>mode==="sun"?{rise:"06:44",set:"18:44",date:"2026-02-15",month:period}:{min:2,max:12});
+    }
+  }});
+  service.setVisiblePins([pin]);
+  service.setMode("daily","01");await tick();
+  service.setMode("sun","02");await tick();
+  assert.deepEqual(requests.map(x=>[x.mode,x.period]),[["daily","01"],["sun","02"]]);
+  assert.equal(service.label(pin).period,"02");
+  service.setMode("daily","01");await tick();
+  assert.equal(requests.length,2,"Returning to first month reuses cached normal");
+  service.setMode("off");
 });
