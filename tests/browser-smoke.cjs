@@ -272,6 +272,69 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".pin-marker").count(),0,"Confirmed removal persists offline");
     assert.deepEqual(errors,[],"Single-pin delete must not raise browser errors");
     console.log("[browser] PASS – pin delete cancel, confirm and offline persistence");
+    step("offline cached search: empty, multiple selection and single result create pins");
+    await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{
+        const project=await store.loadProject();
+        const time=Date.now();
+        project.geoCache={
+          ...project.geoCache,
+          "nohit":{time,results:[]},
+          "multihit":{time,results:[
+            {lat:"48.7758",lon:"9.1829",name:"Stuttgart",address:{city:"Stuttgart"}},
+            {lat:"48.1371",lon:"11.5754",name:"München",address:{city:"München"}}
+          ]},
+          "singlehit":{time,results:[
+            {lat:"50.1109",lon:"8.6821",name:"Frankfurt",address:{city:"Frankfurt"}}
+          ]}
+        };
+        await store.saveProject(project);
+      }finally{store.close();}
+    });
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    const runCachedSearch=async query=>{
+      await page.locator("#searchInput").fill(query);
+      await page.locator("#searchInput").press("Enter");
+    };
+    await runCachedSearch("nohit");
+    await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
+    assert.match(await page.locator("#searchResults .message").textContent(),/Kein Ort gefunden/);
+    await runCachedSearch("multihit");
+    assert.equal(await page.locator("#searchResults button.result").count(),2);
+    assert.equal(await page.locator(".pin-marker").count(),0,"Multiple results must not auto-create pins");
+    await page.locator("#searchResults button.result").first().click();
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
+    assert.equal(await page.locator("#pinName").inputValue(),"Stuttgart");
+    assert.equal(await page.locator(".pin-marker").count(),1);
+    await page.waitForTimeout(750);
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    assert.equal(await page.locator(".pin-marker").count(),1,"Chosen place persists offline");
+    const projectAfterSelection=await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return await store.loadProject();}finally{store.close();}
+    });
+    assert.equal(projectAfterSelection.pins.length,1);
+    assert.equal(projectAfterSelection.pins[0].name,"Stuttgart");
+    assert.ok(Math.abs(projectAfterSelection.viewport.lat-48.7758)<0.002,
+      "Choosing place centers persisted map viewport");
+    await runCachedSearch("singlehit");
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
+    assert.equal(await page.locator("#pinName").inputValue(),"Frankfurt");
+    assert.equal(await page.locator(".pin-marker").count(),2);
+    await page.waitForTimeout(750);
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    const finalPins=await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject()).pins;}finally{store.close();}
+    });
+    assert.deepEqual(finalPins.map(pin=>pin.name).sort(),["Frankfurt","Stuttgart"]);
+    assert.deepEqual(errors,[],"Offline cached search transfer raises no page errors");
+    console.log("[browser] PASS – offline cached search: nohit, multi choose, single auto-pin and persisted viewport/pins");
+
 
   }catch(error){
     let snapshot={};
