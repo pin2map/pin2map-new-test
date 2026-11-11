@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v104: Topografische Karte nach Nutzer-Rückmeldung wieder funktionsfähig; CI/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v105: Suchformular-UI modularisiert; Node/Architektur/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v104**, nach kontrolliertem Topografie-Quellen-Gegenversuch. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v104'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v104` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v105**, nach dritter `app.js`-Entflechtung (Suchformular-UI). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v105'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v105` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -89,6 +89,14 @@
 - Vorherige automatische v104-Gates (Node/Chromium, Architektur und veröffentlichte Preview per HTTPS) bestanden; manuelle Bestätigung ist eine zusätzliche Qualitätsprüfung. Autozoom wurde bereits bei v102 vom Nutzer erfolgreich getestet. Die Straßenkarte funktionierte in den vorigen manuellen Vergleichstests.
 - **Nächste Priorität:** `app.js`-Modularisierung nach erneuter Prüfung des Iststands fortsetzen; bei künftigen Änderungen ausdrücklich mitteilen, ob ein persönlicher Test benötigt wird. CSS bleibt B38 mit 298 `!important`, `main` und persistierte Nutzerdaten bleiben geschützt.
 
+## 4g. Dritte `app.js`-Entflechtung – Suchformular-UI (v105, 2026-11-11)
+
+- `ui/search-form.js` neu: UI-Controller für Formular-Submit, getrimmte Suchanfrage, Suchbutton-Ladezustand, Ergebnis-/Statusmeldungen, überholte Anfragen und eigene Event-Listener. Suchanbieter/Cache/Throttling bleiben in `application/place-search-service.js`, Ergebnisdarstellung in `ui/search-results.js`, Karten-/Pin-Zuordnung weiterhin in `app.js`. Dienst-/State-/Speicherzugriff nur über injizierte Callbacks.
+- `app.js` gibt den bisherigen `runSearch`-Handler ab und verdrahtet das neue Modul; Umfang von 17.316 auf 16.475 Zeichen reduziert. `index.html` lädt es vor `app.js`, `sw.js` enthält es im Offline-`CORE` (Quellkennung `pin2map-new-v105`).
+- Neuer `tests/search-form.test.js` prüft leere Eingaben, Ergebnisse, Statusmeldungen, Stale-Result, Event-Binding/Dispose und Packaging. `tests/browser-smoke.cjs` prüft zusätzlich echten Chromium-Submit mit deaktiviertem Nominatim-Zugriff und sichtbarer Rückmeldung ohne externe Suchanfrage.
+- **Alle finalen Gates nach dem Browser-Testcommit `ea10f3e65b74995a26b0d67662a6948febff670a` erfolgreich:** [Node+Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42986596323), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42986596334), [Pages/HTTPS-Liveprüfung](https://github.com/pin2map/pin2map-new-test/actions/runs/42986596332). Die ausgelieferte Preview ist versioniert v105; direkte Nominatim-Suche wurde bewusst **nicht** ausgelöst.
+- **Schutzbereiche unverändert:** Topo-Quelle `a.tile.opentopomap.org` (v104 manuell bestätigt), Straßenkarte, Autozoom, CSS B38/298 `!important`, Pin-/Ebenenschema, IndexedDB und `main`. Kein zusätzlicher Nutzergerätetest erforderlich für diesen rein kontrollierten UI-Entflechtungsschritt. Bei Bedarf ausdrücklich anfordern.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -103,10 +111,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **`app.js`-Entflechtung wieder aufnehmen:** aktuellen Feature-Branch und vorhandene Application-/UI-Module inventarisieren, nächste fachlich saubere kleine Extraktion auswählen und mit gezieltem Regressionstest umsetzen. Topo-Tile-Host `a.tile.opentopomap.org` nicht ohne Befund verändern.
-2. Jede folgende Codeänderung mit vollständigen Node-, Architektur-, Chromium- und GitHub-Pages-/HTTPS-Gates verifizieren. Die erfolgreiche Live-Auslieferung separat prüfen.
-3. **Nutzergerätetests stets ausdrücklich ankündigen**, wenn benötigt, mit exakter Preview-URL, Schritten und erwartetem Ergebnis. Für reine Architektur-/Quelltextänderungen keine unnötigen manuellen Tests verlangen.
-4. Vollständige CSS-Kaskadenkonsolidierung bleibt pausiert (B38, 298 `!important`). `main`, Referenzzweige, IndexedDB-Schema und persistierte Pins schützen.
+1. **Weitere `app.js`-Verantwortlichkeit auswählen:** anhand der aktiven v105-Version und Architekturgrenzen eine neue, separat testbare UI-/Application-Aufgabe identifizieren; v104-Topo-Fix und Suchformular nicht unbegründet erneut umbauen.
+2. Jede folgende Codeänderung mit vollständigen Node-, Architektur-, Chromium- und GitHub-Pages-/HTTPS-Gates nachweisen. Nicht allein aus Code-/Commitkontrolle auf Freigabe schließen.
+3. **Nutzergerätetests ausdrücklich ankündigen**, falls sinnvoll, mit exakter Preview-URL und konkreten Schritten. Für v105 ist aktuell kein zusätzlicher Gerätetest erforderlich.
+4. CSS-B38/298 bleibt pausiert. `main`, Referenzzweige, IndexedDB-Schema und persistierte Pins schützen.
 
 ## 6. Maßgebliche Dokumente
 
