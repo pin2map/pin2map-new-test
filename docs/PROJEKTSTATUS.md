@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (aktueller Entwicklungs-/Preview-Stand **v135**; technische Live-Abnahme erfolgreich, gezielte Mobilgeräte-Abnahme der neuen Suchfunktion offen; v134-Breitenabnahme und ältere 21/21 iPhone-Basistests bestanden) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (aktueller Entwicklungs-/Preview-Stand **v135**; technische Live- und gezielte iPhone-Suchabnahme erfolgreich; v134-Breitenabnahme und ältere 21/21 iPhone-Basistests bestanden) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -435,6 +435,8 @@
 - **Offen:** ausschließlich gezielte persönliche Mobilgeräte-Abnahme der neuen Legacy-Typanzeige, der unten sichtbar bleibenden Abbrechen-Aktion beim Scrollen und der neuen Eingabe-Änderungsregel. Bei echter Nominatim-Abfrage gilt weiterhin das dokumentierte Opt-in; keine ungeprüfte providerweite Quota-Garantie. Kein Wiederholen bereits bestandener Tests.
 
 
+- **Persönliche Geräteabnahme abgeschlossen (Nutzerrückmeldung 2026-11-11):** Nutzer bestätigt nach den drei gezielten v135-iPhone-Tests ausdrücklich **„alle Tests bestanden“**. Damit sind (1) Vorgänger-App-Trefferinformationen inkl. Typ/Ortsbeschreibung, (2) beim Scrollen feststehender unterer „Abbrechen“-Button sowie (3) sofortiges Schließen bei Suchtextänderung und Wiederöffnen erst nach explizitem Suchen auf dem getesteten iPhone bestanden. **v135 technisch und auf dem getesteten Nutzergerät abgenommen.** Keine Wiederholung nötig; keine Aussage über andere Geräte. Keine Änderung von Anwendungscode, Persistenz oder Offline-Kacheln.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -452,7 +454,7 @@
 1. **iPhone-Safari-Abnahme als Nutzerrückmeldung abschließen:** 21/21 nummerierte v116-Testfälle als OK gemeldet; Geräteprotokoll hat die genaue Zuordnung 7–21 → A07–C05. Keine erneute Einzelabfrage derselben Testfälle. Beim nächsten Gespräch nur neue konkrete Auffälligkeiten oder abweichende Umgebungen behandeln.
 2. **v123 Info-Menü gemäß § 4ac technisch veröffentlicht; v124 Info-Button nach § 4ad vollständig prüfen und auf iPhone abnehmen; Niederschlagsdaten bisher nur Machbarkeitsfrage, noch kein Implementierungsauftrag:** Nach dem architektonischen Abschluss v116 und der positiven iPhone-Basisrückmeldung ist **Datenverlustschutz durch lokalen Projekt-Export/Backup** der erste zu prüfende Kandidat, anschließend sichere Wiederherstellung/Import und Pinnotizen/Links. Vor dem Codieren bestehende Grundentscheidungen zu Format, Datei, Ersetzen/Hinzufügen, Importkonflikten, Datenprüfung und Datenverlustschutz lesen. Keine neue Datenmigration oder automatische Löschung.
 3. **Übrige Geräte-/Feature-Gates unterscheiden:** Die pauschale Nutzerrückmeldung beweist nicht selbstständig Brave privat, eine installierte Home-Screen-PWA, Offline-Flugmodus-Details oder iPad. Gezielte zusätzliche Gerätetests nur bei relevantem Feature oder explizitem Bedarf; keine pauschale volle Vorgänger-Parität behaupten. CSS B38/298 bleibt separat pausiert.
-4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktueller Entwicklungsquellstand **v135** (Legacy-Pin-Suchergebnis-Typen/Details, feststehender Abbrechen-Footer und Sucheingabe schließt alte Treffer; technische Node-/Chromium-/Pages-/HTTPS-Live-Gates bestanden gemäß § 4ao; gezielte persönliche Mobilabnahme offen).
+4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktueller Entwicklungsquellstand **v135** (Legacy-Pin-Suchergebnis-Typen/Details, feststehender Abbrechen-Footer und Sucheingabe schließt alte Treffer; technische Node-/Chromium-/Pages-/HTTPS-Live-Gates sowie gezielte iPhone-Abnahme bestanden gemäß § 4ao).
 
 ## 6. Maßgebliche Dokumente
 
