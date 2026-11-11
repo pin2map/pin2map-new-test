@@ -16,6 +16,7 @@ test("legacy base has manageable lines, not a single minified rule chain",()=>{
   }
   assert.match(base,/^:root\{font-family:/);
   assert.match(base,/^\.hidden\{display:none!important\}$/m);
-  assert.match(base,/^@media\(max-width:630px\)\{\.topbar\{/m);
+  assert.match(base,/^@media\(max-width:630px\)\{\s*\.panel\{right:8px\}/m);
+  assert.doesNotMatch(base,/^@media\(max-width:630px\)\{\s*\.topbar\{/m);
   assert.match(base,/^\}$/m);
 });
