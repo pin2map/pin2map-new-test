@@ -111,7 +111,7 @@ check(gestures.includes("attachMarkerLongPress") &&
   "touch, mouse and marker gestures live in dedicated controller");
 const mapClick=read("application/map-click-coordinator.js");
 check(map.includes("onMapClick(callback)") &&
-  app.includes("mapAdapter.onMapClick(position=>mapClickCoordinator.handle(position))") &&
+  app.includes("mapAdapter.onMapClick(position=>{pinInfoMenu.close();mapClickCoordinator.handle(position);})") &&
   mapClick.includes("handle(position)") && mapClick.includes("this.previewMove(position)"),
   "map events pass neutral coordinates through application coordinator");
 check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
