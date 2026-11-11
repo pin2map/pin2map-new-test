@@ -79,6 +79,15 @@
       renderMarkers();renderPinPanel();updateModeUI();
     }
   });
+  const pinDeleteDialog = new window.Pin2MapPinDeleteDialog({
+    getElement:$,
+    getSelectedPinId:()=>selectedPin()?.id??null,
+    onConfirm:id=>{
+      if(!pinOps.deletePin(state,id))return;
+      if(uiState.selectedPinId===id)uiState.clearSelection();
+      save();renderMarkers();renderLayers();renderPinPanel();updateModeUI();showNotice("Pin gelöscht");
+    }
+  });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -237,12 +246,7 @@
     $("movePin").addEventListener("click",()=>moveController.begin());
     $("cancelMove").addEventListener("click",()=>moveController.cancel());
     $("confirmMove").addEventListener("click",()=>moveController.confirm());
-    $("deletePin").addEventListener("click", () => { if(selectedPin())$("deleteDialog").showModal(); });
-    $("deleteDialog").addEventListener("close", () => {
-      if($("deleteDialog").returnValue!=="confirm")return;
-      pinOps.deletePin(state,uiState.selectedPinId);uiState.clearSelection();
-      save();renderMarkers();renderLayers();renderPinPanel();updateModeUI();showNotice("Pin gelöscht");
-    });
+    pinDeleteDialog.bind();
 
     mapAdapter.onMapClick(position => {
       // A deliberate relocation target is not an accidental follow-up click
