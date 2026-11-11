@@ -78,7 +78,7 @@ jobs:
           from pathlib import Path
           base="https://pin2map.github.io/pin2map-new-test/preview/"
           source=Path("sw.js").read_text()
-          match=re.search(r"const CACHE='pin2map-new-v(\\d+)'",source)
+          match=re.search(r"const CACHE='pin2map-new-v(\d+)'",source)
           assert match,"Missing source version"
           expected="pin2map-preview-v"+match.group(1)
           assets={
