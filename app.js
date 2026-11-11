@@ -40,9 +40,27 @@
     onDelete:id=>deleteLayerOrPrivatePins(id)
   });
   const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
+  const pinInfoService=new window.Pin2MapPinInfoService.PinInfoService({
+    provider:new window.Pin2MapOpenMeteoPinInfo({fetchImpl:(...args)=>fetch(...args)}),
+    onUpdate:()=>renderMarkers(),
+    onError:()=>showNotice("Pin-Informationen vorübergehend nicht verfügbar")
+  });
+  const pinInfoMenu=new window.Pin2MapPinInfoMenu({
+    getElement:$,document,icons:window.Pin2MapIcons,
+    onOpening:()=>{basemapMenu.close();uiShell.closePanels();searchView.hide();},
+    onSelect:mode=>{
+      if(state.pinInfoMode!==mode){
+        state.pinInfoMode=mode;
+        pinInfoService.setMode(mode);
+        pinInfoMenu.render(mode);
+        save();
+        renderMarkers();
+      }
+    }
+  });
   const basemapMenu = new window.Pin2MapBasemapMenu({
     getElement:$,document,
-    onOpening:()=>{uiShell.closePanels();searchView.hide();},
+    onOpening:()=>{pinInfoMenu.close();uiShell.closePanels();searchView.hide();},
     onSelect:value=>{
       if(state.basemap!==value){state.basemap=value;setTileLayer();save();}
     },
@@ -160,8 +178,10 @@
   }
   function renderMarkers(){
     if(!markerView)return;
+    const visible=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
+    pinInfoService.setVisiblePins(visible);
     markerView.render({
-      pins:pinFilter.visiblePins(state.pins,state.layers,currentPinFilter),
+      pins:visible,
       layers:state.layers,selectedPinId:uiState.selectedPinId,
       labelsVisible:state.labelsVisible
     });
@@ -229,6 +249,7 @@
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
     searchForm.bind();
+    pinInfoMenu.bind();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => overlayCoordinator.togglePanel("layersPanel"));
     $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));
@@ -249,7 +270,7 @@
     $("confirmMove").addEventListener("click",()=>moveController.confirm());
     pinDeleteDialog.bind();
 
-    mapAdapter.onMapClick(position=>mapClickCoordinator.handle(position));
+    mapAdapter.onMapClick(position=>{pinInfoMenu.close();mapClickCoordinator.handle(position);});
 
     gestures.attachLongPress();
     mapOverlayLayout.bind();
@@ -274,6 +295,9 @@
     });
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
+      getInfoLabel:pin=>pinInfoService.label(pin),
+      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info),
+      onInfoClick:id=>selectPin(id),
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;selectPin(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
     });
@@ -311,6 +335,9 @@
       onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
+    if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
+    pinInfoService.setMode(state.pinInfoMode);
+    pinInfoMenu.render(state.pinInfoMode);
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && (location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname)))navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
