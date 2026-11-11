@@ -1,6 +1,6 @@
 "use strict";
-/* NASA POWER satellite-precipitation monthly climatology.
- * IMERG_PRECTOT climatology values are mean daily precipitation in mm/day.
+/* NASA POWER corrected-precipitation monthly climatology.
+ * PRECTOTCORR climatology values are mean daily precipitation in mm/day.
  * Multiply by the climatological month length to obtain mean monthly mm.
  * Never confuse this long-term monthly normal with a current forecast.
  */
@@ -21,15 +21,15 @@
       if(cached&&this.now()-cached.at>=0&&this.now()-cached.at<TTL)return cached.data;
       if(this.pending.has(id))return this.pending.get(id);
       const params=new URLSearchParams({
-        parameters:"IMERG_PRECTOT",community:"HY",
+        parameters:"PRECTOTCORR",community:"AG",
         latitude:String(pin.lat),longitude:String(pin.lng),format:"JSON"
       });
       const task=(async()=>{
         const response=await this.fetch("https://power.larc.nasa.gov/api/temporal/climatology/point?"+params);
         if(!response.ok)throw new Error("NASA POWER precipitation HTTP "+response.status);
         const json=await response.json();
-        const monthly=json?.properties?.parameter?.IMERG_PRECTOT;
-        if(!monthly||typeof monthly!=="object")throw new Error("NASA POWER missing IMERG precipitation climatology");
+        const monthly=json?.properties?.parameter?.PRECTOTCORR;
+        if(!monthly||typeof monthly!=="object")throw new Error("NASA POWER missing corrected precipitation climatology");
         const data=MONTHS.map((month,i)=>valid(monthly[month])?{
           value:Number((Number(monthly[month])*DAYS[i]).toFixed(3)),
           dailyRate:Number(monthly[month]),normal:true
