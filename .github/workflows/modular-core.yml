@@ -64,3 +64,58 @@ jobs:
 
 
 
+
+  qa-v142-pages:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-pin-dialog-v142'
+    needs: [node-tests, chromium-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Dispatch approved feature-only Pages workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          repo=pin2map/pin2map-new-test
+          run_url=$(gh workflow run preview-pages.yml --ref feature/leaflet-modular-core -R "$repo")
+          id="${run_url##*/}"
+          [[ "$id" =~ ^[0-9]+$ ]] || { echo "Unexpected dispatch: $run_url"; exit 1; }
+          echo "Feature Pages run: $run_url"
+          gh run watch "$id" -R "$repo" --exit-status
+
+  qa-v142-live:
+    if: github.event_name == 'pull_request' && github.base_ref == 'feature/leaflet-modular-core' && github.head_ref == 'qa/satellite-pin-dialog-v142'
+    needs: [qa-v142-pages]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify actual v142 HTTPS build and new code
+        run: |
+          python3 - <<'PY'
+          import urllib.request
+          base="https://pin2map.github.io/pin2map-new-test/preview/"
+          files={"sw.js":"pin2map-preview-v142",
+            "index.html":"Helligkeit auf 120 % zurücksetzen",
+            "domain/project-model.js":"satelliteBrightness:120",
+            "map-adapter-leaflet.js":"setSatelliteAppearance({brightness=120}",
+            "styles.css":"body.pin-open #map .elevation-label-wrap",
+            "ui/basemap-menu.js":"brightness=120"}
+          for path,marker in files.items():
+            req=urllib.request.Request(base+path,headers={"Cache-Control":"no-cache"})
+            with urllib.request.urlopen(req,timeout=15) as response:
+              content=response.read().decode("utf-8")
+            assert marker in content,path+" was not published as v142"
+          print("PASS real published HTTPS assets: pin2map-preview-v142")
+          PY
+      - name: Live browser checks on phone, tablet and desktop
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable)
+          PIN2MAP_CHROMIUM_EXECUTABLE="$CHROME" PIN2MAP_LIVE_PREVIEW="https://pin2map.github.io/pin2map-new-test/preview/" node tests/preview-live-smoke.cjs
