@@ -28,17 +28,25 @@ function setup(){
   const menu=fakeElement("basemapMenu"),button=fakeElement("basemapButton");
   const street=fakeElement("street"),topo=fakeElement("topo"),invalid=fakeElement("invalid");
   street.dataset.basemap="street";topo.dataset.basemap="topo";invalid.dataset.basemap="other";
+  const brightness=fakeElement("satelliteBrightness"),contrast=fakeElement("satelliteContrast");
+  const brightnessValue=fakeElement("satelliteBrightnessValue"),
+    contrastValue=fakeElement("satelliteContrastValue");
   const doc=fakeElement("document");
   doc.querySelectorAll=selector=>{
     assert.equal(selector,"#basemapMenu [data-basemap]");
     return [street,topo,invalid];
   };
-  const selected=[],opened=[];
+  const selected=[],opened=[],adjusted=[];
   const view=new BasemapMenu({
-    getElement:id=>({basemapMenu:menu,basemapButton:button})[id],
-    document:doc,onSelect:value=>selected.push(value),onOpening:()=>opened.push(true)
+    getElement:id=>({basemapMenu:menu,basemapButton:button,
+      satelliteBrightness:brightness,satelliteContrast:contrast,
+      satelliteBrightnessValue:brightnessValue,satelliteContrastValue:contrastValue})[id],
+    document:doc,onSelect:value=>selected.push(value),
+    onSatelliteAdjust:(key,value,commit)=>adjusted.push({key,value,commit}),
+    onOpening:()=>opened.push(true)
   });
-  return {view,menu,button,street,topo,invalid,doc,selected,opened};
+  return {view,menu,button,street,topo,invalid,doc,selected,opened,adjusted,
+    brightness,contrast,brightnessValue,contrastValue};
 }
 test("render synchronizes selected option aria and classes",()=>{
   const x=setup();
@@ -87,4 +95,46 @@ test("wiring loads UI module before app and includes it in offline shell",()=>{
   assert.match(app,/new window\.Pin2MapBasemapMenu/);
   assert.doesNotMatch(app,/document\.querySelectorAll\("#basemapMenu \[data-basemap\]"\)/);
   assert.match(worker,/const CACHE='pin2map-new-v\d+'/); // Release changes independently of the menu contract.
+});
+
+test("satellite controls reflect stored values, disable off satellite and emit live/commit",()=>{
+  const x=setup();x.view.render("street",false,{brightness:115,contrast:75});
+  assert.equal(x.brightness.disabled,true);
+  assert.equal(x.contrast.disabled,true);
+  assert.equal(x.brightnessValue.textContent,"115 %");
+  assert.equal(x.contrastValue.textContent,"75 %");
+  x.view.render("satellite",false,{brightness:115,contrast:75});
+  assert.equal(x.brightness.disabled,false);
+  assert.equal(x.contrast.disabled,false);
+  assert.equal(x.brightness.value,"115");
+  assert.equal(x.contrast.value,"75");
+  x.view.bind();
+  x.brightness.value="120";x.brightness.emit("input");x.brightness.emit("change");
+  x.contrast.value="65";x.contrast.emit("input");x.contrast.emit("change");
+  assert.deepEqual(x.adjusted,[
+    {key:"brightness",value:120,commit:false},
+    {key:"brightness",value:120,commit:true},
+    {key:"contrast",value:65,commit:false},
+    {key:"contrast",value:65,commit:true}
+  ]);
+  assert.equal(x.brightnessValue.textContent,"120 %");
+  assert.equal(x.contrastValue.textContent,"65 %");
+  assert.equal(x.view.isOpen(),false);
+  x.view.dispose();x.brightness.emit("input");
+  assert.equal(x.adjusted.length,4);
+});
+test("satellite menu markup has requested order, Lucide icons and neutral fallback",()=>{
+  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+  const model=require("../domain/project-model.js");
+  const section=html.slice(html.indexOf('id="basemapMenu"'),html.indexOf('id="searchResults"'));
+  assert.ok(section.indexOf('data-basemap="humanitarian"')<section.indexOf('data-basemap="satellite"'));
+  assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteBrightness"'));
+  assert.ok(section.indexOf('id="satelliteContrast"')<section.indexOf('id="esriReliefToggle"'));
+  assert.match(section,/data-pin-icon="sun-medium"/);
+  assert.match(section,/data-pin-icon="contrast"/);
+  assert.equal(model.defaultProject().satelliteBrightness,100);
+  assert.equal(model.defaultProject().satelliteContrast,100);
+  const icons=fs.readFileSync(path.join(__dirname,"../ui/lucide-icons.js"),"utf8");
+  assert.match(icons,/"sun-medium":/);
+  assert.match(icons,/"contrast":/);
 });
