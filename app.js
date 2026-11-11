@@ -89,8 +89,8 @@
     },
     onSatelliteReset:()=>{
       if(state.basemap!=="satellite")return;
-      state.satelliteBrightness=140;
-      mapAdapter.setSatelliteAppearance({brightness:140});
+      state.satelliteBrightness=120;
+      mapAdapter.setSatelliteAppearance({brightness:120});
       save();
     },
     onSatelliteAdjust:(key,value,commit)=>{
