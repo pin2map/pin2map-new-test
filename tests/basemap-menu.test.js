@@ -28,11 +28,10 @@ function setup(){
   const menu=fakeElement("basemapMenu"),button=fakeElement("basemapButton");
   const street=fakeElement("street"),topo=fakeElement("topo"),invalid=fakeElement("invalid");
   street.dataset.basemap="street";topo.dataset.basemap="topo";invalid.dataset.basemap="other";
-  const brightness=fakeElement("satelliteBrightness"),contrast=fakeElement("satelliteContrast");
+  const brightness=fakeElement("satelliteBrightness");
   const controls=fakeElement("satelliteControls"),reset=fakeElement("satelliteReset");
   brightness.closest=()=>controls;
-  const brightnessValue=fakeElement("satelliteBrightnessValue"),
-    contrastValue=fakeElement("satelliteContrastValue");
+  const brightnessValue=fakeElement("satelliteBrightnessValue");
   const doc=fakeElement("document");
   doc.querySelectorAll=selector=>{
     assert.equal(selector,"#basemapMenu [data-basemap]");
@@ -41,16 +40,15 @@ function setup(){
   const selected=[],opened=[],adjusted=[],resets=[];
   const view=new BasemapMenu({
     getElement:id=>({basemapMenu:menu,basemapButton:button,
-      satelliteBrightness:brightness,satelliteContrast:contrast,
-      satelliteReset:reset,
-      satelliteBrightnessValue:brightnessValue,satelliteContrastValue:contrastValue})[id],
+      satelliteBrightness:brightness,satelliteReset:reset,
+      satelliteBrightnessValue:brightnessValue})[id],
     document:doc,onSelect:value=>selected.push(value),
     onSatelliteAdjust:(key,value,commit)=>adjusted.push({key,value,commit}),
     onSatelliteReset:()=>resets.push(true),
     onOpening:()=>opened.push(true)
   });
   return {view,menu,button,street,topo,invalid,doc,selected,opened,adjusted,resets,controls,reset,
-    brightness,contrast,brightnessValue,contrastValue};
+    brightness,brightnessValue};
 }
 test("render synchronizes selected option aria and classes",()=>{
   const x=setup();
@@ -101,31 +99,22 @@ test("wiring loads UI module before app and includes it in offline shell",()=>{
   assert.match(worker,/const CACHE='pin2map-new-v\d+'/); // Release changes independently of the menu contract.
 });
 
-test("satellite controls reflect stored values, disable off satellite and emit live/commit",()=>{
-  const x=setup();x.view.render("street",false,{brightness:115,contrast:75});
+test("satellite brightness reflects stored value, disables off satellite and emits live/commit",()=>{
+  const x=setup();x.view.render("street",false,{brightness:115});
   assert.equal(x.brightness.disabled,true);
-  assert.equal(x.contrast.disabled,true);
   assert.equal(x.brightnessValue.textContent,"115 %");
-  assert.equal(x.contrastValue.textContent,"75 %");
-  x.view.render("satellite",false,{brightness:115,contrast:75});
+  x.view.render("satellite",false,{brightness:115});
   assert.equal(x.brightness.disabled,false);
-  assert.equal(x.contrast.disabled,false);
   assert.equal(x.brightness.value,"115");
-  assert.equal(x.contrast.value,"75");
   x.view.bind();
-  x.brightness.value="120";x.brightness.emit("input");x.brightness.emit("change");
-  x.contrast.value="65";x.contrast.emit("input");x.contrast.emit("change");
+  x.brightness.value="165";x.brightness.emit("input");x.brightness.emit("change");
   assert.deepEqual(x.adjusted,[
-    {key:"brightness",value:120,commit:false},
-    {key:"brightness",value:120,commit:true},
-    {key:"contrast",value:65,commit:false},
-    {key:"contrast",value:65,commit:true}
+    {key:"brightness",value:165,commit:false},
+    {key:"brightness",value:165,commit:true}
   ]);
-  assert.equal(x.brightnessValue.textContent,"120 %");
-  assert.equal(x.contrastValue.textContent,"65 %");
-  assert.equal(x.view.isOpen(),false);
+  assert.equal(x.brightnessValue.textContent,"165 %");
   x.view.dispose();x.brightness.emit("input");
-  assert.equal(x.adjusted.length,4);
+  assert.equal(x.adjusted.length,2);
 });
 test("satellite menu markup has requested order, Lucide icons and neutral fallback",()=>{
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
@@ -133,46 +122,43 @@ test("satellite menu markup has requested order, Lucide icons and neutral fallba
   const section=html.slice(html.indexOf('id="basemapMenu"'),html.indexOf('id="searchResults"'));
   assert.ok(section.indexOf('data-basemap="humanitarian"')<section.indexOf('data-basemap="satellite"'));
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteBrightness"'));
-  assert.ok(section.indexOf('id="satelliteContrast"')<section.indexOf('id="esriReliefToggle"'));
+  assert.ok(section.indexOf('id="satelliteBrightness"')<section.indexOf('id="esriReliefToggle"'));
   assert.match(section,/data-pin-icon="sun-medium"/);
-  assert.match(section,/data-pin-icon="contrast"/);
+  assert.doesNotMatch(section,/satelliteContrast|Kontrast/);
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteReset"'));
   assert.ok(section.indexOf('id="satelliteReset"')<section.indexOf('id="satelliteBrightness"'));
-  assert.match(section,/aria-label="Helligkeit und Kontrast auf 100 % zurücksetzen"/);
-  assert.equal(model.defaultProject().satelliteBrightness,100);
-  assert.equal(model.defaultProject().satelliteContrast,100);
+  assert.match(section,/aria-label="Helligkeit auf 140 % zurücksetzen"/);
+  assert.equal(model.defaultProject().satelliteBrightness,140);
+  assert.equal(Object.hasOwn(model.defaultProject(),"satelliteContrast"),false);
   const icons=fs.readFileSync(path.join(__dirname,"../ui/lucide-icons.js"),"utf8");
   assert.match(icons,/"sun-medium":/);
-  assert.match(icons,/"contrast":/);
+
 });
 
-test("reset button restores BOTH values atomically and keeps dialog open",()=>{
-  const x=setup();x.view.bind();x.view.render("satellite",false,{brightness:125,contrast:70});
+test("reset restores brightness to 140 and keeps dialog open",()=>{
+  const x=setup();x.view.bind();x.view.render("satellite",false,{brightness:125});
   x.view.open();
   assert.equal(x.reset.disabled,false);
   assert.equal(x.controls.classList.contains("is-inactive"),false);
   x.reset.emit("click");
   assert.deepEqual(x.resets,[true]);
-  assert.equal(x.brightness.value,"100");
-  assert.equal(x.contrast.value,"100");
-  assert.equal(x.brightnessValue.textContent,"100 %");
-  assert.equal(x.contrastValue.textContent,"100 %");
+  assert.equal(x.brightness.value,"140");
+  assert.equal(x.brightnessValue.textContent,"140 %");
   assert.equal(x.reset.disabled,true);
   assert.equal(x.view.isOpen(),true);
   x.reset.emit("click");
   assert.equal(x.resets.length,1);
-  x.contrast.value="80";x.contrast.emit("input");
+  x.brightness.value="80";x.brightness.emit("input");
   assert.equal(x.reset.disabled,false);
 });
 test("inactive satellite options are muted and cannot be reset",()=>{
-  const x=setup();x.view.bind();x.view.render("street",false,{brightness:120,contrast:75});
+  const x=setup();x.view.bind();x.view.render("street",false,{brightness:120});
   assert.equal(x.controls.classList.contains("is-inactive"),true);
   assert.equal(x.brightness.disabled,true);
-  assert.equal(x.contrast.disabled,true);
   assert.equal(x.reset.disabled,true);
   x.reset.emit("click");
   assert.deepEqual(x.resets,[]);
-  x.view.render("satellite",false,{brightness:120,contrast:75});
+  x.view.render("satellite",false,{brightness:120});
   assert.equal(x.controls.classList.contains("is-inactive"),false);
   assert.equal(x.reset.disabled,false);
 });
