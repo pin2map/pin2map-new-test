@@ -71,6 +71,30 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           return img?.closest(".leaflet-layer")?.style.filter;
         });
         assert.ok(!cleanFilter,"Street map must be untouched: "+cleanFilter);
+        await chooser.click();
+        assert.equal(await sun.isDisabled(),true);
+        assert.equal(await contrast.isDisabled(),true);
+        assert.equal(await mapMenu.locator("#satelliteReset").isDisabled(),true);
+        const disabledLabel=await mapMenu.locator(".basemap-satellite-slider").first().evaluate(el=>({
+          color:getComputedStyle(el).color,
+          iconOpacity:getComputedStyle(el.querySelector(".basemap-slider-icon")).opacity
+        }));
+        assert.equal(disabledLabel.color,"rgb(156, 167, 179)");
+        assert.equal(disabledLabel.iconOpacity,"0.48");
+        await mapMenu.locator('[data-basemap="satellite"]').click();
+        await chooser.click();
+        const reset=mapMenu.locator("#satelliteReset");
+        assert.equal(await reset.isEnabled(),true);
+        await reset.click();
+        assert.equal(await mapMenu.isVisible(),true);
+        assert.equal(await reset.isDisabled(),true);
+        assert.equal(await sun.inputValue(),"100");
+        assert.equal(await contrast.inputValue(),"100");
+        const neutralFilter=await page.evaluate(()=>{
+          const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
+          return img?.closest(".leaflet-layer")?.style.filter;
+        });
+        assert.equal(neutralFilter,"brightness(1) contrast(1)");
         // Published geocoder contract: the number of pin results is not
         // device-dependent and the old 8-hit cache is revalidated with consent.
         const limitContract=await page.evaluate(async()=>{
