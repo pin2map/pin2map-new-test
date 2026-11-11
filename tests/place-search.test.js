@@ -29,7 +29,7 @@ test("geocoder constructs identical provider query and validates results",async(
   const result=await geocoder.search("Stuttgart & Umgebung",{signal});
   assert.equal(request.url.searchParams.get("q"),"Stuttgart & Umgebung");
   assert.equal(request.url.searchParams.get("addressdetails"),"1");
-  assert.equal(request.url.searchParams.get("limit"),"8");
+  assert.equal(request.url.searchParams.get("limit"),"25");
   assert.equal(request.options.signal,signal);
   assert.equal(result.length,2);
 });
@@ -115,4 +115,51 @@ test("explicit service cancel invalidates outstanding results",async()=>{
   assert.equal((await pending).kind,"stale");
   assert.equal(aborted,true);
   assert.equal(state.geoCache.alt,undefined);
+});
+
+test("all device queries share 25 as maximum; legacy 40-result caches are capped",async()=>{
+  let calls=0;
+  const geocoder={resultLimit:25,search:async()=>{calls++;return [];}};
+  const svc=new SearchService({geocoder,domain,now:()=>200_000_000});
+  const forty=Array.from({length:40},(_,i)=>({lat:String(i),lon:"8"}));
+  const state={geoCache:{stuttgart:{time:200_000_000,results:forty}}};
+  const result=await svc.search("Stuttgart",{state,allowed:false});
+  assert.equal(result.fromCache,true);
+  assert.equal(result.results.length,25);
+  assert.equal(state.geoCache.stuttgart.results.length,40,
+    "legacy cache data remains untouched");
+  assert.equal(calls,0);
+});
+test("legacy eight-result cache is refreshed with consent, while offline copy survives",async()=>{
+  let calls=0,now=200_000_000;
+  const geocoder={resultLimit:25,search:async()=>{
+    calls++;
+    return Array.from({length:25},(_,i)=>({lat:String(i),lon:"9"}));
+  }};
+  const oldResults=Array.from({length:8},(_,i)=>({lat:String(i),lon:"8"}));
+  const state={geoCache:{berlin:{time:now,results:oldResults}}};
+  const svc=new SearchService({geocoder,domain,now:()=>now});
+  const offline=await svc.search("Berlin",{state,allowed:false});
+  assert.equal(offline.results.length,8);
+  assert.equal(calls,0);
+  const online=await svc.search("Berlin",{state,allowed:true});
+  assert.equal(online.results.length,25);
+  assert.equal(online.fromCache,false);
+  assert.equal(state.geoCache.berlin.requestLimit,25);
+  assert.equal(state.geoCache.berlin.results.length,25);
+  assert.equal(calls,1);
+  const cached=await svc.search("Berlin",{state,allowed:true});
+  assert.equal(cached.fromCache,true);
+  assert.equal(cached.results.length,25);
+  assert.equal(calls,1);
+});
+test("provider responses over 25 are capped and cached with request limit",async()=>{
+  const svc=new SearchService({geocoder:{resultLimit:25,search:async()=>
+    Array.from({length:40},(_,i)=>({lat:String(i),lon:"1"}))},
+    domain,now:()=>200_000_000});
+  const state={geoCache:{}};
+  const found=await svc.search("Paris",{state,allowed:true});
+  assert.equal(found.results.length,25);
+  assert.equal(state.geoCache.paris.results.length,25);
+  assert.equal(state.geoCache.paris.requestLimit,25);
 });
