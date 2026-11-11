@@ -107,6 +107,19 @@
       ["circle",{"cx":"10.5","cy":"6.5","r":".5","fill":"currentColor"}],
       ["path",{"d":"M2 22 22 2"}]
     ],
+    "circle-letter-i": [
+      ["circle",{"cx":"12","cy":"12","r":"10"}],
+      ["path",{"d":"M10 9h4"}],
+      ["path",{"d":"M12 9v6"}],
+      ["path",{"d":"M10 15h4"}]
+    ],
+    "circle-letter-i-off": [
+      ["circle",{"cx":"12","cy":"12","r":"10"}],
+      ["path",{"d":"M10 9h4"}],
+      ["path",{"d":"M12 9v6"}],
+      ["path",{"d":"M10 15h4"}],
+      ["path",{"d":"M2 22 22 2"}]
+    ],
     "info": [
       [
         "circle",
