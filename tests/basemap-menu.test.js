@@ -86,5 +86,5 @@ test("wiring loads UI module before app and includes it in offline shell",()=>{
   assert.match(worker,/".\/ui\/basemap-menu\.js"/);
   assert.match(app,/new window\.Pin2MapBasemapMenu/);
   assert.doesNotMatch(app,/document\.querySelectorAll\("#basemapMenu \[data-basemap\]"\)/);
-  assert.match(worker,/const CACHE='pin2map-new-v101'/);
+  assert.match(worker,/const CACHE='pin2map-new-v\d+'/); // Release changes independently of the menu contract.
 });
