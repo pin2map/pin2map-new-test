@@ -49,6 +49,9 @@
       if(state.basemap!==value){state.basemap=value;setTileLayer();save();}
     }
   });
+  const bulkDeleteDialog = new window.Pin2MapBulkDeleteDialog({
+    getElement:$,onConfirm:id=>confirmBulkDeletion(id)
+  });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -77,20 +80,14 @@
     const info=layerOps.deletionInfo(state,id,PRIVATE_ID);
     if(!info)return;
     if(!info.allowed){showNotice("Keine privaten Pins vorhanden");return;}
-    $("bulkTitle").textContent=info.privateOnly?"Alle Pins in Privat löschen?":"Ebene „"+info.layer.name+"“ löschen?";
-    $("bulkDescription").textContent=info.privateOnly
-      ?"Die Ebene Privat bleibt bestehen. "+info.count+" Pins werden gelöscht."
-      :"Die Ebene und "+info.count+" zugeordnete Pins werden gelöscht.";
-    $("bulkDialog").returnValue="cancel";
-    $("bulkDialog").showModal();
-    $("bulkDialog").onclose=()=>{
-      if($("bulkDialog").returnValue!=="confirm")return;
-      const result=layerOps.deleteLayerOrPins(state,id,PRIVATE_ID);
-      if(!result)return;
-      if(uiState.selectedPinId&&result.removedPinIds.includes(uiState.selectedPinId))uiState.selectedPinId=null;
-      save();renderLayers();renderMarkers();renderPinPanel();
-      showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
-    };
+    bulkDeleteDialog.show(id,info);
+  }
+  function confirmBulkDeletion(id){
+    const result=layerOps.deleteLayerOrPins(state,id,PRIVATE_ID);
+    if(!result)return;
+    if(uiState.selectedPinId&&result.removedPinIds.includes(uiState.selectedPinId))uiState.selectedPinId=null;
+    save();renderLayers();renderMarkers();renderPinPanel();
+    showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
   }
   function renderLayers(){
     layerView.render({
