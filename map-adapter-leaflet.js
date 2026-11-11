@@ -164,13 +164,42 @@
         className:"address-label",interactive:false
       });
     }
+    // Per-pin information lives in a separate map overlay ABOVE the name tooltip.
+    // Handles and Leaflet divIcon details never escape this adapter.
+    setMarkerInfo(marker,html,onClick){
+      if(!this.pinInfoOverlays)this.pinInfoOverlays=new Map();
+      let overlay=this.pinInfoOverlays.get(marker);
+      if(!html){
+        if(overlay){this.map.removeLayer(overlay);this.pinInfoOverlays.delete(marker);}
+        return;
+      }
+      const ll=marker.getLatLng();
+      const options={interactive:true,keyboard:false,zIndexOffset:450,
+        icon:window.L.divIcon({className:"elevation-label-wrap",
+          html,iconSize:[0,0],iconAnchor:[0,42]})};
+      if(!overlay){
+        overlay=window.L.marker(ll,options).addTo(this.map);
+        overlay.on("click",event=>{
+          window.L.DomEvent.stop(event.originalEvent);
+          onClick?.();
+        });
+        this.pinInfoOverlays.set(marker,overlay);
+      }else{
+        overlay.setLatLng(ll);
+        overlay.setIcon(options.icon);
+      }
+    }
     getMarkerElement(marker) { return marker.getElement(); }
     onMarker(marker,event,callback) {
       const handler=e=>callback(event==="drag"||event==="dragend"?this.getMarkerPosition(e.target):e);
       marker.on(event,handler);
       return ()=>marker.off(event,handler);
     }
-    removeOverlay(overlay) { if(overlay)this.map.removeLayer(overlay); }
+    removeOverlay(overlay) {
+      if(!overlay)return;
+      this.setMarkerInfo(overlay,"");
+      this.map.removeLayer(overlay);
+    }
     hasOverlay(overlay) { return this.map.hasLayer(overlay); }
     setMarkerZIndex(marker,value) { marker.setZIndexOffset(value); }
     createLine(positions,options={}) {
