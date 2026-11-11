@@ -18,7 +18,7 @@ function documentStub(){
   };
 }
 test("all selected control icons are available as offline Lucide SVG geometry",()=>{
-  for(const name of ["search","refresh-cw","settings","map","layers","info","plus","minus","scan","x","check","trash","map-pin-off"]){
+  for(const name of ["search","refresh-cw","settings","map","layers","tags","tags-off","info","plus","minus","scan","x","check","trash","map-pin-off"]){
     const icon=Icons.svg(name,documentStub());
     assert.equal(icon.name,"svg");
     assert.equal(icon.attributes.viewBox,"0 0 24 24");
@@ -42,7 +42,7 @@ test("all icon controls use central circular styling and remain offline",()=>{
   const html=read("index.html"),css=read("styles.css"),sw=read("sw.js");
   for(const [id,name] of Object.entries({
     searchButton:"search",refreshButton:"refresh-cw",settingsButton:"settings",
-    layersButton:"layers",labelsToggle:"info",confirmMove:"check",cancelMove:"x"
+    layersButton:"layers",labelsToggle:"tags",confirmMove:"check",cancelMove:"x"
   })){
     const tag=html.match(new RegExp("<button[^>]*id=\""+id+"\"[^>]*>"));
     assert.ok(tag,"Missing button: "+id);
