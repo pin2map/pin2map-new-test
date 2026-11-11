@@ -275,10 +275,35 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await brightness.isDisabled(),true);
     assert.equal(await contrast.isDisabled(),true);
+    assert.equal(await menu.locator("#satelliteReset").isDisabled(),true);
+    const inactiveStyle=await menu.locator(".basemap-satellite-slider").first().evaluate(el=>({
+      color:getComputedStyle(el).color,
+      iconOpacity:getComputedStyle(el.querySelector(".basemap-slider-icon")).opacity
+    }));
+    assert.equal(inactiveStyle.color,"rgb(156, 167, 179)");
+    assert.equal(inactiveStyle.iconOpacity,"0.48");
     await menu.locator('[data-basemap="satellite"]').click();
     await picker.click();
     assert.equal(await brightness.inputValue(),"120","Satellite value survives switching map layers");
     assert.equal(await contrast.inputValue(),"75");
+    const reset=menu.locator("#satelliteReset");
+    assert.equal(await reset.isEnabled(),true);
+    assert.equal(await reset.getAttribute("aria-label"),"Helligkeit und Kontrast auf 100 % zurücksetzen");
+    await reset.click();
+    assert.equal(await menu.isVisible(),true,"Reset must keep menu open");
+    assert.equal(await reset.isDisabled(),true,"Reset disables itself at standard values");
+    assert.equal(await brightness.inputValue(),"100");
+    assert.equal(await contrast.inputValue(),"100");
+    assert.equal(await page.evaluate(()=>{
+      const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
+      return img?.closest(".leaflet-layer")?.style.filter;
+    }),"brightness(1) contrast(1)");
+    await page.waitForTimeout(650);
+    await page.reload({waitUntil:"domcontentloaded"});
+    await assertReady(page);
+    await picker.click();
+    assert.equal(await brightness.inputValue(),"100");
+    assert.equal(await contrast.inputValue(),"100");
     const reliefToggle=page.locator("#esriReliefToggle");
     await reliefToggle.check();
     assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
