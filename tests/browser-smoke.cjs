@@ -334,6 +334,51 @@ async function longPress(page,x,y,ms=725){
     assert.deepEqual(finalPins.map(pin=>pin.name).sort(),["Frankfurt","Stuttgart"]);
     assert.deepEqual(errors,[],"Offline cached search transfer raises no page errors");
     console.log("[browser] PASS – offline cached search: nohit, multi choose, single auto-pin and persisted viewport/pins");
+    step("startup hydration: repair missing private layer without losing stored pins");
+    await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{
+        const project=await store.loadProject();
+        project.layers=project.layers.filter(layer=>layer.id!=="private");
+        project.activeLayer="legacy-obsolete";
+        await store.saveProject(project);
+      }finally{store.close();}
+    });
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    assert.equal(await page.locator(".pin-marker").count(),2,
+      "Hydration must preserve existing private pins and restore private layer");
+    await page.locator("#layersButton").click();
+    assert.ok(await page.locator("#layersList").getByText("Privat").count()>0);
+    assert.ok(await page.locator("#layersList").getByText("Reisen").count()>0);
+    await page.locator("#layersButton").click();
+    await page.locator("#labelsToggle").click();
+    await page.waitForTimeout(650);
+    const repaired=await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return await store.loadProject();}finally{store.close();}
+    });
+    assert.equal(repaired.pins.length,2);
+    assert.ok(repaired.layers.some(layer=>layer.id==="private"));
+    assert.equal(Object.hasOwn(repaired,"activeLayer"),false);
+    console.log("[browser] PASS – startup hydration preserves pins, repairs private layer and drops obsolete selection");
+
+    step("startup hydration: malformed stored project uses existing default-project fallback");
+    await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{await store.saveProject({layers:"invalid",pins:[{id:"bad-pin"}],activeLayer:"legacy"});}
+      finally{store.close();}
+    });
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    assert.equal(await page.locator(".pin-marker").count(),0);
+    await page.locator("#layersButton").click();
+    assert.ok(await page.locator("#layersList").getByText("Privat").count()>0);
+    assert.ok(await page.locator("#layersList").getByText("Ebene 1").count()>0);
+    await page.locator("#layersButton").click();
+    assert.deepEqual(errors,[],"Hydration regressions must not produce page errors");
+    console.log("[browser] PASS – malformed project safely falls back to defaults");
+
 
 
   }catch(error){
