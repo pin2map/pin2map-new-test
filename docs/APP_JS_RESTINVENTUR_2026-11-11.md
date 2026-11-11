@@ -1,6 +1,6 @@
 # Restinventur von `app.js` – nach v112
 
-**Stand:** 2026-11-11 · **Branch:** `feature/leaflet-modular-core` · **Quellstand:** v115 (Fortschreibung der v112-Restinventur)
+**Stand:** 2026-11-11 · **Branch:** `feature/leaflet-modular-core` · **Quellstand:** v116 (Fortschreibung der v112-Restinventur)
 
 ## Auftrag und Maßstab
 
@@ -15,7 +15,7 @@ Nach zehn Schritten zur Entflechtung von `app.js` wurde dessen Restfunktion entl
 | Ebenen hinzufügen: Benutzereingabe, Domänenprüfung, Meldungen und Render/Save | Bis v111 inline im `bind()` | **In v112 umgesetzt:** `application/layer-creation.js`; Prompt als injizierter UI-Port, Mutation bleibt `application/layer-operations.js` |
 | Pin-Editor-Eingaben, Ebenensichtbarkeit und Einzelpin-Löschung | Rückrufe in `app.js` an bestehende `ui/`-Module | **Anwendungsverdrahtung vorerst beibehalten**; Regeln sind Eigentum von `pin-operations`, `filter-operations` und `layer-operations`. Nur bei wiederholten fachlichen Mustern erneut extrahieren |
 | Pin-Marker, Ebenenliste und Pin-Panel rendern | `renderMarkers()`, `renderLayers()`, `renderPinPanel()` | **Composition Root**, injiziert Daten und ruft UI-Views auf; nicht allein wegen Umfang auslagern |
-| Karten-Overlay-Layout bei `move`, `moveend`, `zoomend`, Resize | `scheduleMapOverlayUpdate()`, `updatePanelLayout()` u. a. | **Späterer Kandidat**, wenn der Lifecycle als kohärente Overlay-Layout-Aufgabe testbar getrennt werden kann; Leaflet bleibt ausschließlich hinter Karten-Port |
+| Karten-Overlay-Layout bei `move`, `moveend`, `zoomend`, Resize | Seit v116 `ui/map-overlay-layout.js`; schmale Ports in `app.js` | **In v116 umgesetzt und bestätigt:** Frame-Deduplikation, Resize/Zoom/Moveend-Reihenfolge, Langdruck-Schutz und ausschließlich einmalige Eröffnungskorrektur |
 | Karte bei Klick im Verschiebemodus / nach Langdruck | Seit v115 `application/map-click-coordinator.js` und schlanke Verdrahtung in `app.js` | **In v115 umgesetzt und bestätigt:** Move-Ziel vor Unterdrückung durch Langdruck; Normal-Klick schließt Overlays |
 | PWA-Refresh, SW-Registrierung, Sichtbarkeitswechsel | `bind()`/`init()` | **Composition Root** für den Aufruf bereits vorhandener PWA-/Persistence-Module; keine neue Fachzuständigkeit |
 | Erzeugung der Views/Controller und injizierte Ports | Initialisierung in `app.js` | **Absichtlich in `app.js` belassen**. Reine Instanziierung ist kein Architekturfehler |
@@ -51,3 +51,9 @@ Weder `main`, `reference/*`, CSS (298 `!important`), Topo-Quelle `a.tile.opentop
 - `application/map-click-coordinator.js` entscheidet ohne Leaflet/DOM/IndexedDB über akzeptiertes Verschiebeziel versus Langdruck-Unterdrückung und gewöhnliches Schließen. Move-/Gesten-/Marker-Verträge verbleiben in bestehenden Modulen.
 - Neue Unit-Tests prüfen die Reihenfolge aller vier Fälle. Chromium-Smoke und Preview-Live-Start unverändert erfolgreich. Gates: <https://github.com/pin2map/pin2map-new-test/actions/runs/42995116808>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42995117164>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42995116869>.
 - Nächste Bewertung: Kartenbewegungs-/Overlay-Layout-Koordination, bei erhöhter Vorsicht wegen Pin-Pan- und Gestengeometrie. Kein unnötiges Aufbrechen bereits stabiler Module.
+
+## v116 – Kartenbewegungs-/Overlay-Layout-Koordination abgeschlossen
+
+- `ui/map-overlay-layout.js` übernimmt `move`, `moveend`, `zoomend`, Resize und ein gemeinsam geplantes Layout-Frame. Die reinen Geometrie- und Einmal-Pan-Verträge verbleiben ausdrücklich in `ui/pin-panel-positioner.js` und `ui/pin-move-preview.js`.
+- Unit-Tests plus bestehender Chromium-Smoke sichern Abbruch/Bestätigung von Verschiebungen, Pin-Editor und gespeicherten Viewport. Final grüne Gates: <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996>, <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529>.
+- Nächster Architekturauftrag: Composition-Root-Abschlussinventur; zugehörige Fachprioritäten gegen Vorgänger-App/Grundentscheidungen bestimmen, statt rein mechanischer weiterer Extraktionen.
