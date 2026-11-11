@@ -145,7 +145,7 @@
     onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
   });
   const searchPinTransfer = new window.Pin2MapSearchPinTransfer({
-    searchView,titleOf:result=>placeDomain.title(result),
+    searchView,titleOf:result=>placeDomain.pinName(result),
     addPin:(lat,lng,name)=>addPin(lat,lng,name),mapPort:{
       getViewport:()=>mapAdapter.getViewport(),
       setView:(view,options)=>mapAdapter.setView(view,options)
