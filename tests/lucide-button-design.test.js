@@ -205,7 +205,10 @@ test("Layers occupies the upper-right corner while Info stays above the lower-ri
   assert.ok(info.includes("bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important"));
   assert.ok(css.includes("#app #basemapButton.basemap-map-button.p2m-icon-control"));
   assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
-  assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton)"));
+  assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton)"),
+    "Focused pin editor must hide every map control including Pin-Info");
+  assert.ok(css.includes("body.pin-open #map .elevation-label-wrap"),
+    "Focused pin editor must hide clickable information labels above pins");
 });
 
 
