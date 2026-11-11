@@ -61,7 +61,7 @@
 
 - Neues `application/fit-visible-pins.js`: unabhängiger Anwendungsfall für die Option „Alle sichtbaren Pins anzeigen“; nutzt injizierten `pinFilter` und `mapPort` statt Leaflet/DOM/IndexedDB. Erhält leeren Zustand mit Meldungs-Callback ohne Kartenbewegung, Einzelpin mit Zoom mindestens 13, Mehrfach-Pins mit Padding [35,35]/maxZoom 15 und anschließender UI-Layout-Aktualisierung.
 - `app.js` delegiert ausschließlich diesen Anwendungsfall über `fitVisiblePins(...)`; der Kartenadapter und Pin-/Ebenenzustand bleiben an ihren bisherigen Verantwortlichkeiten. `index.html` lädt das Modul vor `app.js`; `sw.js` nimmt es in den Offline-App-Shell-`CORE` auf, Quellversion `pin2map-new-v102`.
-- Neuer `tests/fit-visible-pins.test.js` prüft 0/1/mehrere sichtbare Pins und die Integration mit HTML/App-Shell. **Statische GitHub-Checks erfolgreich**, aber die neuen Node-/Chromium-/Pages-Workflows wurden bei Erstellung dieser Statusnotiz erst gestartet. Erfolg erst nach tatsächlicher GitHub-Actions-Prüfung behaupten.
+- Neuer `tests/fit-visible-pins.test.js` prüft 0/1/mehrere sichtbare Pins und die Integration mit HTML/App-Shell. Beim ersten v102-Run zunächst **140/141 Node-Tests bestanden**: der ältere Basiskarten-Test hatte den SW-Release-String noch hart auf v101 festgelegt. Diese versionsabhängige Altannahme wurde in `tests/basemap-menu.test.js` durch einen versionstoleranten App-Shell-Vertrag ersetzt (Commit `02c96fdb73ced077258f7e9f4b8fd1042627e43c`). Der aktuelle **Node-Job ist danach grün**, Architekturprüfungen ebenfalls; der vollständige Chromium- und Pages-Lauf wird separat nachgehalten.
 - `styles.css` und das CSS-Budget 298 bleiben unverändert. Keine Änderung an IndexedDB, Pin-Datenschema, `main` oder Referenzzweigen.
 - **Nutzergerätetest:** noch nicht erforderlich, solange die gezielten automatischen Tests und Browser-/Live-Gates laufen. Falls ein Layout-/Interaktionsregressionsverdacht entsteht, wird eine konkrete Testanleitung für die Preview gegeben.
 
@@ -79,7 +79,7 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **v102 technisch verifizieren:** vollständige GitHub-Actions-`Modular core checks`, Architekturchecks, Preview-/HTTPS-Assets und automatisierte Browser-Smokes wirklich prüfen; mögliche Testfehler vor dem nächsten Architekturschnitt beheben.
+1. **v102-Verifikation abschließen:** Nach dem korrigierten versionsgebundenen Alt-Test sind Node- und Architekturläufe grün. Chromium-Smoke, Preview-Deployment und die tatsächlich gelieferten HTTPS-Assets bis zum Ergebnis nachweisen; keine Freigabe ohne Endresultat.
 2. **Bedienung „Alle sichtbaren Pins anzeigen“ abnehmen:** zunächst automatische Browserabdeckung für leere Ansicht sowie Einzel-/Mehrfach-Pin-Einpassen sicherstellen. Eine manuelle iPhone-/iPad-Prüfung nur bei konkretem Bedarf ausdrücklich anfordern, mit URL und Schritten.
 3. Anschließend nächste sinnvolle `app.js`-Verantwortlichkeit auswählen und wieder genau eine kleine Extraktion umsetzen; CSS-Konsolidierung B39 bleibt pausiert.
 4. `main`, Referenzen, IndexedDB und persistierte Nutzerpins geschützt lassen.
