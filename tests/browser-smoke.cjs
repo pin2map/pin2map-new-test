@@ -54,6 +54,10 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await picker.getAttribute("aria-expanded"),"false");
     assert.equal(await topo.getAttribute("aria-pressed"),"true");
     assert.equal(await topo.evaluate(el=>el.classList.contains("is-selected")),true);
+    // A selected menu item is not proof that the external tile server works.
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll(".leaflet-tile-pane img"))
+      .some(img=>img.src.includes("tile.top-o-map.de/")&&img.complete&&img.naturalWidth>0),
+      null,{timeout:20000});
     assert.equal(await picker.evaluate(el=>el===document.activeElement),true);
     await page.waitForTimeout(650); // Debounced IndexedDB save.
     await page.reload({waitUntil:"domcontentloaded"});
