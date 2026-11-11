@@ -36,7 +36,7 @@ test("crossed tags state retains exact icon geometry and draws one diagonal slas
   assert.deepEqual(crossed.children.slice(0,3).map(n=>({name:n.name,attributes:n.attributes})),
     normal.children.map(n=>({name:n.name,attributes:n.attributes})));
   assert.equal(crossed.children[3].name,"path");
-  assert.equal(crossed.children[3].attributes.d,"M2 2 22 22");
+  assert.equal(crossed.children[3].attributes.d,"M2 22 22 2");
 });
 
 test("mount replaces fallback character without changing accessible button labeling",()=>{
