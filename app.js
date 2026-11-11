@@ -41,18 +41,29 @@
   });
   const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
   const pinInfoService=new window.Pin2MapPinInfoService.PinInfoService({
-    provider:new window.Pin2MapOpenMeteoPinInfo({fetchImpl:(...args)=>fetch(...args)}),
+    provider:new window.Pin2MapPinInfoProvider({
+      forecast:new window.Pin2MapOpenMeteoPinInfo({fetchImpl:(...args)=>fetch(...args)}),
+      climatology:new window.Pin2MapNasaPowerClimatology({fetchImpl:(...args)=>fetch(...args)}),
+      sunTimes:new window.Pin2MapMonthlySunTimes({fetchImpl:(...args)=>fetch(...args)})
+    }),
     onUpdate:()=>renderMarkers(),
     onError:()=>showNotice("Pin-Informationen vorübergehend nicht verfügbar")
   });
   const pinInfoMenu=new window.Pin2MapPinInfoMenu({
     getElement:$,document,icons:window.Pin2MapIcons,
     onOpening:()=>{basemapMenu.close();uiShell.closePanels();searchView.hide();},
+    onPeriodChange:period=>{
+      if(state.pinInfoPeriod!==period){
+        state.pinInfoPeriod=period;
+        pinInfoService.setPeriod(period);
+        save();renderMarkers();
+      }
+    },
     onSelect:mode=>{
       if(state.pinInfoMode!==mode){
         state.pinInfoMode=mode;
         pinInfoService.setMode(mode);
-        pinInfoMenu.render(mode);
+        pinInfoMenu.render(mode,state.pinInfoPeriod);
         save();
         renderMarkers();
       }
@@ -296,7 +307,7 @@
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
       getInfoLabel:pin=>pinInfoService.label(pin),
-      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info),
+      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info,{monthIcon:window.Pin2MapIcons.svg("circle-slash-2",document).outerHTML}),
       onInfoClick:id=>selectPin(id),
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;selectPin(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
@@ -336,8 +347,10 @@
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
+    if(!window.Pin2MapPinInfoService.PERIODS.includes(state.pinInfoPeriod))state.pinInfoPeriod="today";
+    pinInfoService.setPeriod(state.pinInfoPeriod);
     pinInfoService.setMode(state.pinInfoMode);
-    pinInfoMenu.render(state.pinInfoMode);
+    pinInfoMenu.render(state.pinInfoMode,state.pinInfoPeriod);
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && (location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname)))navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
