@@ -108,6 +108,36 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator('#basemapMenu [data-basemap="street"]').getAttribute("aria-pressed"),"true",
       "Street choice persists after reload");
     assert.equal(await page.locator("#basemapMenu").isHidden(),true);
+    step("legacy map catalog: International, Satellite, Humanitarian and optional Esri hillshade");
+    const sources=[
+      ["international","World_Street_Map"],
+      ["satellite","World_Imagery"],
+      ["humanitarian","tile.openstreetmap.fr/hot"]
+    ];
+    for(const [choice,source] of sources){
+      await picker.click();
+      await menu.locator('[data-basemap="'+choice+'"]').click();
+      assert.equal(await menu.locator('[data-basemap="'+choice+'"]').getAttribute("aria-pressed"),"true");
+      await page.waitForFunction(part=>Array.from(document.querySelectorAll(".leaflet-tile-pane img"))
+        .some(img=>img.src.includes(part)),source,{timeout:5000});
+    }
+    await picker.click();
+    const reliefToggle=page.locator("#esriReliefToggle");
+    await reliefToggle.check();
+    assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
+    await page.waitForFunction(()=>!!document.querySelector(".leaflet-pane[style*='250'] img[src*='World_Hillshade']"),
+      null,{timeout:5000});
+    assert.equal(await page.locator("#map .leaflet-pane[style*='250']").evaluate(el=>
+      el.style.pointerEvents==="none"&&el.style.mixBlendMode==="multiply"),true);
+    await page.waitForTimeout(650);
+    await page.reload({waitUntil:"domcontentloaded"});
+    await assertReady(page);
+    await picker.click();
+    assert.equal(await reliefToggle.isChecked(),true,"Relief choice persists after reload");
+    await reliefToggle.uncheck();
+    await page.waitForFunction(()=>!document.querySelector(".leaflet-pane[style*='250'] img[src*='World_Hillshade']"),
+      null,{timeout:5000});
+    await menu.locator('[data-basemap="street"]').click();
     assert.deepEqual(errors,[],"No JavaScript errors in basemap menu workflow");
     console.log("[browser] PASS – basemap toggle, street/topo, ARIA, focus, Escape, outside click, panels, persistence");
     const box=await page.locator("#map").boundingBox();
