@@ -82,7 +82,7 @@ test("optional satellite appearance fields hydrate without a storage schema chan
   assert.equal(initial.satelliteBrightness,115);
   assert.equal(initial.satelliteContrast,75);
   const previous=run({layers:[{id:"private",name:"Privat"}],pins:[],basemap:"satellite"});
-  assert.equal(previous.satelliteBrightness,100);
-  assert.equal(previous.satelliteContrast,100);
+  assert.equal(previous.satelliteBrightness,140);
+  assert.equal(Object.hasOwn(previous,"satelliteContrast"),false);
   assert.deepEqual(previous.pins,[]);
 });
