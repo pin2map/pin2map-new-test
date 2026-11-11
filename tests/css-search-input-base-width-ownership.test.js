@@ -7,7 +7,7 @@ const path=require("node:path");
 const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
 const clean=css.replace(/\/\*[\s\S]*?\*\//g,"");
 test("base search input retains its border/background without old 100 percent width",()=>{
-  assert.match(clean,/\.search input\{min-width:0;border:0;outline:0;background:white\}/);
+  assert.match(clean,/\.search input\{border:0;outline:0;background:white\}/);
   assert.doesNotMatch(clean,/\.search input\{width:100%;min-width:0;/);
 });
 test("later flex/width and iOS typography contracts remain",()=>{
