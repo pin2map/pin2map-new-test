@@ -32,12 +32,19 @@
         this.widthObserver.observe(this.outerSearch);
         if(this.bottomControl)this.widthObserver.observe(this.bottomControl);
       }
+      // Only the current view for this results container owns keyboard input.
+      // No document-global shortcut may alter map or search input semantics.
+      this.container.__pin2mapResultsKeyboardOwner=this;
+      this.keyHandler=event=>this.handleKey(event);
+      doc.addEventListener?.("keydown",this.keyHandler);
     }
     syncWidth(){
       const box=this.outerSearch?.getBoundingClientRect?.();
       if(!box||!this.container.style)return;
       const origin=this.appRoot?.getBoundingClientRect?.().top||0;
-      const sheetTop=box.top-origin+box.height/2;
+      // The predecessor's choice dialog is a separate framed panel, not
+      // a visually attached drawer. Keep its top below the OUTER search block.
+      const sheetTop=box.bottom-origin+8;
       const bottomTop=this.bottomControl?.getBoundingClientRect?.().top;
       const appBottom=this.appRoot?.getBoundingClientRect?.().bottom;
       const limit=Number.isFinite(bottomTop)?bottomTop:appBottom;
@@ -45,15 +52,60 @@
       this.container.style.top=sheetTop+"px";
       if(Number.isFinite(limit))
         this.container.style.maxHeight=Math.max(0,limit-origin-sheetTop)+"px";
-      // The background starts behind the rounded search block, but the first
-      // TEXT begins after the outside bottom edge with 12px breathing room.
-      const items=this.container.querySelector?.(".results-items");
-      if(items?.style)items.style.paddingTop=Math.max(0,box.height/2+12)+"px";
+      // Interior spacing belongs to the single .results-items CSS rule.
     }
     isVisible(){return !this.container.classList.contains("hidden");}
+    choices(){return [...(this.container.querySelectorAll?.(".results-items .result")||[])];}
+    mark(target){
+      for(const button of this.choices())button.classList.toggle("is-keyboard-selected",button===target);
+      if(target){
+        target.focus?.({preventScroll:true});
+        target.scrollIntoView?.({block:"nearest",inline:"nearest"});
+      }
+    }
+    handleKey(event){
+      if(this.container.__pin2mapResultsKeyboardOwner!==this||!this.isVisible())return;
+      const key=event.key;
+      if(!["ArrowDown","ArrowUp","Enter","Escape"].includes(key))return;
+      const options=this.choices();
+      const active=this.document.activeElement;
+      const searchInput=this.document.getElementById?.("searchInput");
+      // Enter in the input always remains an explicit NEW search request.
+      if(key==="Enter"&&active===searchInput)return;
+      if(key==="Escape"){
+        event.preventDefault();
+        event.stopPropagation?.();
+        this.hide();
+        this.onCancel();
+        searchInput?.focus?.({preventScroll:true});
+        return;
+      }
+      if(!options.length)return;
+      const focused=options.indexOf(active);
+      const selected=options.findIndex(el=>el.classList.contains("is-keyboard-selected"));
+      const index=focused>=0?focused:selected>=0?selected:0;
+      if(key==="ArrowDown"||key==="ArrowUp"){
+        event.preventDefault();
+        event.stopPropagation?.();
+        const next=focused<0&&selected<0
+          ?(key==="ArrowDown"?0:options.length-1)
+          :(index+(key==="ArrowDown"?1:-1)+options.length)%options.length;
+        this.mark(options[next]);
+      }else if(key==="Enter"&&active!==this.container.querySelector?.(".results-cancel")){
+        event.preventDefault();
+        event.stopPropagation?.();
+        options[index].click();
+      }
+    }
     hide(){
       this.container.classList.add("hidden");
       this.container.replaceChildren();
+    }
+    dispose(){
+      this.document.removeEventListener?.("keydown",this.keyHandler);
+      this.widthObserver?.disconnect?.();
+      if(this.container.__pin2mapResultsKeyboardOwner===this)
+        delete this.container.__pin2mapResultsKeyboardOwner;
     }
     cancelFooter(){
       const footer=this.document.createElement("div");
@@ -115,6 +167,14 @@
       this.container.append(items,this.cancelFooter());
       this.container.classList.remove("hidden");
       this.syncWidth();
+      // Predecessor: first result is the keyboard selection on opening.
+      // Avoid forcing virtual keyboards or changing touch focus.
+      const first=this.choices()[0];
+      if(first){
+        first.classList.add("is-keyboard-selected");
+        if(!root.matchMedia?.("(pointer: coarse)")?.matches)
+          first.focus?.({preventScroll:true});
+      }
     }
   }
   root.Pin2MapSearchResultsView=SearchResultsView;
