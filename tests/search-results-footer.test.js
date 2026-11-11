@@ -35,3 +35,16 @@ test("status message is followed by cancel button",()=>{
   container.children.at(-1).children[0].click();
   assert.equal(view.isVisible(),false);
 });
+test("results use measured search pill width, also after viewport changes",()=>{
+  let width=258;
+  const anchor={getBoundingClientRect:()=>({width})};
+  const container=new Element("div");container.style={};
+  const doc={createElement:tag=>new Element(tag),getElementById:id=>id==="searchForm"?anchor:null};
+  const view=new SearchResultsView({container,document:doc,onChoose:()=>{},
+    titleOf:r=>r.name,detailOf:r=>r.place});
+  view.show([{name:"Stuttgart",place:"Deutschland"}]);
+  assert.equal(container.style.width,"258px");
+  width=305;
+  view.message("Neue Suche");
+  assert.equal(container.style.width,"305px");
+});
