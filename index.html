@@ -133,8 +133,20 @@
     <button type="button" class="basemap-choice" data-basemap="international" aria-pressed="false">International</button>
     <button type="button" class="basemap-choice" data-basemap="street" aria-pressed="false">OSM Original</button>
     <button type="button" class="basemap-choice" data-basemap="topo" aria-pressed="false">Topografisch</button>
-    <button type="button" class="basemap-choice" data-basemap="satellite" aria-pressed="false">Satellit</button>
     <button type="button" class="basemap-choice" data-basemap="humanitarian" aria-pressed="false">Humanitarian</button>
+    <button type="button" class="basemap-choice" data-basemap="satellite" aria-pressed="false">Satellit</button>
+    <div class="basemap-satellite-controls" role="group" aria-label="Satellitenbild anpassen">
+      <label class="basemap-satellite-slider" for="satelliteBrightness">
+        <span class="basemap-slider-icon" data-pin-icon="sun-medium"></span><span>Helligkeit</span>
+        <output id="satelliteBrightnessValue" for="satelliteBrightness">100 %</output>
+      </label>
+      <input id="satelliteBrightness" type="range" min="70" max="140" step="5" value="100" aria-label="Satellitenbild Helligkeit">
+      <label class="basemap-satellite-slider" for="satelliteContrast">
+        <span class="basemap-slider-icon" data-pin-icon="contrast"></span><span>Kontrast</span>
+        <output id="satelliteContrastValue" for="satelliteContrast">100 %</output>
+      </label>
+      <input id="satelliteContrast" type="range" min="60" max="140" step="5" value="100" aria-label="Satellitenbild Kontrast">
+    </div>
     <label class="basemap-relief-toggle" for="esriReliefToggle"><input type="checkbox" id="esriReliefToggle"> Schummerung</label>
   </section>
   <div id="searchResults" class="search-results hidden" role="status" aria-live="polite"></div>
