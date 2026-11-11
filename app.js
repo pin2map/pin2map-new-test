@@ -104,6 +104,16 @@
     createId:uid,cleanText,colors:COLORS,
     onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
   });
+  const searchPinTransfer = new window.Pin2MapSearchPinTransfer({
+    searchView,titleOf:result=>placeDomain.title(result),
+    addPin:(lat,lng,name)=>addPin(lat,lng,name),mapPort:{
+      getViewport:()=>mapAdapter.getViewport(),
+      setView:(view,options)=>mapAdapter.setView(view,options)
+    },
+    onLayout:()=>requestAnimationFrame(keepSelectedAbovePanel),
+    isPrivateLayerVisible:()=>layerById(PRIVATE_ID).visible,
+    onRenderMarkers:()=>renderMarkers()
+  });
   const showNotice = message => uiShell.showNotice(message);
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
@@ -183,24 +193,9 @@
   }
   function addPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
-  const hideResults = () => searchView.hide();
   const searchMessage = msg => searchView.message(msg);
-  function choosePlace(r) {
-    const lat = Number(r.lat), lng = Number(r.lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) { searchMessage("Ort konnte nicht übernommen werden"); return; }
-    hideResults();
-    const pin = addPin(lat, lng, placeDomain.title(r));
-    if (pin) {
-      mapAdapter.setView({center:{lat,lng},zoom:Math.max(mapAdapter.getViewport().zoom,13)}, { animate: false });
-      requestAnimationFrame(keepSelectedAbovePanel);
-      if (layerById(PRIVATE_ID).visible) renderMarkers();
-    }
-  }
-  function renderResults(list) {
-    if (!list.length) { searchMessage("Kein Ort gefunden"); return; }
-    if (list.length === 1) { choosePlace(list[0]); return; }
-    searchView.show(list);
-  }
+  const choosePlace = result => searchPinTransfer.choose(result);
+  const renderResults = list => searchPinTransfer.present(list);
 
   const searchForm = new window.Pin2MapSearchFormController({
     getElement:$,
