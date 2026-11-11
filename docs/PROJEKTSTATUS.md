@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v103 Topo-Kachelserver-Korrektur; manuelle Safari-Abnahme ausdrücklich erforderlich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v104 gezielter OpenTopoMap-a-Host-Gegenversuch; manuelle Browserabnahme erforderlich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v103**, nach Korrektur der topografischen Tile-Quelle. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v103'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v103` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v104**, nach kontrolliertem Topografie-Quellen-Gegenversuch. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v104'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v104` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -73,6 +73,15 @@
 - **Testlücke präzisiert:** Der bisherige Chromium-Test bestätigte nur Auswahl-/ARIA-/Persistenzzustand, nicht tatsächliche Bildauslieferung. Ein neuer externer `naturalWidth>0`-Test zeigte in GitHub Actions **Timeout**, weil der Runner keine Topo-Bilder über die Ersatz-Domain empfing. Das beweist keinen iOS-Erfolg und keinen Defekt des lokalen Menü-Controllers. Für CI bleibt deshalb ein deterministischer Host-/Menüvertrag verpflichtend, eine kurz begrenzte Bildauslieferungsprobe wird diagnostisch protokolliert, aber ein Fremdserver-Ausfall blockiert die Anwendungstests nicht. **Der echte Topo-Erfolg muss im Safari-/iPad-/iPhone-Gerätetest überprüft werden.**
 - **CI/Pages inzwischen bestätigt:** Für den Test-Commit `388c86a2697af690e3f359b1c2db55b8d95730aa` sind `Modular core checks` (Node und Chromium), Architektur-Gate und Preview-Deployment erfolgreich: [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42983369204), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42983369159), [Pages/HTTPS](https://github.com/pin2map/pin2map-new-test/actions/runs/42983369172). Die Live-Startprüfung testet **nicht** die echte Topo-Auslieferung in Safari, und die externe CI-Kachelprobe hat keinen Bildempfang nachgewiesen. **Safari-Gerätetest ist jetzt nötig.** Kein Merge nach `main`.
 
+## 4e. Wiederholter Topo-Ausfall, historische Ursachenprüfung und v104 (2026-11-11)
+
+- **Neuer Nutzerbefund:** In Safari **und** Brave privat bleibt die topografische Kachelfläche auch nach v103 grau, der Wechsel zurück zur Straßenkarte funktioniert. Der Nutzer bestätigt, dass Topografie **vor dem Umbau** angezeigt wurde. **Keine erfolgreiche manuelle Topo-Abnahme.**
+- **Historischer GitHub-Vergleich:** `app.js` vor der Modularisierung und `map-adapter-leaflet.js` ab seiner Einführung am 2026-11-09 nutzten beide dieselbe Topo-Kachel-URL `https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png`. Der Umbau selbst hat diese Adresse also nicht verändert. Erst die unbelegte v103-Reparatur schwenkte auf `tile.top-o-map.de`. Das beweist weder den Anbieter als Fehlerursache noch schließt es andere indirekte Regressionen aus.
+- **Netzwerk-Gegenprobe:** Über einen Webabruf war `https://a.tile.opentopomap.org/6/33/21.png` als Kartenbild erreichbar, während `tile.top-o-map.de` und die `b`-/`c`-Teildomains bei derselben Webprüfung nicht abrufbar waren. Diese Stichprobe ist keine vollständige Netzwerk-/Geräteanalyse.
+- **Kontrollierte v104-Änderung:** Topografie im Leaflet-Adapter auf **`https://a.tile.opentopomap.org/{z}/{x}/{y}.png`** festgelegt. Anders als zuvor kein Wechsel zwischen `a`, `b`, `c`; im Übrigen identische Topo-Kachelquelle, Straßenkarte unverändert. `sw.js` App-Shell-Release auf `pin2map-new-v104` erhöht. Quellenvertrag-/Browser-Tests angepasst, keine CSS-, Pin-, Persistenz- oder `main`-Änderung.
+- **CI/Pages verifiziert:** `Modular core checks` mit Node und Chromium **erfolgreich** <https://github.com/pin2map/pin2map-new-test/actions/runs/42984307184>, Architektur-Gate **erfolgreich** <https://github.com/pin2map/pin2map-new-test/actions/runs/42984305834>, Preview/HTTPS-Live-Start **erfolgreich** <https://github.com/pin2map/pin2map-new-test/actions/runs/42984305659>. Diese Checks beweisen den Quell-/Kartenstartvertrag, **nicht** die korrekte Topo-Kachel-Anzeige bei realen Safari-/Brave-Nutzern.
+- **Jetzt erforderlich:** v104 in Safari **und** Brave privat auf dem betroffenen Gerät aufrufen, Topografische Karte wählen und prüfen, ob die Kacheln tatsächlich sichtbar sind; bei weiterhin grauer Fläche keine weitere blind wechselnde Tile-Domain, sondern gezielte Fehler-/HTTP-/TLS-Diagnose durchführen. `app.js`-Modularisierung bleibt bis zur Fehlerklärung pausiert.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -87,10 +96,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **v103-CI-/Pages-Gates bestanden:** Node, Architektur, Chromium, Preview/HTTPS und Live-Kartenstart wurden für den v103-Test-Commit bestätigt. Externe Topo-Kachelverfügbarkeit in Safari bleibt ausdrücklich unbewiesen.
-2. **Nutzergerätetest ausdrücklich anfordern:** Vorschau auf dem betroffenen iPhone/iPad in Safari mit v103 öffnen (ggf. PWA-Refresh), Topografische Karte auswählen und prüfen, ob echte Kartenkacheln statt grauer Fläche sichtbar sind; anschließend Straßenkarte kontrollieren. Falls weiterhin grau: Browser-/Netzwerkdiagnose statt weiterer CSS-/app.js-Refactorings.
-3. „Alle sichtbaren Pins anzeigen“ ist durch Nutzerbefund positiv bestätigt; danach nächste kleine `app.js`-Verantwortlichkeit nur fortsetzen, wenn die Topo-Störung geklärt ist.
-4. `main`, Referenzen, IndexedDB und vorhandene Pins geschützt lassen; CSS-B38/298 bleibt pausiert.
+1. **Jetzt Nutzertest v104:** <https://pin2map.github.io/pin2map-new-test/preview/> in Safari und Brave privat; Topografische Karte wählen und tatsächliche Bildkacheln prüfen, dann zur Straßenkarte zurückschalten. Kein Pin-Löschen, kein Browserdaten-Reset. Bereits erfolgreich: Autozoom mit mehreren Pins.
+2. **Bei weiter grauer Fläche:** Tile-Load-Fehlermodus auf betroffener Browser/Netzwerk-Kombination eingrenzen (z. B. echte Bild-URL manuell öffnen und gegebenenfalls HTTP-/TLS-Fehler sammeln), dann erst weitere gezielte Codeänderung. Nicht wieder nur die Karten-Domain wechseln.
+3. Bei erfolgreicher manueller Topo-Abnahme nächste kleine `app.js`-Extraktion planen; CSS B38/298 bleibt pausiert.
+4. `main`, Referenzzweige, IndexedDB und persistierte Nutzerdaten schützen; keine stille Produktionsfreigabe.
 
 ## 6. Maßgebliche Dokumente
 
