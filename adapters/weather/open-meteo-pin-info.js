@@ -20,6 +20,7 @@
         if(mode==="temperature")q.set("current","temperature_2m");
         else if(mode==="daily")q.set("daily","temperature_2m_min,temperature_2m_max");
         else if(mode==="sun")q.set("daily","sunrise,sunset");
+        else if(mode==="precipitation")q.set("daily","precipitation_sum");
         else if(mode==="zone")q.set("current","temperature_2m");
         else throw new RangeError("Unknown information mode: "+mode);
       }
@@ -43,6 +44,11 @@
           const min=row.daily?.temperature_2m_min?.[0],max=row.daily?.temperature_2m_max?.[0],date=row.daily?.time?.[0];
           return min!=null&&max!=null&&Number.isFinite(Number(min))&&Number.isFinite(Number(max))&&date
             ?{min:Number(min),max:Number(max),date,zone:row.timezone}:null;
+        }
+        if(mode==="precipitation"){
+          const value=row.daily?.precipitation_sum?.[0],date=row.daily?.time?.[0];
+          return value!==null&&value!==undefined&&Number.isFinite(Number(value))&&Number(value)>=0&&date
+            ?{value:Number(value),date,zone:row.timezone,forecast:true}:null;
         }
         if(mode==="sun"){
           const rise=row.daily?.sunrise?.[0],set=row.daily?.sunset?.[0],date=row.daily?.time?.[0];
