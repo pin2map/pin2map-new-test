@@ -18,13 +18,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .leaflet-top.leaflet-left{top:12px}
 .leaflet-bottom.leaflet-right{bottom:5px}
 .leaflet-control-attribution{font-size:10px!important}
-.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;display:flex;flex-direction:column;overflow:hidden;background:#f2f4f7;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
-.result{display:block;width:100%;text-align:left;border-radius:0;border-bottom:1px solid #dfe5eb;background:transparent;color:#183454;padding:12px}
-.results-items{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#f2f4f7}
+.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;display:flex;flex-direction:column;overflow:hidden;background:#f2f4f7;border:1px solid #aebccc;border-radius:14px;box-shadow:0 6px 24px #15283e45}
+.result{display:block;width:100%;text-align:left;margin:0 0 7px;border:1px solid #d1d8e1;border-radius:9px;background:#fff;color:#183454;padding:10px}
+.results-items{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#f2f4f7;padding:12px 10px 8px}
 .result-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .result-kind{font-size:11px;font-weight:600;color:#555;background:#f0f0f2;border-radius:6px;padding:4px 7px;white-space:normal}
 .result-coordinates{display:block;font-size:11px;color:#777;margin-top:3px}
 .result:hover{background:#edf6ff}
+.result:focus-visible,.result.is-keyboard-selected{background:#e4efff;color:#111;outline:3px solid #287cff;outline-offset:-3px}
 .result strong{display:block;font-size:14px}
 .result small{font-size:12px;color:#66788b}
 .results-footer{display:flex;flex:0 0 auto;justify-content:center;padding:8px 12px;border-top:1px solid #cbd3dc;background:#dfe4eb}
