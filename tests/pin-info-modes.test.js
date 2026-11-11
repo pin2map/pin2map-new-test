@@ -1,0 +1,70 @@
+"use strict";
+const test=require("node:test");
+const assert=require("node:assert/strict");
+const {PinInfoService,TTL,zoneDelta}=require("../application/pin-info-service.js");
+const {labelMarkup,temperatureClass}=require("../ui/pin-info-label.js");
+const Provider=require("../adapters/weather/open-meteo-pin-info.js");
+const visible={id:"visible",lat:48.77,lng:9.18};
+const hidden={id:"hidden",lat:40,lng:10};
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+test("off mode does not contact providers; only visible pins are fetched",async()=>{
+ const calls=[];let updates=0,now=100000;
+ const svc=new PinInfoService({provider:{async request(mode,pins){calls.push({mode,pins:pins.map(p=>p.id)});return pins.map(()=>({value:18}));}},now:()=>now,onUpdate:()=>updates++});
+ svc.setVisiblePins([visible]);await tick();assert.equal(calls.length,0);
+ svc.setMode("temperature");await tick();assert.deepEqual(calls,[{mode:"temperature",pins:["visible"]}]);
+ assert.equal(svc.label(visible).text,"18 °C");
+ svc.setVisiblePins([visible]);await tick();assert.equal(calls.length,1,"Fresh cache prevents duplicate request");
+ svc.setVisiblePins([visible,hidden]);await tick();assert.deepEqual(calls.at(-1).pins,["hidden"],"Newly visible pin loads independently");
+ svc.setVisiblePins([visible]);await tick();assert.equal(calls.length,2,"Hidden pin is not fetched again");
+ now+=TTL.temperature+1;svc.setVisiblePins([visible]);await tick();
+ assert.deepEqual(calls.at(-1).pins,["visible"],"Expired temperature reloaded");
+ assert.ok(updates>=3);
+});
+test("a hidden layer suppresses delayed responses without mutating user pins",async()=>{
+ let deliver;let updates=0;
+ const provider={request:()=>new Promise(resolve=>{deliver=resolve;})};
+ const svc=new PinInfoService({provider,onUpdate:()=>updates++});
+ svc.setVisiblePins([visible]);svc.setMode("temperature");
+ assert.equal(typeof deliver,"function");
+ svc.setVisiblePins([]);
+ deliver([{value:24}]);await tick();
+ assert.equal(svc.get(visible),null);
+ assert.equal(updates,0);
+ svc.setVisiblePins([visible]);deliver([{value:21}]);await tick();
+ assert.equal(svc.label(visible).text,"21 °C");
+ assert.deepEqual(visible,{id:"visible",lat:48.77,lng:9.18});
+});
+test("coordinate-specific cache never leaks data when a pin moves",async()=>{
+ const calls=[];
+ const svc=new PinInfoService({provider:{async request(mode,pins){calls.push(pins[0].lng);return [{value:4}];}}});
+ svc.setMode("elevation");svc.setVisiblePins([visible]);await tick();
+ assert.equal(svc.label(visible).text,"4 m");
+ const moved={...visible,lng:9.31};svc.setVisiblePins([moved]);await tick();
+ assert.deepEqual(calls,[9.18,9.31]);
+});
+test("upward two-tone daily/sun, temperature colors and safe text escaping",()=>{
+ assert.match(labelMarkup({mode:"daily",parts:["-2°","13 °C"]}),/p2m-label-min/);
+ assert.match(labelMarkup({mode:"sun",parts:["07:18","18:21"]}),/p2m-label-set/);
+ assert.equal(labelMarkup({mode:"elevation",text:""}),"");
+ assert.ok(!labelMarkup({mode:"sun",parts:["<img>","18:21"]}).includes("<img>"));
+ for(const [value,klass] of [[-16,"black"],[-6,"darkblue"],[0,"cold"],[12,"darkgreen"],[18,"lightgreen"],[26,"warm"],[32,"hot"],[33,"veryhot"]])
+   assert.equal(temperatureClass(value),"p2m-wx-"+klass);
+ assert.match(zoneDelta({zone:"Etc/UTC",fallback:0},Date.UTC(2026,0,1)),/^Δ /);
+});
+test("Open-Meteo provider creates correct batched endpoints and parses all six-mode data",async()=>{
+ const requests=[];let data;
+ const provider=new Provider({fetchImpl:async url=>{requests.push(url);return {ok:true,json:async()=>data};}});
+ data={elevation:[123,456]};
+ assert.deepEqual(await provider.request("elevation",[visible,hidden]),[{value:123},{value:456}]);
+ assert.ok(requests.at(-1).includes("/v1/elevation?"));
+ data={current:{temperature_2m:22}};
+ assert.deepEqual(await provider.request("temperature",[visible]),[{value:22}]);
+ assert.ok(requests.at(-1).includes("current=temperature_2m"));
+ data={daily:{time:["2026-11-11"],temperature_2m_min:[4],temperature_2m_max:[12]},timezone:"Europe/Brussels"};
+ assert.equal((await provider.request("daily",[visible]))[0].max,12);
+ data={daily:{time:["2026-11-11"],sunrise:["2026-11-11T07:48"],sunset:["2026-11-11T16:57"]},timezone:"Europe/Brussels"};
+ assert.deepEqual(await provider.request("sun",[visible]),[{rise:"07:48",set:"16:57",date:"2026-11-11",zone:"Europe/Brussels"}]);
+ data={timezone:"Europe/Brussels",utc_offset_seconds:3600};
+ assert.deepEqual(await provider.request("zone",[visible]),[{zone:"Europe/Brussels",fallback:3600}]);
+ await assert.rejects(()=>provider.request("elevation",Array(21).fill(visible)),RangeError);
+});
