@@ -148,6 +148,22 @@
       marker.setIcon(window.L.divIcon({html:markup,iconSize:[30,32],iconAnchor:[15,29],className:"pin-icon"}));
       marker.options.title=title;
     }
+    // Presentational Leaflet tooltip port. Keep provider-specific anchoring
+    // and safe DOM content creation out of the UI and application layers.
+    setMarkerLabel(marker,text) {
+      const name=String(text||"");
+      if(!name){
+        if(marker.getTooltip())marker.unbindTooltip();
+        return;
+      }
+      const content=document.createElement("span");
+      content.textContent=name; // Never interpret user-entered names as HTML.
+      if(marker.getTooltip())marker.setTooltipContent(content);
+      else marker.bindTooltip(content,{
+        permanent:true,direction:"right",offset:[12,-18],
+        className:"address-label",interactive:false
+      });
+    }
     getMarkerElement(marker) { return marker.getElement(); }
     onMarker(marker,event,callback) {
       const handler=e=>callback(event==="drag"||event==="dragend"?this.getMarkerPosition(e.target):e);
