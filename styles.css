@@ -961,13 +961,23 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 
-#app .pin-info-credit{
-  margin:7px 6px 4px;padding:8px 7px 2px;
-  border-top:1px solid #d9e0e8;
-  color:#617287;font-size:11px;line-height:1.4;
+/* Two mode rows plus their shared date selector in one compact card. */
+#app #pinInfoMenu .pin-info-period-box{
+  border:1px solid #c9dae9;border-radius:9px;
+  background:#f7faff;margin:5px 0;padding:4px;
 }
-#app .pin-info-credit a{color:#235b9a}
-
+#app #pinInfoMenu .pin-info-period-box .basemap-choice{background:transparent!important}
+#app #pinInfoMenu .pin-info-period-box .basemap-choice.is-selected{background:#eaf2f9!important}
+#app #pinInfoMenu .pin-info-period-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:5px;padding:6px 6px 4px;color:#253a4b;
+  border-top:1px solid #dde6f1;font-size:12px;
+}
+#app #pinInfoMenu #pinInfoPeriod{
+  min-width:0;max-width:125px;width:120px;
+  padding:6px 3px;border:1px solid #c9dae9;border-radius:7px;
+  background:#fff;color:#253a4b;font:inherit;
+}
 /* Legacy upper info labels: separate marker anchored 42px above pin.
    Split min/max and sunrise/sunset use the original two-color treatment. */
 #map .elevation-label-wrap{background:transparent;border:0;overflow:visible}
@@ -992,6 +1002,14 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 #map .elevation-label .p2m-label-max{background:#ffc9c9;color:#111}
 #map .elevation-label .p2m-label-rise{background:#fff0a3;color:#111}
 #map .elevation-label .p2m-label-set{background:#183b78;color:#fff}
+#map .elevation-label .p2m-info-month-prefix{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:3px 5px;color:#253a4b;background:rgba(255,255,255,.98);
+  border-right:1px solid #b7b7b7;white-space:nowrap;line-height:1.25;
+}
+#map .elevation-label .p2m-info-month-prefix svg{
+  width:13px;height:13px;flex:none;stroke-width:2;display:inline-block;
+}
 #map .elevation-label.p2m-temperature-label{background:#fff0ee;border-color:#cb7770}
 #map .p2m-temperature-label .p2m-wx-black{color:#171717}
 #map .p2m-temperature-label .p2m-wx-darkblue{color:#254dd8}
