@@ -34,6 +34,7 @@
       if(!MODES.includes(mode))throw new RangeError("Unknown mode: "+mode);
       if(this.mode===mode)return;
       this.mode=mode;this.generation++;
+      this.activeKeys=new Set(this.visible.map(pin=>key(pin,mode)));
       if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
       this.pending.clear();this.refresh();
     }
