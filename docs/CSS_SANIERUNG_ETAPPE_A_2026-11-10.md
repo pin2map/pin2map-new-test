@@ -584,3 +584,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Schutztest: `tests/css-header-min-width-ownership.test.js` verhindert das Wiederauftauchen dieser isolierten Doppelregel und kontrolliert die bestehenden Eigentümer für Mindestbreite, Header-Höhe, Padding und Flex.
 - `!important` unverändert **298** (anfänglich 402); genau eine alte normale Deklaration entfernt. PWA-Quellkennung **v95**; keine erwartete sichtbare Änderung, daher kein Nutzer-Gerätetest nötig.
 - Gezielte Quelltextbedingungen anhand GitHub-Dateien geprüft. **Noch nicht unabhängig nachgewiesen:** vollständiger Node-Testlauf, erfolgreicher Actions-/Pages-Lauf, ausgelieferte v95-Assets und Live-Browser-Smoketest. Ein gespeicherter Commit ist keine CI-/Veröffentlichungsabnahme.
+
+
+## Inkrement B34 – doppelte mobile Suchleisten-Mindestbreite entfernt (v96, 2026-11-11)
+
+- Nur die alte mobile Einzelregel `.topbar .search{min-width:0}` entfernt. Der geltende, identische Mindestbreitenwert bleibt in `.topbar .search{width:0!important;min-width:0;flex:1 1 auto;max-width:none;margin:0!important}` erhalten. Die unmittelbar benachbarten mobilen Leaflet-/Zoom-Regeln bleiben unberührt.
+- Vorhandenen Test `tests/css-mobile-header-display-ownership.test.js` (B31) nach inhaltlicher Prüfung an die neue Ownership angepasst: Er kontrolliert weiter die gültige Suchkapsel und die mobilen Nachbarregeln, ohne die abgeschaffte Einzelregel zu verlangen. Zusätzlich neuer Test `tests/css-mobile-search-minwidth-ownership.test.js` für die Abwesenheit der Doppeldefinition und den wirksamen Suchleistenvertrag.
+- `!important` weiter **298** (zu Beginn 402). Service-Worker-Quellkennung **v96**. Kein Eingriff in die 30px-Suchringlinie, das 18px-Symbol, den 42px-Antippbereich oder Fach-/Speicherlogik. Keine sichtbare Änderung erwartet; daher kein Nutzer-Gerätetest nötig.
+- Gezielte GitHub-Quelltextinvarianten wurden vor dem Commit geprüft. **Offen:** tatsächlicher vollständiger Node-Testsuite-Lauf, GitHub-Actions-/Pages-Erfolg, über HTTPS ausgelieferte v96 und Live-Browser-Regression. Statische Prüfungen und Commit sind kein Erfolgsnachweis für diese Gates.
