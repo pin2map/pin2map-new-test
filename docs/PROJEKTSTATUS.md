@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v104 gezielter OpenTopoMap-a-Host-Gegenversuch; manuelle Browserabnahme erforderlich) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v104: Topografische Karte nach Nutzer-Rückmeldung wieder funktionsfähig; CI/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -82,6 +82,13 @@
 - **CI/Pages verifiziert:** `Modular core checks` mit Node und Chromium **erfolgreich** <https://github.com/pin2map/pin2map-new-test/actions/runs/42984307184>, Architektur-Gate **erfolgreich** <https://github.com/pin2map/pin2map-new-test/actions/runs/42984305834>, Preview/HTTPS-Live-Start **erfolgreich** <https://github.com/pin2map/pin2map-new-test/actions/runs/42984305659>. Diese Checks beweisen den Quell-/Kartenstartvertrag, **nicht** die korrekte Topo-Kachel-Anzeige bei realen Safari-/Brave-Nutzern.
 - **Jetzt erforderlich:** v104 in Safari **und** Brave privat auf dem betroffenen Gerät aufrufen, Topografische Karte wählen und prüfen, ob die Kacheln tatsächlich sichtbar sind; bei weiterhin grauer Fläche keine weitere blind wechselnde Tile-Domain, sondern gezielte Fehler-/HTTP-/TLS-Diagnose durchführen. `app.js`-Modularisierung bleibt bis zur Fehlerklärung pausiert.
 
+## 4f. v104 – Topografische Karte vom Nutzer erfolgreich bestätigt (2026-11-11)
+
+- **Nutzerrückmeldung auf den ausdrücklich angeforderten v104-Test:** „funktioniert“. Nach dem zuvor in Safari und Brave privat reproduzierten grauen Hintergrund ist die topografische Karte nun wieder sichtbar. Positiver manueller Funktionsbefund für v104; die Rückmeldung spezifiziert nicht einzeln, welcher Browser geprüft wurde. Daher nicht beide Browser separat als nachgewiesen bezeichnen.
+- Die stabile Konfiguration verwendet im Leaflet-Adapter `https://a.tile.opentopomap.org/{z}/{x}/{y}.png` ohne automatischen Wechsel auf `b`/`c`. **Diese Quelle vorerst beibehalten.** Nicht erneut den Provider oder die Tile-Rotation ohne nachvollziehbaren Anlass ändern.
+- Vorherige automatische v104-Gates (Node/Chromium, Architektur und veröffentlichte Preview per HTTPS) bestanden; manuelle Bestätigung ist eine zusätzliche Qualitätsprüfung. Autozoom wurde bereits bei v102 vom Nutzer erfolgreich getestet. Die Straßenkarte funktionierte in den vorigen manuellen Vergleichstests.
+- **Nächste Priorität:** `app.js`-Modularisierung nach erneuter Prüfung des Iststands fortsetzen; bei künftigen Änderungen ausdrücklich mitteilen, ob ein persönlicher Test benötigt wird. CSS bleibt B38 mit 298 `!important`, `main` und persistierte Nutzerdaten bleiben geschützt.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -96,10 +103,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Jetzt Nutzertest v104:** <https://pin2map.github.io/pin2map-new-test/preview/> in Safari und Brave privat; Topografische Karte wählen und tatsächliche Bildkacheln prüfen, dann zur Straßenkarte zurückschalten. Kein Pin-Löschen, kein Browserdaten-Reset. Bereits erfolgreich: Autozoom mit mehreren Pins.
-2. **Bei weiter grauer Fläche:** Tile-Load-Fehlermodus auf betroffener Browser/Netzwerk-Kombination eingrenzen (z. B. echte Bild-URL manuell öffnen und gegebenenfalls HTTP-/TLS-Fehler sammeln), dann erst weitere gezielte Codeänderung. Nicht wieder nur die Karten-Domain wechseln.
-3. Bei erfolgreicher manueller Topo-Abnahme nächste kleine `app.js`-Extraktion planen; CSS B38/298 bleibt pausiert.
-4. `main`, Referenzzweige, IndexedDB und persistierte Nutzerdaten schützen; keine stille Produktionsfreigabe.
+1. **`app.js`-Entflechtung wieder aufnehmen:** aktuellen Feature-Branch und vorhandene Application-/UI-Module inventarisieren, nächste fachlich saubere kleine Extraktion auswählen und mit gezieltem Regressionstest umsetzen. Topo-Tile-Host `a.tile.opentopomap.org` nicht ohne Befund verändern.
+2. Jede folgende Codeänderung mit vollständigen Node-, Architektur-, Chromium- und GitHub-Pages-/HTTPS-Gates verifizieren. Die erfolgreiche Live-Auslieferung separat prüfen.
+3. **Nutzergerätetests stets ausdrücklich ankündigen**, wenn benötigt, mit exakter Preview-URL, Schritten und erwartetem Ergebnis. Für reine Architektur-/Quelltextänderungen keine unnötigen manuellen Tests verlangen.
+4. Vollständige CSS-Kaskadenkonsolidierung bleibt pausiert (B38, 298 `!important`). `main`, Referenzzweige, IndexedDB-Schema und persistierte Pins schützen.
 
 ## 6. Maßgebliche Dokumente
 
