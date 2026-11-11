@@ -37,6 +37,7 @@
 - Ein Commit ist **keine** abgeschlossene Veröffentlichung. Ist ein Gate mangels Zugriff nicht prüfbar, ausdrücklich **offen** dokumentieren.
 - Kein erneuter iPhone-/iPad-Gerätetest bei rein interner Bereinigung ohne erwartete sichtbare Änderung. Bei UI-Änderungen die vorher abgenommene Darstellung gezielt vergleichen.
 - **„ok“** ist eine Fortsetzungsanweisung, keine Testabnahme.
+- **Manuelle Nutzerabnahmen:** ausschließlich einfach nummerierte Tests, keine Checklisten oder interaktiven Auswahlfelder. Nutzer meldet ggf. nur Nummern fehlgeschlagener Tests; siehe `docs/GRUNDENTSCHEIDUNGEN.md`, Arbeitsweise vom 2026-11-11.
 
 ## 4a. v101 – CI-/Preview-Verifikation nach Testreparatur (2026-11-11)
 
