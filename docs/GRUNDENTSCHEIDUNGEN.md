@@ -1911,3 +1911,7 @@ Dieses Dokument hält die für die neue modulare Basisversion beschlossenen Ents
 - Verbindlicher Übergangspunkt ist der **Entwicklungsfahrplan: Gate 3 vor Etappe 4 (Synchronisation)**; keine vorgezogene Server-/Auth-/Sync-Implementierung.
 - Daten- und Schnittstellenentscheidungen dürfen den späteren Sync ermöglichen, ohne ihn schon einzubauen; keine vorzeitigen technischen Abhängigkeiten.
 - Jede Änderung wird nach der Regel vom 10.11.2026 erst nach Prüfung, erfolgreicher Veröffentlichung und Live-Test als abgeschlossen gemeldet.
+
+## Verbindliche Arbeitsweise – manuelle Nutzerabnahmen als nummerierte Tests (2026-11-11)
+
+**Beschlossen:** Für vom Nutzer persönlich abzunehmende Funktionen ausschließlich eine schlichte, fortlaufend **nummerierte Liste** konkreter Tests ausgeben (1., 2., 3. usw.). **Keine interaktiven Checklisten, Checkboxen, Radiobuttons, Formulare oder sonstigen Auswahl-/Bestätigungsfelder** für diese Prüfungsabfragen. Jeder Test muss kurz, eindeutig und beobachtbar beschrieben sein; zuvor erfolgreich abgenommene Tests nicht unnötig wiederholen. Der Nutzer meldet anschließend bei Bedarf **nur die Nummern der nicht bestandenen Tests** (optional mit Fehlerbeschreibung). Tests ohne gemeldete Fehlnummer gelten im Rahmen dieser vereinbarten Rückmeldeweise als bestanden, sofern der Nutzer erklärt, dass die Testreihe durchgeführt wurde; aus ausbleibender Antwort keine Abnahme ableiten. Technische Automatentests und echte Geräteprüfungen weiterhin getrennt dokumentieren.
