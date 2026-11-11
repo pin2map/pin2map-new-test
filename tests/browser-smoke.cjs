@@ -153,6 +153,18 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#closePin").click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator("#layersButton").click();
+    step("layer creation via prompt persists new layer without affecting private pin");
+    page.once("dialog",dialog=>dialog.accept("Reisen"));
+    await page.locator("#addLayer").click();
+    await page.locator("#layersList .layer-row").filter({hasText:"Reisen"}).waitFor({state:"visible",timeout});
+    await page.waitForTimeout(650);
+    const layerNames=await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject()).layers.map(layer=>layer.name);}
+      finally{store.close();}
+    });
+    assert.ok(layerNames.includes("Reisen"),"New layer is saved in the existing project");
+    console.log("[browser] PASS – create named layer, persisted in project");
     await page.locator('#layersList .layer-delete[aria-label="Alle Pins in Privat löschen"]').click();
     await page.locator("#bulkDialog").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#bulkTitle").textContent(),"Alle Pins in Privat löschen?");
