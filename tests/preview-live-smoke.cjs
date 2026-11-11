@@ -78,17 +78,17 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await mapMenu.locator('[data-basemap="satellite"]').click();
         await chooser.click();
         assert.equal(await reset.isEnabled(),true);
-        assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 140 % zurücksetzen");
+        assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 120 % zurücksetzen");
     assert.equal((await reset.innerText()).trim(),"Standard");
         await reset.click();
         assert.equal(await mapMenu.isVisible(),true);
         assert.equal(await reset.isDisabled(),true);
-        assert.equal(await sun.inputValue(),"140");
+        assert.equal(await sun.inputValue(),"120");
         const defaultFilter=await page.evaluate(()=>{
           const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
           return img?.closest(".leaflet-layer")?.style.filter;
         });
-        assert.equal(defaultFilter,"brightness(1.4)");
+        assert.equal(defaultFilter,"brightness(1.2)");
         // Published geocoder contract: the number of pin results is not
         // device-dependent and the old 8-hit cache is revalidated with consent.
         const limitContract=await page.evaluate(async()=>{
