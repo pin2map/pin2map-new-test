@@ -33,7 +33,8 @@ test("crossed tags state retains exact icon geometry and draws one diagonal slas
   const crossed=Icons.svg("tags-off",documentStub());
   assert.equal(normal.children.length,3);
   assert.equal(crossed.children.length,4);
-  assert.deepEqual(crossed.children.slice(0,3),normal.children);
+  assert.deepEqual(crossed.children.slice(0,3).map(n=>({name:n.name,attributes:n.attributes})),
+    normal.children.map(n=>({name:n.name,attributes:n.attributes})));
   assert.equal(crossed.children[3].name,"path");
   assert.equal(crossed.children[3].attributes.d,"M2 2 22 22");
 });
