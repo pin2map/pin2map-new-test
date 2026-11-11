@@ -688,8 +688,9 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
    Current positions are owned by the upper-corner and bottom-right rules below. */
 /* Existing focused-pin editor should continue hiding all map controls,
    despite the explicit inline-flex declarations above. */
-body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton),
+body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton),
 body.pin-open #app #basemapMenu,
+body.pin-open #app #pinInfoMenu,
 body.pin-open #app .topbar,
 body.pin-open #app .pin-zoom-buttons{display:none!important}
 
@@ -962,7 +963,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   padding:7px;border:1px solid var(--p2m-button-border);
   border-radius:11px;background:#fff;box-shadow:var(--shadow);
 }
-body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 
 /* New unboxed menu: native period choices are distinct daily/sun actions. */
 #app #pinInfoMenu .pin-info-separator{
