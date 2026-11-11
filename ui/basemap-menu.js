@@ -2,7 +2,7 @@
 /* Presentation-only basemap menu; no Leaflet, persistence or project ownership. */
 (function(root){
   class BasemapMenu {
-    constructor({getElement,document:doc,onSelect,onOpening=()=>{}}){
+    constructor({getElement,document:doc,onSelect,onReliefChange=()=>{},onOpening=()=>{}}){
       if(typeof getElement!=="function"||!doc||typeof doc.querySelectorAll!=="function")
         throw new TypeError("Basemap menu requires DOM access");
       if(typeof onSelect!=="function"||typeof onOpening!=="function")
@@ -10,13 +10,16 @@
       this.getElement=getElement;
       this.document=doc;
       this.onSelect=onSelect;
+      this.onReliefChange=onReliefChange;
       this.onOpening=onOpening;
       this.listeners=[];
     }
     get button(){return this.getElement("basemapButton");}
     get menu(){return this.getElement("basemapMenu");}
     options(){return this.document.querySelectorAll("#basemapMenu [data-basemap]");}
-    render(selected){
+    render(selected,esriRelief=false){
+      const relief=this.getElement("esriReliefToggle");
+      if(relief)relief.checked=!!esriRelief;
       this.options().forEach(button=>{
         const active=button.dataset.basemap===selected;
         button.setAttribute("aria-pressed",String(active));
@@ -44,11 +47,13 @@
       this.listen(this.button,"click",()=>this.toggle());
       this.options().forEach(button=>this.listen(button,"click",()=>{
         const value=button.dataset.basemap;
-        if(value!=="street"&&value!=="topo")return;
+        if(!["street","topo","international","satellite","humanitarian"].includes(value))return;
         this.onSelect(value);
         this.close();
         this.button.focus();
       }));
+      const relief=this.getElement("esriReliefToggle");
+      if(relief)this.listen(relief,"change",()=>this.onReliefChange(!!relief.checked));
       this.listen(this.document,"keydown",event=>{
         if(event.key==="Escape"&&this.isOpen()){
           this.close();
