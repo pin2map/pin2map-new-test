@@ -41,6 +41,13 @@
     onDelete:id=>deleteLayerOrPrivatePins(id)
   });
   const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
+  const basemapMenu = new window.Pin2MapBasemapMenu({
+    getElement:$,document,
+    onOpening:()=>{uiShell.closePanels();searchView.hide();},
+    onSelect:value=>{
+      if(state.basemap!==value){state.basemap=value;setTileLayer();save();}
+    }
+  });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -55,11 +62,7 @@
   }
   function setTileLayer() {
     mapAdapter.setBasemap(state.basemap);
-    document.querySelectorAll("#basemapMenu [data-basemap]").forEach(button=>{
-      const selected=button.dataset.basemap===state.basemap;
-      button.setAttribute("aria-pressed",String(selected));
-      button.classList.toggle("is-selected",selected);
-    });
+    basemapMenu.render(state.basemap);
   }
   function renderMarkers(){
     if(!markerView)return;
@@ -166,10 +169,7 @@
     }
     if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
   }
-  function closeBasemapMenu(){
-    $("basemapMenu").classList.add("hidden");
-    $("basemapButton").setAttribute("aria-expanded","false");
-  }
+  const closeBasemapMenu = () => basemapMenu.close();
   const togglePanel = id => {closeBasemapMenu();uiShell.togglePanel(id);};
   const hideResults = () => searchView.hide();
   const searchMessage = msg => searchView.message(msg);
@@ -223,27 +223,7 @@
       showNotice
     }));
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}uiShell.closePanel(b.dataset.close);}));
-    $("basemapButton").addEventListener("click",()=>{
-      const menu=$("basemapMenu");
-      const opening=menu.classList.contains("hidden");
-      if(opening){uiShell.closePanels();hideResults();}
-      menu.classList.toggle("hidden",!opening);
-      $("basemapButton").setAttribute("aria-expanded",String(opening));
-    });
-    document.querySelectorAll("#basemapMenu [data-basemap]").forEach(button=>{
-      button.addEventListener("click",()=>{
-        const value=button.dataset.basemap;
-        if(value!=="street"&&value!=="topo")return;
-        if(state.basemap!==value){state.basemap=value;setTileLayer();save();}
-        closeBasemapMenu();
-        $("basemapButton").focus();
-      });
-    });
-    document.addEventListener("keydown",event=>{
-      if(event.key==="Escape"&&!$("basemapMenu").classList.contains("hidden")){
-        closeBasemapMenu();$("basemapButton").focus();
-      }
-    });
+    basemapMenu.bind();
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
     $("addLayer").addEventListener("click", () => {
@@ -280,7 +260,7 @@
     });
     document.addEventListener("pointerdown", e => {
       if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
-      if(!$("basemapMenu").classList.contains("hidden")&&!e.target.closest("#basemapMenu, #basemapButton"))closeBasemapMenu();
+
     });
     mapAdapter.onMapClick(position => {
       // A deliberate relocation target is not an accidental follow-up click
