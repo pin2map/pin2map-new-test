@@ -77,7 +77,9 @@ test("composition boundary, load order and offline cache include overlay coordin
   const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
   const sw=fs.readFileSync(path.resolve(__dirname,"../sw.js"),"utf8");
   assert.match(app,/new window\.Pin2MapMapOverlayCoordinator/);
-  assert.match(app,/overlayCoordinator\.preparePinSelection\(\)/);
+  const session=fs.readFileSync(path.resolve(__dirname,"../application/pin-session.js"),"utf8");
+  assert.match(session,/this\.overlays\.preparePinSelection\(\)/);
+  assert.match(session,/this\.overlays\.closeAll\(\)/);
   assert.match(app,/overlayCoordinator\.closeAll\(\)/);
   assert.match(app,/overlayCoordinator\.bind\(\)/);
   assert.doesNotMatch(app,/function closeMapOverlays\(/);
