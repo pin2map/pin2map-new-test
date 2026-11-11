@@ -4,10 +4,13 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const css=fs.readFileSync(path.join(__dirname,"..","styles.css"),"utf8");
-test("search result list keeps its mobile scroll limit and current floating anchor",()=>{
+const view=fs.readFileSync(path.join(__dirname,"..","ui","search-results.js"),"utf8");
+test("framed result chooser keeps scrollable items and dynamic bottom-button boundary",()=>{
   assert.match(css,/\.search-results\{max-height:42dvh\}/);
-  assert.match(css,/\.search-results\{\s*top:calc\(53px \+ env\(safe-area-inset-top,0px\)\)!important;/);
-  assert.match(css,/\.search-results\{top:calc\(51px \+ env\(safe-area-inset-top,0px\)\)!important\}/);
-  assert.doesNotMatch(css,/\.search-results\{top:calc\(91px \+ env/);
-  assert.doesNotMatch(css,/\.search-results\{top:calc\(var\(--header-height\)/);
+  assert.match(css,/\.results-items\{[^{}]*overflow-y:auto/);
+  assert.match(css,/\.results-footer\{[^{}]*flex:0 0 auto/);
+  assert.doesNotMatch(css,/\.search-results\{[^{}]*top:calc\(/);
+  assert.match(view,/const sheetTop=box\.bottom-origin\+8/);
+  assert.match(view,/const bottomEdge=this\.bottomControl\?\.getBoundingClientRect\?\.\(\)\.bottom/);
+  assert.match(view,/this\.container\.style\.maxHeight=/);
 });
