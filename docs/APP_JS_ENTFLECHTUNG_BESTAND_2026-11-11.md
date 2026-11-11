@@ -65,3 +65,13 @@ Die Fachmodule verwenden teilweise globale `window.Pin2Map...`-Exporte und werde
 - Dies ist ausdrücklich **nicht** `node --test tests/*.test.js`; die vollständige Node-22-Suite und `tests/check-*.mjs` bleiben ungetestet. Ebenso nicht durchgeführt: echter Browser-/Leaflet-/Speicher-Smoke oder Endgeräteprüfung.
 - GitHub-Abfragen zum Code-Test-Commit `809d6d8f3a12a6f2ee08c2326a73257ddc2cf31f` lieferten keine Commit-Statuses und keine PR-gefilterten Workflow-Runs; damit ist kein push-getriggerter Pages-Erfolg belegt oder widerlegt. HTTP(S)-Abrufe der Preview-URL und der v101-Assets waren aus der verfügbaren Umgebung nicht erfolgreich, direkter git-Zugriff scheiterte an DNS.
 - **Status:** Modulfunktion isoliert positiv, veröffentlichte Gesamtanwendung **weiterhin nicht freigegeben**. Keine Quellcode-Änderungen, kein Merge, keine Datenoperationen.
+
+
+## 6. Verifizierte v101-Gates nach Reparatur zweier veralteter Tests (2026-11-11)
+
+- Zunächst bei `Modular core checks` **135/137** Tests erfolgreich; historische, gegen die inzwischen gelöschte CSS-Mobile-Regel und die ausgelagerte Basiskartensteuerung gerichtete Assertions waren die zwei Fehler. Nach Korrektur der Tests `tests/css-base-readability-contract.test.js` und `tests/lucide-button-design.test.js` keine Änderung an `styles.css`, `app.js`, UI-Modul oder Service Worker.
+- **Bestätigter Node-Job:** 137/137 bestanden, <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343397>.
+- **Bestätigter Chromium-Job:** automatischer UI-Test für Pin-Selektion, Verschieben, Datenpersistenz und Offline-Reload erfolgreich; Basiskarten-Menüinteraktionen in diesem Smoke noch nicht explizit nachgewiesen.
+- **Architektur-Gate:** erfolgreich, <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343418>.
+- **Preview-Gate:** erfolgreich, <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343415>. Umfasst `node --test tests/*.test.js`, `tests/check-*.mjs`, Pages-Deploy, **über HTTPS geladene exakt versionierte Preview-Assets** sowie reale Chromium-Live-Start-/Reload-Checks für Telefon-, Tablet- und Desktop-Viewports einschließlich Tracking-URL. Freigegebene Preview-Quelle `pin2map-preview-v101` unter <https://pin2map.github.io/pin2map-new-test/preview/>.
+- **Weiter offen:** gezielte funktionale Basiskarten-Menü-Interaktionen (street↔topo, ARIA, Escape, Außenklick, Fokus, Persistenz) im echten Browser und manuelle Geräteabnahme. Nicht nach `main` übernehmen ohne Freigabe.
