@@ -103,26 +103,22 @@
   <button id="layersButton" data-pin-icon="layers" class="layers-bottom-button" type="button" title="Ebenen auswählen" aria-label="Ebenen auswählen" aria-expanded="false">☷</button>
   <button id="pinInfoButton" data-pin-icon="circle-letter-i-off" class="pin-info-button" type="button" title="Pin-Informationen auswählen" aria-label="Pin-Informationen auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="pinInfoMenu"></button>
   <section id="pinInfoMenu" class="basemap-menu pin-info-menu hidden" aria-label="Pin-Informationen">
-    <div class="basemap-menu-title">Pin-Informationen</div>
-    <button type="button" class="basemap-choice" data-pin-info-mode="zone" aria-pressed="false">Zeitzonenabweichung</button>
-    <div class="pin-info-period-box" role="group" aria-label="Tageswerte und Sonnenzeiten">
-      <button type="button" class="basemap-choice" data-pin-info-mode="sun" aria-pressed="false">Sonnenaufgang / -untergang</button>
-      <button type="button" class="basemap-choice" data-pin-info-mode="daily" aria-pressed="false">Tagesminimum / -maximum</button>
-      <label class="pin-info-period-row" for="pinInfoPeriod"><span>Zeitraum</span>
-        <select id="pinInfoPeriod" aria-label="Zeitraum für Tageswerte und Sonnenzeiten">
-          <option value="today">Heute</option>
-          <option value="01">Januar</option><option value="02">Februar</option>
-          <option value="03">März</option><option value="04">April</option>
-          <option value="05">Mai</option><option value="06">Juni</option>
-          <option value="07">Juli</option><option value="08">August</option>
-          <option value="09">September</option><option value="10">Oktober</option>
-          <option value="11">November</option><option value="12">Dezember</option>
-        </select>
-      </label>
-    </div>
-    <button type="button" class="basemap-choice" data-pin-info-mode="temperature" aria-pressed="false">Aktuelle Temperatur</button>
-    <button type="button" class="basemap-choice" data-pin-info-mode="elevation" aria-pressed="false">Höhe</button>
     <button type="button" class="basemap-choice" data-pin-info-mode="off" aria-pressed="true">Aus</button>
+    <hr class="pin-info-separator">
+    <button type="button" class="basemap-choice pin-info-icon-choice" data-pin-info-mode="elevation" aria-pressed="false"><span data-pin-icon="mountain-snow"></span><span>Höhe</span></button>
+    <hr class="pin-info-separator">
+    <button type="button" class="basemap-choice pin-info-icon-choice" data-pin-info-mode="temperature" aria-pressed="false"><span data-pin-icon="thermometer"></span><span>Aktuelle Temperatur</span></button>
+    <label class="pin-info-mode-row" for="pinInfoDailyPeriod">
+      <span class="pin-info-mode-icons" aria-hidden="true"><span data-pin-icon="thermometer-sun"></span><span class="pin-info-pair-divider">|</span><span data-pin-icon="thermometer-snowflake"></span></span>
+      <select id="pinInfoDailyPeriod" aria-label="Tagesminimum und Tagesmaximum: Zeitraum"><option value="today">Heute</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mär</option><option value="04">Apr</option><option value="05">Mai</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Okt</option><option value="11">Nov</option><option value="12">Dez</option></select>
+    </label>
+    <hr class="pin-info-separator">
+    <label class="pin-info-mode-row" for="pinInfoSunPeriod">
+      <span class="pin-info-mode-icons" aria-hidden="true"><span data-pin-icon="sunrise"></span><span class="pin-info-pair-divider">|</span><span data-pin-icon="sunset"></span></span>
+      <select id="pinInfoSunPeriod" aria-label="Sonnenaufgang und Sonnenuntergang: Zeitraum"><option value="today">Heute</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mär</option><option value="04">Apr</option><option value="05">Mai</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Okt</option><option value="11">Nov</option><option value="12">Dez</option></select>
+    </label>
+    <hr class="pin-info-separator">
+    <p class="pin-info-credit">Daten: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (aktuelle Werte und Höhe), <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a> (langjährige Monatsmittel der täglichen Minima/Maxima), <a href="https://sunrise-sunset.org/" target="_blank" rel="noopener">Sunrise-Sunset.org</a> (Sonnenaufgang/-untergang jeweils am <strong>15. des Monats</strong>). Für „Heute“ werden Tageswerte verwendet.</p>
   </section>
   <button id="labelsToggle" data-pin-icon="tags" class="labels-toggle" type="button" title="Pin-Beschriftungen ein- oder ausblenden" aria-label="Pin-Beschriftungen ein- oder ausblenden"></button>
   <button id="basemapButton" data-pin-icon="map" class="basemap-map-button" type="button" title="Kartendarstellung auswählen" aria-label="Kartendarstellung auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="basemapMenu">▱</button>
