@@ -1077,14 +1077,14 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
   flex:1 1 auto;min-width:0;width:auto;
 }
 #app .basemap-satellite-reset{
-  flex:0 0 30px;display:inline-flex;align-items:center;justify-content:center;
-  width:30px;height:30px;padding:5px;margin:0 3px 0 0;
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  min-width:84px;min-height:32px;padding:5px 8px;margin:0 3px 0 0;
   border:1px solid #c9dae9;border-radius:7px;
-  background:#fff;color:#235b9a;cursor:pointer;
+  background:#fff;color:#235b9a;font-size:12px;font-weight:600;cursor:pointer;
 }
 #app .basemap-satellite-reset .p2m-lucide{width:17px;height:17px}
 #app .basemap-satellite-reset:disabled{
-  opacity:.38;cursor:not-allowed;
+  background:#f3f5f7;color:#69788a;cursor:not-allowed;
 }
 #app .basemap-satellite-reset:focus-visible{
   outline:2px solid #235b9a;outline-offset:2px;
