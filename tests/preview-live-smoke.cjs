@@ -66,6 +66,44 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.ok(Math.abs((searchContract.searchX+endcap)-searchContract.listX)<=3,
           "Results must begin at left straight-line endpoint: "+JSON.stringify(searchContract));
 
+        // The published build must preserve predecessor place metadata and
+        // keep Cancel visible while ONLY the hit rows scroll.
+        const legacyResults=await page.evaluate(()=>{
+          const host=document.getElementById("searchResults"),domain=window.Pin2MapPlaceSearch;
+          const view=new window.Pin2MapSearchResultsView({
+            container:host,document,onChoose:()=>{},
+            titleOf:domain.title,detailOf:domain.detail,kindOf:domain.kind,
+            duplicateCoordinates:domain.duplicateCoordinates
+          });
+          view.show(Array.from({length:32},(_,i)=>({
+            name:"Springfield",display_name:"Springfield, USA",
+            addresstype:"city",class:i%2?"boundary":"place",
+            osm_type:i%2?"relation":"node",lat:String(39+i/100),lon:"-89"
+          })));
+          const items=host.querySelector(".results-items"),footer=host.querySelector(".results-footer");
+          const top=footer.getBoundingClientRect().top;
+          const types=[...items.querySelectorAll(".result-kind")].slice(0,2).map(x=>x.textContent);
+          const coordinates=items.querySelector(".result-coordinates")?.textContent;
+          items.scrollTop=items.scrollHeight;
+          const after=footer.getBoundingClientRect().top;
+          return {canScroll:items.scrollHeight>items.clientHeight,footerStatic:Math.abs(top-after)<=1,
+            footerVisible:footer.getBoundingClientRect().bottom<=host.getBoundingClientRect().bottom+2,
+            types,coordinates};
+        });
+        assert.equal(legacyResults.canScroll,true,JSON.stringify(legacyResults));
+        assert.equal(legacyResults.footerStatic,true,JSON.stringify(legacyResults));
+        assert.equal(legacyResults.footerVisible,true,JSON.stringify(legacyResults));
+        assert.deepEqual(legacyResults.types,["● Stadt · Ortsmittelpunkt","▧ Stadt · Gebiet"]);
+        assert.match(legacyResults.coordinates,/Position: 39/);
+        await page.locator("#searchInput").fill("Stuttgart");
+        assert.equal(await page.locator("#searchResults").isHidden(),true,
+          "Published search input edit must hide current result list");
+        await page.locator("#searchInput").press("Enter");
+        assert.equal(await page.locator("#searchResults").isVisible(),true,
+          "Explicit Enter must reopen search feedback");
+        await page.locator("#searchInput").fill("");
+        assert.equal(await page.locator("#searchResults").isHidden(),true);
+
         // Verify actual rendered mobile layout, not just CSS source rules.
         const geometry=await page.evaluate(()=>{
           const rect=id=>{
