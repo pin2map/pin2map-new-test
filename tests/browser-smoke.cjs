@@ -64,18 +64,21 @@ async function longPress(page,x,y,ms=725){
       const first=items.firstElementChild.getBoundingClientRect();
       return {outer:{x:outer.x,width:outer.width,top:outer.top,bottom:outer.bottom,height:outer.height},
         host:{x:host.x,width:host.width,top:host.top,bottom:host.bottom,height:host.height},
-        bottomTop:bottom.top,firstTop:first.top,
+        bottomEdge:bottom.bottom,firstTop:first.top,
+        framed:getComputedStyle(document.querySelector("#searchResults")).borderTopWidth,
         listBackground:getComputedStyle(items).backgroundColor,
         footerBackground:getComputedStyle(document.querySelector(".results-footer")).backgroundColor};
     });
     assert.ok(Math.abs(sheet.outer.width-sheet.host.width)<=3,JSON.stringify(sheet));
     assert.ok(Math.abs(sheet.outer.x-sheet.host.x)<=3,JSON.stringify(sheet));
-    assert.ok(Math.abs(sheet.host.top-(sheet.outer.top+sheet.outer.height/2))<=3,
-      "Sheet background begins behind middle of rounded block: "+JSON.stringify(sheet));
+    assert.ok(Math.abs(sheet.host.top-(sheet.outer.bottom+8))<=3,
+      "Framed chooser must open below the OUTER search block: "+JSON.stringify(sheet));
     assert.ok(sheet.firstTop>=sheet.outer.bottom+8,
       "First text starts below OUTER search block: "+JSON.stringify(sheet));
-    assert.ok(sheet.host.bottom<=sheet.bottomTop+2,
-      "List must stop by lowest bottom buttons: "+JSON.stringify(sheet));
+    assert.ok(sheet.host.bottom<=sheet.bottomEdge+2,
+      "List must stop at the BOTTOM EDGE of the lowest buttons: "+JSON.stringify(sheet));
+    assert.ok(sheet.host.top<sheet.bottomEdge-40,"Framed chooser must have room to grow");
+    assert.equal(sheet.framed,"1px");
     assert.equal(sheet.listBackground,"rgb(242, 244, 247)");
     assert.equal(sheet.footerBackground,"rgb(223, 228, 235)");
     await footer.locator("button").getByText("Abbrechen").click();
@@ -96,6 +99,27 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#searchResults .results-cancel").click();
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     assert.equal(await page.evaluate(()=>window.__searchChooseCalls),0);
+    step("keyboard search choice: arrow wrap, Enter selects, Escape cancels");
+    await page.evaluate(()=>{
+      window.__keyboardSearchPicked=null;
+      new window.Pin2MapSearchResultsView({
+        container:document.getElementById("searchResults"),document,
+        titleOf:x=>x.name,detailOf:x=>x.name,
+        onChoose:x=>{window.__keyboardSearchPicked=x.name;}
+      }).show([{name:"A"},{name:"B"},{name:"C"}]);
+    });
+    assert.equal(await page.locator("#searchResults .is-keyboard-selected").count(),1);
+    await page.keyboard.press("ArrowDown");
+    assert.equal(await page.locator("#searchResults .result").nth(1).evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("ArrowDown");
+    assert.equal(await page.locator("#searchResults .result").first().evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.press("ArrowUp");
+    assert.equal(await page.locator("#searchResults .result").last().evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.press("Enter");
+    assert.equal(await page.evaluate(()=>window.__keyboardSearchPicked),"C");
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("#searchResults").isHidden(),true);
     step("search results: old place-kind metadata, scrolling footer and edit-to-dismiss");
     await page.evaluate(()=>{
       const host=document.getElementById("searchResults");
