@@ -5,10 +5,11 @@
  */
 (function(root){
   class UIShell {
-    constructor({getElement,setTimer=(callback,delay)=>root.setTimeout(callback,delay),
+    constructor({getElement,mountLabelIcon=()=>{},setTimer=(callback,delay)=>root.setTimeout(callback,delay),
       clearTimer=id=>root.clearTimeout(id)}){
       if(typeof getElement!=="function")throw new TypeError("getElement must be a function");
       this.element=getElement;
+      this.mountLabelIcon=mountLabelIcon;
       this.setTimer=setTimer;
       this.clearTimer=clearTimer;
       this.noticeTimer=null;
@@ -56,6 +57,7 @@
       button.setAttribute("aria-pressed",String(enabled));
       button.title=enabled?"Pin-Beschriftungen ausblenden":"Pin-Beschriftungen einblenden";
       button.classList.toggle("is-off",!enabled);
+      this.mountLabelIcon(button,enabled?"tags":"tags-off");
     }
     dispose(){
       this.clearTimer(this.noticeTimer);
