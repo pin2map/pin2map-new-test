@@ -7,8 +7,8 @@
   function temperatureClass(value){
     if(!Number.isFinite(value))return "";
     const t=Math.round(value);
-    return t<=-10?"p2m-wx-black":t<=-1?"p2m-wx-darkblue":t<=5?"p2m-wx-cold":
-      t<=10?"p2m-wx-darkgreen":t<=15?"p2m-wx-lightgreen":t<=18?"p2m-wx-mild":
+    return t<=-16?"p2m-wx-black":t<=-6?"p2m-wx-darkblue":t<=0?"p2m-wx-cold":
+      t<=12?"p2m-wx-darkgreen":t<=18?"p2m-wx-lightgreen":
       t<=26?"p2m-wx-warm":t<=32?"p2m-wx-hot":"p2m-wx-veryhot";
   }
   function labelMarkup(data){
