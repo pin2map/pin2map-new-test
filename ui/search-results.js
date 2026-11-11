@@ -5,7 +5,7 @@
  */
 (function(root){
   class SearchResultsView {
-    constructor({container,document:doc,onChoose,titleOf,detailOf}){
+    constructor({container,document:doc,onChoose,onCancel=()=>{},titleOf,detailOf,kindOf=()=>null,duplicateCoordinates=()=>[]}){
       if(!container||typeof container.replaceChildren!=="function")
         throw new TypeError("Search result container required");
       if(!doc||typeof doc.createElement!=="function")
@@ -17,6 +17,9 @@
       this.onChoose=onChoose;
       this.titleOf=titleOf;
       this.detailOf=detailOf;
+      this.kindOf=kindOf;
+      this.duplicateCoordinates=duplicateCoordinates;
+      this.onCancel=onCancel;
       // Search results follow the actual inner search-pill width across viewports.
       // Only presentation geometry is read; no application state is modified.
       this.searchAnchor=doc.getElementById?.("searchForm")||null;
@@ -47,7 +50,7 @@
       close.type="button";
       close.className="results-cancel";
       close.textContent="Abbrechen";
-      close.addEventListener("click",()=>this.hide());
+      close.addEventListener("click",()=>{this.hide();this.onCancel();});
       footer.append(close);
       return footer;
     }
@@ -56,26 +59,48 @@
       const p=this.document.createElement("div");
       p.className="message";
       p.textContent=String(message);
-      this.container.append(p,this.cancelFooter());
+      const items=this.document.createElement("div");
+      items.className="results-items";
+      items.append(p);
+      this.container.append(items,this.cancelFooter());
       this.container.classList.remove("hidden");
       this.syncWidth();
     }
     show(results){
       if(!Array.isArray(results))throw new TypeError("Search results must be an array");
       this.container.replaceChildren();
-      for(const result of results){
+      const items=this.document.createElement("div");
+      items.className="results-items";
+      const duplicateNotes=this.duplicateCoordinates(results);
+      results.forEach((result,index)=>{
         const item=this.document.createElement("button");
         item.type="button";
         item.className="result";
+        const heading=this.document.createElement("div");
+        heading.className="result-heading";
         const title=this.document.createElement("strong");
         title.textContent=this.titleOf(result);
+        heading.append(title);
+        const kind=this.kindOf(result);
+        if(kind?.label){
+          const badge=this.document.createElement("span");
+          badge.className="result-kind";
+          badge.textContent=kind.symbol+" "+kind.label;
+          heading.append(badge);
+        }
         const detail=this.document.createElement("small");
         detail.textContent=this.detailOf(result);
-        item.append(title,detail);
+        item.append(heading,detail);
+        if(duplicateNotes[index]){
+          const coords=this.document.createElement("span");
+          coords.className="result-coordinates";
+          coords.textContent=duplicateNotes[index];
+          item.append(coords);
+        }
         item.addEventListener("click",()=>this.onChoose(result));
-        this.container.append(item);
-      }
-      this.container.append(this.cancelFooter());
+        items.append(item);
+      });
+      this.container.append(items,this.cancelFooter());
       this.container.classList.remove("hidden");
       this.syncWidth();
     }
