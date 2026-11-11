@@ -8,6 +8,7 @@
   const defaults = projectModel.defaultProject;
   const pinOps = window.Pin2MapPinOperations;
   const pinFilter = window.Pin2MapPinFilter;
+  const fitVisiblePins = window.Pin2MapFitVisiblePins;
   const filterOps = window.Pin2MapFilterOperations;
   const placeDomain = window.Pin2MapPlaceSearch;
   const placeSearch = new window.Pin2MapPlaceSearchService({
@@ -113,11 +114,11 @@
     if(panelPositioner)panelPositioner.keepVisibleAtOpen({pin:selectedPin(),moving:uiState.moveMode});
   }
   function fitAllPins(){
-    const pts=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter).map(p=>[p.lat,p.lng]);
-    if(!pts.length){showNotice("Keine sichtbaren Pins vorhanden");return;}
-    if(pts.length===1)mapAdapter.setView({center:{lat:pts[0][0],lng:pts[0][1]},zoom:Math.max(mapAdapter.getViewport().zoom,13)},{animate:false});
-    else mapAdapter.fitBounds(pts,{padding:[35,35],maxZoom:15,animate:false});
-    updatePanelLayout();
+    fitVisiblePins({
+      pins:state.pins,layers:state.layers,filter:currentPinFilter,
+      pinFilter,mapPort:mapAdapter,onEmpty:()=>showNotice("Keine sichtbaren Pins vorhanden"),
+      onFit:updatePanelLayout
+    });
   }
   function renderPinPanel(){
     const pin=selectedPin();
