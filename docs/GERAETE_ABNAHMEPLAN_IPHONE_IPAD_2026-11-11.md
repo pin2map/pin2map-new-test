@@ -1,6 +1,6 @@
 # Geräte-Abnahmeprotokoll – lokale Basisversion v116 (iPhone / iPad)
 
-**Erstellt:** 2026-11-11 · **Stand:** Entwurf für reale Geräteabnahme, **noch nicht durchgeführt** · **Ziel:** Gate 2 / konkrete UX-Parität zur Vorgänger-App, ohne alten Code zu übernehmen.
+**Erstellt:** 2026-11-11 · **Stand:** Geräteabnahme läuft; **A01–A02 laut Nutzerrückmeldung bestanden**, weitere Fälle offen · **Ziel:** Gate 2 / konkrete UX-Parität zur Vorgänger-App, ohne alten Code zu übernehmen.
 
 ## 1. Ausgangspunkt und Belegstatus
 
@@ -9,14 +9,14 @@
 - **Entwicklungsquelle:** `pin2map/pin2map-new-test`, `feature/leaflet-modular-core`.
 - **Quellversion:** v116, SW-Quelle `pin2map-new-v116`, Preview-Variante `pin2map-preview-v116`. Die installierte/aktivierte Version auf einem bestimmten Nutzergerät ist **nicht automatisch nachgewiesen**.
 - **Bereits automatisiert geprüft:** Node+Chromium <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550>, Architektur <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996>, Pages-/HTTPS-Live-Start <https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529>. Diese Prüfläufe ersetzen **keinen echten Safari-/Touch-/Flugmodus-Test**.
-- **Manueller Ergebnisstand:** Sämtliche unten aufgeführten Gerätefälle **offen** bis zu einer ausdrücklichen Rückmeldung. Ein früheres „funktioniert“ für OpenTopoMap v104 ist kein umfassendes v116-Gate.
+- **Manueller Ergebnisstand:** **A01–A02 laut Nutzerrückmeldung auf iPhone/Safari OK** (11.11.2026); A03–A08, B01–B08 und C01–C05 sowie iPad weiterhin offen. Ein früheres „funktioniert“ für OpenTopoMap v104 ist kein umfassendes v116-Gate.
 - **Sicherheit:** Tests nach Möglichkeit mit **einem eigens angelegten Testpin und einer Testebene**. Vorhandene persönliche Pins/Ebenen nicht löschen; auch bei einer Test-Löschung nur den explizit erstellten Testpin verwenden. **Browserdaten, Website-Speicher, Service Worker und PWA nicht löschen oder zurücksetzen.** Bei Fehlern zuerst Screenshot und genaue Schritte erfassen.
 
 ## 2. Prüfgeräte und Ergebniserfassung
 
 | Gerät / Umgebung | Prüfstatus | Ergebnis / Browser-/iOS-Version |
 | --- | --- | --- |
-| iPhone – Safari-Tab, bestehende frühere Preview-Nutzung | offen | – |
+| iPhone – Safari-Tab, bestehende frühere Preview-Nutzung | A01–A02 OK, übrige offen | Nutzerrückmeldung 11.11.2026; iOS-/Safari-Version nicht mitgeteilt |
 | iPhone – installierte PWA (nur falls bereits installiert) | offen | – |
 | iPad – Safari-Tab | offen | – |
 | iPad – installierte PWA (nur falls bereits installiert) | offen | – |
@@ -28,8 +28,8 @@ Ergebnis je Fall: **OK**, **Fehler**, **nicht ausführbar** oder **nicht geprüf
 
 | ID | Bedienfolge | Erwartetes Ergebnis | Status |
 | --- | --- | --- | --- |
-| A01 | Preview direkt in Safari öffnen; Karte ohne Tastatureingabe verschieben; mit zwei Fingern zoomen, dann +/- nutzen | Karte bleibt bedienbar, kein weißes/graues Dauerbild, Zoom/Pan unabhängig von Pins | offen |
-| A02 | Freie Kartenstelle länger berühren, bis ein **Testpin** angelegt ist | Genau ein Pin erscheint am gedrückten Ort und ist in **Privat**; normaler kurzer Tipp erzeugt keinen Pin | offen |
+| A01 | Preview direkt in Safari öffnen; Karte ohne Tastatureingabe verschieben; mit zwei Fingern zoomen, dann +/- nutzen | Karte bleibt bedienbar, kein weißes/graues Dauerbild, Zoom/Pan unabhängig von Pins | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
+| A02 | Freie Kartenstelle länger berühren, bis ein **Testpin** angelegt ist | Genau ein Pin erscheint am gedrückten Ort und ist in **Privat**; normaler kurzer Tipp erzeugt keinen Pin | OK – iPhone Safari (Nutzerrückmeldung 11.11.2026) |
 | A03 | Testpin antippen, Namen bearbeiten, Editor schließen und Pin erneut öffnen | Pin-Auswahl/Editor reagieren; Name bleibt sichtbar und nach Reload gespeichert | offen |
 | A04 | Testpin auswählen, Verschieben aktivieren, Vorschau auf andere Stelle bewegen, **Abbrechen** | Ursprüngliche Pin-Position bleibt unverändert; keine versehentliche Pin-Erstellung oder Verschiebung | offen |
 | A05 | Verschieben erneut aktivieren, Zielposition wählen, **Bestätigen** | Genau derselbe Pin (ID) hat neue Position; nach Reload bleibt diese gespeichert | offen |
@@ -94,3 +94,7 @@ Wiederholbar: ja / nein
 - **Nicht geplant:** Fotos, Kartenbild-/PNG-Export.
 - **Nach dem UX-Gate zu priorisieren:** lokaler Projekt-Export/Backup und sicherer Import/Wiederherstellung (Verlustschutz), anschließend Pinnotizen/Links und weitere Vorgänger-Funktionen. Keine vorgezogene Server-/Synchronisationsintegration.
 - **Technische Baseline:** v116 unverändert, keine neue Live-Abnahme aus der Erstellung dieses Dokuments ableiten. `main`, Referenzen, IndexedDB-Daten, CSS/Tile-Server bleiben geschützt.
+
+## Laufende Geräte-Ergebnisse
+
+- **2026-11-11 – iPhone/Safari, Test A01–A02: OK.** Nutzer meldet wörtlich „Test A01–A02: Alles funktioniert wie beschrieben.“ Damit sind Pan/Zoom und die Pin-Anlage per Langdruck nach dem bereitgestellten Ablauf bestätigt; kurz tippen erzeugt keinen Pin. Testpin für A03–A05 weiterverwenden. Kein Screenshot oder Geräte-/iOS-Versionsdetail übermittelt. **Alle anderen A-, B- und C-Fälle bleiben offen.**
