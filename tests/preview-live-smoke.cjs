@@ -34,8 +34,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
-        // Real published basemap menu: slider icons, imagery-only live
-        // adjustment, and non-satellite map isolation on every viewport.
+        // Only the Esri tile imagery changes; no contrast control remains.
         const chooser=page.locator("#basemapButton");
         const mapMenu=page.locator("#basemapMenu");
         const ordered=await mapMenu.locator("[data-basemap]").evaluateAll(items=>
@@ -44,17 +43,13 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await chooser.click();
         await mapMenu.locator('[data-basemap="satellite"]').click();
         await chooser.click();
-        const sun=mapMenu.locator("#satelliteBrightness"),contrast=mapMenu.locator("#satelliteContrast");
+        const sun=mapMenu.locator("#satelliteBrightness");
+        const reset=mapMenu.locator("#satelliteReset");
         assert.equal(await sun.isEnabled(),true);
-        assert.equal(await contrast.isEnabled(),true);
+        assert.equal(await mapMenu.locator("#satelliteContrast").count(),0);
         assert.equal(await mapMenu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
-        assert.equal(await mapMenu.locator('.basemap-slider-icon[data-pin-icon="contrast"] svg').count(),1);
         await sun.evaluate(el=>{
-          el.value="115";el.dispatchEvent(new Event("input",{bubbles:true}));
-          el.dispatchEvent(new Event("change",{bubbles:true}));
-        });
-        await contrast.evaluate(el=>{
-          el.value="70";el.dispatchEvent(new Event("input",{bubbles:true}));
+          el.value="165";el.dispatchEvent(new Event("input",{bubbles:true}));
           el.dispatchEvent(new Event("change",{bubbles:true}));
         });
         assert.equal(await mapMenu.isVisible(),true);
@@ -63,7 +58,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           return {tile:img?.closest(".leaflet-layer")?.style.filter,
             markers:getComputedStyle(document.querySelector(".leaflet-marker-pane")).filter};
         });
-        assert.equal(liveFilter.tile,"brightness(1.15) contrast(0.7)",JSON.stringify(liveFilter));
+        assert.equal(liveFilter.tile,"brightness(1.65)",JSON.stringify(liveFilter));
         assert.equal(liveFilter.markers,"none");
         await mapMenu.locator('[data-basemap="street"]').click();
         const cleanFilter=await page.evaluate(()=>{
@@ -73,8 +68,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.ok(!cleanFilter,"Street map must be untouched: "+cleanFilter);
         await chooser.click();
         assert.equal(await sun.isDisabled(),true);
-        assert.equal(await contrast.isDisabled(),true);
-        assert.equal(await mapMenu.locator("#satelliteReset").isDisabled(),true);
+        assert.equal(await reset.isDisabled(),true);
         const disabledLabel=await mapMenu.locator(".basemap-satellite-slider").first().evaluate(el=>({
           color:getComputedStyle(el).color,
           iconOpacity:getComputedStyle(el.querySelector(".basemap-slider-icon")).opacity
@@ -83,18 +77,17 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(disabledLabel.iconOpacity,"0.48");
         await mapMenu.locator('[data-basemap="satellite"]').click();
         await chooser.click();
-        const reset=mapMenu.locator("#satelliteReset");
         assert.equal(await reset.isEnabled(),true);
+        assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 140 % zurücksetzen");
         await reset.click();
         assert.equal(await mapMenu.isVisible(),true);
         assert.equal(await reset.isDisabled(),true);
-        assert.equal(await sun.inputValue(),"100");
-        assert.equal(await contrast.inputValue(),"100");
-        const neutralFilter=await page.evaluate(()=>{
+        assert.equal(await sun.inputValue(),"140");
+        const defaultFilter=await page.evaluate(()=>{
           const img=document.querySelector('.leaflet-tile-pane img[src*="World_Imagery"]');
           return img?.closest(".leaflet-layer")?.style.filter;
         });
-        assert.equal(neutralFilter,"brightness(1) contrast(1)");
+        assert.equal(defaultFilter,"brightness(1.4)");
         // Published geocoder contract: the number of pin results is not
         // device-dependent and the old 8-hit cache is revalidated with consent.
         const limitContract=await page.evaluate(async()=>{
