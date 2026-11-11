@@ -448,18 +448,18 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
-    assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),6);
+    assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),7);
     assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
-      ["off","elevation","temperature","daily","precipitation","sun"]);
+      ["off","elevation","temperature","daily","precipitation","sun","zone"]);
     assert.equal(await infoMenu.locator(".basemap-menu-title").count(),0,"Menu has no headline");
-    assert.equal(await infoMenu.locator(".pin-info-separator").count(),5);
+    assert.equal(await infoMenu.locator(".pin-info-separator").count(),6);
     assert.equal(await infoMenu.locator('[data-pin-info-mode="daily"] + hr.pin-info-separator + [data-pin-info-mode="precipitation"]').count(),1,"Divider separates min/max and precipitation");
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
     assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/Monatsmittel/);
     assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/15\. des Monats/);
-    for(const icon of ["eye-off","mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset"])
+    for(const icon of ["eye-off","mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset","rotate-cw-clock"])
       assert.equal(await infoMenu.locator('[data-pin-icon="'+icon+'"] svg').count(),1,icon);
     assert.equal(await page.locator(".elevation-label-wrap").count(),0);
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
@@ -599,6 +599,29 @@ async function longPress(page,x,y,ms=725){
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("1,8 mm")),null,{timeout:6000});
     assert.equal(climateRequests.length,precipClimateBefore+2);
+    await infoButton.click();
+    assert.equal(await infoMenu.locator('button[data-pin-info-mode]').last().getAttribute("data-pin-info-mode"),"zone");
+    await infoMenu.locator('button[data-pin-info-mode="zone"]').click();
+    await page.waitForFunction(()=>document.querySelectorAll(".elevation-label .p2m-zone-information svg").length===2,
+      null,{timeout:6000});
+    assert.equal(await page.locator(".p2m-zone-information svg").first().locator("path").first().getAttribute("d"),
+      "M12 7v5l4 2","Live timezone displays official clockwise Lucide geometry");
+    assert.match(await page.locator(".p2m-zone-information").first().innerText(),/\\+[0-9]/);
+    const iconMarkup=await page.evaluate(()=>{
+      const f=window.Pin2MapPinInfoLabel.labelMarkup,shapes=window.Pin2MapIcons;
+      const svg=name=>shapes.svg(name,document).outerHTML;
+      return {
+        positive:f({mode:"zone",text:"+2",icon:"rotate-cw-clock"},{getIconSvg:svg}),
+        negative:f({mode:"zone",text:"-3",icon:"rotate-ccw-clock"},{getIconSvg:svg}),
+        equal:f({mode:"zone",text:"",icon:"clock-check"},{getIconSvg:svg})
+      };
+    });
+    assert.match(iconMarkup.positive,/M12 7v5l4 2/);
+    assert.match(iconMarkup.positive,/\\+2/);
+    assert.match(iconMarkup.negative,/M3 12a9 9 0 1 0 9-9/);
+    assert.match(iconMarkup.negative,/-3/);
+    assert.match(iconMarkup.equal,/m16 19 2 2 4-4/);
+    assert.doesNotMatch(iconMarkup.equal,/>0</);
     await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="off"]').click();
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
