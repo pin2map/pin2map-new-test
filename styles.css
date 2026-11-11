@@ -942,6 +942,58 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   transform:none!important;
 }
 
+/* Pin-information trigger sits one slot ABOVE the established tags control.
+   No new important declarations; the shared icon tokens own its size/surface. */
+#app #pinInfoButton.pin-info-button.p2m-icon-control{
+  position:absolute;z-index:1190;
+  right:var(--p2m-top-corner-inset);left:auto;top:auto;
+  bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px));
+  --p2m-button-size:var(--p2m-map-circle-size);
+}
+#app #pinInfoMenu.pin-info-menu{
+  position:absolute;z-index:1200;
+  right:calc(var(--p2m-top-corner-inset) + var(--p2m-map-circle-size) + 8px);
+  bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px) - 4px);
+  width:min(230px,calc(100% - 74px));
+  max-height:min(75dvh,360px);overflow-y:auto;
+}
+body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
+
+/* Legacy upper info labels: separate marker anchored 42px above pin.
+   Split min/max and sunrise/sunset use the original two-color treatment. */
+#map .elevation-label-wrap{background:transparent;border:0;overflow:visible}
+#map .elevation-label{
+  display:inline-block;transform:translate(-50%,-100%);
+  background:rgba(255,255,255,.94);border:1px solid #777;
+  border-radius:999px;color:#111;
+  font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  padding:2px 5px;white-space:nowrap;box-shadow:0 1px 3px #0002;
+}
+#map .elevation-label.p2m-daily-label,
+#map .elevation-label.p2m-sun-label{
+  display:inline-flex;align-items:stretch;padding:0;overflow:hidden;
+  background:transparent;white-space:nowrap;
+}
+#map .elevation-label.p2m-daily-label{background:#f4f6ff;border-color:#9e9ebd}
+#map .elevation-label.p2m-sun-label{background:#fff;border-color:#b7b7b7}
+#map .elevation-label .p2m-label-half{
+  display:inline-block;padding:3px 6px;line-height:1.25;white-space:nowrap
+}
+#map .elevation-label .p2m-label-min{background:#c7e8ff;color:#111}
+#map .elevation-label .p2m-label-max{background:#ffc9c9;color:#111}
+#map .elevation-label .p2m-label-rise{background:#fff0a3;color:#111}
+#map .elevation-label .p2m-label-set{background:#183b78;color:#fff}
+#map .elevation-label.p2m-temperature-label{background:#fff0ee;border-color:#cb7770}
+#map .p2m-temperature-label .p2m-wx-black{color:#171717}
+#map .p2m-temperature-label .p2m-wx-darkblue{color:#254dd8}
+#map .p2m-temperature-label .p2m-wx-cold{color:#27a8f2}
+#map .p2m-temperature-label .p2m-wx-darkgreen{color:#087c58}
+#map .p2m-temperature-label .p2m-wx-lightgreen{color:#55b832}
+#map .p2m-temperature-label .p2m-wx-mild{color:#168447}
+#map .p2m-temperature-label .p2m-wx-warm{color:#d69b22}
+#map .p2m-temperature-label .p2m-wx-hot{color:#f04438}
+#map .p2m-temperature-label .p2m-wx-veryhot{color:#a344d2}
+
 /* Basemap menu extension: scoped style; B38 cascade budget unchanged. */
 #app .basemap-relief-toggle{
   display:flex;align-items:center;gap:8px;padding:10px 12px;
