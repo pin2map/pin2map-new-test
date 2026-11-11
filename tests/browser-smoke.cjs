@@ -452,13 +452,14 @@ async function longPress(page,x,y,ms=725){
     assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
       ["off","elevation","temperature","daily","precipitation","sun"]);
     assert.equal(await infoMenu.locator(".basemap-menu-title").count(),0,"Menu has no headline");
-    assert.equal(await infoMenu.locator(".pin-info-separator").count(),4);
+    assert.equal(await infoMenu.locator(".pin-info-separator").count(),5);
+    assert.equal(await infoMenu.locator('[data-pin-info-mode="daily"] + hr.pin-info-separator + [data-pin-info-mode="precipitation"]').count(),1,"Divider separates min/max and precipitation");
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
     assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/Monatsmittel/);
     assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/15\. des Monats/);
-    for(const icon of ["mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset"])
+    for(const icon of ["eye-off","mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset"])
       assert.equal(await infoMenu.locator('[data-pin-icon="'+icon+'"] svg').count(),1,icon);
     assert.equal(await page.locator(".elevation-label-wrap").count(),0);
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
