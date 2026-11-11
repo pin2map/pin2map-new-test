@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v112: app.js-Restinventur und Ebenenerzeugung ausgelagert; Node/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v113: Suchtreffer-Übernahme als Pin ausgelagert; Node/Architektur/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v112**, nach zehnter `app.js`-Entflechtung (Ebenenerzeugung) und systematischer Restinventur. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v112'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v112` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v113**, nach elfter `app.js`-Entflechtung (Suchtreffer zu Pin). Die Restinventur v112 bleibt maßgeblich und wird fortgeschrieben. Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v113'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v113` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -159,6 +159,15 @@
 - **Finale Gates für `277760ee562f2081b7149ea75330788803c74178`:** [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42991543896), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42991543940), [Pages-/HTTPS-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/42991543920) alle erfolgreich. Preview-Gate bestätigte **188 Node-Tests, 0 Fehler**, SW-Version/Assets sowie Live-Kartenstart und Reload auf Phone/Tablet/Desktop.
 - **Geschützt:** `main`, Referenzen, CSS B38/298 `!important`, Topo-Host `a.tile.opentopomap.org`, IndexedDB-Schema und gespeicherte Nutzerdaten. **Kein zusätzlicher Gerätetest für v112** erforderlich.
 
+## 4o. Elfte `app.js`-Entflechtung – Suchtreffer als Pin übernehmen (v113, 2026-11-11)
+
+- Neues `application/search-pin-transfer.js` übernimmt den zusammenhängenden Ablauf `choosePlace()`/`renderResults()` aus `app.js`. Bei null Treffern bleibt die Meldung „Kein Ort gefunden“, bei einem Treffer wird der Pin automatisch erzeugt, bei mehreren Treffern bleibt die Liste zur expliziten Auswahl sichtbar. Ungültige Koordinaten lösen „Ort konnte nicht übernommen werden“ aus, ohne Pin-/Kartenmutation.
+- Bei erfolgreicher Wahl: Suchtreffer schließen, `addPin` über vorhandenen `Pin2MapPinSession`-Port aufrufen, Karte über injizierten Karten-Port mit Zoom mindestens 13 und `animate:false` zentrieren, Layout prüfen und sichtbare private Marker aktualisieren. Nominatim-Service, Suchcache und `ui/search-results.js` bleiben unverändert; keine Netzwerkaufrufe im Test.
+- `app.js` von **15.003 auf 14.837 Zeichen** verkürzt. `index.html` lädt `application/search-pin-transfer.js` vor `app.js`, `sw.js` enthält es im Offline-`CORE` als **v113**. Neuer `tests/search-pin-transfer.test.js` deckt null/ein/mehrere Treffer, ungültige Koordinaten, sichtbare/unsichtbare private Ebene, Mindestzoom/erhaltenen größeren Zoom, Fehler bei Pin-Erstellung und Packaging ab.
+- **Echte Chromium-Integration ohne Nominatim:** In die unveränderte isolierte Testdatenbank werden Suchcache-Treffer für `nohit`, `multihit` und `singlehit` eingelegt. Anschließend **offline**: null Treffer zeigt Meldung; mehrere Treffer erzeugen zunächst keinen Pin, ausgewählter Treffer erstellt „Stuttgart“; danach Einzelresultat erzeugt automatisch „Frankfurt“. Beide Pins und der gespeicherte Kartenausschnitt sind nach Neuladen vorhanden. Browser-Log `PASS – offline cached search: nohit, multi choose, single auto-pin and persisted viewport/pins`.
+- **Finale Gates für `3cb4d999ec2a1c1ab463708ed56dace967a6642f`:** [Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42992796747) erfolgreich; [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42992796879) erfolgreich; [Pages-/HTTPS-/Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42992796882) erfolgreich. Preview-Gate: **195 Node-Tests, 0 Fehler**, korrekter Worker/alle aktualisierten Assets und Live-Start auf Phone/Tablet/Desktop.
+- **Schutz:** `main`, Referenzen, Nutzerdaten und IndexedDB-Schema, CSS-B38/298 `!important`, Topografie-`a.tile.opentopomap.org` unverändert. **Kein eigener Gerätetest erforderlich** für v113; echte iOS-Gesten sind damit nicht gesondert verifiziert.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -173,10 +182,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Suchtreffer → Pin:** nach [Restinventur](APP_JS_RESTINVENTUR_2026-11-11.md) als nächste eigenständige Anwendungsfunktion `choosePlace()`/`renderResults()` prüfen und extrahieren; ungültige Koordinaten, null/ein/mehrere Treffer, richtige Marker-/Viewport-Zuordnung und gespeicherte Daten absichern. Kein echter Nominatim-Netzwerktest.
-2. Danach Projekthydrierung (Default-/Saved-Project-Vertrag) und Karten-/Move-Ereignisse gegen die Architekturregeln bewerten; reine Modulinstanziierung und Rendering-Verdrahtung in `app.js` belassen.
-3. Jede Codeänderung mit Node-/Architektur-/Chromium- und tatsächlichem Pages-/HTTPS-Live-Gate nachweisen; Topo `a.tile.opentopomap.org` unverändert lassen. **Manuelle Gerätetests ausdrücklich mit URL und Schritten anfordern**, wenn benötigt; für v112 keiner erforderlich.
-4. CSS B38/298 bleibt pausiert; `main`, `reference/*`, IndexedDB und vorhandene Nutzerpins schützen.
+1. **Projekthydrierung als nächstes prüfen:** In `init()` hängen das Zusammenführen von Defaults/gespeichertem Projekt, Sicherstellen der privaten Ebene, Entfernen des historischen `activeLayer` und Bereinigen des Suchcaches noch zusammen. Ein eigenes Anwendungsmodul nur bei kontrolliertem Erhalt der bisherigen Semantik und mit Tests für vollständige, teilweise und ungültige Projektdaten einführen. **Keine IndexedDB-Schemaänderung.**
+2. Danach Karten-/Move-Ereignis-Lebenszyklus im Composition Root bewerten; reine Modulerstellung und Renderer-Verdrahtung bleiben in `app.js`.
+3. Vollständige Node-/Architektur-/Chromium-Gates und reale Pages-/HTTPS-Liveprüfung vor Abschluss jeder Codeänderung. Topo-Host `a.tile.opentopomap.org` und CSS B38/298 unverändert lassen.
+4. **Nutzergerätetests bei Bedarf ausdrücklich mit URL und Schritten anfordern.** Für v113 ist kein zusätzlicher Test erforderlich. `main`, `reference/*`, persistierte Nutzerdaten schützen.
 
 ## 6. Maßgebliche Dokumente
 
