@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (erste `app.js`-Extraktion, Quellversion v101) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v101 nach erfolgreichem CI-/Pages-Gate; Basiskarten-Bedienabnahme offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -38,32 +38,34 @@
 - Kein erneuter iPhone-/iPad-Gerätetest bei rein interner Bereinigung ohne erwartete sichtbare Änderung. Bei UI-Änderungen die vorher abgenommene Darstellung gezielt vergleichen.
 - **„ok“** ist eine Fortsetzungsanweisung, keine Testabnahme.
 
-## 4a. v101-Prüfrunde – isolierte JavaScript-Ausführung (2026-11-11)
+## 4a. v101 – CI-/Preview-Verifikation nach Testreparatur (2026-11-11)
 
-- **12 tatsächliche isolierte JavaScript-Prüfungen bestanden:** den exakten in GitHub gespeicherten `ui/basemap-menu.js`-Quelltext in einer separaten V8-Laufzeit mit DOM-Doubles ausgeführt. Bestätigt: ARIA-/Auswahl-Rendern, einmalige Öffnung, Auswahl/Schließen/Fokus, ungültige Auswahl ignorieren, Innen-/Außenklick, Escape, andere Tasten, Entfernen der Event-Listener. Zusätzlich Zusammensetzung `app.js`, Skriptreihenfolge in `index.html` sowie Offline-`CORE` und Quellversion v101 kontrolliert.
-- **Genaue Abgrenzung:** Dies ist **nicht** die tatsächliche Node-Testsuite `node --test tests/*.test.js`, kein Lauf der `tests/check-*.mjs`, keine vollständige Browser-DOM-/Leaflet-Integration und keine Geräteabnahme. Der in GitHub abgelegte Regressionstest `tests/basemap-menu.test.js` wurde dadurch nicht als Node-Test ausgeführt.
-- **CI-Nachweise:** GitHub-Abfrage des v101-Test-Commits `809d6d8f3a12a6f2ee08c2326a73257ddc2cf31f` gab leere Commit-Statuses und leere **PR-gefilterte** Workflow-Runs zurück. Diese API kann einen push-getriggerten Workflow **nicht ausschließen** und beweist keinen Erfolg.
-- **HTTPS-Preview nicht nachgewiesen:** Web-Abrufe von `/preview/`, `/preview/sw.js` und `/preview/ui/basemap-menu.js` wurden durch die verfügbare Web-Umgebung abgewiesen; direkter Git-Zugriff scheiterte an DNS-Auflösung. Keine Behauptung, v101 sei öffentlich aktiv.
-- **Ergebnis:** isoliertes UI-Modul funktional geprüft; **End-to-End-Gates offen**. Weder CSS-/App-Quellen noch Nutzerdaten wurden für diese Prüfung geändert.
+- **CI-Ursache geklärt:** Workflow `Modular core checks` meldete zunächst 135 bestandene und 2 fehlgeschlagene Tests. Fehler: `tests/css-base-readability-contract.test.js` erwartete eine im CSS-Sanierungsverlauf entfernte mobile `.topbar`-Grundregel; `tests/lucide-button-design.test.js` suchte die bereits nach `ui/basemap-menu.js` extrahierten DOM-/Escape-Ereignisse noch in `app.js`. Die beiden Tests wurden an die **bereits existierenden** Eigentümer angepasst, ohne App- oder CSS-Änderung. Commits `f365bca105b306e06eac97aad82a37ec7dea7ec6` und `773cc29f652a6c44b6c0379c9b29988713412f6a`.
+- **Node-Tests tatsächlich in GitHub Actions erfolgreich:** `Modular core checks` – Node-Job `node-tests`: **137 bestanden, 0 fehlgeschlagen**. <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343397>
+- **Automatisierter Chromium-Test tatsächlich erfolgreich:** `chromium-smoke` desselben Laufs: Pin-Selektion, Move/Cancel/Confirm, Persistenz und Offline-Reload bestanden. Das ist ein automatisierter Test auf der Entwicklungsfassung, kein Nutzer-Gerätetest und keine spezifische Basiskarten-Menü-Bedienungsabnahme.
+- **Architekturprüfungen erfolgreich:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343418>.
+- **Preview-Deployment erfolgreich:** <https://github.com/pin2map/pin2map-new-test/actions/runs/42981343415>, Head-Commit `773cc29f652a6c44b6c0379c9b29988713412f6a`. Die Pipeline bestätigte (1) gesamte Vorabvalidierung inkl. `node --test tests/*.test.js` und `tests/check-*.mjs`, (2) GitHub-Pages-Deployment, (3) reale HTTP(S)-Abfrage der **exakten Preview-Service-Worker-Version und aktualisierten Assets**, (4) automatisierten Live-Leaflet-Start, Controls, Attribution und Reload für Smartphone, Tracking-URL, Tablet und Desktop. <https://pin2map.github.io/pin2map-new-test/preview/>
+- **Technischer Freigabestand:** v101-Quellstand über GitHub Actions inkl. HTTPS-Preview verifiziert. Manuelle iPhone-/iPad-/Desktop-Geräteabnahme und eine explizite Nutzerprüfung der Basiskarten-Auswahl inklusive deren Fokus-/Escape-Interaktion bleiben **offen**. Die automatischen Live-Smokes testen primär den Kartenstart und allgemeine Steuerung, nicht alle Menüinteraktionen. Die App nicht ohne gesonderte Freigabe nach `main` mergen.
+- **Quellstand:** weiterhin `pin2map-new-v101` / Preview `pin2map-preview-v101`; `styles.css` B38, 298 `!important`; App-/Datenmodule und Nutzerdaten unverändert durch die Testreparatur.
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
-**CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. Das ist **noch keine durch CI/Pages/Browser bestätigte Freigabe**.
+**CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; gesonderte Basiskarten-Menü-Bedienabnahme bleibt offen.
 
 - `styles.css`: 947 Zeilen, rund 40 KB, **298 `!important`** (anfangs 402); 36 mehrfach vorkommende Selektoren in einer groben Quelltext-Inventur. Wiederholungen können berechtigte Media-Query-/Zustandsunterschiede sein und sind nicht automatisch Fehler. CSS bleibt technischer **Übergangszustand**, keine architektonisch abgeschlossene Komponentenkaskade.
 - Letzte konkrete Bereinigung: **B38** (ursprüngliche doppelte `min-width:0` im Suchfeld), dokumentiert in `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`. CSS, JavaScript, Worker und Datenmodell werden durch diese **Dokumentationsentscheidung nicht verändert**; CSS-Quellinhalt bleibt gleich; durch die neue App-Shell-Datei wird die SW-Quellkennung auf `pin2map-new-v101` angehoben.
 - Geltender Schutzvertrag: keine neuen pauschalen `!important`-Overrides; CSS-Budget **298** nicht erhöhen; vorhandene Designtokens und Eigentümer respektieren; den abgenommenen Suchbutton (42px Antippfläche, 30px Sichtkreis, 18px Lupe) nicht beiläufig verändern.
 - Bewusst **zurückgestellt**, nicht erledigt: umfassende CSS-Kaskadenkonsolidierung, konkurrierende Eigentümer, langfristige Aufteilung nach Komponenten, Stylelint-/AST-Infrastruktur und spätere Desktop-/iPad-/iPhone-CSS-Abnahme. **B39 wird nicht automatisch gestartet.**
 - **Quelltext geprüft:** Feature-Branch `styles.css`, CSS-Architekturvertrag, Fahrplan, Projektstatus und Preview-Workflow wurden gelesen. Die Workflowdefinition führt u. a. `node --test tests/*.test.js` und `tests/check-*.mjs` vor einem geplanten Pages-Deploy aus; eine Konfiguration beweist keinen erfolgreichen Lauf.
-- **Unabhängig offen:** vollständiger Node-22-Testlauf einschließlich des neuen Basiskarten-Menü-Tests, GitHub-Actions-Laufresultat des relevanten Pushes, veröffentlichte `/preview/`-Assets und SW **v101** über HTTPS, Browser-Smoke inklusive Basiskartenwechsel, Escape/Außenklick, Fokus und Speichern sowie nötige Geräteabnahme. Der Container konnte `github.com` und `pin2map.github.io` nicht per DNS auflösen; die Web-Abrufe waren nicht erfolgreich. Verfügbare Commit-Status-/PR-Workflow-Quellen haben für die bisherigen Commits keine belastbaren Push-Run-Ergebnisse geliefert.
+- **CSS-Endabnahme weiterhin offen:** Die v101-CI-/Pages-Prüfungen sind nun bestätigt (siehe § 4a); dies ist **keine** vollständige CSS-Kaskaden-/Geräteabnahme. Eine reine Dokumentationsprüfung oder ältere gescheiterte Webzugriffe sind durch die belegten GitHub-Actions-/HTTPS-Ergebnisse überholt.
 - **Schutzregel:** vor weiteren **Anwendungsänderungen** die technischen Gates nach Möglichkeit nachholen; fehlen die Belege weiterhin, ausdrücklich offen lassen und keine erfolgreich getestete/ausgelieferte Version behaupten. Nicht ungeprüft nach `main` übernehmen.
 
 ## 5. Nächste konkrete Schritte
 
-1. **Offene v101-End-to-End-Gates nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien samt `ui/basemap-menu.js` und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
-2. **Erste `app.js`-Extraktion umgesetzt (Quellstand v101):** `ui/basemap-menu.js` steuert DOM/ARIA/Escape/Außenklick; `app.js` behält Basiskartenwechsel und Speicherung. `index.html` und SW-`CORE` enthalten die neue Datei; `tests/basemap-menu.test.js` wurde neu angelegt. CSS unangetastet.
-3. **Ersten Refactoring-Schnitt technisch freigeben:** `tests/basemap-menu.test.js` und volle Node-Suite sowie `tests/check-*.mjs` ausführen, CI/Pages und live geladenes `ui/basemap-menu.js` (v101) verifizieren, Basiskartenwechsel, ARIA/Escape/Außenklick und Persistenz im Browser prüfen. Bis dahin **Implementierung vorhanden, Freigabe offen**.
-4. CSS-Komplettsanierung später wieder aufnehmen, wenn Änderungen konkrete Kaskadenprobleme offenbaren oder die Architektur-/UI-Abnahme ansteht. B39 bleibt bis dahin **pausiert**.
+1. **Basiskarten-Menü v101 funktional gezielt abnehmen:** automatisierter/echter Browser-Test von `street`↔`topo`, Auswahlmarkierung und gespeichertem Projektzustand sowie Öffnen/Schließen, Escape, Außenklick, Tastaturfokus und Konflikten mit Suchtreffern/anderen Panels. Die bereits erfolgreichen Kartenstart-/Offline-Smokes decken diese Detailinteraktionen nicht ausdrücklich ab.
+2. Danach nächste kleine `app.js`-Verantwortlichkeit anhand `docs/MODULARCHITEKTUR.md` auswählen und mit eigenem Modultest extrahieren. `main`, Nutzerdaten und IndexedDB-Schema bleiben geschützt.
+3. Eine manuelle iPhone-/iPad-/Desktop-Abnahme und später die vollständige CSS-Kaskadenkonsolidierung nicht als bereits erledigt verbuchen; CSS-Schritt B39 bleibt pausiert.
+4. Bei jeder erneuten Anwendungsänderung GitHub-Actions-/Preview-Tests und die tatsächlich ausgelieferte Version prüfen; keine reine Commit-Abnahme.
 
 ## 6. Maßgebliche Dokumente
 
