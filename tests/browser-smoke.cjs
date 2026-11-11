@@ -470,6 +470,16 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
+    step("pin info native period selectors: taps must not dismiss the popup");
+    for(const id of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
+      const select=infoMenu.locator("#"+id);
+      await select.evaluate(el=>el.closest("label").dispatchEvent(new MouseEvent("click",{bubbles:true})));
+      assert.equal(await infoMenu.isVisible(),true,id+" label click must not dismiss menu");
+      await select.click();
+      assert.equal(await infoMenu.isVisible(),true,id+" select activation must not dismiss menu");
+      assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
+    }
+
     assert.equal(await infoMenu.locator(".pin-info-credit").count(),0,
       "No source/explanation block belongs in the pin-info menu");
     assert.equal(await infoMenu.getByText("NASA POWER").count(),0,
