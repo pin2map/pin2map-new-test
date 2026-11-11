@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v109: Einzelpin-Löschbestätigung modularisiert, Offline-Löschtest grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v110: Speicher-/Viewport-Koordination modularisiert; Node/Architektur/Chromium/Pages grün) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -17,7 +17,7 @@
 
 ## 2. Aktueller Entwicklungsstand
 
-- **Quellversion:** **v109**, nach siebter `app.js`-Entflechtung (Einzelpin-Löschdialog). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v109'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v109` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
+- **Quellversion:** **v110**, nach achter `app.js`-Entflechtung (Speicher- und Viewport-Koordination). Zweite `app.js`-Modulentflechtung bleibt auf v102-Codebasis bestehen; CSS unverändert B38. Quelle: `sw.js`, `const CACHE='pin2map-new-v110'`. Die zur Preview-Auslieferung gehörende Kennung wird im Workflow in `pin2map-preview-v110` umgeschrieben. Nicht mit einer tatsächlich überprüften installierten Version verwechseln.
 - **CSS-Sanierung:** Anfang **402** `!important`-Vorkommen, derzeit **298**. B38 entfernte die redundante ursprüngliche `min-width:0`-Angabe in `.search input`; die späteren Mindestbreiten-Eigentümer bleiben gültig.
 - **Sanierungsprotokoll:** `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`; alle Schritte B1–B38 sind dort erläutert.
 - **CSS-Regelvertrag:** `docs/CSS_ARCHITEKTURREGELN.md`; temporärer Grenzwert in `tests/css-debt-budget.test.js` ist 298.
@@ -134,6 +134,15 @@
 - **GitHub Actions tatsächlich erfolgreich (finaler Test-Commit `f0294eb24c789f04d8164a3561ecf527bbd5b71f`):** [Node und Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42989242321), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42989242227), [Pages/HTTPS-Preview und Live-Start](https://github.com/pin2map/pin2map-new-test/actions/runs/42989242295). Die Preview wird mit `pin2map-preview-v109` ausgeliefert.
 - **Schutz:** Topo-Host `a.tile.opentopomap.org`, CSS B38 mit 298 `!important`, IndexedDB-Schema, Nutzerdaten und `main` nicht geändert. **Kein persönlicher Gerätetest erforderlich** für v109; tatsächlicher Chromium-Test einschließlich Datenpersistenz erfolgreich.
 
+## 4l. Achte `app.js`-Entflechtung – Speicher-/Viewport-Koordination (v110, 2026-11-11)
+
+- Neues Anwendungsmodul `application/project-persistence.js` übernimmt **debounced Save (300 ms)**, Schreiben über den injizierten Repository-Port, unmittelbares Schreiben beim PWA-Refresh, stillen Flush bei `visibilitychange=hidden` und die Übernahme des aktuellen Karten-Viewports nach `moveend`. Das Modul kennt **weder IndexedDB-API noch Leaflet, DOM oder Projekt-Datenbankschema**.
+- `app.js` führt statt eigenem `saveTimer`/`dbWrite`/`save` eine `Pin2MapProjectPersistence`-Instanz und knappe Delegationscallbacks. `app.js` **15.433 → 15.269 Zeichen**; `index.html` und Offline-`CORE` laden neues Modul, Source-Cache **v110**. `adapters/storage/indexeddb-project-store.js` blieb unverändert: Datenbank `pin2map-new-v1`, Version 1, Store `kv`, Key `appState`.
+- `tests/project-persistence.test.js` prüft Debounce, aktuelle Datenreferenz, Viewport-Daten, Immediate-Flush ohne doppelte Nachschreiboperation, fehlenden Repository-Port, Fehler-/Hidden-Verhalten sowie `dispose()`; `tests/check-architecture.mjs` überprüft nun den Repository-Port-Zugriff im neuen Anwendungsmodul statt historisch direkt in `app.js`.
+- **Neuer echter Chromium-Regressionstest:** Karte verschieben, gespeicherten Viewport über den bereits vorhandenen Storage-Adapter lesen, nach Neuladen den erhaltenen Viewport vergleichen; Ergebnis im Browser-Log **`PASS – viewport moveend persistence and reload`**. Bestehende Browserfälle für Topografie, Pins, Benennung, Move, Löschen und Offline-Persistenz bleiben erfolgreich.
+- **Verifiziert für finalen Code-/Test-Commit `8b8c1c179b92046bd87c3b082987d73bcc753fea`:** [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42990198957) erfolgreich, [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42990198915) erfolgreich, [GitHub-Pages-/HTTPS-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/42990198868) erfolgreich. Die Preview veröffentlicht die Version `pin2map-preview-v110`.
+- **Schutzbereiche unverändert:** `main` und Referenzen, persistierte Nutzerdaten, IndexedDB-Adapter/-Schema, CSS B38 mit 298 `!important`, Topografie `a.tile.opentopomap.org`. **Kein zusätzlicher persönlicher Test erforderlich** für v110; die betroffenen Speichervorgänge sind im realen Chromium-Lauf geprüft.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -148,10 +157,10 @@
 
 ## 5. Nächste konkrete Schritte
 
-1. **Nächste größere, fachlich kohärente `app.js`-Verantwortlichkeit beurteilen:** verbleibende **Speicher-/Viewport-Koordination** oder Pin-Erzeugung/-Auswahl als eigenen Anwendungsfall prüfen. Modulgrenzen und seit v109 getrennte UI-Dialoge erhalten; nicht nur nach Zeichenersparnis optimieren.
-2. Jede neue Anwendungsänderung mit vollständigem Node-/Architektur-/Chromium-Lauf und echtem GitHub-Pages-/HTTPS-Preview-Gate bestätigen; externe Topokarten-Quelle `a.tile.opentopomap.org` unverändert beibehalten.
-3. Erforderliche **Nutzergerätetests ausdrücklich ankündigen** mit URL, Schritten und erwartetem Ergebnis. Für v109 ist kein persönlicher Test notwendig.
-4. CSS B38/298 bleibt pausiert. `main`, `reference/*`, IndexedDB-Schema und Nutzerpins schützen.
+1. **Nächste fachliche Verantwortlichkeit bewerten:** nach Speicherentflechtung die verbliebenen Pin-Erzeugungs-/Selektionsabläufe und weitere UI-Ereignisverdrahtung in `app.js` prüfen. Eine eigenständige, testbare Modulfunktion wählen, nicht bloß maximale Zeilenersparnis.
+2. Vor weiterer Codeänderung aktuelle v110-Baseline und Architekturverträge erneut lesen; danach Node-, Architektur-, Chromium- und echte Pages-/HTTPS-Live-Gates bis zum endgültigen Ergebnis prüfen.
+3. **Nutzergerätetests ausdrücklich anfordern**, wenn notwendig, mit konkreter Preview-URL und Prüfschritten. Für v110 ist kein Gerätetest erforderlich.
+4. `main`, Referenzzweige, bestehende IndexedDB-Daten und Topo-Kachelquelle schützen; CSS-B38/298 bleibt pausiert.
 
 ## 6. Maßgebliche Dokumente
 
