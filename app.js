@@ -98,6 +98,12 @@
     scheduleSelectionLayout:()=>requestAnimationFrame(keepSelectedAbovePanel),
     onSave:()=>save(),onNotice:message=>showNotice(message)
   });
+  const layerCreation = new window.Pin2MapLayerCreation({
+    getProject:()=>state,operations:layerOps,
+    askName:defaultName=>prompt("Name der neuen Ebene:",defaultName),
+    createId:uid,cleanText,colors:COLORS,
+    onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
+  });
   const showNotice = message => uiShell.showNotice(message);
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
@@ -220,17 +226,7 @@
     basemapMenu.bind();
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
-    $("addLayer").addEventListener("click", () => {
-      const name=prompt("Name der neuen Ebene:",layerOps.nextName(state));
-      if(name===null)return;
-      try{layerOps.create(state,{id:uid(),name,cleanText,colors:COLORS});}
-      catch(error){
-        showNotice(error.message==="Empty layer name"?"Bitte einen Ebenennamen eingeben":
-          error.message==="Duplicate layer name"?"Der Ebenenname ist bereits vergeben":"Ebene konnte nicht erstellt werden");
-        return;
-      }
-      renderLayers();save();
-    });
+    $("addLayer").addEventListener("click",()=>layerCreation.create());
 
     pinEditorActions.bind();
     $("movePin").addEventListener("click",()=>moveController.begin());
