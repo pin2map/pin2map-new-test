@@ -48,6 +48,7 @@
       sunTimes:new window.Pin2MapMonthlySunTimes({fetchImpl:(...args)=>fetch(...args)})
     }),
     onUpdate:()=>renderMarkers(),
+    onLoadingChange:loading=>pinInfoMenu.setLoading(loading),
     onError:()=>showNotice("Pin-Informationen vorübergehend nicht verfügbar")
   });
   const pinInfoMenu=new window.Pin2MapPinInfoMenu({
