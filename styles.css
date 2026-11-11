@@ -110,7 +110,6 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-zoom-button:last-child{font-size:25px!important}
 .pin-zoom-button:active{background:#e6f0ff!important}
 @media(max-width:630px){
-  .topbar .search{min-width:0}
   .leaflet-top.leaflet-left{top:8px;left:6px}
   .pin-zoom-button{width:40px;height:40px;font-size:25px!important}
 }
