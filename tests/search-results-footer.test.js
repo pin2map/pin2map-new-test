@@ -41,7 +41,7 @@ test("framed chooser follows OUTER search block below it and stops at bottom con
   let width=410,outerTop=8,bottomTop=780;
   const outer={getBoundingClientRect:()=>({width,height:52,top:outerTop,bottom:outerTop+52})};
   const search={closest:selector=>selector===".topbar"?outer:null};
-  const bottom={getBoundingClientRect:()=>({top:bottomTop})};
+  const bottom={getBoundingClientRect:()=>({bottom:bottomTop})};
   const app={getBoundingClientRect:()=>({top:0,bottom:844})};
   const container=new Element("div");container.style={};
   container.querySelector=()=>container.children[0];
