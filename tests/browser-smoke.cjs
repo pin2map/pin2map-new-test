@@ -443,7 +443,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".pin-marker").count(),1);
     const infoButton=page.locator("#pinInfoButton");
     const infoMenu=page.locator("#pinInfoMenu");
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i-off");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
     assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),5);
@@ -463,7 +463,7 @@ async function longPress(page,x,y,ms=725){
       null,{timeout:6000});
     assert.equal(forecastRequests.length,1,"Only the visible pin must be queried");
     assert.equal(forecastRequests[0].count,1);
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point");
     assert.match(await page.locator(".elevation-label").first().textContent(),/19 °C/);
     await page.locator("#layersButton").click();
     await page.locator('#layersList input[aria-label="Wettertest sichtbar"]').check();
@@ -500,7 +500,7 @@ async function longPress(page,x,y,ms=725){
       }else await infoMenu.locator('[data-pin-info-mode="'+mode+'"]').click();
       await page.waitForFunction(value=>Array.from(document.querySelectorAll(".elevation-label"))
         .some(el=>el.textContent.includes(value)),match,{timeout:6000});
-      assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i");
+      assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point");
     };
     await nextMode("elevation","250 m");
     await nextMode("daily","16 °C");
@@ -551,7 +551,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator('.p2m-info-month-prefix').count(),0);
     await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="off"]').click();
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"circle-letter-i-off");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     assert.equal(await infoButton.locator("svg path").last().getAttribute("d"),"M2 22 22 2");
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label").length===0,
       null,{timeout:6000});
