@@ -23,16 +23,18 @@
   }
   function key(pin,mode){return mode+":"+Number(pin.lat).toFixed(5)+","+Number(pin.lng).toFixed(5);}
   class PinInfoService{
-    constructor({provider,onUpdate=()=>{},onError=()=>{},now=()=>Date.now()}){
+    constructor({provider,onUpdate=()=>{},onError=()=>{},now=()=>Date.now(),schedule=(fn,delay)=>root.setTimeout(fn,delay),cancel=id=>root.clearTimeout(id)}){
       if(!provider||typeof provider.request!=="function")throw new TypeError("Pin information provider required");
       this.provider=provider;this.onUpdate=onUpdate;this.onError=onError;this.now=now;
       this.mode="off";this.cache=new Map();this.pending=new Set();this.generation=0;
+      this.schedule=schedule;this.cancel=cancel;this.timer=null;
       this.visible=[];this.activeKeys=new Set();
     }
     setMode(mode){
       if(!MODES.includes(mode))throw new RangeError("Unknown mode: "+mode);
       if(this.mode===mode)return;
       this.mode=mode;this.generation++;
+      if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
       this.pending.clear();this.refresh();
     }
     setVisiblePins(pins){
@@ -65,10 +67,28 @@
       if(mode==="sun")return {mode,parts:data?[data.rise,data.set]:["–:–","–:–"]};
       return {mode,text:data?zoneDelta(data,this.now()):"Δ …"};
     }
+    armRefresh(){
+      if(this.timer!==null){this.cancel(this.timer);this.timer=null;}
+      if(this.mode==="off"||!this.visible.length)return;
+      const now=this.now();
+      const expirations=this.visible.map(pin=>{
+        const record=this.cache.get(key(pin,this.mode));
+        return record?Math.max(1000,TTL[this.mode]-(now-record.at)):null;
+      }).filter(v=>v!==null);
+      if(!expirations.length)return;
+      const delay=Math.max(1000,Math.min(...expirations));
+      this.timer=this.schedule(()=>{
+        this.timer=null;
+        if(this.mode==="off")return;
+        this.onUpdate(); // Stale weather becomes a placeholder immediately.
+        this.refresh();
+      },delay);
+      this.timer?.unref?.(); // Node regression runs must not be held by timers.
+    }
     refresh(){
       const mode=this.mode;
       if(mode==="off")return;
-      const unfilled=this.visible.filter(pin=>!this.get(pin,mode)&&!this.pending.has(key(pin,mode)));
+      const unfilled=this.visible.filter(pin=>!this.isFresh(this.cache.get(key(pin,mode)),mode,this.now())&&!this.pending.has(key(pin,mode)));
       if(!unfilled.length)return;
       const generation=this.generation;
       const batches=[];
@@ -81,12 +101,16 @@
           try{
             const rows=await this.provider.request(mode,batch);
             if(this.generation===generation&&this.mode===mode){
-              rows.forEach((data,i)=>{if(data)this.cache.set(key(batch[i],mode),{data,at:this.now()});});
+              rows.forEach((data,i)=>{this.cache.set(key(batch[i],mode),{data,at:this.now()});});
               this.onUpdate();
             }
-          }catch(error){if(this.generation===generation)this.onError(error);}
+          }catch(error){if(this.generation===generation){
+            batch.forEach(pin=>this.cache.set(key(pin,mode),{data:null,at:this.now()}));
+            this.onError(error);
+          }}
           finally{batch.forEach(pin=>this.pending.delete(key(pin,mode)));}
         }
+        if(this.generation===generation)this.armRefresh();
       };
       void next();
     }
