@@ -46,7 +46,7 @@
         }
         if(mode==="sun"){
           const rise=row.daily?.sunrise?.[0],set=row.daily?.sunset?.[0],date=row.daily?.time?.[0];
-          return /^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d/.test(rise||"")&&/^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d/.test(set||"")
+          return /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(rise||"")&&/^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(set||"")
             ?{rise:rise.slice(11,16),set:set.slice(11,16),date,zone:row.timezone}:null;
         }
         return typeof row.timezone==="string"&&row.timezone
