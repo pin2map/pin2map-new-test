@@ -38,6 +38,52 @@ async function longPress(page,x,y,ms=725){
     step("load application");
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await assertReady(page);
+    step("basemap menu: switch, aria states, Escape, outside click and persistence");
+    const picker=page.locator("#basemapButton");
+    const menu=page.locator("#basemapMenu");
+    const street=menu.locator('[data-basemap="street"]');
+    const topo=menu.locator('[data-basemap="topo"]');
+    assert.equal(await menu.isHidden(),true);
+    assert.equal(await picker.getAttribute("aria-expanded"),"false");
+    assert.equal(await street.getAttribute("aria-pressed"),"true");
+    await picker.click();
+    assert.equal(await menu.isVisible(),true);
+    assert.equal(await picker.getAttribute("aria-expanded"),"true");
+    await topo.click();
+    assert.equal(await menu.isHidden(),true);
+    assert.equal(await picker.getAttribute("aria-expanded"),"false");
+    assert.equal(await topo.getAttribute("aria-pressed"),"true");
+    assert.equal(await topo.evaluate(el=>el.classList.contains("is-selected")),true);
+    assert.equal(await picker.evaluate(el=>el===document.activeElement),true);
+    await page.waitForTimeout(650); // Debounced IndexedDB save.
+    await page.reload({waitUntil:"domcontentloaded"});
+    await assertReady(page);
+    assert.equal(await page.locator('#basemapMenu [data-basemap="topo"]').getAttribute("aria-pressed"),"true",
+      "Topographic choice persists after reload");
+    await picker.click();
+    await page.keyboard.press("Escape");
+    assert.equal(await menu.isHidden(),true);
+    assert.equal(await picker.getAttribute("aria-expanded"),"false");
+    assert.equal(await picker.evaluate(el=>el===document.activeElement),true);
+    await picker.click();
+    await page.locator("#map").click({position:{x:60,y:60}});
+    assert.equal(await menu.isHidden(),true,"Outside map click closes the menu");
+    await page.locator("#settingsButton").click();
+    assert.equal(await page.locator("#settingsPanel").isVisible(),true);
+    await picker.click();
+    assert.equal(await page.locator("#settingsPanel").isHidden(),true,
+      "Basemap picker dismisses settings panel");
+    assert.equal(await menu.isVisible(),true);
+    await street.click();
+    assert.equal(await street.getAttribute("aria-pressed"),"true");
+    await page.waitForTimeout(650);
+    await page.reload({waitUntil:"domcontentloaded"});
+    await assertReady(page);
+    assert.equal(await page.locator('#basemapMenu [data-basemap="street"]').getAttribute("aria-pressed"),"true",
+      "Street choice persists after reload");
+    assert.equal(await page.locator("#basemapMenu").isHidden(),true);
+    assert.deepEqual(errors,[],"No JavaScript errors in basemap menu workflow");
+    console.log("[browser] PASS – basemap toggle, street/topo, ARIA, focus, Escape, outside click, panels, persistence");
     const box=await page.locator("#map").boundingBox();
     assert.ok(box&&box.width>300&&box.height>300,"Map viewport is present");
     const center={x:box.x+box.width*.5,y:box.y+box.height*.57};
