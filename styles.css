@@ -10,7 +10,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .secondary{background:#e9f0f7;color:#172b49}
 .danger{background:#b13232}
 .full{width:100%;margin-top:14px}
-.topbar{position:absolute;z-index:1100;top:0;left:0;right:0;align-items:center;background:var(--navy);color:white;box-shadow:var(--shadow)}
+.topbar{position:absolute;z-index:1400;top:0;left:0;right:0;align-items:center;background:var(--navy);color:white;box-shadow:var(--shadow)}
 .search{display:flex;flex:1;max-width:520px;min-width:0;margin:auto;background:white;overflow:hidden}
 .search input{border:0;outline:0;background:white}
 .search button{border-radius:0;background:#e8f1fc;color:#14385c}
@@ -18,16 +18,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .leaflet-top.leaflet-left{top:12px}
 .leaflet-bottom.leaflet-right{bottom:5px}
 .leaflet-control-attribution{font-size:10px!important}
-.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;display:flex;flex-direction:column;overflow:hidden;background:#fff;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
-.result{display:block;width:100%;text-align:left;border-radius:0;border-bottom:1px solid #edf1f5;background:white;color:#183454;padding:12px}
-.results-items{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.search-results{position:absolute;z-index:1300;left:50%;transform:translateX(-50%);width:min(520px,calc(100% - 22px));max-height:45vh;display:flex;flex-direction:column;overflow:hidden;background:#f2f4f7;border:1px solid var(--border);border-radius:0 0 12px 12px;box-shadow:var(--shadow)}
+.result{display:block;width:100%;text-align:left;border-radius:0;border-bottom:1px solid #dfe5eb;background:transparent;color:#183454;padding:12px}
+.results-items{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#f2f4f7}
 .result-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .result-kind{font-size:11px;font-weight:600;color:#555;background:#f0f0f2;border-radius:6px;padding:4px 7px;white-space:normal}
 .result-coordinates{display:block;font-size:11px;color:#777;margin-top:3px}
 .result:hover{background:#edf6ff}
 .result strong{display:block;font-size:14px}
 .result small{font-size:12px;color:#66788b}
-.results-footer{display:flex;flex:0 0 auto;justify-content:center;padding:8px 12px;border-top:1px solid #edf1f5;background:#fff}
+.results-footer{display:flex;flex:0 0 auto;justify-content:center;padding:8px 12px;border-top:1px solid #cbd3dc;background:#dfe4eb}
 .results-footer .results-cancel{padding:8px 20px;color:#3e5974;background:#edf1f5;border:1px solid #d7dde3;border-radius:999px;font-size:14px;cursor:pointer}
 .message{padding:13px;font-size:14px;color:#4a5870}
 .panel{position:absolute;right:12px;z-index:1250;background:white;border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--shadow);width:min(350px,calc(100% - 24px));max-height:70vh;overflow-y:auto}
@@ -121,7 +121,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 /* Compact floating search block: iPhone-sized even on large displays. */
 #map{inset:0;top:0!important;right:0;bottom:0;left:0}
 .topbar{
-  position:absolute!important;z-index:1100;
+  position:absolute!important;z-index:1400;
   top:calc(7px + env(safe-area-inset-top,0px));left:50%;right:auto;
   transform:translateX(-50%);
   width:min(410px,calc(100% - 14px));max-width:410px;
@@ -133,9 +133,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .topbar .search input{font-size:16px!important;padding:5px 8px!important;min-width:0;max-width:100%}
 .topbar .search button{padding:0!important;font-size:20px!important}
 .search-results{
-  top:calc(53px + env(safe-area-inset-top,0px))!important;
   left:50%!important;right:auto!important;transform:translateX(-50%)!important;
-  /* Width is now measured from #searchForm by ui/search-results.js. */
+  /* Geometry owned by ui/search-results.js; no competing CSS top/width. */
 }
 .panel{top:calc(56px + env(safe-area-inset-top,0px))!important}
 .notice{top:calc(56px + env(safe-area-inset-top,0px))!important}
@@ -179,7 +178,6 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 @media(max-width:630px){
   .topbar{top:calc(5px + env(safe-area-inset-top,0px));width:calc(100% - 12px);max-width:410px}
   .topbar .search input{font-size:16px!important}
-  .search-results{top:calc(51px + env(safe-area-inset-top,0px))!important}
   .pin-panel{max-height:min(320px,calc(100dvh - 100px))!important}
   .panel{max-width:calc(100vw - 16px)}
   .leaflet-top.leaflet-left{top:calc(59px + env(safe-area-inset-top,0px))}
