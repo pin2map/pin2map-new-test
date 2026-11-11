@@ -67,5 +67,5 @@ test("wiring, script ordering, offline app shell and release are synchronized",(
   assert.ok(html.indexOf("./ui/search-form.js")>html.indexOf("./ui/search-results.js"));
   assert.ok(html.indexOf("./ui/search-form.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/ui\/search-form\.js"/);
-  assert.match(sw,/const CACHE='pin2map-new-v105'/);
+  assert.match(sw,/const CACHE='pin2map-new-v\d+'/); // App shell release can advance independently.
 });
