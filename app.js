@@ -69,6 +69,16 @@
       save();renderLayers();renderMarkers();renderPinPanel();
     }
   });
+  const overlayCoordinator = new window.Pin2MapMapOverlayCoordinator({
+    getElement:$,document,searchView,uiShell,basemapMenu,
+    getMoveMode:()=>uiState.moveMode,
+    getSelectedPinId:()=>uiState.selectedPinId,
+    onCancelMove:()=>moveController.cancel(),
+    onClearSelection:()=>{
+      uiState.selectedPinId=null;uiState.moveMode=false;
+      renderMarkers();renderPinPanel();updateModeUI();
+    }
+  });
   const showNotice = message => uiShell.showNotice(message);
   function dbWrite() {
     return projectStore ? projectStore.saveProject(state) : Promise.resolve();
@@ -144,12 +154,9 @@
     else pinLayerPicker.setOpen(false);
   }
   function selectPin(id) {
-    if (uiState.selectedPinId === id) { closeMapOverlays(); return; }
+    if (uiState.selectedPinId === id) { overlayCoordinator.closeAll(); return; }
     // A pin tap replaces other map overlays with the selected pin editor.
-    hideResults();
-    $("layersPanel").classList.add("hidden");
-    $("settingsPanel").classList.add("hidden");
-    closeBasemapMenu();
+    overlayCoordinator.preparePinSelection();
     moveController.cancel();
     uiState.selectPin(id); updateModeUI();
     renderMarkers(); renderLayers(); renderPinPanel();
@@ -170,22 +177,7 @@
     if (!layer.visible) showNotice("Pin in ausgeblendeter Ebene „" + layer.name + "“ gespeichert");
     return pin;
   }
-  function closeMapOverlays() {
-    hideResults();
-    uiShell.closePanels();
-    closeBasemapMenu();
-    uiShell.hideNotice();
-    const dlg = $("deleteDialog");
-    if (dlg.open) dlg.close("cancel");
-    if(uiState.moveMode)moveController.cancel();
-    if (uiState.selectedPinId !== null || uiState.moveMode) {
-      uiState.selectedPinId = null; uiState.moveMode = false;
-      renderMarkers(); renderPinPanel(); updateModeUI();
-    }
-    if (document.activeElement && typeof document.activeElement.blur === "function") document.activeElement.blur();
-  }
-  const closeBasemapMenu = () => basemapMenu.close();
-  const togglePanel = id => {closeBasemapMenu();uiShell.togglePanel(id);};
+
   const hideResults = () => searchView.hide();
   const searchMessage = msg => searchView.message(msg);
   function choosePlace(r) {
@@ -218,14 +210,14 @@
   function bind() {
     searchForm.bind();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
-    $("layersButton").addEventListener("click", () => togglePanel("layersPanel"));
-    $("settingsButton").addEventListener("click", () => togglePanel("settingsPanel"));
+    $("layersButton").addEventListener("click", () => overlayCoordinator.togglePanel("layersPanel"));
+    $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));
     $("refreshButton").addEventListener("click",()=>window.Pin2MapPwaRefresh.refresh({
       button:$("refreshButton"),
       save:async()=>{clearTimeout(saveTimer);await dbWrite();},
       showNotice
     }));
-    document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}uiShell.closePanel(b.dataset.close);}));
+    overlayCoordinator.bind();
     basemapMenu.bind();
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
@@ -251,10 +243,7 @@
       pinOps.deletePin(state,uiState.selectedPinId);uiState.clearSelection();
       save();renderMarkers();renderLayers();renderPinPanel();updateModeUI();showNotice("Pin gelöscht");
     });
-    document.addEventListener("pointerdown", e => {
-      if(!$("searchResults").classList.contains("hidden") && !e.target.closest("#searchResults, #searchForm"))hideResults();
 
-    });
     mapAdapter.onMapClick(position => {
       // A deliberate relocation target is not an accidental follow-up click
       // to the preceding long press. Process move mode before suppression.
@@ -267,7 +256,7 @@
         return;
       }
       if (gestures.isSuppressed()) return;
-      closeMapOverlays();
+      overlayCoordinator.closeAll();
     });
 
     gestures.attachLongPress();
