@@ -34,6 +34,34 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        // Live acceptance of the search-results UI, not just a successful map start.
+        // Use a local view instance: no geocoder requests or persisted pin changes.
+        const searchContract=await page.evaluate(()=>{
+          const host=document.getElementById("searchResults");
+          const view=new window.Pin2MapSearchResultsView({
+            container:host,document,
+            onChoose:()=>{},titleOf:r=>r.name,detailOf:r=>r.detail
+          });
+          view.show([{name:"Stuttgart",detail:"Deutschland"},{name:"Stuttgart",detail:"USA"}]);
+          const search=document.getElementById("searchForm").getBoundingClientRect();
+          const list=host.getBoundingClientRect();
+          const result={
+            searchWidth:search.width,listWidth:list.width,
+            hasHeader:!!host.querySelector(".results-head"),
+            footerLast:host.lastElementChild?.classList.contains("results-footer"),
+            cancelText:host.querySelector(".results-footer button")?.textContent,
+            count:host.querySelectorAll(".result").length
+          };
+          view.hide();
+          return result;
+        });
+        assert.equal(searchContract.hasHeader,false,"Published search list must not show old gray header");
+        assert.equal(searchContract.footerLast,true,"Published cancel must be last in results");
+        assert.equal(searchContract.cancelText,"Abbrechen");
+        assert.equal(searchContract.count,2);
+        assert.ok(Math.abs(searchContract.searchWidth-searchContract.listWidth)<=3,
+          "Published results must match search pill width: "+JSON.stringify(searchContract));
+
         // Verify actual rendered mobile layout, not just CSS source rules.
         const geometry=await page.evaluate(()=>{
           const rect=id=>{
