@@ -457,11 +457,29 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
-    assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/Monatsmittel/);
-    assert.match(await infoMenu.locator(".pin-info-credit").innerText(),/15\. des Monats/);
+    assert.equal(await infoMenu.locator(".pin-info-credit").count(),0,
+      "No source/explanation block belongs in the pin-info menu");
+    assert.equal(await infoMenu.getByText("NASA POWER").count(),0,
+      "Data attribution moved to Settings");
+    await infoMenu.locator('button[data-pin-info-mode="zone"]').count().then(n=>
+      assert.equal(n,1,"Zone remains last selectable entry"));
     for(const icon of ["eye-off","mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset","rotate-cw-clock"])
       assert.equal(await infoMenu.locator('[data-pin-icon="'+icon+'"] svg').count(),1,icon);
     assert.equal(await page.locator(".elevation-label-wrap").count(),0);
+    // Sources live in existing Settings, not in the popup; open only after closing it.
+    await infoButton.click();
+    await page.locator("#settingsButton").click();
+    assert.equal(await page.locator("#settingsPanel").isVisible(),true);
+    const credit=page.locator("#settingsPinInfoSources");
+    assert.equal(await credit.count(),1);
+    assert.match(await credit.innerText(),/Monatsmittel/);
+    assert.match(await credit.innerText(),/15\. des ausgewählten Monats/);
+    assert.match(await credit.innerText(),/sichtbarer Ebenen/);
+    for(const url of ["https://open-meteo.com/","https://power.larc.nasa.gov/","https://sunrise-sunset.org/"])
+      assert.equal(await credit.locator('a[href="'+url+'"]').count(),1);
+    assert.doesNotMatch(await credit.innerText(),/am 21\./,"Obsolete date must not remain");
+    await page.locator('#settingsPanel [data-close="settingsPanel"]').click();
+    await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===1,
       null,{timeout:6000});
