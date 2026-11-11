@@ -116,7 +116,11 @@ check(map.includes("onMapClick(callback)") &&
   "map events pass neutral coordinates through application coordinator");
 check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
   "application never creates raw Leaflet overlays");
-check(app.includes("mapAdapter.setBasemap(state.basemap,{esriRelief:!!state.esriRelief})") &&
+check(app.includes("mapAdapter.setBasemap(state.basemap,{") &&
+  app.includes("esriRelief:!!state.esriRelief") &&
+  app.includes("satelliteBrightness:state.satelliteBrightness") &&
+  app.includes("satelliteContrast:state.satelliteContrast") &&
+  map.includes("setSatelliteAppearance(") &&
   app.includes("mapAdapter.addZoomControls({onFitAll:fitAllPins})"),
   "map selection and zoom controls use Leaflet adapter");
 check(html.includes('id="refreshButton"') &&
