@@ -117,6 +117,10 @@ async function longPress(page,x,y,ms=725){
     assert.match(coordsBefore,/Koordinaten:/);
     assert.equal(await page.locator(".pin-marker").count(),1);
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
+    step("pin editor: rename and blur without changing pin coordinates");
+    await page.locator("#pinName").fill("  Reise-Testpin  ");
+    await page.locator("#pinName").blur();
+    assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin");
     step("bulk delete confirmation cancels without removing a private pin");
     await page.locator("#closePin").click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
@@ -176,6 +180,8 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".leaflet-marker-icon").first().click({force:true});
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
+    assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin",
+      "Edited pin name persists after reload");
     step("layer visibility hides/restores the persisted pin");
     // Focused pin editing intentionally hides all other map controls.
     // Close the editor before opening the bottom-center layers picker.
