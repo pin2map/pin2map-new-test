@@ -34,6 +34,26 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        // Per-pin interactive info overlays live in Leaflet's marker pane;
+        // the pin editor's existing body class must hide them, without
+        // requiring project data or creating a real user pin.
+        const upperPinOverlayContract=await page.evaluate(()=>{
+          const pane=document.querySelector("#map .leaflet-marker-pane");
+          const fake=document.createElement("div");
+          fake.className="elevation-label-wrap";
+          pane.appendChild(fake);
+          const before=getComputedStyle(fake).display;
+          document.body.classList.add("pin-open");
+          const whileOpen=getComputedStyle(fake).display;
+          document.body.classList.remove("pin-open");
+          const after=getComputedStyle(fake).display;
+          fake.remove();
+          return {before,whileOpen,after};
+        });
+        assert.notEqual(upperPinOverlayContract.before,"none");
+        assert.equal(upperPinOverlayContract.whileOpen,"none",
+          "Pin editor must hide clickable upper-pin label controls");
+        assert.notEqual(upperPinOverlayContract.after,"none");
         // Only the Esri tile imagery changes; no contrast control remains.
         const chooser=page.locator("#basemapButton");
         const mapMenu=page.locator("#basemapMenu");
