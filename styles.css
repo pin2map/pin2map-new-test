@@ -993,13 +993,6 @@ body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
   background:#fff;color:#253a4b;padding:7px 3px;
   font:inherit;cursor:pointer;
 }
-#app #pinInfoMenu .pin-info-credit{
-  margin:4px 7px 3px;color:#617287;
-  font-size:10px;line-height:1.42;
-}
-#app #pinInfoMenu .pin-info-credit a{
-  color:#235b9a;text-decoration:underline;
-}
 /* Legacy upper info labels: separate marker anchored 34px above pin.
    Split min/max and sunrise/sunset use the original two-color treatment. */
 #map .elevation-label-wrap{background:transparent;border:0;overflow:visible}
