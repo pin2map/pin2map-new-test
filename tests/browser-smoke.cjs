@@ -219,6 +219,26 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".pin-marker").count(),1);
     assert.equal(errors.length,0,"Browser errors: "+errors.join("; "));
     console.log("[browser] PASS – selection, move/cancel/confirm, persistence, offline reload");
+    step("single pin delete dialog: cancel, confirm and offline persistence");
+    await page.locator(".leaflet-marker-icon").first().click({force:true});
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
+    await page.locator("#deletePin").click();
+    await page.locator("#deleteDialog").waitFor({state:"visible",timeout});
+    await page.locator('#deleteDialog button[value="cancel"]').click();
+    await page.locator("#deleteDialog").waitFor({state:"hidden",timeout});
+    assert.equal(await page.locator(".pin-marker").count(),1,"Cancel preserves pin");
+    await page.locator("#deletePin").click();
+    await page.locator("#deleteDialog").waitFor({state:"visible",timeout});
+    await page.locator('#deleteDialog button[value="confirm"]').click();
+    await page.locator("#deleteDialog").waitFor({state:"hidden",timeout});
+    await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===0);
+    await page.waitForTimeout(650);
+    await page.reload({waitUntil:"domcontentloaded",timeout});
+    await assertReady(page);
+    assert.equal(await page.locator(".pin-marker").count(),0,"Confirmed removal persists offline");
+    assert.deepEqual(errors,[],"Single-pin delete must not raise browser errors");
+    console.log("[browser] PASS – pin delete cancel, confirm and offline persistence");
+
   }catch(error){
     let snapshot={};
     try{
