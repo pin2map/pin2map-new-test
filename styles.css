@@ -961,6 +961,13 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 body.pin-open #app #pinInfoButton,body.pin-open #app #pinInfoMenu{display:none}
 
+#app .pin-info-credit{
+  margin:7px 6px 4px;padding:8px 7px 2px;
+  border-top:1px solid #d9e0e8;
+  color:#617287;font-size:11px;line-height:1.4;
+}
+#app .pin-info-credit a{color:#235b9a}
+
 /* Legacy upper info labels: separate marker anchored 42px above pin.
    Split min/max and sunrise/sunset use the original two-color treatment. */
 #map .elevation-label-wrap{background:transparent;border:0;overflow:visible}
