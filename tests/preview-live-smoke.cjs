@@ -43,11 +43,15 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
             onChoose:()=>{},titleOf:r=>r.name,detailOf:r=>r.detail
           });
           view.show([{name:"Stuttgart",detail:"Deutschland"},{name:"Stuttgart",detail:"USA"}]);
-          const search=document.getElementById("searchForm").getBoundingClientRect();
+          const outer=document.querySelector(".topbar").getBoundingClientRect();
           const list=host.getBoundingClientRect();
+          const bottom=document.getElementById("basemapButton").getBoundingClientRect();
+          const first=host.querySelector(".result").getBoundingClientRect();
           const result={
-            searchWidth:search.width,searchHeight:search.height,listWidth:list.width,
-            searchX:search.x,listX:list.x,
+            outer:{x:outer.x,width:outer.width,bottom:outer.bottom},
+            list:{x:list.x,width:list.width,top:list.top,bottom:list.bottom},
+            bottomEdge:bottom.bottom,firstTop:first.top,
+            frameBorder:getComputedStyle(host).borderTopWidth,
             hasHeader:!!host.querySelector(".results-head"),
             footerLast:host.lastElementChild?.classList.contains("results-footer"),
             cancelText:host.querySelector(".results-footer button")?.textContent,
@@ -60,11 +64,17 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(searchContract.footerLast,true,"Published cancel must be last in results");
         assert.equal(searchContract.cancelText,"Abbrechen");
         assert.equal(searchContract.count,2);
-        const endcap=Math.min(searchContract.searchWidth,searchContract.searchHeight)/2;
-        assert.ok(Math.abs((searchContract.searchWidth-2*endcap)-searchContract.listWidth)<=3,
-          "Published results must match straight horizontal lines of pill: "+JSON.stringify(searchContract));
-        assert.ok(Math.abs((searchContract.searchX+endcap)-searchContract.listX)<=3,
-          "Results must begin at left straight-line endpoint: "+JSON.stringify(searchContract));
+        assert.ok(Math.abs(searchContract.outer.width-searchContract.list.width)<=3,
+          "Published framed chooser matches outer search width: "+JSON.stringify(searchContract));
+        assert.ok(Math.abs(searchContract.outer.x-searchContract.list.x)<=3,
+          "Published framed chooser centers under outer search: "+JSON.stringify(searchContract));
+        assert.ok(Math.abs(searchContract.list.top-searchContract.outer.bottom-8)<=3,
+          "Framed chooser begins below the outer search block: "+JSON.stringify(searchContract));
+        assert.ok(searchContract.firstTop>=searchContract.outer.bottom+8,
+          "First result is inset below the outer block: "+JSON.stringify(searchContract));
+        assert.ok(searchContract.list.bottom<=searchContract.bottomEdge+2,
+          "Published chooser must not extend below bottommost buttons: "+JSON.stringify(searchContract));
+        assert.equal(searchContract.frameBorder,"1px");
 
         // The published build must preserve predecessor place metadata and
         // keep Cancel visible while ONLY the hit rows scroll.
@@ -102,6 +112,24 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(await page.locator("#searchResults").isVisible(),true,
           "Explicit Enter must reopen search feedback");
         await page.locator("#searchInput").fill("");
+        assert.equal(await page.locator("#searchResults").isHidden(),true);
+
+        // Actual published keyboard behavior uses the predecessor's key contract.
+        await page.evaluate(()=>{
+          window.__liveSearchChoice=null;
+          new window.Pin2MapSearchResultsView({
+            container:document.getElementById("searchResults"),document,
+            onChoose:r=>{window.__liveSearchChoice=r.name;},
+            titleOf:r=>r.name,detailOf:r=>r.name
+          }).show([{name:"First"},{name:"Second"},{name:"Third"}]);
+        });
+        await page.keyboard.press("ArrowDown");
+        assert.equal(await page.locator("#searchResults .result").nth(1).evaluate(el=>el===document.activeElement),true);
+        await page.keyboard.press("ArrowUp");
+        assert.equal(await page.locator("#searchResults .result").first().evaluate(el=>el===document.activeElement),true);
+        await page.keyboard.press("Enter");
+        assert.equal(await page.evaluate(()=>window.__liveSearchChoice),"First");
+        await page.keyboard.press("Escape");
         assert.equal(await page.locator("#searchResults").isHidden(),true);
 
         // Verify actual rendered mobile layout, not just CSS source rules.
