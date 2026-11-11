@@ -18,18 +18,18 @@ test("Open-Meteo precipitation forecast requests daily sum, including zero mm, w
  assert.equal(urls[0].searchParams.get("timezone"),"auto");
  assert.equal(urls[0].searchParams.get("forecast_days"),"1");
 });
-test("NASA IMERG climatology converts valid daily mean into monthly total incl leap-year February average",async()=>{
+test("NASA corrected climatology converts valid daily mean into monthly total incl leap-year February average",async()=>{
  const urls=[];const nasa=new NasaRain({fetchImpl:async url=>{
   urls.push(new URL(url));
-  return {ok:true,json:async()=>({properties:{parameter:{IMERG_PRECTOT:{JAN:2,FEB:3,MAR:0,APR:-999}}}})};
+  return {ok:true,json:async()=>({properties:{parameter:{PRECTOTCORR:{JAN:2,FEB:3,MAR:0,APR:-999}}}})};
  }});
  assert.deepEqual(await nasa.request([pin],"01"),[{value:62,dailyRate:2,normal:true}]);
  assert.deepEqual(await nasa.request([pin],"02"),[{value:84.75,dailyRate:3,normal:true}]);
  assert.deepEqual(await nasa.request([pin],"03"),[{value:0,dailyRate:0,normal:true}]);
  assert.deepEqual(await nasa.request([pin],"04"),[null]);
  assert.equal(urls.length,1,"12-month normal reused without second NASA request");
- assert.equal(urls[0].searchParams.get("parameters"),"IMERG_PRECTOT");
- assert.equal(urls[0].searchParams.get("community"),"HY");
+ assert.equal(urls[0].searchParams.get("parameters"),"PRECTOTCORR");
+ assert.equal(urls[0].searchParams.get("community"),"AG");
  await assert.rejects(()=>nasa.request([pin],"13"),RangeError);
 });
 test("provider routes monthly precipitation to NASA and today to Open-Meteo",async()=>{
@@ -72,7 +72,7 @@ test("precipitation fetching respects visibility, separate periods, cache reuse 
 test("missing or corrupted NASA precipitation never becomes a fake zero",async()=>{
  for(const value of [-999,null]){
   const nasa=new NasaRain({fetchImpl:async()=>({ok:true,json:async()=>({
-   properties:{parameter:{IMERG_PRECTOT:{JAN:value}}}
+   properties:{parameter:{PRECTOTCORR:{JAN:value}}}
   })})});
   await assert.rejects(()=>nasa.request([pin],"01"),/missing valid precipitation normals/);
  }
