@@ -19,5 +19,6 @@ test("standalone map buttons share exactly one authoritative 42px size contract"
 });
 test("dialog button sizes remain scoped to dialog actions",()=>{
   assert.match(css,/--p2m-pin-dialog-action-size:32px/);
-  assert.match(css,/button\.close\.p2m-icon-control,button\.layer-delete\.p2m-icon-control,/);
+  assert.match(css,/button\.close\.p2m-icon-control,button\.layer-delete\.p2m-icon-control\s*\{/);
+  assert.doesNotMatch(css,/\.results-head button\.p2m-icon-control/);
 });
