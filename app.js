@@ -52,20 +52,24 @@
   const pinInfoMenu=new window.Pin2MapPinInfoMenu({
     getElement:$,document,icons:window.Pin2MapIcons,
     onOpening:()=>{basemapMenu.close();uiShell.closePanels();searchView.hide();},
-    onPeriodChange:period=>{
-      if(state.pinInfoPeriod!==period){
-        state.pinInfoPeriod=period;
-        pinInfoService.setPeriod(period);
+    onPeriodChange:(mode,period)=>{
+      const field=mode==="daily"?"pinInfoDailyPeriod":"pinInfoSunPeriod";
+      if(state[field]!==period||state.pinInfoMode!==mode){
+        state[field]=period;
+        state.pinInfoMode=mode;
+        pinInfoService.setMode(mode,period);
+        pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,sun:state.pinInfoSunPeriod});
         save();renderMarkers();
       }
     },
     onSelect:mode=>{
       if(state.pinInfoMode!==mode){
         state.pinInfoMode=mode;
-        pinInfoService.setMode(mode);
-        pinInfoMenu.render(mode,state.pinInfoPeriod);
-        save();
-        renderMarkers();
+        const period=mode==="daily"?state.pinInfoDailyPeriod:
+          mode==="sun"?state.pinInfoSunPeriod:"today";
+        pinInfoService.setMode(mode,period);
+        pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,sun:state.pinInfoSunPeriod});
+        save();renderMarkers();
       }
     }
   });
@@ -307,7 +311,7 @@
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
       getInfoLabel:pin=>pinInfoService.label(pin),
-      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info,{monthIcon:window.Pin2MapIcons.svg("circle-slash-2",document).outerHTML}),
+      formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info),
       onInfoClick:id=>selectPin(id),
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;selectPin(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
@@ -347,10 +351,17 @@
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
-    if(!window.Pin2MapPinInfoService.PERIODS.includes(state.pinInfoPeriod))state.pinInfoPeriod="today";
-    pinInfoService.setPeriod(state.pinInfoPeriod);
-    pinInfoService.setMode(state.pinInfoMode);
-    pinInfoMenu.render(state.pinInfoMode,state.pinInfoPeriod);
+    for(const field of ["pinInfoDailyPeriod","pinInfoSunPeriod"]){
+      // The old single period is retained when reopening an existing v122 project.
+      if(!Object.hasOwn(savedProject||{},field)&&
+        window.Pin2MapPinInfoService.PERIODS.includes(savedProject?.pinInfoPeriod))
+        state[field]=savedProject.pinInfoPeriod;
+      if(!window.Pin2MapPinInfoService.PERIODS.includes(state[field]))state[field]="today";
+    }
+    const selectedPeriod=state.pinInfoMode==="daily"?state.pinInfoDailyPeriod:
+      state.pinInfoMode==="sun"?state.pinInfoSunPeriod:"today";
+    pinInfoService.setMode(state.pinInfoMode,selectedPeriod);
+    pinInfoMenu.render(state.pinInfoMode,{daily:state.pinInfoDailyPeriod,sun:state.pinInfoSunPeriod});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && (location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname)))navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
