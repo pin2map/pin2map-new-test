@@ -29,8 +29,10 @@ assert.equal(ui.isVisible(),false);
 ui.message("Ort wird gesucht …");
 assert.equal(ui.isVisible(),true);
 assert.equal(container.children.length,2);
-assert.equal(container.children[1].textContent,"Ort wird gesucht …");
-container.children[0].children[0].click();
+assert.equal(container.children[0].textContent,"Ort wird gesucht …");
+assert.equal(container.children[1].className,"results-footer");
+assert.equal(container.children[1].children[0].textContent,"Abbrechen");
+container.children[1].children[0].click();
 assert.equal(ui.isVisible(),false);
 assert.equal(container.children.length,0);
 const results=[
@@ -40,9 +42,11 @@ const results=[
 ui.show(results);
 assert.equal(ui.isVisible(),true);
 assert.equal(container.children.length,3);
-assert.equal(container.children[1].children[0].textContent,"Stuttgart");
-assert.equal(container.children[2].children[1].textContent,"Deutschland");
-container.children[2].click();
+assert.equal(container.children[0].children[0].textContent,"Stuttgart");
+assert.equal(container.children[1].children[1].textContent,"Deutschland");
+assert.equal(container.children[2].className,"results-footer");
+assert.equal(container.children[2].children[0].textContent,"Abbrechen");
+container.children[1].click();
 assert.deepEqual(chosen,["b"]);
 assert.throws(()=>ui.show(null),TypeError);
 ui.hide();
