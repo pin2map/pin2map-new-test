@@ -616,3 +616,11 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - Neuer Regressionstest `tests/css-search-input-base-width-ownership.test.js` schützt die ursprünglichen übrigen Eigenschaften und die finalen Breiten-/Flex-Verträge.
 - Eine normal priorisierte überholte Deklaration entfernt; `!important`-Zahl weiter **298** (anfangs 402). PWA-Quellversion **v99**. 30px-Suchringlinie, 42px-Antippfläche und 18px-Lupe nicht berührt; keine sichtbare Änderung vorgesehen.
 - Quelltextinvarianten vor dem Schreiben anhand aktueller GitHub-Dateien geprüft. **Weiter offen:** vollständige Node-Testsuite, GitHub-Actions-/Pages-Push-Lauf, unabhängige HTTPS-Auslieferung und Browser-Smoke für v99. Ein Gerätetest ist für die überschriebene Altregel nicht erforderlich.
+
+
+## Inkrement B38 – redundante Mindestbreite aus der ursprünglichen Suchfeld-Regel entfernt (v100, 2026-11-11)
+
+- Ausschließlich das frühe `min-width:0` aus `.search input{min-width:0;border:0;outline:0;background:white}` entfernt; die frühen Border-/Outline-/Background-Eigenschaften bleiben erhalten. Die spätere gleichspezifische Flex-Regel `.search input{flex:1 1 0;width:0;min-width:0;...}` und der spezifischere `.topbar .search input`-Eigentümer behalten dieselbe Mindestbreite. Kein sichtbarer Effekt erwartet.
+- B37-Test `tests/css-search-input-base-width-ownership.test.js` auf das verbleibende Basis-CSS umgestellt; außerdem neuer Regressionstest `tests/css-search-input-base-minwidth-ownership.test.js`, der frühere Doppeldefinition und gültige Suchfeld-/Kapselgeometrie kontrolliert.
+- `!important` unverändert **298** (ursprünglich 402), eine normale Altdeklaration weniger. PWA-Quellversion **v100**. Der Suchbutton mit 42px-Antippfläche, 30px-Kreis und 18px-Symbol wurde nicht verändert.
+- Statische Quelltextbedingungen geprüft; vollständige Node-Suite, GitHub-Actions-/Pages-Deploy und echte HTTPS-Browserauslieferung von v100 noch **nicht unabhängig bestätigt**. Kein zusätzlicher Nutzertest, weil die effektive Kaskade gleich bleibt.
