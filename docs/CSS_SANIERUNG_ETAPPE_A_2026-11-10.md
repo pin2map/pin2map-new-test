@@ -624,3 +624,12 @@ Nach der Aufforderung, die Vorschau auf dem iPhone zu aktualisieren und **Suchle
 - B37-Test `tests/css-search-input-base-width-ownership.test.js` auf das verbleibende Basis-CSS umgestellt; außerdem neuer Regressionstest `tests/css-search-input-base-minwidth-ownership.test.js`, der frühere Doppeldefinition und gültige Suchfeld-/Kapselgeometrie kontrolliert.
 - `!important` unverändert **298** (ursprünglich 402), eine normale Altdeklaration weniger. PWA-Quellversion **v100**. Der Suchbutton mit 42px-Antippfläche, 30px-Kreis und 18px-Symbol wurde nicht verändert.
 - Statische Quelltextbedingungen geprüft; vollständige Node-Suite, GitHub-Actions-/Pages-Deploy und echte HTTPS-Browserauslieferung von v100 noch **nicht unabhängig bestätigt**. Kein zusätzlicher Nutzertest, weil die effektive Kaskade gleich bleibt.
+
+
+## Meilenstein – CSS-Stabilisierungsphase nach B38/v100 pausiert (Beschluss 2026-11-11)
+
+- Die schrittweise CSS-Altregelbereinigung B1–B38 wird **nicht als endgültig abgeschlossen**, sondern als tragfähiger Übergangszustand **pausiert**. B39 und folgende kosmetische CSS-Schritte haben aktuell keine Priorität. Stand: 298 `!important` (402 ursprünglich), CSS-Datei mit weiterhin mehrfachen Komponentenselektoren; keine pauschale Behauptung vollständiger Architekturkonformität.
+- Schutzverträge, die bestehenden Komponententokens, das CSS-Debt-Budget sowie die letzte abgenommene Gestaltung bleiben verbindlich. Die vollständige CSS-Kaskadenkonsolidierung, AST-/Stylelint-Kontrollen und Geräte-Endabnahme werden für später offen gehalten.
+- Nächster Schwerpunkt nach technischer v100-Baseline: schrittweise Entflechtung von `app.js` gemäß modularer Zielarchitektur; nicht gleichzeitig das CSS grundlegend reorganisieren.
+- **Nachweisstatus:** GitHub-Quelldateien und die Definition der Preview-Workflowtests wurden geprüft. Direkter GitHub-Klon sowie HTTPS-Abruf der Live-Preview scheiterten in der aktuellen Umgebung an DNS-/Zugriffsproblemen. Der vollständige Node-Testlauf, ein erfolgreicher GitHub-Actions-/Pages-Lauf und die echte Auslieferung v100 sind daher weiterhin **offen**. Weder ein Commit noch ein Dokumentationsupdate wird als Deployment-Bestätigung gewertet.
+- Dieser Meilenstein ändert **nur Dokumentation**, nicht `styles.css`, `app.js`, `sw.js`, `main`, Datenbank oder persistierte Nutzerdaten. Quellrelease bleibt v100.
