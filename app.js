@@ -44,6 +44,7 @@
     provider:new window.Pin2MapPinInfoProvider({
       forecast:new window.Pin2MapOpenMeteoPinInfo({fetchImpl:(...args)=>fetch(...args)}),
       climatology:new window.Pin2MapNasaPowerClimatology({fetchImpl:(...args)=>fetch(...args)}),
+      precipitation:new window.Pin2MapNasaPowerPrecipitation({fetchImpl:(...args)=>fetch(...args)}),
       sunTimes:new window.Pin2MapMonthlySunTimes({fetchImpl:(...args)=>fetch(...args)})
     }),
     onUpdate:()=>renderMarkers(),
@@ -53,12 +54,12 @@
     getElement:$,document,icons:window.Pin2MapIcons,
     onOpening:()=>{basemapMenu.close();uiShell.closePanels();searchView.hide();},
     onPeriodChange:(mode,period)=>{
-      const field=mode==="daily"?"pinInfoDailyPeriod":"pinInfoSunPeriod";
+      const field=mode==="daily"?"pinInfoDailyPeriod":mode==="precipitation"?"pinInfoPrecipitationPeriod":"pinInfoSunPeriod";
       if(state[field]!==period||state.pinInfoMode!==mode){
         state[field]=period;
         state.pinInfoMode=mode;
         pinInfoService.setMode(mode,period);
-        pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,sun:state.pinInfoSunPeriod});
+        pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,precipitation:state.pinInfoPrecipitationPeriod,sun:state.pinInfoSunPeriod});
         save();renderMarkers();
       }
     },
@@ -66,9 +67,9 @@
       if(state.pinInfoMode!==mode){
         state.pinInfoMode=mode;
         const period=mode==="daily"?state.pinInfoDailyPeriod:
-          mode==="sun"?state.pinInfoSunPeriod:"today";
+          mode==="sun"?state.pinInfoSunPeriod:mode==="precipitation"?state.pinInfoPrecipitationPeriod:"today";
         pinInfoService.setMode(mode,period);
-        pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,sun:state.pinInfoSunPeriod});
+        pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,precipitation:state.pinInfoPrecipitationPeriod,sun:state.pinInfoSunPeriod});
         save();renderMarkers();
       }
     }
@@ -351,7 +352,7 @@
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
-    for(const field of ["pinInfoDailyPeriod","pinInfoSunPeriod"]){
+    for(const field of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
       // The old single period is retained when reopening an existing v122 project.
       if(!Object.hasOwn(savedProject||{},field)&&
         window.Pin2MapPinInfoService.PERIODS.includes(savedProject?.pinInfoPeriod))
@@ -359,9 +360,9 @@
       if(!window.Pin2MapPinInfoService.PERIODS.includes(state[field]))state[field]="today";
     }
     const selectedPeriod=state.pinInfoMode==="daily"?state.pinInfoDailyPeriod:
-      state.pinInfoMode==="sun"?state.pinInfoSunPeriod:"today";
+      state.pinInfoMode==="sun"?state.pinInfoSunPeriod:state.pinInfoMode==="precipitation"?state.pinInfoPrecipitationPeriod:"today";
     pinInfoService.setMode(state.pinInfoMode,selectedPeriod);
-    pinInfoMenu.render(state.pinInfoMode,{daily:state.pinInfoDailyPeriod,sun:state.pinInfoSunPeriod});
+    pinInfoMenu.render(state.pinInfoMode,{daily:state.pinInfoDailyPeriod,precipitation:state.pinInfoPrecipitationPeriod,sun:state.pinInfoSunPeriod});
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && (location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname)))navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
