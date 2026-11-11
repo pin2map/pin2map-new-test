@@ -19,14 +19,14 @@
     get button(){return this.getElement("basemapButton");}
     get menu(){return this.getElement("basemapMenu");}
     options(){return this.document.querySelectorAll("#basemapMenu [data-basemap]");}
-    render(selected,esriRelief=false,{brightness=140}={}){
+    render(selected,esriRelief=false,{brightness=120}={}){
       const relief=this.getElement("esriReliefToggle");
       if(relief)relief.checked=!!esriRelief;
       const satelliteSelected=selected==="satellite";
       const controls=this.getElement("satelliteBrightness")?.closest?.(".basemap-satellite-controls");
       controls?.classList.toggle("is-inactive",!satelliteSelected);
       const reset=this.getElement("satelliteReset");
-      if(reset)reset.disabled=!satelliteSelected||Number(brightness)===140;
+      if(reset)reset.disabled=!satelliteSelected||Number(brightness)===120;
       const input=this.getElement("satelliteBrightness");
       if(input){input.value=String(brightness);input.disabled=!satelliteSelected;}
       const output=this.getElement("satelliteBrightnessValue");
@@ -69,7 +69,7 @@
       if(reset)this.listen(reset,"click",()=>{
         if(reset.disabled)return;
         this.onSatelliteReset();
-        this.render("satellite",!!relief?.checked,{brightness:140});
+        this.render("satellite",!!relief?.checked,{brightness:120});
       });
       const brightnessInput=this.getElement("satelliteBrightness");
       if(brightnessInput){
@@ -80,7 +80,7 @@
           if(output)output.textContent=value+" %";
           this.onSatelliteAdjust("brightness",value,commit);
           const reset=this.getElement("satelliteReset");
-          if(reset)reset.disabled=value===140;
+          if(reset)reset.disabled=value===120;
         };
         this.listen(brightnessInput,"input",()=>emit(false));
         this.listen(brightnessInput,"change",()=>emit(true));
