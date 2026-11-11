@@ -40,7 +40,7 @@
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
-**CSS-Pause beschlossen am 2026-11-11; Quellstand B38/v100 bleibt unverändert.**
+**CSS-Pause beschlossen am 2026-11-11; Quellstand B38/v100 bleibt unverändert.** Die Istaufnahme von `app.js` am selben Tag hat noch keine Programmänderung ausgelöst.
 
 - `styles.css`: 947 Zeilen, rund 40 KB, **298 `!important`** (anfangs 402); 36 mehrfach vorkommende Selektoren in einer groben Quelltext-Inventur. Wiederholungen können berechtigte Media-Query-/Zustandsunterschiede sein und sind nicht automatisch Fehler. CSS bleibt technischer **Übergangszustand**, keine architektonisch abgeschlossene Komponentenkaskade.
 - Letzte konkrete Bereinigung: **B38** (ursprüngliche doppelte `min-width:0` im Suchfeld), dokumentiert in `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md`. CSS, JavaScript, Worker und Datenmodell werden durch diese **Dokumentationsentscheidung nicht verändert**; SW-Quellkennung bleibt `pin2map-new-v100`.
@@ -53,8 +53,8 @@
 ## 5. Nächste konkrete Schritte
 
 1. **Qualitäts-Baseline v100 nachweisen:** vollständiges `node --test tests/*.test.js` und `tests/check-*.mjs` auf dem Feature-Branch, GitHub Actions/Pages prüfen, HTTPS-Dateien und echten Browser-Smoke verifizieren; fehlende Nachweise als blockiert/offen markieren. Keine Daten oder `main` ändern.
-2. **`app.js`-Entflechtung vorbereiten:** vorhandene Verantwortlichkeiten und importierte UI-/Application-/Domain-/Adapter-Module inventarisieren; eine kleine risikoarme vertikale Extraktion anhand `docs/MODULARCHITEKTUR.md` festlegen. Noch keine gleichzeitige große CSS-Umgestaltung.
-3. Anschließend erste kleine `app.js`-Extraktion mit passenden Unit-/Integrations-/Browser-Regressionen und nachvollziehbarer Preview-Freigabe durchführen.
+2. **`app.js`-Entflechtung vorbereitet (2026-11-11):** Iststand und vorhandene Module in `docs/APP_JS_ENTFLECHTUNG_BESTAND_2026-11-11.md` inventarisiert. Als erste kleine Extraktion ist das **Basiskarten-Menü** in ein reines `ui/basemap-menu.js` vorgesehen. Vorerst keine Programm-/CSS-Änderung.
+3. Basiskarten-Menü aus `app.js` herauslösen (nur UI/ARIA/Interaktion; Karte, Projektzustand und Speichern bleiben außerhalb des UI-Moduls), mit gezieltem DOM-Unit-/Integrations-/Browser-Test und verifizierter Preview-Freigabe.
 4. CSS-Komplettsanierung später wieder aufnehmen, wenn Änderungen konkrete Kaskadenprobleme offenbaren oder die Architektur-/UI-Abnahme ansteht. B39 bleibt bis dahin **pausiert**.
 
 ## 6. Maßgebliche Dokumente
@@ -63,6 +63,7 @@
 - `docs/PROJEKTWEGWEISER.md` – Repositories, Branches, Umgebungen und Quellenhierarchie.
 - `docs/GRUNDENTSCHEIDUNGEN.md` – Fachentscheidungen; neuere ausdrücklich beschlossene Präzisierungen beachten.
 - `docs/MODULARCHITEKTUR.md` und `docs/ENTWICKLUNGSFAHRPLAN.md` – Modulgrenzen und Etappen.
+- `docs/APP_JS_ENTFLECHTUNG_BESTAND_2026-11-11.md` – aktuelle `app.js`-Verantwortlichkeiten, Schnittstelle und erster UI-Extraktionsvorschlag.
 - `docs/CSS_SANIERUNG_ETAPPE_A_2026-11-10.md` – vollständiger Verlauf der CSS-Inkremente.
 - `docs/CSS_ARCHITEKTURREGELN.md` – aktive CSS-Eigentümer und Abnahmeregeln.
 - `docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md` – Preview- und GitHub-Pages-Vertrag.
