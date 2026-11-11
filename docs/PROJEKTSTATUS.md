@@ -243,6 +243,14 @@
 - **Quellkennung:** `pin2map-new-v117` / Preview bei erfolgreichem Publish `pin2map-preview-v117`. Dies ist zunächst eine Quellversionskennung, kein Beleg für die ausgelieferte Installation.
 - **Nächster Schritt:** Externes Kachelrendering und Schummerung in der veröffentlichten v117-Preview auf iPhone/Safari gezielt abnehmen (jede Grundkarte sichtbar, Relief an/aus und Wechsel ohne graue Fläche). Erst danach v117 vollständig freigeben; `main` bleibt gesperrt.
 
+## 4x. iPhone-Abnahme v117 und Kurzbezeichnung Schummerung (v118, 2026-11-11)
+
+- **Nutzerabnahme:** Nutzer meldet ausdrücklich „Alle Tests bestanden“ für die sieben nummerierten Safari-Prüfungen T01–T07 der v117-Preview. Damit sind fünf Kartenarten (International, OSM Original, Topografisch, Satellit, Humanitarian), Schummerung an/aus mit Kartenwechsel und die Zustands-/Pin-Persistenz nach Reload **laut Nutzer auf dem iPhone erfolgreich**. Kein zusätzlicher iPad-/PWA-Offline-Nachweis.
+- **Änderungswunsch:** Einziger sichtbarer Text im Kartenwahlmenü: **„Esri-Schummerung“ → „Schummerung“** in `index.html`. Quelle, Pane, Mischmodus, Zoom- und Farbfiltervertrag sowie internes `esriRelief`-Feld bleiben absichtlich **unverändert**. Kein Eingriff in Kartenadapter, App-Fachlogik, CSS, IndexedDB, Pin-/Ebenenzustand, `main` oder `reference/*`.
+- **Version:** Offline-App-Shell auf `pin2map-new-v118` erhöht, um die neue Oberflächenbeschriftung verlässlich auszuliefern; der Preview-Build verwendet entsprechend `pin2map-preview-v118`. Dies ist zunächst ein Quellstand, bis Deployment und HTTPS-Version separat geprüft sind.
+- **Prüfung:** Nach Commit der Bezeichnungsänderung und Versionsanhebung Node-/Architektur-/Chromium-Gates sowie Pages-HTTPS-Asset-Nachweis prüfen; etwaige offene Gates nicht als bestanden darstellen. Kein neuer iPhone-Gerätetest für diese reine Textänderung nötig.
+- **Nächster konkreter Schritt:** v118-Preview verifizieren; danach die vom Nutzer angekündigte nächste Funktion nach dem modularen Feature-Verfahren (§ 4v) aufnehmen.
+
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
 **CSS-Pause beschlossen am 2026-11-11; CSS bleibt auf Stand B38 mit 298 `!important`.** Der erste `app.js`-Entflechtungsschritt ist auf dem Feature-Branch umgesetzt; PWA-Quellrelease **v101**. CI/Pages-/automatisierte Kartenstart-/Offline-Smokes wurden später erfolgreich verifiziert; automatisierte Basiskarten-Menü-Regression wurde inzwischen separat im localhost-Chromium-Test bestanden; manuelle Geräteabnahme bleibt offen.
@@ -258,9 +266,9 @@
 ## 5. Nächste konkrete Schritte
 
 1. **iPhone-Safari-Abnahme als Nutzerrückmeldung abschließen:** 21/21 nummerierte v116-Testfälle als OK gemeldet; Geräteprotokoll hat die genaue Zuordnung 7–21 → A07–C05. Keine erneute Einzelabfrage derselben Testfälle. Beim nächsten Gespräch nur neue konkrete Auffälligkeiten oder abweichende Umgebungen behandeln.
-2. **V117-Kartenarten/Esri-Schummerung nach § 4w vollständig verifizieren und gezielt abnehmen; erst danach weiteren lokalen Funktionsausbau nach § 4v fachlich eingrenzen:** Nach dem architektonischen Abschluss v116 und der positiven iPhone-Basisrückmeldung ist **Datenverlustschutz durch lokalen Projekt-Export/Backup** der erste zu prüfende Kandidat, anschließend sichere Wiederherstellung/Import und Pinnotizen/Links. Vor dem Codieren bestehende Grundentscheidungen zu Format, Datei, Ersetzen/Hinzufügen, Importkonflikten, Datenprüfung und Datenverlustschutz lesen. Keine neue Datenmigration oder automatische Löschung.
+2. **v117-Kartenarten und Schummerung laut Nutzer auf iPhone/Safari (T01–T07) bestanden; v118-Textänderung gemäß § 4x technisch prüfen und anschließend nächstes Nutzerfeature nach § 4v aufnehmen:** Nach dem architektonischen Abschluss v116 und der positiven iPhone-Basisrückmeldung ist **Datenverlustschutz durch lokalen Projekt-Export/Backup** der erste zu prüfende Kandidat, anschließend sichere Wiederherstellung/Import und Pinnotizen/Links. Vor dem Codieren bestehende Grundentscheidungen zu Format, Datei, Ersetzen/Hinzufügen, Importkonflikten, Datenprüfung und Datenverlustschutz lesen. Keine neue Datenmigration oder automatische Löschung.
 3. **Übrige Geräte-/Feature-Gates unterscheiden:** Die pauschale Nutzerrückmeldung beweist nicht selbstständig Brave privat, eine installierte Home-Screen-PWA, Offline-Flugmodus-Details oder iPad. Gezielte zusätzliche Gerätetests nur bei relevantem Feature oder explizitem Bedarf; keine pauschale volle Vorgänger-Parität behaupten. CSS B38/298 bleibt separat pausiert.
-4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktuell **v116 unverändert**.
+4. Neue App-Version nur auf `feature/leaflet-modular-core` und nur mit Node-, Architektur-, Chromium- und nachgewiesenem Pages-/HTTPS-Live-Gate. `main`, `reference/*`, IndexedDB, Nutzerpins, Topo-Provider und Offline-Caches schützen. Aktueller Entwicklungsquellstand **v118** (lediglich Beschriftung seit v117).
 
 ## 6. Maßgebliche Dokumente
 
