@@ -499,20 +499,6 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
-    step("pin info native period selectors: taps must not dismiss the popup");
-    for(const id of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
-      const select=infoMenu.locator("#"+id);
-      await select.evaluate(el=>el.closest("label").dispatchEvent(new MouseEvent("click",{bubbles:true})));
-      assert.equal(await infoMenu.isVisible(),true,id+" label click must not dismiss menu");
-      await select.click();
-      assert.equal(await infoMenu.isVisible(),true,id+" select activation must not dismiss menu");
-      assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
-    }
-    // Restore the initial Off state after selector-activation coverage.
-    // Focus events intentionally change the active information mode.
-    await infoMenu.locator('button[data-pin-info-mode="off"]').click();
-    await infoButton.click();
-
     assert.equal(await infoMenu.locator(".pin-info-credit").count(),0,
       "No source/explanation block belongs in the pin-info menu");
     assert.equal(await infoMenu.getByText("NASA POWER").count(),0,
@@ -725,6 +711,21 @@ async function longPress(page,x,y,ms=725){
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label").length===0,
       null,{timeout:6000});
     console.log("[browser] PASS – six information modes, legacy info labels, cache and lazy hidden-layer fetch");
+    // Run the UI-only selector activation after the request-count assertions.
+    // Focusing a native select changes the active mode and may issue requests.
+    await infoButton.click();
+    step("pin info native period selectors: taps must not dismiss the popup");
+    for(const id of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
+      const select=infoMenu.locator("#"+id);
+      await select.evaluate(el=>el.closest("label").dispatchEvent(new MouseEvent("click",{bubbles:true})));
+      assert.equal(await infoMenu.isVisible(),true,id+" label click must not dismiss menu");
+      await select.click();
+      assert.equal(await infoMenu.isVisible(),true,id+" select activation must not dismiss menu");
+      assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
+    }
+    await infoMenu.locator('button[data-pin-info-mode="off"]').click();
+
+
 
     step("startup hydration: malformed stored project uses existing default-project fallback");
     await page.evaluate(async()=>{
