@@ -14,10 +14,13 @@ test("panel has only the active vertical anchor",()=>{
   assert.match(clean,/\.panel\{right:8px\}/);
   assert.match(clean,/\.panel\{max-height:calc\(100dvh - 125px\)\}/);
 });
-test("search result anchors are exactly one general and one narrow rule",()=>{
+test("framed search result geometry is owned only by search UI module",()=>{
   const clean=css.replace(/\/\*[\s\S]*?\*\//g,"");
-  assert.equal((clean.match(/\.search-results\{[^{}]*top:/g)||[]).length,2);
-  assert.match(clean,/\.search-results\{\s*top:calc\(53px \+ env\(safe-area-inset-top,0px\)\)!important;/);
-  assert.match(clean,/\.search-results\{top:calc\(51px \+ env\(safe-area-inset-top,0px\)\)!important\}/);
+  assert.equal((clean.match(/\.search-results\{[^{}]*top:/g)||[]).length,0,
+    "No old hard-coded responsive top offsets may compete with runtime geometry");
   assert.match(clean,/\.search-results\{max-height:42dvh\}/);
+  const view=fs.readFileSync(path.resolve(__dirname,"../ui/search-results.js"),"utf8");
+  assert.match(view,/const sheetTop=box\.bottom-origin\+8/);
+  assert.match(view,/const bottomEdge=this\.bottomControl\?\.getBoundingClientRect\?\.\(\)\.bottom/);
+  assert.match(view,/this\.container\.style\.maxHeight=/);
 });
