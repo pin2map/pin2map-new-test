@@ -481,8 +481,8 @@ async function longPress(page,x,y,ms=725){
       const q=new URL(route.request().url()).searchParams;
       climateRequests.push(q);
       const lows={JAN:3.2,FEB:4.5},highs={JAN:11.6,FEB:13.7};
-      const parameter=q.get("parameters")==="IMERG_PRECTOT"
-        ?{IMERG_PRECTOT:{JAN:2,FEB:1.5}}
+      const parameter=q.get("parameters")==="PRECTOTCORR"
+        ?{PRECTOTCORR:{JAN:2,FEB:1.5}}
         :{T2M_MIN_AVG:lows,T2M_MAX_AVG:highs};
       await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
         properties:{parameter}
@@ -571,7 +571,7 @@ async function longPress(page,x,y,ms=725){
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("Ø Jan")&&el.textContent.includes("62 mm")),null,{timeout:6000});
     assert.equal(climateRequests.length,precipClimateBefore+2,"Only two visible pins need new NASA rain data");
-    assert.ok(climateRequests.slice(precipClimateBefore).every(q=>q.get("parameters")==="IMERG_PRECTOT"));
+    assert.ok(climateRequests.slice(precipClimateBefore).every(q=>q.get("parameters")==="PRECTOTCORR"));
     await infoButton.click();
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"02","Daily month retained");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today","Sun month retained");
