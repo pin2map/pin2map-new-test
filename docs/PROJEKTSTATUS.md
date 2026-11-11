@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-11 (v116 unverändert: iPhone-/iPad-Geräte-Abnahmeplan dokumentiert, reale Geräte-Gates noch offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-11 (v116 unverändert: iPhone/Safari A01–A02 laut Nutzer bestanden, übrige Gerätefälle offen) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** Arbeitsstand aus dem GitHub-Feature-Branch; kein pauschaler Nachweis einer erfolgreichen öffentlichen Veröffentlichung.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -211,6 +211,12 @@
 - **Nicht als Fehler einstufen:** Eine Pinliste war für die erste Basisversion nicht vorgesehen; alte aktive-Ebene-/Pin-hinzufügen-Modus-Regeln wurden ersetzt. Kartenbildexport/Fotos nicht geplant.
 - **Keine Runtime-Änderung:** `app.js`, `sw.js` und CSS sowie IndexedDB bleiben v116/B38; letzte belegte App-Gates [Node/Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283550), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283996), [Pages/HTTPS](https://github.com/pin2map/pin2map-new-test/actions/runs/42996283529). Dies sind keine neuen Testresultate des Dokumentationscommits.
 - **Nutzer-Testbedarf für diesen Schritt:** nicht erforderlich – es wurde nur das Protokoll angelegt. Die reale Geräteabnahme bleibt offen und wird **gesondert mit genauer Preview-URL und Testfolge** angefordert.
+
+## 4u. Beginn der realen iPhone-Safari-Abnahme (2026-11-11)
+
+- **A01–A02 bestanden laut ausdrücklicher Nutzerrückmeldung:** „Test A01–A02: Alles funktioniert wie beschrieben.“ Damit sind Kartenpan/Zoom sowie keine Pin-Erzeugung bei kurzem Tipp und eine Pin-Erzeugung per Langdruck mit Auswahl in der privaten Ebene auf dem iPhone bestätigt. Gerätedetails/iOS-Version nicht genannt.
+- Protokoll in [`docs/GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md`](GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md) aktualisiert. **A03–A08, B01–B08, C01–C05 und iPad-Tests offen**. Fortsetzung: zunächst A03 mit vorhandenem Testpin, dann A04–A05, ohne andere Benutzerdaten zu verändern.
+- Keine App-, CSS-, SW- oder IndexedDB-Änderung; v116 unverändert. Geräteteststatus ist Nutzerbeobachtung, kein neuer CI-/Deployment-Nachweis.
 
 ## 4. Beschlossener CSS-Zwischenstand und Verifikationslage
 
