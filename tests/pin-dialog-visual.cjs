@@ -328,7 +328,7 @@ async function metrics(page){
      baseCover:getComputedStyle(el,"::before").backgroundColor,
      baseHeight:getComputedStyle(el,"::before").height
    }));
-   assert.equal(tip.baseCover,"rgb(255, 255, 255)");
+   assert.equal(tip.baseCover,"rgb(247, 248, 250)","Dialog tip matches the new pale-gray panel surface");
    assert.equal(tip.baseHeight,"3px");
    await page.locator("#pinWikipedia").hover();
    await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v161-notes.png"});
