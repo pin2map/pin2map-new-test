@@ -54,6 +54,23 @@ async function metrics(page){
    try{
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"),null,{timeout:20000});
+    // Recreate the reported failure with MANY layers, not only the two
+    // default ones. This project lives only in this isolated test context.
+    await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{
+        const project=await store.loadProject();
+        const colors=["#e57b23","#8d61c4","#23866f","#c7507e","#d1a52a","#456ba1"];
+        while(project.layers.length<8){
+          const i=project.layers.length;
+          project.layers.push({id:"visual-layer-"+i,name:"Beispiel-Ebene "+i,
+            color:colors[(i-2)%colors.length],visible:i%3!==0});
+        }
+        await store.saveProject(project);
+      }finally{store.close();}
+    });
+    await page.reload({waitUntil:"domcontentloaded"});
+    await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"));
     const at={x:Math.floor(viewport.width/2),y:Math.floor(viewport.height*.7)};
     await page.mouse.move(at.x,at.y);
     await page.mouse.down();
@@ -97,10 +114,11 @@ async function metrics(page){
     assert.ok(pop.x>=4&&pop.right<=viewport.width-4,JSON.stringify(pop));
     assert.ok(pop.y>=4&&pop.bottom<=viewport.height-4,JSON.stringify(pop));
     assert.ok(pop.scrollWidth<=pop.clientWidth+2,"Horizontal layer menu scrolling: "+JSON.stringify(pop));
-    assert.ok(pop.items>=2,"All layers must be present");
+    assert.equal(pop.items,8,"A long eight-layer list must remain accessible");
+    assert.ok(pop.scrollHeight>pop.clientHeight,"Long layer list should scroll independently");
     assert.ok(pop.bodyScrollWidth<=viewport.width+2,"Menu causes horizontal page scrolling");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-layers.png"});
-    await page.locator("#pinLayerMenu .pin-layer-option").nth(1).click();
+    await page.locator("#pinLayerMenu .pin-layer-option").last().click();
     assert.equal(await page.locator("#pinLayerMenu").isHidden(),true);
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
