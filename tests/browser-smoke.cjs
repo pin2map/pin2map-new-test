@@ -427,10 +427,12 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinUrlBlock").isVisible(),true);
     assert.equal(await page.locator("#pinUrlBlock").evaluate(el=>el.parentElement.tagName),"BODY");
+    assert.equal(await page.locator("#pinUrl").evaluate(el=>el.tagName),"TEXTAREA");
+    assert.equal(await page.locator("#pinUrl").getAttribute("rows"),"3");
     assert.equal(await page.locator("#pinUrlOpen").isDisabled(),true);
     await page.locator("#pinUrl").fill("https://example.org/path");
     assert.equal(await page.locator("#pinUrlOpen").isEnabled(),true);
-    await page.locator("#pinUrlCancel").click();
+    await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinUrl").inputValue(),"");
@@ -439,8 +441,8 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
     assert.equal(await page.locator("#pinWeather").isDisabled(),true);
-    assert.match(await page.locator("#pinCreated").textContent(),/Erstellt:/);
-    assert.match(await page.locator("#pinUpdated").textContent(),/Geändert:/);
+    assert.equal(await page.locator("#pinCreated").count(),0);
+    assert.equal(await page.locator("#pinUpdated").count(),0);
     await page.waitForTimeout(650);
     step("bulk delete confirmation cancels without removing a private pin");
     await page.locator("#closePin").click();
