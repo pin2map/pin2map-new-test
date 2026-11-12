@@ -61,7 +61,7 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  const section=html.split('<section id="pinPanel"')[1].split("</section>")[0];
  assert.ok(section.includes('id="pinNotes"'));
  assert.ok(section.includes('class="pin-navigation-row"'));
- assert.equal((section.match(/ disabled/g)||[]).length,6,"Five navigation placeholders plus weather");
+ assert.equal((section.match(/ disabled/g)||[]).length,7,"Five navigation placeholders plus two dormant GPX buttons");
  assert.ok(html.includes('id="pinUrlOpen"'));
  assert.ok(!html.includes('id="pinUrlCancel"'));
  assert.ok(html.includes('<textarea id="pinUrl" rows="3"'));
