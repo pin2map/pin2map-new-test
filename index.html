@@ -74,6 +74,8 @@
 <script defer src="./ui/shell.js"></script>
 <script defer src="./ui/map-overlay-coordinator.js"></script>
 <script defer src="./ui/basemap-menu.js"></script>
+<script defer src="./adapters/esri-imagery-metadata.js"></script>
+<script defer src="./ui/satellite-inspector.js"></script>
 <script defer src="./ui/lucide-icons.js"></script>
 <script defer src="./ui/map-control-feedback.js"></script>
 <script defer src="./ui/pwa-refresh.js"></script>
@@ -145,8 +147,12 @@
       </label>
       <input id="satelliteBrightness" type="range" min="70" max="180" step="5" value="120" aria-label="Satellitenbild Helligkeit">
     </div>
+    <label class="basemap-satellite-roads" for="satelliteRoads"><input type="checkbox" id="satelliteRoads"> Straßen und Ortsnamen</label>
+    <div class="basemap-satellite-info"><span>Bildinformationen</span><button id="satelliteInspect" type="button" data-pin-icon="switch-camera" aria-label="Bildinformationen für Kartenpunkt abfragen" title="Bildinformationen für Kartenpunkt abfragen" aria-pressed="false"></button></div>
+    <hr class="basemap-satellite-divider" aria-hidden="true">
     <label class="basemap-relief-toggle" for="esriReliefToggle"><input type="checkbox" id="esriReliefToggle"> Schummerung</label>
   </section>
+  <aside id="satelliteInfoPanel" class="satellite-info-panel hidden" aria-label="Bildinformationen" role="region"><div class="satellite-info-head"><strong>Esri-Bildinformationen</strong><button type="button" id="satelliteInfoClose" data-pin-icon="x" aria-label="Bildinformationen schließen"></button></div><div id="satelliteInfoFields" aria-live="polite"></div><small>Für den ausgewählten Kartenpunkt und Maßstab. Bildquellen können je nach Zoom variieren.</small></aside>
   <div id="searchResults" class="search-results hidden" role="status" aria-live="polite"></div>
   <aside id="layersPanel" class="panel layers-panel hidden" aria-label="Ebenen"><div class="panel-head"><h2>Ebenen</h2><button class="close" data-pin-icon="x" data-close="layersPanel" aria-label="Schließen">×</button></div><div id="layersList"></div><button id="addLayer" class="secondary full p2m-text-action"><span data-pin-icon="plus"></span>Neue Ebene</button></aside>
   <aside id="settingsPanel" class="panel settings-panel hidden" aria-label="Einstellungen"><div class="panel-head"><h2>Einstellungen</h2><button class="close" data-pin-icon="x" data-close="settingsPanel" aria-label="Schließen">×</button></div><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Nominatim-Ortssuche für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Die öffentliche Nominatim-API ist kein uneingeschränkter Produktionsdienst. Keine automatischen Suchen; maximal eine Anfrage pro Sekunde in diesem Browser. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a></p><p class="small attribution" id="settingsPinInfoSources"><strong>Pin-Informationen:</strong> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> liefert aktuelle Wetterprognosen und Höhe. <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a> liefert langjährige Monatsmittel von Temperaturen und Niederschlag (durchschnittlicher Monats- und Jahresniederschlag in mm). <a href="https://sunrise-sunset.org/" target="_blank" rel="noopener">Sunrise-Sunset.org</a> liefert Sonnenaufgang und -untergang jeweils am <strong>15. des ausgewählten Monats</strong>. Bei „Heute“ werden aktuelle Tageswerte verwendet. Daten werden nur für Pins sichtbarer Ebenen im gewählten Modus abgerufen.</p><hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></aside>
