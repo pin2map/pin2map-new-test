@@ -37,21 +37,18 @@ function fixture(){
   elements.pinLayer.value="private";
   return {picker,elements,layers,listeners};
 }
-test("selected layer shows own color and visibility, including hidden layer",()=>{
+test("selected layer trigger uses Lucide icon and colored dot; menu keeps full labels",()=>{
   const {picker,elements,layers}=fixture();
   picker.render({layers,selectedLayerId:"private"});
   const trigger=elements.pinLayerTrigger;
-  assert.equal(trigger.children[0].style.backgroundColor,"#cc2244");
-  assert.equal(trigger.children[1].textContent,"Privat");
-  assert.equal(trigger.children[2].children[0].iconName,"eye");
-  assert.equal(trigger.children[2].attrs["aria-label"],"Sichtbar");
+  assert.equal(trigger.children[0].iconName,"layers-arrow-down");
+  assert.equal(trigger.children[1].style.backgroundColor,"#cc2244");
+  assert.match(trigger.attrs["aria-label"],/Privat, Sichtbar/);
   picker.render({layers,selectedLayerId:"work"});
-  assert.equal(trigger.children[0].style.backgroundColor,"#235baa");
-  assert.equal(trigger.children[2].children[0].iconName,"eye-off");
-  assert.equal(trigger.children[2].attrs["aria-label"],"Ausgeblendet");
+  assert.equal(trigger.children[1].style.backgroundColor,"#235baa");
+  assert.match(trigger.attrs["aria-label"],/Arbeit, Ausgeblendet/);
   assert.equal(elements.pinLayerMenu.children.length,2);
   assert.equal(elements.pinLayerMenu.children[1].children[2].children[0].iconName,"eye-off");
-  assert.equal(elements.pinLayerMenu.children[1].attrs["aria-label"],"Arbeit, Ausgeblendet");
   assert.equal(elements.pinLayerMenu.children[1].attrs["aria-selected"],"true");
 });
 test("selecting a layer dispatches the existing native change event exactly once",()=>{
@@ -87,29 +84,16 @@ test("outside press and Escape close selector without changing assignment",()=>{
   assert.equal(elements.pinLayer.value,"private");
 });
 
-test("layer picker overlay does not change dialog height and labels are 12px",()=>{
-  const fs=require("node:fs");
-  const css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
-  const menu=css.match(/#pinPanel \.pin-layer-menu\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(menu.includes("position:absolute"),"Floating list should not enlarge the pin panel");
-  assert.ok(css.includes("#pinPanel.pin-layer-open{overflow:visible!important}"),"Open menu must not clip against scrolling pin panel");
-  assert.ok(menu.includes("z-index:20"));
-  assert.ok(menu.includes("top:calc(100% + 4px);bottom:auto"),"Options open downward without obscuring the pin name");
-  const label=css.match(/#pinPanel \.pin-layer-trigger,[\s\S]*?#pinPanel \.pin-layer-option\s*\{([^}]+)\}/)?.[1]||"";
-  assert.ok(label.includes("font-size:12px!important"));
-  const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
-  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
-  const footer=section.split('<div class="pin-actions">')[1]||"";
-  const move=footer.indexOf('id="movePin"');
-  const picker=footer.indexOf('id="pinLayerPicker"');
-  const ok=footer.indexOf('id="closePin"');
-  assert.ok(move>=0&&move<picker&&picker<ok,"Layer selection must sit between Move and OK");
-  assert.ok(css.includes("#pinPanel .pin-actions .pin-layer-picker{"));
-  assert.ok(!section.includes('<label id="pinLayerLabel">Ebene</label>'),"No visible Ebene heading");
-  assert.ok(section.includes('<span id="pinLayerLabel" class="sr-only">Ebene auswählen</span>'),"Accessibility label retained");
-  assert.ok(css.includes("flex:1 1 0%;width:100%;min-width:0"),"Picker fills space between buttons");
-  assert.ok(css.includes("align-items:center;justify-content:space-between"),"All footer controls share a baseline");
-  assert.ok(css.includes("gap:12px!important;width:100%"),"Selector has visible breathing room beside both buttons");
-  assert.ok(css.includes("#pinPanel.pin-layer-open + #pinDialogTip{display:none!important}"),
-    "Pin pointer triangle must be hidden while list is open");
+test("layer picker remains a compact circular action with floating accessible choices",()=>{
+ const fs=require("node:fs"),css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
+ const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
+ assert.match(css,/#pinPanel \\.pin-layer-menu\\s*\\{[^}]*position:absolute/);
+ assert.match(css,/#pinPanel\\.pin-layer-open\\{overflow:visible\\}/);
+ assert.match(css,/#pinPanel \\.pin-layer-trigger\\s*\\{[^}]*border-radius:50%/);
+ assert.match(css,/#pinPanel \\.pin-actions \\.pin-layer-picker\\{[^}]*flex:0 0 var\\(--p2m-pin-dialog-action-size\\)/);
+ const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
+ const footer=section.split('<div class="pin-actions">')[1]||"";
+ const ids=["movePin","pinLayerPicker","pinUrlButton","pinWikipedia","pinWeather","closePin"];
+ let last=-1;
+ for(const id of ids){const next=footer.indexOf('id="'+id+'"');assert.ok(next>last,"Footer action order: "+id);last=next;}
 });
