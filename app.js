@@ -78,11 +78,25 @@
       }
     }
   });
+  const satelliteInspector=new window.Pin2MapSatelliteInspector({
+    getElement:$,document,
+    mapPort:{
+      getViewport:()=>mapAdapter.getViewport(),
+      showSatelliteSelection:p=>mapAdapter.showSatelliteSelection(p),
+      clearSatelliteSelection:()=>mapAdapter?.clearSatelliteSelection()
+    },
+    provider:new window.Pin2MapEsriImageryMetadata({fetchImpl:(...args)=>fetch(...args)}),
+    onNotice:message=>showNotice(message)
+  });
   const basemapMenu = new window.Pin2MapBasemapMenu({
     getElement:$,document,
     onOpening:()=>{pinInfoMenu.close();uiShell.closePanels();searchView.hide();},
     onSelect:value=>{
-      if(state.basemap!==value){state.basemap=value;setTileLayer();save();}
+      if(state.basemap!==value){satelliteInspector.stop();state.basemap=value;setTileLayer();save();}
+    },
+    onRoadsChange:enabled=>{
+      if(state.basemap!=="satellite")return;
+      if(!!state.satelliteRoads!==enabled){state.satelliteRoads=enabled;setTileLayer();save();}
     },
     onReliefChange:enabled=>{
       if(!!state.esriRelief!==enabled){state.esriRelief=enabled;setTileLayer();save();}
@@ -207,10 +221,11 @@
   function setTileLayer() {
     mapAdapter.setBasemap(state.basemap,{
       esriRelief:!!state.esriRelief,
-      satelliteBrightness:state.satelliteBrightness
+      satelliteBrightness:state.satelliteBrightness,
+      satelliteRoads:!!state.satelliteRoads
     });
     basemapMenu.render(state.basemap,!!state.esriRelief,{
-      brightness:state.satelliteBrightness
+      brightness:state.satelliteBrightness,roads:!!state.satelliteRoads
     });
   }
   function renderMarkers(){
@@ -299,6 +314,7 @@
     }));
     overlayCoordinator.bind();
     basemapMenu.bind();
+    satelliteInspector.bind();
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
     $("addLayer").addEventListener("click",()=>layerCreation.create());
@@ -309,7 +325,10 @@
     $("confirmMove").addEventListener("click",()=>moveController.confirm());
     pinDeleteDialog.bind();
 
-    mapAdapter.onMapClick(position=>{pinInfoMenu.close();mapClickCoordinator.handle(position);});
+    mapAdapter.onMapClick(position=>{
+      if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
+      pinInfoMenu.close();mapClickCoordinator.handle(position);
+    });
 
     gestures.attachLongPress();
     mapOverlayLayout.bind();
@@ -328,6 +347,7 @@
       mapAdapter,
       getBasemap:()=>state.basemap,
       isMoveMode:()=>uiState.moveMode,
+      isInspectMode:()=>satelliteInspector.isActive(),
       selectPin,addPin,renderMarkers,persistViewport,updatePanelLayout,
       scheduleFrame:requestAnimationFrame,
       vibrate:duration=>{if(navigator.vibrate)navigator.vibrate(duration);}
