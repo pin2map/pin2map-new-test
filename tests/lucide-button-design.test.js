@@ -128,7 +128,7 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  assert.match(section,/id="deletePin"[^>]*data-pin-icon="x"/);
  assert.doesNotMatch(section,/id="cancelPin"/);
  for(const title of ["Pin Name","Navi extern","pin2map Routing","Pin Notizen"])
-   assert.ok(section.includes("<legend>"+title+"</legend>"),"Frame legend: "+title);
+   assert.ok(section.includes("<legend"+(title==="Pin Notizen"?" id=\"pinDetailTitle\"":"")+">"+title+"</legend>"),"Frame legend: "+title);
  const placeholder=section.match(/<div class="pin-navigation-row"[\s\S]*?<\/div>\s*<\/fieldset>\s*<\/div>/)?.[0]||"";
  assert.equal((placeholder.match(/ disabled/g)||[]).length,5);
  assert.ok(!section.includes('id="pinCreated"')&&!section.includes('id="pinUpdated"'));
@@ -138,7 +138,7 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  const ids=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
  let last=-1;
  for(const id of ids){const index=section.indexOf('id="'+id+'"');assert.ok(index>last,id);last=index;}
- for(const name of ["layers-arrow-down","link-2","save-check","external-link","cloud-sun-rain","arrow-up-right","circle-dot","apple-brand"]){
+ for(const name of ["layers-arrow-down","link-2","save-check","external-link","thermometer-snowflake","arrow-up-right","circle-dot","apple-brand"]){
    const svg=Icons.svg(name,documentStub());assert.ok(svg.children.length,name);
  }
  // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
@@ -149,7 +149,7 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
 
  const action=css.match(/#pinUrlBlock \.pin-url-actions button\{([^}]+)\}/)?.[1]||"";
  assert.match(action,/min-width:52px/);
- assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
+ assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:145px/);
 });
 test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
@@ -207,7 +207,7 @@ test("standalone map controls share 42px; search ring and editor actions stay se
   assert.ok(!rule.includes("#searchButton"),"Search action must not inherit the map size contract");
   assert.match(css,/--p2m-search-tap-size:42px/);
   assert.match(css,/--p2m-search-ring-size:30px/);
-  assert.ok(css.includes(":root{--p2m-pin-dialog-action-size:38px}"));
+  assert.ok(css.includes(":root{--p2m-pin-dialog-action-size:42px}"));
 });
 
 
