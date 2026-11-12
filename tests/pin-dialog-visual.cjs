@@ -24,7 +24,7 @@ async function metrics(page){
   const panel=get("pinPanel"),notes=get("pinNotes");
   const styles=getComputedStyle(panel);
   return {
-   panel:rect("pinPanel"),name:rect("pinName"),meta:rect("pinCreated"),
+   panel:rect("pinPanel"),name:rect("pinName"),
    navigation:rect("pinPanel"),
    details:rect("pinNotesBlock"),footer:rect("closePin"),
    routingRow:rect("pinPanel"),routingCount:get("pinPanel").querySelectorAll(".pin-navigation-buttons button").length,
@@ -94,10 +94,13 @@ async function metrics(page){
     assert.ok(m.panel.x>=4&&m.panel.right<=viewport.width-4,JSON.stringify(m));
     assert.ok(m.panel.y>=4&&m.panel.bottom<=viewport.height-4,JSON.stringify(m));
     assert.ok(m.scrollHeight<=m.clientHeight+2,"Nested pin dialog scroll: "+JSON.stringify(m));
-    assert.ok(m.meta.y>m.name.y,"Date line must be below name");
+    assert.equal(await page.locator(".pin-meta-row").count(),0,"No visible timestamp row");
+    const navRect=await page.locator("#pinPanel .pin-navigation-row").boundingBox();
+    const nameRect=await page.locator("#pinPanel .pin-editor-head").boundingBox();
+    assert.ok(navRect.y-nameRect.y-nameRect.height>=10,"Navigation must breathe above");
     assert.equal(m.routingCount,5,"Two external and three routing controls must be visible");
     assert.equal(m.routingDisabled,true,"All future navigation controls must stay inert");
-    assert.ok(m.details.y>m.meta.y,"Notes must follow date and navigation rows");
+    assert.ok(m.details.y>navRect.y+navRect.height,"Notes follow navigation");
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
     assert.ok(Math.abs(m.noteHeight-106)<=1,JSON.stringify(m));
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
@@ -146,9 +149,21 @@ async function metrics(page){
     assert.equal(urlPopup.parent,"BODY");
     assert.ok(urlPopup.left>=4&&urlPopup.right<=viewport.width-4&&urlPopup.top>=4&&urlPopup.bottom<=viewport.height-4,JSON.stringify(urlPopup));
     assert.ok(Math.abs(urlPopup.width-260)<=1,"URL popup width matches approved layer picker");
-    for(const item of urlPopup.actions)assert.ok(Math.abs(item.width-viewport.button)<=1&&Math.abs(item.height-viewport.button)<=1,"URL button size "+JSON.stringify(item));
+    assert.equal(urlPopup.actions.length,2,"Only OK and URL öffnen are shown");
+    for(const item of urlPopup.actions)assert.ok(item.width>=52&&Math.abs(item.height-34)<=1,"Rectangular URL button "+JSON.stringify(item));
+    assert.equal(await page.locator("#pinUrl").getAttribute("rows"),"3");
+    assert.equal(await page.locator("#pinUrl").evaluate(el=>el.tagName),"TEXTAREA");
+    assert.equal(await page.locator("#pinUrlBlock legend").textContent(),"Pin-URL");
+    const urlFieldHeight=await page.locator("#pinUrl").evaluate(el=>el.getBoundingClientRect().height);
+    assert.ok(urlFieldHeight>=70,"Three-line URL input must be visibly taller");
+    assert.equal(await page.locator("#pinUrlCancel").count(),0);
+    const initialTop=await page.locator("#pinUrlBlock").evaluate(el=>Number.parseFloat(el.style.top));
+    await page.locator("#pinUrl").focus();
+    await page.evaluate(()=>window.visualViewport?.dispatchEvent(new Event("resize")));
+    const keyboardTop=await page.locator("#pinUrlBlock").evaluate(el=>Number.parseFloat(el.style.top));
+    assert.ok(Math.abs(initialTop-keyboardTop)<=1,"Keyboard resize must not reposition URL popup");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-url.png"});
-    await page.locator("#pinUrlCancel").click();
+    await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     assert.deepEqual(errors,[],"Uncaught page error");
