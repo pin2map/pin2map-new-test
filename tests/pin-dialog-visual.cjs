@@ -287,6 +287,20 @@ async function metrics(page){
    assert.ok(positions.logoComplete&&positions.logoWidth>0,"User-provided Wikipedia SVG must load locally");
    assert.equal(positions.deleteIcon,"map-pin-off");
    assert.ok(Math.abs(Number.parseFloat(positions.weatherStroke)-1.45)<.01);
+   // Custom two-pin artwork is already SVG. Its per-element presentation
+   // colors must be overridable by the shared white-hover contract.
+   await page.locator("#movePin").hover();
+   const moveStrokes=await page.locator("#movePin .p2m-relocate-icon path, #movePin .p2m-relocate-icon circle")
+    .evaluateAll(nodes=>nodes.map(node=>getComputedStyle(node).stroke));
+   assert.ok(moveStrokes.length>=5&&moveStrokes.every(value=>value==="rgb(255, 255, 255)"),
+     "Custom SVG lines must turn white on hover: "+JSON.stringify(moveStrokes));
+   const tip=await page.locator("#pinDialogTip").evaluate(el=>({
+     baseCover:getComputedStyle(el,"::before").backgroundColor,
+     baseHeight:getComputedStyle(el,"::before").height
+   }));
+   assert.equal(tip.baseCover,"rgb(255, 255, 255)");
+   assert.equal(tip.baseHeight,"3px");
+   await page.locator("#pinWikipedia").hover();
    await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v160-notes.png"});
    await page.locator("#pinWeather").click();
    const weatherFrame=await page.locator("#pinPanel .pin-detail-region").evaluate(el=>{
