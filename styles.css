@@ -580,6 +580,10 @@ body.pin-relocation-picking #map .leaflet-interactive{
   #pinPanel #pinNotes{font-size:16px;line-height:1.25}
   #pinPanel #pinUrl{font-size:16px}
 }
+/* iPhone landscape can exceed 700px; keyboard-safe font size still applies. */
+@media (hover:none) and (pointer:coarse){
+  #pinPanel #pinNotes,#pinPanel #pinUrl{font-size:16px}
+}
 
 /* Independent refresh control, anchored to the viewport instead of the
    floating search header. 35% is measured from the visible screen height.
