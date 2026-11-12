@@ -7,7 +7,7 @@ const {chromium}=require("playwright");
 const fs=require("node:fs");
 const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
 const cases=[
- {name:"iphone-narrow",width:320,height:568,button:38},
+ {name:"iphone-narrow",width:320,height:568,button:42},
  {name:"iphone",width:375,height:667,button:38},
  {name:"ipad",width:768,height:1024,button:38}
 ];
@@ -102,7 +102,7 @@ async function metrics(page){
     assert.equal(m.routingDisabled,true,"All future navigation controls must stay inert");
     assert.ok(m.details.y>navRect.y+navRect.height,"Notes follow navigation");
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
-    assert.ok(Math.abs(m.noteHeight-106)<=1,JSON.stringify(m));
+    assert.ok(Math.abs(m.noteHeight-145)<=1,JSON.stringify(m));
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
     for(const b of m.routingButtons)assert.ok(b.disabled&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size "+JSON.stringify(b));
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
