@@ -56,7 +56,7 @@
     }
     addWaybackRow(parent,url){
       const row=this.document.createElement("div");row.className="satellite-info-row";
-      const title=this.document.createElement("strong");title.textContent="Wayback";
+      const title=this.document.createElement("strong");title.textContent="Link zu Wayback";
       const link=this.document.createElement("a");
       link.textContent="In Wayback öffnen";
       link.href=url;link.target="_blank";link.rel="noopener noreferrer";
