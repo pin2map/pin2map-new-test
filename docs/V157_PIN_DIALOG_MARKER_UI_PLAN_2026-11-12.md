@@ -1,6 +1,6 @@
 # v157 – verbindlicher Umsetzungsauftrag: Pin-Dialog, Wetter, Marker und iPad-Editor
 
-**Status:** GEPLANT / NICHT IMPLEMENTIERT  
+**Status:** IMPLEMENTIERT UND TECHNISCH ABGENOMMEN (v157); persönliche Safari-Geräteabnahme ausstehend  
 **Ausgangsbasis:** v156, `feature/leaflet-modular-core`  
 **Referenz:** Screenshots aus dem Nutzerfeedback 2026-11-12; bestätigte Ebenenauswahl und mobile iPhone-Notizbedienung bleiben erhalten.  
 **Ziel:** Berechenbare, elegante, verlässlich klick- und tastbare UI statt neuer ad-hoc-Overrides.
@@ -102,4 +102,4 @@
 
 Keine Flächen-/Seen-/Flusssuche; keine GPS-Routenlogik; keine GPX-Dateiverarbeitung; keine Wetter-API; keine Datenmigration; keine Neugestaltung der bereits bestätigten Ebenenauswahl.
 
-**Status dieser Datei:** Der Auftrag ist formuliert, aber v157 ist **noch nicht implementiert, getestet oder veröffentlicht**.
+**Abschlussnachweis (2026-11-12):** v157 wurde implementiert und veröffentlicht. Funktionaler Commit `18732238e99c22d51f138c77ad72d20dc2577339`; [291/291 Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/43290859132), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/43290860122) und [Live-HTTPS-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/43290859676) erfolgreich. Der finale Screenshot-Artefaktname wurde nachträglich auf v157 korrigiert; [auch dieser Deploylauf](https://github.com/pin2map/pin2map-new-test/actions/runs/43291184889) war erfolgreich. Wetter- und Markersegmente, URL-Klammerung und Hover sind implementiert. Noch offen ist ausschließlich die echte, persönliche iPhone-/iPad-Safari-Usability-Abnahme; Browser-Emulation darf diese nicht ersetzen.
