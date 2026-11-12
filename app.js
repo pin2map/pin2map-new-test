@@ -83,7 +83,8 @@
     mapPort:{
       getViewport:()=>mapAdapter.getImageryQueryViewport(),
       showSatelliteSelection:p=>mapAdapter.showSatelliteSelection(p),
-      clearSatelliteSelection:()=>mapAdapter?.clearSatelliteSelection()
+      clearSatelliteSelection:()=>mapAdapter?.clearSatelliteSelection(),
+      setInspectionCursor:active=>mapAdapter?.setInspectionCursor(active)
     },
     provider:new window.Pin2MapEsriImageryMetadata({fetchImpl:(...args)=>fetch(...args)}),
     onNotice:message=>showNotice(message)
