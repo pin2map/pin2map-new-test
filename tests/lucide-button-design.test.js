@@ -199,7 +199,7 @@ test("standalone map controls share 42px; search ring and editor actions stay se
   assert.ok(!rule.includes("#searchButton"),"Search action must not inherit the map size contract");
   assert.match(css,/--p2m-search-tap-size:42px/);
   assert.match(css,/--p2m-search-ring-size:30px/);
-  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"));
+  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:38px}"));
 });
 
 
