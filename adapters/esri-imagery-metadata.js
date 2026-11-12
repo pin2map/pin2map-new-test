@@ -19,7 +19,7 @@
       const params=new URLSearchParams({
         f:"json",geometry:lng+","+lat,geometryType:"esriGeometryPoint",
         sr:"4326",layers:"all:4",tolerance:"2",mapExtent:extent,
-        imageDisplay:"800,600,96",returnGeometry:"false"
+        imageDisplay:width+","+height+",96",returnGeometry:"false"
       });
       const url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/identify?"+params;
       const response=await this.fetchImpl(url,{signal,cache:"no-store"});
