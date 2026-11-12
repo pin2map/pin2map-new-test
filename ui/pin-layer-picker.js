@@ -40,14 +40,15 @@
       if(selected){
         trigger.setAttribute("aria-label","Ebene: "+selected.name+", "+this.visibilityLabel(selected.visible));
         const dot=this.document.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=selected.color;
-        const name=this.document.createElement("span");name.className="pin-layer-name";name.textContent=selected.name;
+        const icon=this.icons.svg("layers-arrow-down",this.document);
+        icon.classList.add("pin-layer-trigger-icon");
         const status=this.document.createElement("span");
         status.className="pin-layer-visibility"+(selected.visible?"":" is-hidden");
         status.title=this.visibilityLabel(selected.visible);
         status.setAttribute("aria-label",this.visibilityLabel(selected.visible));
         status.append(this.visibilityIcon(selected.visible));
         const arrow=this.document.createElement("span");arrow.className="pin-layer-chevron";arrow.setAttribute("aria-hidden","true");arrow.textContent="";
-        trigger.append(dot,name,status,arrow);
+        trigger.append(icon,dot);
       }
       menu.replaceChildren();
       for(const layer of layers){
