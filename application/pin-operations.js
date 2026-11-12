@@ -12,12 +12,14 @@
    const pin=findPin(project,id);
    if(!pin)return null;
    pin.name=cleanText(name);
+   pin.updatedAt=new Date().toISOString();
    return pin;
  }
  function assignLayer(project,id,layerId){
    const pin=findPin(project,id);
    if(!pin||!layerExists(project,layerId))return null;
    pin.layerId=layerId;
+   pin.updatedAt=new Date().toISOString();
    return pin;
  }
  function movePin(project,id,position,{validatePosition}){
@@ -25,6 +27,7 @@
    if(!pin)return null;
    const next=validatePosition(position.lat,position.lng);
    pin.lat=next.lat;pin.lng=next.lng;
+   pin.updatedAt=new Date().toISOString();
    return pin;
  }
  function createPin(project,{id,lat,lng,name="",layerId="private"},{validatePosition,cleanText}){
