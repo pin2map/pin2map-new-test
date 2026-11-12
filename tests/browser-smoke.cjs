@@ -159,6 +159,16 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#searchInput").fill("");
     assert.equal(await page.locator("#searchResults").isHidden(),true,
       "Clearing via the search input closes results");
+    step("mobile-safe search clear is explicit and cancels without submitting");
+    const searchClear=page.locator("#searchClear");
+    assert.equal(await searchClear.isHidden(),true);
+    await page.locator("#searchInput").fill("Hamburg");
+    assert.equal(await searchClear.isVisible(),true);
+    await searchClear.click();
+    assert.equal(await page.locator("#searchInput").inputValue(),"");
+    assert.equal(await searchClear.isHidden(),true);
+    assert.equal(await page.locator("#searchResults").isHidden(),true);
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true);
 
     step("basemap menu: switch, aria states, Escape, outside click and persistence");
     const picker=page.locator("#basemapButton");
@@ -171,9 +181,17 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await menu.isVisible(),true);
     assert.equal(await picker.getAttribute("aria-expanded"),"true");
+    assert.equal(await picker.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
+    assert.equal(await picker.evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
+    assert.equal(await menu.locator(".basemap-menu-title").count(),0);
+    assert.deepEqual(await menu.locator("[data-basemap]").evaluateAll(nodes=>nodes.map(n=>n.dataset.basemap)),
+      ["street","international","humanitarian","topo","satellite"]);
+    assert.equal(await street.textContent(),"Standard");
+    assert.ok(await menu.locator("hr.basemap-satellite-divider").count()===1);
     await topo.click();
     assert.equal(await menu.isHidden(),true);
     assert.equal(await picker.getAttribute("aria-expanded"),"false");
+    assert.notEqual(await picker.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
     assert.equal(await topo.getAttribute("aria-pressed"),"true");
     assert.equal(await topo.evaluate(el=>el.classList.contains("is-selected")),true);
     // Verify the correct external source is requested. Live tile availability
@@ -204,7 +222,10 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await menu.isHidden(),true,"Outside map click closes the menu");
     await page.locator("#settingsButton").click();
     assert.equal(await page.locator("#settingsPanel").isVisible(),true);
+    assert.equal(await page.locator("#settingsButton").getAttribute("aria-expanded"),"true");
+    assert.equal(await page.locator("#settingsButton").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
     await picker.click();
+    assert.equal(await page.locator("#settingsButton").getAttribute("aria-expanded"),"false");
     assert.equal(await page.locator("#settingsPanel").isHidden(),true,
       "Basemap picker dismisses settings panel");
     assert.equal(await menu.isVisible(),true);
@@ -630,6 +651,9 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoButton.getAttribute("aria-busy"),"false","Off starts idle");
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
+    assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
+    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
+    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
     assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),7);
     assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
       ["off","elevation","temperature","daily","precipitation","sun","zone"]);
