@@ -40,3 +40,9 @@ Eine **vollständige CSS-Abnahme** erfordert weiterhin: dokumentierte Eigentüme
 **Geänderte Arbeitsreihenfolge:** Statt auf vollständige kosmetische CSS-Bereinigung zu warten, wird nach nachzuholender technischer Baseline-Prüfung die inkrementelle Entflechtung von `app.js` als nächstes Architekturthema aufgenommen. Die Änderbarkeit des Codes hat Vorrang; größere CSS-Umstrukturierung und `app.js`-Refactoring werden nicht gleichzeitig vorgenommen. Die CSS-Komplettsanierung bleibt ein offener späterer Arbeitsauftrag.
 
 Die Vorgänger-App dient als funktionale und visuelle Referenz, nicht als Quellcode- oder CSS-Architekturvorlage. Die stabile Anwendung auf `main` bleibt unberührt.
+
+## Audit- und Vorbereitungsbaseline v148 (2026-11-12)
+
+Die aktuelle `styles.css` ist für die Architektur-Stabilisierung **nicht** verändert worden: **293** `!important`-Vorkommen bei weiter gültigem Limit **298**. B38 bleibt bewusst **pausiert**, die vollständige visuelle CSS-Abnahme ist weiterhin offen. Ein niedrigerer Grenzwert ist erst nach einer tatsächlich getesteten Komponentenbereinigung legitim.
+
+**Pflicht vor einer größeren Feature-UI:** betroffene CSS-Eigentümer ermitteln (bereits wirksame Selektoren und Media Queries), bestehende Tokens/Map-Button-Verträge beibehalten, keine neue globale Kaskadenebene und keine zusätzlichen `!important`-Regeln, sondern nur für das Feature relevante Komponentenregeln an ihrer Quelle konsolidieren und mit gezielten Node-/Chromium-/Geräte-Gates prüfen. Ein allgemeines Refactoring ohne konkreten visuellen oder funktionalen Bedarf bleibt unzulässig. Für die Preview-Paketgrenze gilt `docs/ARCHITEKTUR_STABILISIERUNG_2026-11-12.md`.
