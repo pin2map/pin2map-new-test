@@ -124,12 +124,12 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
 
 test("framed pin editor contains inert routing and an independent URL popup",()=>{
  const html=read("index.html"),css=read("styles.css");
- const section=html.match(/<section id="pinPanel"[\\s\\S]*?<\\/section>/)?.[0]||"";
+ const section=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
  assert.match(section,/id="deletePin"[^>]*data-pin-icon="x"/);
  assert.doesNotMatch(section,/id="cancelPin"/);
  for(const title of ["Pin Name","Navi extern","pin2map Routing","Pin Notizen"])
    assert.ok(section.includes("<legend>"+title+"</legend>"),"Frame legend: "+title);
- const placeholder=section.match(/<div class="pin-navigation-row"[\\s\\S]*?<\\/div>\\s*<\\/fieldset>\\s*<\\/div>/)?.[0]||"";
+ const placeholder=section.match(/<div class="pin-navigation-row"[\s\S]*?<\/div>\s*<\/fieldset>\s*<\/div>/)?.[0]||"";
  assert.equal((placeholder.match(/ disabled/g)||[]).length,5);
  assert.ok(section.includes('id="pinCreated"')&&section.includes('id="pinUpdated"'));
  const popup=html.slice(html.indexOf('<div id="pinUrlBlock"'));
@@ -143,9 +143,9 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  }
  // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
  assert.equal(Icons.svg("link-2",documentStub()).children.length,3);
- const action=css.match(/#pinPanel button:is\\([^)]*\\)\\{([^}]+)\\}/)?.[1]||"";
- assert.match(action,/width:var\\(--p2m-pin-dialog-action-size\\)!important/);
- assert.match(css,/#pinPanel \\.pin-detail-region #pinNotes\\{[^}]*height:106px/);
+ const action=css.match(/#pinPanel button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
+ assert.match(action,/width:var\(--p2m-pin-dialog-action-size\)!important/);
+ assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
 });
 test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
