@@ -559,7 +559,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
   border:1px solid #a6ceaa!important;font-size:14px!important;font-weight:750!important;
   box-shadow:var(--p2m-button-shadow);
 }
-#pinPanel .pin-actions #closePin.pin-ok-button:hover{background:#b6e4ba!important}
+/* Pin OK hover is owned by the common dialog-button rule below. */
 /* Shared blue-open-state contract: dialogs and subordinate menus. */
 #pinPanel .pin-actions button.p2m-icon-control.is-active,
 #pinPanel #pinLayerTrigger[aria-expanded="true"],
