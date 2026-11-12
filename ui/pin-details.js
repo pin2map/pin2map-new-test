@@ -42,20 +42,20 @@
    const viewLeft=vv?.offsetLeft||0,viewTop=vv?.offsetTop||0;
    const viewWidth=vv?.width||win.innerWidth,viewHeight=vv?.height||win.innerHeight;
    const margin=12,panelInset=10,gap=8;
-   const width=Math.max(180,Math.min(260,panel.width-panelInset*2,viewWidth-margin*2));
-   popup.style.width=width+"px";
-   const popupHeight=popup.offsetHeight||158;
-   // Panel-owned horizontal placement: never float beside the pin panel.
-   const panelLeft=panel.left+panelInset,panelRight=panel.right-panelInset;
-   const idealLeft=panelRight-width;
-   const left=Math.max(viewLeft+margin,Math.min(idealLeft,
-     viewLeft+viewWidth-width-margin));
-   popup.style.left=Math.max(panelLeft,Math.min(left,panelRight-width))+"px";
-   // Overlay the note/navigation content, leaving footer buttons exposed.
-   const preferredTop=trigger.top-gap-popupHeight;
+   const width=Math.min(panel.width-panelInset*2,viewWidth-margin*2);
+   popup.style.width=Math.max(180,width)+"px";
+   // Symmetric inside the pin panel; no dependence on the URL button's x.
+   popup.style.left=Math.max(viewLeft+margin,panel.left+panelInset)+"px";
+   const navButton=this.el("pinPanel").querySelector?.(".pin-navigation-buttons button");
+   const nav=navButton?.getBoundingClientRect?.();
+   const preferredTop=nav?.height?nav.top+nav.height*.38:panel.top+70;
    const upper=viewTop+margin;
-   const lower=viewTop+viewHeight-popupHeight-margin;
-   popup.style.top=Math.max(upper,Math.min(preferredTop,Math.max(upper,lower)))+"px";
+   const bottom=Math.min(trigger.top-gap,viewTop+viewHeight-margin);
+   // Keep long URLs legible even on small devices, without covering the footer.
+   const top=Math.max(upper,Math.min(preferredTop,bottom-170));
+   const height=Math.max(150,bottom-top);
+   popup.style.top=top+"px";
+   popup.style.height=Math.min(height,viewTop+viewHeight-margin-top)+"px";
   }
   show(mode){
    this.mode=mode;
