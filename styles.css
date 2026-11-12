@@ -604,6 +604,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 /* A keyboard-visible editor may not reserve the iPhone home-indicator area. */
 .pin-note-editor.is-keyboard-visible{padding-bottom:4px}
+#pinPanel #pinNotesExpand{display:none}
 @media(min-width:701px) and (pointer:fine){
   #pinPanel .pin-detail-region #pinNotesBlock{position:relative;padding-bottom:16px}
   #pinPanel #pinNotesExpand{
