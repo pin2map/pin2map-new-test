@@ -10,7 +10,12 @@
       const center=viewport?.center||point;
       const zoom=Math.max(0,Math.min(23,Math.round(Number(viewport?.zoom)||16)));
       const span=360/Math.pow(2,zoom);
-      const extent=[lng-span,lat-span/2,lng+span,lat+span/2].join(",");
+      const validBounds=Array.isArray(viewport?.bounds)&&viewport.bounds.length===4&&
+        viewport.bounds.every(x=>Number.isFinite(Number(x)));
+      const extent=validBounds?viewport.bounds.join(","):
+        [lng-span,lat-span/2,lng+span,lat+span/2].join(",");
+      const width=Math.max(1,Math.round(Number(viewport?.width)||800));
+      const height=Math.max(1,Math.round(Number(viewport?.height)||600));
       const params=new URLSearchParams({
         f:"json",geometry:lng+","+lat,geometryType:"esriGeometryPoint",
         sr:"4326",layers:"all:4",tolerance:"2",mapExtent:extent,
