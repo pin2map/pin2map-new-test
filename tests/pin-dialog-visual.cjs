@@ -117,6 +117,18 @@ async function metrics(page){
     }
     assert.equal(m.weatherOpacity,"1","Disabled weather icon remains clearly recognizable");
     assert.ok(m.documentScrollWidth<=viewport.width+2,"Unexpected horizontal document scroll");
+    assert.equal(await page.locator("#pinGpxActions").isHidden(),true,
+     "GPX controls are only visible when a real track association exists");
+    assert.equal(await page.locator("#pinWeather").isEnabled(),true);
+    await page.locator("#pinWeather").click();
+    assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinWeather").getAttribute("aria-pressed"),"true");
+    assert.equal(await page.locator("#pinWeather").evaluate(el=>
+      getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
+    await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-weather.png"});
+    await page.locator("#pinWeather").click();
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-notes.png"});
     await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu").waitFor({state:"visible",timeout:5000});
@@ -166,6 +178,23 @@ async function metrics(page){
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
+    // On touch devices, the editor must have its own focused area and
+    // bottom toolbar; timestamps insert at the captured caret, not the end.
+    await page.locator("#pinNotes").click();
+    assert.equal(await page.locator("#pinMobileNoteEditor").isVisible(),true);
+    await page.locator("#pinNoteEditorText").fill("VorNach");
+    await page.locator("#pinNoteEditorText").evaluate(el=>{el.focus();el.setSelectionRange(3,3);el.dispatchEvent(new Event("select"));});
+    await page.locator("#pinNoteInsertDate").click();
+    const text=await page.locator("#pinNoteEditorText").inputValue();
+    assert.match(text,/^Vor\\d{2}\\.\\d{2}\\.\\d{4}Nach$/);
+    const toolbar=await page.locator("#pinNoteEditorDone").boundingBox();
+    assert.ok(toolbar.y>=0&&toolbar.y+toolbar.height<=viewport.height+2,
+      "Mobile editor toolbar is not below the visible screen");
+    await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-mobile-notes.png"});
+    await page.locator("#pinNoteEditorDone").click();
+    assert.equal(await page.locator("#pinMobileNoteEditor").isHidden(),true);
+    assert.equal(await page.locator("#pinNotes").inputValue(),text);
+    assert.ok(await page.locator(".pin-status-note").count()>0,"Saved note adds a visible marker indicator");
     assert.deepEqual(errors,[],"Uncaught page error");
     console.log("[visual] PASS",viewport.name,JSON.stringify({panel:m.panel,notes:m.noteHeight,
      button:viewport.button,layerList:pop}));
