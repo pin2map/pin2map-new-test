@@ -804,19 +804,24 @@ async function longPress(page,x,y,ms=725){
       null,{timeout:6000});
     assert.equal(forecastRequests.length,2,"Newly visible pins load after layer reveal");
     assert.equal(forecastRequests[1].count,1);
-    step("pin editor hides interactive upper-pin info overlays and restores them on close");
+    step("pin editor preserves visible pin information and name labels while disabling map controls");
     assert.equal(await page.locator("#map .elevation-label-wrap").count(),2);
     await page.locator("#map .pin-marker").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
-    assert.equal(await page.locator("#map .elevation-label-wrap").first().evaluate(
+    assert.notEqual(await page.locator("#map .elevation-label-wrap").first().evaluate(
       el=>getComputedStyle(el).display),"none",
-      "Upper-pin info options must be hidden while a pin dialog is open");
+      "Pin information labels must remain visible while editing");
+    assert.equal(await page.locator("#map .elevation-label-wrap").first().evaluate(
+      el=>getComputedStyle(el).pointerEvents),"none",
+      "Information labels may not intercept pin-dialog interactions");
     assert.equal(await page.locator("#pinInfoButton").isHidden(),true);
+    assert.equal(await page.locator("#map .pin-marker").count(),2,
+      "Other pins remain visible");
     await page.locator("#closePin").click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     assert.notEqual(await page.locator("#map .elevation-label-wrap").first().evaluate(
       el=>getComputedStyle(el).display),"none",
-      "Upper-pin info labels return after closing the editor");
+      "Upper pin information remains visible after closing the editor");
     await page.locator("#layersButton").click();
     // Historical monthly normals are NOT forecasts. Mock both provider contracts.
     const climateRequests=[],sunRequests=[];
