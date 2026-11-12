@@ -85,6 +85,7 @@
 <script defer src="./ui/pin-editor.js"></script>
 <script defer src="./ui/pin-editor-actions.js"></script>
 <script defer src="./ui/pin-details.js"></script>
+<script defer src="./ui/pin-note-editor.js"></script>
 <script defer src="./ui/map-gesture-controller.js"></script>
 <script defer src="./ui/pin-marker-view.js"></script>
 <script defer src="./ui/pin-move-preview.js"></script>
@@ -182,18 +183,36 @@
         </div>
       </fieldset>
     </div>
+    <div id="pinGpxActions" class="pin-gpx-actions hidden" role="group" aria-label="GPX-Track">
+      <button id="pinGpxRoute" type="button" disabled>Route</button>
+      <button id="pinGpxExport" type="button" disabled>GPX ↓</button>
+    </div>
     <fieldset class="pin-detail-region">
-      <legend>Pin Notizen</legend>
-      <div id="pinNotesBlock"><textarea id="pinNotes" rows="5" placeholder="Notiz eingeben …" aria-label="Notizen zum Pin"></textarea></div>
+      <legend id="pinDetailTitle">Pin Notizen</legend>
+      <div id="pinNotesBlock"><textarea id="pinNotes" rows="7" placeholder="Notiz eingeben …" aria-label="Notizen zum Pin"></textarea></div>
+      <div id="pinWeatherBlock" class="pin-weather-placeholder hidden" role="region" aria-label="Wetteransicht">
+        <span data-pin-icon="thermometer-snowflake" aria-hidden="true"></span>
+        <strong>Wetter</strong><span>Wetterinformationen werden später ergänzt.</span>
+      </div>
     </fieldset>
     <div class="pin-actions">
       <button id="movePin" type="button" class="secondary" data-pin-icon="pin-relocate" title="Pin verschieben" aria-label="Pin verschieben"></button>
       <div id="pinLayerPicker" class="pin-layer-picker"><span id="pinLayerLabel" class="sr-only">Ebene auswählen</span><select id="pinLayer" class="pin-layer-native-select" aria-hidden="true" tabindex="-1"></select><button id="pinLayerTrigger" type="button" class="pin-layer-trigger" aria-labelledby="pinLayerLabel" aria-haspopup="listbox" aria-expanded="false"></button><div id="pinLayerMenu" class="pin-layer-menu hidden" role="listbox" aria-labelledby="pinLayerLabel"></div></div>
       <button id="pinUrlButton" type="button" data-pin-icon="link-2" title="URL zum Pin" aria-label="URL zum Pin" aria-expanded="false" aria-controls="pinUrlBlock"></button>
       <button id="pinWikipedia" type="button" title="Wikipedia zum Pin-Namen suchen" aria-label="Wikipedia zum Pin-Namen suchen"><span class="pin-wikipedia-glyph" aria-hidden="true">W</span></button>
-      <button id="pinWeather" type="button" data-pin-icon="cloud-sun-rain" title="Wetter (später verfügbar)" aria-label="Wetter (später verfügbar)" disabled></button>
+      <button id="pinWeather" type="button" data-pin-icon="thermometer-snowflake" title="Wetteransicht" aria-label="Wetteransicht anzeigen" aria-pressed="false"></button>
       <button id="closePin" type="button" class="pin-ok-button" data-close="pinPanel" title="Dialog schließen" aria-label="Dialog schließen">OK</button>
     </div>
+  </section>
+  <section id="pinMobileNoteEditor" class="pin-note-editor hidden" role="dialog" aria-modal="true" aria-label="Pin Notizen">
+    <header class="pin-note-editor-header"><strong id="pinNoteEditorTitle">Pin Notizen</strong></header>
+    <textarea id="pinNoteEditorText" aria-label="Pin-Notizen bearbeiten" placeholder="Notiz eingeben …"></textarea>
+    <footer class="pin-note-editor-actions">
+      <button id="pinNoteInsertDate" type="button">Datum</button>
+      <button id="pinNoteInsertTime" type="button">Zeit</button>
+      <span class="pin-note-editor-spacer"></span>
+      <button id="pinNoteEditorDone" type="button">Fertig</button>
+    </footer>
   </section>
   <div id="pinUrlBlock" class="pin-url-popup hidden" role="dialog" aria-label="Pin-URL bearbeiten" aria-modal="false">
     <fieldset class="pin-url-field"><legend>Pin-URL</legend>
