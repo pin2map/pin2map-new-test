@@ -122,52 +122,27 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
 });
 
 
-test("pin dialog name replaces heading and red delete button uses official white Lucide icon",()=>{
-  const html=read("index.html"),css=read("styles.css");
-  const pinSection=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
-  assert.ok(pinSection);
-  assert.ok(!pinSection.includes("<h2>Pin bearbeiten</h2>"));
-  assert.match(pinSection,/<div class="panel-head pin-editor-head"><button id="deletePin"[^>]*data-pin-icon="map-pin-off"[^>]*aria-label="Pin löschen"><\/button><label[^>]*for="pinName"/);
-  assert.match(pinSection,/<input id="pinName"[^>]*aria-label="Pin-Name"/);
-  assert.match(pinSection,/<div class="pin-actions">[\s\S]*?<button id="closePin"[^>]*data-close="pinPanel"[^>]*>OK<\/button><\/div>/);
-  assert.equal((pinSection.match(/id="deletePin"/g)||[]).length,1);
-  assert.match(css,/\.pin-panel\{--p2m-pin-dialog-action-size:32px\}/);
-  const shared=css.match(/#pinPanel button:is\(#movePin,#deletePin,#closePin,#showPinLayer\)\{([^}]+)\}/)?.[1]||"";
-  for(const property of ["width","height","min-width","min-height","max-width","max-height"]){
-    assert.ok(shared.includes(property+":var(--p2m-pin-dialog-action-size)!important"),property);
-  }
-  assert.ok(shared.includes("flex:0 0 var(--p2m-pin-dialog-action-size)!important"));
-  const deleteStyles=css.match(/\.pin-panel \.pin-editor-head #deletePin\.p2m-icon-control\s*\{([^}]+)\}/)?.[1]||"";
-  const okStyles=css.match(/\.pin-panel \.pin-actions #closePin\.pin-ok-button\s*\{([^}]+)\}/)?.[1]||"";
-  assert.match(deleteStyles,/background:#bc2837!important;color:#fff!important/);
-  assert.match(okStyles,/background:#c9eecb!important/);
-  for(const styles of [deleteStyles,okStyles]){
-    assert.ok(!/(?:^|;)\s*(?:width|height|flex)\s*:/.test(styles),"Button-specific sizes must stay removed");
-  }
-  assert.match(css,/\.pin-panel \.pin-editor-head #pinName\s*\{/);
-  const icon=Icons.svg("map-pin-off",documentStub());
-  assert.equal(icon.children.length,5);
-  assert.equal(icon.attributes.stroke,"currentColor");
+test("pin editor has cancel/name, timestamps, notes/URL swap, and six equal footer buttons",()=>{
+ const html=read("index.html"),css=read("styles.css");
+ const section=html.match(/<section id="pinPanel"[\\s\\S]*?<\\/section>/)?.[0]||"";
+ assert.match(section,/id="cancelPin"[^>]*data-pin-icon="x"/);
+ assert.match(section,/id="pinCreated"/);
+ assert.match(section,/id="pinUpdated"/);
+ assert.match(section,/id="pinNotes"/);
+ assert.match(section,/id="pinUrlBlock" class="hidden"/);
+ assert.equal((section.match(/id="deletePin"/g)||[]).length,1);
+ const ids=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
+ let last=-1;
+ for(const id of ids){const index=section.indexOf('id="'+id+'"');assert.ok(index>last,id);last=index;}
+ for(const name of ["layers-arrow-down","link-2","save-check","external-link","cloud-sun-rain"]){
+   const svg=Icons.svg(name,documentStub());
+   assert.ok(svg.children.length,name);
+ }
+ const rule=css.match(/#pinPanel button:is\\([^)]*\\)\\{([^}]+)\\}/)?.[1]||"";
+ assert.match(rule,/width:var\\(--p2m-pin-dialog-action-size\\)!important/);
+ assert.match(css,/#pinPanel #pinNotes\\{[^}]*height:144px/);
+ assert.match(css,/@media\\(max-width:700px\\)\\{[\\s\\S]*?#pinPanel #pinNotes\\{font-size:16px/);
 });
-
-test("all four pin-dialog buttons use one shared 32px size token",()=>{
-  const html=read("index.html"),css=read("styles.css");
-  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
-  for(const id of ["movePin","deletePin","closePin","showPinLayer"]){
-    assert.ok(section.includes('id="'+id+'"'),"Missing pin-dialog button: "+id);
-  }
-  assert.ok(section.includes('id="showPinLayer" type="button" data-pin-icon="eye"'));
-  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:32px}"));
-  const start=css.indexOf("#pinPanel button:is(#movePin,#deletePin,#closePin,#showPinLayer){");
-  assert.ok(start>=0);
-  const shared=css.slice(start,css.indexOf("}",start));
-  for(const property of ["width","height","min-width","min-height","max-width","max-height"]){
-    assert.ok(shared.includes(property+":var(--p2m-pin-dialog-action-size)!important"),property);
-  }
-  assert.ok(css.includes("#pinPanel #movePin .p2m-relocate-icon{width:28px!important;height:19px!important}"));
-});
-
-
 test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
   const header=html.match(/<header class="topbar">([\s\S]*?)<\/header>/)?.[1]||"";
