@@ -139,7 +139,8 @@ async function metrics(page){
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
     const weatherHeight=await page.locator("#pinWeatherBlock").evaluate(el=>el.getBoundingClientRect().height);
     assert.ok(weatherHeight>=185,"Weather block must be visibly taller than inline notes");
-    assert.ok((await page.locator("#pinPanel").boundingBox()).y>=0,"Weather editor stays visible");
+    await page.waitForFunction(()=>document.getElementById("pinPanel").getBoundingClientRect().top>=0,null,{timeout:4000});
+    assert.ok((await page.locator("#pinPanel").boundingBox()).y>=0,"Weather editor stays visible after map pan/layout frame");
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
     assert.equal(await page.locator("#pinWeather").getAttribute("aria-pressed"),"true");
     assert.equal(await page.locator("#pinWeather").evaluate(el=>
