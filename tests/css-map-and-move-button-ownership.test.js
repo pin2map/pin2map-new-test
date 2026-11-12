@@ -16,7 +16,8 @@ test("move pin size comes exclusively from the shared 38px pin action contract",
   }
   assert.ok(move.includes("background:#fff!important;color:var(--p2m-button-ink)!important;"));
   assert.ok(!css.includes("--p2m-button-size:44px;"));
-  assert.ok(block("#pinPanel button:is(#deletePin,#movePin,#closePin,#showPinLayer,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather)").includes("width:var(--p2m-pin-dialog-action-size)!important;"));
+  assert.ok(css.includes("#pinPanel button:is(#deletePin,#movePin,#closePin,#showPinLayer,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather),"));
+  assert.ok(block("#pinUrlBlock button:is(#pinUrlCancel,#pinUrlSave,#pinUrlOpen)").includes("width:var(--p2m-pin-dialog-action-size)!important;"));
 });
 test("refresh retains position and unique white visual surface but not local size overrides",()=>{
   const refresh=block("#refreshButton.refresh-map-button.p2m-icon-control");
