@@ -421,7 +421,7 @@ async function longPress(page,x,y,ms=725){
       [...row.querySelectorAll(":scope > button, :scope > .pin-layer-picker > .pin-layer-trigger")].map(b=>({id:b.id,left:b.getBoundingClientRect().left,
         width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})));
     assert.deepEqual(footerLayout.map(b=>b.id),footerIds);
-    for(const item of footerLayout)assert.ok(Math.abs(item.width-38)<1&&Math.abs(item.height-38)<1,JSON.stringify(item));
+    for(const item of footerLayout)assert.ok(Math.abs(item.width-42)<1&&Math.abs(item.height-42)<1,JSON.stringify(item));
     await page.locator("#pinNotes").fill("Erste Zeile\nZweite Zeile");
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
