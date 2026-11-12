@@ -7,6 +7,9 @@
         throw new TypeError("Note editor ports required");
       this.el=getElement;this.document=doc;this.onChange=onChange;this.onClose=onClose;
       this.open=false;this.selection={start:0,end:0};
+      this.onViewport=()=>this.layoutViewport();
+      doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewport);
+      doc.defaultView?.visualViewport?.addEventListener?.("scroll",this.onViewport);
     }
     static insertAtSelection(value,{start,end},insert){
       const a=Math.max(0,Math.min(value.length,start)),b=Math.max(a,Math.min(value.length,end));
@@ -44,6 +47,15 @@
       this.selection={start:result.caret,end:result.caret};
       this.onChange(result.text);
     }
+    layoutViewport(){
+      if(!this.open)return;
+      const vv=this.document.defaultView?.visualViewport;
+      if(!vv)return;
+      const node=this.el("pinMobileNoteEditor");
+      node.style.top=(vv.offsetTop||0)+"px";
+      node.style.height=vv.height+"px";
+      node.style.bottom="auto";
+    }
     show({name="",note=""}={}){
       const field=this.el("pinNoteEditorText");
       this.el("pinNoteEditorTitle").textContent=String(name).trim()||"Pin Notizen";
@@ -51,6 +63,7 @@
       this.el("pinMobileNoteEditor").classList.remove("hidden");
       this.document.body.classList.add("pin-note-editor-open");
       this.open=true;
+      this.layoutViewport();
       this.selection={start:field.value.length,end:field.value.length};
       field.focus();
       field.setSelectionRange(this.selection.start,this.selection.end);
@@ -60,7 +73,9 @@
       this.captureSelection();
       this.onChange(this.el("pinNoteEditorText").value);
       this.open=false;
-      this.el("pinMobileNoteEditor").classList.add("hidden");
+      const node=this.el("pinMobileNoteEditor");
+      node.classList.add("hidden");
+      node.style.top="";node.style.height="";node.style.bottom="";
       this.document.body.classList.remove("pin-note-editor-open");
       this.onClose();
     }
