@@ -57,8 +57,23 @@ dialog{border:0;border-radius:13px;padding:24px;box-shadow:0 15px 70px #0004;max
 dialog::backdrop{background:#1629457a}
 dialog h2{font-size:18px;margin:0 0 24px}
 .dialog-actions{display:flex;justify-content:end;gap:10px}
-.pin-marker{width:24px;height:24px;border:3px solid white;border-radius:50% 50% 50% 3px;transform:rotate(-45deg);box-shadow:0 1px 5px #0008}
-.pin-marker.selected{width:30px;height:30px;border-width:4px;outline:2px solid #172b49}
+/* Wide predecessor-inspired teardrop; Leaflet owns its 50x64 anchor. */
+.pin-marker{position:relative;width:50px;height:64px;filter:drop-shadow(0 2px 3px #142b4560)}
+.pin-marker .pin-marker-shape{display:block;width:50px;height:64px;overflow:visible}
+.pin-marker.selected .pin-marker-shape{filter:drop-shadow(0 0 1px #102d52)}
+.pin-status-column{
+  position:absolute;right:-13px;top:2px;display:flex;flex-direction:column;
+  align-items:center;gap:2px;pointer-events:none;z-index:2;
+}
+.pin-status-badge{
+  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
+  width:17px;height:17px;flex:0 0 17px;border-radius:6px;
+  border:1px solid #b8c6d4;background:#fff;box-shadow:0 1px 3px #152a4140;
+  color:#32465a;
+}
+.pin-status-badge svg{display:block;width:12px;height:12px}
+.pin-status-url{color:#276bb8}
+.pin-status-gpx{color:#248363}
 .leaflet-div-icon{background:none;border:none}
 @media(max-width:630px){
 .panel{right:8px}
@@ -167,7 +182,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   white-space:nowrap;
   pointer-events:none;
 }
-.pin-marker{position:relative;z-index:1}
+.pin-marker{z-index:1}
 /* Info: keep only local stacking and typography. The shared map-control
    contract owns its diameter/surface, and the bottom-right contract owns
    its final position. */
