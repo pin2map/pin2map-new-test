@@ -51,7 +51,7 @@ async function longPress(page,x,y,ms=725){
         top:box.top,opacity:lineStyles.backgroundColor,fontWeight:lineStyles.fontWeight,
         pointerEvents:styles.pointerEvents};
     });
-    assert.match(scaleBefore.text,/^(?:[\\d,.]+)\\s*(?:m|km)$/);
+    assert.match(scaleBefore.text,/^(?:[\d,.]+)\s*(?:m|km)$/);
     assert.ok(scaleBefore.width>0&&scaleBefore.width<=165,JSON.stringify(scaleBefore));
     assert.ok(Math.abs(scaleBefore.left+scaleBefore.width/2-550)<=3,
       "Scale centered in 1100px desktop viewport: "+JSON.stringify(scaleBefore));
