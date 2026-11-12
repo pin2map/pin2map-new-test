@@ -122,26 +122,30 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
 });
 
 
-test("pin editor has cancel/name, timestamps, notes/URL swap, and six equal footer buttons",()=>{
+test("framed pin editor contains inert routing and an independent URL popup",()=>{
  const html=read("index.html"),css=read("styles.css");
- const section=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
- assert.match(section,/id="cancelPin"[^>]*data-pin-icon="x"/);
- assert.match(section,/id="pinCreated"/);
- assert.match(section,/id="pinUpdated"/);
- assert.match(section,/id="pinNotes"/);
- assert.match(section,/id="pinUrlBlock" class="hidden"/);
- assert.equal((section.match(/id="deletePin"/g)||[]).length,1);
+ const section=html.match(/<section id="pinPanel"[\\s\\S]*?<\\/section>/)?.[0]||"";
+ assert.match(section,/id="deletePin"[^>]*data-pin-icon="x"/);
+ assert.doesNotMatch(section,/id="cancelPin"/);
+ for(const title of ["Pin Name","Navi extern","pin2map Routing","Pin Notizen"])
+   assert.ok(section.includes("<legend>"+title+"</legend>"),"Frame legend: "+title);
+ const placeholder=section.match(/<div class="pin-navigation-row"[\\s\\S]*?<\\/div>\\s*<\\/fieldset>\\s*<\\/div>/)?.[0]||"";
+ assert.equal((placeholder.match(/ disabled/g)||[]).length,5);
+ assert.ok(section.includes('id="pinCreated"')&&section.includes('id="pinUpdated"'));
+ const popup=html.slice(html.indexOf('<div id="pinUrlBlock"'));
+ assert.match(popup,/class="pin-url-popup hidden"/);
+ for(const id of ["pinUrlCancel","pinUrlSave","pinUrlOpen"])assert.ok(popup.includes('id="'+id+'"'));
  const ids=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
  let last=-1;
  for(const id of ids){const index=section.indexOf('id="'+id+'"');assert.ok(index>last,id);last=index;}
- for(const name of ["layers-arrow-down","link-2","save-check","external-link","cloud-sun-rain"]){
-   const svg=Icons.svg(name,documentStub());
-   assert.ok(svg.children.length,name);
+ for(const name of ["layers-arrow-down","link-2","save-check","external-link","cloud-sun-rain","arrow-up-right","circle-dot"]){
+   const svg=Icons.svg(name,documentStub());assert.ok(svg.children.length,name);
  }
- const rule=css.match(/#pinPanel button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
- assert.match(rule,/width:var\(--p2m-pin-dialog-action-size\)!important/);
- assert.match(css,/#pinPanel #pinNotes\{[^}]*height:144px/);
- assert.match(css,/@media\(max-width:700px\)\{[\s\S]*?#pinPanel #pinNotes\{font-size:16px/);
+ // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
+ assert.equal(Icons.svg("link-2",documentStub()).children.length,3);
+ const action=css.match(/#pinPanel button:is\\([^)]*\\)\\{([^}]+)\\}/)?.[1]||"";
+ assert.match(action,/width:var\\(--p2m-pin-dialog-action-size\\)!important/);
+ assert.match(css,/#pinPanel \\.pin-detail-region #pinNotes\\{[^}]*height:106px/);
 });
 test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
