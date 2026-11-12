@@ -220,7 +220,7 @@
       content.textContent=name; // Never interpret user-entered names as HTML.
       if(marker.getTooltip())marker.setTooltipContent(content);
       else marker.bindTooltip(content,{
-        permanent:true,direction:"right",offset:[22,-17],
+        permanent:true,direction:"right",offset:[12,-17],
         className:"address-label",interactive:false
       });
     }
