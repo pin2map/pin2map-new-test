@@ -514,7 +514,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
   padding:3px;border-radius:50%;background:#bc2837;color:white;
 }
 #pinPanel .pin-meta-row #deletePin .p2m-lucide{width:14px;height:14px}
-#pinPanel .pin-editor-head #cancelPin{background:#f0f1f3;color:#171717}
+#pinPanel .pin-editor-head #cancelPin{--p2m-button-bg:#f0f1f3;--p2m-button-ink:#171717}
 #pinPanel .pin-detail-region{
   min-height:167px;margin:7px 0 10px;border:1px solid #c7c7cc;
   border-radius:10px;padding:5px 7px 7px;box-sizing:border-box;
@@ -534,8 +534,8 @@ body.pin-relocation-picking #map .leaflet-interactive{
   border-radius:7px;
 }
 #pinPanel .pin-url-actions{display:flex;justify-content:space-evenly;gap:10px;margin-top:12px}
-#pinPanel .pin-url-actions #pinUrlOpen.has-url{background:#c9eecb;color:#245b30}
-#pinPanel .pin-url-actions #pinUrlOpen:disabled{background:#e8e8e8;color:#9b9b9b;cursor:default}
+#pinPanel .pin-url-actions #pinUrlOpen.has-url{--p2m-button-bg:#c9eecb;--p2m-button-ink:#245b30}
+#pinPanel .pin-url-actions #pinUrlOpen:disabled{--p2m-button-bg:#e8e8e8;--p2m-button-ink:#9b9b9b;cursor:default}
 #pinPanel .pin-actions{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
 #pinPanel .pin-actions .pin-layer-picker{position:relative;flex:0 0 var(--p2m-pin-dialog-action-size);min-width:0;isolation:isolate}
 #pinPanel .pin-layer-native-select{display:none}
@@ -573,7 +573,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel.pin-layer-open + #pinDialogTip{display:none}
 #pinPanel #pinWikipedia{font-size:22px;font-weight:700}
 #pinPanel button:disabled{opacity:.62}
-#pinPanel .pin-actions #pinWeather:disabled{opacity:.65}
+#pinPanel .pin-actions #pinWeather:disabled{--p2m-button-bg:#e8e8e8;--p2m-button-ink:#9b9b9b;opacity:.65}
 #pinPanel .pin-actions button .p2m-lucide,
 #pinPanel .pin-url-actions button .p2m-lucide{width:18px;height:18px}
 @media(max-width:700px){
