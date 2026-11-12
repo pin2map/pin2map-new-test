@@ -295,6 +295,7 @@
       pin,moving:uiState.moveMode,layerVisible:pin?!!layerById(pin.layerId)?.visible:true,
       onLayout:updatePanelLayout
     });
+    pinDetails.render(pin);
     if(pin)pinLayerPicker.render({layers:state.layers,selectedLayerId:pin.layerId});
     else pinLayerPicker.setOpen(false);
   }
@@ -341,6 +342,11 @@
     $("addLayer").addEventListener("click",()=>layerCreation.create());
 
     pinEditorActions.bind();
+    pinDetails.bind();
+    $("cancelPin").addEventListener("click",()=>overlayCoordinator.closeAll());
+    for(const id of ["cancelPin","deletePin","movePin","pinLayerTrigger","closePin"]){
+      $(id).addEventListener("click",()=>pinDetails.closeTransient());
+    }
     $("movePin").addEventListener("click",()=>moveController.begin());
     $("cancelMove").addEventListener("click",()=>moveController.cancel());
     $("confirmMove").addEventListener("click",()=>moveController.confirm());
