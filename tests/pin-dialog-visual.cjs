@@ -7,7 +7,7 @@ const {chromium}=require("playwright");
 const fs=require("node:fs");
 const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
 const cases=[
- {name:"iphone-narrow",width:320,height:568,button:36},
+ {name:"iphone-narrow",width:320,height:568,button:38},
  {name:"iphone",width:375,height:667,button:38},
  {name:"ipad",width:768,height:1024,button:38}
 ];
