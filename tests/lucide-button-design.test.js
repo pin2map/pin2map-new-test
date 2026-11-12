@@ -255,12 +255,13 @@ test("settings and Layers flank search above while map picker stays bottom-right
   assert.ok(css.includes("left:var(--p2m-top-search-clearance)!important"));
   assert.ok(css.includes("right:var(--p2m-top-search-clearance)!important"));
   const menu=html.match(/<section id="basemapMenu"[\s\S]*?<\/section>/)?.[0]||"";
-  assert.ok(menu.includes(">Darstellung</div>"));
-  assert.ok(menu.indexOf('data-basemap="international"')<menu.indexOf('data-basemap="street"'));
-  assert.ok(menu.indexOf('data-basemap="street"')<menu.indexOf('data-basemap="topo"'));
-  assert.ok(menu.indexOf('data-basemap="topo"')<menu.indexOf('data-basemap="satellite"'));
-  assert.ok(menu.indexOf('data-basemap="humanitarian"')<menu.indexOf('data-basemap="satellite"'),
-    "Satellite is last basemap above the relief divider");
+  assert.ok(!menu.includes('class="basemap-menu-title"'));
+  assert.deepEqual([...menu.matchAll(/data-basemap="([^"]+)"/g)].map(match=>match[1]),
+    ["street","international","humanitarian","topo","satellite"]);
+  assert.ok(menu.indexOf('class="basemap-satellite-divider"')<
+    menu.indexOf('data-basemap="satellite"'));
+  assert.ok(menu.indexOf('data-basemap="topo"')<
+    menu.indexOf('class="basemap-satellite-divider"'));
   assert.ok(menu.indexOf('data-basemap="satellite"')<menu.indexOf('id="satelliteBrightness"'));
   assert.ok(menu.indexOf('id="satelliteBrightness"')<menu.indexOf('id="esriReliefToggle"'));
   assert.ok(!menu.includes('id="satelliteContrast"'));
