@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-12 (aktueller Entwicklungs-/veröffentlichter Preview-Stand **v156**; Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates bestanden; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme der neuen Pin-Dialog-Bedienung gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-12 (aktueller Entwicklungs-/veröffentlichter Preview-Stand **v157**; Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates bestanden; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme der neuen Pin-Dialog-Bedienung gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -713,3 +713,16 @@
 - **Prüfung:** Architektur-, Node-, echtes Chromium-Visual-/Funktions- und Live-HTTPS-Pages-Gate werden pro v156-Commit bewertet; insbesondere nachzutesten sind URL-Überlagerung, sichtbarer vergrößerter Wetterblock, mobile Notizen und Desktop-Großeditor samt persistiertem Text. Reale iOS-Safari-Tastaturposition kann ausschließlich der Auftraggeber auf dem Gerät abnehmen. Verbindliche Abschlussregel aus AGENTS.md gilt unverändert; **keine Fertigmeldung ohne erfolgreiche Veröffentlichung**.
 
 - **v156 technischer Release-Nachweis (funktionaler Commit `f1298a2f263fa527defdbd71448285996174e901`):** [Modular core checks](https://github.com/pin2map/pin2map-new-test/actions/runs/43281528114) vollständig erfolgreich einschließlich Node-/Chromium-Visualtests und Desktop-Editor; [Architektur-Gate](https://github.com/pin2map/pin2map-new-test/actions/runs/43281528093) erfolgreich; [Pages/HTTPS-Preview einschließlich tatsächlicher Live-Browserprüfung](https://github.com/pin2map/pin2map-new-test/actions/runs/43281528490) erfolgreich, mit gerenderten Notiz-, URL-, Wetter-, Ebenen- und mobilen Editor-Screenshots in den drei Geräteprofilen. Bei der reinen nachfolgenden Umbenennung des Screenshot-Artefakts wurde keine Laufzeitfunktion geändert. Echte iPhone-/iPad-Tastaturabnahme bleibt separat offen.
+
+
+## 4bj. v157 – Dialog- und Pin-Status-Überarbeitung (2026-11-12)
+
+**Version:** v157; **funktionaler Commit:** `18732238e99c22d51f138c77ad72d20dc2577339`.
+
+- Das URL-Popup wird als unabhängiges DOM-Portal ausschließlich innerhalb der horizontalen Pin-Panel-Grenzen platziert, nicht mehr neben dem Dialog. URL-Formular, sichere externe Protokolle und bereits akzeptierte Ebenenauswahl bleiben erhalten.
+- Ein einheitlicher mausabhängiger Hover-Zustand der Dialogbuttons verwendet Dunkelgrau `#52606d` und Weiß für Icons, auch bei roten/grünen/blauen Buttons und dem inaktiven Navi-Plus. Die konkurrierende ältere OK-Hover-Regel wurde entfernt. Dialog-Lucide-Linien 1.8–1.9.
+- Wetter ersetzt nun **den gesamten mittleren Navi-/Notizbereich**, ohne den Dialog wesentlich höher zu machen. Kopf/untere Aktionen bleiben sichtbar. Keine Wetter-API.
+- Der iPhone-Notizeditor bleibt; der iPad-Editor bekommt bei Tastatur 16px unteren Komfortabstand, statt 4px auf iPhone. Desktop-Großeditor bleibt.
+- Neue Pin-Grafik: 30×40px sichtbarer breiter Tropfen, getrennte 44×44px Trefferfläche, weiß umrandeter dreigeteilter Innenkreis: links oben Rot=Notiz, rechts oben Blau=URL, unten Grau=GPX; neutraler Zustand ohne Daten. Äußere Minibadges entfernt, Höhenlabel nach oben, Name angepasst. Status aus bestehenden Pin-Feldern ohne Schema-/Datenänderung abgeleitet.
+- **Gates erfolgreich:** [291/291 Node + Chromium-Regression/Visual](https://github.com/pin2map/pin2map-new-test/actions/runs/43290859132), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/43290860122), [echte Pages/HTTPS-Live-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/43290859676). Screenshots aus den Browser-Gates archiviert; persönliche iPhone-/iPad-Safari-Abnahme weiterhin offen.
+- Ausschließlich `feature/leaflet-modular-core`, nicht `main`/`reference/*`; keine Datenbank-/Offline-Kachel-/Server-/GPX-/Wetterprovider-Änderung. CSS-`!important`-Zähler: 249 (Budget: 298).
