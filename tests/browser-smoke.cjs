@@ -923,7 +923,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#esriReliefToggle").isDisabled(),true);
     await page.locator("#satelliteRoads").check();
     assert.equal(await page.locator("#satelliteInspect").isEnabled(),true);
-    const imageryOverlaySources=await page.locator(".leaflet-tile-pane img").evaluateAll(imgs=>imgs.map(img=>img.src));
+    const imageryOverlaySources=await page.locator("#map .leaflet-pane img").evaluateAll(imgs=>imgs.map(img=>img.src));
     assert.ok(imageryOverlaySources.some(src=>src.includes("World_Transportation")));
     assert.ok(imageryOverlaySources.some(src=>src.includes("World_Boundaries_and_Places")));
     await page.locator("#satelliteInspect").click();
