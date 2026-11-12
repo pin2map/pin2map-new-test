@@ -118,6 +118,26 @@
   const bulkDeleteDialog = new window.Pin2MapBulkDeleteDialog({
     getElement:$,onConfirm:id=>confirmBulkDeletion(id)
   });
+  const pinDetails=new window.Pin2MapPinDetails({
+    getElement:$,document,
+    onNote:value=>{
+      const p=selectedPin();if(!p)return;
+      pinOps.updateDetails(state,p.id,{note:value});save();
+    },
+    onUrl:value=>{
+      const p=selectedPin();if(!p)return;
+      pinOps.updateDetails(state,p.id,{url:value});save();
+    },
+    onWikipedia:()=>{
+      const name=selectedPin()?.name?.trim();if(!name){showNotice("Bitte zuerst einen Pin-Namen eingeben");return;}
+      const url="https://de.wikipedia.org/w/index.php?search="+encodeURIComponent(name);
+      window.open(url,"_blank","noopener,noreferrer");
+    },
+    onLayout:focus=>{
+      updatePanelLayout();
+      if(focus)requestAnimationFrame(keepSelectedAbovePanel);
+    }
+  });
   const pinEditorActions = new window.Pin2MapPinEditorActions({
     getElement:$,cleanText,
     onNameChange:value=>{
