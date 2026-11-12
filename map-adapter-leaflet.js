@@ -68,7 +68,7 @@
       const tiles=this.basemapLayer.getContainer();
       if(tiles)tiles.style.filter="brightness("+(bounded/100)+")";
     }
-    setBasemap(id,{esriRelief=false,satelliteBrightness=120}={}) {
+    setBasemap(id,{esriRelief=false,satelliteBrightness=120,satelliteRoads=false}={}) {
       const sources={
         street:{url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",maxZoom:19,
           attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'},
@@ -83,6 +83,7 @@
       if(!source)throw new RangeError("Unknown basemap: "+id);
       // Remove previous overlay first; never let its pane obscure markers or controls.
       if(this.reliefOverlay){this.map.removeLayer(this.reliefOverlay);this.reliefOverlay=null;}
+      if(this.satelliteReferenceOverlays){for(const layer of this.satelliteReferenceOverlays)this.map.removeLayer(layer);this.satelliteReferenceOverlays=null;}
       if(this.basemapLayer){this.map.removeLayer(this.basemapLayer);this.basemapLayer=null;}
       this.activeBasemap=id;
       this.basemapLayer=window.L.tileLayer(source.url,{
@@ -91,7 +92,18 @@
       this.setSatelliteAppearance({brightness:satelliteBrightness});
       // Historical relief composite still applies to non-satellite basemaps.
       // Do not override user brightness/contrast for satellite tiles.
-      if(esriRelief){
+      if(id==="satellite"&&satelliteRoads){
+        let pane=this.map.getPane("p2mSatelliteReferencePane");
+        if(!pane)pane=this.map.createPane("p2mSatelliteReferencePane");
+        pane.style.zIndex="280";pane.style.pointerEvents="none";
+        this.satelliteReferenceOverlays=[
+          "World_Transportation","World_Boundaries_and_Places"
+        ].map(service=>window.L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/"+service+"/MapServer/tile/{z}/{y}/{x}",
+          {pane:"p2mSatelliteReferencePane",maxZoom:19,attribution:"Reference &copy; Esri und Datenanbieter"}
+        ).addTo(this.map));
+      }
+      if(esriRelief&&id!=="satellite"){
         const container=this.basemapLayer.getContainer();
         if(container&&id!=="satellite")
           container.style.filter="saturate(0.68) contrast(0.94) brightness(1.04)";
@@ -105,6 +117,25 @@
           pane:"p2mEsriReliefPane",minZoom:1,maxNativeZoom:15,maxZoom:19,opacity:1,
           attribution:"Relief &copy; Esri und Datenanbieter"
         }).addTo(this.map);
+      }
+    }
+    showSatelliteSelection(position){
+      this.clearSatelliteSelection();
+      const p=latLng(position);
+      this.satelliteSelectionRing=window.L.circleMarker([p.lat,p.lng],{
+        radius:30,color:"#414141",weight:2,dashArray:"5 5",
+        fillColor:"#ffde00",fillOpacity:0.46,interactive:false
+      }).addTo(this.map);
+      const icon=window.Pin2MapIcons.svg("satellite",document).outerHTML;
+      this.satelliteSelectionSymbol=window.L.marker([p.lat,p.lng],{
+        interactive:false,keyboard:false,zIndexOffset:550,
+        icon:window.L.divIcon({html:icon,className:"p2m-satellite-selection-icon",
+          iconSize:[24,24],iconAnchor:[12,12]})
+      }).addTo(this.map);
+    }
+    clearSatelliteSelection(){
+      for(const key of ["satelliteSelectionRing","satelliteSelectionSymbol"]){
+        if(this[key]){this.map.removeLayer(this[key]);this[key]=null;}
       }
     }
     addZoomControls({onFitAll}) {
