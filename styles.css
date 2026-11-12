@@ -1156,3 +1156,22 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   cursor:pointer;font:inherit;
 }
 #app .basemap-relief-toggle input{margin:0;accent-color:#235b9a;}
+
+/* Satellite inspection and optional reference controls: isolated ownership. */
+#app .basemap-satellite-roads{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;color:#253a4b}
+#app .basemap-satellite-roads input{margin:0;accent-color:#235b9a}
+#app .basemap-satellite-roads:has(input:disabled){color:#9ca7b3}
+#app .basemap-satellite-info{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 12px;font-size:12px;font-weight:600;color:#253a4b}
+#app #satelliteInspect{display:grid;place-items:center;min-width:35px;min-height:35px;padding:6px;background:#f1f3f6;color:#253a4b;border:1px solid #b7c5d4}
+#app #satelliteInspect[aria-pressed="true"]{background:#1764bf;color:white}
+#app #satelliteInspect:disabled{opacity:.45;cursor:not-allowed}
+#app .basemap-relief-toggle.is-inactive{color:#9ca7b3;cursor:not-allowed}
+#app .basemap-relief-toggle.is-inactive input{opacity:.45}
+#map .p2m-satellite-selection-icon{background:none;border:0;pointer-events:none;display:grid;place-items:center;color:#303b43}
+#map .p2m-satellite-selection-icon svg{width:24px;height:24px;filter:drop-shadow(0 1px 1px #fff)}
+#app .satellite-info-panel{position:absolute;z-index:1280;top:calc(85px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(380px,calc(100% - 24px));max-height:min(46dvh,340px);overflow-y:auto;background:rgba(255,255,255,.97);border:1px solid #b7c5d4;border-radius:12px;padding:12px;box-shadow:0 6px 20px #172b4940;color:#253a4b;font-size:12px}
+#app .satellite-info-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+#app #satelliteInfoClose{display:grid;place-items:center;background:#f1f3f6;border:1px solid #b7c5d4;color:#253a4b;width:30px;height:30px;padding:4px}
+#app .satellite-info-row{display:grid;grid-template-columns:minmax(90px,36%) minmax(0,1fr);gap:8px;padding:5px 0;border-bottom:1px solid #edf1f5;overflow-wrap:anywhere}
+#app .satellite-info-panel small{display:block;margin-top:8px;color:#617287}
+@media(max-width:630px){#app .satellite-info-panel{top:calc(70px + env(safe-area-inset-top,0px));max-height:40dvh}}
