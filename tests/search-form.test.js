@@ -6,6 +6,12 @@ const path=require("node:path");
 const SearchForm=require("../ui/search-form.js");
 function fixture(kind="results"){
   const listeners=new Map(),button={disabled:false};
+  const clearHandlers=new Map(),classes=new Set(["hidden"]);
+  const clear={classList:{contains:name=>classes.has(name),
+    toggle:(name,force)=>force?classes.add(name):classes.delete(name)},
+    addEventListener:(event,fn)=>clearHandlers.set(event,fn),
+    removeEventListener:event=>clearHandlers.delete(event),
+    emit:()=>clearHandlers.get("click")?.()};
   const form={
     addEventListener:(type,fn)=>listeners.set(type,fn),
     removeEventListener:(type,fn)=>{if(listeners.get(type)===fn)listeners.delete(type);},
@@ -14,11 +20,11 @@ function fixture(kind="results"){
   const inputListeners=new Map();
   const input={value:" Stuttgart ",addEventListener:(type,fn)=>inputListeners.set(type,fn),
     removeEventListener:(type,fn)=>{if(inputListeners.get(type)===fn)inputListeners.delete(type);},
-    emitInput:()=>inputListeners.get("input")?.()},calls=[],messages=[],results=[];
+    focus(){this.focused=true;},emitInput:()=>inputListeners.get("input")?.()},calls=[],messages=[],results=[];
   let finish;
   let cancelled=0,dismissed=0;
   const controller=new SearchForm({
-    getElement:id=>({searchForm:form,searchInput:input,searchButton:button})[id],
+    getElement:id=>({searchForm:form,searchInput:input,searchButton:button,searchClear:clear})[id],
     search:async(query,hooks)=>{
       calls.push(query);finish=hooks.onFinish;
       hooks.onStart();
@@ -29,7 +35,7 @@ function fixture(kind="results"){
     onMessage:message=>messages.push(message),
     cancelSearch:()=>cancelled++,onInputChange:()=>dismissed++
   });
-  return {controller,form,input,button,calls,messages,results,
+  return {controller,form,input,button,clear,calls,messages,results,
     getCancelled:()=>cancelled,getDismissed:()=>dismissed};
 }
 test("empty or whitespace searches do nothing; bind and dispose manage one listener",async()=>{
@@ -113,4 +119,28 @@ test("late results cannot reopen results after edit; explicit submit can reopen"
   await fresh;
   assert.equal(results.length,1);
   ctl.dispose();
+});
+
+test("explicit cross-platform clear button hides when empty and cancels results without submitting",()=>{
+  const x=fixture();x.controller.bind();
+  assert.equal(x.clear.classList.contains("hidden"),false);
+  x.clear.emit();
+  assert.equal(x.input.value,"");
+  assert.equal(x.clear.classList.contains("hidden"),true);
+  assert.equal(x.getCancelled(),1);
+  assert.equal(x.getDismissed(),1);
+  assert.deepEqual(x.calls,[],"clear never submits");
+  assert.equal(x.input.focused,true);
+  x.input.value="Berlin";x.input.emitInput();
+  assert.equal(x.clear.classList.contains("hidden"),false);
+  x.controller.dispose();
+  x.clear.emit();
+  assert.equal(x.input.value,"Berlin","dispose removes search clear listener");
+});
+test("search clear button is explicitly available for touch and not native WebKit only",()=>{
+  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
+  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
+  assert.match(html,/id="searchClear" class="search-clear hidden" aria-label="Suchfeld leeren"/);
+  assert.match(css,/#app #searchClear\.search-clear/);
+  assert.match(css,/#searchInput::-webkit-search-cancel-button/);
 });
