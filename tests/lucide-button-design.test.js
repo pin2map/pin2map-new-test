@@ -186,8 +186,8 @@ test("Layers occupies the upper-right corner while Info stays above the lower-ri
   assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
   assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton)"),
     "Focused pin editor must hide every map control including Pin-Info");
-  assert.ok(css.includes("body.pin-open #map .elevation-label-wrap{pointer-events:none}"),
-    "Visible pin info labels must not steal input events while editing");
+  assert.ok(!css.includes("body.pin-open #map .elevation-label-wrap{display:none"),
+    "Pin info labels must remain visible while editing");
 });
 
 
