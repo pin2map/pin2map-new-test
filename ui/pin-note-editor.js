@@ -6,7 +6,7 @@
       if(typeof getElement!=="function"||!doc||typeof onChange!=="function"||typeof onClose!=="function")
         throw new TypeError("Note editor ports required");
       this.el=getElement;this.document=doc;this.onChange=onChange;this.onClose=onClose;
-      this.open=false;this.selection={start:0,end:0};
+      this.open=false;this.selection={start:0,end:0};this.desktop=false;
       this.onViewport=()=>this.layoutViewport();
       doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewport);
       doc.defaultView?.visualViewport?.addEventListener?.("scroll",this.onViewport);
@@ -49,18 +49,29 @@
     }
     layoutViewport(){
       if(!this.open)return;
-      const vv=this.document.defaultView?.visualViewport;
-      if(!vv)return;
       const node=this.el("pinMobileNoteEditor");
+      if(this.desktop)return;
+      const win=this.document.defaultView;
+      const vv=win?.visualViewport;
+      if(!vv)return;
+      // iOS changes the visual viewport when the software keyboard opens.
+      // Match its *visible* top and bottom, with no extra home-area padding.
+      const keyboard=win.innerHeight-vv.height>90;
+      node.classList.toggle("is-keyboard-visible",keyboard);
       node.style.top=(vv.offsetTop||0)+"px";
       node.style.height=vv.height+"px";
       node.style.bottom="auto";
+      node.style.left=(vv.offsetLeft||0)+"px";
+      node.style.width=vv.width+"px";
     }
-    show({name="",note=""}={}){
+    show({name="",note="",desktop=false}={}){
       const field=this.el("pinNoteEditorText");
       this.el("pinNoteEditorTitle").textContent=String(name).trim()||"Pin Notizen";
       field.value=String(note);
-      this.el("pinMobileNoteEditor").classList.remove("hidden");
+      const editor=this.el("pinMobileNoteEditor");
+      this.desktop=Boolean(desktop);
+      editor.classList.toggle("is-desktop",this.desktop);
+      editor.classList.remove("hidden");
       this.document.body.classList.add("pin-note-editor-open");
       this.open=true;
       this.layoutViewport();
@@ -76,6 +87,8 @@
       const node=this.el("pinMobileNoteEditor");
       node.classList.add("hidden");
       node.style.top="";node.style.height="";node.style.bottom="";
+      node.style.left="";node.style.width="";
+      node.classList.remove("is-desktop","is-keyboard-visible");
       this.document.body.classList.remove("pin-note-editor-open");
       this.onClose();
     }
