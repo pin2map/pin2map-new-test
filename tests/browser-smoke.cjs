@@ -187,7 +187,9 @@ async function longPress(page,x,y,ms=725){
     assert.deepEqual(await menu.locator("[data-basemap]").evaluateAll(nodes=>nodes.map(n=>n.dataset.basemap)),
       ["street","international","humanitarian","topo","satellite"]);
     assert.equal(await street.textContent(),"Standard");
-    assert.ok(await menu.locator("hr.basemap-satellite-divider").count()===1);
+    assert.equal(await menu.locator("hr.basemap-satellite-divider").count(),2);
+    assert.equal(await menu.locator("#satelliteInspect").isDisabled(),true);
+    assert.equal(await menu.locator("#satelliteRoads").isDisabled(),true);
     await topo.click();
     assert.equal(await menu.isHidden(),true);
     assert.equal(await picker.getAttribute("aria-expanded"),"false");
