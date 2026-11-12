@@ -138,11 +138,15 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  const ids=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
  let last=-1;
  for(const id of ids){const index=section.indexOf('id="'+id+'"');assert.ok(index>last,id);last=index;}
- for(const name of ["layers-arrow-down","link-2","save-check","external-link","cloud-sun-rain","arrow-up-right","circle-dot"]){
+ for(const name of ["layers-arrow-down","link-2","save-check","external-link","cloud-sun-rain","arrow-up-right","circle-dot","apple-brand"]){
    const svg=Icons.svg(name,documentStub());assert.ok(svg.children.length,name);
  }
  // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
  assert.equal(Icons.svg("link-2",documentStub()).children.length,3);
+ assert.ok(section.includes('class="pin-nav-apple" data-pin-icon="apple-brand"'));
+ assert.ok(section.includes('class="pin-wikipedia-glyph" aria-hidden="true">W</span>'));
+ assert.doesNotMatch(section,/|ⓦ/,"No private-use or nonportable circled font glyphs");
+
  const action=css.match(/#pinUrlBlock button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
  assert.match(action,/width:var\(--p2m-pin-dialog-action-size\)!important/);
  assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
