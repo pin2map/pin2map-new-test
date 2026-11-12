@@ -31,8 +31,17 @@
    if(!id||project.pins.some(p=>p.id===id))throw new Error("Duplicate or empty pin ID");
    if(!layerExists(project,layerId))throw new Error("Pin layer does not exist");
    const point=validatePosition(lat,lng);
-   const pin={id,lat:point.lat,lng:point.lng,name:cleanText(name),layerId};
+   const pin={id,lat:point.lat,lng:point.lng,name:cleanText(name),layerId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),note:"",url:""};
    project.pins.push(pin);
+   return pin;
+ }
+ function updateDetails(project,id,changes,{now=()=>new Date().toISOString()}={}){
+   const pin=findPin(project,id);
+   if(!pin)return null;
+   for(const key of ["note","url"]){
+     if(Object.hasOwn(changes,key))pin[key]=String(changes[key]??"");
+   }
+   pin.updatedAt=now();
    return pin;
  }
  function deletePin(project,id){
@@ -40,7 +49,7 @@
    project.pins=project.pins.filter(pin=>pin.id!==id);
    return count!==project.pins.length;
  }
- const api=Object.freeze({findPin,createPin,renamePin,assignLayer,movePin,deletePin});
+ const api=Object.freeze({findPin,createPin,renamePin,assignLayer,movePin,updateDetails,deletePin});
  root.Pin2MapPinOperations=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
