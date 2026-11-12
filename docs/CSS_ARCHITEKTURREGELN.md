@@ -84,3 +84,8 @@ Pin-Dialoggrößen bleiben im `#pinPanel`-Komponenten-Eigentümer: ein zentraler
 ## v156 – Markerabmessungen, Wetterhöhe und kontextabhängiger Notizeditor (2026-11-12)
 
 Die bestehende Marker-CSS-Eigentümerschaft wurde an der Quelle auf den 36×46px sichtbaren Körper und die 14px-Statusplättchen angepasst. Der Leaflet-Adapter besitzt weiterhin exklusiv Hitbox und Anker. `#pinUrlBlock` behält den eigenständigen Popup-Stil, dessen Position in der DOM-Komponente analog zur akzeptierten Ebenenauswahl berechnet wird. Der Wetterplatzhalter erhält im `#pinPanel`-Eigentümer mehr Höhe; ein einziges gezieltes Media Query begrenzt sie auf schmalen Screens. Der Notizfeld-Vergrößern-Button erscheint nur bei großem Viewport und feinem Zeigegerät; der vorhandene `.pin-note-editor`-Eigentümer gestaltet zusätzlich `.is-desktop` bzw. `.is-keyboard-visible`. Keine allgemeine B38-Sanierung und keine pauschale globale Override-Schicht.
+
+
+## v157 – CSS-Eigentümer und Hover-Prüfung (2026-11-12)
+
+Der bisherige Eigentümer der Pin-Marker entfernt sämtliche `.pin-status-column`-/`.pin-status-badge`-Regeln und zeichnet den 30×40px-Pin samt drei SVG-Innensegmenten; 44px-Hitbox ausschließlich im Adapter. `#pinPanel.pin-weather-mode` tauscht den gesamten Mittelbereich aus, anstatt den Dialog zu vergrößern. Ein dialoglokaler `@media(hover:hover) and (pointer:fine)`-Vertrag setzt `#52606d` und weiße Iconfarbe auch auf farbige Dialogbuttons; konkurrierender grüner OK-Hover am Ursprung entfernt. Keine neue globale Override-Schicht. Lucide-Strokes 1.8–1.9. `.pin-note-editor.is-tablet-keyboard` setzt 16px iPad-Abstand, iPhone bleibt 4px. **249** `!important`-Vorkommen bei höchstens **298**. B38 bleibt pausiert. Browser-Hover und visuelle Regressionen sind Teil des Gates.
