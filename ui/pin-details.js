@@ -36,24 +36,26 @@
   positionPopup(){
    const win=this.document.defaultView, popup=this.el("pinUrlBlock");
    if(!win||!this.el("pinUrlButton").getBoundingClientRect)return;
-   const rect=this.el("pinPanel").getBoundingClientRect();
-   const vv=win.visualViewport;
-   const left=vv?.offsetLeft||0,top=vv?.offsetTop||0;
-   const width=vv?.width||win.innerWidth,height=vv?.height||win.innerHeight;
-   const margin=12,gap=8;
-   const desired=Math.min(260,width-margin*2);
-   popup.style.width=desired+"px";
-   const popupHeight=popup.offsetHeight||158;
-   // Same overlay behaviour as pinLayerMenu: anchored to the trigger
-   // INSIDE the pin dialog, overlapping it rather than floating beside it.
+   const panel=this.el("pinPanel").getBoundingClientRect();
    const trigger=this.el("pinUrlButton").getBoundingClientRect();
-   const availableAbove=trigger.top-(top+margin)-gap;
-   const availableBelow=top+height-margin-trigger.bottom-gap;
-   const openAbove=availableAbove>=popupHeight||availableAbove>availableBelow;
-   popup.style.left=Math.max(left+margin,
-     Math.min(trigger.left,left+width-desired-margin))+"px";
-   popup.style.top=Math.max(top+margin,Math.min(top+height-popupHeight-margin,
-     openAbove?trigger.top-gap-popupHeight:trigger.bottom+gap))+"px";
+   const vv=win.visualViewport;
+   const viewLeft=vv?.offsetLeft||0,viewTop=vv?.offsetTop||0;
+   const viewWidth=vv?.width||win.innerWidth,viewHeight=vv?.height||win.innerHeight;
+   const margin=12,panelInset=10,gap=8;
+   const width=Math.max(180,Math.min(260,panel.width-panelInset*2,viewWidth-margin*2));
+   popup.style.width=width+"px";
+   const popupHeight=popup.offsetHeight||158;
+   // Panel-owned horizontal placement: never float beside the pin panel.
+   const panelLeft=panel.left+panelInset,panelRight=panel.right-panelInset;
+   const idealLeft=panelRight-width;
+   const left=Math.max(viewLeft+margin,Math.min(idealLeft,
+     viewLeft+viewWidth-width-margin));
+   popup.style.left=Math.max(panelLeft,Math.min(left,panelRight-width))+"px";
+   // Overlay the note/navigation content, leaving footer buttons exposed.
+   const preferredTop=trigger.top-gap-popupHeight;
+   const upper=viewTop+margin;
+   const lower=viewTop+viewHeight-popupHeight-margin;
+   popup.style.top=Math.max(upper,Math.min(preferredTop,Math.max(upper,lower)))+"px";
   }
   show(mode){
    this.mode=mode;
@@ -86,13 +88,14 @@
   }
   setWeather(enabled){
    this.weatherMode=Boolean(enabled);
+   this.el("pinPanel").classList.toggle("pin-weather-mode",this.weatherMode);
    this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode);
    this.el("pinWeatherBlock").classList.toggle("hidden",!this.weatherMode);
    this.el("pinWeather").classList.toggle("is-active",this.weatherMode);
    this.el("pinWeather").setAttribute("aria-pressed",String(this.weatherMode));
    this.el("pinWeather").setAttribute("aria-label",this.weatherMode?"Pin Notizen anzeigen":"Wetteransicht anzeigen");
    this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":"Pin Notizen";
-   this.onLayout(true);
+   this.onLayout(false);
   }
   normalizedUrl(raw){
    try{
