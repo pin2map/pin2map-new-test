@@ -641,6 +641,25 @@ body.pin-relocation-picking #map .leaflet-interactive{
 body.pin-open #refreshButton.refresh-map-button{display:none!important}
 
 
+/* Explicit search clear button: native WebKit search cancellation varies on mobile.
+   Own the appearance once, without changing the existing search ring/tap contract. */
+#app #searchInput::-webkit-search-cancel-button{
+  -webkit-appearance:none;appearance:none;display:none;
+}
+#app #searchClear.search-clear{
+  display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 30px;min-width:30px;width:30px;height:40px;align-self:center;
+  margin:0;padding:0;border:0;background:transparent;color:#fff;
+  border-radius:50%;box-shadow:none;cursor:pointer;
+}
+#app #searchClear.search-clear.hidden{display:none!important}
+#app #searchClear.search-clear span{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:23px;height:23px;line-height:1;border-radius:50%;
+  background:#6f7378;color:#fff;font-size:20px;font-weight:500;
+}
+#app #searchClear.search-clear:focus-visible{outline:2px solid #235b9a;outline-offset:-1px}
+
 /* Search action: 42px tap target, independent 30px visible ring.
    This explicitly separates the hit area, circle and magnifier. */
 :root{
@@ -812,6 +831,15 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 :is(#app > button, #app #map .leaflet-control button):is(:active,.p2m-map-tap-flash){
   background:var(--p2m-map-control-pressed)!important;
   color:var(--p2m-map-control-ink)!important;
+}
+/* Expanded menu triggers share one strong-blue active state, white Lucide glyph.
+   This remains in the owner for map controls, not separate button overrides. */
+#app #basemapButton.basemap-map-button.p2m-icon-control[aria-expanded="true"],
+#app #pinInfoButton.pin-info-button.p2m-icon-control[aria-expanded="true"],
+#app #layersButton.layers-bottom-button.p2m-icon-control[aria-expanded="true"],
+#app #settingsButton.settings-map-button.p2m-icon-control[aria-expanded="true"]{
+  background:#1764bf!important;
+  color:#fff!important;
 }
 
 /* iPhone viewport corrections (2026-11-10).
@@ -1071,6 +1099,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   max-height:calc(100dvh - 88px - env(safe-area-inset-top,0px));
   overflow-y:auto;overscroll-behavior:contain;
 }
+#app .basemap-satellite-divider{
+  border:0;border-top:1px solid #d9e0e8;margin:6px 9px 8px;
+}
 #app .basemap-satellite-choice-row{
   display:flex;align-items:center;gap:5px;
 }
@@ -1123,6 +1154,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 /* Basemap menu extension: scoped style; B38 cascade budget unchanged. */
 #app .basemap-relief-toggle{
   display:flex;align-items:center;gap:8px;padding:10px 12px;
-  border-top:1px solid #d9e0e8;cursor:pointer;font:inherit;
+  cursor:pointer;font:inherit;
 }
 #app .basemap-relief-toggle input{margin:0;accent-color:#235b9a;}
