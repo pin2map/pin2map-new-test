@@ -74,7 +74,10 @@ async function metrics(page){
           project.layers.push({id:"visual-layer-"+i,name:"Beispiel-Ebene "+i,
             color:colors[(i-2)%colors.length],visible:i%3!==0});
         }
-        project.pins.push({id:"visual-reference-pin",lat:48.7758,lng:9.1829,name:"Referenz-Pin",layerId:"private"});
+        // Synthetic layout-only GPX association: no track file is opened or imported.
+        project.pins.push({id:"visual-reference-pin",lat:48.7758,lng:9.1829,
+          name:"Referenz-Pin",layerId:"private",note:"Kontrolle",
+          url:"obsidian://pin/referenz",gpxKey:"visual-only-gpx"});
         await store.saveProject(project);
       }finally{store.close();}
     });
@@ -106,6 +109,18 @@ async function metrics(page){
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
     for(const b of m.routingButtons)assert.ok(b.disabled&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size "+JSON.stringify(b));
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
+    const statusMarkers=await page.locator(".pin-status-column").evaluateAll(nodes=>
+      nodes.map(node=>[...node.children].map(b=>{
+        const rect=b.getBoundingClientRect();return {kind:b.className,top:rect.top,left:rect.left,width:rect.width};
+      })));
+    assert.ok(statusMarkers.some(b=>b.length===3),"Note/URL/GPX badges appear together on a loaded pin");
+    for(const badges of statusMarkers){
+      for(let i=1;i<badges.length;i++){
+        assert.ok(Math.abs(badges[i].left-badges[0].left)<0.5,"Status badges share one vertical edge");
+        assert.ok(badges[i].top>badges[i-1].top,"Status badges stack without gaps for missing types");
+      }
+    }
+
     assert.ok(m.visibleLabels>=1,"Pin name labels remain displayed with open dialog");
     assert.ok(m.noteFont>=16&&m.nameFont>=16,"Touch inputs must prevent iOS zoom: "+JSON.stringify(m));
     for(let i=0;i<m.footerItems.length;i++){
