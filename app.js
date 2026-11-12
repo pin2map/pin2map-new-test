@@ -122,11 +122,11 @@
     getElement:$,document,
     onNote:value=>{
       const p=selectedPin();if(!p)return;
-      pinOps.updateDetails(state,p.id,{note:value});save();
+      pinOps.updateDetails(state,p.id,{note:value});save();renderMarkers();
     },
     onUrl:value=>{
       const p=selectedPin();if(!p)return;
-      pinOps.updateDetails(state,p.id,{url:value});save();
+      pinOps.updateDetails(state,p.id,{url:value});save();renderMarkers();
     },
     onWikipedia:()=>{
       const name=selectedPin()?.name?.trim();if(!name){showNotice("Bitte zuerst einen Pin-Namen eingeben");return;}
@@ -139,6 +139,14 @@
       updatePanelLayout();
       if(focus)requestAnimationFrame(keepSelectedAbovePanel);
     }
+  });
+  const noteEditor=new window.Pin2MapPinNoteEditor({
+    getElement:$,document,
+    onChange:value=>{
+      const pin=selectedPin();
+      if(pin){pinOps.updateDetails(state,pin.id,{note:value});$("pinNotes").value=value;save();renderMarkers();}
+    },
+    onClose:()=>{updatePanelLayout();}
   });
   const pinEditorActions = new window.Pin2MapPinEditorActions({
     getElement:$,cleanText,
@@ -345,6 +353,15 @@
 
     pinEditorActions.bind();
     pinDetails.bind();
+    noteEditor.bind();
+    $("pinNotes").addEventListener("focus",()=>{
+      const pin=selectedPin();
+      if(!pin||noteEditor.open)return;
+      if(window.matchMedia("(max-width: 700px), (pointer: coarse)").matches){
+        $("pinNotes").blur();
+        noteEditor.show({name:pin.name,note:pin.note});
+      }
+    });
     for(const id of ["deletePin","movePin","pinLayerTrigger","closePin"]){
       $(id).addEventListener("click",()=>pinDetails.closeTransient());
     }
