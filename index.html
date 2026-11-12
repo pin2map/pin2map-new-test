@@ -163,7 +163,7 @@
       <label class="sr-only" for="pinName">Pin-Name</label><input id="pinName" type="text" maxlength="120" placeholder="Name (optional)" aria-label="Pin-Name">
     </div>
     <div class="pin-meta-row"><span id="pinCreated"></span><span id="pinUpdated"></span><button id="deletePin" type="button" class="danger" data-pin-icon="map-pin-off" title="Pin löschen" aria-label="Pin löschen"></button></div>
-    <p id="pinCoords" class="muted small"></p>
+    <p id="pinCoords" class="sr-only" aria-live="off"></p>
     <p id="pinHiddenInfo" class="muted small hidden">Dieser Pin liegt in einer ausgeblendeten Ebene. <button id="showPinLayer" type="button" data-pin-icon="eye" title="Ebene einblenden" aria-label="Ebene einblenden"></button></p>
     <div class="pin-detail-region">
       <div id="pinNotesBlock"><label class="pin-detail-caption" for="pinNotes">Pin-Notizen</label><textarea id="pinNotes" rows="7" placeholder="Notiz eingeben …" aria-label="Notizen zum Pin"></textarea></div>
