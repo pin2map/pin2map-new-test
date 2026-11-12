@@ -576,3 +576,14 @@
 - **Tests:** `tests/satellite-inspector.test.js` für Anfrage und Markierungslebenszyklus, bestehende Menü-/Klick-/Architekturprüfungen angepasst. CI-/Pages-/HTTPS-Nachweise erst nach dem finalen Quellcommit verifizieren. Reale iPhone-Abnahme bleibt offen.
 - **Geschützt:** `main`, `reference/*`, Nutzerpins, IndexedDB-Schema, alte OSM-Kacheln, v143-Schaltflächen und bestehende Karten-IDs.
 - **Nächster Schritt:** Endgültige CI-/Chromium-/Pages-/HTTPS-Gates für v144 prüfen, danach gezielt auf iPhone Satellitenmenü, Straßenbeschriftung, Punkt-Tap, gelbe Markierung, Esri-Datenantwort, Schummerungsrückkehr und Abbruch testen.
+
+
+### v144 – abschließender technischer Nachweis (2026-11-12)
+
+- **Letzter funktionaler Quell-/Testcommit:** `a94285d49210caa0300bedb65e58871a72b7cb97`. Offline-App-Shell `pin2map-new-v144`, Preview-Release `pin2map-preview-v144`.
+- **Node- und Chromium-Gates:** [Actions 43189797617](https://github.com/pin2map/pin2map-new-test/actions/runs/43189797617) erfolgreich; **273/273 Node-Tests**, bestehende Browserregressionen inklusive echter UI-Interaktion für Satelliten-Bildinformationen und temporäre Markierung (Esri-Metadatenantwort im Test simuliert) bestanden.
+- **Architektur-Gate:** [Actions 43189797773](https://github.com/pin2map/pin2map-new-test/actions/runs/43189797773) erfolgreich.
+- **Offizieller Preview-Deploy und Live-Nachweis:** [Actions 43189797660](https://github.com/pin2map/pin2map-new-test/actions/runs/43189797660) vollständig erfolgreich. Das Deployment prüfte veröffentlichte HTML-/CSS-/JS-/SW-Dateien über HTTPS sowie Live-Leaflet-Start und Reload auf Phone, Phone mit Tracking-URL, Tablet und Desktop. URL: https://pin2map.github.io/pin2map-new-test/preview/ .
+- **Getrennt offen:** reale iPhone-/Safari-Abnahme des Kartenmenüs, der Esri-Referenzlayer, gelber Markierung, Metadatenantwort des externen Esri-Dienstes und Schummerungswiederherstellung. Chromium simuliert die Bildmetadatenantwort, er prüft nicht deren reale weltweite Abdeckung. Lizenz-/Nutzungsbedingungen vor einer späteren Produktionsfreigabe separat validieren.
+- **Schutz:** stable `main`, `reference/*`, bestehende Nutzerdaten/IndexedDB und offline gespeicherte OSM-Kacheln unberührt. v143 persönlich bereits abgenommen.
+- **Nächster Schritt:** nur die neuen v144-Bedienfälle auf einem realen iPhone durch Auftraggeber prüfen, Auffälligkeiten konkret korrigieren; zuvor abgenommene v143-Funktionen nicht erneut anfordern.
