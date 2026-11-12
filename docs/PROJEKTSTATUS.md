@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-12 (aktueller Entwicklungs-/veröffentlichter Preview-Stand **v157**; Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates bestanden; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme der neuen Pin-Dialog-Bedienung gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-12 (aktueller Entwicklungs-/veröffentlichter Preview-Stand **v158**; Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates bestanden; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme der neuen Pin-Dialog-Bedienung gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -726,3 +726,14 @@
 - Neue Pin-Grafik: 30×40px sichtbarer breiter Tropfen, getrennte 44×44px Trefferfläche, weiß umrandeter dreigeteilter Innenkreis: links oben Rot=Notiz, rechts oben Blau=URL, unten Grau=GPX; neutraler Zustand ohne Daten. Äußere Minibadges entfernt, Höhenlabel nach oben, Name angepasst. Status aus bestehenden Pin-Feldern ohne Schema-/Datenänderung abgeleitet.
 - **Gates erfolgreich:** [291/291 Node + Chromium-Regression/Visual](https://github.com/pin2map/pin2map-new-test/actions/runs/43290859132), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/43290860122), [echte Pages/HTTPS-Live-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/43290859676). Screenshots aus den Browser-Gates archiviert; persönliche iPhone-/iPad-Safari-Abnahme weiterhin offen.
 - Ausschließlich `feature/leaflet-modular-core`, nicht `main`/`reference/*`; keine Datenbank-/Offline-Kachel-/Server-/GPX-/Wetterprovider-Änderung. CSS-`!important`-Zähler: 249 (Budget: 298).
+
+
+## 4bk. v158 – Wetterdialog ohne Höhenänderung, obere Labels und Desktop-Notizlauncher (2026-11-12)
+
+- **Wetter-Mittelbereich:** `ui/pin-details.js` misst vor dem Umschalten die tatsächlichen Außenkanten der Navigations-/Routingzeile und des Notizfeldes und nutzt exakt diese Höhe für die Wetteransicht. Die Oberkante des Wetter-Fieldsets wird auf die gemessene Navigationsoberkante gesetzt; beim Zurückschalten wird der ursprüngliche Layoutzustand wiederhergestellt. CSS besitzt keine starre 252px-Wetterhöhe mehr. GPX- und Pin-Daten unverändert.
+- **Höhenlabel:** `map-adapter-leaflet.js` setzt den Leaflet-Info-Overlay-Anker von [0,43] auf [0,39] (visuell 4px tiefer). Pin-Dialog-Positionierung und Abstand zum Marker unverändert.
+- **Desktop-Notizlauncher:** Er hängt CSS-seitig rechts unten an der Notiz-Fieldset-Ecke (8px Innenabstand), mit rechter Textreserve (40px), damit geschriebene Zeilen nicht verdeckt werden. iPhone-/iPad-Tastatur-Editorlogik bleibt unverändert.
+- **Regression:** `tests/pin-dialog-visual.cjs` misst jetzt Wetter-Fieldset-Oberkante und identische Dialoghöhe vor/nach beiden Wechselrichtungen (Toleranz höchstens 1px) statt der früheren 20px. Isolierte DOM-Port-Tests bleiben funktionsfähig.
+- **Quell-Version:** `pin2map-new-v158`; funktionaler Head-Commit `bbb7a73da28e926ab5d15647db78f782f32afdf8`.
+- **Verifizierte Actions:** [291/291 Node + Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/43298970177) erfolgreich; [Architektur-Gate](https://github.com/pin2map/pin2map-new-test/actions/runs/43298970181) erfolgreich; [GitHub Pages + reale HTTPS-Preview](https://github.com/pin2map/pin2map-new-test/actions/runs/43298970188) erfolgreich. Der Live-Lauf hat die exakte Worker-Version und die aktualisierten Assets sowie Neustart/Reload und die Pin-Dialog-Visualtests in 320px, 375px und 768px nachweislich geprüft. Persönliche Safari-iPhone-/iPad-Abnahme und finale visuelle Beurteilung durch den Auftraggeber bleiben gesondert offen.
+- **Schutz:** Nur Feature-Branch und Preview; keine Änderung an `main`, `reference/*`, Projekt-Datenschema, IndexedDB, Pin-IDs, Offline-Tile-Cache, Routing oder Wetterprovider. Das ältere CSS-Schulden-Budget bleibt bestehen.
