@@ -26,7 +26,7 @@
     // A wide teardrop with a large white center, not a rotated square.
     // The three badges always stack flush in a single compact column.
     const html='<div class="pin-marker'+(selected?' selected':'')+'" style="color:'+safeColor+'">'
-      +'<svg class="pin-marker-shape" viewBox="0 0 50 64" aria-hidden="true"><path d="M25 61C19 51 3 33 3 24a22 22 0 0 1 44 0c0 9-16 27-22 37Z" fill="currentColor" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><circle cx="25" cy="24" r="12.5" fill="#fff"/></svg>'
+      +'<svg class="pin-marker-shape" viewBox="0 0 36 46" aria-hidden="true"><path d="M18 44C13 36 2 24 2 17a16 16 0 0 1 32 0c0 7-11 19-16 27Z" fill="currentColor" stroke="#fff" stroke-width="2.8" stroke-linejoin="round"/><circle cx="18" cy="17" r="10.4" fill="#fff"/></svg>'
       +(badges?'<span class="pin-status-column" aria-label="Weitere Pin-Inhalte">'+badges+'</span>':"")
       +'</div>';
     return {html,title:pin.name||"Pin"};
