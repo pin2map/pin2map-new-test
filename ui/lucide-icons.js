@@ -12,13 +12,16 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    /* The predecessor's Apple Maps brand silhouette. The Unicode private-use
+       Apple glyph is missing on Chrome/Android, so draw it as a filled SVG. */
+    "apple-brand": [["path",{"d":"M17.05 12.54c-.02-2.48 2.03-3.69 2.12-3.75-1.17-1.7-2.98-1.93-3.62-1.95-1.54-.16-3.02.9-3.8.9-.78 0-1.95-.88-3.21-.86-1.64.03-3.18.97-4.02 2.43-1.72 2.98-.44 7.36 1.24 9.77.84 1.18 1.84 2.5 3.14 2.45 1.26-.05 1.74-.79 3.27-.79 1.52 0 1.95.79 3.2.77 1.33-.02 2.17-1.2 3-2.37a10.65 10.65 0 0 0 1.36-2.8c-.03-.01-2.66-1.02-2.68-3.8Z","fill":"currentColor","stroke":"none"}],["path",{"d":"M15.75 4.61c.69-.83 1.16-1.99 1.03-3.15-1 .04-2.2.67-2.92 1.49-.65.74-1.21 1.92-1.06 3.05 1.12.08 2.26-.56 2.95-1.39Z","fill":"currentColor","stroke":"none"}]],
     "arrow-up-right": [["path",{"d":"M7 7h10v10"}],["path",{"d":"M7 17 17 7"}]],
     "circle-dot": [["circle",{"cx":"12","cy":"12","r":"10"}],["circle",{"cx":"12","cy":"12","r":"3"}]],
     "layers-arrow-down": [["path",{"d":"m12 2 9 5-9 5-9-5 9-5Z"}],["path",{"d":"m3 12 9 5 3.5-1.95"}],["path",{"d":"M12 22v-6"}],["path",{"d":"m9 19 3 3 3-3"}]],
     "link-2": [["path",{"d":"M15 7h3a5 5 0 0 1 0 10h-3"}],["path",{"d":"M9 17H6a5 5 0 0 1 0-10h3"}],["path",{"d":"M8 12h8"}]],
-    "save-check": [["path",{"d":"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v6"}],["path",{"d":"M17 3v5H7V3"}],["path",{"d":"M7 21v-8h10"}],["path",{"d":"m16 19 2 2 4-4"}]],
+    "save-check": [["path",{"d":"M15.2 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h11"}],["path",{"d":"M17 2v6H7V2"}],["path",{"d":"M7 22v-8h8"}],["path",{"d":"m16 19 2 2 4-4"}]],
     "external-link": [["path",{"d":"M15 3h6v6"}],["path",{"d":"M10 14 21 3"}],["path",{"d":"M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"}]],
-    "cloud-sun-rain": [["path",{"d":"M12 2v2"}],["path",{"d":"m4.93 4.93 1.42 1.42"}],["path",{"d":"M20 12h2"}],["path",{"d":"m17.65 4.93-1.42 1.42"}],["path",{"d":"M12 8a4 4 0 0 1 4 4"}],["path",{"d":"M20 16.58A5 5 0 0 0 18 7h-.26A7 7 0 1 0 4 16"}],["path",{"d":"m8 19-1 3"}],["path",{"d":"m15 19-1 3"}]],
+    "cloud-sun-rain": [["path",{"d":"M12 2v2"}],["path",{"d":"m5.2 5.2 1.3 1.3"}],["path",{"d":"m18.8 5.2-1.3 1.3"}],["path",{"d":"M12 8a4 4 0 0 1 4 4"}],["path",{"d":"M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3 3 0 0 0 7 17Z"}],["path",{"d":"m9 19-1 3"}],["path",{"d":"m16 19-1 3"}]],
 
     "switch-camera": [
       ["path",{"d":"M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"}],
