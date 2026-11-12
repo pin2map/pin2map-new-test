@@ -10,8 +10,8 @@ test("Esri imagery requests only on selection and returns the ordered user field
   const provider=new Metadata({fetchImpl:async (url,options)=>{
     calls.push({url:String(url),options});
     return {ok:true,json:async()=>({results:[{layerId:4,attributes:{
-      SOURCE:"Imagery consortium",DATE:20240115,ACCURACY:2.7,
-      RESOLUTION:0.5,SOURCE_INFO:"Imagery attribution",
+      SOURCE:"Imagery consortium","DATE (YYYYMMDD)":20240115,"ACCURACY (M)":2.7,
+      "RESOLUTION (M)":0.5,SOURCE_INFO:"Imagery attribution",
       OBJECTID:18,OTHER_SECRET:"not displayed"
     }}]})};
   }});
@@ -22,7 +22,7 @@ test("Esri imagery requests only on selection and returns the ordered user field
   assert.match(calls[0].url,/World_Imagery\/MapServer\/identify/);
   assert.match(calls[0].url,/layers=all%3A4/);
   assert.deepEqual(result.fields,[
-    {name:"Aufnahmedatum",value:"2024-01-15"},
+    {name:"Aufnahmedatum",value:"20240115"},
     {name:"Resolution",value:"0.5"},
     {name:"Accuracy",value:"2.7"},
     {name:"Source_info",value:"Imagery attribution"},
@@ -31,22 +31,33 @@ test("Esri imagery requests only on selection and returns the ordered user field
   assert.match(result.waybackUrl,/^https:\/\/livingatlas\.arcgis\.com\/wayback\/#mapCenter=/);
   assert.match(decodeURIComponent(result.waybackUrl),/9\.1829,48\.7758,17/);
 });
-test("alternative Esri field keys, empty fields and ISO date safeguards",async()=>{
+test("alternative Esri field keys and original values are preserved",async()=>{
   const provider=new Metadata({fetchImpl:async()=>({ok:true,json:async()=>({results:[{
     attributes:{SRC_DATE:"20260230",SRC_RES:99999,SRC_ACC:99999,
       NICE_NAME:"Photograph by agency",NICE_DESC:"Agency source",UNRELATED:"ignore"}
   }]})})});
   const result=await provider.identify({lat:0,lng:0},{zoom:4});
   assert.deepEqual(result.fields,[
-    {name:"Aufnahmedatum",value:"Nicht verfügbar"},
+    {name:"Aufnahmedatum",value:"20260230"},
     {name:"Resolution",value:"Nicht verfügbar"},
     {name:"Accuracy",value:"Nicht verfügbar"},
     {name:"Source_info",value:"Photograph by agency"},
     {name:"Datenquelle",value:"Agency source"}
   ]);
-  assert.equal(Metadata.isoDate("20241112"),"2024-11-12");
-  assert.equal(Metadata.isoDate("2024-11-12"),"2024-11-12");
-  assert.equal(Metadata.isoDate("2024-02-30"),null);
+});
+test("actual Esri alias labels preserve original zero, precision and date text",async()=>{
+  const provider=new Metadata({fetchImpl:async()=>({ok:true,json:async()=>({results:[{layerId:4,attributes:{
+    "DATE (YYYYMMDD)":"2024-05-19","RESOLUTION (M)":0.31,"ACCURACY (M)":0,
+    "SOURCE_INFO":"Vivid Advanced","SOURCE":"Vantor","OBJECTID":4
+  }}]})})});
+  const {fields}=await provider.identify({lat:48.78,lng:9.18},{zoom:18});
+  assert.deepEqual(fields,[
+    {name:"Aufnahmedatum",value:"2024-05-19"},
+    {name:"Resolution",value:"0.31"},
+    {name:"Accuracy",value:"0"},
+    {name:"Source_info",value:"Vivid Advanced"},
+    {name:"Datenquelle",value:"Vantor"}
+  ]);
 });
 test("Esri missing citations never fabricate metadata",async()=>{
   const provider=new Metadata({fetchImpl:async()=>({ok:true,json:async()=>({results:[]})})});
