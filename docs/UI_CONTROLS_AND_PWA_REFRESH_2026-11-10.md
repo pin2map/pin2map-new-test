@@ -138,3 +138,12 @@ Kartenkachel-Caches bleiben von der Codeversionsbereinigung getrennt.
 Die optionale Checkbox „Straßen und Ortsnamen“ steuert separate Esri-World-Transportation- und World-Boundaries-and-Places-Layer. Straßenlayer werden nur für Satellit erzeugt, unter Pins; der Zustand wird mit bestehenden Projekteinstellungen gespeichert. `esriRelief` bleibt persistiert, aber der Kartenadapter rendert **keinen** Schummerungslayer für Satellit und der Schalter ist ausgegraut. Rückkehr zu anderen Basiskarten stellt den gespeicherten Relief-Zustand wieder her; Satellitenbild-Controls werden deaktiviert und das Bildinfo-Overlay geleert. Bestehende Slider-/Reset-Regeln mit 120 % gelten unverändert.
 
 **Keine Änderung:** aktuelle Pin-/Ebenenobjekte, Datenbankversion, Referenzbranches oder stabile `main`-PWA. Implementierung auf `feature/leaflet-modular-core` mit Release `v144`. Technische Prüfnachweise im zentralen `PROJEKTSTATUS.md` ergänzen, keine Geräteabnahme vorwegnehmen. Offen bleibt die praktische Eignung von Esri-Identify-/Referenzdiensten und Anbieterbedingungen für eine spätere öffentliche Produktionsfreigabe.
+
+
+## v145 – Metadaten-Reihenfolge, ISO-Datum, Wayback und Fadenkreuz (2026-11-12)
+
+Der neue Bildinfo-Dialog erhält **ausschließlich** sechs Zeilen: **Aufnahmedatum**, **Resolution**, **Accuracy**, **Source_info**, **Datenquelle**, **Link zu Wayback**. Esri-Daten werden nur in der Reihenfolge dieser freigegebenen Felder angezeigt; keine Zusatzangaben. Fehlende/ungültige Werte: „Nicht verfügbar“. Aufnahmedatum: `YYYY-MM-DD`; Veröffentlichungsdaten werden nicht aus Aufnahmedaten abgeleitet. Wayback öffnet via `target="_blank"` und `rel="noopener noreferrer"` mit `#mapCenter=lng,lat,zoom` an der angeklickten Position.
+
+Die bewusst durch `switch-camera` aktivierte Kartenauswahl erhält einen **Fadenkreuz-Zeiger** über die Kartenoberfläche; die bisherige Auswahlmarkierung (gelber transparenter Kreis mit grauem gestricheltem Rand und `satellite`-Symbol), Folge-Taps und Abbruch bleiben exakt wie in v144. Beim Deaktivieren wird die Cursor-Klasse entfernt. CSS benutzt bestehende Zuständigkeit ohne `!important`-Budget zu erhöhen.
+
+Die als fehlend gemeldeten Straßen-/Ortsnamen-Referenzen werden über die fachlich korrekten `Reference/`-Dienste von Esri geladen; weiterhin optional, nur bei Satellit, zwischen Basiskarte und Pin-Markern. Alle bereits bestandenen persönlichen v144-Testfälle gelten als angenommen. Technische Test-/Preview-Nachweise im Projektstatus gesondert vermerken.
