@@ -17,7 +17,7 @@ test("compact wide pin has three SVG sectors, a white ring and a separate 44px t
  assert.ok(!look.html.includes("pin-status-column"));
  const css=read("styles.css");
  assert.match(css,/\.pin-marker\{[^}]*width:30px;height:40px/);
- assert.match(read("map-adapter-leaflet.js"),/iconSize:\\[44,44\\],iconAnchor:\\[22,39\\]/);
+ assert.match(read("map-adapter-leaflet.js"),/iconSize:\[44,44\],iconAnchor:\[22,39\]/);
 });
 test("all 8 note URL GPX combinations map to independent sector colors",()=>{
  const fills={note:"#d94f55",url:"#2979d1",gpx:"#8f989f"};
