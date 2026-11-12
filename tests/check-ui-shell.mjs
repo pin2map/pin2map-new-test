@@ -22,7 +22,7 @@ function element(){
     getAttribute:key=>attributes.get(key)
   };
 }
-const ids=["notice","layersPanel","settingsPanel","layersButton","labelsToggle"];
+const ids=["notice","layersPanel","settingsPanel","layersButton","settingsButton","labelsToggle"];
 const nodes=Object.fromEntries(ids.map(id=>[id,element()]));
 let nextId=0;
 const pending=new Map();
@@ -62,7 +62,12 @@ assert.equal(nodes.layersButton.getAttribute("aria-expanded"),"false");
 ui.togglePanel("settingsPanel");
 assert.equal(nodes.settingsPanel.classList.contains("hidden"),false);
 assert.equal(nodes.layersButton.getAttribute("aria-expanded"),"false");
+assert.equal(nodes.settingsButton.getAttribute("aria-expanded"),"true");
+ui.closePanel("settingsPanel");
+assert.equal(nodes.settingsButton.getAttribute("aria-expanded"),"false");
+ui.togglePanel("settingsPanel");
 ui.closePanels();
+assert.equal(nodes.settingsButton.getAttribute("aria-expanded"),"false");
 assert.equal(nodes.settingsPanel.classList.contains("hidden"),true);
 assert.throws(()=>ui.togglePanel("pinPanel"),RangeError);
 
