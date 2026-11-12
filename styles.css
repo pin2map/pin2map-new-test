@@ -522,8 +522,8 @@ body.pin-relocation-picking #map .leaflet-interactive{
   padding:0!important;border-radius:50%!important;line-height:1!important;
 }
 #pinPanel #deletePin.p2m-icon-control{
-  --p2m-button-bg:#ed433d;--p2m-button-ink:#fff;
-  --p2m-button-border:#d12f2a;
+  --p2m-button-bg:#bc2837;--p2m-button-ink:#fff;
+  --p2m-button-border:#a81f2e;
 }
 #pinPanel #deletePin.p2m-icon-control .p2m-lucide{width:23px;height:23px;stroke-width:2.6}
 #pinPanel .pin-navigation-buttons .p2m-lucide{width:21px;height:21px;stroke-width:2.3}
@@ -542,10 +542,9 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel #movePin .p2m-relocate-icon{width:30px!important;height:21px!important}
 #pinPanel #showPinLayer.p2m-icon-control{margin-left:6px}
-#pinPanel #pinWikipedia .pin-wikipedia-glyph{
-  display:grid;place-items:center;width:24px;height:24px;
-  box-sizing:border-box;border:1.5px solid #253a4b;border-radius:50%;
-  color:#253a4b;font:700 18px/1 system-ui,-apple-system,sans-serif;
+/* Locally bundled user-provided Wikipedia globe; never rely on an external icon CDN. */
+#pinPanel #pinWikipedia .pin-wikipedia-logo{
+  display:block;width:25px;height:25px;object-fit:contain;
 }
 #pinPanel .pin-actions button .p2m-lucide{width:22px;height:22px}
 /* Keep the original Lucide weather silhouette legible at the shared 38px size. */
@@ -594,11 +593,13 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* Weather replaces the entire navigation-and-notes middle region without
    shifting the header/footer or changing the dialog's outer height. */
 #pinPanel.pin-weather-mode .pin-navigation-row{display:none}
+/* Keep the native fieldset border/legend painting: flex on fieldset itself
+   suppresses the upper border to the right of the legend in WebKit/Chromium. */
 #pinPanel.pin-weather-mode .pin-detail-region{
-  height:var(--pin-weather-middle-height);display:flex;flex-direction:column;
+  height:var(--pin-weather-middle-height);display:block;
 }
 #pinPanel.pin-weather-mode .pin-detail-region .pin-weather-placeholder{
-  flex:1;min-height:0;height:auto;
+  min-height:0;height:100%;
 }
 .pin-note-editor.is-tablet-keyboard{padding-bottom:16px}
 /* A keyboard-visible editor may not reserve the iPhone home-indicator area. */
@@ -606,9 +607,9 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel #pinNotesExpand{display:none}
 @media(min-width:701px) and (pointer:fine){
   #pinPanel .pin-detail-region{position:relative}
-  #pinPanel .pin-detail-region #pinNotes{padding-right:40px}
+  #pinPanel .pin-detail-region #pinNotes{padding-right:40px;padding-bottom:34px}
   #pinPanel #pinNotesExpand{
-    position:absolute;right:8px;bottom:8px;display:grid;place-items:center;
+    position:absolute;right:-13px;bottom:-13px;display:grid;place-items:center;
     width:26px;height:26px;padding:0;border:0;border-radius:6px;
     background:#fff;color:#61758b;box-shadow:none;
   }
@@ -665,13 +666,15 @@ body.pin-note-editor-open{overflow:hidden}
     --p2m-button-bg:#52606d;--p2m-button-ink:#fff;
     background:#52606d!important;color:#fff!important;border-color:#52606d!important;
   }
-  #pinPanel button:hover .pin-wikipedia-glyph{color:#fff;border-color:#fff}
+  #pinPanel button:hover .pin-wikipedia-logo{filter:invert(1)}
 }
 #pinPanel button .p2m-lucide{stroke-width:1.8}
-#pinPanel #deletePin.p2m-icon-control .p2m-lucide{stroke-width:1.9}
+#pinPanel #deletePin.p2m-icon-control .p2m-lucide{stroke-width:1.7}
 #pinPanel .pin-navigation-buttons .p2m-lucide,
-#pinPanel .pin-nav-add .p2m-lucide,
-#pinPanel #pinWeather .p2m-lucide{stroke-width:1.8}
+#pinPanel .pin-nav-add .p2m-lucide{stroke-width:1.8}
+/* Footer has a single fine optical stroke weight, separate from navigation. */
+#pinPanel .pin-actions button .p2m-lucide,
+#pinPanel #pinWeather .p2m-lucide{stroke-width:1.45}
 /* The approved layer popup remains independent and scrolls only vertically. */
 #pinLayerMenu.pin-layer-menu{
   position:fixed;z-index:1550;box-sizing:border-box;
