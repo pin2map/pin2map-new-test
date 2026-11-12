@@ -27,7 +27,20 @@
       const fields=Object.entries(attributes)
         .filter(([key,value])=>value!==null&&value!==undefined&&value!==""&&value!==99999&&value!=="99999")
         .filter(([key])=>!/^(objectid|shape|fid|globalid|st_area|st_length)$/i.test(key))
-        .map(([key,value])=>({name:key,value:String(value)}));
+        .map(([key,value])=>{
+          const normalized=key.toLowerCase().replace(/[^a-z]/g,"");
+          const labels={date:"Aufnahmedatum",acquisitiondate:"Aufnahmedatum",
+            provider:"Bildanbieter",source:"Datenquelle",datasource:"Datenquelle",
+            resolution:"Auflösung (m)",accuracy:"Genauigkeit (m)"};
+          let readable=String(value);
+          if((normalized==="date"||normalized==="acquisitiondate")&&/^\\d{8}$/.test(readable)){
+            const y=readable.slice(0,4),m=readable.slice(4,6),d=readable.slice(6,8);
+            const parsed=new Date(y+"-"+m+"-"+d+"T00:00:00Z");
+            if(!Number.isNaN(parsed.valueOf())&&
+              parsed.toISOString().slice(0,10)===y+"-"+m+"-"+d)readable=d+"."+m+"."+y;
+          }
+          return {name:labels[normalized]||key,value:readable};
+        });
       return {fields,message:fields.length?"":"Keine Bildinformationen für diesen Punkt verfügbar"};
     }
   }
