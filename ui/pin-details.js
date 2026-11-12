@@ -8,7 +8,7 @@
     throw new TypeError("Pin detail ports required");
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
    this.onWikipedia=onWikipedia;this.onLayout=onLayout;
-   this.pinId=null;this.mode="notes";this.urlSnapshot="";
+   this.pinId=null;this.mode="notes";this.urlSnapshot="";this.weatherMode=false;
    this.keyboardAnchor=null;
    // Popover must escape the map-clipped dialog just like the layer menu.
    const popup=this.el("pinUrlBlock");
@@ -33,7 +33,7 @@
   positionPopup(){
    const win=this.document.defaultView, popup=this.el("pinUrlBlock");
    if(!win||!this.el("pinUrlButton").getBoundingClientRect)return;
-   const rect=this.el("pinUrlButton").getBoundingClientRect();
+   const rect=this.el("pinPanel").getBoundingClientRect();
    const vv=win.visualViewport;
    const left=vv?.offsetLeft||0,top=vv?.offsetTop||0;
    const width=vv?.width||win.innerWidth,height=vv?.height||win.innerHeight;
@@ -41,19 +41,23 @@
    const desired=Math.min(260,width-margin*2);
    popup.style.width=desired+"px";
    const popupHeight=popup.offsetHeight||158;
-   const above=rect.top-top-margin-gap;
-   const below=top+height-rect.bottom-margin-gap;
-   const useAbove=above>=popupHeight||above>below;
-   popup.style.left=Math.max(left+margin,
-    Math.min(rect.left,left+width-desired-margin))+"px";
-   popup.style.top=Math.max(top+margin,
-    Math.min(top+height-popupHeight-margin,
-     useAbove?rect.top-gap-popupHeight:rect.bottom+gap))+"px";
+   // Anchor to the PIN PANEL, never to a button which moves when keyboard
+   // or optional content changes. Place beside panel when space permits.
+   const roomRight=left+width-margin-rect.right;
+   const roomLeft=rect.left-left-margin;
+   const idealLeft=roomRight>=desired+gap?rect.right+gap:
+     roomLeft>=desired+gap?rect.left-gap-desired:
+     rect.right-desired;
+   popup.style.left=Math.max(left+margin,Math.min(idealLeft,left+width-desired-margin))+"px";
+   const panelTop=rect.top+Math.min(72,rect.height*.18);
+   const visibleTop=Math.max(top+margin,Math.min(panelTop,top+height-popupHeight-margin));
+   popup.style.top=visibleTop+"px";
   }
   show(mode){
    this.mode=mode;
    this.el("pinUrlBlock").classList.toggle("hidden",mode!=="url");
    this.el("pinUrlButton").setAttribute("aria-expanded",String(mode==="url"));
+   this.el("pinUrlButton").classList.toggle("is-active",mode==="url");
    if(mode==="url")this.positionPopup();
    else this.keyboardAnchor=null;
   }
@@ -64,6 +68,7 @@
     this.el("pinNotes").value=String(pin.note||"");
     this.el("pinUrl").value=this.urlSnapshot;
     this.show("notes");
+    this.setWeather(false);
    }else{
     const notes=this.el("pinNotes"),url=this.el("pinUrl");
     if(this.document.activeElement!==notes)notes.value=String(pin.note||"");
@@ -72,12 +77,31 @@
     }
    }
    this.refreshUrlOpen();
+   this.el("pinUrlButton").classList.toggle("has-url",Boolean(String(pin.url||"").trim()));
+   // GPX UI is future-only until a concrete persisted track association exists.
+   const hasGpx=Boolean(pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
+   this.el("pinGpxActions")?.classList.toggle("hidden",!hasGpx);
+  }
+  setWeather(enabled){
+   this.weatherMode=Boolean(enabled);
+   this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode);
+   this.el("pinWeatherBlock").classList.toggle("hidden",!this.weatherMode);
+   this.el("pinWeather").classList.toggle("is-active",this.weatherMode);
+   this.el("pinWeather").setAttribute("aria-pressed",String(this.weatherMode));
+   this.el("pinWeather").setAttribute("aria-label",this.weatherMode?"Pin Notizen anzeigen":"Wetteransicht anzeigen");
+   this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":"Pin Notizen";
+   this.onLayout(false);
   }
   normalizedUrl(raw){
    try{
     if(!raw.trim())return null;
     const url=new URL(raw.trim());
-    return ["https:","http:"].includes(url.protocol)?url.href:null;
+    // Browser/deep-link schemes are data, not executable page code.
+    // Block script, data and local file URLs; permit mailto, obsidian,
+    // tel and other externally handled protocols.
+    const scheme=url.protocol.toLowerCase();
+    if(["javascript:","data:","vbscript:","file:","blob:","about:"].includes(scheme))return null;
+    return /^[a-z][a-z0-9+.-]*:$/.test(scheme)?url.href:null;
    }catch(e){return null;}
   }
   refreshUrlOpen(){
@@ -121,16 +145,18 @@
    this.el("pinUrlSave").addEventListener("click",()=>{
     const value=this.el("pinUrl").value.trim();
     if(value&&!this.normalizedUrl(value)){
-     this.el("pinUrl").setCustomValidity("Bitte eine gültige HTTP(S)-URL eingeben");
+     this.el("pinUrl").setCustomValidity("Bitte eine gültige URL mit sicherem Protokoll eingeben");
      this.el("pinUrl").reportValidity();this.el("pinUrl").setCustomValidity("");return;
     }
     this.urlSnapshot=value;this.onUrl(value);this.show("notes");
+    this.el("pinUrlButton").classList.toggle("has-url",Boolean(value));
    });
    this.el("pinUrlOpen").addEventListener("click",()=>{
     const value=this.normalizedUrl(this.el("pinUrl").value);
     if(value)root.open(value,"_blank","noopener,noreferrer");
    });
    this.el("pinWikipedia").addEventListener("click",()=>{this.closeTransient();this.onWikipedia();});
+   this.el("pinWeather").addEventListener("click",()=>{this.closeTransient();this.setWeather(!this.weatherMode);});
    this.document.addEventListener?.("pointerdown",event=>{
     if(this.mode==="url"&&!event.target.closest?.("#pinUrlBlock,#pinUrlButton"))
      this.closeTransient();
@@ -140,7 +166,7 @@
      event.preventDefault();this.closeTransient();this.el("pinUrlButton").focus?.();
     }
    });
-   // Routing and weather placeholders intentionally have NO handlers.
+   // Routing/GPX transport controls intentionally have NO handlers.
   }
  }
  root.Pin2MapPinDetails=PinDetails;
