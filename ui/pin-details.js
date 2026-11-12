@@ -9,10 +9,23 @@
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
    this.onWikipedia=onWikipedia;this.onLayout=onLayout;
    this.pinId=null;this.mode="notes";this.urlSnapshot="";
+   this.keyboardAnchor=null;
    // Popover must escape the map-clipped dialog just like the layer menu.
    const popup=this.el("pinUrlBlock");
    if(doc.body?.append)doc.body.append(popup);
-   this.onViewportChange=()=>{if(this.mode==="url")this.positionPopup();};
+   this.onViewportChange=()=>{
+    if(this.mode!=="url")return;
+    if(this.keyboardAnchor){
+      // During iOS keyboard presentation the visual viewport shrinks and can
+      // scroll. Never recompute the popup against the keyboard's smaller size.
+      // Keep the same visual position by compensating only viewport scrolling.
+      const offset=doc.defaultView?.visualViewport?.offsetTop||0;
+      this.el("pinUrlBlock").style.top=
+        (this.keyboardAnchor.top+offset-this.keyboardAnchor.visualOffsetTop)+"px";
+      return;
+    }
+    this.positionPopup();
+   };
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
    doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
    doc.defaultView?.visualViewport?.addEventListener?.("scroll",this.onViewportChange);
@@ -42,6 +55,7 @@
    this.el("pinUrlBlock").classList.toggle("hidden",mode!=="url");
    this.el("pinUrlButton").setAttribute("aria-expanded",String(mode==="url"));
    if(mode==="url")this.positionPopup();
+   else this.keyboardAnchor=null;
   }
   render(pin){
    if(!pin){this.pinId=null;this.show("notes");return;}
@@ -81,7 +95,19 @@
   bind(){
    this.el("pinNotes").addEventListener("input",event=>this.onNote(event.target.value));
    this.el("pinNotes").addEventListener("focus",()=>this.onLayout(true));
-   this.el("pinUrl").addEventListener("focus",()=>this.onViewportChange());
+   this.el("pinUrl").addEventListener("focus",()=>{
+    if(this.mode!=="url")return;
+    const popup=this.el("pinUrlBlock");
+    this.keyboardAnchor={
+      top:Number.parseFloat(popup.style.top)||popup.getBoundingClientRect().top,
+      visualOffsetTop:this.document.defaultView?.visualViewport?.offsetTop||0
+    };
+   });
+   this.el("pinUrl").addEventListener("blur",()=>{
+    // Reposition on the next explicit open/resize, not while the keyboard
+    // animation is still active.
+    this.keyboardAnchor=null;
+   });
    // Keep selected marker/dialog visible after iOS keyboard changes.
    this.document.defaultView?.visualViewport?.addEventListener?.("resize",()=>{
     if(this.document.activeElement===this.el("pinNotes"))this.onLayout(true);
@@ -92,7 +118,6 @@
     this.el("pinUrl").value=this.urlSnapshot;
     this.show("url");this.refreshUrlOpen();
    });
-   this.el("pinUrlCancel").addEventListener("click",()=>this.closeTransient());
    this.el("pinUrlSave").addEventListener("click",()=>{
     const value=this.el("pinUrl").value.trim();
     if(value&&!this.normalizedUrl(value)){
