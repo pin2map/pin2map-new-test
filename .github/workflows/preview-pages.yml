@@ -304,6 +304,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: live-preview-pin-dialog-v160
+          name: live-preview-pin-dialog-v161
           path: preview-source/pin-dialog-visual-artifacts/*.png
           if-no-files-found: ignore
