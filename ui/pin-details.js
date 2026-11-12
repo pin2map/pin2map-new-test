@@ -50,6 +50,12 @@
    this.el("pinNotes").addEventListener("input",event=>this.onNote(event.target.value));
    this.el("pinNotes").addEventListener("focus",()=>this.onLayout(true));
    this.el("pinUrl").addEventListener("focus",()=>this.onLayout(true));
+   // On iPhone the visual viewport often shrinks only AFTER focus.
+   // Reapply the existing one-shot pin visibility correction on keyboard resize.
+   this.document.defaultView?.visualViewport?.addEventListener("resize",()=>{
+    if([this.el("pinNotes"),this.el("pinUrl")].includes(this.document.activeElement))
+     this.onLayout(true);
+   });
    this.el("pinUrl").addEventListener("input",()=>this.refreshUrlOpen());
    this.el("pinUrlButton").addEventListener("click",()=>{
     if(this.mode==="url"){this.show("notes");return;}
