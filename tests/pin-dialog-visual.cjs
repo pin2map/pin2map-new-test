@@ -137,6 +137,9 @@ async function metrics(page){
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
+    const weatherHeight=await page.locator("#pinWeatherBlock").evaluate(el=>el.getBoundingClientRect().height);
+    assert.ok(weatherHeight>=185,"Weather block must be visibly taller than inline notes");
+    assert.ok((await page.locator("#pinPanel").boundingBox()).y>=0,"Weather editor stays visible");
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
     assert.equal(await page.locator("#pinWeather").getAttribute("aria-pressed"),"true");
     assert.equal(await page.locator("#pinWeather").evaluate(el=>
@@ -174,6 +177,10 @@ async function metrics(page){
       return {parent:el.parentElement.tagName,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,actions};
     });
     assert.equal(urlPopup.parent,"BODY");
+    const pinBox=await page.locator("#pinPanel").boundingBox();
+    assert.ok(urlPopup.left<pinBox.x+pinBox.width&&urlPopup.right>pinBox.x,
+      "URL popup must overlap pin panel horizontally like the layer picker");
+
     assert.ok(urlPopup.left>=4&&urlPopup.right<=viewport.width-4&&urlPopup.top>=4&&urlPopup.bottom<=viewport.height-4,JSON.stringify(urlPopup));
     assert.ok(Math.abs(urlPopup.width-260)<=1,"URL popup width matches approved layer picker");
     assert.equal(urlPopup.actions.length,2,"Only OK and URL öffnen are shown");
