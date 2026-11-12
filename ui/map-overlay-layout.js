@@ -33,6 +33,7 @@
         if(!this.isMarkerPressActive())this.onRenderMarkers();
         this.schedule();
       };
+      this.onViewportResize=()=>this.schedule();
       this.onResize=()=>{
         this.map.invalidateSize();
         this.onRenderMarkers();
@@ -61,6 +62,8 @@
       this.map.on("moveend",this.onMoveEnd);
       this.map.on("zoomend",this.onZoomEnd);
       this.window.addEventListener("resize",this.onResize);
+      this.window.visualViewport?.addEventListener?.("resize",this.onViewportResize);
+      this.window.visualViewport?.addEventListener?.("scroll",this.onViewportResize);
     }
     dispose(){
       if(this.bound){
@@ -71,6 +74,8 @@
           this.map.off("zoomend",this.onZoomEnd);
         }
         this.window.removeEventListener("resize",this.onResize);
+        this.window.visualViewport?.removeEventListener?.("resize",this.onViewportResize);
+        this.window.visualViewport?.removeEventListener?.("scroll",this.onViewportResize);
       }
       if(this.frame!==null){this.cancelFrame(this.frame);this.frame=null;}
     }
