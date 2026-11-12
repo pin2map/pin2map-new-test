@@ -13,20 +13,19 @@
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
     "switch-camera": [
-      ["path",{"d":"M11 5H7L5 7H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-5"}],
-      ["circle",{"cx":"12","cy":"14","r":"3"}],
-      ["path",{"d":"M16 3h6v6"}],["path",{"d":"m22 3-5 5"}],
-      ["path",{"d":"M13 3h-1"}]
+      ["path",{"d":"M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"}],
+      ["path",{"d":"M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5"}],
+      ["circle",{"cx":"12","cy":"12","r":"3"}],
+      ["path",{"d":"m18 22-3-3 3-3"}],
+      ["path",{"d":"m6 2 3 3-3 3"}]
     ],
     "satellite": [
-      ["path",{"d":"M13 7 9 3 3 9l4 4"}],
-      ["path",{"d":"m16 8 5 5-8 8-5-5"}],
-      ["path",{"d":"m2 22 5-5"}],
-      ["path",{"d":"m16 2 6 6"}],
-      ["path",{"d":"m9 15-2 2"}],
-      ["path",{"d":"M3 3l3 3"}]
+      ["path",{"d":"M13 7 9 3 5 7l4 4"}],
+      ["path",{"d":"m17 11 4 4-4 4-4-4"}],
+      ["path",{"d":"m8 12 4 4 6-6-4-4Z"}],
+      ["path",{"d":"m16 8 3-3"}],
+      ["path",{"d":"M9 21a6 6 0 0 0-6-6"}]
     ],
-
     "sun-medium": [
       ["circle",{"cx":"12","cy":"12","r":"4"}],
       ["path",{"d":"M12 2v2"}],
