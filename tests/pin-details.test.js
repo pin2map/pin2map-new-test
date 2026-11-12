@@ -29,9 +29,9 @@ test("notes are edited inline without a replacement textarea or save dialog",()=
  f.controller.render({id:"p",note:"Zeile 1\nZeile 2",url:""});
  assert.equal(f.elements.pinNotes.value,"Zeile 1\nZeile 2");
 });
-test("URL panel swaps in place, cancel discards draft and save commits",()=>{
+test("URL popup overlays unchanged notes, cancel discards draft and save commits",()=>{
  const f=fixture();f.controller.render({id:"p",note:"",url:"https://example.com"});
- f.fire("pinUrlButton");assert.equal(f.elements.pinNotesBlock.classes.has("hidden"),true);
+ f.fire("pinUrlButton");assert.equal(f.elements.pinNotesBlock.classes.has("hidden"),false);
  assert.equal(f.elements.pinUrlBlock.classes.has("hidden"),false);
  assert.equal(f.elements.pinUrlOpen.disabled,false);
  f.fire("pinUrl","input","not-a-valid-url");
@@ -60,10 +60,12 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  const html=read("index.html"),sw=read("sw.js"),css=read("styles.css");
  const section=html.split('<section id="pinPanel"')[1].split("</section>")[0];
  assert.ok(section.includes('id="pinNotes"'));
- assert.ok(section.includes('id="pinUrlOpen"'));
+ assert.ok(section.includes('class="pin-navigation-row"'));
+ assert.equal((section.match(/ disabled/g)||[]).length,6,"Five navigation placeholders plus weather");
+ assert.ok(html.includes('id="pinUrlOpen"'));
  assert.ok(section.includes('id="pinWeather"'));
  assert.match(section,/id="pinWeather"[^>]*disabled/);
- assert.match(css,/#pinPanel #pinNotes\{[^}]*height:144px/);
+ assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
  assert.match(css,/@media\(max-width:700px\)\{\s*#pinPanel #pinNotes\{font-size:16px/);
  assert.ok(css.includes("@media(hover:none) and (pointer:coarse)"),"iPhone landscape must retain 16px notes");
  assert.ok(sw.includes('"./ui/pin-details.js"'));
