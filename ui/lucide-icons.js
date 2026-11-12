@@ -12,11 +12,13 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    "arrow-up-right": [["path",{"d":"M7 7h10v10"}],["path",{"d":"M7 17 17 7"}]],
+    "circle-dot": [["circle",{"cx":"12","cy":"12","r":"10"}],["circle",{"cx":"12","cy":"12","r":"3"}]],
     "layers-arrow-down": [["path",{"d":"m12 2 9 5-9 5-9-5 9-5Z"}],["path",{"d":"m3 12 9 5 3.5-1.95"}],["path",{"d":"M12 22v-6"}],["path",{"d":"m9 19 3 3 3-3"}]],
-    "link-2": [["path",{"d":"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"}],["path",{"d":"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"}]],
-    "save-check": [["path",{"d":"M15.2 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h11"}],["path",{"d":"M17 2v6H7V2"}],["path",{"d":"M7 22v-8h8"}],["path",{"d":"m16 19 2 2 4-4"}]],
+    "link-2": [["path",{"d":"M15 7h3a5 5 0 0 1 0 10h-3"}],["path",{"d":"M9 17H6a5 5 0 0 1 0-10h3"}],["path",{"d":"M8 12h8"}]],
+    "save-check": [["path",{"d":"M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v6"}],["path",{"d":"M17 3v5H7V3"}],["path",{"d":"M7 21v-8h10"}],["path",{"d":"m16 19 2 2 4-4"}]],
     "external-link": [["path",{"d":"M15 3h6v6"}],["path",{"d":"M10 14 21 3"}],["path",{"d":"M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"}]],
-    "cloud-sun-rain": [["path",{"d":"M12 2v2"}],["path",{"d":"m4.93 4.93 1.42 1.42"}],["path",{"d":"M2 12h2"}],["path",{"d":"M18 6a4 4 0 0 0-7 2"}],["path",{"d":"M8 17a5 5 0 0 1-.5-9.97A7 7 0 0 1 20 12a3 3 0 0 1 0 6"}],["path",{"d":"m10 19-1 3"}],["path",{"d":"m16 19-1 3"}]],
+    "cloud-sun-rain": [["path",{"d":"M12 2v2"}],["path",{"d":"m4.93 4.93 1.42 1.42"}],["path",{"d":"M20 12h2"}],["path",{"d":"m17.65 4.93-1.42 1.42"}],["path",{"d":"M12 8a4 4 0 0 1 4 4"}],["path",{"d":"M20 16.58A5 5 0 0 0 18 7h-.26A7 7 0 1 0 4 16"}],["path",{"d":"m8 19-1 3"}],["path",{"d":"m15 19-1 3"}]],
 
     "switch-camera": [
       ["path",{"d":"M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5"}],
