@@ -562,8 +562,8 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* Keep the original Lucide weather silhouette legible at the shared 38px size. */
 #pinPanel #pinWeather .p2m-lucide{width:24px;height:24px;stroke-width:2}
 #pinPanel #pinWeather.p2m-icon-control{
-  --p2m-button-bg:#f0f2f5;--p2m-button-ink:#52667b;
-  opacity:1;cursor:default;
+  --p2m-button-bg:#fff;--p2m-button-ink:#1c2733;
+  opacity:1;cursor:pointer;
 }
 #pinPanel .pin-actions #closePin.pin-ok-button{
   background:#c9eecb!important;color:#245b30!important;
