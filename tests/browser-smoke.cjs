@@ -440,7 +440,12 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinUrlSave").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
-    assert.equal(await page.locator("#pinWeather").isDisabled(),true);
+    assert.equal(await page.locator("#pinWeather").isEnabled(),true);
+    await page.locator("#pinWeather").click();
+    assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
+    await page.locator("#pinWeather").click();
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinCreated").count(),0);
     assert.equal(await page.locator("#pinUpdated").count(),0);
     await page.waitForTimeout(650);
