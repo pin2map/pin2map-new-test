@@ -914,7 +914,7 @@ async function longPress(page,x,y,ms=725){
     step("satellite inspector: deliberate click, street overlays, single marker and reversible relief");
     await page.route("**/World_Imagery/MapServer/identify?**",async route=>{
       await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
-        results:[{layerId:4,attributes:{DATE:20240115,PROVIDER:"Vantor",RESOLUTION:0.5}}]
+        results:[{layerId:4,attributes:{DATE:20240115,RESOLUTION:0.5,ACCURACY:1.2,SOURCE_INFO:"Imagery provider",SOURCE:"Vantor"}}]
       })});
     });
     await page.locator("#basemapButton").click();
@@ -924,20 +924,31 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#satelliteRoads").check();
     assert.equal(await page.locator("#satelliteInspect").isEnabled(),true);
     const imageryOverlaySources=await page.locator("#map .leaflet-pane img").evaluateAll(imgs=>imgs.map(img=>img.src));
+    assert.ok(imageryOverlaySources.filter(src=>src.includes("World_Transportation")||src.includes("World_Boundaries_and_Places")).every(src=>src.includes("/Reference/")), "Esri references must use Reference/ service paths");
     assert.ok(imageryOverlaySources.some(src=>src.includes("World_Transportation")));
     assert.ok(imageryOverlaySources.some(src=>src.includes("World_Boundaries_and_Places")));
     await page.locator("#satelliteInspect").click();
     assert.equal(await page.locator("#basemapMenu").isHidden(),true);
     assert.equal(await page.locator("#satelliteInspect").getAttribute("aria-pressed"),"true");
+    assert.equal(await page.locator("#map").evaluate(el=>getComputedStyle(el).cursor),"crosshair");
     await page.locator("#map").click({position:{x:38,y:305}});
-    await page.waitForFunction(()=>document.querySelector("#satelliteInfoFields")?.textContent?.includes("15.01.2024"),null,{timeout:6000});
-    assert.match(await page.locator("#satelliteInfoFields").innerText(),/Bildanbieter/);
+    await page.waitForFunction(()=>document.querySelector("#satelliteInfoFields")?.textContent?.includes("2024-01-15"),null,{timeout:6000});
+    const infoRows=page.locator("#satelliteInfoFields .satellite-info-row");
+    assert.deepEqual(await infoRows.locator("strong").allTextContents(),[
+      "Aufnahmedatum","Resolution","Accuracy","Source_info","Datenquelle","Link zu Wayback"
+    ]);
+    assert.equal(await infoRows.nth(0).locator("span").innerText(),"2024-01-15");
+    const wayback=infoRows.last().locator("a");
+    assert.equal(await wayback.getAttribute("target"),"_blank");
+    assert.equal(await wayback.getAttribute("rel"),"noopener noreferrer");
+    assert.match(await wayback.getAttribute("href"),/livingatlas\\.arcgis\\.com\\/wayback\\/#mapCenter=/);
     assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),1);
     await page.locator("#map").click({position:{x:58,y:326}});
     assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),1);
     await page.locator("#satelliteInfoClose").click();
     assert.equal(await page.locator("#satelliteInfoPanel").isHidden(),true);
     assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),0);
+    assert.notEqual(await page.locator("#map").evaluate(el=>getComputedStyle(el).cursor),"crosshair");
     await page.locator("#basemapButton").click();
     await page.locator('#basemapMenu [data-basemap="street"]').click();
     assert.equal(await page.locator("#satelliteInspect").isDisabled(),true);
