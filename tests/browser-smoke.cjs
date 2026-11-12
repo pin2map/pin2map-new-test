@@ -941,7 +941,7 @@ async function longPress(page,x,y,ms=725){
     const wayback=infoRows.last().locator("a");
     assert.equal(await wayback.getAttribute("target"),"_blank");
     assert.equal(await wayback.getAttribute("rel"),"noopener noreferrer");
-    assert.match(await wayback.getAttribute("href"),/livingatlas\\.arcgis\\.com\\/wayback\\/#mapCenter=/);
+    assert.ok((await wayback.getAttribute("href")).startsWith("https://livingatlas.arcgis.com/wayback/#mapCenter="));
     assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),1);
     await page.locator("#map").click({position:{x:58,y:326}});
     assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),1);
