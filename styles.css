@@ -551,6 +551,8 @@ body.pin-relocation-picking #map .leaflet-interactive{
   color:#253a4b;font:700 18px/1 system-ui,-apple-system,sans-serif;
 }
 #pinPanel .pin-actions button .p2m-lucide{width:22px;height:22px}
+/* Keep the original Lucide weather silhouette legible at the shared 38px size. */
+#pinPanel #pinWeather .p2m-lucide{width:24px;height:24px;stroke-width:2}
 #pinPanel #pinWeather.p2m-icon-control:disabled{
   --p2m-button-bg:#f0f2f5;--p2m-button-ink:#52667b;
   opacity:1;cursor:default;
