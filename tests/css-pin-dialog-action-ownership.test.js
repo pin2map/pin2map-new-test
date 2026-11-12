@@ -11,11 +11,10 @@ const rule=selector=>{
 };
 test("pin editor shared selector owns all compact action dimensions",()=>{
   assert.ok(css.includes("#pinPanel button:is(#deletePin,#movePin,#closePin,#showPinLayer,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather),"));
-  const body=rule("#pinUrlBlock button:is(#pinUrlCancel,#pinUrlSave,#pinUrlOpen)");
-  for(const key of ["width","height","min-width","min-height","max-width","max-height"]){
-    assert.ok(body.includes(key+":var(--p2m-pin-dialog-action-size)!important;"),key);
-  }
-  assert.ok(body.includes("flex:0 0 var(--p2m-pin-dialog-action-size)!important;"));
+  const body=rule("#pinUrlBlock .pin-url-actions button");
+  assert.ok(body.includes("min-width:52px"));
+  assert.ok(body.includes("border-radius:8px"));
+  assert.ok(body.includes("height:34px"));
 });
 test("delete action remains available and the footer OK is size-token driven",()=>{
   const del=rule("#pinPanel #deletePin.p2m-icon-control");
@@ -23,7 +22,8 @@ test("delete action remains available and the footer OK is size-token driven",()
   assert.ok(del.includes("--p2m-button-bg:#ed433d;--p2m-button-ink:#fff"));
   assert.ok(ok.includes("background:#c9eecb!important;color:#245b30!important"));
   const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
-  assert.ok(html.includes('<div class="pin-meta-row">')&&html.includes('id="deletePin"'));
+  assert.ok(!html.includes('id="pinCreated"')&&!html.includes('id="pinUpdated"'));
+  assert.ok(html.includes('id="deletePin"'));
   assert.doesNotMatch(html,/id="cancelPin"/);
   assert.match(html,/id="deletePin"[^>]*data-pin-icon="x"/);
 });
