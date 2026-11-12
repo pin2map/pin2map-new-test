@@ -44,7 +44,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         });
         assert.equal(liveScale.count,1,"Published scale present: "+JSON.stringify(liveScale));
         assert.equal(liveScale.lines,1,"Metric scale only: "+JSON.stringify(liveScale));
-        assert.match(liveScale.label,/^(?:[0-9.,]+)\\s*(?:m|km)$/);
+        assert.match(liveScale.label,/^(?:[0-9.,]+)\s*(?:m|km)$/);
         assert.ok(liveScale.width>0&&liveScale.width<=165);
         assert.ok(Math.abs(liveScale.center-viewport.width/2)<=3,
           "Published scale is horizontally centered: "+JSON.stringify(liveScale));
