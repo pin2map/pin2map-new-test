@@ -12,6 +12,21 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    "switch-camera": [
+      ["path",{"d":"M11 5H7L5 7H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2v-5"}],
+      ["circle",{"cx":"12","cy":"14","r":"3"}],
+      ["path",{"d":"M16 3h6v6"}],["path",{"d":"m22 3-5 5"}],
+      ["path",{"d":"M13 3h-1"}]
+    ],
+    "satellite": [
+      ["path",{"d":"M13 7 9 3 3 9l4 4"}],
+      ["path",{"d":"m16 8 5 5-8 8-5-5"}],
+      ["path",{"d":"m2 22 5-5"}],
+      ["path",{"d":"m16 2 6 6"}],
+      ["path",{"d":"m9 15-2 2"}],
+      ["path",{"d":"M3 3l3 3"}]
+    ],
+
     "sun-medium": [
       ["circle",{"cx":"12","cy":"12","r":"4"}],
       ["path",{"d":"M12 2v2"}],
