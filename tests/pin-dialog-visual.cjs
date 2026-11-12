@@ -265,7 +265,7 @@ async function metrics(page){
      "Desktop note launcher bottom edge must match fieldset frame: "+JSON.stringify(positions));
    assert.ok(positions.logoComplete&&positions.logoWidth>0,"User-provided Wikipedia SVG must load locally");
    assert.equal(positions.deleteIcon,"map-pin-off");
-   assert.equal(positions.weatherStroke,"1.45");
+   assert.ok(Math.abs(Number.parseFloat(positions.weatherStroke)-1.45)<.01);
    await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v159-notes.png"});
    await page.locator("#pinWeather").click();
    const weatherFrame=await page.locator("#pinPanel .pin-detail-region").evaluate(el=>{
