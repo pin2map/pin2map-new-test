@@ -21,7 +21,7 @@ test("HTML script and style assets are represented in the canonical offline shel
  assert.ok(assets.includes("manifest.webmanifest"));
 });
 test("Defer script order matches the offline shell and has no duplicate module",()=>{
- const htmlModules=[...html.matchAll(/<script\\s+defer\\s+src="\\.\\/([^"]+\\.js)"/g)].map(m=>m[1]);
+ const htmlModules=[...html.matchAll(/<script[^>]+src="\.\/([^"]+\.js)"/g)].map(m=>m[1]);
  const coreModules=manifest().filter(p=>p.endsWith(".js"));
  assert.deepEqual(coreModules,htmlModules,
    "The same modules must load and cache in the same order; no second manually maintained list");
