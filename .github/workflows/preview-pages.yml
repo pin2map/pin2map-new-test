@@ -51,15 +51,22 @@ jobs:
           node --test tests/*.test.js
           for test_file in tests/check-*.mjs; do node "$test_file"; done
 
-      - name: Copy only the preview app under a separate URL
+      - name: Package only active modules referenced by the offline shell
         run: |
-          mkdir -p site-root/preview
-          rsync -a \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='tests' \
-            --exclude='docs' \
-            preview-source/ site-root/preview/
+          python3 preview-source/scripts/preview-bundle.py preview-source site-root/preview
+
+      - name: Assert Preview allowlist excludes historical experiments
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("site-root/preview")
+          forbidden=("maplibre", "pmtiles", "osm-raster-parity", "diagnostics.html", "tests/", "docs/", "scripts/")
+          files=[p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()]
+          unexpected=[f for f in files if any(fragment in f for fragment in forbidden)]
+          assert not unexpected, "Non-app experiments published: "+repr(unexpected)
+          assert "index.html" in files and "sw.js" in files and "app.js" in files
+          print("PASS: only application assets, no historical experiment routes")
+          PY
 
       - name: Vendor pinned Leaflet into the published preview
         run: |
@@ -174,6 +181,10 @@ jobs:
           assert 'href="./styles.css?__p2m_release=' in preview
           assert (Path("site-root/preview/styles.css").stat().st_size > 1000), "Preview stylesheet missing"
           assert (Path("site-root/preview/app.js").stat().st_size > 1000), "Preview app.js missing"
+          assert not (Path("site-root/preview/maplibre-full-integration.html")).exists()
+          assert not (Path("site-root/preview/pmtiles-experiment-1.html")).exists()
+          assert not (Path("site-root/preview/diagnostics.html")).exists()
+
           # Custom layer selector must be in the published bundle, not only CI.
           assert 'id="pinLayerPicker"' in preview
           picker = Path("site-root/preview/ui/pin-layer-picker.js").read_text(encoding="utf-8")
