@@ -422,6 +422,20 @@ async function longPress(page,x,y,ms=725){
         width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})));
     assert.deepEqual(footerLayout.map(b=>b.id),footerIds);
     for(const item of footerLayout)assert.ok(Math.abs(item.width-42)<1&&Math.abs(item.height-42)<1,JSON.stringify(item));
+    step("dialog hover contract: no white-on-white icons");
+    for(const id of ["deletePin","pinLayerTrigger","pinUrlButton","pinWeather","closePin"]){
+      await page.locator("#"+id).hover();
+      const hover=await page.locator("#"+id).evaluate(el=>{
+        const style=getComputedStyle(el);
+        return {background:style.backgroundColor,color:style.color,stroke:el.querySelector("svg")?.getAttribute("stroke")||""};
+      });
+      assert.equal(hover.background,"rgb(82, 96, 109)","Dark hover background: "+id+" "+JSON.stringify(hover));
+      assert.equal(hover.color,"rgb(255, 255, 255)","White icon color: "+id+" "+JSON.stringify(hover));
+    }
+    await page.locator("#pinPanel .pin-nav-add").hover({force:true});
+    assert.equal(await page.locator("#pinPanel .pin-nav-add").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(82, 96, 109)","Disabled placeholder + still has a legible hover style");
+    await page.locator("#pinName").hover();
     await page.locator("#pinNotes").fill("Erste Zeile\nZweite Zeile");
     step("desktop note editor opens centered with a larger editing area");
     assert.equal(await page.locator("#pinNotesExpand").isVisible(),true);
