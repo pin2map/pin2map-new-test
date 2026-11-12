@@ -908,6 +908,38 @@ async function longPress(page,x,y,ms=725){
 
 
 
+    step("satellite inspector: deliberate click, street overlays, single marker and reversible relief");
+    await page.route("**/World_Imagery/MapServer/identify?**",async route=>{
+      await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({
+        results:[{layerId:4,attributes:{DATE:20240115,PROVIDER:"Vantor",RESOLUTION:0.5}}]
+      })});
+    });
+    await page.locator("#basemapButton").click();
+    await page.locator('#basemapMenu [data-basemap="satellite"]').click();
+    await page.locator("#basemapButton").click();
+    assert.equal(await page.locator("#esriReliefToggle").isDisabled(),true);
+    await page.locator("#satelliteRoads").check();
+    assert.equal(await page.locator("#satelliteInspect").isEnabled(),true);
+    const imageryOverlaySources=await page.locator(".leaflet-tile-pane img").evaluateAll(imgs=>imgs.map(img=>img.src));
+    assert.ok(imageryOverlaySources.some(src=>src.includes("World_Transportation")));
+    assert.ok(imageryOverlaySources.some(src=>src.includes("World_Boundaries_and_Places")));
+    await page.locator("#satelliteInspect").click();
+    assert.equal(await page.locator("#basemapMenu").isHidden(),true);
+    assert.equal(await page.locator("#satelliteInspect").getAttribute("aria-pressed"),"true");
+    await page.locator("#map").click({position:{x:38,y:305}});
+    await page.waitForFunction(()=>document.querySelector("#satelliteInfoFields")?.textContent?.includes("15.01.2024"),null,{timeout:6000});
+    assert.match(await page.locator("#satelliteInfoFields").innerText(),/Bildanbieter/);
+    assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),1);
+    await page.locator("#map").click({position:{x:58,y:326}});
+    assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),1);
+    await page.locator("#satelliteInfoClose").click();
+    assert.equal(await page.locator("#satelliteInfoPanel").isHidden(),true);
+    assert.equal(await page.locator("#map .p2m-satellite-selection-icon").count(),0);
+    await page.locator("#basemapButton").click();
+    await page.locator('#basemapMenu [data-basemap="street"]').click();
+    assert.equal(await page.locator("#satelliteInspect").isDisabled(),true);
+    console.log("[browser] PASS – satellite imagery inspection and reversible overlay controls");
+
     step("startup hydration: malformed stored project uses existing default-project fallback");
     await page.evaluate(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
