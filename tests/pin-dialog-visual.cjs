@@ -133,6 +133,26 @@ async function metrics(page){
     assert.ok(m.documentScrollWidth<=viewport.width+2,"Unexpected horizontal document scroll");
     assert.equal(await page.locator("#pinGpxActions").isHidden(),true,
      "GPX controls are only visible when a real track association exists");
+    // Pin-specific modal is anchored within the original panel, preserving
+    // its identifying header and retaining all data after cancellation.
+    await page.locator("#pinName").fill("Sicherheits-Testpin");
+    await page.locator("#deletePin").click();
+    const deletion=await page.evaluate(()=>{
+      const rect=s=>document.querySelector(s).getBoundingClientRect();
+      const dialog=rect("#deleteDialog"),header=rect("#pinPanel .pin-editor-head");
+      const panel=rect("#pinPanel");
+      return {dialog:{left:dialog.left,top:dialog.top,right:dialog.right},
+        headerBottom:header.bottom,panelLeft:panel.left,panelRight:panel.right,
+        name:document.querySelector("#deletePinName").textContent};
+    });
+    assert.ok(Math.abs(deletion.dialog.left-deletion.panelLeft)<=1&&
+      Math.abs(deletion.dialog.right-deletion.panelRight)<=1,"Delete confirmation spans original panel");
+    assert.ok(deletion.dialog.top>=deletion.headerBottom-1,"Pin header stays visible");
+    assert.equal(deletion.name,"Sicherheits-Testpin","Delete confirmation names selected pin");
+    await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-delete.png"});
+    await page.locator('#deleteDialog button[value="cancel"]').click();
+    assert.equal(await page.locator("#deleteDialog").evaluate(el=>el.open),false);
+    assert.equal(await page.locator("#pinName").inputValue(),"Sicherheits-Testpin");
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
@@ -194,14 +214,15 @@ async function metrics(page){
       "Entire URL popup must fit horizontally inside pin panel");
 
     assert.ok(urlPopup.left>=4&&urlPopup.right<=viewport.width-4&&urlPopup.top>=4&&urlPopup.bottom<=viewport.height-4,JSON.stringify(urlPopup));
-    assert.ok(Math.abs(urlPopup.width-260)<=1,"URL popup width matches approved layer picker");
+    assert.ok(Math.abs(urlPopup.left-(pinBox.x+10))<=2&&Math.abs(urlPopup.right-(pinBox.x+pinBox.width-10))<=2,
+      "URL popup maintains symmetric 10px horizontal insets");
     assert.equal(urlPopup.actions.length,2,"Only OK and URL öffnen are shown");
     for(const item of urlPopup.actions)assert.ok(item.width>=52&&Math.abs(item.height-34)<=1,"Rectangular URL button "+JSON.stringify(item));
     assert.equal(await page.locator("#pinUrl").getAttribute("rows"),"3");
     assert.equal(await page.locator("#pinUrl").evaluate(el=>el.tagName),"TEXTAREA");
     assert.equal(await page.locator("#pinUrlBlock legend").textContent(),"Pin-URL");
     const urlFieldHeight=await page.locator("#pinUrl").evaluate(el=>el.getBoundingClientRect().height);
-    assert.ok(urlFieldHeight>=70,"Three-line URL input must be visibly taller");
+    assert.ok(urlFieldHeight>=80,"Expanded URL textarea has usable vertical space");
     assert.equal(await page.locator("#pinUrlCancel").count(),0);
     const initialTop=await page.locator("#pinUrlBlock").evaluate(el=>Number.parseFloat(el.style.top));
     await page.locator("#pinUrl").focus();
@@ -250,7 +271,7 @@ async function metrics(page){
    await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
    const positions=await page.evaluate(()=>{
     const rect=s=>document.querySelector(s).getBoundingClientRect();
-    const field=rect("#pinPanel .pin-detail-region"),button=rect("#pinNotesExpand");
+    const field=rect("#pinPanel .pin-detail-region"),button=rect("#pinNotesExpand .p2m-lucide");
     const logo=document.querySelector("#pinWikipedia .pin-wikipedia-logo");
     const weather=document.querySelector("#pinWeather");
     return {fieldRight:field.right,fieldBottom:field.bottom,
@@ -260,13 +281,13 @@ async function metrics(page){
       weatherStroke:getComputedStyle(weather.querySelector("svg")).strokeWidth};
    });
    assert.ok(Math.abs(positions.fieldRight-positions.buttonRight)<=1,
-     "Desktop note launcher right edge must match fieldset frame: "+JSON.stringify(positions));
+     "Desktop note glyph right edge must match fieldset frame: "+JSON.stringify(positions));
    assert.ok(Math.abs(positions.fieldBottom-positions.buttonBottom)<=1,
-     "Desktop note launcher bottom edge must match fieldset frame: "+JSON.stringify(positions));
+     "Desktop note glyph bottom edge must match fieldset frame: "+JSON.stringify(positions));
    assert.ok(positions.logoComplete&&positions.logoWidth>0,"User-provided Wikipedia SVG must load locally");
    assert.equal(positions.deleteIcon,"map-pin-off");
    assert.ok(Math.abs(Number.parseFloat(positions.weatherStroke)-1.45)<.01);
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v159-notes.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v160-notes.png"});
    await page.locator("#pinWeather").click();
    const weatherFrame=await page.locator("#pinPanel .pin-detail-region").evaluate(el=>{
     const c=getComputedStyle(el);return {display:c.display,top:c.borderTopStyle,topWidth:c.borderTopWidth};
@@ -274,9 +295,9 @@ async function metrics(page){
    assert.equal(weatherFrame.display,"block","Weather fieldset keeps native legend border rendering");
    assert.equal(weatherFrame.top,"solid");
    assert.equal(weatherFrame.topWidth,"1px");
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v159-weather.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v160-weather.png"});
    assert.deepEqual(errors,[]);
-   console.log("[visual] PASS desktop v159 icon, weather and note-corner geometry");
+   console.log("[visual] PASS desktop v160 icon, weather and note-corner geometry");
   }finally{await desktop.close();}
  }finally{await browser.close();}
 })().catch(error=>{console.error("[visual] FAIL",error.stack||error);process.exitCode=1;});
