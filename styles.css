@@ -601,11 +601,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
   --p2m-button-bg:#c9eecb;--p2m-button-ink:#245b30;
 }
 @media(max-width:700px){
-  #pinPanel #pinNotes{font-size:16px;line-height:1.3}
+  #pinPanel .pin-detail-region #pinNotes{font-size:16px;line-height:1.3}
   #pinUrlBlock #pinUrl{font-size:16px}
 }
 @media(hover:none) and (pointer:coarse){
-  #pinPanel #pinNotes,#pinUrlBlock #pinUrl{font-size:16px}
+  #pinPanel .pin-detail-region #pinNotes,#pinUrlBlock #pinUrl{font-size:16px}
 }
 @media(max-height:380px){
   .pin-panel{max-height:calc(100dvh - 18px);overflow-y:auto}
