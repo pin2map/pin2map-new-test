@@ -6,7 +6,7 @@
  * navigation it remains anchored to its pin even beyond viewport boundaries.
  */
 (function(root){
-  function anchorGeometry({point,mapRect,appRect,panelHeight,maxWidth=360,padding=16,offset=76}){
+  function anchorGeometry({point,mapRect,appRect,panelHeight,maxWidth=390,padding=16,offset=76}){
     const width=Math.min(maxWidth,appRect.width-padding);
     const x=mapRect.left+point.x-appRect.left;
     const y=mapRect.top+point.y-appRect.top;
@@ -50,6 +50,18 @@
       panel.style.bottom="auto";panel.style.right="auto";
       panel.style.transform="none";panel.style.width=positions.panel.width+"px";
       panel.classList.remove("panel-near-top");
+      // When a narrow mobile visual viewport is reduced by the keyboard,
+      // anchor the editor near the top of the remaining visible area.
+      // The fullscreen note editor handles long-form mobile typing separately.
+      const vv=this.document.defaultView?.visualViewport;
+      const mobile=this.document.defaultView?.innerWidth<=700;
+      if(mobile&&vv&&vv.height<this.document.defaultView.innerHeight*.78&&
+         panel.contains(this.document.activeElement)){
+        panel.style.left=Math.max(12,(vv.width-width)/2+vv.offsetLeft)+"px";
+        panel.style.top=(vv.offsetTop+12)+"px";
+        tip.classList.add("hidden");
+        return true;
+      }
       tip.style.left=positions.tip.left+"px";
       tip.style.top=positions.tip.top+"px";
       return true;
