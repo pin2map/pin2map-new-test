@@ -89,8 +89,8 @@
   setWeather(enabled){
    const next=Boolean(enabled);
    const panel=this.el("pinPanel");
-   const region=panel.querySelector(".pin-detail-region");
-   if(next&&!this.weatherMode){
+   const region=panel.querySelector?.(".pin-detail-region");
+   if(next&&!this.weatherMode&&region){
     // Measure navigation and notes before either is hidden; do not guess a pixel height.
     const nav=panel.querySelector(".pin-navigation-row").getBoundingClientRect();
     const notes=region.getBoundingClientRect();
@@ -105,13 +105,13 @@
    this.el("pinWeather").setAttribute("aria-pressed",String(this.weatherMode));
    this.el("pinWeather").setAttribute("aria-label",this.weatherMode?"Pin Notizen anzeigen":"Wetteransicht anzeigen");
    this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":"Pin Notizen";
-   if(this.weatherMode){
+   if(this.weatherMode&&region){
     // Match the top border of the original routing fieldsets precisely.
     const expected=Number.parseFloat(region.style.getPropertyValue("--pin-weather-middle-top"));
     const actual=region.getBoundingClientRect().top;
     if(Number.isFinite(expected)&&Number.isFinite(actual))
      region.style.marginTop=(Number.parseFloat(getComputedStyle(region).marginTop)||0)+(expected-actual)+"px";
-   }else{
+   }else if(region){
     region.style.removeProperty("margin-top");
    }
    this.onLayout(false);
