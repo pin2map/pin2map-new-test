@@ -31,6 +31,12 @@
       const center=this.map.getCenter();
       return {center:{lat:center.lat,lng:center.lng},zoom:this.map.getZoom()};
     }
+    getImageryQueryViewport(){
+      const bounds=this.map.getBounds(),size=this.map.getSize();
+      return {zoom:this.map.getZoom(),bounds:[
+        bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()
+      ],width:size.x,height:size.y};
+    }
     getContainer() { return this.map.getContainer(); }
     getSize() {
       const size=this.map.getSize();
