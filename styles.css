@@ -171,6 +171,13 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   white-space:nowrap;
   pointer-events:none;
 }
+/* Complete the Leaflet tooltip nose with the label's own thin dark outline. */
+#map .leaflet-tooltip-right.address-label::before{border-right-color:#777}
+#map .leaflet-tooltip-right.address-label::after{
+  content:"";position:absolute;pointer-events:none;
+  top:50%;left:-10px;margin-top:-5px;width:0;height:0;
+  border:5px solid transparent;border-right-color:rgba(255,255,255,.94);
+}
 .pin-marker{z-index:1}
 /* Info: keep only local stacking and typography. The shared map-control
    contract owns its diameter/surface, and the bottom-right contract owns
@@ -276,6 +283,12 @@ body.pin-open #pinPanel{visibility:visible}
   border-right:11px solid transparent;
   border-top:15px solid #fff;
   filter:drop-shadow(0 2px 1px #293a4d45);
+}
+/* The triangle is a continuation of the panel, not a separate shape:
+   conceal only the horizontal bottom border beneath its 20px-wide base. */
+.pin-dialog-tip::before{
+  content:"";position:absolute;left:-10px;top:-17px;
+  width:20px;height:3px;background:#fff;
 }
 body.pin-open .pin-dialog-tip:not(.hidden){display:block}
 
@@ -524,6 +537,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel #deletePin.p2m-icon-control{
   --p2m-button-bg:#bc2837;--p2m-button-ink:#fff;
   --p2m-button-border:#a81f2e;
+  transform:translateY(5px);
 }
 #pinPanel #deletePin.p2m-icon-control .p2m-lucide{width:23px;height:23px;stroke-width:2.6}
 #pinPanel .pin-navigation-buttons .p2m-lucide{width:21px;height:21px;stroke-width:2.3}
@@ -540,7 +554,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel #pinLayerTrigger[aria-expanded="true"]{
   background:#1764bf!important;color:#fff!important;border-color:#1764bf!important;
 }
-#pinPanel #movePin .p2m-relocate-icon{width:30px!important;height:21px!important}
+#pinPanel #movePin .p2m-relocate-icon{width:30px!important;height:21px!important;stroke-width:1.5}
 #pinPanel #showPinLayer.p2m-icon-control{margin-left:6px}
 /* Locally bundled user-provided Wikipedia globe; never rely on an external icon CDN. */
 #pinPanel #pinWikipedia .pin-wikipedia-logo{
@@ -608,12 +622,16 @@ body.pin-relocation-picking #map .leaflet-interactive{
 @media(min-width:701px) and (pointer:fine){
   #pinPanel .pin-detail-region{position:relative}
   #pinPanel .pin-detail-region #pinNotes{padding-right:40px;padding-bottom:34px}
+  /* Explicit exception: only the glyph is visible, at the fieldset corner.
+     The button retains its 26px hit target, without a circular surface. */
   #pinPanel #pinNotesExpand{
-    position:absolute;right:-1px;bottom:-1px;display:grid;place-items:center;
-    width:26px;height:26px;padding:0;border:0;border-radius:6px;
-    background:#fff;color:#61758b;box-shadow:none;
+    position:absolute;right:-1px;bottom:-1px;display:block;
+    width:26px;height:26px;padding:0;border:0;border-radius:0;
+    background:transparent;color:#61758b;box-shadow:none;
   }
-  #pinPanel #pinNotesExpand .p2m-lucide{width:18px;height:18px}
+  #pinPanel #pinNotesExpand .p2m-lucide{
+    position:absolute;right:0;bottom:0;width:20px;height:20px;
+  }
   .pin-note-editor.is-desktop{
     inset:50% auto auto 50%;transform:translate(-50%,-50%);
     width:min(900px,calc(100vw - 48px));
@@ -667,6 +685,11 @@ body.pin-note-editor-open{overflow:hidden}
     background:#52606d!important;color:#fff!important;border-color:#52606d!important;
   }
   #pinPanel button:hover .pin-wikipedia-logo{filter:invert(1)}
+  #pinPanel #pinNotesExpand:hover{
+    background:transparent!important;border-color:transparent!important;
+    color:#1764bf!important;
+  }
+  #pinPanel #movePin:hover .p2m-relocate-icon :is(path,circle){stroke:#fff}
 }
 #pinPanel button .p2m-lucide{stroke-width:1.8}
 #pinPanel #deletePin.p2m-icon-control .p2m-lucide{stroke-width:1.7}
@@ -696,14 +719,17 @@ body.pin-note-editor-open{overflow:hidden}
 #pinLayerMenu .pin-layer-visibility{display:inline-flex;flex:0 0 18px;color:#52677b}
 #pinLayerMenu .pin-layer-visibility-icon{width:18px;height:18px}
 #pinLayerMenu .pin-layer-visibility.is-hidden{color:#a66b78}
-/* Compact independent URL popover: long URLs wrap across three lines. */
+/* Wide but panel-contained URL popover; textarea grows vertically to fill
+   the measured space between the navigation buttons and footer. */
 #pinUrlBlock.pin-url-popup{
   position:fixed;z-index:1560;box-sizing:border-box;
+  display:flex;flex-direction:column;
   margin:0;padding:11px 10px 10px;border:1px solid #c7d0db;
   border-radius:12px;background:#fff;box-shadow:0 10px 30px #152c4550;
 }
 #pinUrlBlock .pin-url-field{
-  box-sizing:border-box;min-width:0;margin:0 0 10px;
+  box-sizing:border-box;min-width:0;min-height:0;flex:1;
+  display:flex;flex-direction:column;margin:0 0 10px;
   padding:2px 8px 7px;border:1px solid #c7d0db;
   border-radius:10px;background:#fff;
 }
@@ -714,7 +740,7 @@ body.pin-note-editor-open{overflow:hidden}
 }
 #pinUrlBlock #pinUrl{
   display:block;box-sizing:border-box;width:100%;
-  height:75px;min-height:75px;margin:0;padding:6px 4px;
+  height:auto;flex:1;min-height:80px;margin:0;padding:6px 4px;
   resize:none;overflow-y:auto;overflow-wrap:anywhere;word-break:break-word;
   border:0;outline-offset:1px;background:#fff;color:#26394c;
   font:400 16px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -1331,4 +1357,23 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   #map .leaflet-control-scale{
     top:max(72px,calc(env(safe-area-inset-top,0px) + 72px));
   }
+}
+
+
+/* Single-pin deletion is anchored over the current pin panel's body.
+   Keep the original pin-name header visible; unlike bulk deletion it
+   must never become an unrelated screen-centred confirmation. */
+#deleteDialog{
+  position:fixed;inset:auto;box-sizing:border-box;max-width:none;max-height:none;
+  margin:0;padding:20px 18px;overflow:auto;
+  background:#fff;border:1px solid #cbd4df;border-radius:0 0 15px 15px;
+  box-shadow:0 8px 22px #152c4525;
+}
+#deleteDialog::backdrop{background:transparent}
+#deleteDialog form{display:flex;flex-direction:column;justify-content:center;gap:22px;height:100%}
+#deleteDialog h2{margin:0;overflow-wrap:anywhere;font-size:17px;color:#26394c}
+#deleteDialog .dialog-actions{flex-wrap:wrap}
+#deleteDialog .dialog-actions button{min-height:42px;padding:8px 15px}
+#deleteDialog .dialog-actions button[value="confirm"]{
+  background:#bc2837;color:#fff;border-color:#a81f2e;
 }
