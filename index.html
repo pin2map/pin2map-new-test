@@ -94,7 +94,7 @@
 <body>
 <div id="app">
   <header class="topbar">
-    <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen" aria-label="Ort weltweit suchen"><button type="submit" id="searchButton" data-pin-icon="search" title="Ort suchen">⌕</button></form>
+    <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen" aria-label="Ort weltweit suchen"><button type="button" id="searchClear" class="search-clear hidden" aria-label="Suchfeld leeren" title="Suchfeld leeren"><span aria-hidden="true">×</span></button><button type="submit" id="searchButton" data-pin-icon="search" title="Ort suchen">⌕</button></form>
 
 
   </header>
@@ -129,11 +129,11 @@
   <button id="labelsToggle" data-pin-icon="tags" class="labels-toggle" type="button" title="Pin-Beschriftungen ein- oder ausblenden" aria-label="Pin-Beschriftungen ein- oder ausblenden"></button>
   <button id="basemapButton" data-pin-icon="map" class="basemap-map-button" type="button" title="Kartendarstellung auswählen" aria-label="Kartendarstellung auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="basemapMenu">▱</button>
   <section id="basemapMenu" class="basemap-menu hidden" aria-label="Darstellung">
-    <div class="basemap-menu-title">Darstellung</div>
+    <button type="button" class="basemap-choice" data-basemap="street" aria-pressed="false">Standard</button>
     <button type="button" class="basemap-choice" data-basemap="international" aria-pressed="false">International</button>
-    <button type="button" class="basemap-choice" data-basemap="street" aria-pressed="false">OSM Original</button>
-    <button type="button" class="basemap-choice" data-basemap="topo" aria-pressed="false">Topografisch</button>
     <button type="button" class="basemap-choice" data-basemap="humanitarian" aria-pressed="false">Humanitarian</button>
+    <button type="button" class="basemap-choice" data-basemap="topo" aria-pressed="false">Topografisch</button>
+    <hr class="basemap-satellite-divider" aria-hidden="true">
     <div class="basemap-satellite-choice-row">
       <button type="button" class="basemap-choice" data-basemap="satellite" aria-pressed="false">Satellit</button>
       <button type="button" id="satelliteReset" class="basemap-satellite-reset" title="Helligkeit auf 120 % zurücksetzen" aria-label="Helligkeit auf 120 % zurücksetzen"><span data-pin-icon="refresh-cw"></span><span>Standard</span></button>
