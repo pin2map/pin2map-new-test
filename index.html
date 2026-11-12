@@ -195,13 +195,13 @@
       <button id="closePin" type="button" class="pin-ok-button" data-close="pinPanel" title="Dialog schließen" aria-label="Dialog schließen">OK</button>
     </div>
   </section>
-  <div id="pinUrlBlock" class="pin-url-popup hidden" role="dialog" aria-label="URL zum Pin" aria-modal="false">
-    <label for="pinUrl">URL zum Pin</label>
-    <input id="pinUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://…" aria-label="URL zum Pin">
+  <div id="pinUrlBlock" class="pin-url-popup hidden" role="dialog" aria-label="Pin-URL bearbeiten" aria-modal="false">
+    <fieldset class="pin-url-field"><legend>Pin-URL</legend>
+      <textarea id="pinUrl" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="https://…" aria-label="Pin-URL"></textarea>
+    </fieldset>
     <div class="pin-url-actions">
-      <button id="pinUrlCancel" type="button" data-pin-icon="x" aria-label="URL-Eingabe abbrechen" title="Abbrechen"></button>
-      <button id="pinUrlSave" type="button" data-pin-icon="save-check" aria-label="URL speichern" title="Speichern"></button>
-      <button id="pinUrlOpen" type="button" data-pin-icon="external-link" aria-label="URL öffnen" title="Öffnen" disabled></button>
+      <button id="pinUrlSave" type="button" aria-label="Pin-URL speichern" title="Speichern">OK</button>
+      <button id="pinUrlOpen" type="button" aria-label="URL öffnen" title="URL öffnen" disabled>URL öffnen</button>
     </div>
   </div>
   
