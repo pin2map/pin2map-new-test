@@ -21,6 +21,12 @@
    if(this.document.activeElement!==name)name.value=pin.name||"";
    this.element("pinLayer").value=pin.layerId;
    this.element("pinCoords").textContent="Koordinaten: "+pin.lat.toFixed(6)+", "+pin.lng.toFixed(6);
+   const formatDate=value=>{
+     const timestamp=Date.parse(value||"");
+     return Number.isFinite(timestamp)?new Date(timestamp).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"}):"–";
+   };
+   this.element("pinCreated").textContent="Erstellt: "+formatDate(pin.createdAt);
+   this.element("pinUpdated").textContent="Geändert: "+formatDate(pin.updatedAt||pin.createdAt);
    this.element("pinHiddenInfo").classList.toggle("hidden",Boolean(layerVisible));
    // Preserve the SVG child: assigning textContent would remove the icon.
    const moveButton=this.element("movePin");
