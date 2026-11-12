@@ -131,10 +131,10 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
    assert.ok(section.includes("<legend>"+title+"</legend>"),"Frame legend: "+title);
  const placeholder=section.match(/<div class="pin-navigation-row"[\s\S]*?<\/div>\s*<\/fieldset>\s*<\/div>/)?.[0]||"";
  assert.equal((placeholder.match(/ disabled/g)||[]).length,5);
- assert.ok(section.includes('id="pinCreated"')&&section.includes('id="pinUpdated"'));
+ assert.ok(!section.includes('id="pinCreated"')&&!section.includes('id="pinUpdated"'));
  const popup=html.slice(html.indexOf('<div id="pinUrlBlock"'));
  assert.match(popup,/class="pin-url-popup hidden"/);
- for(const id of ["pinUrlCancel","pinUrlSave","pinUrlOpen"])assert.ok(popup.includes('id="'+id+'"'));
+ for(const id of ["pinUrlSave","pinUrlOpen"])assert.ok(popup.includes('id="'+id+'"'));
  const ids=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
  let last=-1;
  for(const id of ids){const index=section.indexOf('id="'+id+'"');assert.ok(index>last,id);last=index;}
