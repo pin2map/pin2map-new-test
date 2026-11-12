@@ -471,7 +471,12 @@ body.pin-relocation-picking #map .leaflet-interactive{
   --p2m-button-bg:#1679e5;--p2m-button-ink:#fff;--p2m-button-border:#b6c6d8;
 }
 #pinPanel .pin-nav-apple{background:#fff;color:#111;font-size:22px}
-#pinPanel .pin-nav-apple span{font-family:system-ui,-apple-system,sans-serif}
+#pinPanel .pin-nav-apple .p2m-lucide{width:23px;height:23px}
+#pinPanel .pin-navigation-buttons .pin-nav-start.p2m-icon-control,
+#pinPanel .pin-navigation-buttons .pin-nav-waypoint.p2m-icon-control,
+#pinPanel .pin-navigation-buttons .pin-nav-target.p2m-icon-control{
+  border-width:2px!important;
+}
 #pinPanel .pin-nav-start.p2m-icon-control{
   --p2m-button-bg:#f5f6f8;--p2m-button-ink:#141c25;--p2m-button-border:#ee4545;
 }
@@ -540,7 +545,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel #movePin .p2m-relocate-icon{width:30px!important;height:21px!important}
 #pinPanel #showPinLayer.p2m-icon-control{margin-left:6px}
-#pinPanel #pinWikipedia span{font:700 22px/1 system-ui,-apple-system,sans-serif}
+#pinPanel #pinWikipedia .pin-wikipedia-glyph{
+  display:grid;place-items:center;width:24px;height:24px;
+  box-sizing:border-box;border:1.5px solid #253a4b;border-radius:50%;
+  color:#253a4b;font:700 18px/1 system-ui,-apple-system,sans-serif;
+}
 #pinPanel .pin-actions button .p2m-lucide{width:22px;height:22px}
 #pinPanel #pinWeather.p2m-icon-control:disabled{
   --p2m-button-bg:#f0f2f5;--p2m-button-ink:#52667b;
@@ -592,7 +601,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinUrlBlock #pinUrlSave.p2m-icon-control{
   --p2m-button-bg:#eef1f4;--p2m-button-ink:#26394c;
 }
-#pinUrlBlock .pin-url-actions .p2m-lucide{width:23px;height:23px;stroke-width:2}
+#pinUrlBlock .pin-url-actions .p2m-lucide{width:25px;height:25px;stroke-width:1.9}
 #pinUrlBlock #pinUrlOpen.p2m-icon-control:disabled{
   --p2m-button-bg:#edf0f2;--p2m-button-ink:#8792a0;
   opacity:1;cursor:default;
