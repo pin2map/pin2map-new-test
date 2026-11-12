@@ -205,7 +205,7 @@
       const markup=html===undefined
         ? '<div class="pin-marker'+(selected?' selected':'')+'" style="background:'+color+'"></div>'+label
         : html;
-      marker.setIcon(window.L.divIcon({html:markup,iconSize:[50,64],iconAnchor:[25,61],className:"pin-icon"}));
+      marker.setIcon(window.L.divIcon({html:markup,iconSize:[68,64],iconAnchor:[25,61],className:"pin-icon"}));
       marker.options.title=title;
     }
     // Presentational Leaflet tooltip port. Keep provider-specific anchoring
