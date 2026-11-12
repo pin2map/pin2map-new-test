@@ -6,7 +6,7 @@ const ops=require("../application/pin-operations.js");
 const domain=require("../domain/project-model.js");
 function fixture(){
  const events={},elements={};
- for(const id of ["pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlCancel","pinUrlSave","pinUrlOpen","pinWikipedia"]){
+ for(const id of ["pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia"]){
   const el={value:"",disabled:false,attrs:{},classes:new Set(id==="pinUrlBlock"?["hidden"]:[]),
    addEventListener(name,handler){(events[id]??={})[name]=handler;},
    setAttribute(k,v){this.attrs[k]=v;},
@@ -29,14 +29,14 @@ test("notes are edited inline without a replacement textarea or save dialog",()=
  f.controller.render({id:"p",note:"Zeile 1\nZeile 2",url:""});
  assert.equal(f.elements.pinNotes.value,"Zeile 1\nZeile 2");
 });
-test("URL popup overlays unchanged notes, cancel discards draft and save commits",()=>{
+test("URL popup overlays unchanged notes, button toggles draft and save commits",()=>{
  const f=fixture();f.controller.render({id:"p",note:"",url:"https://example.com"});
  f.fire("pinUrlButton");assert.equal(f.elements.pinNotesBlock.classes.has("hidden"),false);
  assert.equal(f.elements.pinUrlBlock.classes.has("hidden"),false);
  assert.equal(f.elements.pinUrlOpen.disabled,false);
  f.fire("pinUrl","input","not-a-valid-url");
  assert.equal(f.elements.pinUrlOpen.disabled,true);
- f.fire("pinUrlCancel");assert.equal(f.elements.pinUrl.value,"https://example.com");
+ f.fire("pinUrlButton");assert.equal(f.elements.pinUrl.value,"https://example.com");
  assert.deepEqual(f.urls,[]);
  f.fire("pinUrlButton");f.fire("pinUrl","input","https://openstreetmap.org");
  f.fire("pinUrlSave");
@@ -63,6 +63,9 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  assert.ok(section.includes('class="pin-navigation-row"'));
  assert.equal((section.match(/ disabled/g)||[]).length,6,"Five navigation placeholders plus weather");
  assert.ok(html.includes('id="pinUrlOpen"'));
+ assert.ok(!html.includes('id="pinUrlCancel"'));
+ assert.ok(html.includes('<textarea id="pinUrl" rows="3"'));
+ assert.ok(html.includes('<legend>Pin-URL</legend>'));
  assert.ok(section.includes('id="pinWeather"'));
  assert.match(section,/id="pinWeather"[^>]*disabled/);
  assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
