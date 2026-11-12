@@ -18,17 +18,21 @@
   function appearance({pin,color,selected}){
     const flags=statusFlags(pin);
     const safeColor=/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(color)?color:"#3676c4";
-    const badges=[
-      flags.note?'<span class="pin-status-badge pin-status-note" title="Notiz vorhanden" aria-label="Notiz vorhanden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 11h8M10 15h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>':"",
-      flags.url?'<span class="pin-status-badge pin-status-url" title="URL vorhanden" aria-label="URL vorhanden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H7a5 5 0 0 0 0 10h2m6-10h2a5 5 0 0 1 0 10h-2M8 12h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>':"",
-      flags.gpx?'<span class="pin-status-badge pin-status-gpx" title="GPX-Track vorhanden" aria-label="GPX-Track vorhanden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 18 6-11 6 7 6-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="3" cy="18" r="2" fill="currentColor"/><circle cx="21" cy="4" r="2" fill="currentColor"/></svg></span>':""
-    ].filter(Boolean).join("");
-    // A wide teardrop with a large white center, not a rotated square.
-    // The three badges always stack flush in a single compact column.
+    // Three 120-degree sectors: top-left note, top-right URL, bottom GPX.
+    // Status is derived entirely from existing persisted pin fields.
+    const noteColor=flags.note?"#d94f55":"#e8edf2";
+    const urlColor=flags.url?"#2979d1":"#e8edf2";
+    const gpxColor=flags.gpx?"#8f989f":"#e8edf2";
     const html='<div class="pin-marker'+(selected?' selected':'')+'" style="color:'+safeColor+'">'
-      +'<svg class="pin-marker-shape" viewBox="0 0 36 46" aria-hidden="true"><path d="M18 44C13 36 2 24 2 17a16 16 0 0 1 32 0c0 7-11 19-16 27Z" fill="currentColor" stroke="#fff" stroke-width="2.8" stroke-linejoin="round"/><circle cx="18" cy="17" r="10.4" fill="#fff"/></svg>'
-      +(badges?'<span class="pin-status-column" aria-label="Weitere Pin-Inhalte">'+badges+'</span>':"")
-      +'</div>';
+      +'<svg class="pin-marker-shape" viewBox="0 0 30 40" aria-hidden="true">'
+      +'<path d="M15 38C10 30 2 21 2 15a13 13 0 0 1 26 0c0 6-8 15-13 23Z" fill="currentColor" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
+      +'<g class="pin-status-segments">'
+      +'<path class="pin-sector-note" d="M15 14 8.1 18A8 8 0 0 1 15 6Z" fill="'+noteColor+'"/>'
+      +'<path class="pin-sector-url" d="M15 14 15 6A8 8 0 0 1 21.9 18Z" fill="'+urlColor+'"/>'
+      +'<path class="pin-sector-gpx" d="M15 14 21.9 18A8 8 0 0 1 8.1 18Z" fill="'+gpxColor+'"/>'
+      +'<circle cx="15" cy="14" r="8" fill="none" stroke="#fff" stroke-width="1.1"/>'
+      +'<path d="M15 14V6M15 14 8.1 18M15 14 21.9 18" stroke="#fff" stroke-width="1.05" stroke-linecap="round"/>'
+      +'</g></svg></div>';
     return {html,title:pin.name||"Pin"};
   }
   // Legacy contract: permanently visible pin-name tooltip on the right,
