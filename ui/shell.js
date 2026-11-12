@@ -33,6 +33,7 @@
       this.element("layersPanel").classList.add("hidden");
       this.element("settingsPanel").classList.add("hidden");
       this.element("layersButton").setAttribute("aria-expanded","false");
+      this.element("settingsButton").setAttribute("aria-expanded","false");
     }
     togglePanel(id){
       if(id!=="layersPanel"&&id!=="settingsPanel")
@@ -43,6 +44,8 @@
       if(wasHidden)panel.classList.remove("hidden");
       this.element("layersButton").setAttribute("aria-expanded",
         String(!this.element("layersPanel").classList.contains("hidden")));
+      this.element("settingsButton").setAttribute("aria-expanded",
+        String(!this.element("settingsPanel").classList.contains("hidden")));
     }
     closePanel(id){
       if(id!=="layersPanel"&&id!=="settingsPanel")
@@ -50,6 +53,8 @@
       this.element(id).classList.add("hidden");
       if(id==="layersPanel")
         this.element("layersButton").setAttribute("aria-expanded","false");
+      if(id==="settingsPanel")
+        this.element("settingsButton").setAttribute("aria-expanded","false");
     }
     updateLabelButton(labelsVisible){
       const button=this.element("labelsToggle");
