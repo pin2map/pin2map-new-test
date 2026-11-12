@@ -13,12 +13,14 @@
     start(){
       if(this.active){this.stop();return;}
       this.active=true;this.button.setAttribute("aria-pressed","true");
+      this.mapPort.setInspectionCursor?.(true);
       this.onNotice("Bildposition auf der Karte antippen");
     }
     stop(){
       this.active=false;this.serial++;
       this.abortController?.abort();this.abortController=null;
       this.mapPort.clearSatelliteSelection();this.marker=null;
+      this.mapPort.setInspectionCursor?.(false);
       this.panel.classList.add("hidden");
       this.getElement("satelliteInfoFields").replaceChildren();
       this.button.setAttribute("aria-pressed","false");
@@ -38,7 +40,7 @@
         if(serial!==this.serial||!this.active)return true;
         fields.replaceChildren();
         for(const field of result.fields)this.addRow(fields,field.name,field.value);
-        if(!result.fields.length)this.addRow(fields,"Hinweis",result.message);
+        this.addWaybackRow(fields,result.waybackUrl);
       }catch(error){
         if(serial!==this.serial||!this.active||error?.name==="AbortError")return true;
         fields.replaceChildren();
@@ -51,6 +53,14 @@
       const title=this.document.createElement("strong");title.textContent=name;
       const detail=this.document.createElement("span");detail.textContent=value;
       row.append(title,detail);parent.append(row);
+    }
+    addWaybackRow(parent,url){
+      const row=this.document.createElement("div");row.className="satellite-info-row";
+      const title=this.document.createElement("strong");title.textContent="Wayback";
+      const link=this.document.createElement("a");
+      link.textContent="In Wayback öffnen";
+      link.href=url;link.target="_blank";link.rel="noopener noreferrer";
+      row.append(title,link);parent.append(row);
     }
     bind(){
       this.button.addEventListener("click",()=>{
