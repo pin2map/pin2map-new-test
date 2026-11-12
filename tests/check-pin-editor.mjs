@@ -17,7 +17,7 @@ function element(){
   }
  };
 }
-const ids=["pinPanel","pinDialogTip","pinName","pinLayer","pinCoords","pinHiddenInfo","movePin"];
+const ids=["pinPanel","pinDialogTip","pinName","pinLayer","pinCoords","pinCreated","pinUpdated","pinHiddenInfo","movePin"];
 const nodes=Object.fromEntries(ids.map(id=>[id,element()]));
 const body=element(),doc={body,activeElement:null};
 let layouts=0;
@@ -32,6 +32,8 @@ assert.equal(body.classList.contains("pin-open"),true);
 assert.equal(nodes.pinName.value,"Aussichtspunkt");
 assert.equal(nodes.pinLayer.value,"private");
 assert.equal(nodes.pinCoords.textContent,"Koordinaten: 48.775800, 9.182900");
+assert.match(nodes.pinCreated.textContent,/^Erstellt:/);
+assert.match(nodes.pinUpdated.textContent,/^Geändert:/);
 assert.equal(nodes.pinHiddenInfo.classList.contains("hidden"),true);
 assert.equal(nodes.movePin.getAttribute("aria-label"),"Pin verschieben");
 assert.equal(nodes.movePin.title,"Pin verschieben");
