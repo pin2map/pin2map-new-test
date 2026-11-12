@@ -57,10 +57,11 @@ dialog{border:0;border-radius:13px;padding:24px;box-shadow:0 15px 70px #0004;max
 dialog::backdrop{background:#1629457a}
 dialog h2{font-size:18px;margin:0 0 24px}
 .dialog-actions{display:flex;justify-content:end;gap:10px}
-/* Wide predecessor-inspired teardrop; Leaflet owns its 50x64 anchor. */
-/* Wide compact SVG body inside a separate 44px Leaflet tap target. */
-.pin-marker{position:relative;left:7px;top:0;width:30px;height:40px;filter:drop-shadow(0 2px 2px #142b4560)}
-.pin-marker .pin-marker-shape{display:block;width:30px;height:40px;overflow:visible}
+/* Predecessor reference: 36px pin body and extra 42px touch proximity.
+   Our proportional 36x48 teardrop is centered in a separate 52x56 target.
+   This is presentation only: the persisted coordinate remains at its tip. */
+.pin-marker{position:relative;left:8px;top:0;width:36px;height:48px;filter:drop-shadow(0 2px 2px #142b4560)}
+.pin-marker .pin-marker-shape{display:block;width:36px;height:48px;overflow:visible}
 .pin-marker.selected .pin-marker-shape{filter:drop-shadow(0 0 1px #102d52)}
 .pin-status-segments{pointer-events:none}
 .leaflet-div-icon{background:none;border:none}
@@ -144,6 +145,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .panel{top:calc(56px + env(safe-area-inset-top,0px))!important}
 .notice{top:calc(56px + env(safe-area-inset-top,0px))!important}
 /* Pin editor floats above the actual map pin instead of using the bottom edge. */
+:root{--p2m-pin-dialog-surface:#f7f8fa}
 .pin-panel{
   position:absolute!important;z-index:1250!important;
   right:auto!important;bottom:auto!important;
@@ -274,21 +276,21 @@ body.pin-open .leaflet-control-container .leaflet-control:not(.leaflet-control-a
 body.pin-open #pinPanel{visibility:visible}
 
 
-/* Predecessor popup geometry: 76px clearance measured from pin anchor to
-   the editor's bottom edge. Separate pointer avoids overflow clipping. */
+/* v162: 86px clearance between anchor and panel bottom accommodates the
+   enlarged pin and upper information label without overlap. Arrow shape unchanged. */
 .pin-dialog-tip{
   position:absolute;z-index:1251;pointer-events:none;
   width:0;height:0;transform:translateX(-50%);
   border-left:11px solid transparent;
   border-right:11px solid transparent;
-  border-top:15px solid #fff;
+  border-top:15px solid var(--p2m-pin-dialog-surface);
   filter:drop-shadow(0 2px 1px #293a4d45);
 }
 /* The triangle is a continuation of the panel, not a separate shape:
    conceal only the horizontal bottom border beneath its 20px-wide base. */
 .pin-dialog-tip::before{
   content:"";position:absolute;left:-10px;top:-17px;
-  width:20px;height:3px;background:#fff;
+  width:20px;height:3px;background:var(--p2m-pin-dialog-surface);
 }
 body.pin-open .pin-dialog-tip:not(.hidden){display:block}
 
@@ -443,7 +445,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 :root{--p2m-pin-dialog-action-size:42px}
 #pinPanel{
   padding:10px 12px!important;
-  background:#fff;border:1px solid #cbd4df;border-radius:15px;
+  background:var(--p2m-pin-dialog-surface);border:1px solid #cbd4df;border-radius:15px;
 }
 #pinPanel .pin-editor-head{
   display:flex;align-items:center;gap:9px;min-width:0;margin:0;
@@ -1370,7 +1372,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #deleteDialog{
   position:fixed;inset:auto;box-sizing:border-box;max-width:none;max-height:none;
   margin:0;padding:20px 18px;overflow:auto;
-  background:#fff;border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
+  background:var(--p2m-pin-dialog-surface);border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
   box-shadow:0 8px 22px #152c4525;
 }
 #deleteDialog::backdrop{background:transparent}
