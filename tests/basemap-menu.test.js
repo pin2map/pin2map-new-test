@@ -120,7 +120,14 @@ test("satellite menu markup has requested order, Lucide icons and neutral fallba
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
   const model=require("../domain/project-model.js");
   const section=html.slice(html.indexOf('id="basemapMenu"'),html.indexOf('id="searchResults"'));
-  assert.ok(section.indexOf('data-basemap="humanitarian"')<section.indexOf('data-basemap="satellite"'));
+  const choices=[...section.matchAll(/data-basemap="([^"]+)"/g)].map(match=>match[1]);
+  assert.deepEqual(choices,["street","international","humanitarian","topo","satellite"]);
+  assert.match(section,/data-basemap="street"[^>]*>Standard<\/button>/);
+  assert.doesNotMatch(section,/class="basemap-menu-title"/);
+  assert.ok(section.indexOf('class="basemap-satellite-divider"')>
+    section.indexOf('data-basemap="topo"'));
+  assert.ok(section.indexOf('class="basemap-satellite-divider"')<
+    section.indexOf('data-basemap="satellite"'));
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteBrightness"'));
   assert.ok(section.indexOf('id="satelliteBrightness"')<section.indexOf('id="esriReliefToggle"'));
   assert.match(section,/data-pin-icon="sun-medium"/);
