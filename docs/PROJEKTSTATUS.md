@@ -565,3 +565,14 @@
 3. Verbindliche neue Fachentscheidungen im dafür zuständigen Dokument festhalten und hier nur kurz mit Fundstelle referenzieren – **keine konkurrierende zweite Entscheidungssammlung**.
 4. Nach jedem Commit die betroffenen GitHub-Dateien erneut lesen; publizierte Version und Workflowstatus gesondert prüfen.
 5. Nach einem Chatwechsel genügt als Einstieg grundsätzlich: **„pin2map NEW – bitte nach docs/PROJEKTSTATUS.md im Feature-Branch fortsetzen.“** Die Ausführung beginnt mit einer frischen Repository-Prüfung.
+
+
+## 4ax. v144 – Satellitenreferenzlayer und bewusste Einzelpunkt-Metadaten-Abfrage (2026-11-12; Prüfung läuft)
+
+- **Nutzerabnahme v143:** Der Auftraggeber meldete „alle Tests bestanden“. Diese persönliche Abnahme gilt für die bereits in v143 veröffentlichte Kartenwahl, aktiven Menüauslöser und mobilen Suchfeld-Löschen-Button.
+- **Freigabe für v144:** Ein einziger `switch-camera`-Button ersetzt zwei getrennte Datum-/Quellenauslöser. Erst nach seiner Aktivierung fragt der nächste Karten-Tap die aktuellen World-Imagery-Bildmetadaten an und markiert die Stelle durch einen temporären gelben gestrichelten Kreis mit Satellitensymbol. Weitere Taps ersetzen die Auswahl und brechen ältere Requests ab; Schließen/Escape/Kartenwechsel setzt alles zurück. Datums- und sonstige gelieferte Quellfelder werden in einem separaten Overlay dargestellt.
+- **Optionaler Satelliten-Referenzlayer:** Esri World Transportation und World Boundaries and Places über Esri World Imagery, unter Markern/Pins. Einstellung `satelliteRoads` in bestehendem Projektobjekt (Default aus); keine IndexedDB-Migration. Schummerung in Satellitenkarte deaktiviert/ausgegraut, gespeicherter Zustand bleibt für Nicht-Satellitenkarten erhalten. Bestehende 120-%-Helligkeit unverändert.
+- **Module:** `adapters/esri-imagery-metadata.js`, `ui/satellite-inspector.js`; Ergänzungen in Leaflet-Adapter, Kartenmenü, Gestensteuerung und Composition Root. Offline-App-Shell `v144` nimmt beide neuen Skripte auf. Esri-Identify wird nur nach Kartenpunkt-Tap gestartet; kein Pin wird aus der gelben Markierung erzeugt. Anbieter-Metadaten variieren mit Position und Zoom; ein Veröffentlichungsdatum darf nicht aus dem Aufnahmedatum geschätzt werden.
+- **Tests:** `tests/satellite-inspector.test.js` für Anfrage und Markierungslebenszyklus, bestehende Menü-/Klick-/Architekturprüfungen angepasst. CI-/Pages-/HTTPS-Nachweise erst nach dem finalen Quellcommit verifizieren. Reale iPhone-Abnahme bleibt offen.
+- **Geschützt:** `main`, `reference/*`, Nutzerpins, IndexedDB-Schema, alte OSM-Kacheln, v143-Schaltflächen und bestehende Karten-IDs.
+- **Nächster Schritt:** Endgültige CI-/Chromium-/Pages-/HTTPS-Gates für v144 prüfen, danach gezielt auf iPhone Satellitenmenü, Straßenbeschriftung, Punkt-Tap, gelbe Markierung, Esri-Datenantwort, Schummerungsrückkehr und Abbruch testen.
