@@ -147,8 +147,8 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  assert.ok(section.includes('class="pin-wikipedia-glyph" aria-hidden="true">W</span>'));
  assert.doesNotMatch(section,/|ⓦ/,"No private-use or nonportable circled font glyphs");
 
- const action=css.match(/#pinUrlBlock button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
- assert.match(action,/width:var\(--p2m-pin-dialog-action-size\)!important/);
+ const action=css.match(/#pinUrlBlock \.pin-url-actions button\{([^}]+)\}/)?.[1]||"";
+ assert.match(action,/min-width:52px/);
  assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
 });
 test("refresh is a separate circular map control at 35% screen height",()=>{
