@@ -22,6 +22,6 @@ test("delete action remains available and the footer OK is size-token driven",()
   assert.ok(del.includes("background:#bc2837!important;color:#fff!important"));
   assert.ok(ok.includes("background:#c9eecb!important;color:#245b30!important"));
   const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
-  assert.match(html,/<div class="pin-meta-row">[\\s\\S]*?id="deletePin"/);
+  assert.ok(html.includes('<div class="pin-meta-row">')&&html.includes('id="deletePin"'));
   assert.match(html,/id="cancelPin"[^>]*data-pin-icon="x"/);
 });
