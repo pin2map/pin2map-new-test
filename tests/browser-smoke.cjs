@@ -438,6 +438,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinUrl").inputValue(),"");
     await page.locator("#pinUrl").fill("https://example.org/path");
     await page.locator("#pinUrlSave").click();
+    assert.equal(await page.locator("#pinUrlButton").evaluate(el=>el.classList.contains("has-url")),true,"Saved URL adds blue footer indicator");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
