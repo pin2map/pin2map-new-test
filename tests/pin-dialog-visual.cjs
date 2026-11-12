@@ -28,6 +28,7 @@ async function metrics(page){
    details:rect("pinNotesBlock"),footer:rect("closePin"),
    noteHeight:notes.getBoundingClientRect().height,
    noteFont:Number.parseFloat(getComputedStyle(notes).fontSize),
+   nameFont:Number.parseFloat(getComputedStyle(get("pinName")).fontSize),
    overflowY:styles.overflowY,scrollHeight:panel.scrollHeight,clientHeight:panel.clientHeight,
    footerItems:footer.map(button=>{const b=button.getBoundingClientRect();return {
     id:button.id,x:b.left,y:b.top,right:b.right,width:b.width,height:b.height,
@@ -59,7 +60,7 @@ async function metrics(page){
     await page.evaluate(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
       try{
-        const project=await store.loadProject();
+        const project=(await store.loadProject())||window.Pin2MapProjectModel.defaultProject();
         const colors=["#e57b23","#8d61c4","#23866f","#c7507e","#d1a52a","#456ba1"];
         while(project.layers.length<8){
           const i=project.layers.length;
@@ -89,7 +90,7 @@ async function metrics(page){
     assert.ok(m.details.y>m.meta.y,"Note detail must follow dates with no routing placeholder");
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
     assert.ok(Math.abs(m.noteHeight-144)<=1,JSON.stringify(m));
-    assert.ok(m.noteFont>=16,"Touch input font must prevent iOS zoom: "+JSON.stringify(m));
+    assert.ok(m.noteFont>=16&&m.nameFont>=16,"Touch inputs must prevent iOS zoom: "+JSON.stringify(m));
     for(let i=0;i<m.footerItems.length;i++){
      const item=m.footerItems[i];
      assert.ok(Math.abs(item.width-viewport.button)<=1&&Math.abs(item.height-viewport.button)<=1,
