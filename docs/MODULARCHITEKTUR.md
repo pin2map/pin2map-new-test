@@ -197,3 +197,10 @@ Lokale SVGs in `ui/lucide-icons.js` tragen alle Sichtzustände ohne externes Fon
 `ui/pin-details.js` hat die Ansichtsumschaltung Notizen/Wetter als UI-Zustand sowie ein bedingt sichtbares GPX-Aktionspaar ohne Handler. Eine GPX-Verknüpfung muss bereits am Pin existieren; eine entsprechende Datei-Verarbeitung wird nicht vorgetäuscht. Das URL-Popup bleibt DOM-only und öffnet zulässige externe Protokolle über den bereits injizierten Benutzerinteraktionsweg. `ui/pin-note-editor.js` ist ein neues, vollständig vom Fachmodell getrenntes UI-Modul; es erhält Wert, Pin-Name und Save-/Close-Callbacks, verwaltet Selektion/Datum/Zeit sowie das `visualViewport`-Layout für den mobilen Editor. `app.js` verdrahtet lediglich die schon vorhandenen `pinOps.updateDetails`- und Render-/Speicherports; `ui/map-overlay-layout.js` erfasst zusätzlich Viewport-Änderungen der iPhone-Tastatur.
 
 Neue Module müssen sowohl in `index.html` als auch in der `sw.js`-`CORE`-Reihenfolge stehen; hier betrifft dies `ui/pin-note-editor.js`. Keine Änderung an IndexedDB-Schema, bestehender Pin-Identität, Offline-Tile-Policy, `main` oder `reference/*`.
+
+
+## v156 – gezielte Kalibrierung innerhalb bestehender UI-Komponenten (2026-11-12)
+
+Die Marker-SVG-Geometrie in `ui/pin-marker-view.js` (36×46) und die Leaflet-Hitbox/Anker-/Tooltip-Geometrie im `map-adapter-leaflet.js` (52×46) wurden gemeinsam verkleinert, ohne die Symbolstatus-Logik zu verändern. `ui/pin-details.js` verwendet für das URL-Portal denselben Trigger-basierten, innerhalb des Viewports geklemmten Überlagerungsgrundsatz wie `ui/pin-layer-picker.js`. Die größere Wetteransicht bleibt ein Anzeigezustand und nutzt den vorhandenen Sichtbarkeits-/Pan-Port.
+
+Das Desktop-Vergrößerungssymbol wird durch die bestehende lokale Lucide-Sammlung bereitgestellt. `ui/pin-note-editor.js` besitzt weiterhin die gesamte Notizeditor-Ansicht und Cursor-Interaktion, zusätzlich die Darstellungsvarianten Desktop-Fenster vs. mobiles Visual-Viewport-Overlay; `app.js` verdrahtet nur den neuen Auslösebutton. Keine Daten-/Schemaänderung, keine neue Datenquelle, kein neues UI-/Build-Framework.
