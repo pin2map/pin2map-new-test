@@ -17,8 +17,9 @@ test("Esri imagery requests only explicitly at point selection; no cache or stor
   assert.equal(calls[0].options.cache,"no-store");
   assert.match(calls[0].url,/World_Imagery\/MapServer\/identify/);
   assert.match(calls[0].url,/layers=all%3A4/);
-  assert.ok(result.fields.some(field=>field.name==="PROVIDER"&&field.value==="Vantor"));
-  assert.ok(!result.fields.some(field=>field.name==="OBJECTID"||field.name==="ACCURACY"));
+  assert.ok(result.fields.some(field=>field.name==="Bildanbieter"&&field.value==="Vantor"));
+  assert.ok(result.fields.some(field=>field.name==="Aufnahmedatum"&&field.value==="15.01.2024"));
+  assert.ok(!result.fields.some(field=>field.name==="OBJECTID"||field.name==="Genauigkeit (m)"));
 });
 test("Esri missing citations are not fabricated",async()=>{
   const provider=new Metadata({fetchImpl:async()=>({ok:true,json:async()=>({results:[]})})});
