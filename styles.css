@@ -257,7 +257,7 @@ body.pin-open #settingsPanel,
 body.pin-open .leaflet-control-container .leaflet-control:not(.leaflet-control-attribution){
   display:none!important;
 }
-/* The editor is positioned by JavaScript at the pin, deliberately without
+/* Information labels and other pins stay rendered, but non-button info overlays\n   do not intercept taps while the pin editor is active. */\nbody.pin-open #map .elevation-label-wrap{pointer-events:none}\n/* The editor is positioned by JavaScript at the pin, deliberately without
    edge constraints. The #app viewport clips the dialog naturally offscreen. */
 body.pin-open #pinPanel{visibility:visible}
 
