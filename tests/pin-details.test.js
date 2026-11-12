@@ -65,6 +65,7 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  assert.match(section,/id="pinWeather"[^>]*disabled/);
  assert.match(css,/#pinPanel #pinNotes\{[^}]*height:144px/);
  assert.match(css,/@media\(max-width:700px\)\{\s*#pinPanel #pinNotes\{font-size:16px/);
+ assert.ok(css.includes("@media (hover:none) and (pointer:coarse)"),"iPhone landscape must retain 16px notes");
  assert.ok(sw.includes('"./ui/pin-details.js"'));
  assert.ok(html.indexOf('./ui/pin-details.js')<html.indexOf('./app.js'));
 });
