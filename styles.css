@@ -599,6 +599,13 @@ body.pin-relocation-picking #map .leaflet-interactive{
   background:#e9f5ec;color:#25683a;border-radius:9px;font-weight:700;
 }
 #pinPanel .pin-gpx-actions button:disabled{opacity:.85}
+/* Only when a mobile keyboard takes available height from the PIN NAME.
+   The footer remains reachable without moving the underlying map pin. */
+#pinPanel.pin-keyboard-mode{overscroll-behavior:contain}
+#pinPanel.pin-keyboard-mode .pin-actions{
+  position:sticky;bottom:0;z-index:2;padding:7px 0 0;
+  background:#fff;
+}
 /* Fullscreen mobile note editor. Uses native 16px typing to avoid Safari zoom. */
 .pin-note-editor{
   position:fixed;z-index:1900;inset:0;box-sizing:border-box;
