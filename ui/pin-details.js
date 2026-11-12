@@ -87,14 +87,33 @@
    this.el("pinGpxActions")?.classList.toggle("hidden",!hasGpx);
   }
   setWeather(enabled){
-   this.weatherMode=Boolean(enabled);
-   this.el("pinPanel").classList.toggle("pin-weather-mode",this.weatherMode);
+   const next=Boolean(enabled);
+   const panel=this.el("pinPanel");
+   const region=panel.querySelector(".pin-detail-region");
+   if(next&&!this.weatherMode){
+    // Measure navigation and notes before either is hidden; do not guess a pixel height.
+    const nav=panel.querySelector(".pin-navigation-row").getBoundingClientRect();
+    const notes=region.getBoundingClientRect();
+    region.style.setProperty("--pin-weather-middle-height",Math.max(0,notes.bottom-nav.top)+"px");
+    region.style.setProperty("--pin-weather-middle-top",nav.top+"px");
+   }
+   this.weatherMode=next;
+   panel.classList.toggle("pin-weather-mode",this.weatherMode);
    this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode);
    this.el("pinWeatherBlock").classList.toggle("hidden",!this.weatherMode);
    this.el("pinWeather").classList.toggle("is-active",this.weatherMode);
    this.el("pinWeather").setAttribute("aria-pressed",String(this.weatherMode));
    this.el("pinWeather").setAttribute("aria-label",this.weatherMode?"Pin Notizen anzeigen":"Wetteransicht anzeigen");
    this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":"Pin Notizen";
+   if(this.weatherMode){
+    // Match the top border of the original routing fieldsets precisely.
+    const expected=Number.parseFloat(region.style.getPropertyValue("--pin-weather-middle-top"));
+    const actual=region.getBoundingClientRect().top;
+    if(Number.isFinite(expected)&&Number.isFinite(actual))
+     region.style.marginTop=(Number.parseFloat(getComputedStyle(region).marginTop)||0)+(expected-actual)+"px";
+   }else{
+    region.style.removeProperty("margin-top");
+   }
    this.onLayout(false);
   }
   normalizedUrl(raw){
