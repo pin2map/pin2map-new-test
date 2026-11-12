@@ -449,7 +449,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel .pin-meta-row #deletePin .p2m-lucide{width:16px;height:16px}
 #pinPanel .pin-detail-region{
-  height:170px;min-height:0;box-sizing:border-box;position:relative;
+  height:176px;min-height:0;box-sizing:border-box;position:relative;
   padding:7px 9px;margin:0 0 12px;border:1px solid #c8d0da;
   border-radius:12px;background:#fff;
 }
@@ -458,7 +458,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
   font-size:11px;line-height:1.2;font-weight:600;
 }
 #pinPanel #pinNotes{
-  display:block;box-sizing:border-box;width:100%;height:138px;min-height:0;
+  display:block;box-sizing:border-box;width:100%;height:144px;min-height:0;
   padding:4px 3px;resize:none;overflow-y:auto;border:0;border-radius:4px;
   background:#fff;color:#26394c;font-family:inherit;font-size:14px;font-weight:400;line-height:1.35;
 }
