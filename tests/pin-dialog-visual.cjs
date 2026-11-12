@@ -195,6 +195,7 @@ async function metrics(page){
     assert.equal(await page.locator("#pinMobileNoteEditor").isHidden(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),text);
     assert.ok(await page.locator(".pin-status-note").count()>0,"Saved note adds a visible marker indicator");
+    await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-note-indicator.png"});
     assert.deepEqual(errors,[],"Uncaught page error");
     console.log("[visual] PASS",viewport.name,JSON.stringify({panel:m.panel,notes:m.noteHeight,
      button:viewport.button,layerList:pop}));
