@@ -422,7 +422,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 
 /* Pin/area dialog family: one visual owner, one 38px action token.
    Frame legends replace separate headings. Routing remains inert. */
-.pin-panel{--p2m-pin-dialog-action-size:38px}
+:root{--p2m-pin-dialog-action-size:38px}
 #pinPanel{
   padding:10px 12px!important;
   background:#fff;border:1px solid #cbd4df;border-radius:15px;
@@ -574,7 +574,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinLayerMenu .pin-layer-visibility.is-hidden{color:#a66b78}
 /* Small URL popover: not a replacement for the notes. */
 #pinUrlBlock.pin-url-popup{
-  --p2m-pin-dialog-action-size:38px;position:fixed;z-index:1560;
+  position:fixed;z-index:1560;
   box-sizing:border-box;margin:0;padding:10px;
   border:1px solid #c7d0db;border-radius:12px;
   background:#fff;box-shadow:0 10px 30px #152c4550;
