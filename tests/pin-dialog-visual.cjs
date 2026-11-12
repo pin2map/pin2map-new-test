@@ -118,7 +118,17 @@ async function metrics(page){
       "Former external microbadges must be removed");
     const touchRects=await page.locator(".leaflet-marker-icon.pin-icon").evaluateAll(nodes=>
       nodes.map(n=>{const b=n.getBoundingClientRect();return {w:b.width,h:b.height};}));
-    assert.ok(touchRects.some(r=>r.w>=44&&r.h>=44),"Pin tap target >=44px");
+    assert.ok(touchRects.some(r=>r.w>=52&&r.h>=56),
+      "Enlarged pin retains its independent 52x56px tap target");
+    const visiblePin=await page.locator(".pin-marker-shape").first().boundingBox();
+    assert.ok(Math.abs(visiblePin.width-36)<=1&&Math.abs(visiblePin.height-48)<=1,
+      "Predecessor-scaled pin must be a visible 36x48px teardrop");
+    const labelHit=await page.locator("#map .leaflet-tooltip.address-label").first().evaluate(el=>({
+      pointer:getComputedStyle(el).pointerEvents,
+      nose:getComputedStyle(el,"::before").borderRightColor
+    }));
+    assert.equal(labelHit.pointer,"none","Name labels cannot swallow pin taps");
+    assert.equal(labelHit.nose,"rgb(119, 119, 119)");
 
     assert.ok(m.visibleLabels>=1,"Pin name labels remain displayed with open dialog");
     assert.ok(m.noteFont>=16&&m.nameFont>=16,"Touch inputs must prevent iOS zoom: "+JSON.stringify(m));
@@ -151,6 +161,13 @@ async function metrics(page){
     assert.equal(await page.locator("#deleteDialog").evaluate(el=>getComputedStyle(el).borderTopWidth),
       "0px","Delete overlay has no horizontal seam beneath the name");
     assert.equal(deletion.name,"Sicherheits-Testpin","Delete confirmation names selected pin");
+    const surfaces=await page.evaluate(()=>({
+      pin:getComputedStyle(document.querySelector("#pinPanel")).backgroundColor,
+      deletion:getComputedStyle(document.querySelector("#deleteDialog")).backgroundColor
+    }));
+    assert.equal(surfaces.pin,surfaces.deletion,
+      "Pin editor and its delete confirmation have exactly the same pale gray surface");
+    assert.equal(surfaces.pin,"rgb(247, 248, 250)");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-delete.png"});
     await page.locator('#deleteDialog button[value="cancel"]').click();
     assert.equal(await page.locator("#deleteDialog").evaluate(el=>el.open),false);
