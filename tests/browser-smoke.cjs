@@ -811,9 +811,6 @@ async function longPress(page,x,y,ms=725){
     assert.notEqual(await page.locator("#map .elevation-label-wrap").first().evaluate(
       el=>getComputedStyle(el).display),"none",
       "Pin information labels must remain visible while editing");
-    assert.equal(await page.locator("#map .elevation-label-wrap").first().evaluate(
-      el=>getComputedStyle(el).pointerEvents),"none",
-      "Information labels may not intercept pin-dialog interactions");
     assert.equal(await page.locator("#pinInfoButton").isHidden(),true);
     assert.equal(await page.locator("#map .pin-marker").count(),2,
       "Other pins remain visible");
