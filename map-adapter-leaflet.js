@@ -139,6 +139,7 @@
           iconSize:[24,24],iconAnchor:[12,12]})
       }).addTo(this.map);
     }
+    setInspectionCursor(active){this.map.getContainer().classList.toggle("p2m-satellite-inspecting",!!active);}
     clearSatelliteSelection(){
       for(const key of ["satelliteSelectionRing","satelliteSelectionSymbol"]){
         if(this[key]){this.map.removeLayer(this[key]);this[key]=null;}
