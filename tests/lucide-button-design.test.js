@@ -124,7 +124,7 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
 
 test("pin editor has cancel/name, timestamps, notes/URL swap, and six equal footer buttons",()=>{
  const html=read("index.html"),css=read("styles.css");
- const section=html.match(/<section id="pinPanel"[\\s\\S]*?<\\/section>/)?.[0]||"";
+ const section=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
  assert.match(section,/id="cancelPin"[^>]*data-pin-icon="x"/);
  assert.match(section,/id="pinCreated"/);
  assert.match(section,/id="pinUpdated"/);
@@ -138,10 +138,10 @@ test("pin editor has cancel/name, timestamps, notes/URL swap, and six equal foot
    const svg=Icons.svg(name,documentStub());
    assert.ok(svg.children.length,name);
  }
- const rule=css.match(/#pinPanel button:is\\([^)]*\\)\\{([^}]+)\\}/)?.[1]||"";
- assert.match(rule,/width:var\\(--p2m-pin-dialog-action-size\\)!important/);
- assert.match(css,/#pinPanel #pinNotes\\{[^}]*height:144px/);
- assert.match(css,/@media\\(max-width:700px\\)\\{[\\s\\S]*?#pinPanel #pinNotes\\{font-size:16px/);
+ const rule=css.match(/#pinPanel button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
+ assert.match(rule,/width:var\(--p2m-pin-dialog-action-size\)!important/);
+ assert.match(css,/#pinPanel #pinNotes\{[^}]*height:144px/);
+ assert.match(css,/@media\(max-width:700px\)\{[\s\S]*?#pinPanel #pinNotes\{font-size:16px/);
 });
 test("refresh is a separate circular map control at 35% screen height",()=>{
   const html=read("index.html"),css=read("styles.css"),app=read("app.js");
