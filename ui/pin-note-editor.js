@@ -58,6 +58,7 @@
       // Match its *visible* top and bottom, with no extra home-area padding.
       const keyboard=win.innerHeight-vv.height>90;
       node.classList.toggle("is-keyboard-visible",keyboard);
+      node.classList.toggle("is-tablet-keyboard",keyboard&&vv.width>=700);
       node.style.top=(vv.offsetTop||0)+"px";
       node.style.height=vv.height+"px";
       node.style.bottom="auto";
@@ -88,7 +89,7 @@
       node.classList.add("hidden");
       node.style.top="";node.style.height="";node.style.bottom="";
       node.style.left="";node.style.width="";
-      node.classList.remove("is-desktop","is-keyboard-visible");
+      node.classList.remove("is-desktop","is-keyboard-visible","is-tablet-keyboard");
       this.document.body.classList.remove("pin-note-editor-open");
       this.onClose();
     }
