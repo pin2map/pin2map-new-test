@@ -595,7 +595,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
    shifting the header/footer or changing the dialog's outer height. */
 #pinPanel.pin-weather-mode .pin-navigation-row{display:none}
 #pinPanel.pin-weather-mode .pin-detail-region{
-  height:252px;display:flex;flex-direction:column;
+  height:var(--pin-weather-middle-height);display:flex;flex-direction:column;
 }
 #pinPanel.pin-weather-mode .pin-detail-region .pin-weather-placeholder{
   flex:1;min-height:0;height:auto;
@@ -605,9 +605,10 @@ body.pin-relocation-picking #map .leaflet-interactive{
 .pin-note-editor.is-keyboard-visible:not(.is-tablet-keyboard){padding-bottom:4px}
 #pinPanel #pinNotesExpand{display:none}
 @media(min-width:701px) and (pointer:fine){
-  #pinPanel .pin-detail-region #pinNotesBlock{position:relative;padding-bottom:16px}
+  #pinPanel .pin-detail-region{position:relative}
+  #pinPanel .pin-detail-region #pinNotes{padding-right:40px}
   #pinPanel #pinNotesExpand{
-    position:absolute;right:0;bottom:0;display:grid;place-items:center;
+    position:absolute;right:8px;bottom:8px;display:grid;place-items:center;
     width:26px;height:26px;padding:0;border:0;border-radius:6px;
     background:#fff;color:#61758b;box-shadow:none;
   }
