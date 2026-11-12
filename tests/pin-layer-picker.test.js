@@ -6,7 +6,7 @@ function fixture(){
   class Node{
     constructor(tag){
       this.tagName=tag;this.children=[];this.attrs={};this.listeners={};
-      this.style={};this.className="";this.textContent="";this.value="";
+      this.style={};this.className="";this.textContent="";this.value="";this.scrollHeight=160;
       this.classList={
         add(key){this.list.add(key);},
         list:new Set(["hidden"]),
@@ -19,12 +19,14 @@ function fixture(){
     replaceChildren(...kids){this.children=kids;}
     append(...kids){this.children.push(...kids);}
     dispatchEvent(e){this.listeners[e.type]?.(e);return true;}
+    getBoundingClientRect(){return {left:100,top:320,bottom:358,right:138,width:38,height:38};}
     focus(){this.focused=true;}
     click(){this.listeners.click?.();}
   }
   const elements=Object.fromEntries(["pinLayerTrigger","pinLayerMenu","pinLayer","pinPanel"].map(id=>[id,new Node("div")]));
   const listeners={},doc={
-    defaultView:{Event:class{constructor(type,options){this.type=type;this.bubbles=options?.bubbles;}}},
+    defaultView:{innerWidth:375,innerHeight:667,Event:class{constructor(type,options){this.type=type;this.bubbles=options?.bubbles;}},addEventListener(){}},
+    body:new Node("body"),
     createElement:tag=>new Node(tag),
     addEventListener:(type,fn)=>{listeners[type]=fn;}
   };
@@ -84,13 +86,24 @@ test("outside press and Escape close selector without changing assignment",()=>{
   assert.equal(elements.pinLayer.value,"private");
 });
 
-test("layer picker remains a compact circular action with floating accessible choices",()=>{
+test("layer menu is portalled outside pin panel and positioned in the visual viewport",()=>{
+ const {picker,elements,layers}=fixture();
+ picker.render({layers,selectedLayerId:"private"});
+ picker.setOpen(true);
+ const menu=elements.pinLayerMenu;
+ assert.equal(menu.style.position,undefined,"Layout position comes from one CSS owner");
+ assert.equal(menu.style.width,"260px");
+ assert.ok(Number.parseFloat(menu.style.left)>=12);
+ assert.ok(Number.parseFloat(menu.style.top)>=12);
+ assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),true);
+});
+test("layer picker uses fixed popup outside the scrolling panel and a circular trigger",()=>{
  const fs=require("node:fs"),css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
  const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
- assert.match(css,/#pinPanel \.pin-layer-menu\s*\{[^}]*position:absolute/);
- assert.match(css,/#pinPanel\.pin-layer-open\{overflow:visible\}/);
- assert.match(css,/#pinPanel \.pin-layer-trigger\s*\{[^}]*border-radius:50%/);
- assert.match(css,/#pinPanel \.pin-actions \.pin-layer-picker\{[^}]*flex:0 0 var\(--p2m-pin-dialog-action-size\)/);
+ assert.match(css,/#pinLayerMenu\\.pin-layer-menu\\{[^}]*position:fixed/);
+ assert.match(css,/#pinPanel #pinLayerTrigger\\.pin-layer-trigger\\{[^}]*border-radius:50%/);
+ assert.doesNotMatch(css,/#pinPanel\\.pin-layer-open\\{overflow:visible/);
+ assert.match(css,/#pinLayerMenu\\.pin-layer-menu\\{[^}]*overflow-x:hidden/);
  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
  const footer=section.split('<div class="pin-actions">')[1]||"";
  const ids=["movePin","pinLayerPicker","pinUrlButton","pinWikipedia","pinWeather","closePin"];
