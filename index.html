@@ -189,7 +189,7 @@
     </div>
     <fieldset class="pin-detail-region">
       <legend id="pinDetailTitle">Pin Notizen</legend>
-      <div id="pinNotesBlock"><textarea id="pinNotes" rows="7" placeholder="Notiz eingeben …" aria-label="Notizen zum Pin"></textarea></div>
+      <div id="pinNotesBlock"><textarea id="pinNotes" rows="7" placeholder="Notiz eingeben …" aria-label="Notizen zum Pin"></textarea><button id="pinNotesExpand" type="button" data-pin-icon="square-chevron-right" title="Notizeditor vergrößern" aria-label="Notizeditor vergrößern"></button></div>
       <div id="pinWeatherBlock" class="pin-weather-placeholder hidden" role="region" aria-label="Wetteransicht">
         <span data-pin-icon="thermometer-snowflake" aria-hidden="true"></span>
         <strong>Wetter</strong><span>Wetterinformationen werden später ergänzt.</span>
@@ -216,7 +216,7 @@
   </section>
   <div id="pinUrlBlock" class="pin-url-popup hidden" role="dialog" aria-label="Pin-URL bearbeiten" aria-modal="false">
     <fieldset class="pin-url-field"><legend>Pin-URL</legend>
-      <textarea id="pinUrl" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="https://…" aria-label="Pin-URL"></textarea>
+      <textarea id="pinUrl" rows="3" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" placeholder="URL eingeben …" aria-label="Pin-URL"></textarea>
     </fieldset>
     <div class="pin-url-actions">
       <button id="pinUrlSave" type="button" aria-label="Pin-URL speichern" title="Speichern">OK</button>
