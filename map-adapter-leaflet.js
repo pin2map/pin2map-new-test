@@ -145,6 +145,15 @@
         if(this[key]){this.map.removeLayer(this[key]);this[key]=null;}
       }
     }
+    // Exact predecessor control contract: Leaflet's native metric scale,
+    // automatic scale changes on map zoom/move, no imperial line.
+    addScaleControl(){
+      if(this.scaleControl)return this.scaleControl;
+      this.scaleControl=window.L.control.scale({
+        position:"bottomleft",metric:true,imperial:false,maxWidth:160
+      }).addTo(this.map);
+      return this.scaleControl;
+    }
     addZoomControls({onFitAll}) {
       const adapter=this;
       const control=window.L.control({position:"bottomleft"});
