@@ -397,6 +397,7 @@
       onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
     });
     mapAdapter.addZoomControls({onFitAll:fitAllPins});
+    mapAdapter.addScaleControl();
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
     for(const field of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
       // The old single period is retained when reopening an existing v122 project.
