@@ -8,14 +8,14 @@ test("wide predecessor-style pin has large white center and aligned status colum
  const pin={id:"p",name:"Test",note:"Eine Notiz",url:"obsidian://note/a",gpxKey:"track"};
  const look=marker.appearance({pin,color:"#2474b7",selected:true});
  assert.match(look.html,/pin-marker selected/);
- assert.match(look.html,/viewBox="0 0 50 64"/);
+ assert.match(look.html,/viewBox="0 0 36 46"/);
  assert.match(look.html,/fill="#fff"/);
  assert.equal((look.html.match(/class="pin-status-badge/g)||[]).length,3);
  assert.ok(look.html.indexOf("pin-status-note")<look.html.indexOf("pin-status-url"));
  assert.ok(look.html.indexOf("pin-status-url")<look.html.indexOf("pin-status-gpx"));
  const css=read("styles.css");
  assert.match(css,/\.pin-status-column\{[^}]*flex-direction:column/);
- assert.match(css,/\.pin-status-badge\{[^}]*width:17px;height:17px/);
+ assert.match(css,/\.pin-status-badge\{[^}]*width:14px;height:14px/);
  assert.match(read("map-adapter-leaflet.js"),/iconSize:\[68,64\],iconAnchor:\[25,61\]/);
 });
 test("badges derive from existing pin data; no empty gaps or persistent marker flags",()=>{
