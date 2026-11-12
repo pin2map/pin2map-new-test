@@ -4,30 +4,37 @@ const fs=require("node:fs"),path=require("node:path");
 const marker=require("../ui/pin-marker-view.js");
 const NoteEditor=require("../ui/pin-note-editor.js");
 const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
-test("wide predecessor-style pin has large white center and aligned status column",()=>{
+test("compact wide pin has three SVG sectors, a white ring and a separate 44px touch target",()=>{
  const pin={id:"p",name:"Test",note:"Eine Notiz",url:"obsidian://note/a",gpxKey:"track"};
  const look=marker.appearance({pin,color:"#2474b7",selected:true});
  assert.match(look.html,/pin-marker selected/);
- assert.match(look.html,/viewBox="0 0 36 46"/);
- assert.match(look.html,/fill="#fff"/);
- assert.equal((look.html.match(/class="pin-status-badge/g)||[]).length,3);
- assert.ok(look.html.indexOf("pin-status-note")<look.html.indexOf("pin-status-url"));
- assert.ok(look.html.indexOf("pin-status-url")<look.html.indexOf("pin-status-gpx"));
+ assert.match(look.html,/viewBox="0 0 30 40"/);
+ for(const type of ["note","url","gpx"])assert.ok(look.html.includes("pin-sector-"+type));
+ assert.match(look.html,/stroke="#fff"/);
+ assert.match(look.html,/fill="#d94f55"/);
+ assert.match(look.html,/fill="#2979d1"/);
+ assert.match(look.html,/fill="#8f989f"/);
+ assert.ok(!look.html.includes("pin-status-column"));
  const css=read("styles.css");
- assert.match(css,/\.pin-status-column\{[^}]*flex-direction:column/);
- assert.match(css,/\.pin-status-badge\{[^}]*width:14px;height:14px/);
- assert.match(read("map-adapter-leaflet.js"),/iconSize:\[52,46\],iconAnchor:\[18,44\]/);
+ assert.match(css,/\.pin-marker\{[^}]*width:30px;height:40px/);
+ assert.match(read("map-adapter-leaflet.js"),/iconSize:\\[44,44\\],iconAnchor:\\[22,39\\]/);
 });
-test("badges derive from existing pin data; no empty gaps or persistent marker flags",()=>{
- const pin={id:"p",note:"",url:"mailto:a@example.com"};
- assert.deepEqual(marker.statusFlags(pin),{note:false,url:true,gpx:false});
- const look=marker.appearance({pin,color:"#333333"});
- assert.equal((look.html.match(/class="pin-status-badge/g)||[]).length,1);
- pin.url="";pin.note="Jetzt Notiz";
- assert.deepEqual(marker.statusFlags(pin),{note:true,url:false,gpx:false});
- assert.equal((marker.appearance({pin,color:"#333333"}).html.match(/class="pin-status-badge/g)||[]).length,1);
- pin.note="";
- assert.ok(!marker.appearance({pin,color:"#333333"}).html.includes("pin-status-column"));
+test("all 8 note URL GPX combinations map to independent sector colors",()=>{
+ const fills={note:"#d94f55",url:"#2979d1",gpx:"#8f989f"};
+ for(let mask=0;mask<8;mask++){
+  const pin={id:"p",note:mask&1?"Notiz":"",url:mask&2?"mailto:a@example.org":"",
+   gpxKey:mask&4?"track":null};
+  const flags=marker.statusFlags(pin);
+  assert.deepEqual(flags,{note:!!(mask&1),url:!!(mask&2),gpx:!!(mask&4)});
+  const html=marker.appearance({pin,color:"#333333"}).html;
+  for(const [type,active] of Object.entries(flags)){
+   const re=new RegExp('class="pin-sector-'+type+'"[^>]*fill="([^"]+)"');
+   const match=html.match(re);
+   assert.ok(match,"sector always present "+type);
+   assert.equal(match[1],active?fills[type]:"#e8edf2");
+  }
+  assert.ok(!html.includes("pin-status-badge"));
+ }
 });
 test("insertion at captured caret and replacement of a selection never appends blindly",()=>{
  assert.deepEqual(NoteEditor.insertAtSelection("Zeile eins\nZeile zwei",{start:6,end:10},"12.11.2026"),
