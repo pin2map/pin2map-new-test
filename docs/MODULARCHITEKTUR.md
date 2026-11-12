@@ -164,3 +164,8 @@ Die bereits vorhandene Trennung von Ebenenoperationen (`application/layer-operat
 **Einheitliche Bezeichnungen für spätere Fachbereiche:** `application/geographic-information-service.js` und `application/watercourse-service.js` sind die einzigen kanonischen Providergrenzen. Keine konkurrierenden Parallelmodule für „environment“, „location-context“, „river“ oder „watercourse“ anlegen. Diese Ports sind noch nicht mit der PWA verbunden. Ihre späteren inneren Komponenten (OSM-Suche, Topologie, Cache, Wetterprovider, Höhenprovider, Sonnenberechnung, Zeitzone, Anzeige) bleiben unabhängig.
 
 **Nächster Schritt:** Benutzeroberfläche in kleinen, abnehmbaren Schritten an der Vorgänger-App messen, beginnend mit Shell/Bedienkontrollen und Pin-Dialog. Ein sichtbarer UI-Schritt darf keine ungetesteten Änderungen an Pin-Domain, Filterregeln, Persistenz oder Routing enthalten.
+
+
+## v149 – austauschbarer Pin-Detailbereich als Vorarbeit für Flächen (2026-11-12)
+
+`ui/pin-details.js` besitzt ausschließlich die Präsentation und den temporären Notizen-/URL-Ansichtsmodus. Änderungen an den Pin-Daten geschehen über `application/pin-operations.js` (`updateDetails`); `app.js` bleibt Kompositionswurzel mit injizierten Speicher- und Navigationscallbacks. `ui/pin-editor.js` stellt vorhandene Datumswerte dar. `ui/pin-layer-picker.js` behält die native Select-Change-Schnittstelle; nur das Trigger-Layout wird als Rundbutton mit Farbpunkt dargestellt. Geänderte CSS-Eigentümer bleiben auf `#pinPanel` eingegrenzt. `ui/pin-details.js` wird in `index.html` und `sw.js`-`CORE` gemeinsam geführt; der Preview-Paketvertrag v148 bleibt unverändert. Für den künftigen Flächendialog wird die fachliche Daten-/Geometrieverantwortung separat geplant, kein Copy-and-Paste eines Pin-Monolithen.
