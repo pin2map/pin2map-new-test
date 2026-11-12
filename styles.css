@@ -145,8 +145,8 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   right:auto!important;bottom:auto!important;
   border-radius:13px!important;padding:12px 13px!important;
   max-width:calc(100vw - 16px);
-  max-height:min(335px,calc(100dvh - 105px))!important;
-  overflow-y:auto!important;
+  max-height:calc(100dvh - 24px);
+  overflow:visible;
   box-shadow:0 7px 26px #132e4d4a
 }
 .pin-panel .panel-head{margin-bottom:3px}
@@ -179,7 +179,6 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 @media(max-width:630px){
   .topbar{top:calc(5px + env(safe-area-inset-top,0px));width:calc(100% - 12px);max-width:410px}
   .topbar .search input{font-size:16px!important}
-  .pin-panel{max-height:min(320px,calc(100dvh - 100px))!important}
   .panel{max-width:calc(100vw - 16px)}
   .leaflet-top.leaflet-left{top:calc(59px + env(safe-area-inset-top,0px))}
   .pin-zoom-button{width:39px;height:39px}
