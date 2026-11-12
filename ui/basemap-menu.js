@@ -2,7 +2,7 @@
 /* Presentation-only basemap menu; no Leaflet, persistence or project ownership. */
 (function(root){
   class BasemapMenu {
-    constructor({getElement,document:doc,onSelect,onReliefChange=()=>{},onSatelliteAdjust=()=>{},onSatelliteReset=()=>{},onOpening=()=>{}}){
+    constructor({getElement,document:doc,onSelect,onReliefChange=()=>{},onSatelliteAdjust=()=>{},onSatelliteReset=()=>{},onRoadsChange=()=>{},onOpening=()=>{}}){
       if(typeof getElement!=="function"||!doc||typeof doc.querySelectorAll!=="function")
         throw new TypeError("Basemap menu requires DOM access");
       if(typeof onSelect!=="function"||typeof onOpening!=="function")
@@ -13,15 +13,23 @@
       this.onReliefChange=onReliefChange;
       this.onSatelliteAdjust=onSatelliteAdjust;
       this.onSatelliteReset=onSatelliteReset;
+      this.onRoadsChange=onRoadsChange;
       this.onOpening=onOpening;
       this.listeners=[];
     }
     get button(){return this.getElement("basemapButton");}
     get menu(){return this.getElement("basemapMenu");}
     options(){return this.document.querySelectorAll("#basemapMenu [data-basemap]");}
-    render(selected,esriRelief=false,{brightness=120}={}){
+    render(selected,esriRelief=false,{brightness=120,roads=false}={}){
       const relief=this.getElement("esriReliefToggle");
-      if(relief)relief.checked=!!esriRelief;
+      if(relief){
+        relief.checked=!!esriRelief;relief.disabled=selected==="satellite";
+        relief.closest(".basemap-relief-toggle")?.classList.toggle("is-inactive",selected==="satellite");
+      }
+      const roadsInput=this.getElement("satelliteRoads");
+      if(roadsInput){roadsInput.checked=!!roads;roadsInput.disabled=selected!=="satellite";}
+      const inspect=this.getElement("satelliteInspect");
+      if(inspect)inspect.disabled=selected!=="satellite";
       const satelliteSelected=selected==="satellite";
       const controls=this.getElement("satelliteBrightness")?.closest?.(".basemap-satellite-controls");
       controls?.classList.toggle("is-inactive",!satelliteSelected);
@@ -64,7 +72,9 @@
         this.button.focus();
       }));
       const relief=this.getElement("esriReliefToggle");
-      if(relief)this.listen(relief,"change",()=>this.onReliefChange(!!relief.checked));
+      if(relief)this.listen(relief,"change",()=>{if(!relief.disabled)this.onReliefChange(!!relief.checked);});
+      const roads=this.getElement("satelliteRoads");
+      if(roads)this.listen(roads,"change",()=>{if(!roads.disabled)this.onRoadsChange(!!roads.checked);});
       const reset=this.getElement("satelliteReset");
       if(reset)this.listen(reset,"click",()=>{
         if(reset.disabled)return;
