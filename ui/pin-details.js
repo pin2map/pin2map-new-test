@@ -92,7 +92,7 @@
    this.el("pinWeather").setAttribute("aria-pressed",String(this.weatherMode));
    this.el("pinWeather").setAttribute("aria-label",this.weatherMode?"Pin Notizen anzeigen":"Wetteransicht anzeigen");
    this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":"Pin Notizen";
-   this.onLayout(false);
+   this.onLayout(true);
   }
   normalizedUrl(raw){
    try{
