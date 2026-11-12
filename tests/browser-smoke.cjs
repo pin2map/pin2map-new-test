@@ -317,6 +317,9 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await brightness.inputValue(),"120");
     const reliefToggle=page.locator("#esriReliefToggle");
+    assert.equal(await reliefToggle.isDisabled(),true,"Relief cannot be enabled on satellite imagery");
+    await menu.locator('[data-basemap="street"]').click();
+    await picker.click();
     await reliefToggle.check();
     assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
     await page.waitForFunction(()=>!!document.querySelector(".leaflet-pane[style*='250'] img[src*='World_Hillshade']"),
