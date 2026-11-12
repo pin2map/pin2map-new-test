@@ -8,9 +8,27 @@
   function escapeHtml(value){
     return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   }
+  // Visual-only badges are derived from existing pin information.
+  // No additional persistent marker state or schema is introduced.
+  function statusFlags(pin){
+    const hasText=value=>typeof value==="string"&&value.trim().length>0;
+    const hasGpx=Boolean(pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
+    return {note:hasText(pin.note),url:hasText(pin.url),gpx:hasGpx};
+  }
   function appearance({pin,color,selected}){
-    return {html:'<div class="pin-marker'+(selected?' selected':'')+'" style="background:'+color+'"></div>',
-      title:pin.name||"Pin"};
+    const flags=statusFlags(pin);
+    const badges=[
+      flags.note?'<span class="pin-status-badge pin-status-note" title="Notiz vorhanden" aria-label="Notiz vorhanden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v14H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 11h8M10 15h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>':"",
+      flags.url?'<span class="pin-status-badge pin-status-url" title="URL vorhanden" aria-label="URL vorhanden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H7a5 5 0 0 0 0 10h2m6-10h2a5 5 0 0 1 0 10h-2M8 12h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>':"",
+      flags.gpx?'<span class="pin-status-badge pin-status-gpx" title="GPX-Track vorhanden" aria-label="GPX-Track vorhanden"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 18 6-11 6 7 6-10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="3" cy="18" r="2" fill="currentColor"/><circle cx="21" cy="4" r="2" fill="currentColor"/></svg></span>':""
+    ].filter(Boolean).join("");
+    // A wide teardrop with a large white center, not a rotated square.
+    // The three badges always stack flush in a single compact column.
+    const html='<div class="pin-marker'+(selected?' selected':'')+'" style="color:'+color+'">'
+      +'<svg class="pin-marker-shape" viewBox="0 0 50 64" aria-hidden="true"><path d="M25 61C19 51 3 33 3 24a22 22 0 0 1 44 0c0 9-16 27-22 37Z" fill="currentColor" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><circle cx="25" cy="24" r="12.5" fill="#fff"/></svg>'
+      +(badges?'<span class="pin-status-column" aria-label="Weitere Pin-Inhalte">'+badges+'</span>':"")
+      +'</div>';
+    return {html,title:pin.name||"Pin"};
   }
   // Legacy contract: permanently visible pin-name tooltip on the right,
   // without label collision suppression or special selected-label exception.
@@ -70,7 +88,7 @@
       this.markers.clear();
     }
   }
-  const api=Object.freeze({escapeHtml,appearance,layout,PinMarkerView});
+  const api=Object.freeze({escapeHtml,statusFlags,appearance,layout,PinMarkerView});
   root.Pin2MapPinMarkerView=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
