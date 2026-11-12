@@ -19,9 +19,12 @@
       // During iOS keyboard presentation the visual viewport shrinks and can
       // scroll. Never recompute the popup against the keyboard's smaller size.
       // Keep the same visual position by compensating only viewport scrolling.
-      const offset=doc.defaultView?.visualViewport?.offsetTop||0;
-      this.el("pinUrlBlock").style.top=
-        (this.keyboardAnchor.top+offset-this.keyboardAnchor.visualOffsetTop)+"px";
+      const vv=doc.defaultView?.visualViewport;
+      const offset=vv?.offsetTop||0;
+      const popup=this.el("pinUrlBlock");
+      const desired=this.keyboardAnchor.top+offset-this.keyboardAnchor.visualOffsetTop;
+      popup.style.top=Math.max(offset+8,Math.min(desired,
+        offset+(vv?.height||doc.defaultView?.innerHeight||600)-popup.offsetHeight-8))+"px";
       return;
     }
     this.positionPopup();
@@ -41,17 +44,16 @@
    const desired=Math.min(260,width-margin*2);
    popup.style.width=desired+"px";
    const popupHeight=popup.offsetHeight||158;
-   // Anchor to the PIN PANEL, never to a button which moves when keyboard
-   // or optional content changes. Place beside panel when space permits.
-   const roomRight=left+width-margin-rect.right;
-   const roomLeft=rect.left-left-margin;
-   const idealLeft=roomRight>=desired+gap?rect.right+gap:
-     roomLeft>=desired+gap?rect.left-gap-desired:
-     rect.right-desired;
-   popup.style.left=Math.max(left+margin,Math.min(idealLeft,left+width-desired-margin))+"px";
-   const panelTop=rect.top+Math.min(72,rect.height*.18);
-   const visibleTop=Math.max(top+margin,Math.min(panelTop,top+height-popupHeight-margin));
-   popup.style.top=visibleTop+"px";
+   // Same overlay behaviour as pinLayerMenu: anchored to the trigger
+   // INSIDE the pin dialog, overlapping it rather than floating beside it.
+   const trigger=this.el("pinUrlButton").getBoundingClientRect();
+   const availableAbove=trigger.top-(top+margin)-gap;
+   const availableBelow=top+height-margin-trigger.bottom-gap;
+   const openAbove=availableAbove>=popupHeight||availableAbove>availableBelow;
+   popup.style.left=Math.max(left+margin,
+     Math.min(trigger.left,left+width-desired-margin))+"px";
+   popup.style.top=Math.max(top+margin,Math.min(top+height-popupHeight-margin,
+     openAbove?trigger.top-gap-popupHeight:trigger.bottom+gap))+"px";
   }
   show(mode){
    this.mode=mode;
