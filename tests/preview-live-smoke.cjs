@@ -31,6 +31,24 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           leaflet:!!window.L,zoomButtons:document.querySelectorAll(".pin-zoom-button").length,
           map:!!document.querySelector("#map.leaflet-container")
         }));
+        // The delivered app must expose the metric predecessor scale on every viewport.
+        const liveScale=await page.evaluate(()=>{
+          const control=document.querySelector("#map .leaflet-control-scale");
+          const line=control?.querySelector(".leaflet-control-scale-line");
+          const rect=control?.getBoundingClientRect();
+          return {count:document.querySelectorAll("#map .leaflet-control-scale").length,
+            lines:control?.querySelectorAll(".leaflet-control-scale-line").length,
+            label:line?.textContent.trim(),width:rect?.width,
+            center:rect?rect.left+rect.width/2:null,
+            top:rect?.top,hidden:control?getComputedStyle(control).display==="none":true};
+        });
+        assert.equal(liveScale.count,1,"Published scale present: "+JSON.stringify(liveScale));
+        assert.equal(liveScale.lines,1,"Metric scale only: "+JSON.stringify(liveScale));
+        assert.match(liveScale.label,/^(?:[0-9.,]+)\\s*(?:m|km)$/);
+        assert.ok(liveScale.width>0&&liveScale.width<=165);
+        assert.ok(Math.abs(liveScale.center-viewport.width/2)<=3,
+          "Published scale is horizontally centered: "+JSON.stringify(liveScale));
+        assert.ok(liveScale.top>=65&&liveScale.top<140&&!liveScale.hidden);
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
