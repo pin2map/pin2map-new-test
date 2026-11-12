@@ -105,7 +105,7 @@
         this.satelliteReferenceOverlays=[
           "World_Transportation","World_Boundaries_and_Places"
         ].map(service=>window.L.tileLayer(
-          "https://server.arcgisonline.com/ArcGIS/rest/services/"+service+"/MapServer/tile/{z}/{y}/{x}",
+          "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/"+service+"/MapServer/tile/{z}/{y}/{x}",
           {pane:"p2mSatelliteReferencePane",maxZoom:19,attribution:"Reference &copy; Esri und Datenanbieter"}
         ).addTo(this.map));
       }
