@@ -413,7 +413,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     const footerIds=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
     const footerLayout=await page.locator("#pinPanel .pin-actions").evaluate(row=>
-      [...row.querySelectorAll("button")].map(b=>({id:b.id,left:b.getBoundingClientRect().left,
+      [...row.querySelectorAll(":scope > button, :scope > .pin-layer-picker > .pin-layer-trigger")].map(b=>({id:b.id,left:b.getBoundingClientRect().left,
         width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})));
     assert.deepEqual(footerLayout.map(b=>b.id),footerIds);
     for(const item of footerLayout)assert.ok(Math.abs(item.width-32)<1&&Math.abs(item.height-32)<1,JSON.stringify(item));
