@@ -152,9 +152,9 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-panel .panel-head{margin-bottom:3px}
 .pin-panel .panel-head h2{font-size:16px!important}
 .pin-panel label{margin:7px 0!important;font-size:12px!important}
-.pin-panel input,.pin-panel select{padding:7px 8px!important;font-size:15px!important;margin-top:3px}
+.pin-panel input:not(#pinUrl),.pin-panel select{padding:7px 8px!important;font-size:15px!important;margin-top:3px}
 .pin-panel .muted{margin:7px 0;font-size:11px}
-.pin-panel .pin-actions button{font-size:12px!important;padding:8px!important}
+.pin-panel .pin-actions button:not(#pinWikipedia){font-size:12px!important;padding:8px!important}
 /* Vorgänger-Namenslabels: permanente Leaflet-Tooltips, rechts am Pin.
    Leaflet owns their position; no generic marker/collision CSS overrides. */
 #map .leaflet-tooltip.address-label{
