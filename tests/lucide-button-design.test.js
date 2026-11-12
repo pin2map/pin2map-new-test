@@ -143,7 +143,7 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  }
  // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
  assert.equal(Icons.svg("link-2",documentStub()).children.length,3);
- const action=css.match(/#pinPanel button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
+ const action=css.match(/#pinUrlBlock button:is\([^)]*\)\{([^}]+)\}/)?.[1]||"";
  assert.match(action,/width:var\(--p2m-pin-dialog-action-size\)!important/);
  assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
 });
@@ -186,8 +186,8 @@ test("Layers occupies the upper-right corner while Info stays above the lower-ri
   assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
   assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton)"),
     "Focused pin editor must hide every map control including Pin-Info");
-  assert.ok(css.includes("body.pin-open #map .elevation-label-wrap"),
-    "Focused pin editor must hide clickable information labels above pins");
+  assert.ok(!css.includes("body.pin-open #map .elevation-label-wrap"),
+    "Pin labels and information must stay visible while editing a pin");
 });
 
 
@@ -203,7 +203,7 @@ test("standalone map controls share 42px; search ring and editor actions stay se
   assert.ok(!rule.includes("#searchButton"),"Search action must not inherit the map size contract");
   assert.match(css,/--p2m-search-tap-size:42px/);
   assert.match(css,/--p2m-search-ring-size:30px/);
-  assert.ok(css.includes(".pin-panel{--p2m-pin-dialog-action-size:38px}"));
+  assert.ok(css.includes(":root{--p2m-pin-dialog-action-size:38px}"));
 });
 
 
