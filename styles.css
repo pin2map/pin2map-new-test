@@ -49,7 +49,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .layer-name small{display:block;color:#6c7e91}
 .layer-row button{font-size:12px;padding:6px 8px}
 .layer-color{display:inline-block;width:12px;height:12px;border-radius:50%}
-.pin-panel{position:absolute;z-index:1200;bottom:15px;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 22px));padding:16px;background:white;border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow)}
+.pin-panel{position:absolute;z-index:1200;bottom:15px;left:50%;transform:translateX(-50%);width:min(430px,calc(100% - 24px));padding:12px;background:#fff;border:1px solid #d3dce5;border-radius:16px;box-shadow:0 8px 28px #182c4340}
 .pin-actions{display:flex;gap:8px;justify-content:space-between}
 .inline-button{background:none;color:#1764a9;text-decoration:underline;padding:0}
 .notice{position:absolute;z-index:1400;left:12px;max-width:65vw;background:#263e60;color:white;padding:10px 14px;border-radius:9px;box-shadow:var(--shadow);font-size:13px}
@@ -71,19 +71,19 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 #app{height:100%;height:100dvh;position:relative;overflow:hidden}
 .search{flex:1 1 0;min-width:0;max-width:min(520px,100%)}
 .search input{flex:1 1 0;width:0;min-width:0;text-overflow:ellipsis}
-.pin-panel{max-height:calc(100dvh - 125px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.pin-panel{max-height:calc(100dvh - 24px);overflow:visible;overscroll-behavior:contain}
 #fitPins{white-space:nowrap}
 @media(max-width:630px){
   .search{width:100%;max-width:none;margin:0;min-width:0}
   .search-results{max-height:42dvh}
   .panel{max-height:calc(100dvh - 125px)}
-  .pin-panel{left:0;right:0;bottom:0;transform:none;width:100%;border-radius:18px 18px 0 0;padding:14px 16px calc(12px + env(safe-area-inset-bottom,0px));max-height:calc(100dvh - 172px);overflow-y:auto}
+  .pin-panel{padding:12px;max-height:calc(100dvh - 24px);overflow:visible}
   .pin-panel .panel-head{margin-bottom:4px}
   .pin-panel .panel-head h2{font-size:17px}
   .pin-panel label{margin:8px 0}
   .pin-panel input,.pin-panel select{padding:9px}
   .pin-panel .pin-actions{gap:8px}
-  .pin-panel .pin-actions button{padding:9px 12px;font-size:13px}
+  .pin-panel .pin-actions button{padding:0;font-size:13px}
   .leaflet-top.leaflet-left{top:6px}
   .leaflet-control-zoom a{width:34px!important;height:34px!important;line-height:34px!important}
   .notice{max-width:calc(100% - 24px)}
@@ -424,64 +424,64 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 
 
-/* Pin editor: editable name replaces the former heading on the first row. */
-.pin-panel .pin-editor-head{
-  display:flex;align-items:center;gap:8px;
-  min-width:0;margin-bottom:7px;
+/* Pin/dialog family v150. The reserved navigation row is intentionally absent:
+   only header, dates, replaceable details and footer take up space. */
+.pin-panel{--p2m-pin-dialog-action-size:38px}
+#pinPanel .pin-editor-head{
+  display:flex;align-items:center;gap:9px;margin:0 0 7px;min-width:0;
 }
-.pin-panel .pin-editor-head #pinName{
-  flex:1 1 auto;width:0;min-width:0;
-  margin:0!important;padding:7px 10px!important;
-  font-size:16px!important;font-weight:600;
-  border:1px solid var(--p2m-button-border);
-  border-radius:8px;
-  background:#fff;color:#17253c;
+#pinPanel .pin-editor-head #pinName{
+  flex:1 1 auto;min-width:0;width:0;min-height:38px;margin:0;
+  padding:7px 11px;font-size:16px;font-weight:600;line-height:1.35;
+  border:1px solid #c3cbd5;border-radius:10px;background:#fff;color:#182b3d;
 }
-/* Pin-dialog red delete and green OK: exactly the same compact diameter.
-   Single shared token prevents later size divergence across mobile CSS. */
-.pin-panel{--p2m-pin-dialog-action-size:32px}
-/* Destructive action sits left of the name and matches the OK diameter. */
-/* Shared dimensions are owned by #pinPanel button:is(...) below.
-   Keep only this destructive action's colors and border. */
-.pin-panel .pin-meta-row #deletePin.p2m-icon-control{
-  background:#bc2837!important;color:#fff!important;
-  border:1px solid #a81f2e!important;
+#pinPanel .pin-meta-row{
+  display:flex;align-items:center;gap:8px;min-height:26px;
+  margin:0 0 8px;color:#7a8797;font-size:11px;white-space:nowrap;
 }
-.pin-panel .pin-meta-row #deletePin .p2m-lucide{
-  width:18px;height:18px;
+#pinPanel .pin-meta-row span{flex:1 1 0;min-width:0}
+#pinPanel .pin-meta-row #deletePin.p2m-icon-control{
+  flex:0 0 27px;width:27px;height:27px;min-width:27px;min-height:27px;
+  max-width:27px;max-height:27px;padding:0;border-radius:50%;
+  background:#fcecee!important;color:#ad3042!important;
+  border:1px solid #eac6cc!important;box-shadow:none;
+  --p2m-button-size:27px;
 }
-.pin-panel .pin-meta-row #deletePin.p2m-icon-control:hover{
-  background:#a92231!important;color:#fff!important;
+#pinPanel .pin-meta-row #deletePin .p2m-lucide{width:16px;height:16px}
+#pinPanel .pin-detail-region{
+  height:170px;min-height:0;box-sizing:border-box;position:relative;
+  padding:7px 9px;margin:0 0 12px;border:1px solid #c8d0da;
+  border-radius:12px;background:#fff;
 }
-.pin-panel .pin-meta-row #deletePin.p2m-icon-control:active{
-  background:#911827!important;color:#fff!important;
+#pinPanel .pin-detail-region .pin-detail-caption{
+  display:block;margin:0 0 4px;color:#66778a;
+  font-size:11px;line-height:1.2;font-weight:600;
 }
-/* Bottom-right: matching compact light-green circular OK action. */
-.pin-panel .pin-actions{
+#pinPanel #pinNotes{
+  display:block;box-sizing:border-box;width:100%;height:138px;min-height:0;
+  padding:4px 3px;resize:none;overflow-y:auto;border:0;border-radius:4px;
+  background:#fff;color:#26394c;font-family:inherit;font-size:14px;font-weight:400;line-height:1.35;
+}
+#pinPanel #pinNotes:focus-visible{outline:2px solid #9cb8df;outline-offset:-1px}
+#pinPanel #pinUrl{
+  box-sizing:border-box;width:100%;height:39px;min-height:39px;margin:9px 0 14px;
+  padding:8px 10px;border:1px solid #c8d0da;border-radius:8px;
+  background:#fff;color:#26394c;font:400 16px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+#pinPanel .pin-url-actions{display:flex;align-items:center;justify-content:space-around;gap:10px}
+#pinPanel .pin-actions{
   display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:nowrap;gap:5px;width:100%;margin:0;padding:0;
 }
-.pin-panel .pin-actions #closePin.pin-ok-button{
-  appearance:none;
-  border:1px solid #a6ceaa!important;
-  background:#c9eecb!important;color:#245b30!important;
-  font-size:14px!important;font-weight:750!important;
-  box-shadow:var(--p2m-button-shadow);
+#pinPanel .pin-actions .pin-layer-picker{
+  position:relative;flex:0 0 var(--p2m-pin-dialog-action-size);
+  width:var(--p2m-pin-dialog-action-size);min-width:0;
 }
-.pin-panel .pin-actions #closePin.pin-ok-button:hover{
-  background:#b6e4ba!important;
-}
-.pin-panel .pin-actions #closePin.pin-ok-button:active{
-  background:#9dd6a3!important;
-}
-
-
-/* All button controls INSIDE the pin editor share this ONE trial diameter.
-   Include the conditional eye button for revealing a hidden layer. Scoped to
-   #pinPanel to leave separate confirmation dialogs / map controls unchanged. */
+#pinPanel .pin-layer-native-select{display:none}
 #pinPanel button:is(#movePin,#closePin,#showPinLayer,#cancelPin,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather,#pinUrlCancel,#pinUrlSave,#pinUrlOpen){
   --p2m-button-size:var(--p2m-pin-dialog-action-size);
-  box-sizing:border-box!important;
-  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;display:inline-flex!important;
+  align-items:center!important;justify-content:center!important;
   width:var(--p2m-pin-dialog-action-size)!important;
   height:var(--p2m-pin-dialog-action-size)!important;
   min-width:var(--p2m-pin-dialog-action-size)!important;
@@ -489,100 +489,99 @@ body.pin-relocation-picking #map .leaflet-interactive{
   max-width:var(--p2m-pin-dialog-action-size)!important;
   max-height:var(--p2m-pin-dialog-action-size)!important;
   flex:0 0 var(--p2m-pin-dialog-action-size)!important;
-  padding:0!important;border-radius:50%!important;
-  line-height:1!important;
+  padding:0!important;border-radius:50%!important;line-height:1!important;
 }
-#pinPanel #movePin .p2m-relocate-icon{width:28px!important;height:19px!important}
-#pinPanel #showPinLayer.p2m-icon-control{
-  vertical-align:middle;margin-left:6px;
-  background:#fff!important;color:#1764a9!important;
-  border:1px solid var(--p2m-button-border)!important;
+#pinPanel button:is(#cancelPin,#pinUrlCancel,#pinUrlSave).p2m-icon-control{
+  --p2m-button-bg:#eef1f4;--p2m-button-ink:#26394c;
 }
-#pinPanel #showPinLayer .p2m-lucide{width:18px;height:18px}
-#pinPanel #closePin.pin-ok-button{font-size:12px!important}
-
-
-/* Pin detail editor and future area-dialog basis: one component owner.
-   iOS form controls stay >=16px to prevent WebKit focus auto-zoom. */
-#pinPanel .pin-meta-row{
-  display:flex;align-items:center;gap:6px;min-height:22px;
-  margin:0 0 4px;color:#788494;font-size:10px;white-space:nowrap;
+#pinPanel #cancelPin.p2m-icon-control{--p2m-button-ink:#20252a}
+#pinPanel #pinLayerTrigger.pin-layer-trigger{
+  position:relative;background:#fff;color:#26394c;
+  border:1px solid var(--p2m-button-border);border-radius:50%;
+  box-shadow:var(--p2m-button-shadow);
 }
-#pinPanel .pin-meta-row span{min-width:0;flex:1 1 auto}
-#pinPanel .pin-meta-row #deletePin{
-  width:24px;height:24px;min-width:24px;flex:0 0 24px;
-  padding:3px;border-radius:50%;background:#bc2837;color:white;
+#pinPanel #pinLayerTrigger .pin-layer-trigger-icon{width:22px;height:22px}
+#pinPanel #pinLayerTrigger .pin-layer-dot{
+  position:absolute;right:1px;bottom:1px;display:block;
+  width:10px;height:10px;border-radius:50%;
+  border:2px solid #fff;box-shadow:0 0 0 1px #a7b4c1;
 }
-#pinPanel .pin-meta-row #deletePin .p2m-lucide{width:14px;height:14px}
-#pinPanel .pin-editor-head #cancelPin{--p2m-button-bg:#f0f1f3;--p2m-button-ink:#171717}
-#pinPanel .pin-detail-region{
-  min-height:167px;margin:7px 0 10px;border:1px solid #c7c7cc;
-  border-radius:10px;padding:5px 7px 7px;box-sizing:border-box;
+#pinPanel #pinLayerTrigger[aria-expanded="true"]{
+  background:#1764bf!important;color:#fff!important;border-color:#1764bf!important;
 }
-#pinPanel .pin-detail-caption{
-  display:block;margin:0 0 3px;font-size:11px;font-weight:600;color:#788494;
+#pinPanel #pinLayerTrigger:focus-visible{outline:3px solid #8ab8eb;outline-offset:2px}
+#pinPanel #movePin .p2m-relocate-icon{width:30px!important;height:21px!important}
+#pinPanel #showPinLayer.p2m-icon-control{margin-left:6px}
+#pinPanel #pinWikipedia{
+  color:#26394c;background:#fff;font-size:23px;font-weight:700;
+  letter-spacing:-1px;
 }
-#pinPanel #pinNotes{
-  display:block;box-sizing:border-box;width:100%;height:144px;min-height:144px;
-  padding:5px;border:0;border-radius:5px;resize:none;overflow-y:auto;
-  background:white;color:#253a4b;font-size:14px;line-height:1.3;
-  font-family:inherit;outline-offset:-2px;
-}
-#pinPanel #pinUrl{
-  box-sizing:border-box;width:100%;min-height:38px;margin:7px 0 12px;
-  font:inherit;font-size:16px;padding:7px;border:1px solid #c7c7cc;
-  border-radius:7px;
-}
-#pinPanel .pin-url-actions{display:flex;justify-content:space-evenly;gap:10px;margin-top:12px}
-#pinPanel .pin-url-actions #pinUrlOpen.has-url{--p2m-button-bg:#c9eecb;--p2m-button-ink:#245b30}
-#pinPanel .pin-url-actions #pinUrlOpen:disabled{--p2m-button-bg:#e8e8e8;--p2m-button-ink:#9b9b9b;cursor:default}
-#pinPanel .pin-actions{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%}
-#pinPanel .pin-actions .pin-layer-picker{position:relative;flex:0 0 var(--p2m-pin-dialog-action-size);min-width:0;isolation:isolate}
-#pinPanel .pin-layer-native-select{display:none}
-#pinPanel .pin-layer-trigger{
-  position:relative;width:var(--p2m-pin-dialog-action-size);
-  height:var(--p2m-pin-dialog-action-size);min-width:0;
-  padding:0;display:flex;align-items:center;justify-content:center;
-  background:#fff;color:#253a4b;border:1px solid var(--p2m-button-border);
-  border-radius:50%;box-sizing:border-box;
-}
-#pinPanel .pin-layer-trigger .pin-layer-trigger-icon{width:20px;height:20px}
-#pinPanel .pin-layer-trigger .pin-layer-dot{
-  position:absolute;right:1px;bottom:1px;width:9px;height:9px;border-radius:50%;
-  border:1px solid #fff;box-shadow:0 0 0 1px #9da9b3;
-}
-#pinPanel.pin-layer-open{overflow:visible}
-#pinPanel .pin-layer-menu{
-  position:absolute;z-index:20;left:0;top:calc(100% + 4px);
-  width:min(240px,calc(100vw - 40px));max-height:min(175px,40dvh);
-  display:flex;flex-direction:column;gap:2px;padding:4px;
-  border:1px solid #ccd6e0;border-radius:9px;background:white;
-  box-shadow:0 4px 14px #142c3d24;overflow-y:auto;overscroll-behavior:contain;
-}
-#pinPanel .pin-layer-option{
-  display:flex;align-items:center;gap:8px;text-align:left;
-  width:100%;min-height:30px;padding:6px 9px;border-radius:6px;
-  border:1px solid transparent;background:white;color:#253a4b;
-  font-size:11px;line-height:1.3;
-}
-#pinPanel .pin-layer-option[aria-selected="true"]{background:#eaf2f9;border-color:#c9dae9}
-#pinPanel .pin-layer-option .pin-layer-dot{flex:0 0 10px;width:10px;height:10px;border-radius:50%}
-#pinPanel .pin-layer-option .pin-layer-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#pinPanel .pin-layer-option .pin-layer-visibility{width:15px;height:15px}
-#pinPanel .pin-layer-option .pin-layer-visibility-icon{width:15px;height:15px}
-#pinPanel.pin-layer-open + #pinDialogTip{display:none}
-#pinPanel #pinWikipedia{font-size:22px;font-weight:700}
-#pinPanel button:disabled{opacity:.62}
-#pinPanel .pin-actions #pinWeather:disabled{--p2m-button-bg:#e8e8e8;--p2m-button-ink:#9b9b9b;opacity:.65}
+#pinPanel #pinWikipedia span{font:700 24px/1 system-ui,-apple-system,sans-serif}
 #pinPanel .pin-actions button .p2m-lucide,
-#pinPanel .pin-url-actions button .p2m-lucide{width:18px;height:18px}
+#pinPanel .pin-url-actions button .p2m-lucide{width:21px;height:21px}
+#pinPanel #pinWeather.p2m-icon-control:disabled{
+  --p2m-button-bg:#f0f2f4;--p2m-button-ink:#647386;
+  opacity:1;cursor:default;
+}
+#pinPanel #pinUrlOpen.p2m-icon-control:disabled{
+  --p2m-button-bg:#edf0f2;--p2m-button-ink:#8792a0;
+  opacity:1;cursor:default;
+}
+#pinPanel #pinUrlOpen.p2m-icon-control.has-url:not(:disabled){
+  --p2m-button-bg:#c9eecb;--p2m-button-ink:#245b30;
+}
+#pinPanel .pin-actions #closePin.pin-ok-button{
+  appearance:none;background:#c9eecb!important;color:#245b30!important;
+  border:1px solid #a6ceaa!important;font-size:14px!important;font-weight:750!important;
+  box-shadow:var(--p2m-button-shadow);
+}
+#pinPanel .pin-actions #closePin.pin-ok-button:hover{background:#b6e4ba!important}
+#pinPanel .pin-actions #closePin.pin-ok-button:active{background:#9dd6a3!important}
+#pinPanel.pin-layer-open + #pinDialogTip{display:none}
+
+/* Viewport portal: the layer list NEVER participates in dialog scroll height.
+   A single menu scroll container, no horizontal scrolling or clipped options. */
+#pinLayerMenu.pin-layer-menu{
+  position:fixed;z-index:1550;box-sizing:border-box;
+  display:flex;flex-direction:column;gap:2px;overflow-y:auto;
+  overflow-x:hidden;overscroll-behavior:contain;
+  margin:0;padding:6px;background:#fff;border:1px solid #c7d0db;
+  border-radius:12px;box-shadow:0 10px 30px #152c4550;
+}
+#pinLayerMenu .pin-layer-option{
+  display:flex;align-items:center;gap:10px;flex:0 0 auto;
+  width:100%;min-height:39px;padding:7px 10px;text-align:left;
+  border:1px solid transparent;border-radius:8px;
+  background:#fff;color:#26394c;font-size:13px;line-height:1.3;
+}
+#pinLayerMenu .pin-layer-option:hover{background:#f1f6fb}
+#pinLayerMenu .pin-layer-option[aria-selected="true"]{
+  background:#e9f2fb;border-color:#c9dcf0;
+}
+#pinLayerMenu .pin-layer-dot{
+  display:block;flex:0 0 11px;width:11px;height:11px;
+  border-radius:50%;
+}
+#pinLayerMenu .pin-layer-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pinLayerMenu .pin-layer-visibility{display:inline-flex;flex:0 0 18px;color:#52677b}
+#pinLayerMenu .pin-layer-visibility-icon{width:18px;height:18px}
+#pinLayerMenu .pin-layer-visibility.is-hidden{color:#a66b78}
+
+/* Mobile WebKit: never use an editable input below 16px. This also applies
+   in landscape. Dialog itself must not create a second scroll container. */
 @media(max-width:700px){
-  #pinPanel #pinNotes{font-size:16px;line-height:1.25}
+  #pinPanel #pinNotes{font-size:16px;line-height:1.3}
   #pinPanel #pinUrl{font-size:16px}
 }
-/* iPhone landscape can exceed 700px; keyboard-safe font size still applies. */
-@media (hover:none) and (pointer:coarse){
+@media(hover:none) and (pointer:coarse){
   #pinPanel #pinNotes,#pinPanel #pinUrl{font-size:16px}
+}
+@media(max-width:360px){
+  .pin-panel{--p2m-pin-dialog-action-size:36px}
+  #pinPanel .pin-actions{gap:3px}
+}
+@media(max-height:380px){
+  .pin-panel{max-height:calc(100dvh - 18px);overflow-y:auto}
 }
 
 /* Independent refresh control, anchored to the viewport instead of the
