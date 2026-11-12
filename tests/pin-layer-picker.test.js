@@ -87,10 +87,10 @@ test("outside press and Escape close selector without changing assignment",()=>{
 test("layer picker remains a compact circular action with floating accessible choices",()=>{
  const fs=require("node:fs"),css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
  const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
- assert.match(css,/#pinPanel \\.pin-layer-menu\\s*\\{[^}]*position:absolute/);
- assert.match(css,/#pinPanel\\.pin-layer-open\\{overflow:visible\\}/);
- assert.match(css,/#pinPanel \\.pin-layer-trigger\\s*\\{[^}]*border-radius:50%/);
- assert.match(css,/#pinPanel \\.pin-actions \\.pin-layer-picker\\{[^}]*flex:0 0 var\\(--p2m-pin-dialog-action-size\\)/);
+ assert.match(css,/#pinPanel \.pin-layer-menu\s*\{[^}]*position:absolute/);
+ assert.match(css,/#pinPanel\.pin-layer-open\{overflow:visible\}/);
+ assert.match(css,/#pinPanel \.pin-layer-trigger\s*\{[^}]*border-radius:50%/);
+ assert.match(css,/#pinPanel \.pin-actions \.pin-layer-picker\{[^}]*flex:0 0 var\(--p2m-pin-dialog-action-size\)/);
  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
  const footer=section.split('<div class="pin-actions">')[1]||"";
  const ids=["movePin","pinLayerPicker","pinUrlButton","pinWikipedia","pinWeather","closePin"];
