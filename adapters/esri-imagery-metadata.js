@@ -38,7 +38,7 @@
             provider:"Bildanbieter",source:"Datenquelle",datasource:"Datenquelle",
             resolution:"Auflösung (m)",accuracy:"Genauigkeit (m)"};
           let readable=String(value);
-          if((normalized==="date"||normalized==="acquisitiondate")&&/^\\d{8}$/.test(readable)){
+          if((normalized==="date"||normalized==="acquisitiondate")&&/^\d{8}$/.test(readable)){
             const y=readable.slice(0,4),m=readable.slice(4,6),d=readable.slice(6,8);
             const parsed=new Date(y+"-"+m+"-"+d+"T00:00:00Z");
             if(!Number.isNaN(parsed.valueOf())&&
