@@ -148,6 +148,8 @@ async function metrics(page){
     assert.ok(Math.abs(deletion.dialog.left-deletion.panelLeft)<=1&&
       Math.abs(deletion.dialog.right-deletion.panelRight)<=1,"Delete confirmation spans original panel");
     assert.ok(deletion.dialog.top>=deletion.headerBottom-1,"Pin header stays visible");
+    assert.equal(await page.locator("#deleteDialog").evaluate(el=>getComputedStyle(el).borderTopWidth),
+      "0px","Delete overlay has no horizontal seam beneath the name");
     assert.equal(deletion.name,"Sicherheits-Testpin","Delete confirmation names selected pin");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-delete.png"});
     await page.locator('#deleteDialog button[value="cancel"]').click();
@@ -284,6 +286,17 @@ async function metrics(page){
      "Desktop note glyph right edge must match fieldset frame: "+JSON.stringify(positions));
    assert.ok(Math.abs(positions.fieldBottom-positions.buttonBottom)<=1,
      "Desktop note glyph bottom edge must match fieldset frame: "+JSON.stringify(positions));
+   const editorButton=await page.locator("#pinNotesExpand").evaluate(el=>{
+     const c=getComputedStyle(el),r=el.getBoundingClientRect(),svg=el.querySelector("svg").getBoundingClientRect();
+     return {width:r.width,height:r.height,svgWidth:svg.width,svgHeight:svg.height,
+       background:c.backgroundColor,borderRadius:c.borderRadius,shadow:c.boxShadow,border:c.borderTopWidth};
+   });
+   assert.ok(Math.abs(editorButton.width-20)<=1&&Math.abs(editorButton.height-20)<=1,
+     "Only the tiny SVG may form the editor button: "+JSON.stringify(editorButton));
+   assert.equal(editorButton.background,"rgb(255, 255, 255)");
+   assert.equal(editorButton.borderRadius,"0px");
+   assert.equal(editorButton.shadow,"none");
+   assert.equal(editorButton.border,"0px");
    assert.ok(positions.logoComplete&&positions.logoWidth>0,"User-provided Wikipedia SVG must load locally");
    assert.equal(positions.deleteIcon,"map-pin-off");
    assert.ok(Math.abs(Number.parseFloat(positions.weatherStroke)-1.45)<.01);
@@ -301,7 +314,7 @@ async function metrics(page){
    assert.equal(tip.baseCover,"rgb(255, 255, 255)");
    assert.equal(tip.baseHeight,"3px");
    await page.locator("#pinWikipedia").hover();
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v160-notes.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v161-notes.png"});
    await page.locator("#pinWeather").click();
    const weatherFrame=await page.locator("#pinPanel .pin-detail-region").evaluate(el=>{
     const c=getComputedStyle(el);return {display:c.display,top:c.borderTopStyle,topWidth:c.borderTopWidth};
@@ -309,9 +322,9 @@ async function metrics(page){
    assert.equal(weatherFrame.display,"block","Weather fieldset keeps native legend border rendering");
    assert.equal(weatherFrame.top,"solid");
    assert.equal(weatherFrame.topWidth,"1px");
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v160-weather.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v161-weather.png"});
    assert.deepEqual(errors,[]);
-   console.log("[visual] PASS desktop v160 icon, weather and note-corner geometry");
+   console.log("[visual] PASS desktop v161 icon, weather and note-corner geometry");
   }finally{await desktop.close();}
  }finally{await browser.close();}
 })().catch(error=>{console.error("[visual] FAIL",error.stack||error);process.exitCode=1;});
