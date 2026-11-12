@@ -58,22 +58,11 @@ dialog::backdrop{background:#1629457a}
 dialog h2{font-size:18px;margin:0 0 24px}
 .dialog-actions{display:flex;justify-content:end;gap:10px}
 /* Wide predecessor-inspired teardrop; Leaflet owns its 50x64 anchor. */
-.pin-marker{position:relative;width:36px;height:46px;filter:drop-shadow(0 2px 3px #142b4560)}
-.pin-marker .pin-marker-shape{display:block;width:36px;height:46px;overflow:visible}
+/* Wide compact SVG body inside a separate 44px Leaflet tap target. */
+.pin-marker{position:relative;left:7px;top:0;width:30px;height:40px;filter:drop-shadow(0 2px 2px #142b4560)}
+.pin-marker .pin-marker-shape{display:block;width:30px;height:40px;overflow:visible}
 .pin-marker.selected .pin-marker-shape{filter:drop-shadow(0 0 1px #102d52)}
-.pin-status-column{
-  position:absolute;right:-10px;top:0;display:flex;flex-direction:column;
-  align-items:center;gap:1px;pointer-events:none;z-index:2;
-}
-.pin-status-badge{
-  box-sizing:border-box;display:flex;align-items:center;justify-content:center;
-  width:14px;height:14px;flex:0 0 14px;border-radius:5px;
-  border:1px solid #b8c6d4;background:#fff;box-shadow:0 1px 3px #152a4140;
-  color:#32465a;
-}
-.pin-status-badge svg{display:block;width:10px;height:10px}
-.pin-status-url{color:#276bb8}
-.pin-status-gpx{color:#248363}
+.pin-status-segments{pointer-events:none}
 .leaflet-div-icon{background:none;border:none}
 @media(max-width:630px){
 .panel{right:8px}
@@ -586,7 +575,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel #pinUrlButton.is-active.has-url::after{background:#fff;border-color:#1764bf}
 #pinPanel .pin-detail-region .pin-weather-placeholder{
-  box-sizing:border-box;min-height:230px;display:flex;flex-direction:column;
+  box-sizing:border-box;min-height:0;height:220px;display:flex;flex-direction:column;
   justify-content:center;align-items:center;gap:8px;color:#61738a;text-align:center;
   font-size:13px;
 }
@@ -600,10 +589,20 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel .pin-gpx-actions button:disabled{opacity:.85}
 @media(max-width:700px){
-  #pinPanel .pin-detail-region .pin-weather-placeholder{min-height:190px}
+  #pinPanel .pin-detail-region .pin-weather-placeholder{min-height:0}
 }
+/* Weather replaces the entire navigation-and-notes middle region without
+   shifting the header/footer or changing the dialog's outer height. */
+#pinPanel.pin-weather-mode .pin-navigation-row{display:none}
+#pinPanel.pin-weather-mode .pin-detail-region{
+  height:252px;display:flex;flex-direction:column;
+}
+#pinPanel.pin-weather-mode .pin-detail-region .pin-weather-placeholder{
+  flex:1;min-height:0;height:auto;
+}
+.pin-note-editor.is-tablet-keyboard{padding-bottom:16px}
 /* A keyboard-visible editor may not reserve the iPhone home-indicator area. */
-.pin-note-editor.is-keyboard-visible{padding-bottom:4px}
+.pin-note-editor.is-keyboard-visible:not(.is-tablet-keyboard){padding-bottom:4px}
 #pinPanel #pinNotesExpand{display:none}
 @media(min-width:701px) and (pointer:fine){
   #pinPanel .pin-detail-region #pinNotesBlock{position:relative;padding-bottom:16px}
@@ -654,6 +653,24 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 .pin-note-editor-spacer{flex:1}
 body.pin-note-editor-open{overflow:hidden}
+/* One dialog-owned mouse hover contract; no sticky hover on touch. The
+   explicit selector beats earlier global and component color overrides. */
+@media(hover:hover) and (pointer:fine){
+  #pinPanel button:is(#deletePin,#movePin,#closePin,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather,#showPinLayer,#pinNotesExpand):not(:disabled):hover,
+  #pinPanel .pin-navigation-row .pin-nav-add:hover,
+  #pinPanel .pin-navigation-row button:not(:disabled):hover,
+  #pinUrlBlock .pin-url-actions button:not(:disabled):hover,
+  .pin-note-editor .pin-note-editor-actions button:not(:disabled):hover{
+    --p2m-button-bg:#52606d;--p2m-button-ink:#fff;
+    background:#52606d!important;color:#fff!important;border-color:#52606d!important;
+  }
+  #pinPanel button:hover .pin-wikipedia-glyph{color:#fff;border-color:#fff}
+}
+#pinPanel button .p2m-lucide{stroke-width:1.8}
+#pinPanel #deletePin.p2m-icon-control .p2m-lucide{stroke-width:1.9}
+#pinPanel .pin-navigation-buttons .p2m-lucide,
+#pinPanel .pin-nav-add .p2m-lucide,
+#pinPanel #pinWeather .p2m-lucide{stroke-width:1.8}
 /* The approved layer popup remains independent and scrolls only vertically. */
 #pinLayerMenu.pin-layer-menu{
   position:fixed;z-index:1550;box-sizing:border-box;
