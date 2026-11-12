@@ -3,9 +3,9 @@
  * No browser storage, automatic requests or fabricated metadata. */
 (function(root){
   const KEYS=Object.freeze([
-    ["Aufnahmedatum",["DATE","SRC_DATE","ACQUISITION_DATE","ACQUISITIONDATE","SRC_DATE2"]],
-    ["Resolution",["RESOLUTION","SRC_RES"]],
-    ["Accuracy",["ACCURACY","SRC_ACC"]],
+    ["Aufnahmedatum",["DATE","DATE (YYYYMMDD)","SRC_DATE","SRC_DATE2","ACQUISITION_DATE","ACQUISITIONDATE"]],
+    ["Resolution",["RESOLUTION","RESOLUTION (M)","SRC_RES"]],
+    ["Accuracy",["ACCURACY","ACCURACY (M)","SRC_ACC"]],
     ["Source_info",["SOURCE_INFO","NICE_NAME"]],
     ["Datenquelle",["SOURCE","DATA_SOURCE","DATASOURCE","NICE_DESC","PROVIDER"]]
   ]);
@@ -13,19 +13,14 @@
     if(value===null||value===undefined||!String(value).trim())return false;
     return !["99999","N/A","NULL","UNKNOWN","NO DATA"].includes(String(value).trim().toUpperCase());
   }
-  function isoDate(value){
-    const raw=String(value).trim();
-    let match=/^(\d{4})(\d{2})(\d{2})$/.exec(raw);
-    if(!match)match=/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(raw);
-    if(!match)return null;
-    const date=match.slice(1).join("-");
-    const check=new Date(date+"T00:00:00Z");
-    return !Number.isNaN(check.valueOf())&&check.toISOString().slice(0,10)===date?date:null;
-  }
+  // Esri Identify exposes layer field aliases (for example
+  // "DATE (YYYYMMDD)" and "RESOLUTION (M)"), not always field names.
+  // Accept both, but do not format or otherwise transform their values.
+  function fieldKey(value){return String(value).toUpperCase().replace(/[^A-Z0-9]/g,"");}
   function pick(attributes,names){
-    const indexed=new Map(Object.entries(attributes).map(([key,value])=>[key.toUpperCase(),value]));
+    const indexed=new Map(Object.entries(attributes).map(([key,value])=>[fieldKey(key),value]));
     for(const name of names){
-      const value=indexed.get(name);
+      const value=indexed.get(fieldKey(name));
       if(available(value))return value;
     }
     return null;
@@ -64,15 +59,13 @@
         ||json.results?.[0]?.attributes;
       const fields=KEYS.map(([name,keys])=>{
         const raw=attributes?pick(attributes,keys):null;
-        const value=raw===null?"Nicht verfügbar":
-          name==="Aufnahmedatum"?(isoDate(raw)||"Nicht verfügbar"):String(raw).trim();
+        const value=raw===null?"Nicht verfügbar":String(raw);
         return {name,value};
       });
       return {fields,waybackUrl:waybackUrl({lat,lng},zoom)};
     }
   }
   const api=EsriImageryMetadata;
-  api.isoDate=isoDate;
   root.Pin2MapEsriImageryMetadata=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
