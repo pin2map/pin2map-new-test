@@ -6,7 +6,7 @@ const ops=require("../application/pin-operations.js");
 const domain=require("../domain/project-model.js");
 function fixture(){
  const events={},elements={};
- for(const id of ["pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia"]){
+ for(const id of ["pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia","pinWeather","pinWeatherBlock","pinDetailTitle","pinGpxActions"]){
   const el={value:"",disabled:false,attrs:{},classes:new Set(id==="pinUrlBlock"?["hidden"]:[]),
    addEventListener(name,handler){(events[id]??={})[name]=handler;},
    setAttribute(k,v){this.attrs[k]=v;},
@@ -67,8 +67,8 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  assert.ok(html.includes('<textarea id="pinUrl" rows="3"'));
  assert.ok(html.includes('<legend>Pin-URL</legend>'));
  assert.ok(section.includes('id="pinWeather"'));
- assert.match(section,/id="pinWeather"[^>]*disabled/);
- assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:106px/);
+ assert.match(section,/id="pinWeather"[^>]*aria-pressed="false"/);
+ assert.match(css,/#pinPanel \.pin-detail-region #pinNotes\{[^}]*height:145px/);
  assert.match(css,/@media\(max-width:700px\)\{\s*#pinPanel \.pin-detail-region #pinNotes\{font-size:16px/);
  assert.ok(css.includes("@media(hover:none) and (pointer:coarse)"),"iPhone landscape must retain 16px notes");
  assert.ok(sw.includes('"./ui/pin-details.js"'));
