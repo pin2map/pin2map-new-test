@@ -35,7 +35,9 @@ test("module wired to app via map adapter and cached for offline startup",()=>{
   const read=name=>fs.readFileSync(path.resolve(__dirname,"..",name),"utf8");
   const app=read("app.js"),html=read("index.html"),sw=read("sw.js");
   assert.match(app,/new window\.Pin2MapMapClickCoordinator/);
-  assert.match(app,/mapAdapter\.onMapClick\(position=>\{pinInfoMenu\.close\(\);mapClickCoordinator\.handle\(position\);\}\)/);
+  assert.match(app,/mapAdapter\.onMapClick\(position=>\{/);
+  assert.match(app,/if\(satelliteInspector\.isActive\(\)\)\{satelliteInspector\.pick\(position\);return;\}/);
+  assert.match(app,/pinInfoMenu\.close\(\);mapClickCoordinator\.handle\(position\);/);
   assert.ok(html.indexOf("./application/map-click-coordinator.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/application\/map-click-coordinator\.js"/);
   assert.match(sw,/const CACHE='pin2map-new-v\d+'/);
