@@ -34,6 +34,15 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(loaded.zoomButtons,3);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        // Cross-platform search clear works without the browser-native X.
+        const search=page.locator("#searchInput"),clear=page.locator("#searchClear");
+        assert.equal(await clear.isHidden(),true);
+        await search.fill("Stuttgart");
+        assert.equal(await clear.isVisible(),true);
+        await clear.click();
+        assert.equal(await search.inputValue(),"");
+        assert.equal(await clear.isHidden(),true);
+        assert.equal(await page.locator("#searchResults").isHidden(),true);
         // Per-pin interactive info overlays live in Leaflet's marker pane;
         // the pin editor's existing body class must hide them, without
         // requiring project data or creating a real user pin.
@@ -59,8 +68,14 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         const mapMenu=page.locator("#basemapMenu");
         const ordered=await mapMenu.locator("[data-basemap]").evaluateAll(items=>
           items.map(item=>item.dataset.basemap));
-        assert.equal(ordered.at(-1),"satellite");
+        assert.deepEqual(ordered,["street","international","humanitarian","topo","satellite"]);
+        assert.equal(await mapMenu.locator(".basemap-menu-title").count(),0);
+        assert.equal(await mapMenu.locator('[data-basemap="street"]').textContent(),"Standard");
+        assert.equal(await mapMenu.locator("hr.basemap-satellite-divider").count(),1);
         await chooser.click();
+        assert.equal(await chooser.getAttribute("aria-expanded"),"true");
+        assert.equal(await chooser.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
+        assert.equal(await chooser.evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
         await mapMenu.locator('[data-basemap="satellite"]').click();
         await chooser.click();
         const sun=mapMenu.locator("#satelliteBrightness");
