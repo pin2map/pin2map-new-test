@@ -408,6 +408,34 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinName").fill("  Reise-Testpin  ");
     await page.locator("#pinName").blur();
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin");
+    step("pin details: multiline notes, URL swap, six footer controls and persistence");
+    assert.equal(await page.locator("#pinNotes").count(),1);
+    assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
+    const footerIds=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
+    const footerLayout=await page.locator("#pinPanel .pin-actions").evaluate(row=>
+      [...row.querySelectorAll("button")].map(b=>({id:b.id,left:b.getBoundingClientRect().left,
+        width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})));
+    assert.deepEqual(footerLayout.map(b=>b.id),footerIds);
+    for(const item of footerLayout)assert.ok(Math.abs(item.width-32)<1&&Math.abs(item.height-32)<1,JSON.stringify(item));
+    await page.locator("#pinNotes").fill("Erste Zeile\\nZweite Zeile");
+    await page.locator("#pinUrlButton").click();
+    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinUrlBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinUrlOpen").isDisabled(),true);
+    await page.locator("#pinUrl").fill("https://example.org/path");
+    assert.equal(await page.locator("#pinUrlOpen").isEnabled(),true);
+    await page.locator("#pinUrlCancel").click();
+    assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
+    await page.locator("#pinUrlButton").click();
+    assert.equal(await page.locator("#pinUrl").inputValue(),"");
+    await page.locator("#pinUrl").fill("https://example.org/path");
+    await page.locator("#pinUrlSave").click();
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\\nZweite Zeile");
+    assert.equal(await page.locator("#pinWeather").isDisabled(),true);
+    assert.match(await page.locator("#pinCreated").textContent(),/Erstellt:/);
+    assert.match(await page.locator("#pinUpdated").textContent(),/Geändert:/);
+    await page.waitForTimeout(650);
     step("bulk delete confirmation cancels without removing a private pin");
     await page.locator("#closePin").click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
@@ -481,6 +509,13 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin",
       "Edited pin name persists after reload");
+    assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\\nZweite Zeile",
+      "Multiline notes persist in existing IndexedDB project");
+    await page.locator("#pinUrlButton").click();
+    assert.equal(await page.locator("#pinUrl").inputValue(),"https://example.org/path",
+      "Saved pin URL persists across reload");
+    await page.locator("#pinUrlCancel").click();
+
     step("layer visibility hides/restores the persisted pin");
     // Focused pin editing intentionally hides all other map controls.
     // Close the editor before opening the bottom-center layers picker.
