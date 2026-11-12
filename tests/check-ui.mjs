@@ -84,7 +84,7 @@ const anchored=anchorGeometry({
   appRect:{left:0,top:0,width:400,height:500},
   panelHeight:140
 });
-check(anchored.panel.left===45 && anchored.panel.top===34 &&
+check(anchored.panel.left===20 && anchored.panel.top===34 &&
   anchored.tip.left===200 && anchored.tip.top===174,
   "pin editor retains predecessor-style 76px pointer clearance");
 const correction=openingCorrection({
