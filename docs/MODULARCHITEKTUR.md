@@ -188,3 +188,12 @@ Lokale SVGs in `ui/lucide-icons.js` tragen alle Sichtzustände ohne externes Fon
 ## v154 – URL-Textarea und unveränderte Zeitstempel-Domain (2026-11-12)
 
 `index.html` enthält keine sichtbare `pin-meta-row` mehr; `ui/pin-editor.js` verarbeitet keine Datums-DOM-Knoten. Domain und Application behalten vorhandene `createdAt`/`updatedAt`-Mutation und Persistenz unverändert. `ui/pin-details.js` hält für den separat an `body` verankerten URL-Popup eine reine DOM-/Viewport-Fokus-Positionsmarke, sodass ein schrumpfender `visualViewport` bei Tastatureingabe nicht erneut die vertikale Popup-Position bestimmt. Die URL ist ein dreizeiliges `textarea` mit zwei rechteckigen Aktionen, aber weiter demselben injizierten Speicher-/Öffnungs-Port. Keine neuen Framework-, Kartenadapter-, Datenbank- oder Navigationsabhängigkeiten.
+
+
+## v155 – modulare Markeransicht und optionale Pin-Dialogzustände (2026-11-12)
+
+`ui/pin-marker-view.js` leitet rein präsentationsseitig den Status für Note, URL und GPX aus dem aktuellen Pin-Datensatz ab und erzeugt breite, sichere SVG-Markups sowie vertikal bündige Badge-Symbole. Der `map-adapter-leaflet.js` besitzt weiterhin allein `L.divIcon`, den 68×64px Trefferbereich, den stabilen Pin-Anker und den gegenüber der neuen Badge-Spalte versetzten Namenstooltip. Weder `domain/` noch `application/` erhalten Leaflet-/DOM-Verweise. Die DOM-Statussymbole erzeugen keine eigene Datenpersistenz oder Event-Fläche.
+
+`ui/pin-details.js` hat die Ansichtsumschaltung Notizen/Wetter als UI-Zustand sowie ein bedingt sichtbares GPX-Aktionspaar ohne Handler. Eine GPX-Verknüpfung muss bereits am Pin existieren; eine entsprechende Datei-Verarbeitung wird nicht vorgetäuscht. Das URL-Popup bleibt DOM-only und öffnet zulässige externe Protokolle über den bereits injizierten Benutzerinteraktionsweg. `ui/pin-note-editor.js` ist ein neues, vollständig vom Fachmodell getrenntes UI-Modul; es erhält Wert, Pin-Name und Save-/Close-Callbacks, verwaltet Selektion/Datum/Zeit sowie das `visualViewport`-Layout für den mobilen Editor. `app.js` verdrahtet lediglich die schon vorhandenen `pinOps.updateDetails`- und Render-/Speicherports; `ui/map-overlay-layout.js` erfasst zusätzlich Viewport-Änderungen der iPhone-Tastatur.
+
+Neue Module müssen sowohl in `index.html` als auch in der `sw.js`-`CORE`-Reihenfolge stehen; hier betrifft dies `ui/pin-note-editor.js`. Keine Änderung an IndexedDB-Schema, bestehender Pin-Identität, Offline-Tile-Policy, `main` oder `reference/*`.
