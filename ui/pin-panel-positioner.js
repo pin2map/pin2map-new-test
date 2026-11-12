@@ -6,7 +6,7 @@
  * navigation it remains anchored to its pin even beyond viewport boundaries.
  */
 (function(root){
-  function anchorGeometry({point,mapRect,appRect,panelHeight,maxWidth=310,padding=16,offset=76}){
+  function anchorGeometry({point,mapRect,appRect,panelHeight,maxWidth=360,padding=16,offset=76}){
     const width=Math.min(maxWidth,appRect.width-padding);
     const x=mapRect.left+point.x-appRect.left;
     const y=mapRect.top+point.y-appRect.top;
