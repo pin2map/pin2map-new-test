@@ -101,7 +101,8 @@ test("layer picker uses fixed popup outside the scrolling panel and a circular t
  const fs=require("node:fs"),css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
  const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
  assert.match(css,/#pinLayerMenu\.pin-layer-menu\{[^}]*position:fixed/);
- assert.match(css,/#pinPanel #pinLayerTrigger\.pin-layer-trigger\{[^}]*border-radius:50%/);
+ assert.match(css,/#pinPanel #pinLayerTrigger\.pin-layer-trigger\{/);
+ assert.ok(css.includes("padding:0!important;border-radius:50%!important;"));
  assert.doesNotMatch(css,/#pinPanel\.pin-layer-open\{overflow:visible/);
  assert.match(css,/#pinLayerMenu\.pin-layer-menu\{[^}]*overflow-x:hidden/);
  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
