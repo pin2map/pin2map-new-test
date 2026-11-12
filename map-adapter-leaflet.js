@@ -205,7 +205,7 @@
       const markup=html===undefined
         ? '<div class="pin-marker'+(selected?' selected':'')+'" style="background:'+color+'"></div>'+label
         : html;
-      marker.setIcon(window.L.divIcon({html:markup,iconSize:[52,46],iconAnchor:[18,44],className:"pin-icon"}));
+      marker.setIcon(window.L.divIcon({html:markup,iconSize:[44,44],iconAnchor:[22,39],className:"pin-icon"}));
       marker.options.title=title;
     }
     // Presentational Leaflet tooltip port. Keep provider-specific anchoring
@@ -220,7 +220,7 @@
       content.textContent=name; // Never interpret user-entered names as HTML.
       if(marker.getTooltip())marker.setTooltipContent(content);
       else marker.bindTooltip(content,{
-        permanent:true,direction:"right",offset:[29,-21],
+        permanent:true,direction:"right",offset:[22,-17],
         className:"address-label",interactive:false
       });
     }
@@ -236,7 +236,7 @@
       const ll=marker.getLatLng();
       const options={interactive:true,keyboard:false,zIndexOffset:450,
         icon:window.L.divIcon({className:"elevation-label-wrap",
-          html,iconSize:[0,0],iconAnchor:[0,34]})};
+          html,iconSize:[0,0],iconAnchor:[0,43]})};
       if(!overlay){
         overlay=window.L.marker(ll,options).addTo(this.map);
         overlay.on("click",event=>{
