@@ -16,7 +16,7 @@ test("wide predecessor-style pin has large white center and aligned status colum
  const css=read("styles.css");
  assert.match(css,/\.pin-status-column\{[^}]*flex-direction:column/);
  assert.match(css,/\.pin-status-badge\{[^}]*width:14px;height:14px/);
- assert.match(read("map-adapter-leaflet.js"),/iconSize:\[68,64\],iconAnchor:\[25,61\]/);
+ assert.match(read("map-adapter-leaflet.js"),/iconSize:\[52,46\],iconAnchor:\[18,44\]/);
 });
 test("badges derive from existing pin data; no empty gaps or persistent marker flags",()=>{
  const pin={id:"p",note:"",url:"mailto:a@example.com"};
