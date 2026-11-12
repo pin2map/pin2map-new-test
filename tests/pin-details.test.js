@@ -6,7 +6,7 @@ const ops=require("../application/pin-operations.js");
 const domain=require("../domain/project-model.js");
 function fixture(){
  const events={},elements={};
- for(const id of ["pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia","pinWeather","pinWeatherBlock","pinDetailTitle","pinGpxActions"]){
+ for(const id of ["pinPanel","pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia","pinWeather","pinWeatherBlock","pinDetailTitle","pinGpxActions"]){
   const el={value:"",disabled:false,attrs:{},classes:new Set(id==="pinUrlBlock"?["hidden"]:[]),
    addEventListener(name,handler){(events[id]??={})[name]=handler;},
    setAttribute(k,v){this.attrs[k]=v;},
