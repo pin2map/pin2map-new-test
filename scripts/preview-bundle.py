@@ -32,11 +32,11 @@ def app_shell(source: Path) -> list[str]:
         if not (source / relative).is_file():
             raise ValueError(f"Missing app-shell asset: {relative}")
         result.append(relative)
-    if "index.html" not in result or "sw.js" in result:
-        # sw.js is separately deployed because service workers cannot cache
-        # their own script from inside install. Preserve it explicitly.
-        if "index.html" not in result:
-            raise ValueError("CORE must contain index.html")
+    if "index.html" not in result:
+        raise ValueError("CORE must contain index.html")
+    # A service worker is published separately but not precached by itself.
+    if "sw.js" in result:
+        raise ValueError("sw.js must be deployed separately from CORE")
     return result
 
 
