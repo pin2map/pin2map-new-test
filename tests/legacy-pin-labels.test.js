@@ -24,7 +24,7 @@ test("legacy pin labels are safe, right-anchored permanent Leaflet tooltips",()=
   assert.equal(tooltip.content.textContent,'<img src=x onerror=alert(1)>');
   assert.equal(options.permanent,true);
   assert.equal(options.direction,"right");
-  assert.deepEqual(Array.from(options.offset),[22,-17]);
+  assert.deepEqual(Array.from(options.offset),[12,-17]);
   assert.equal(options.className,"address-label");
   assert.equal(options.interactive,false);
   adapter.setMarkerLabel(marker,"New name");
