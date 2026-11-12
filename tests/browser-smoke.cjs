@@ -417,7 +417,7 @@ async function longPress(page,x,y,ms=725){
         width:b.getBoundingClientRect().width,height:b.getBoundingClientRect().height})));
     assert.deepEqual(footerLayout.map(b=>b.id),footerIds);
     for(const item of footerLayout)assert.ok(Math.abs(item.width-32)<1&&Math.abs(item.height-32)<1,JSON.stringify(item));
-    await page.locator("#pinNotes").fill("Erste Zeile\\nZweite Zeile");
+    await page.locator("#pinNotes").fill("Erste Zeile\nZweite Zeile");
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
     assert.equal(await page.locator("#pinUrlBlock").isVisible(),true);
@@ -431,7 +431,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinUrl").fill("https://example.org/path");
     await page.locator("#pinUrlSave").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
-    assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\\nZweite Zeile");
+    assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
     assert.equal(await page.locator("#pinWeather").isDisabled(),true);
     assert.match(await page.locator("#pinCreated").textContent(),/Erstellt:/);
     assert.match(await page.locator("#pinUpdated").textContent(),/Geändert:/);
@@ -509,7 +509,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinCoords").textContent(),coordsAfter);
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin",
       "Edited pin name persists after reload");
-    assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\\nZweite Zeile",
+    assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile",
       "Multiline notes persist in existing IndexedDB project");
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinUrl").inputValue(),"https://example.org/path",
