@@ -827,7 +827,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   background:var(--p2m-map-control-bg)!important;
   color:var(--p2m-map-control-ink)!important;
 }
-:is(#app > button, #app #map .leaflet-control button):is(:active,.p2m-map-tap-flash){
+:is(#app > button, #app #map .leaflet-control button):is(:active,.p2m-map-tap-flash):not([aria-expanded="true"]){
   background:var(--p2m-map-control-pressed)!important;
   color:var(--p2m-map-control-ink)!important;
 }
