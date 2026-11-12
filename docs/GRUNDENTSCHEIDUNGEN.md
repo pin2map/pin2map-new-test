@@ -2021,3 +2021,12 @@ Die Vorgänger-App bleibt die **visuelle und ergonomische Referenz**, nicht die 
 **Notizeditor:** Auf Touchgeräten soll der Editor den sichtbaren Bildschirm auch bei geöffneter Tastatur bis an deren obere Grenze verwenden. Die Buttonleiste Datum–Zeit–Fertig steht unmittelbar unter dem Textfeld und direkt über der Tastatur; bei Tastatureinblendung entfällt die zusätzliche Safe-Area-Fußpolsterung. Auf großen Monitoren mit feinem Zeigegerät zeigt die **rechte untere Ecke des Inline-Notizfeldes** ein dezentes Lucide-Symbol `square-chevron-right`, das denselben separat gekapselten Editor als **großes, mittig zentriertes Fenster** öffnet (bis 900×720 CSS-Pixel, viewportbegrenzt). Datum/Zeit/Autosave/Fertig verwenden unverändert die bestehenden Pin-Updateports; kein zweiter Notiz-Datenbestand, keine Popup-Fachlogik in `app.js`.
 
 **Abnahme:** Tatsächliche iPhone-/iPad-Safari-Tastaturbedienung bleibt trotz emuliertem Chromium-/HTTPS-Live-Gate durch den Auftraggeber zu bestätigen. Die Wetter- und Desktop-Editor-Proportionen sind nach Veröffentlichung visuell zu beurteilen.
+
+
+## v157 – verbindlicher UI- und Marker-Vertrag (2026-11-12)
+
+Die URL-Überlagerung muss vollständig innerhalb der horizontalen Pin-Panel-Grenzen liegen; die Position wird in `ui/pin-details.js` aus dem Panel berechnet, nicht aus freiem Platz links oder rechts. Hover bei Maus (nicht Touch) wird für alle Dialogbuttons einschließlich farbiger Aktionen, Löschbutton und Navi-Plus dunkelgrau (`#52606d`) mit weißen Symbolen. Lucide-Dialogstrokes ca. 1.8–1.9.
+
+Der Wettermodus ersetzt Navigation **und** Notizen als gemeinsamen Mittelbereich, ohne Dialogkopf/Footer zu verschieben; nur ein Platzhalter ohne Wetterdaten. Beim mobilen Notizeditor bleibt das abgenommene iPhone-Layout; das iPad bekommt bei sichtbarer Tastatur 16px Abstand unter der Aktionsleiste.
+
+Der breite SVG-Pin misst sichtbar 30×40px, die getrennte Klickfläche 44×44px. Der Innenkreis besitzt drei durch feines Weiß getrennte 120°-Sektoren (oben links Rot Notiz, oben rechts Blau URL, unten Grau GPX); ohne Inhalt neutral. **Externe Badges entfallen**. Flags weiterhin ausschließlich aus Bestands-Pin-Daten, keine Speicherung zusätzlicher Markerinformationen. Höhen- und Namenslabel mit neuen Abständen. Reale Safari-Abnahme bleibt zusätzlich zum erfolgreichen Browser-/Pages-Gate erforderlich.
