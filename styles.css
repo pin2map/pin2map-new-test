@@ -1175,3 +1175,10 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .satellite-info-row{display:grid;grid-template-columns:minmax(90px,36%) minmax(0,1fr);gap:8px;padding:5px 0;border-bottom:1px solid #edf1f5;overflow-wrap:anywhere}
 #app .satellite-info-panel small{display:block;margin-top:8px;color:#617287}
 @media(max-width:630px){#app .satellite-info-panel{top:calc(70px + env(safe-area-inset-top,0px));max-height:40dvh}}
+
+/* Satellite point picking only: override Leaflet's hand/grab cursor without !important. */
+#map.leaflet-container.p2m-satellite-inspecting,
+#map.leaflet-container.p2m-satellite-inspecting .leaflet-interactive,
+#map.leaflet-container.p2m-satellite-inspecting .leaflet-grab{
+  cursor:crosshair;
+}
