@@ -81,7 +81,7 @@
   const satelliteInspector=new window.Pin2MapSatelliteInspector({
     getElement:$,document,
     mapPort:{
-      getViewport:()=>mapAdapter.getViewport(),
+      getViewport:()=>mapAdapter.getImageryQueryViewport(),
       showSatelliteSelection:p=>mapAdapter.showSatelliteSelection(p),
       clearSatelliteSelection:()=>mapAdapter?.clearSatelliteSelection()
     },
