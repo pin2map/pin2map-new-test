@@ -186,7 +186,7 @@ async function metrics(page){
     await page.locator("#pinNoteEditorText").evaluate(el=>{el.focus();el.setSelectionRange(3,3);el.dispatchEvent(new Event("select"));});
     await page.locator("#pinNoteInsertDate").click();
     const text=await page.locator("#pinNoteEditorText").inputValue();
-    assert.match(text,/^Vor\\d{2}\\.\\d{2}\\.\\d{4}Nach$/);
+    assert.match(text,/^Vor\d{2}\.\d{2}\.\d{4}Nach$/);
     const toolbar=await page.locator("#pinNoteEditorDone").boundingBox();
     assert.ok(toolbar.y>=0&&toolbar.y+toolbar.height<=viewport.height+2,
       "Mobile editor toolbar is not below the visible screen");
