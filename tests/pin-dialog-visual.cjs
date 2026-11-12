@@ -25,7 +25,10 @@ async function metrics(page){
   const styles=getComputedStyle(panel);
   return {
    panel:rect("pinPanel"),name:rect("pinName"),meta:rect("pinCreated"),
+   navigation:rect("pinPanel"),
    details:rect("pinNotesBlock"),footer:rect("closePin"),
+   routingRow:rect("pinPanel"),routingCount:get("pinPanel").querySelectorAll(".pin-navigation-buttons button").length,
+   routingDisabled:[...get("pinPanel").querySelectorAll(".pin-navigation-buttons button")].every(b=>b.disabled),
    noteHeight:notes.getBoundingClientRect().height,
    noteFont:Number.parseFloat(getComputedStyle(notes).fontSize),
    nameFont:Number.parseFloat(getComputedStyle(get("pinName")).fontSize),
@@ -36,6 +39,10 @@ async function metrics(page){
     svgSize:button.querySelector("svg")?.getBoundingClientRect().width||0
    };}),
    weatherOpacity:getComputedStyle(get("pinWeather")).opacity,
+   delete:rect("deletePin"),
+   routingButtons:[...get("pinPanel").querySelectorAll(".pin-navigation-buttons button")].map(b=>{const r=b.getBoundingClientRect();return {width:r.width,height:r.height,disabled:b.disabled};}),
+   markerCount:document.querySelectorAll(".pin-marker").length,
+   visibleLabels:[...document.querySelectorAll("#map .leaflet-tooltip")].filter(e=>getComputedStyle(e).display!=="none"&&getComputedStyle(e).visibility!=="hidden").length,
    viewport:{width:innerWidth,height:innerHeight},
    documentScrollWidth:document.documentElement.scrollWidth,
    bodyScrollWidth:document.body.scrollWidth
@@ -67,6 +74,7 @@ async function metrics(page){
           project.layers.push({id:"visual-layer-"+i,name:"Beispiel-Ebene "+i,
             color:colors[(i-2)%colors.length],visible:i%3!==0});
         }
+        project.pins.push({id:"visual-reference-pin",lat:48.7758,lng:9.1829,name:"Referenz-Pin",layerId:"private"});
         await store.saveProject(project);
       }finally{store.close();}
     });
@@ -87,9 +95,15 @@ async function metrics(page){
     assert.ok(m.panel.y>=4&&m.panel.bottom<=viewport.height-4,JSON.stringify(m));
     assert.ok(m.scrollHeight<=m.clientHeight+2,"Nested pin dialog scroll: "+JSON.stringify(m));
     assert.ok(m.meta.y>m.name.y,"Date line must be below name");
-    assert.ok(m.details.y>m.meta.y,"Note detail must follow dates with no routing placeholder");
+    assert.equal(m.routingCount,5,"Two external and three routing controls must be visible");
+    assert.equal(m.routingDisabled,true,"All future navigation controls must stay inert");
+    assert.ok(m.details.y>m.meta.y,"Notes must follow date and navigation rows");
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
-    assert.ok(Math.abs(m.noteHeight-144)<=1,JSON.stringify(m));
+    assert.ok(Math.abs(m.noteHeight-106)<=1,JSON.stringify(m));
+    assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
+    for(const b of m.routingButtons)assert.ok(b.disabled&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size "+JSON.stringify(b));
+    assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
+    assert.ok(m.visibleLabels>=1,"Pin name labels remain displayed with open dialog");
     assert.ok(m.noteFont>=16&&m.nameFont>=16,"Touch inputs must prevent iOS zoom: "+JSON.stringify(m));
     for(let i=0;i<m.footerItems.length;i++){
      const item=m.footerItems[i];
@@ -122,11 +136,21 @@ async function metrics(page){
     await page.locator("#pinLayerMenu .pin-layer-option").last().click();
     assert.equal(await page.locator("#pinLayerMenu").isHidden(),true);
     await page.locator("#pinUrlButton").click();
-    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true,"URL popup must not replace notes");
     assert.equal(await page.locator("#pinUrlBlock").isVisible(),true);
+    const urlPopup=await page.locator("#pinUrlBlock").evaluate(el=>{
+      const r=el.getBoundingClientRect();
+      const actions=[...el.querySelectorAll(".pin-url-actions button")].map(b=>{const q=b.getBoundingClientRect();return {width:q.width,height:q.height};});
+      return {parent:el.parentElement.tagName,left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,actions};
+    });
+    assert.equal(urlPopup.parent,"BODY");
+    assert.ok(urlPopup.left>=4&&urlPopup.right<=viewport.width-4&&urlPopup.top>=4&&urlPopup.bottom<=viewport.height-4,JSON.stringify(urlPopup));
+    assert.ok(Math.abs(urlPopup.width-260)<=1,"URL popup width matches approved layer picker");
+    for(const item of urlPopup.actions)assert.ok(Math.abs(item.width-viewport.button)<=1&&Math.abs(item.height-viewport.button)<=1,"URL button size "+JSON.stringify(item));
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-url.png"});
     await page.locator("#pinUrlCancel").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     assert.deepEqual(errors,[],"Uncaught page error");
     console.log("[visual] PASS",viewport.name,JSON.stringify({panel:m.panel,notes:m.noteHeight,
      button:viewport.button,layerList:pop}));
