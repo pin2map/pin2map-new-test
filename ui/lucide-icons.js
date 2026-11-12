@@ -469,6 +469,8 @@
       for(const [key,value] of Object.entries(attrs))element.setAttribute(key,String(value));
       out.append(element);
     };
+    // Already a real inline SVG. CSS now owns hover stroke and may turn
+    // its colored path/circle strokes white without replacing the glyph.
     // Connection behind the two pins, so the markers remain readable.
     make("path",{d:"M13 16 Q18 11 23 16",stroke:"#78838c",
       "stroke-dasharray":"2 3"});
