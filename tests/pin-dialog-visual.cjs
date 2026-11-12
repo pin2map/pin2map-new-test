@@ -235,5 +235,48 @@ async function metrics(page){
      button:viewport.button,layerList:pop}));
    }finally{await ctx.close();}
   }
+  // A real fine-pointer desktop context: the corner launcher is hidden on touch.
+  const desktop=await browser.newContext({viewport:{width:1280,height:800},serviceWorkers:"allow"});
+  try{
+   const page=await desktop.newPage();
+   const errors=[];
+   page.on("pageerror",e=>errors.push(e.message));
+   await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
+   await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"),null,{timeout:20000});
+   await page.mouse.move(640,570);
+   await page.mouse.down();
+   await page.waitForTimeout(735);
+   await page.mouse.up();
+   await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
+   const positions=await page.evaluate(()=>{
+    const rect=s=>document.querySelector(s).getBoundingClientRect();
+    const field=rect("#pinPanel .pin-detail-region"),button=rect("#pinNotesExpand");
+    const logo=document.querySelector("#pinWikipedia .pin-wikipedia-logo");
+    const weather=document.querySelector("#pinWeather");
+    return {fieldRight:field.right,fieldBottom:field.bottom,
+      buttonRight:button.right,buttonBottom:button.bottom,
+      logoComplete:logo?.complete,logoWidth:logo?.naturalWidth,
+      deleteIcon:document.querySelector("#deletePin")?.getAttribute("data-pin-icon"),
+      weatherStroke:getComputedStyle(weather.querySelector("svg")).strokeWidth};
+   });
+   assert.ok(Math.abs(positions.fieldRight-positions.buttonRight)<=1,
+     "Desktop note launcher right edge must match fieldset frame: "+JSON.stringify(positions));
+   assert.ok(Math.abs(positions.fieldBottom-positions.buttonBottom)<=1,
+     "Desktop note launcher bottom edge must match fieldset frame: "+JSON.stringify(positions));
+   assert.ok(positions.logoComplete&&positions.logoWidth>0,"User-provided Wikipedia SVG must load locally");
+   assert.equal(positions.deleteIcon,"map-pin-off");
+   assert.equal(positions.weatherStroke,"1.45");
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v159-notes.png"});
+   await page.locator("#pinWeather").click();
+   const weatherFrame=await page.locator("#pinPanel .pin-detail-region").evaluate(el=>{
+    const c=getComputedStyle(el);return {display:c.display,top:c.borderTopStyle,topWidth:c.borderTopWidth};
+   });
+   assert.equal(weatherFrame.display,"block","Weather fieldset keeps native legend border rendering");
+   assert.equal(weatherFrame.top,"solid");
+   assert.equal(weatherFrame.topWidth,"1px");
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v159-weather.png"});
+   assert.deepEqual(errors,[]);
+   console.log("[visual] PASS desktop v159 icon, weather and note-corner geometry");
+  }finally{await desktop.close();}
  }finally{await browser.close();}
 })().catch(error=>{console.error("[visual] FAIL",error.stack||error);process.exitCode=1;});
