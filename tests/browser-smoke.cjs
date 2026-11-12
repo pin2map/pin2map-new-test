@@ -38,6 +38,38 @@ async function longPress(page,x,y,ms=725){
     step("load application");
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await assertReady(page);
+    step("predecessor scale: single metric Leaflet control centered below header, updates on zoom");
+    const scale=page.locator("#map .leaflet-control-scale");
+    assert.equal(await scale.count(),1,"One Leaflet scale must be present");
+    assert.equal(await scale.locator(".leaflet-control-scale-line").count(),1,
+      "Metric scale only, no second imperial line");
+    const scaleBefore=await scale.evaluate(el=>{
+      const line=el.querySelector(".leaflet-control-scale-line");
+      const box=el.getBoundingClientRect(),styles=getComputedStyle(el);
+      const lineStyles=getComputedStyle(line);
+      return {text:line.textContent.trim(),width:box.width,left:box.left,
+        top:box.top,opacity:lineStyles.backgroundColor,fontWeight:lineStyles.fontWeight,
+        pointerEvents:styles.pointerEvents};
+    });
+    assert.match(scaleBefore.text,/^(?:[\\d,.]+)\\s*(?:m|km)$/);
+    assert.ok(scaleBefore.width>0&&scaleBefore.width<=165,JSON.stringify(scaleBefore));
+    assert.ok(Math.abs(scaleBefore.left+scaleBefore.width/2-550)<=3,
+      "Scale centered in 1100px desktop viewport: "+JSON.stringify(scaleBefore));
+    assert.ok(scaleBefore.top>=70&&scaleBefore.top<=130,JSON.stringify(scaleBefore));
+    assert.equal(scaleBefore.pointerEvents,"none");
+    assert.equal(scaleBefore.fontWeight,"600");
+    const labelBefore=scaleBefore.text;
+    await page.locator(".pin-zoom-button").first().click();
+    await page.waitForFunction(before=>
+      document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()!==before,
+      labelBefore,{timeout:6000});
+    assert.equal(await scale.count(),1,"Zoom must not insert a second scale");
+    assert.equal(await scale.locator(".leaflet-control-scale-line").count(),1);
+    await page.locator(".pin-zoom-button").nth(1).click();
+    await page.waitForFunction(before=>
+      document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()===before,
+      labelBefore,{timeout:6000});
+    console.log("[browser] PASS – predecessor scale visible, centered, metric and zoom-responsive");
     step("search form: disabled geocoder message without network");
     assert.equal(await page.locator("#allowGeocode").isChecked(),false);
     await page.locator("#searchInput").fill("Berlin");
