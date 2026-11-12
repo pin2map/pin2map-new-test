@@ -1182,3 +1182,20 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #map.leaflet-container.p2m-satellite-inspecting .leaflet-grab{
   cursor:crosshair;
 }
+
+/* Predecessor map scale: one Leaflet-owned control, top center under header.
+   Scoped to this control; no CSS cascade override layers or !important rules. */
+#map .leaflet-control-scale{
+  position:fixed;left:50%;top:max(76px,calc(env(safe-area-inset-top,0px) + 76px));
+  bottom:auto;transform:translateX(-50%);
+  margin:0;z-index:1090;pointer-events:none;white-space:nowrap;
+}
+#map .leaflet-control-scale-line{
+  background:rgba(255,255,255,.92);
+  color:#111;border-color:#111;border-top:0;font-weight:600;
+}
+@media(max-width:600px){
+  #map .leaflet-control-scale{
+    top:max(72px,calc(env(safe-area-inset-top,0px) + 72px));
+  }
+}
