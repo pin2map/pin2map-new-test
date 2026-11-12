@@ -109,17 +109,16 @@ async function metrics(page){
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
     for(const b of m.routingButtons)assert.ok(b.disabled&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size "+JSON.stringify(b));
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
-    const statusMarkers=await page.locator(".pin-status-column").evaluateAll(nodes=>
-      nodes.map(node=>[...node.children].map(b=>{
-        const rect=b.getBoundingClientRect();return {kind:b.className,top:rect.top,left:rect.left,width:rect.width};
-      })));
-    assert.ok(statusMarkers.some(b=>b.length===3),"Note/URL/GPX badges appear together on a loaded pin");
-    for(const badges of statusMarkers){
-      for(let i=1;i<badges.length;i++){
-        assert.ok(Math.abs(badges[i].left-badges[0].left)<0.5,"Status badges share one vertical edge");
-        assert.ok(badges[i].top>badges[i-1].top,"Status badges stack without gaps for missing types");
-      }
-    }
+    const sectors=await page.locator(".pin-status-segments").evaluateAll(nodes=>
+      nodes.map(n=>["note","url","gpx"].map(t=>
+        n.querySelector(".pin-sector-"+t)?.getAttribute("fill"))));
+    assert.ok(sectors.some(colors=>colors.join(",")==="#d94f55,#2979d1,#8f989f"),
+      "A loaded test pin shows red note, blue URL, gray GPX inside its circle");
+    assert.equal(await page.locator(".pin-status-column").count(),0,
+      "Former external microbadges must be removed");
+    const touchRects=await page.locator(".leaflet-marker-icon.pin-icon").evaluateAll(nodes=>
+      nodes.map(n=>{const b=n.getBoundingClientRect();return {w:b.width,h:b.height};}));
+    assert.ok(touchRects.some(r=>r.w>=44&&r.h>=44),"Pin tap target >=44px");
 
     assert.ok(m.visibleLabels>=1,"Pin name labels remain displayed with open dialog");
     assert.ok(m.noteFont>=16&&m.nameFont>=16,"Touch inputs must prevent iOS zoom: "+JSON.stringify(m));
@@ -138,7 +137,12 @@ async function metrics(page){
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
     const weatherHeight=await page.locator("#pinWeatherBlock").evaluate(el=>el.getBoundingClientRect().height);
-    assert.ok(weatherHeight>=185,"Weather block must be visibly taller than inline notes");
+    assert.ok(weatherHeight>=175,"Weather placeholder uses middle region");
+    assert.equal(await page.locator("#pinPanel .pin-navigation-row").isHidden(),true,
+      "Navigation is hidden ONLY while weather occupies the same middle region");
+    const weatherPanel=await page.locator("#pinPanel").boundingBox();
+    assert.ok(Math.abs(weatherPanel.height-m.panel.height)<20,
+      "Weather toggle must not expand and shift the dialog");
     await page.waitForFunction(()=>document.getElementById("pinPanel").getBoundingClientRect().top>=0,null,{timeout:4000});
     assert.ok((await page.locator("#pinPanel").boundingBox()).y>=0,"Weather editor stays visible after map pan/layout frame");
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
@@ -147,6 +151,7 @@ async function metrics(page){
       getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-weather.png"});
     await page.locator("#pinWeather").click();
+    assert.equal(await page.locator("#pinPanel .pin-navigation-row").isVisible(),true);
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-notes.png"});
     await page.locator("#pinLayerTrigger").click();
@@ -179,8 +184,8 @@ async function metrics(page){
     });
     assert.equal(urlPopup.parent,"BODY");
     const pinBox=await page.locator("#pinPanel").boundingBox();
-    assert.ok(urlPopup.left<pinBox.x+pinBox.width&&urlPopup.right>pinBox.x,
-      "URL popup must overlap pin panel horizontally like the layer picker");
+    assert.ok(urlPopup.left>=pinBox.x+3&&urlPopup.right<=pinBox.x+pinBox.width-3,
+      "Entire URL popup must fit horizontally inside pin panel");
 
     assert.ok(urlPopup.left>=4&&urlPopup.right<=viewport.width-4&&urlPopup.top>=4&&urlPopup.bottom<=viewport.height-4,JSON.stringify(urlPopup));
     assert.ok(Math.abs(urlPopup.width-260)<=1,"URL popup width matches approved layer picker");
@@ -217,7 +222,7 @@ async function metrics(page){
     await page.locator("#pinNoteEditorDone").click();
     assert.equal(await page.locator("#pinMobileNoteEditor").isHidden(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),text);
-    assert.ok(await page.locator(".pin-status-note").count()>0,"Saved note adds a visible marker indicator");
+    assert.ok(await page.locator(".pin-sector-note[fill=\"#d94f55\"]").count()>0,"Saved note colors the pin circle segment");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-note-indicator.png"});
     assert.deepEqual(errors,[],"Uncaught page error");
     console.log("[visual] PASS",viewport.name,JSON.stringify({panel:m.panel,notes:m.noteHeight,
