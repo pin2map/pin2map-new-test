@@ -204,3 +204,8 @@ Neue Module müssen sowohl in `index.html` als auch in der `sw.js`-`CORE`-Reihen
 Die Marker-SVG-Geometrie in `ui/pin-marker-view.js` (36×46) und die Leaflet-Hitbox/Anker-/Tooltip-Geometrie im `map-adapter-leaflet.js` (52×46) wurden gemeinsam verkleinert, ohne die Symbolstatus-Logik zu verändern. `ui/pin-details.js` verwendet für das URL-Portal denselben Trigger-basierten, innerhalb des Viewports geklemmten Überlagerungsgrundsatz wie `ui/pin-layer-picker.js`. Die größere Wetteransicht bleibt ein Anzeigezustand und nutzt den vorhandenen Sichtbarkeits-/Pan-Port.
 
 Das Desktop-Vergrößerungssymbol wird durch die bestehende lokale Lucide-Sammlung bereitgestellt. `ui/pin-note-editor.js` besitzt weiterhin die gesamte Notizeditor-Ansicht und Cursor-Interaktion, zusätzlich die Darstellungsvarianten Desktop-Fenster vs. mobiles Visual-Viewport-Overlay; `app.js` verdrahtet nur den neuen Auslösebutton. Keine Daten-/Schemaänderung, keine neue Datenquelle, kein neues UI-/Build-Framework.
+
+
+## v157 – Verteilung der UI-Verantwortung (2026-11-12)
+
+`ui/pin-details.js` besitzt URL-Popup-x-Klammerung an das Pin-Panel und `.pin-weather-mode` als UI-Zustand; CSS stellt den Wetterplatzhalter anstelle der kompletten Navi-/Notiz-Mittelregion dar. `ui/pin-note-editor.js` besitzt allein iPad-/iPhone-Visual-Viewport-Anpassung, ohne persistente Daten zu verändern. `ui/pin-marker-view.js` leitet drei Segmentfarben aus `note`, `url` und vorhandenen GPX-Zuordnungsfeldern ab, rein präsentationsseitig. Ausschließlich `map-adapter-leaflet.js` definiert Leaflet-Hitbox/Anker/Labels (44×44px), nicht die Domain. Keine neuen Laufzeitmodule, APIs, Datenmigrationen oder Leaflet-Logik in `app.js`. Bestehende Ebenenauswahl unverändert.
