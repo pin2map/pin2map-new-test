@@ -61,9 +61,8 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(await search.inputValue(),"");
         assert.equal(await clear.isHidden(),true);
         assert.equal(await page.locator("#searchResults").isHidden(),true);
-        // Per-pin interactive info overlays live in Leaflet's marker pane;
-        // the pin editor's existing body class must hide them, without
-        // requiring project data or creating a real user pin.
+        // Pin information overlays are intentionally visible beside the editor;
+        // only map control buttons disappear when body.pin-open is active.
         const upperPinOverlayContract=await page.evaluate(()=>{
           const pane=document.querySelector("#map .leaflet-marker-pane");
           const fake=document.createElement("div");
@@ -78,8 +77,8 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           return {before,whileOpen,after};
         });
         assert.notEqual(upperPinOverlayContract.before,"none");
-        assert.equal(upperPinOverlayContract.whileOpen,"none",
-          "Pin editor must hide clickable upper-pin label controls");
+        assert.notEqual(upperPinOverlayContract.whileOpen,"none",
+          "Pin editor must preserve pin information labels");
         assert.notEqual(upperPinOverlayContract.after,"none");
         // Only the Esri tile imagery changes; no contrast control remains.
         const chooser=page.locator("#basemapButton");
