@@ -55,8 +55,12 @@
       // The fullscreen note editor handles long-form mobile typing separately.
       const vv=this.document.defaultView?.visualViewport;
       const mobile=this.document.defaultView?.innerWidth<=700;
-      if(mobile&&vv&&vv.height<this.document.defaultView.innerHeight*.78&&
-         panel.contains(this.document.activeElement)){
+      const keyboard=Boolean(mobile&&vv&&vv.height<this.document.defaultView.innerHeight*.78&&
+        panel.contains(this.document.activeElement));
+      panel.classList.toggle("pin-keyboard-mode",keyboard);
+      panel.style.maxHeight=keyboard?Math.max(130,vv.height-24)+"px":"";
+      panel.style.overflowY=keyboard?"auto":"";
+      if(keyboard){
         panel.style.left=Math.max(12,(vv.width-positions.panel.width)/2+vv.offsetLeft)+"px";
         panel.style.top=(vv.offsetTop+12)+"px";
         tip.classList.add("hidden");
