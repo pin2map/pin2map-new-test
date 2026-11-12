@@ -125,7 +125,7 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
 test("framed pin editor contains inert routing and an independent URL popup",()=>{
  const html=read("index.html"),css=read("styles.css");
  const section=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
- assert.match(section,/id="deletePin"[^>]*data-pin-icon="x"/);
+ assert.match(section,/id="deletePin"[^>]*data-pin-icon="map-pin-off"/);
  assert.doesNotMatch(section,/id="cancelPin"/);
  for(const title of ["Pin Name","Navi extern","pin2map Routing","Pin Notizen"])
    assert.ok(section.includes("<legend"+(title==="Pin Notizen"?" id=\"pinDetailTitle\"":"")+">"+title+"</legend>"),"Frame legend: "+title);
@@ -144,7 +144,7 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
  assert.equal(Icons.svg("link-2",documentStub()).children.length,3);
  assert.ok(section.includes('class="pin-nav-apple" data-pin-icon="apple-brand"'));
- assert.ok(section.includes('class="pin-wikipedia-glyph" aria-hidden="true">W</span>'));
+ assert.ok(section.includes('class="pin-wikipedia-logo" src="./assets/wikipedia-social.svg"'));
  assert.doesNotMatch(section,/|ⓦ/,"No private-use or nonportable circled font glyphs");
 
  const action=css.match(/#pinUrlBlock \.pin-url-actions button\{([^}]+)\}/)?.[1]||"";
