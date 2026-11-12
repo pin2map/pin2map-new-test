@@ -20,6 +20,12 @@ test("HTML script and style assets are represented in the canonical offline shel
  for(const item of assets)assert.ok(fs.statSync(path.join(ROOT,item)).isFile(),item);
  assert.ok(assets.includes("manifest.webmanifest"));
 });
+test("Defer script order matches the offline shell and has no duplicate module",()=>{
+ const htmlModules=[...html.matchAll(/<script\\s+defer\\s+src="\\.\\/([^"]+\\.js)"/g)].map(m=>m[1]);
+ const coreModules=manifest().filter(p=>p.endsWith(".js"));
+ assert.deepEqual(coreModules,htmlModules,
+   "The same modules must load and cache in the same order; no second manually maintained list");
+});
 test("Preview workflow uses fail-closed allowlist, not entire repository rsync",()=>{
  assert.match(workflow,/python3 preview-source\/scripts\/preview-bundle\.py preview-source site-root\/preview/);
  assert.doesNotMatch(workflow,/rsync -a/);
