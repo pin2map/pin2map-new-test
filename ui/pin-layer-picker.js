@@ -11,12 +11,19 @@
       this.el=getElement;this.document=doc;this.icons=icons;
       if(!icons||typeof icons.svg!=="function")throw new TypeError("Lucide icons required");
       this.open=false;
+      // The menu is a viewport-level overlay. Keeping it inside the
+      // scroll-limited pin panel caused nested scrollbars on iPhone.
+      const menu=this.el("pinLayerMenu");
+      if(doc.body&&typeof doc.body.append==="function")doc.body.append(menu);
+      this.onViewportChange=()=>{if(this.open)this.positionMenu();};
+      doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
+      doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
       this.el("pinLayerTrigger").addEventListener("click",()=>this.setOpen(!this.open));
       this.el("pinLayerMenu").addEventListener("keydown",event=>{
         if(event.key==="Escape"){event.preventDefault();this.setOpen(false);this.el("pinLayerTrigger").focus();}
       });
       doc.addEventListener("pointerdown",event=>{
-        if(!event.target.closest?.("#pinLayerPicker"))this.setOpen(false);
+        if(!event.target.closest?.("#pinLayerPicker, #pinLayerMenu"))this.setOpen(false);
       });
     }
     visibilityIcon(visible){
@@ -27,11 +34,36 @@
     visibilityLabel(visible){
       return visible?"Sichtbar":"Ausgeblendet";
     }
+    positionMenu(){
+      const trigger=this.el("pinLayerTrigger").getBoundingClientRect();
+      const menu=this.el("pinLayerMenu");
+      const view=this.document.defaultView;
+      if(!view)return;
+      const viewport=view.visualViewport;
+      const left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0;
+      const width=viewport?.width||view.innerWidth;
+      const height=viewport?.height||view.innerHeight;
+      const margin=12,gap=8;
+      // A fixed width gives long layer names room without expanding the dialog.
+      const menuWidth=Math.min(260,width-2*margin);
+      const availableAbove=trigger.top-(top+margin)-gap;
+      const availableBelow=(top+height-margin)-trigger.bottom-gap;
+      const placeAbove=availableAbove>=Math.min(238,availableBelow);
+      const space=Math.max(72,placeAbove?availableAbove:availableBelow);
+      const maxHeight=Math.min(260,space);
+      menu.style.width=menuWidth+"px";
+      menu.style.maxHeight=maxHeight+"px";
+      menu.style.left=Math.max(left+margin,Math.min(trigger.left,left+width-menuWidth-margin))+"px";
+      menu.style.top=(placeAbove
+        ?Math.max(top+margin,trigger.top-gap-Math.min(menu.scrollHeight,maxHeight))
+        :trigger.bottom+gap)+"px";
+    }
     setOpen(open){
       this.open=Boolean(open);
       this.el("pinLayerMenu").classList.toggle("hidden",!this.open);
-      this.el("pinPanel").classList.toggle("pin-layer-open",this.open);
       this.el("pinLayerTrigger").setAttribute("aria-expanded",String(this.open));
+      this.el("pinPanel").classList.toggle("pin-layer-open",this.open);
+      if(this.open)this.positionMenu();
     }
     render({layers,selectedLayerId}){
       const trigger=this.el("pinLayerTrigger"),menu=this.el("pinLayerMenu");
@@ -42,12 +74,6 @@
         const dot=this.document.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=selected.color;
         const icon=this.icons.svg("layers-arrow-down",this.document);
         icon.classList.add("pin-layer-trigger-icon");
-        const status=this.document.createElement("span");
-        status.className="pin-layer-visibility"+(selected.visible?"":" is-hidden");
-        status.title=this.visibilityLabel(selected.visible);
-        status.setAttribute("aria-label",this.visibilityLabel(selected.visible));
-        status.append(this.visibilityIcon(selected.visible));
-        const arrow=this.document.createElement("span");arrow.className="pin-layer-chevron";arrow.setAttribute("aria-hidden","true");arrow.textContent="";
         trigger.append(icon,dot);
       }
       menu.replaceChildren();
