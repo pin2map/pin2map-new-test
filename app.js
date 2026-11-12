@@ -345,8 +345,7 @@
 
     pinEditorActions.bind();
     pinDetails.bind();
-    $("cancelPin").addEventListener("click",()=>overlayCoordinator.closeAll());
-    for(const id of ["cancelPin","deletePin","movePin","pinLayerTrigger","closePin"]){
+    for(const id of ["deletePin","movePin","pinLayerTrigger","closePin"]){
       $(id).addEventListener("click",()=>pinDetails.closeTransient());
     }
     $("movePin").addEventListener("click",()=>moveController.begin());
