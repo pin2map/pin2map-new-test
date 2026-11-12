@@ -19,7 +19,7 @@
       ],
       pins:[],
       viewport:{lat:48.7758,lng:9.1829,zoom:6},
-      basemap:"street",esriRelief:false,satelliteBrightness:120,labelsVisible:true,pinInfoMode:"off",pinInfoPeriod:"today",pinInfoDailyPeriod:"today",pinInfoPrecipitationPeriod:"today",pinInfoSunPeriod:"today",allowGeocode:false,geoCache:{}
+      basemap:"street",esriRelief:false,satelliteBrightness:120,satelliteRoads:false,labelsVisible:true,pinInfoMode:"off",pinInfoPeriod:"today",pinInfoDailyPeriod:"today",pinInfoPrecipitationPeriod:"today",pinInfoSunPeriod:"today",allowGeocode:false,geoCache:{}
     };
   }
   function position(lat,lng){
