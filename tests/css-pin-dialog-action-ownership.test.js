@@ -19,7 +19,7 @@ test("pin editor shared selector owns all compact action dimensions",()=>{
 test("delete action remains available and the footer OK is size-token driven",()=>{
   const del=rule(".pin-panel .pin-meta-row #deletePin.p2m-icon-control");
   const ok=rule(".pin-panel .pin-actions #closePin.pin-ok-button");
-  assert.ok(del.includes("background:#bc2837!important;color:#fff!important"));
+  assert.ok(del.includes("background:#fcecee!important;color:#ad3042!important"));
   assert.ok(ok.includes("background:#c9eecb!important;color:#245b30!important"));
   const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
   assert.ok(html.includes('<div class="pin-meta-row">')&&html.includes('id="deletePin"'));
