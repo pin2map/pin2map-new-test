@@ -354,6 +354,11 @@
     pinEditorActions.bind();
     pinDetails.bind();
     noteEditor.bind();
+    $("pinNotesExpand").addEventListener("click",()=>{
+      const pin=selectedPin();if(!pin||noteEditor.open)return;
+      pinDetails.closeTransient();
+      noteEditor.show({name:pin.name,note:pin.note,desktop:true});
+    });
     $("pinNotes").addEventListener("focus",()=>{
       const pin=selectedPin();
       if(!pin||noteEditor.open)return;
