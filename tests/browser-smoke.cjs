@@ -522,7 +522,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinUrlButton").click();
     assert.equal(await page.locator("#pinUrl").inputValue(),"https://example.org/path",
       "Saved pin URL persists across reload");
-    await page.locator("#pinUrlCancel").click();
+    await page.locator("#pinUrlButton").click();
 
     step("layer visibility hides/restores the persisted pin");
     // Focused pin editing intentionally hides all other map controls.
