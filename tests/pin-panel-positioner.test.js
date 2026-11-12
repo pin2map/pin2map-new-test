@@ -3,14 +3,14 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 const {anchorGeometry,openingCorrection,PinPanelPositioner}=require("../ui/pin-panel-positioner.js");
 
-test("pin panel preserves the original anchor and 76px arrow offset",()=>{
+test("pin panel keeps panel and arrow together at the new 86px clearance",()=>{
   const p=anchorGeometry({
     point:{x:100,y:80},mapRect:{left:10,top:20},
     appRect:{left:0,top:0,width:500,height:450},panelHeight:120
   });
   assert.deepEqual(p,{
-    panel:{left:-85,top:-96,width:390},
-    tip:{left:110,top:24}
+    panel:{left:-85,top:-106,width:390},
+    tip:{left:110,top:14}
   });
 });
 test("narrow screens keep prior width formula without silently clamping panel coordinates",()=>{
