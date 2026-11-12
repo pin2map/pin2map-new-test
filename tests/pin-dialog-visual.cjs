@@ -141,8 +141,11 @@ async function metrics(page){
     assert.equal(await page.locator("#pinPanel .pin-navigation-row").isHidden(),true,
       "Navigation is hidden ONLY while weather occupies the same middle region");
     const weatherPanel=await page.locator("#pinPanel").boundingBox();
-    assert.ok(Math.abs(weatherPanel.height-m.panel.height)<20,
-      "Weather toggle must not expand and shift the dialog");
+    const weatherRegion=await page.locator("#pinPanel .pin-detail-region").boundingBox();
+    assert.ok(Math.abs(weatherRegion.y-navRect.y)<=1,
+      "Weather top border must match the original routing/navigation border");
+    assert.ok(Math.abs(weatherPanel.height-m.panel.height)<=1,
+      "Weather toggle must preserve exact outer dialog height");
     await page.waitForFunction(()=>document.getElementById("pinPanel").getBoundingClientRect().top>=0,null,{timeout:4000});
     assert.ok((await page.locator("#pinPanel").boundingBox()).y>=0,"Weather editor stays visible after map pan/layout frame");
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
@@ -151,6 +154,9 @@ async function metrics(page){
       getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-weather.png"});
     await page.locator("#pinWeather").click();
+    const restoredPanel=await page.locator("#pinPanel").boundingBox();
+    assert.ok(Math.abs(restoredPanel.height-m.panel.height)<=1,
+      "Returning from weather must restore original panel height");
     assert.equal(await page.locator("#pinPanel .pin-navigation-row").isVisible(),true);
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-notes.png"});
