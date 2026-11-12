@@ -438,7 +438,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 
 /* Pin/area dialog family: one visual owner, one 38px action token.
    Frame legends replace separate headings. Routing remains inert. */
-:root{--p2m-pin-dialog-action-size:38px}
+:root{--p2m-pin-dialog-action-size:42px}
 #pinPanel{
   padding:10px 12px!important;
   background:#fff;border:1px solid #cbd4df;border-radius:15px;
@@ -462,10 +462,10 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel .pin-name-field #pinName:focus-visible{outline:2px solid #aac5e9;outline-offset:0}
 #pinPanel .pin-navigation-row{
   display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);
-  gap:6px;margin:13px 0 12px;min-width:0;
+  gap:7px;margin:10px 0 10px;min-width:0;
 }
 #pinPanel .pin-navigation-group{
-  padding:1px 5px 5px;margin:0;min-width:0;
+  padding:4px 6px 7px;margin:0;min-width:0;
 }
 #pinPanel .pin-navigation-group legend{
   font-size:11px;margin-left:4px;padding:0 3px;
@@ -497,11 +497,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel .pin-detail-region{
   display:block;box-sizing:border-box;min-width:0;
-  padding:2px 9px 6px;margin:0 0 9px;
+  padding:4px 9px 8px;margin:0 0 12px;
   border:1px solid #c7cfd9;border-radius:11px;background:#fff;
 }
 #pinPanel .pin-detail-region #pinNotes{
-  display:block;box-sizing:border-box;width:100%;height:106px;min-height:0;
+  display:block;box-sizing:border-box;width:100%;height:145px;min-height:0;
   margin:0;padding:3px 4px;border:0;resize:none;overflow-y:auto;
   background:#fff;color:#283a4c;
   font-family:inherit;font-size:14px;font-weight:400;line-height:1.35;
@@ -561,7 +561,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel .pin-actions button .p2m-lucide{width:22px;height:22px}
 /* Keep the original Lucide weather silhouette legible at the shared 38px size. */
 #pinPanel #pinWeather .p2m-lucide{width:24px;height:24px;stroke-width:2}
-#pinPanel #pinWeather.p2m-icon-control:disabled{
+#pinPanel #pinWeather.p2m-icon-control{
   --p2m-button-bg:#f0f2f5;--p2m-button-ink:#52667b;
   opacity:1;cursor:default;
 }
@@ -571,6 +571,59 @@ body.pin-relocation-picking #map .leaflet-interactive{
   box-shadow:var(--p2m-button-shadow);
 }
 #pinPanel .pin-actions #closePin.pin-ok-button:hover{background:#b6e4ba!important}
+/* Shared blue-open-state contract: dialogs and subordinate menus. */
+#pinPanel .pin-actions button.p2m-icon-control.is-active,
+#pinPanel #pinLayerTrigger[aria-expanded="true"],
+#pinPanel #pinWeather.is-active{
+  background:#1764bf!important;color:#fff!important;border-color:#1764bf!important;
+  --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;
+}
+#pinPanel #pinUrlButton{position:relative}
+#pinPanel #pinUrlButton.has-url::after{
+  content:"";position:absolute;right:1px;bottom:1px;
+  width:10px;height:10px;box-sizing:border-box;border-radius:50%;
+  border:2px solid #fff;background:#2875c7;box-shadow:0 0 0 1px #a7b4c1;
+}
+#pinPanel #pinUrlButton.is-active.has-url::after{background:#fff;border-color:#1764bf}
+#pinPanel .pin-detail-region .pin-weather-placeholder{
+  box-sizing:border-box;min-height:145px;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;gap:8px;color:#61738a;text-align:center;
+  font-size:13px;
+}
+#pinPanel .pin-weather-placeholder [data-pin-icon] svg{width:29px;height:29px}
+#pinPanel .pin-gpx-actions{
+  display:flex;justify-content:stretch;gap:10px;margin:0 0 12px;
+}
+#pinPanel .pin-gpx-actions button{
+  flex:1;min-width:0;padding:8px;border:1px solid #a4c9ad;
+  background:#e9f5ec;color:#25683a;border-radius:9px;font-weight:700;
+}
+#pinPanel .pin-gpx-actions button:disabled{opacity:.85}
+/* Fullscreen mobile note editor. Uses native 16px typing to avoid Safari zoom. */
+.pin-note-editor{
+  position:fixed;z-index:1900;inset:0;box-sizing:border-box;
+  display:flex;flex-direction:column;gap:10px;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 14px
+          calc(12px + env(safe-area-inset-bottom,0px));
+  background:#fff;color:#26394c;
+}
+.pin-note-editor-header{display:flex;align-items:center;min-height:32px;font-size:17px}
+.pin-note-editor-header strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pinNoteEditorText{
+  box-sizing:border-box;flex:1;min-height:70px;width:100%;
+  padding:12px;border:1px solid #c7cfd9;border-radius:11px;
+  resize:none;overflow-y:auto;font:400 16px/1.4 system-ui,-apple-system,sans-serif;
+}
+.pin-note-editor-actions{display:flex;align-items:center;gap:8px}
+.pin-note-editor-actions button{
+  padding:9px 12px;border-radius:9px;border:1px solid #bdcbd9;
+  background:#edf1f5;color:#26394c;font-weight:700;font-size:14px;
+}
+.pin-note-editor-actions #pinNoteEditorDone{
+  background:#c9eecb;color:#245b30;border-color:#a6ceaa;
+}
+.pin-note-editor-spacer{flex:1}
+body.pin-note-editor-open{overflow:hidden}
 /* The approved layer popup remains independent and scrolls only vertically. */
 #pinLayerMenu.pin-layer-menu{
   position:fixed;z-index:1550;box-sizing:border-box;
