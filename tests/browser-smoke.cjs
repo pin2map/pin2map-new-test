@@ -408,9 +408,14 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinName").fill("  Reise-Testpin  ");
     await page.locator("#pinName").blur();
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin");
-    step("pin details: multiline notes, URL swap, six footer controls and persistence");
+    step("pin details: multiline notes, floating URL popup, five routing placeholders and six footer controls");
     assert.equal(await page.locator("#pinNotes").count(),1);
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinPanel .pin-navigation-buttons button").count(),5);
+    for(const item of await page.locator("#pinPanel .pin-navigation-buttons button").all())
+      assert.equal(await item.isDisabled(),true);
+    assert.equal(await page.locator("#deletePin").isVisible(),true);
+    assert.equal(await page.locator("#cancelPin").count(),0);
     const footerIds=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
     const footerLayout=await page.locator("#pinPanel .pin-actions").evaluate(row=>
       [...row.querySelectorAll(":scope > button, :scope > .pin-layer-picker > .pin-layer-trigger")].map(b=>({id:b.id,left:b.getBoundingClientRect().left,
@@ -419,8 +424,9 @@ async function longPress(page,x,y,ms=725){
     for(const item of footerLayout)assert.ok(Math.abs(item.width-38)<1&&Math.abs(item.height-38)<1,JSON.stringify(item));
     await page.locator("#pinNotes").fill("Erste Zeile\nZweite Zeile");
     await page.locator("#pinUrlButton").click();
-    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinUrlBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinUrlBlock").evaluate(el=>el.parentElement.tagName),"BODY");
     assert.equal(await page.locator("#pinUrlOpen").isDisabled(),true);
     await page.locator("#pinUrl").fill("https://example.org/path");
     assert.equal(await page.locator("#pinUrlOpen").isEnabled(),true);
