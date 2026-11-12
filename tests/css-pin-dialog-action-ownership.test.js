@@ -10,7 +10,8 @@ const rule=selector=>{
   return css.slice(start+selector.length+1,css.indexOf("}",start));
 };
 test("pin editor shared selector owns all compact action dimensions",()=>{
-  const body=rule("#pinPanel button:is(#deletePin,#movePin,#closePin,#showPinLayer,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather)");
+  assert.ok(css.includes("#pinPanel button:is(#deletePin,#movePin,#closePin,#showPinLayer,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather),"));
+  const body=rule("#pinUrlBlock button:is(#pinUrlCancel,#pinUrlSave,#pinUrlOpen)");
   for(const key of ["width","height","min-width","min-height","max-width","max-height"]){
     assert.ok(body.includes(key+":var(--p2m-pin-dialog-action-size)!important;"),key);
   }
