@@ -205,7 +205,7 @@
       const markup=html===undefined
         ? '<div class="pin-marker'+(selected?' selected':'')+'" style="background:'+color+'"></div>'+label
         : html;
-      marker.setIcon(window.L.divIcon({html:markup,iconSize:[68,64],iconAnchor:[25,61],className:"pin-icon"}));
+      marker.setIcon(window.L.divIcon({html:markup,iconSize:[52,46],iconAnchor:[18,44],className:"pin-icon"}));
       marker.options.title=title;
     }
     // Presentational Leaflet tooltip port. Keep provider-specific anchoring
@@ -220,7 +220,7 @@
       content.textContent=name; // Never interpret user-entered names as HTML.
       if(marker.getTooltip())marker.setTooltipContent(content);
       else marker.bindTooltip(content,{
-        permanent:true,direction:"right",offset:[41,-29],
+        permanent:true,direction:"right",offset:[29,-21],
         className:"address-label",interactive:false
       });
     }
