@@ -1184,7 +1184,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 
 /* Predecessor map scale: one Leaflet-owned control, top center under header.
-   Scoped to this control; no CSS cascade override layers or !important rules. */
+   Scoped to this control; without added cascade precedence overrides. */
 #map .leaflet-control-scale{
   position:fixed;left:50%;top:max(76px,calc(env(safe-area-inset-top,0px) + 76px));
   bottom:auto;transform:translateX(-50%);
