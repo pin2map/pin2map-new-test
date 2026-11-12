@@ -622,15 +622,19 @@ body.pin-relocation-picking #map .leaflet-interactive{
 @media(min-width:701px) and (pointer:fine){
   #pinPanel .pin-detail-region{position:relative}
   #pinPanel .pin-detail-region #pinNotes{padding-right:40px;padding-bottom:34px}
-  /* Explicit exception: only the glyph is visible, at the fieldset corner.
-     The button retains its 26px hit target, without a circular surface. */
-  #pinPanel #pinNotesExpand{
-    position:absolute;right:-1px;bottom:-1px;display:block;
-    width:26px;height:26px;padding:0;border:0;border-radius:0;
-    background:transparent;color:#61758b;box-shadow:none;
+  /* The sole exception to circular buttons: the 20px glyph IS the button. */
+  #pinPanel button#pinNotesExpand.p2m-icon-control{
+    position:absolute;right:-1px;bottom:-1px;display:block!important;
+    box-sizing:border-box!important;
+    width:20px!important;height:20px!important;
+    min-width:20px!important;min-height:20px!important;
+    max-width:20px!important;max-height:20px!important;
+    padding:0!important;border:0!important;border-radius:0!important;
+    background:#fff!important;color:#26394c!important;box-shadow:none!important;
+    --p2m-button-bg:#fff;--p2m-button-shadow:none;
   }
   #pinPanel #pinNotesExpand .p2m-lucide{
-    position:absolute;right:0;bottom:0;width:20px;height:20px;
+    position:absolute;inset:0;width:20px;height:20px;
   }
   .pin-note-editor.is-desktop{
     inset:50% auto auto 50%;transform:translate(-50%,-50%);
@@ -685,8 +689,8 @@ body.pin-note-editor-open{overflow:hidden}
     background:#52606d!important;color:#fff!important;border-color:#52606d!important;
   }
   #pinPanel button:hover .pin-wikipedia-logo{filter:invert(1)}
-  #pinPanel #pinNotesExpand:hover{
-    background:transparent!important;border-color:transparent!important;
+  #pinPanel button#pinNotesExpand.p2m-icon-control:hover{
+    background:#fff!important;border-color:transparent!important;
     color:#1764bf!important;
   }
   #pinPanel #movePin:hover .p2m-relocate-icon :is(path,circle){stroke:#fff}
@@ -1366,7 +1370,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #deleteDialog{
   position:fixed;inset:auto;box-sizing:border-box;max-width:none;max-height:none;
   margin:0;padding:20px 18px;overflow:auto;
-  background:#fff;border:1px solid #cbd4df;border-radius:0 0 15px 15px;
+  background:#fff;border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
   box-shadow:0 8px 22px #152c4525;
 }
 #deleteDialog::backdrop{background:transparent}
