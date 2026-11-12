@@ -4,7 +4,7 @@
  * Callback dependencies preserve the existing UI semantics. */
 (function(root){
   function createMapGestureController({
-    mapAdapter,getBasemap,isMoveMode,selectPin,addPin,
+    mapAdapter,getBasemap,isMoveMode,isInspectMode=()=>false,selectPin,addPin,
     renderMarkers,persistViewport,updatePanelLayout,
     scheduleFrame, vibrate=()=>{}, now=()=>Date.now(),
     setTimer=setTimeout,clearTimer=clearTimeout
@@ -106,7 +106,7 @@
       activePointers.add(e.pointerId);
       if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=DateNow();
       cancelLongPress();
-      if (isMoveMode() || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
+      if (isMoveMode() || isInspectMode() || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
       longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
       // Long press works for touch and mouse. Right click remains an alternative.
       longPressTimer = setTimer(() => {
@@ -140,7 +140,7 @@
       e.preventDefault();
       // iOS may synthesize contextmenu after a long touch; only create once.
       if(DateNow()-lastTouchStartAt<2400 || DateNow()<suppressMapClickUntil)return;
-      if(isMoveMode())return;
+      if(isMoveMode()||isInspectMode())return;
       const rect=container.getBoundingClientRect();
       const location=mapAdapter.unproject({x:e.clientX-rect.left,y:e.clientY-rect.top});
       addPin(location.lat,location.lng,"");
