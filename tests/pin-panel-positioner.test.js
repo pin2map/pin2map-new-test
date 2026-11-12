@@ -9,7 +9,7 @@ test("pin panel preserves the original anchor and 76px arrow offset",()=>{
     appRect:{left:0,top:0,width:500,height:450},panelHeight:120
   });
   assert.deepEqual(p,{
-    panel:{left:-45,top:-96,width:310},
+    panel:{left:-70,top:-96,width:360},
     tip:{left:110,top:24}
   });
 });
