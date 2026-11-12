@@ -100,10 +100,10 @@ test("layer menu is portalled outside pin panel and positioned in the visual vie
 test("layer picker uses fixed popup outside the scrolling panel and a circular trigger",()=>{
  const fs=require("node:fs"),css=fs.readFileSync(require("node:path").join(__dirname,"..","styles.css"),"utf8");
  const html=fs.readFileSync(require("node:path").join(__dirname,"..","index.html"),"utf8");
- assert.match(css,/#pinLayerMenu\\.pin-layer-menu\\{[^}]*position:fixed/);
- assert.match(css,/#pinPanel #pinLayerTrigger\\.pin-layer-trigger\\{[^}]*border-radius:50%/);
- assert.doesNotMatch(css,/#pinPanel\\.pin-layer-open\\{overflow:visible/);
- assert.match(css,/#pinLayerMenu\\.pin-layer-menu\\{[^}]*overflow-x:hidden/);
+ assert.match(css,/#pinLayerMenu\.pin-layer-menu\{[^}]*position:fixed/);
+ assert.match(css,/#pinPanel #pinLayerTrigger\.pin-layer-trigger\{[^}]*border-radius:50%/);
+ assert.doesNotMatch(css,/#pinPanel\.pin-layer-open\{overflow:visible/);
+ assert.match(css,/#pinLayerMenu\.pin-layer-menu\{[^}]*overflow-x:hidden/);
  const section=html.split('<section id="pinPanel"')[1]?.split("</section>")[0]||"";
  const footer=section.split('<div class="pin-actions">')[1]||"";
  const ids=["movePin","pinLayerPicker","pinUrlButton","pinWikipedia","pinWeather","closePin"];
