@@ -17,6 +17,20 @@ async function assertReady(page){
     &&!!document.querySelector(".pin-zoom-buttons"),null,{timeout});
   assert.equal(await page.locator("#layersButton").count(),1);
 }
+async function assertCircularControls(page,stage){
+  const mismatches=await page.evaluate(()=>{
+    return Array.from(document.querySelectorAll("button.p2m-icon-control,.favorite-row .favorite-icon"))
+      .flatMap(el=>{
+        const box=el.getBoundingClientRect(),css=getComputedStyle(el);
+        if(!box.width||!box.height||css.visibility==="hidden"||css.display==="none"||
+           css.borderTopLeftRadius==="0px")return [];
+        if(Math.abs(box.width-box.height)<=1)return [];
+        return [{name:el.id||el.getAttribute("aria-label")||el.className,
+          width:Math.round(box.width*100)/100,height:Math.round(box.height*100)/100}];
+      });
+  });
+  assert.deepEqual(mismatches,[],"Round buttons must never stretch into ovals during "+stage);
+}
 async function longPress(page,x,y,ms=725){
   await page.mouse.move(x,y);
   await page.mouse.down();
@@ -38,6 +52,7 @@ async function longPress(page,x,y,ms=725){
     step("load application");
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await assertReady(page);
+    await assertCircularControls(page,"initial map");
     step("predecessor scale: single metric Leaflet control centered below header, updates on zoom");
     const scale=page.locator("#map .leaflet-control-scale");
     assert.equal(await scale.count(),1,"One Leaflet scale must be present");
@@ -483,6 +498,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#closePin").click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator("#layersButton").click();
+    await assertCircularControls(page,"layers panel");
     step("layer creation via prompt persists new layer without affecting private pin");
     page.once("dialog",dialog=>dialog.accept("Reisen"));
     await page.locator("#addLayer").click();
