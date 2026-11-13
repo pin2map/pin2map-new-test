@@ -81,9 +81,17 @@ test("same-position pins always offer named explicit choices at provider limit",
   const f=fixture([{id:"a",lat:0,lng:0,name:"Alpha"},
     {id:"b",lat:0,lng:0,name:"Beta"}],17,10);
   assert.equal(f.controller.handleTap("a"),"choices");
-  assert.equal(f.pans[0].next.zoom,17);
+  assert.deepEqual(f.pans,[],"Identical coordinates must not zoom the map pointlessly");
   assert.deepEqual(f.selected,[]);
   assert.ok(f.controller.menu);
   assert.deepEqual(f.controller.menu.children.slice(1).map(b=>b.textContent),
     ["Alpha · 1","Beta · 2"]);
+});
+
+test("thousands of identical visible pins form one selectable group without pairwise rescans",()=>{
+  const pins=Array.from({length:2200},(_,i)=>({id:"pin-"+i,x:5,y:6}));
+  const group=connectedPins(pins,"pin-103",pin=>pin);
+  assert.equal(group.length,2200);
+  assert.equal(group[0].id,"pin-103");
+  assert.deepEqual(new Set(group.map(p=>p.id)).size,2200);
 });
