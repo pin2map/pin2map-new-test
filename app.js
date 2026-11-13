@@ -576,7 +576,17 @@
       onOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();setFavoriteMessage("");},
       onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
       onRemove:removeMapFavorite,onChoose:openMapFavorite,suggestName:suggestFavoriteName,
-      capacity:favorites.ACTIVE_CAPACITY
+      capacity:favorites.ACTIVE_CAPACITY,
+      getSearch:()=>{
+        try{return localStorage.getItem("pin2map-favorites-search-v1")||"";}
+        catch(_){return "";}
+      },
+      onSearchChange:value=>{
+        try{
+          if(value)localStorage.setItem("pin2map-favorites-search-v1",value);
+          else localStorage.removeItem("pin2map-favorites-search-v1");
+        }catch(_){}
+      }
     });
     // No modal dialog is used: replacement confirmation is inside the panel.
     window.Pin2MapIcons.mount($("favoritesButton"),"star");
