@@ -21,14 +21,21 @@ function fixture(){
   }
   const button=element("deletePin"),dialog=element("deleteDialog"),confirmed=[];
   let selected="pin-1";let openings=0;
-  dialog.showModal=()=>{dialog.open=true;openings++;};
+  dialog.show=()=>{dialog.open=true;openings++;};
+  dialog.showModal=()=>{throw Error("Delete confirmation must not make its on/off trigger inert");};
   dialog.close=(value)=>{dialog.returnValue=value;dialog.open=false;dialog.fire("close");};
+  const documentListeners=new Map();
+  dialog.ownerDocument={
+    addEventListener:(type,fn)=>documentListeners.set(type,fn),
+    removeEventListener:(type,fn)=>{if(documentListeners.get(type)===fn)documentListeners.delete(type);}
+  };
   const controller=new PinDeleteDialog({
     getElement:id=>({deletePin:button,deleteDialog:dialog})[id],
     getSelectedPinId:()=>selected,
     onConfirm:id=>confirmed.push(id)
   });
-  return {controller,button,dialog,confirmed,getOpenings:()=>openings,select:id=>selected=id};
+  return {controller,button,dialog,confirmed,getOpenings:()=>openings,select:id=>selected=id,
+    keydown:key=>documentListeners.get("keydown")?.({key,preventDefault:()=>{}})};
 }
 test("confirm deletes only the id captured when the dialog opened",()=>{
   const x=fixture();x.controller.bind();
@@ -48,12 +55,41 @@ test("cancel and Escape-equivalent dismissal never invoke deletion",()=>{
   assert.equal(x.button.getAttribute("aria-expanded"),"false");
   assert.equal(x.button.classList.contains("is-active"),false);
 });
-test("no selected pin does not open a dialog; repeat click cannot retarget it",()=>{
+test("a second tap on the same delete trigger turns off the confirmation without deletion",()=>{
+  const x=fixture();x.controller.bind();
+  x.button.fire("click");
+  assert.equal(x.dialog.open,true);
+  assert.equal(x.button.getAttribute("aria-expanded"),"true");
+  x.select("pin-2"); // even if selection changes, the toggle only closes
+  x.button.fire("click");
+  assert.equal(x.dialog.open,false);
+  assert.equal(x.button.getAttribute("aria-expanded"),"false");
+  assert.deepEqual(x.confirmed,[]);
+  assert.equal(x.getOpenings(),1);
+  x.button.fire("click");
+  assert.equal(x.dialog.open,true);
+  assert.equal(x.getOpenings(),2);
+  x.dialog.close("confirm");
+  assert.deepEqual(x.confirmed,["pin-2"]);
+});
+test("no selected pin does not open a dialog; repeated click while open always cancels",()=>{
   const x=fixture();x.controller.bind();x.select(null);x.button.fire("click");
   assert.equal(x.getOpenings(),0);
   x.select("pin-1");x.button.fire("click");x.select("pin-2");x.button.fire("click");
-  assert.equal(x.getOpenings(),1);x.dialog.close("confirm");
-  assert.deepEqual(x.confirmed,["pin-1"]);
+  assert.equal(x.getOpenings(),1);
+  assert.equal(x.dialog.open,false);
+  assert.deepEqual(x.confirmed,[]);
+});
+test("Escape cancels the nonmodal confirmation and resets blue state",()=>{
+  const x=fixture();x.controller.bind();x.button.fire("click");
+  let prevented=false;
+  x.dialog.ownerDocument.addEventListener("keydown",event=>{
+    if(event.key==="Escape")prevented=true;
+  }); // event still reaches registered handler; no destructive confirmation
+  x.keydown("Escape");
+  assert.equal(x.dialog.open,false);
+  assert.equal(x.button.getAttribute("aria-expanded"),"false");
+  assert.deepEqual(x.confirmed,[]);
 });
 test("bind once, dispose unbinds both listeners, rebinding is supported",()=>{
   const x=fixture();x.controller.bind();x.controller.bind();x.button.fire("click");x.dialog.close("confirm");
