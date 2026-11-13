@@ -9,6 +9,8 @@
   const VERSION=1;
   const STORE="kv";
   const PROJECT_KEY="appState";
+  // A device-only key in the existing KV store, never part of project export/sync.
+  const VIEW_HISTORY_KEY="localMapViewHistory-v1";
   class IndexedDBProjectStore {
     constructor(db){this.db=db;}
     static open(indexedDBApi=root.indexedDB){
@@ -41,6 +43,24 @@
         tx.oncomplete=()=>resolve();
         tx.onerror=()=>reject(tx.error||new Error("Project write failed"));
         tx.onabort=()=>reject(tx.error||new Error("Project write aborted"));
+      });
+    }
+    loadViewHistory(){
+      return new Promise((resolve,reject)=>{
+        const tx=this.db.transaction(STORE,"readonly");
+        const req=tx.objectStore(STORE).get(VIEW_HISTORY_KEY);
+        req.onsuccess=()=>resolve(req.result);
+        req.onerror=()=>reject(req.error||new Error("History read failed"));
+        tx.onabort=()=>reject(tx.error||new Error("History read aborted"));
+      });
+    }
+    saveViewHistory(value){
+      return new Promise((resolve,reject)=>{
+        const tx=this.db.transaction(STORE,"readwrite");
+        tx.objectStore(STORE).put(value,VIEW_HISTORY_KEY);
+        tx.oncomplete=()=>resolve();
+        tx.onerror=()=>reject(tx.error||new Error("History write failed"));
+        tx.onabort=()=>reject(tx.error||new Error("History write aborted"));
       });
     }
     close(){this.db.close();}
