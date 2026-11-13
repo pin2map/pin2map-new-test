@@ -117,7 +117,7 @@
       list.replaceChildren();
       const add=this.el("favoritesAdd");
       add.disabled=values.length>=this.capacity;
-      add.title=add.disabled?"Alle sieben Favoriten A–G belegt – vorhandenen Platz ersetzen":"Neue Ansicht hinzufügen";
+      add.title=add.disabled?"Alle 15 Favoriten A–O belegt – vorhandenen Platz ersetzen":"Neue Ansicht hinzufügen";
       if(!values.length){
         const empty=this.doc.createElement("p");empty.className="favorites-empty";
         empty.textContent="Noch keine Favoriten gespeichert.";list.append(empty);
