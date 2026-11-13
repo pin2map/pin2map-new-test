@@ -19,7 +19,8 @@
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
-  let gestures,pinOverlapZoom;
+  let gestures,pinOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
+  const favorites=window.Pin2MapMapFavorites;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
@@ -249,6 +250,44 @@
   function persistViewport() {
     persistence.saveViewport(mapAdapter.getViewport());
   }
+  function flushHistoryRecord(){
+    if(historyRecordTimer!==null){clearTimeout(historyRecordTimer);historyRecordTimer=null;}
+    if(mapViewHistory)mapViewHistory.push(mapAdapter.getViewport());
+  }
+  function navigateMapHistory(direction){
+    flushHistoryRecord();
+    const view=direction==="undo"?mapViewHistory?.undo():mapViewHistory?.redo();
+    if(view){pinOverlapZoom?.close();overlayCoordinator.closeAll();
+      mapAdapter.setView(view,{animate:false});persistViewport();}
+  }
+  function currentFavorites(){return favorites.items(state);}
+  function setFavoriteMessage(message){$("favoritesMessage").textContent=message;}
+  function syncFavoritePanel(){favoritesPanel?.render(currentFavorites());}
+  function addMapFavorite(){
+    const name=favorites.append(state,mapAdapter.getViewport(),state.layers,new Date().toISOString());
+    if(!name){setFavoriteMessage("Alle 26 Favoriten A–Z sind belegt.");return;}
+    save();syncFavoritePanel();setFavoriteMessage("Favorit "+name+" gespeichert.");
+  }
+  function replaceMapFavorite(index){
+    if(favorites.replace(state,index,mapAdapter.getViewport(),state.layers,new Date().toISOString())){
+      save();syncFavoritePanel();setFavoriteMessage("Favorit "+favorites.letter(index)+" ersetzt.");
+    }
+  }
+  function removeMapFavorite(index){
+    if(favorites.remove(state,index)){
+      save();syncFavoritePanel();
+      setFavoriteMessage("Favorit entfernt. Die Liste wurde lückenlos neu geordnet.");
+    }
+  }
+  function openMapFavorite(index){
+    const viewport=favorites.apply(state,index);
+    if(!viewport)return;
+    save();renderLayers();renderMarkers();renderPinPanel();
+    favoritesPanel.close();
+    setFavoriteMessage("");
+    mapAdapter.setView(viewport,{animate:false});
+    persistViewport();
+  }
   function setTileLayer() {
     mapAdapter.setBasemap(state.basemap,{
       esriRelief:!!state.esriRelief,
@@ -393,7 +432,7 @@
 
     gestures.attachLongPress();
     mapOverlayLayout.bind();
-    document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden")persistence.flushOnHidden(); });
+    document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden"){flushHistoryRecord();persistence.flushOnHidden();} });
   }
   async function init() {
     if(!window.L){$("notice").textContent="Die Kartenbibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen."; $("notice").classList.remove("hidden");return;}
@@ -403,6 +442,7 @@
     state=window.Pin2MapProjectHydration.hydrate(savedProject,{
       defaults,privateLayerId:PRIVATE_ID,cleanupSearch:project=>placeSearch.cleanup(project)
     });
+    if(!Array.isArray(state.favorites))state.favorites=[];
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
     gestures=window.Pin2MapMapGestureController({
       mapAdapter,
@@ -429,7 +469,7 @@
       getMaxZoom:()=>state.basemap==="topo"?17:19,
       onSelect:id=>selectPin(id),
       onBeforeZoom:()=>overlayCoordinator.closeAll(),
-      onHistoryChange:available=>mapAdapter.updateZoomUndo(available),
+      onHistoryChange:()=>{},
       getElement:$,document
     });
     moveView=new window.Pin2MapPinMovePreview.PinMovePreview({
@@ -465,8 +505,46 @@
       },
       onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
     });
-    mapAdapter.addZoomControls({onFitAll:fitAllPins,onUndo:()=>pinOverlapZoom.undo()});
-    mapAdapter.updateZoomUndo(pinOverlapZoom.canUndo());
+    mapViewHistory=new window.Pin2MapMapViewHistory.MapViewHistory({
+      onChange:availability=>mapAdapter.updateZoomHistory(availability),
+      onSave:value=>projectStore?.saveViewHistory(value).catch(()=>showNotice("Ansichts-Historie konnte nicht gespeichert werden"))
+    });
+    let previouslySavedHistory=null;
+    try{previouslySavedHistory=await projectStore?.loadViewHistory();}
+    catch(_){showNotice("Ansichts-Historie konnte nicht geladen werden");}
+    const restoredViewport=mapViewHistory.load(previouslySavedHistory,mapAdapter.getViewport());
+    if(restoredViewport)mapAdapter.setView(restoredViewport,{animate:false});
+    mapAdapter.addZoomControls({
+      onFitAll:fitAllPins,
+      onUndo:()=>navigateMapHistory("undo"),
+      onRedo:()=>navigateMapHistory("redo")
+    });
+    mapAdapter.updateZoomHistory({undo:mapViewHistory.canUndo(),redo:mapViewHistory.canRedo()});
+    // A whole drag or a wheel/pinch sequence becomes one settled navigation
+    // step, rather than creating dozens of intermediate undo entries.
+    mapAdapter.on("moveend zoomend",()=>{
+      if(historyRecordTimer!==null)clearTimeout(historyRecordTimer);
+      historyRecordTimer=setTimeout(flushHistoryRecord,320);
+    });
+    favoritesPanel=new window.Pin2MapMapFavoritesPanel({
+      document,getElement:$,icons:window.Pin2MapIcons,
+      onOpen:()=>{overlayCoordinator.closeAll();pinOverlapZoom.close();setFavoriteMessage("");},
+      onAdd:addMapFavorite,onReplace:replaceMapFavorite,
+      onRemove:removeMapFavorite,onChoose:openMapFavorite
+    });
+    // No modal dialog is used: replacement confirmation is inside the panel.
+    window.Pin2MapIcons.mount($("favoritesButton"),"star");
+    window.Pin2MapIcons.mount($("favoritesClose"),"x");
+    const favoriteAdd=$("favoritesAdd");
+    const favoriteAddLabel=favoriteAdd.querySelector("span");
+    const favoriteIcon=window.Pin2MapIcons.svg("star-plus",document);
+    favoriteAdd.prepend(favoriteIcon);
+    $("favoritesButton").addEventListener("click",()=>favoritesPanel.toggle(currentFavorites()));
+    $("favoritesClose").addEventListener("click",()=>favoritesPanel.close());
+    favoriteAdd.addEventListener("click",addMapFavorite);
+    document.addEventListener("keydown",event=>{
+      if(event.key==="Escape"&&favoritesPanel.open){event.preventDefault();favoritesPanel.close();}
+    });
     mapAdapter.addScaleControl();
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
     for(const field of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
