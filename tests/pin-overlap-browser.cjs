@@ -2,6 +2,7 @@
 /* Actual Chrome marker-tap regression for the v167 disentangling workflow.
  * Each test context uses independent IndexedDB; no real user pins are read. */
 const assert=require("node:assert/strict");
+const fs=require("node:fs");
 const {chromium}=require("playwright");
 const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
 const viewports=[
@@ -40,6 +41,7 @@ async function zoom(page){
     });
 }
 (async()=>{
+  fs.mkdirSync("pin-overlap-artifacts",{recursive:true});
   const browser=await chromium.launch({headless:true,...(process.env.PIN2MAP_CHROMIUM_EXECUTABLE
     ?{executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE}:{})});
   try{
@@ -67,6 +69,7 @@ async function zoom(page){
         assert.ok(Math.abs(firstBox.x-secondBox.x)<52,
           "Precondition: actual 52px hitboxes overlap at low zoom");
         const initialScale=await zoom(page);
+        await page.screenshot({path:"pin-overlap-artifacts/"+viewport.name+"-before.png"});
         const tap=async locator=>viewport.hasTouch?locator.tap({force:true}):locator.click({force:true});
         await tap(page.locator(".pin-icon").last());
         assert.equal(await page.locator("#pinPanel").isHidden(),true,
@@ -74,6 +77,7 @@ async function zoom(page){
         assert.equal(await page.locator(".pin-overlap-chooser").count(),0,
           "Separable nearby pins must not force a chooser");
         const afterScale=await zoom(page);
+        await page.screenshot({path:"pin-overlap-artifacts/"+viewport.name+"-after-zoom.png"});
         assert.notEqual(afterScale,initialScale,
           "First ambiguous tap must change map zoom");
         const afterA=await page.locator(".pin-icon").first().boundingBox();
@@ -97,6 +101,9 @@ async function zoom(page){
         await page.locator(".pin-overlap-chooser").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinPanel").isHidden(),true);
         assert.equal(await page.locator(".pin-overlap-choice").count(),2);
+        assert.equal(await zoom(page),initialScale,
+          "Identical coordinates must offer choices without needless zoom");
+        await page.screenshot({path:"pin-overlap-artifacts/"+viewport.name+"-exact-chooser.png"});
         await page.locator(".pin-overlap-choice").filter({hasText:"Identisch A"}).click();
         await page.locator("#pinPanel").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinName").inputValue(),"Identisch A");
