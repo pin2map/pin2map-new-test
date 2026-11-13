@@ -185,6 +185,19 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").count(),1);
         assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Meine Übersicht");
+        // The letter, name, date and blank row surface ALL activate the
+        // saved view. Renaming is reserved for the square-pen button only.
+        for(const target of [".favorite-name",".favorite-open",".favorite-date"]){
+          await page.locator(target).first().click();
+          assert.equal(await page.locator("#favoritesPanel").isHidden(),true,
+            target+" must open the view, not the rename editor");
+          assert.equal(await page.locator(".favorite-confirm").count(),0);
+          await favoriteTrigger.click();
+        }
+        await page.locator(".favorite-row").first().click({position:{x:135,y:4}});
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true,
+          "Clicking a blank part of a favorite row opens the saved view");
+        await favoriteTrigger.click();
         assert.match(await page.locator(".favorite-date").first().textContent(),/\d{2}\.\d{2}\.\d{4}/);
 
         // Any pointer interaction outside the dialog dismisses it.
@@ -211,6 +224,14 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-edit").first().getAttribute("data-pin-icon"),"square-pen");
         await page.locator(".favorite-edit").first().click();
         assert.equal(await page.locator(".favorite-name-input").inputValue(),"Meine Übersicht");
+        const stacking=await page.evaluate(()=>{
+          const star=document.querySelector("#favoritesButton");
+          const panel=document.querySelector("#favoritesPanel");
+          return {star:Number.parseInt(getComputedStyle(star).zIndex,10),
+                  panel:Number.parseInt(getComputedStyle(panel).zIndex,10)};
+        });
+        assert.ok(stacking.panel>stacking.star,
+          "Favorite list and inline editor must stack ABOVE the active star button");
         await page.locator(".favorite-name-input").fill("Umbenannt");
         await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Umbenannt");
@@ -239,6 +260,26 @@ async function zoom(page){
         const removeCircle=await page.locator(".favorite-row").first().locator(".favorite-remove").boundingBox();
         assert.ok(removeCircle&&Math.abs(removeCircle.width-removeCircle.height)<1,
           "Favorite row icon buttons must remain perfectly round");
+        // Audits ALL visible buttons that present as round: map controls,
+        // favorites actions, pin dialog / toolbar and overlay close controls.
+        const geometryProblems=await page.evaluate(()=>{
+          const roundCandidates=[
+            ...document.querySelectorAll("button.p2m-icon-control, .favorite-row .favorite-icon, #favoritesClose")
+          ];
+          return roundCandidates.filter(el=>{
+            const css=getComputedStyle(el),box=el.getBoundingClientRect();
+            if(css.display==="none"||css.visibility==="hidden"||
+              !box.width||!box.height||!el.getClientRects().length)return false;
+            const radius=css.borderTopLeftRadius;
+            return radius==="50%"||parseFloat(radius)>=Math.min(box.width,box.height)*.45;
+          }).filter(el=>{
+            const box=el.getBoundingClientRect();
+            return Math.abs(box.width-box.height)>1;
+          }).map(el=>({selector:el.id||el.className,width:el.getBoundingClientRect().width,
+            height:el.getBoundingClientRect().height}));
+        });
+        assert.deepEqual(geometryProblems,[],
+          "Every visible round control must have equal rendered width and height");
         assert.equal(await page.locator(".favorite-row").first().locator(".favorite-remove").evaluate(
           el=>getComputedStyle(el.querySelector("svg")).color),"rgb(191, 36, 49)",
           "Remove icon itself must be red");
