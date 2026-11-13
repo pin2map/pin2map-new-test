@@ -26,7 +26,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         try{
           await page.waitForFunction(()=>Boolean(window.L)&&
             document.querySelector("#map.leaflet-container")&&
-            document.querySelectorAll(".pin-zoom-button").length===4,
+            document.querySelectorAll(".pin-zoom-button").length===5,
             null,{timeout:10000});
         }catch(error){
           const state=await page.evaluate(()=>({
@@ -61,7 +61,8 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.ok(Math.abs(liveScale.center-viewport.width/2)<=3,
           "Published scale is horizontally centered: "+JSON.stringify(liveScale));
         assert.ok(liveScale.top>=65&&liveScale.top<140&&!liveScale.hidden);
-        assert.equal(loaded.zoomButtons,4);
+        assert.equal(loaded.zoomButtons,5);
+        assert.equal(await page.locator(".pin-zoom-button").nth(1).getAttribute("data-pin-icon"),"redo-2");
         assert.equal(await page.locator(".pin-zoom-button").first().getAttribute("data-pin-icon"),"undo-2");
         assert.equal(await page.locator(".pin-zoom-button").first().isDisabled(),true);
         assert.equal(loaded.map,true);
@@ -363,7 +364,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await page.reload({waitUntil:"domcontentloaded"});
         await page.waitForFunction(()=>Boolean(window.L)&&
           document.querySelector("#map.leaflet-container")&&
-          document.querySelectorAll(".pin-zoom-button").length===4,
+          document.querySelectorAll(".pin-zoom-button").length===5,
           null,{timeout:22000});
         assert.deepEqual(errors,[],"Errors after reload: "+errors.join("; "));
         console.log("PASS live map startup, controls, attribution and reload:",name,url);
