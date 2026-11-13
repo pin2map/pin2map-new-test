@@ -104,6 +104,24 @@ test("first autozoom fits every connected pin even if distant members cannot be 
   assert.equal(fittingZoom(group,10,19,projected,{x:350,y:650}),12,
     "Fit constraints must cap zoom before losing initial members");
 });
+test("Hamburg-like group is kept whole on first zoom; closer subgroup separates on next tap",()=>{
+  const pins=[0,5,10,11,20,30,40].map((x,i)=>({id:"h"+i,x,y:0}));
+  const project=(p,z)=>({x:p.x*2**(z-10),y:0});
+  const original=connectedPins(pins,"h2",p=>project(p,10));
+  assert.equal(original.length,7);
+  const firstTarget=Math.min(
+    zoomDecision(original,10,19,project).zoom,
+    fittingZoom(original,10,19,project,{x:1100,y:780}));
+  assert.equal(firstTarget,14);
+  assert.equal(allSeparated(original,p=>project(p,firstTarget)),false);
+  const residual=connectedPins(pins,"h2",p=>project(p,firstTarget));
+  assert.deepEqual(residual.map(p=>p.id),["h2","h3"]);
+  const secondTarget=Math.min(
+    zoomDecision(residual,firstTarget,19,project).zoom,
+    fittingZoom(residual,firstTarget,19,project,{x:1100,y:780}));
+  assert.equal(secondTarget,16);
+  assert.equal(allSeparated(residual,p=>project(p,secondTarget)),true);
+});
 test("viewport undo is inert until an autozoom and restores exact previous center and zoom",()=>{
   const f=fixture([{id:"a",lat:0,lng:0},{id:"b",lat:0,lng:10}]);
   assert.equal(f.controller.undo(),false);
