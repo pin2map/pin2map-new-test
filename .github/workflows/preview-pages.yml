@@ -294,16 +294,30 @@ jobs:
           PIN2MAP_LIVE_PREVIEW: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/preview-live-smoke.cjs
 
+      - name: Confirm live autozoom disentangles pin hitboxes and allows exact-coordinate choice
+        working-directory: preview-source
+        env:
+          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
+        run: node tests/pin-overlap-browser.cjs
+
       - name: Visual verification of actually published Pin dialog and layer chooser
         working-directory: preview-source
         env:
           PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/pin-dialog-visual.cjs
 
+      - name: Archive published overlap autozoom screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-preview-pin-overlap-v167
+          path: preview-source/pin-overlap-artifacts/*.png
+          if-no-files-found: ignore
+
       - name: Archive published Pin dialog screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: live-preview-pin-dialog-v166
+          name: live-preview-pin-dialog-v167
           path: preview-source/pin-dialog-visual-artifacts/*.png
           if-no-files-found: ignore
