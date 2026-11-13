@@ -687,7 +687,7 @@ body.pin-note-editor-open{overflow:hidden}
 /* One dialog-owned mouse hover contract; no sticky hover on touch. The
    explicit selector beats earlier global and component color overrides. */
 @media(hover:hover) and (pointer:fine){
-  #pinPanel button:is(#deletePin,#movePin,#closePin,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather,#showPinLayer,#pinNotesExpand):not(:disabled):hover,
+  #pinPanel button:is(#deletePin,#movePin,#closePin,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather,#showPinLayer,#pinNotesExpand):not(:disabled):not([aria-expanded="true"],[aria-pressed="true"],.is-active):hover,
   #pinPanel .pin-navigation-row .pin-nav-add:hover,
   #pinPanel .pin-navigation-row button:not(:disabled):hover,
   #pinUrlBlock .pin-url-actions button:not(:disabled):hover,
