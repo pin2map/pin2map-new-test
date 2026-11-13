@@ -158,18 +158,21 @@
       }).addTo(this.map);
       return this.scaleControl;
     }
-    addZoomControls({onFitAll}) {
+    addZoomControls({onFitAll,onUndo}) {
       const adapter=this;
       const control=window.L.control({position:"bottomleft"});
       control.onAdd=function(){
         const holder=window.L.DomUtil.create("div","pin-zoom-buttons leaflet-bar");
-        const add=(symbol,title,action)=>{
+        const add=(symbol,title,action,icon)=>{
           const button=window.L.DomUtil.create("button","pin-zoom-button",holder);
           button.type="button";button.textContent=symbol;button.title=title;
-          window.Pin2MapIcons?.mount(button,symbol==="+"?"plus":symbol==="−"?"minus":"scan");
+          window.Pin2MapIcons?.mount(button,icon|| (symbol==="+"?"plus":symbol==="−"?"minus":"scan"));
           button.setAttribute("aria-label",title);
-          window.L.DomEvent.on(button,"click",event=>{window.L.DomEvent.stop(event);action();});
+          window.L.DomEvent.on(button,"click",event=>{window.L.DomEvent.stop(event);if(!button.disabled)action();});
+          return button;
         };
+        adapter.zoomUndoButton=add("↶","Zurück zur letzten Ansicht",onUndo||(()=>{}),"undo-2");
+        adapter.zoomUndoButton.disabled=true;
         add("+","Vergrößern",()=>adapter.zoomIn());
         add("−","Verkleinern",()=>adapter.zoomOut());
         add("◎","Alle sichtbaren Pins anzeigen",onFitAll);
@@ -186,6 +189,7 @@
       this.map.on("click",handler);
       return ()=>this.map.off("click",handler);
     }
+    updateZoomUndo(enabled){if(this.zoomUndoButton)this.zoomUndoButton.disabled=!enabled;}
     zoomIn() { this.map.zoomIn(); }
     zoomOut() { this.map.zoomOut(); }
     invalidateSize() { this.map.invalidateSize(); }
