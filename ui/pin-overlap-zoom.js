@@ -8,26 +8,50 @@
     return Math.abs(a.x-b.x)<HIT_WIDTH+gap &&
       Math.abs(a.y-b.y)<HIT_HEIGHT+gap;
   }
+  // Spatial hash: tapping one of thousands of visible pins only probes
+  // its adjacent 52x56px cells; no quadratic all-pairs scan on each tap.
+  function cell(point,width,height){
+    return {x:Math.floor(point.x/width),y:Math.floor(point.y/height)};
+  }
+  function key(x,y){return x+","+y;}
   function connectedPins(pins,chosenId,project){
     const points=pins.map(pin=>({...pin,point:project(pin)}));
     const index=points.findIndex(pin=>pin.id===chosenId);
     if(index<0)return [];
+    const buckets=new Map();
+    for(let j=0;j<points.length;j++){
+      const c=cell(points[j].point,HIT_WIDTH,HIT_HEIGHT);
+      const k=key(c.x,c.y);
+      if(!buckets.has(k))buckets.set(k,[]);
+      buckets.get(k).push(j);
+    }
     const seen=new Set([index]),queue=[index];
     for(let at=0;at<queue.length;at++){
       const current=points[queue[at]];
-      for(let j=0;j<points.length;j++){
-        if(!seen.has(j)&&overlaps(current.point,points[j].point)){
-          seen.add(j);queue.push(j);
+      const c=cell(current.point,HIT_WIDTH,HIT_HEIGHT);
+      for(let x=c.x-1;x<=c.x+1;x++)for(let y=c.y-1;y<=c.y+1;y++){
+        for(const j of buckets.get(key(x,y))||[]){
+          if(!seen.has(j)&&overlaps(current.point,points[j].point)){
+            seen.add(j);queue.push(j);
+          }
         }
       }
     }
     return queue.map(i=>points[i]);
   }
   function allSeparated(pins,project,gap=GAP){
-    const positions=pins.map(pin=>project(pin));
-    for(let i=0;i<positions.length;i++)
-      for(let j=i+1;j<positions.length;j++)
-        if(overlaps(positions[i],positions[j],gap))return false;
+    const width=HIT_WIDTH+gap,height=HIT_HEIGHT+gap;
+    const buckets=new Map();
+    for(const pin of pins){
+      const point=project(pin),c=cell(point,width,height);
+      for(let x=c.x-1;x<=c.x+1;x++)for(let y=c.y-1;y<=c.y+1;y++){
+        for(const other of buckets.get(key(x,y))||[])
+          if(overlaps(point,other,gap))return false;
+      }
+      const k=key(c.x,c.y);
+      if(!buckets.has(k))buckets.set(k,[]);
+      buckets.get(k).push(point);
+    }
     return true;
   }
   function zoomDecision(pins,current,max,projectAtZoom){
