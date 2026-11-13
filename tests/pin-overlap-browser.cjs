@@ -123,6 +123,12 @@ async function zoom(page){
         // A pin-editor opening pan is also an intentional history step, so
         // returning to the overview may require more than one Undo.
         await page.waitForTimeout(400);
+        const inspectHistory=()=>page.evaluate(async()=>{
+          const store=await window.Pin2MapIndexedDBProjectStore.open();
+          try{return await store.loadViewHistory();}finally{store.close();}
+        });
+        console.log("[history diagnostic] before undo",viewport.name,
+          JSON.stringify(await inspectHistory()),"scale",await zoom(page),"wanted",initialScale);
         let restored=false;
         for(let n=0;n<20;n++){
           if(await zoom(page)===initialScale){restored=true;break;}
@@ -130,6 +136,8 @@ async function zoom(page){
           if(await undo.isDisabled())break;
           await undo.click();
           await page.waitForTimeout(60);
+          if(n<4)console.log("[history diagnostic] after undo",n,
+            JSON.stringify(await inspectHistory()),"scale",await zoom(page));
         }
         assert.equal(restored||await zoom(page)===initialScale,true,
           "Undo history must eventually return to the overview after editor pans");
