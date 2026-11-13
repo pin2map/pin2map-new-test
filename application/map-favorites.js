@@ -4,7 +4,7 @@
  * remain untouched when a favorite is applied. */
 (function(root){
   const CAPACITY=26;
-  const ACTIVE_CAPACITY=7; // Current UI limit A–G; retain 26-place data contract.
+  const ACTIVE_CAPACITY=15; // Trial UI limit A–O; preserve 26-place data contract.
   const letter=index=>String.fromCharCode(65+index);
   function capture(view,layers,date,name="",basemap="street"){
     const lat=Number(view?.center?.lat),lng=Number(view?.center?.lng),zoom=Number(view?.zoom);
