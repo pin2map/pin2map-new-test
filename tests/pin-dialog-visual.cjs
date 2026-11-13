@@ -415,7 +415,8 @@ async function metrics(page){
    },"Desktop modal trigger must be BLUE, not red or hovered gray");
    await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v165-delete.png"});
    await page.keyboard.press("Escape");
-   await page.waitForFunction(()=>document.querySelector("#deleteDialog").open===false);
+   await page.waitForFunction(()=>document.querySelector("#deleteDialog").open===false&&
+     document.querySelector("#deletePin").getAttribute("aria-expanded")==="false");
    assert.equal(await page.locator("#deletePin").getAttribute("aria-expanded"),"false");
    assert.equal(await page.locator("#deletePin").evaluate(el=>el.classList.contains("is-active")),false);
    assert.deepEqual(errors,[]);
