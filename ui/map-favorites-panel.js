@@ -9,6 +9,22 @@
       this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
       this.suggestName=suggestName;this.capacity=capacity;
       this.open=false;this.mode=null;this.index=null;this.values=[];
+      this.searchText="";
+      const search=this.el("favoritesSearch");
+      search.addEventListener("input",()=>{
+        this.searchText=search.value;
+        this.mode=null;this.index=null;
+        this.render();
+        this.el("favoritesList").scrollTop=0;
+      });
+      this.el("favoritesSearchClear").addEventListener("click",()=>{
+        if(!this.searchText)return;
+        this.searchText="";search.value="";
+        this.mode=null;this.index=null;
+        this.render();
+        this.el("favoritesList").scrollTop=0;
+        search.focus({preventScroll:true});
+      });
       // iOS Safari shrinks its visual viewport above the on-screen keyboard.
       // Keep the active inline editor inside that visible region.
       this.viewport=this.doc.defaultView?.visualViewport||null;
@@ -33,6 +49,7 @@
     }
     show(values){
       this.values=values;this.mode=null;this.index=null;this.open=true;
+      this.searchText="";this.el("favoritesSearch").value="";
       this.el("favoritesPanel").classList.remove("hidden");
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
@@ -116,14 +133,21 @@
       const oldScroll=list.scrollTop;
       list.replaceChildren();
       const add=this.el("favoritesAdd");
+      const clear=this.el("favoritesSearchClear");
+      clear.disabled=!this.searchText.length;
+      const query=this.searchText.trim().toLocaleLowerCase("de-DE");
+      const matches=query?values.map((item,index)=>({item,index}))
+        .filter(({item})=>(item.name||"Unbenannt").toLocaleLowerCase("de-DE").includes(query)):
+        values.map((item,index)=>({item,index}));
       add.disabled=values.length>=this.capacity;
       add.title=add.disabled?"Alle 15 Favoriten A–O belegt – vorhandenen Platz ersetzen":"Neue Ansicht hinzufügen";
-      if(!values.length){
+      if(!matches.length){
         const empty=this.doc.createElement("p");empty.className="favorites-empty";
-        empty.textContent="Noch keine Favoriten gespeichert.";list.append(empty);
+        empty.textContent=values.length?"Keine passenden Favoriten gefunden.":"Noch keine Favoriten gespeichert.";
+        list.append(empty);
       }
       let pendingFocus=null;
-      values.forEach((item,index)=>{
+      matches.forEach(({item,index})=>{
         const row=this.doc.createElement("div");row.className="favorite-row";
         // Letter, name, date and empty row area all open the saved view.
         // ONLY the dedicated square-pen control starts renaming.
