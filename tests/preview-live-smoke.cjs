@@ -25,7 +25,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await page.goto(url,{waitUntil:"domcontentloaded",timeout:35000});
         await page.waitForFunction(()=>Boolean(window.L)&&
           document.querySelector("#map.leaflet-container")&&
-          document.querySelectorAll(".pin-zoom-button").length===3,
+          document.querySelectorAll(".pin-zoom-button").length===4,
           null,{timeout:22000});
         const loaded=await page.evaluate(()=>({
           leaflet:!!window.L,zoomButtons:document.querySelectorAll(".pin-zoom-button").length,
@@ -49,7 +49,9 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.ok(Math.abs(liveScale.center-viewport.width/2)<=3,
           "Published scale is horizontally centered: "+JSON.stringify(liveScale));
         assert.ok(liveScale.top>=65&&liveScale.top<140&&!liveScale.hidden);
-        assert.equal(loaded.zoomButtons,3);
+        assert.equal(loaded.zoomButtons,4);
+        assert.equal(await page.locator(".pin-zoom-button").first().getAttribute("data-pin-icon"),"undo-2");
+        assert.equal(await page.locator(".pin-zoom-button").first().isDisabled(),true);
         assert.equal(loaded.map,true);
         assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
         // Cross-platform search clear works without the browser-native X.
