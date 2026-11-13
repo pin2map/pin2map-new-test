@@ -125,7 +125,8 @@
       let pendingFocus=null;
       values.forEach((item,index)=>{
         const row=this.doc.createElement("div");row.className="favorite-row";
-        // Row/date chooses the view; the name is reserved for inline rename.
+        // Letter, name, date and empty row area all open the saved view.
+        // ONLY the dedicated square-pen control starts renaming.
         row.addEventListener("click",event=>{
           if(!event.target.closest("button"))this.onChoose(index);
         });
@@ -134,8 +135,9 @@
         const open=this.button(null,"Ansicht "+item.letter+" öffnen",()=>this.onChoose(index),"favorite-open");
         open.textContent=item.letter;
         const details=this.doc.createElement("div");details.className="favorite-details";
-        const name=this.labeledButton(item.name||"Unbenannt",()=>this.start("rename",index),"favorite-name");
-        name.title="Favorit umbenennen";name.setAttribute("aria-label","Favorit "+item.letter+" umbenennen");
+        const name=this.labeledButton(item.name||"Unbenannt",()=>this.onChoose(index),"favorite-name");
+        name.title="Ansicht "+item.letter+" öffnen";
+        name.setAttribute("aria-label","Ansicht "+item.letter+" – "+(item.name||"Unbenannt")+" öffnen");
         const when=this.doc.createElement("small");when.className="favorite-date";
         const date=new Date(item.savedAt);
         when.textContent=Number.isNaN(date.getTime())?"Unbekanntes Datum":
