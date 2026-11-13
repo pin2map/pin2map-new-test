@@ -859,7 +859,9 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     const verticalStack=await page.evaluate(()=>{
       const tip=document.querySelector("#pinDialogTip").getBoundingClientRect();
-      const pin=document.querySelector("#map .pin-marker-shape").getBoundingClientRect();
+      // The clicked marker may no longer be the FIRST SVG in Leaflet's
+      // stacking order. Compare against the actual selected marker.
+      const pin=document.querySelector("#map .pin-marker.selected .pin-marker-shape").getBoundingClientRect();
       const labels=[...document.querySelectorAll("#map .elevation-label")].map(el=>el.getBoundingClientRect());
       const info=labels.reduce((best,item)=>{
         const dist=r=>Math.abs((r.left+r.right)/2-(pin.left+pin.right)/2);
