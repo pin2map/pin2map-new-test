@@ -158,7 +158,7 @@
       }).addTo(this.map);
       return this.scaleControl;
     }
-    addZoomControls({onFitAll,onUndo}) {
+    addZoomControls({onFitAll,onUndo,onRedo}) {
       const adapter=this;
       const control=window.L.control({position:"bottomleft"});
       control.onAdd=function(){
@@ -173,6 +173,8 @@
         };
         adapter.zoomUndoButton=add("↶","Zurück zur letzten Ansicht",onUndo||(()=>{}),"undo-2");
         adapter.zoomUndoButton.disabled=true;
+        adapter.zoomRedoButton=add("↷","Weiter zur nächsten Ansicht",onRedo||(()=>{}),"redo-2");
+        adapter.zoomRedoButton.disabled=true;
         add("+","Vergrößern",()=>adapter.zoomIn());
         add("−","Verkleinern",()=>adapter.zoomOut());
         add("◎","Alle sichtbaren Pins anzeigen",onFitAll);
@@ -190,6 +192,8 @@
       return ()=>this.map.off("click",handler);
     }
     updateZoomUndo(enabled){if(this.zoomUndoButton)this.zoomUndoButton.disabled=!enabled;}
+    updateZoomRedo(enabled){if(this.zoomRedoButton)this.zoomRedoButton.disabled=!enabled;}
+    updateZoomHistory({undo,redo}){this.updateZoomUndo(undo);this.updateZoomRedo(redo);}
     zoomIn() { this.map.zoomIn(); }
     zoomOut() { this.map.zoomOut(); }
     invalidateSize() { this.map.invalidateSize(); }
