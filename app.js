@@ -384,7 +384,9 @@
     pinDeleteDialog.bind();
 
     mapAdapter.onMapClick(position=>{
-      pinOverlapZoom?.close();
+      // A pin touch can synthesize a later Leaflet map click. Do not let that
+      // suppressed ghost click immediately dismiss the new overlap chooser.
+      if(!gestures.isSuppressed())pinOverlapZoom?.close();
       if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
       pinInfoMenu.close();mapClickCoordinator.handle(position);
     });
