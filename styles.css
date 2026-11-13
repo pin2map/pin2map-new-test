@@ -1444,7 +1444,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
    panel, including replacement confirmation, is anchored to that control,
    never a centered modal. Map contents and attribution remain untouched. */
 #app #favoritesButton.favorites-map-button.p2m-icon-control{
-  position:absolute;z-index:1300;
+  position:absolute;z-index:1190;
   left:auto!important;right:var(--p2m-top-corner-inset)!important;
   top:calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px))!important;
   bottom:auto!important;
@@ -1454,6 +1454,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   max-width:var(--p2m-map-circle-size)!important;max-height:var(--p2m-map-circle-size)!important;
   border-radius:50%!important;aspect-ratio:1;
 }
+#app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{z-index:1300}
 #app .favorites-panel{
   position:absolute;z-index:1280;box-sizing:border-box;
   left:auto;right:var(--p2m-top-corner-inset);
