@@ -843,8 +843,32 @@ async function longPress(page,x,y,ms=725){
     assert.equal(forecastRequests[1].count,1);
     step("pin editor preserves visible pin information and name labels while disabling map controls");
     assert.equal(await page.locator("#map .elevation-label-wrap").count(),2);
+    // Actual on-screen geometry, not just configuration values: the upper
+    // info label must never overlap the visible droplet.
+    const upperGap=await page.evaluate(()=>{
+      const pin=document.querySelector("#map .pin-marker-shape").getBoundingClientRect();
+      const infos=[...document.querySelectorAll("#map .elevation-label")].map(el=>el.getBoundingClientRect());
+      const info=infos.reduce((best,current)=>{
+        const distance=r=>Math.abs((r.left+r.right)/2-(pin.left+pin.right)/2);
+        return !best||distance(current)<distance(best)?current:best;
+      },null);
+      return {gap:pin.top-info.bottom,pinTop:pin.top,infoBottom:info.bottom};
+    });
+    assert.ok(upperGap.gap>=6,"Actual info label must clear the pin by 6px: "+JSON.stringify(upperGap));
     await page.locator("#map .pin-marker").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
+    const verticalStack=await page.evaluate(()=>{
+      const tip=document.querySelector("#pinDialogTip").getBoundingClientRect();
+      const pin=document.querySelector("#map .pin-marker-shape").getBoundingClientRect();
+      const labels=[...document.querySelectorAll("#map .elevation-label")].map(el=>el.getBoundingClientRect());
+      const info=labels.reduce((best,item)=>{
+        const dist=r=>Math.abs((r.left+r.right)/2-(pin.left+pin.right)/2);
+        return !best||dist(item)<dist(best)?item:best;
+      },null);
+      return {dialogToInfo:info.top-tip.bottom,infoToPin:pin.top-info.bottom};
+    });
+    assert.ok(verticalStack.dialogToInfo>=5&&verticalStack.infoToPin>=6,
+      "Dialog tip -> info label -> pin must have two measurable gaps: "+JSON.stringify(verticalStack));
     assert.notEqual(await page.locator("#map .elevation-label-wrap").first().evaluate(
       el=>getComputedStyle(el).display),"none",
       "Pin information labels must remain visible while editing");
