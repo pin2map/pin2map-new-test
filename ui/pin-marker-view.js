@@ -70,7 +70,8 @@
         cleanText:this.cleanText,colorsByLayer,defaultColor:this.defaultColor
       });
       this.visiblePinList=placements.map(({pin})=>({
-        id:pin.id,lat:pin.lat,lng:pin.lng,name:pin.name
+        id:pin.id,lat:pin.lat,lng:pin.lng,name:pin.name,layerId:pin.layerId,
+        layerName:layers.find(layer=>layer.id===pin.layerId)?.name||"Unbekannte Ebene"
       }));
       const shown=new Set();
       for(const {pin,appearance:look,label} of placements){
