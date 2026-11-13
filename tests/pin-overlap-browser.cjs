@@ -141,7 +141,72 @@ async function zoom(page){
         await page.locator("#pinPanel").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinName").inputValue(),"Allein");
         assert.equal(await zoom(page),soloScale);
+        await page.locator("#closePin").click();
+        // Favorites panel is modeless and must preserve all map content.
+        const favoriteTrigger=page.locator("#favoritesButton");
+        assert.equal(await favoriteTrigger.getAttribute("data-pin-icon"),"star");
+        await favoriteTrigger.click();
+        assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
+        assert.equal(await page.locator(".pin-icon").count(),1);
+        assert.equal(await page.locator("#basemapButton").isHidden(),true);
+        assert.equal(await page.locator(".pin-zoom-buttons").isHidden(),true);
+        assert.equal(await page.locator("#map .leaflet-control-attribution").isVisible(),true);
+        await page.locator("#favoritesAdd").click();
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A");
+        assert.match(await page.locator(".favorite-select span").first().textContent(),/\\d{2}\\.\\d{2}\\.\\d{4}/);
+        await page.locator("#favoritesClose").click();
+        assert.equal(await page.locator(".pin-zoom-buttons").isVisible(),true);
+        await page.locator(".pin-zoom-button").nth(2).click();
+        await page.waitForTimeout(450);
+        assert.notEqual(await zoom(page),soloScale,"Zoom+ changes viewport after saving favorite");
+        await favoriteTrigger.click();
+        await page.locator(".favorite-select").first().click();
+        assert.equal(await zoom(page),soloScale,"Favorit A restores its saved map zoom");
+        await page.waitForTimeout(450);
+        await page.locator(".pin-zoom-button").first().click();
+        assert.notEqual(await zoom(page),soloScale,"Undo returns from favorite to previous map view");
+        await page.locator(".pin-zoom-button").nth(1).click();
+        assert.equal(await zoom(page),soloScale,"Redo returns to selected favorite");
+        await favoriteTrigger.click();
+        await page.locator(".favorite-row .favorite-icon").first().click();
+        assert.equal(await page.locator(".favorite-confirm").count(),1,
+          "Replace confirmation must be INSIDE the favorites panel");
+        await page.locator(".favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator(".favorite-confirm").count(),0);
+        await page.locator(".favorite-row .favorite-icon").first().click();
+        await page.locator(".favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        await page.locator("#favoritesAdd").click();
+        assert.equal(await page.locator(".favorite-select strong").last().textContent(),"B");
+        await page.locator(".favorite-row").first().locator(".favorite-icon").last().click();
+        assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A",
+          "After deleting A, old B takes the first free letter");
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        await page.locator("#favoritesClose").click();
+        await page.waitForTimeout(650);
+        await page.reload({waitUntil:"domcontentloaded"});
+        await page.waitForFunction(()=>!!document.querySelector(".pin-zoom-buttons"),null,{timeout:10000});
+        assert.equal(await page.locator(".pin-zoom-button").first().isEnabled(),true,
+          "Local Undo history must survive an application restart");
+        await favoriteTrigger.click();
+        assert.equal(await page.locator(".favorite-row").count(),1,
+          "Project favorite must survive an application restart");
+        assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A");
+        const saved=await page.evaluate(async()=>{
+          const store=await window.Pin2MapIndexedDBProjectStore.open();
+          try{return {project:await store.loadProject(),history:await store.loadViewHistory()};}
+          finally{store.close();}
+        });
+        assert.equal(saved.project.favorites.length,1);
+        assert.equal(saved.project.favorites[0].layers[0].id,"private");
+        assert.ok(saved.history?.entries.length>0);
+        assert.equal(Object.hasOwn(saved.project,"localMapViewHistory"),false,
+          "Syncable project must not contain device-specific navigation history");
+        await page.locator("#favoritesClose").click();
         assert.deepEqual(errors,[]);
+        console.log("[favorites] PASS",viewport.name,
+          "map content retained, save/replace/delete, Undo/Redo, restart persistence");
         console.log("[overlap] PASS",viewport.name,
           "tap zoom, second tap selection, exact-coordinates chooser, isolated pin");
       }finally{await context.close();}
