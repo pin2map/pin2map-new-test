@@ -23,8 +23,10 @@
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
       this.render();
-      this.el("favoritesClose").focus({preventScroll:true});
       this.onOpen?.();
+      // Closing other overlays blurs the formerly active control; focus the
+      // Favorites close button only after that cleanup has finished.
+      this.el("favoritesClose").focus({preventScroll:true});
     }
     close(){
       this.confirmation=null;this.open=false;
