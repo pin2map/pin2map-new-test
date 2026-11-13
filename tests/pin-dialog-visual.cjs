@@ -119,10 +119,16 @@ async function metrics(page){
     const touchRects=await page.locator(".leaflet-marker-icon.pin-icon").evaluateAll(nodes=>
       nodes.map(n=>{const b=n.getBoundingClientRect();return {w:b.width,h:b.height};}));
     assert.ok(touchRects.some(r=>r.w>=52&&r.h>=56),
-      "Enlarged pin retains its independent 52x56px tap target");
+      "Compact pin retains the separately enlarged 52x56px tap target");
     const visiblePin=await page.locator(".pin-marker-shape").first().boundingBox();
-    assert.ok(Math.abs(visiblePin.width-36)<=1&&Math.abs(visiblePin.height-48)<=1,
-      "Predecessor-scaled pin must be a visible 36x48px teardrop");
+    assert.ok(Math.abs(visiblePin.width-30)<=1&&Math.abs(visiblePin.height-40)<=1,
+      "Visible droplet must return to the compact 30x40px proportions");
+    const yellowHitbox=await page.locator(".leaflet-marker-icon.pin-icon").first().evaluate(el=>({
+      color:getComputedStyle(el).backgroundColor,border:getComputedStyle(el).borderTopStyle
+    }));
+    assert.equal(yellowHitbox.color,"rgba(255, 224, 0, 0.55)",
+      "TEMPORARY v163: actual hitbox must be visibly yellow");
+    assert.equal(yellowHitbox.border,"dashed");
     const labelHit=await page.locator("#map .leaflet-tooltip.address-label").first().evaluate(el=>({
       pointer:getComputedStyle(el).pointerEvents,
       nose:getComputedStyle(el,"::before").borderRightColor
