@@ -12,7 +12,8 @@ test("binding common map-control rule inherits automatically; search and dialogs
   assert.ok(css.includes("--p2m-map-control-border:#b7c5d4"));
   assert.ok(css.includes("--p2m-map-control-shadow:0 2px 8px #12253a36"));
   assert.ok(css.includes("--p2m-map-control-pressed:#c9e1ff"));
-  const rule=css.slice(css.lastIndexOf(":is(#app > button, #app #map .leaflet-control button){"));
+  const start=css.lastIndexOf(":is(#app > button, #app #map .leaflet-control button){");
+  const rule=css.slice(start,css.indexOf("/* Expanded menu triggers",start));
   assert.ok(rule.includes("background:var(--p2m-map-control-bg)!important"));
   assert.ok(rule.includes("box-shadow:var(--p2m-map-control-shadow)!important"));
   assert.ok(rule.includes("border:1px solid var(--p2m-map-control-border)!important"));
