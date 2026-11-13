@@ -219,6 +219,28 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").count(),1);
         assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Meine Übersicht");
+        // Filter substring case-insensitively, keep all original IDs unchanged.
+        const search=page.locator("#favoritesSearch");
+        const clear=page.locator("#favoritesSearchClear");
+        assert.equal(await page.locator(".favorites-head-star svg").count(),1);
+        assert.equal(await page.locator(".favorites-head strong").count(),0);
+        assert.equal(await clear.getAttribute("data-pin-icon"),"funnel-x");
+        assert.equal(await clear.isDisabled(),true);
+        await search.fill("ÜBERS");
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await clear.isEnabled(),true);
+        assert.equal(await clear.evaluate(el=>getComputedStyle(el).color),"rgb(188, 40, 51)");
+        const clearBox=await clear.boundingBox();
+        assert.ok(clearBox&&Math.abs(clearBox.width-clearBox.height)<1,
+          "The funnel-x reset control remains perfectly circular");
+        await search.fill("auss");
+        assert.equal(await page.locator(".favorite-row").count(),0);
+        assert.match(await page.locator(".favorites-empty").textContent(),/Keine passenden/);
+        await clear.click();
+        assert.equal(await search.inputValue(),"");
+        assert.equal(await clear.isDisabled(),true);
+        assert.equal(await page.locator(".favorite-row").count(),1);
         // The letter, name, date and blank row surface ALL activate the
         // saved view. Renaming is reserved for the square-pen button only.
         for(const target of [".favorite-name",".favorite-open",".favorite-date"]){
@@ -284,6 +306,15 @@ async function zoom(page){
         await page.locator(".favorite-name-input").fill("Zweiter Platz");
         await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-open").last().textContent(),"B");
+        // A filtered B must keep its ORIGINAL index 1 for the edit operation.
+        await search.fill("zweiter");
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator(".favorite-open").first().textContent(),"B");
+        await page.locator(".favorite-edit").first().click();
+        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Zweiter Platz");
+        await page.locator(".favorite-confirm-actions button").first().click();
+        await clear.click();
+        assert.equal(await page.locator(".favorite-row").count(),2);
 
         // Delete is red and requires explicit in-panel confirmation.
         await page.locator(".favorite-row").first().locator(".favorite-remove").click();
