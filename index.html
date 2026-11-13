@@ -48,6 +48,8 @@
 <script defer src="./application/pin-session.js"></script>
 <script defer src="./application/filter-operations.js"></script>
 <script defer src="./application/fit-visible-pins.js"></script>
+<script defer src="./application/map-view-history.js"></script>
+<script defer src="./application/map-favorites.js"></script>
 <script defer src="./application/project-persistence.js"></script>
 <script defer src="./application/project-hydration.js"></script>
 <script defer src="./application/layer-operations.js"></script>
@@ -89,6 +91,7 @@
 <script defer src="./ui/map-gesture-controller.js"></script>
 <script defer src="./ui/pin-marker-view.js"></script>
 <script defer src="./ui/pin-overlap-zoom.js"></script>
+<script defer src="./ui/map-favorites-panel.js"></script>
 <script defer src="./ui/pin-move-preview.js"></script>
 <script defer src="./ui/pin-move-guide.js"></script>
 <script defer src="./ui/pin-panel-positioner.js"></script>
@@ -104,6 +107,13 @@
 
   </header>
   <main id="map" aria-label="Interaktive Karte"></main>
+  <button id="favoritesButton" type="button" data-pin-icon="star" class="favorites-map-button" title="Kartenfavoriten" aria-label="Kartenfavoriten öffnen" aria-controls="favoritesPanel" aria-expanded="false"></button>
+  <aside id="favoritesPanel" class="favorites-panel hidden" role="dialog" aria-label="Kartenfavoriten">
+    <div class="favorites-head"><strong>Kartenfavoriten</strong><button id="favoritesClose" type="button" data-pin-icon="x" aria-label="Favoriten schließen"></button></div>
+    <div id="favoritesList" class="favorites-list"></div>
+    <button id="favoritesAdd" type="button" data-pin-icon="star-plus" class="favorites-add" aria-label="Aktuelle Kartenansicht als neuen Favoriten speichern"><span>Aktuelle Ansicht speichern</span></button>
+    <p id="favoritesMessage" class="favorites-message" role="status" aria-live="polite"></p>
+  </aside>
   <button id="settingsButton" type="button" data-pin-icon="settings" class="settings-map-button" title="Einstellungen" aria-label="Einstellungen" aria-expanded="false" aria-controls="settingsPanel">⚙</button>
   <button id="refreshButton" data-pin-icon="refresh-cw" class="refresh-map-button" type="button" title="Neueste Version laden" aria-label="Neueste Version laden">⟳</button>
   <button id="layersButton" data-pin-icon="layers" class="layers-bottom-button" type="button" title="Ebenen auswählen" aria-label="Ebenen auswählen" aria-expanded="false">☷</button>
