@@ -234,6 +234,15 @@ async function zoom(page){
         const clearBox=await clear.boundingBox();
         assert.ok(clearBox&&Math.abs(clearBox.width-clearBox.height)<1,
           "The funnel-x reset control remains perfectly circular");
+        // Choosing a favorite closes its panel but must NOT lose the filter.
+        await page.locator(".favorite-open").first().click();
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
+        await favoriteTrigger.click();
+        assert.equal(await search.inputValue(),"ÜBERS");
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await clear.isEnabled(),true);
+        assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),"ÜBERS");
         await search.fill("auss");
         assert.equal(await page.locator(".favorite-row").count(),0);
         assert.match(await page.locator(".favorites-empty").textContent(),/Keine passenden/);
@@ -364,6 +373,17 @@ async function zoom(page){
           "Project favorite must survive application restart");
         assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz");
+        await search.fill("zweiter");
+        await page.locator("#favoritesCloseBottom").click();
+        await page.reload({waitUntil:"domcontentloaded"});
+        await page.waitForFunction(()=>!!document.querySelector("#favoritesButton"),null,{timeout:10000});
+        await favoriteTrigger.click();
+        assert.equal(await search.inputValue(),"zweiter",
+          "Favoritenfilter bleibt auch nach einem Neustart bestehen");
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        await clear.click();
+        assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),null);
+        assert.equal(await search.inputValue(),"");
         const saved=await page.evaluate(async()=>{
           const store=await window.Pin2MapIndexedDBProjectStore.open();
           try{return {project:await store.loadProject(),history:await store.loadViewHistory()};}
