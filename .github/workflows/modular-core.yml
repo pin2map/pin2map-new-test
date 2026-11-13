@@ -56,6 +56,13 @@ jobs:
         run: node tests/pin-overlap-browser.cjs
       - name: Verify responsive pin dialog, popup containment and capture visual evidence
         run: node tests/pin-dialog-visual.cjs
+      - name: Publish overlap zoom and fallback screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pin-overlap-responsive-screenshots
+          path: pin-overlap-artifacts/*.png
+          if-no-files-found: ignore
       - name: Publish responsive dialog screenshots for review
         if: always()
         uses: actions/upload-artifact@v4
