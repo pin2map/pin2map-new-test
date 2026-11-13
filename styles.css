@@ -64,6 +64,12 @@ dialog h2{font-size:18px;margin:0 0 24px}
   box-sizing:border-box;background:rgba(255,224,0,.55);
   border:1px dashed #bb9100;
 }
+/* Hide only the temporary yellow visualization, NEVER the marker element,
+   actual 52×56 hitbox, pointer handlers, or the drawn 30×40 pin. */
+body.pin-hitboxes-hidden #map .leaflet-marker-icon.pin-icon{
+  background:transparent;
+  border-color:transparent;
+}
 .pin-marker{position:relative;left:10px;top:-1px;width:30px;height:40px;filter:drop-shadow(0 2px 2px #142b4560)}
 .pin-marker .pin-marker-shape{display:block;width:30px;height:40px;overflow:visible}
 .pin-marker.selected .pin-marker-shape{filter:drop-shadow(0 0 1px #102d52)}
