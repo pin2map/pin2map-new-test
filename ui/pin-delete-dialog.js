@@ -27,6 +27,13 @@
     bind(){
       if(this.listeners.length)return;
       const button=this.element("deletePin");
+      // Explicit cross-device opened-state contract for an internal
+      // subdialog. Never infer it from hover, :active or iOS touch styling.
+      const setExpanded=open=>{
+        button.setAttribute("aria-expanded",String(open));
+        button.classList.toggle("is-active",open);
+      };
+      setExpanded(false);
       const onClick=()=>{
         const id=this.getSelectedPinId();
         if(typeof id!=="string"||!id||this.dialog.open)return;
@@ -37,10 +44,13 @@
         const nameLabel=this.element("deletePinName");
         if(nameLabel)nameLabel.textContent=name||"Unbenannter Pin";
         this.positionOverPanel();
-        try{this.dialog.showModal();}
-        catch(error){this.pendingId=null;throw error;}
+        try{
+          this.dialog.showModal();
+          setExpanded(true);
+        }catch(error){this.pendingId=null;setExpanded(false);throw error;}
       };
       const onClose=()=>{
+        setExpanded(false);
         const id=this.pendingId;
         this.pendingId=null;
         if(id!==null&&this.dialog.returnValue==="confirm")this.onConfirm(id);
@@ -58,6 +68,8 @@
     dispose(){
       for(const {node,type,handler} of this.listeners)node.removeEventListener(type,handler);
       this.listeners=[];
+      this.element("deletePin").setAttribute("aria-expanded","false");
+      this.element("deletePin").classList.remove("is-active");
       this.pendingId=null;
     }
   }
