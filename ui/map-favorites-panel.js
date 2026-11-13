@@ -1,87 +1,131 @@
 "use strict";
-/* In-panel confirmations, not viewport-centered native dialogs.
- * No project data mutations or persistence in this presentation module. */
+/* Presentation only. Every confirmation and edit stays INSIDE the favorites
+ * panel; no native modal, no data/Leaflet/IndexedDB access. */
 (function(root){
   class MapFavoritesPanel{
-    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onChoose}){
+    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName}){
       this.doc=doc;this.el=getElement;this.icons=icons;
       this.onOpen=onOpen;this.onAdd=onAdd;this.onReplace=onReplace;
-      this.onRemove=onRemove;this.onChoose=onChoose;
-      this.open=false;this.confirmation=null;this.values=[];
+      this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
+      this.suggestName=suggestName;
+      this.open=false;this.mode=null;this.index=null;this.values=[];
     }
-    button(name,title,action,cls=""){
-      const node=this.doc.createElement("button");node.type="button";
-      node.className=cls;node.title=title;node.setAttribute("aria-label",title);
-      this.icons.mount(node,name);
-      node.addEventListener("click",action);return node;
+    button(icon,title,action,className=""){
+      const button=this.doc.createElement("button");
+      button.type="button";button.className=className;
+      button.title=title;button.setAttribute("aria-label",title);
+      if(icon)this.icons.mount(button,icon);
+      button.addEventListener("click",action);
+      return button;
+    }
+    labeledButton(label,action,kind=""){
+      const b=this.button(null,label,action,"favorite-action"+(kind?" favorite-action-"+kind:""));
+      b.textContent=label;return b;
+    }
+    start(mode,index=null){
+      this.mode=mode;this.index=index;this.render();
     }
     show(values){
-      this.values=values;
-      this.confirmation=null;
-      this.open=true;
+      this.values=values;this.mode=null;this.index=null;this.open=true;
       this.el("favoritesPanel").classList.remove("hidden");
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
       this.render();
       this.onOpen?.();
-      // Closing other overlays blurs the formerly active control; focus the
-      // Favorites close button only after that cleanup has finished.
       this.el("favoritesClose").focus({preventScroll:true});
     }
     close(){
-      this.confirmation=null;this.open=false;
+      this.open=false;this.mode=null;this.index=null;
       this.el("favoritesPanel").classList.add("hidden");
       this.doc.body.classList.remove("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","false");
     }
     toggle(values){this.open?this.close():this.show(values);}
+    editor(mode,index){
+      const isNew=mode==="new",isRename=mode==="rename",isDelete=mode==="delete";
+      const target=this.doc.createElement("section");
+      target.className="favorite-confirm"+(isDelete?" favorite-confirm-danger":"");
+      const title=this.doc.createElement("p");
+      const letter=isNew?String.fromCharCode(65+this.values.length):this.values[index]?.letter;
+      title.textContent=isNew?"Neue Ansicht als Favorit "+letter+" speichern?":
+        isRename?"Favorit "+letter+" umbenennen?":
+        isDelete?"Favorit "+letter+" wirklich löschen?":
+        "Favorit "+letter+" durch die aktuelle Ansicht ersetzen?";
+      target.append(title);
+      let input=null;
+      if(!isDelete){
+        const label=this.doc.createElement("label");
+        label.textContent="Name des Favoriten";
+        input=this.doc.createElement("input");
+        input.type="text";input.className="favorite-name-input";
+        input.maxLength=120;input.setAttribute("aria-label","Favoritenname");
+        input.value=isRename?(this.values[index]?.name||""):
+          (this.suggestName?.()||"Unbekannt");
+        label.append(input);target.append(label);
+      }
+      const actions=this.doc.createElement("div");
+      actions.className="favorite-confirm-actions";
+      actions.append(this.labeledButton("Abbrechen",()=>this.start(null)));
+      const label=isNew?"Speichern":isRename?"Umbenennen":isDelete?"Löschen":"Ersetzen";
+      const confirm=this.labeledButton(label,()=>{
+        if(!isDelete&&!input.value.trim()){input.focus();return;}
+        const name=input?.value.trim();
+        this.mode=null;this.index=null;
+        if(isNew)this.onAdd(name);
+        else if(isRename)this.onRename(index,name);
+        else if(isDelete)this.onRemove(index);
+        else this.onReplace(index,name);
+      },isDelete?"danger":"primary");
+      actions.append(confirm);target.append(actions);
+      if(input)input.addEventListener("keydown",event=>{
+        if(event.key==="Enter"){event.preventDefault();confirm.click();}
+      });
+      return {target,focus:input||actions.lastChild};
+    }
     render(values=this.values){
       this.values=values;
-      const target=this.el("favoritesList");
-      const previousScroll=target.scrollTop;
-      target.replaceChildren();
-      const controls=this.el("favoritesAdd");
-      controls.disabled=false; // At capacity the app shows a useful message and offers replacement.
+      const list=this.el("favoritesList");
+      const oldScroll=list.scrollTop;
+      list.replaceChildren();
+      const add=this.el("favoritesAdd");
+      // Capacity message remains actionable, including after 7 entries.
+      add.disabled=false;
       if(!values.length){
-        const empty=this.doc.createElement("p");
-        empty.className="favorites-empty";empty.textContent="Noch keine Favoriten gespeichert.";
-        target.append(empty);
+        const empty=this.doc.createElement("p");empty.className="favorites-empty";
+        empty.textContent="Noch keine Favoriten gespeichert.";list.append(empty);
       }
+      let pendingFocus=null;
       values.forEach((item,index)=>{
         const row=this.doc.createElement("div");row.className="favorite-row";
-        const replace=this.button("star-plus","Favorit "+item.letter+" ersetzen",()=>{
-          this.confirmation=index;this.render();
-        },"favorite-icon");
-        const select=this.doc.createElement("button");select.type="button";
-        select.className="favorite-select";
-        const label=this.doc.createElement("strong");label.textContent=item.letter;
-        const when=this.doc.createElement("span");
+        const replace=this.button("copy-plus","Favorit "+item.letter+" durch aktuelle Ansicht ersetzen",
+          ()=>this.start("replace",index),"favorite-icon");
+        const open=this.button(null,"Ansicht "+item.letter+" öffnen",()=>this.onChoose(index),"favorite-open");
+        open.textContent=item.letter;
+        const details=this.doc.createElement("div");details.className="favorite-details";
+        const name=this.labeledButton(item.name||"Unbenannt",()=>this.start("rename",index),"favorite-name");
+        name.title="Favorit umbenennen";name.setAttribute("aria-label","Favorit "+item.letter+" umbenennen");
+        const when=this.doc.createElement("small");when.className="favorite-date";
         const date=new Date(item.savedAt);
         when.textContent=Number.isNaN(date.getTime())?"Unbekanntes Datum":
           date.toLocaleString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
-        select.append(label,when);
-        select.addEventListener("click",()=>this.onChoose(index));
-        const remove=this.button("star-off","Favorit "+item.letter+" entfernen",()=>{
-          this.onRemove(index);
-        },"favorite-icon");
-        row.append(replace,select,remove);
-        target.append(row);
-        if(this.confirmation===index){
-          const confirm=this.doc.createElement("div");confirm.className="favorite-confirm";
-          const prompt=this.doc.createElement("p");
-          prompt.textContent="Favorit "+item.letter+" durch die aktuelle Ansicht ersetzen?";
-          const actions=this.doc.createElement("div");actions.className="favorite-confirm-actions";
-          const cancel=this.doc.createElement("button");cancel.type="button";
-          cancel.textContent="Abbrechen";cancel.addEventListener("click",()=>{this.confirmation=null;this.render();});
-          const yes=this.doc.createElement("button");yes.type="button";
-          yes.textContent="Ersetzen";yes.addEventListener("click",()=>{this.confirmation=null;this.onReplace(index);});
-          actions.append(cancel,yes);confirm.append(prompt,actions);target.append(confirm);
-          cancel.focus({preventScroll:true});
+        details.append(name,when);
+        const remove=this.button("star-off","Favorit "+item.letter+" löschen",
+          ()=>this.start("delete",index),"favorite-icon favorite-remove");
+        row.append(replace,open,details,remove);list.append(row);
+        if(this.mode&&this.mode!=="new"&&this.index===index){
+          const editor=this.editor(this.mode,index);
+          list.append(editor.target);pendingFocus=editor.focus;
         }
       });
-      target.scrollTop=previousScroll;
-      if(this.confirmation!==null)
-        target.querySelector(".favorite-confirm")?.scrollIntoView?.({block:"nearest"});
+      if(this.mode==="new"){
+        const editor=this.editor("new");
+        list.append(editor.target);pendingFocus=editor.focus;
+      }
+      list.scrollTop=oldScroll;
+      if(pendingFocus){
+        pendingFocus.focus({preventScroll:true});
+        pendingFocus.closest(".favorite-confirm")?.scrollIntoView?.({block:"nearest"});
+      }
     }
   }
   root.Pin2MapMapFavoritesPanel=MapFavoritesPanel;
