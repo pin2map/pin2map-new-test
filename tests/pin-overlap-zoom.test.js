@@ -1,7 +1,7 @@
 "use strict";
 const test=require("node:test");
 const assert=require("node:assert/strict");
-const {HIT_WIDTH,HIT_HEIGHT,overlaps,connectedPins,allSeparated,zoomDecision,PinOverlapZoom}
+const {HIT_WIDTH,HIT_HEIGHT,overlaps,connectedPins,allSeparated,zoomDecision,fittingZoom,PinOverlapZoom}
   =require("../ui/pin-overlap-zoom.js");
 
 test("real 52x56 hitbox rectangles, not visible 30x40 art, define overlaps",()=>{
@@ -34,6 +34,7 @@ function fixture(pins,maxZoom=19,zoom=10){
   const selected=[],pans=[],nodes=[];
   const map={
     getViewport:()=>({center:{lat:0,lng:0},zoom}),
+    getSize:()=>({x:1100,y:780}),
     getContainer:()=>({getBoundingClientRect:()=>({left:0,top:0})}),
     project:pin=>({x:pin.lng,y:pin.lat}),
     projectAtZoom:(pin,z)=>({x:pin.lng*2**(z-10),y:pin.lat*2**(z-10)}),
@@ -77,15 +78,39 @@ test("overlapping pins zoom once without opening ANY pin editor",()=>{
   assert.deepEqual(f.pans[0].options,{animate:false});
   assert.equal(f.getBefore(),1);
 });
-test("same-position pins always offer named explicit choices at provider limit",()=>{
-  const f=fixture([{id:"a",lat:0,lng:0,name:"Alpha"},
-    {id:"b",lat:0,lng:0,name:"Beta"}],17,10);
-  assert.equal(f.controller.handleTap("a"),"choices");
-  assert.deepEqual(f.pans,[],"Identical coordinates must not zoom the map pointlessly");
-  assert.deepEqual(f.selected,[]);
-  assert.ok(f.controller.menu);
+test("overview duplicates zoom into a centered visible pin before asking for choices",()=>{
+  const f=fixture([{id:"a",lat:10,lng:20,name:"Fulda",layerName:"Privat"},
+    {id:"b",lat:10,lng:20,name:"Fulda",layerName:"Ebene 1"}],19,6);
+  assert.equal(f.controller.handleTap("a"),"zoomed");
+  assert.deepEqual(f.pans[0].next,{center:{lat:10,lng:20},zoom:19});
+  assert.equal(f.controller.menu,null);
+  assert.equal(f.controller.canUndo(),true);
+  assert.equal(f.controller.handleTap("b"),"choices");
   assert.deepEqual(f.controller.menu.children.slice(1).map(b=>b.textContent),
-    ["Alpha · 1","Beta · 2"]);
+    ["Fulda · Ebene 1 · 1","Fulda · Privat · 2"]);
+  assert.deepEqual(f.selected,[]);
+  assert.equal(f.controller.undo(),true);
+  assert.equal(f.pans.at(-1).next.zoom,6);
+  assert.equal(f.controller.canUndo(),false);
+  assert.equal(f.controller.menu,null);
+});
+test("first autozoom fits every connected pin even if distant members cannot be fully separated",()=>{
+  const pins=[0,48,96,144,192].map((x,i)=>({id:String(i),x,y:0}));
+  const projected=(p,z)=>({x:p.x*2**(z-10),y:0});
+  assert.deepEqual(connectedPins(pins,"0",p=>p).map(p=>p.id),
+    ["0","1","2","3","4"]);
+  assert.equal(zoomDecision(pins,10,19,projected).zoom,11);
+  const group=[{x:0},{x:10},{x:20},{x:30},{x:40}];
+  assert.equal(fittingZoom(group,10,19,projected,{x:350,y:650}),12,
+    "Fit constraints must cap zoom before losing initial members");
+});
+test("viewport undo is inert until an autozoom and restores exact previous center and zoom",()=>{
+  const f=fixture([{id:"a",lat:0,lng:0},{id:"b",lat:0,lng:10}]);
+  assert.equal(f.controller.undo(),false);
+  f.controller.handleTap("a");
+  assert.equal(f.controller.canUndo(),true);
+  f.controller.undo();
+  assert.deepEqual(f.pans.at(-1).next,{center:{lat:0,lng:0},zoom:10});
 });
 
 test("thousands of identical visible pins form one selectable group without pairwise rescans",()=>{
