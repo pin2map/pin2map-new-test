@@ -36,7 +36,13 @@
       setExpanded(false);
       const onClick=()=>{
         const id=this.getSelectedPinId();
-        if(typeof id!=="string"||!id||this.dialog.open)return;
+        if(this.dialog.open){
+          // A second tap on the SAME blue trigger turns the subdialog off.
+          // Closing without "confirm" must never delete anything.
+          this.dialog.close("cancel");
+          return;
+        }
+        if(typeof id!=="string"||!id)return;
         this.dialog.returnValue="cancel";
         this.pendingId=id;
         // Name is presentation-only and set via textContent, never HTML.
@@ -45,9 +51,17 @@
         if(nameLabel)nameLabel.textContent=name||"Unbenannter Pin";
         this.positionOverPanel();
         try{
-          this.dialog.showModal();
+          // showModal() makes the underlying trigger inert, preventing
+          // a genuine on/off button. show() keeps the header trigger usable;
+          // the snapshot id + explicit confirm still guard destructive action.
+          this.dialog.show();
           setExpanded(true);
         }catch(error){this.pendingId=null;setExpanded(false);throw error;}
+      };
+      const onEscape=event=>{
+        if(event.key!=="Escape"||!this.dialog.open)return;
+        event.preventDefault();
+        this.dialog.close("cancel");
       };
       const onClose=()=>{
         setExpanded(false);
@@ -58,7 +72,14 @@
       button.addEventListener("click",onClick);
       this.dialog.addEventListener("close",onClose);
       this.listeners=[{node:button,type:"click",handler:onClick},{node:this.dialog,type:"close",handler:onClose}];
-      const win=this.dialog.ownerDocument?.defaultView;
+      // Nonmodal <dialog> does not receive the browser's implicit Escape
+      // cancellation: preserve the established behavior explicitly.
+      const doc=this.dialog.ownerDocument;
+      if(doc?.addEventListener){
+        doc.addEventListener("keydown",onEscape);
+        this.listeners.push({node:doc,type:"keydown",handler:onEscape});
+      }
+      const win=doc?.defaultView;
       if(win?.addEventListener){
         const reposition=()=>{if(this.dialog.open)this.positionOverPanel();};
         win.addEventListener("resize",reposition);
