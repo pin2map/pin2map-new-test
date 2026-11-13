@@ -36,6 +36,7 @@
     render(values=this.values){
       this.values=values;
       const target=this.el("favoritesList");
+      const previousScroll=target.scrollTop;
       target.replaceChildren();
       const controls=this.el("favoritesAdd");
       controls.disabled=false; // At capacity the app shows a useful message and offers replacement.
@@ -76,6 +77,9 @@
           cancel.focus({preventScroll:true});
         }
       });
+      target.scrollTop=previousScroll;
+      if(this.confirmation!==null)
+        target.querySelector(".favorite-confirm")?.scrollIntoView?.({block:"nearest"});
     }
   }
   root.Pin2MapMapFavoritesPanel=MapFavoritesPanel;
