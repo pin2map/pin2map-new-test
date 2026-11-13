@@ -9,10 +9,15 @@
       this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
       this.suggestName=suggestName;this.capacity=capacity;
       this.open=false;this.mode=null;this.index=null;this.values=[];
-      this.searchText="";
+      // Search is a per-device UI preference, never part of synced favorites.
+      this.searchStorageKey="pin2map-favorites-search-v1";
+      try{this.searchText=this.doc.defaultView?.localStorage?.getItem(this.searchStorageKey)||"";}
+      catch(_){this.searchText="";}
       const search=this.el("favoritesSearch");
+      search.value=this.searchText;
       search.addEventListener("input",()=>{
         this.searchText=search.value;
+        try{this.doc.defaultView?.localStorage?.setItem(this.searchStorageKey,this.searchText);}catch(_){}
         this.mode=null;this.index=null;
         this.render();
         this.el("favoritesList").scrollTop=0;
@@ -20,6 +25,7 @@
       this.el("favoritesSearchClear").addEventListener("click",()=>{
         if(!this.searchText)return;
         this.searchText="";search.value="";
+        try{this.doc.defaultView?.localStorage?.removeItem(this.searchStorageKey);}catch(_){}
         this.mode=null;this.index=null;
         this.render();
         this.el("favoritesList").scrollTop=0;
@@ -49,7 +55,7 @@
     }
     show(values){
       this.values=values;this.mode=null;this.index=null;this.open=true;
-      this.searchText="";this.el("favoritesSearch").value="";
+      this.el("favoritesSearch").value=this.searchText;
       this.el("favoritesPanel").classList.remove("hidden");
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
