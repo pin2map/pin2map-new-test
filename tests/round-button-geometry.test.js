@@ -21,7 +21,7 @@ test("all circular icon controls share an unsquashable square geometry contract"
 });
 test("favorites overlay must win the z-index race against its opener",()=>{
   const panel=css.match(/#app \.favorites-panel\{([\s\S]*?)\n\}/)?.[1];
-  const opener=css.match(/#app #favoritesButton\.favorites-map-button\.p2m-icon-control\[aria-expanded="true"\]\{([^}]+)\}/)?.[1];
+  const opener=[...css.matchAll(/#app #favoritesButton\.favorites-map-button\.p2m-icon-control\[aria-expanded="true"\]\{([^}]+)\}/g)].map(m=>m[1]).find(block=>block.includes("z-index:"));
   assert.ok(panel&&opener);
   const p=Number(panel.match(/z-index:(\d+)/)?.[1]);
   const b=Number(opener.match(/z-index:(\d+)/)?.[1]);
