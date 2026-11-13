@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v166';
+const CACHE='pin2map-new-v167';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -54,6 +54,7 @@ const CORE=[
   "./ui/pin-note-editor.js",
   "./ui/map-gesture-controller.js",
   "./ui/pin-marker-view.js",
+  "./ui/pin-overlap-zoom.js",
   "./ui/pin-move-preview.js",
   "./ui/pin-move-guide.js",
   "./ui/pin-panel-positioner.js",
