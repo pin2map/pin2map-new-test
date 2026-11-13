@@ -177,7 +177,20 @@ async function metrics(page){
     // Pin-specific modal is anchored within the original panel, preserving
     // its identifying header and retaining all data after cancellation.
     await page.locator("#pinName").fill("Sicherheits-Testpin");
+    assert.equal(await page.locator("#deletePin").getAttribute("aria-expanded"),"false");
     await page.locator("#deletePin").click();
+    assert.equal(await page.locator("#deletePin").getAttribute("aria-expanded"),"true");
+    const deleteTrigger=await page.locator("#deletePin").evaluate(el=>({
+      background:getComputedStyle(el).backgroundColor,
+      ink:getComputedStyle(el).color,
+      border:getComputedStyle(el).borderTopColor,
+      active:el.classList.contains("is-active"),
+      dialogOpen:document.querySelector("#deleteDialog").open
+    }));
+    assert.deepEqual(deleteTrigger,{
+      background:"rgb(23, 100, 191)",ink:"rgb(255, 255, 255)",
+      border:"rgb(23, 100, 191)",active:true,dialogOpen:true
+    },"ALL mobile/tablet internal subdialog triggers must turn blue while open");
     const deletion=await page.evaluate(()=>{
       const rect=s=>document.querySelector(s).getBoundingClientRect();
       const dialog=rect("#deleteDialog"),header=rect("#pinPanel .pin-editor-head");
@@ -199,13 +212,24 @@ async function metrics(page){
     assert.equal(surfaces.pin,surfaces.deletion,
       "Pin editor and its delete confirmation have exactly the same pale gray surface");
     assert.equal(surfaces.pin,"rgb(247, 248, 250)");
+    const colorContract=await page.evaluate(()=>({
+      root:getComputedStyle(document.documentElement).getPropertyValue("--p2m-pin-dialog-surface").trim(),
+      dialogBackdrop:getComputedStyle(document.querySelector("#deleteDialog"),"::backdrop").backgroundColor
+    }));
+    assert.equal(colorContract.root,"#f7f8fa","Exact palette color, no second guessed delete gray");
+    assert.equal(colorContract.dialogBackdrop,"rgba(0, 0, 0, 0)","Delete backdrop cannot tint panel surface");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-delete.png"});
     await page.locator('#deleteDialog button[value="cancel"]').click();
     assert.equal(await page.locator("#deleteDialog").evaluate(el=>el.open),false);
+    await page.waitForFunction(()=>document.querySelector("#deletePin").getAttribute("aria-expanded")==="false");
+    assert.equal(await page.locator("#deletePin").evaluate(el=>el.classList.contains("is-active")),false,
+      "Blue delete-trigger state must reset on Cancel");
     assert.equal(await page.locator("#pinName").inputValue(),"Sicherheits-Testpin");
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinWeather").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(23, 100, 191)","Weather internal view uses the same blue open state");
     const weatherHeight=await page.locator("#pinWeatherBlock").evaluate(el=>el.getBoundingClientRect().height);
     assert.ok(weatherHeight>=175,"Weather placeholder uses middle region");
     assert.equal(await page.locator("#pinPanel .pin-navigation-row").isHidden(),true,
@@ -232,6 +256,8 @@ async function metrics(page){
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-notes.png"});
     await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu").waitFor({state:"visible",timeout:5000});
+    assert.equal(await page.locator("#pinLayerTrigger").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(23, 100, 191)","Layer internal menu uses the same blue open state");
     const pop=await page.evaluate(()=>{
      const menu=document.getElementById("pinLayerMenu"),b=menu.getBoundingClientRect();
      return {parent:menu.parentElement.tagName,x:b.left,y:b.top,right:b.right,bottom:b.bottom,
@@ -251,6 +277,8 @@ async function metrics(page){
     await page.locator("#pinLayerMenu .pin-layer-option").last().click();
     assert.equal(await page.locator("#pinLayerMenu").isHidden(),true);
     await page.locator("#pinUrlButton").click();
+    assert.equal(await page.locator("#pinUrlButton").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(23, 100, 191)","URL internal popup uses the same blue open state");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true,"URL popup must not replace notes");
     assert.equal(await page.locator("#pinUrlBlock").isVisible(),true);
     const urlPopup=await page.locator("#pinUrlBlock").evaluate(el=>{
@@ -362,7 +390,7 @@ async function metrics(page){
    assert.equal(tip.baseCover,"rgb(247, 248, 250)","Dialog tip matches the new pale-gray panel surface");
    assert.equal(tip.baseHeight,"3px");
    await page.locator("#pinWikipedia").hover();
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v161-notes.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v165-notes.png"});
    await page.locator("#pinWeather").click();
    const weatherFrame=await page.locator("#pinPanel .pin-detail-region").evaluate(el=>{
     const c=getComputedStyle(el);return {display:c.display,top:c.borderTopStyle,topWidth:c.borderTopWidth};
@@ -370,9 +398,28 @@ async function metrics(page){
    assert.equal(weatherFrame.display,"block","Weather fieldset keeps native legend border rendering");
    assert.equal(weatherFrame.top,"solid");
    assert.equal(weatherFrame.topWidth,"1px");
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v161-weather.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v165-weather.png"});
+   // Fine-pointer desktop: blue state must override the default red AND
+   // the gray :hover rule throughout the native modal's lifetime.
+   await page.locator("#pinWeather").click();
+   await page.locator("#deletePin").click();
+   const desktopDelete=await page.locator("#deletePin").evaluate(el=>({
+     expanded:el.getAttribute("aria-expanded"),
+     background:getComputedStyle(el).backgroundColor,
+     border:getComputedStyle(el).borderTopColor,
+     ink:getComputedStyle(el).color
+   }));
+   assert.deepEqual(desktopDelete,{
+     expanded:"true",background:"rgb(23, 100, 191)",
+     border:"rgb(23, 100, 191)",ink:"rgb(255, 255, 255)"
+   },"Desktop modal trigger must be BLUE, not red or hovered gray");
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v165-delete.png"});
+   await page.keyboard.press("Escape");
+   await page.waitForFunction(()=>document.querySelector("#deleteDialog").open===false);
+   assert.equal(await page.locator("#deletePin").getAttribute("aria-expanded"),"false");
+   assert.equal(await page.locator("#deletePin").evaluate(el=>el.classList.contains("is-active")),false);
    assert.deepEqual(errors,[]);
-   console.log("[visual] PASS desktop v161 icon, weather and note-corner geometry");
+   console.log("[visual] PASS desktop v165 button state, weather and note-corner geometry");
   }finally{await desktop.close();}
  }finally{await browser.close();}
 })().catch(error=>{console.error("[visual] FAIL",error.stack||error);process.exitCode=1;});
