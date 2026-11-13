@@ -556,22 +556,21 @@
     });
     favoritesPanel=new window.Pin2MapMapFavoritesPanel({
       document,getElement:$,icons:window.Pin2MapIcons,
-      onOpen:()=>{overlayCoordinator.closeAll();pinOverlapZoom.close();setFavoriteMessage("");},
+      onOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();setFavoriteMessage("");},
       onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
       onRemove:removeMapFavorite,onChoose:openMapFavorite,suggestName:suggestFavoriteName
     });
     // No modal dialog is used: replacement confirmation is inside the panel.
     window.Pin2MapIcons.mount($("favoritesButton"),"star");
     const favoriteAdd=$("favoritesAdd");
-    favoriteAdd.replaceChildren(window.Pin2MapIcons.svg("star-plus",document),
-      document.createTextNode("Aktuelle Ansicht speichern"));
+    favoriteAdd.replaceChildren(window.Pin2MapIcons.svg("plus",document),
+      document.createTextNode("Ansicht hinzufügen"));
     $("favoritesButton").addEventListener("click",()=>favoritesPanel.toggle(currentFavorites()));
     $("favoritesClose").addEventListener("click",()=>favoritesPanel.close());
     $("favoritesCloseBottom").addEventListener("click",()=>favoritesPanel.close());
     favoriteAdd.addEventListener("click",()=>{
-      if(currentFavorites().length>=favorites.ACTIVE_CAPACITY){
-        setFavoriteMessage("Alle sieben Favoriten A–G sind belegt. Bitte einen vorhandenen Favoriten ersetzen.");
-      }else{setFavoriteMessage("");favoritesPanel.start("new");}
+      if(favoriteAdd.disabled)return;
+      setFavoriteMessage("");favoritesPanel.start("new");
     });
     // Every click/tap outside the panel (especially on the map) closes it,
     // consistent with the existing overlay convention. No map content is hidden.
