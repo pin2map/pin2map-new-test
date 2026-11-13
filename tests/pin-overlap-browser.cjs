@@ -154,48 +154,88 @@ async function zoom(page){
         assert.equal(await page.locator("#basemapButton").isHidden(),true);
         assert.equal(await page.locator(".pin-zoom-buttons").isHidden(),true);
         assert.equal(await page.locator("#map .leaflet-control-attribution").isVisible(),true);
-        await page.locator("#favoritesAdd").click();
+        const footer=page.locator("#favoritesAdd");
+        assert.match(await footer.innerText(),/Aktuelle Ansicht speichern/);
+        assert.equal(await footer.locator("svg").count(),1);
+        const box=await footer.boundingBox();
+        assert.ok(box&&box.width>130&&box.height<75,
+          "Footer save must be a compact rectangle, not an oversized round icon");
+
+        // New favorite asks for a name and suggests the pin nearest center.
+        await footer.click();
+        assert.equal(await page.locator(".favorite-confirm").count(),1);
+        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Allein");
+        await page.locator(".favorite-name-input").fill("Meine Übersicht");
+        await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A");
-        assert.match(await page.locator(".favorite-select span").first().textContent(),/\d{2}\.\d{2}\.\d{4}/);
-        await page.locator("#favoritesClose").click();
+        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await page.locator(".favorite-name").first().textContent(),"Meine Übersicht");
+        assert.match(await page.locator(".favorite-date").first().textContent(),/\d{2}\.\d{2}\.\d{4}/);
+
+        // Any pointer interaction outside the dialog dismisses it.
+        await page.locator("#map").click({position:{x:viewport.width/2,y:100}});
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
+        await favoriteTrigger.click();
+        await page.locator("#favoritesCloseBottom").click();
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         assert.equal(await page.locator(".pin-zoom-buttons").isVisible(),true);
         await page.locator(".pin-zoom-button").nth(2).click();
         await page.waitForTimeout(450);
         assert.notEqual(await zoom(page),soloScale,"Zoom+ changes viewport after saving favorite");
         await favoriteTrigger.click();
-        await page.locator(".favorite-select").first().click();
-        assert.equal(await zoom(page),soloScale,"Favorit A restores its saved map zoom");
+        await page.locator(".favorite-open").first().click();
+        assert.equal(await zoom(page),soloScale,"Favorite A restores saved zoom");
         await page.waitForTimeout(450);
         await page.locator(".pin-zoom-button").first().click();
         assert.notEqual(await zoom(page),soloScale,"Undo returns from favorite to previous map view");
         await page.locator(".pin-zoom-button").nth(1).click();
         assert.equal(await zoom(page),soloScale,"Redo returns to selected favorite");
+
+        // Tapping the name edits it inside the panel, not on the map.
         await favoriteTrigger.click();
+        await page.locator(".favorite-name").first().click();
+        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Meine Übersicht");
+        await page.locator(".favorite-name-input").fill("Umbenannt");
+        await page.locator(".favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator(".favorite-name").first().textContent(),"Umbenannt");
+
+        // Replacement needs in-panel confirmation and uses copy-plus.
+        assert.equal(await page.locator(".favorite-row .favorite-icon").first().getAttribute("data-pin-icon"),"copy-plus");
         await page.locator(".favorite-row .favorite-icon").first().click();
-        assert.equal(await page.locator(".favorite-confirm").count(),1,
-          "Replace confirmation must be INSIDE the favorites panel");
+        assert.equal(await page.locator(".favorite-confirm").count(),1);
         await page.locator(".favorite-confirm-actions button").first().click();
         assert.equal(await page.locator(".favorite-confirm").count(),0);
         await page.locator(".favorite-row .favorite-icon").first().click();
+        await page.locator(".favorite-name-input").fill("Ersatz");
         await page.locator(".favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator(".favorite-name").first().textContent(),"Ersatz");
+        await footer.click();
+        await page.locator(".favorite-name-input").fill("Zweiter Platz");
+        await page.locator(".favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator(".favorite-open").last().textContent(),"B");
+
+        // Delete is red and requires explicit in-panel confirmation.
+        await page.locator(".favorite-row").first().locator(".favorite-remove").click();
+        assert.equal(await page.locator(".favorite-confirm-danger").count(),1);
+        assert.match(await page.locator(".favorite-confirm-actions .favorite-action-danger").textContent(),/Löschen/);
+        await page.locator(".favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator(".favorite-row").count(),2);
+        await page.locator(".favorite-row").first().locator(".favorite-remove").click();
+        await page.locator(".favorite-confirm-actions .favorite-action-danger").click();
+        assert.equal(await page.locator(".favorite-open").first().textContent(),"A",
+          "Removing A renumbers former B to A without gaps");
         assert.equal(await page.locator(".favorite-row").count(),1);
-        await page.locator("#favoritesAdd").click();
-        assert.equal(await page.locator(".favorite-select strong").last().textContent(),"B");
-        await page.locator(".favorite-row").first().locator(".favorite-icon").last().click();
-        assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A",
-          "After deleting A, old B takes the first free letter");
-        assert.equal(await page.locator(".favorite-row").count(),1);
-        await page.locator("#favoritesClose").click();
+        await page.locator("#favoritesCloseBottom").click();
         await page.waitForTimeout(650);
         await page.reload({waitUntil:"domcontentloaded"});
         await page.waitForFunction(()=>!!document.querySelector(".pin-zoom-buttons"),null,{timeout:10000});
         assert.equal(await page.locator(".pin-zoom-button").first().isEnabled(),true,
-          "Local Undo history must survive an application restart");
+          "Local Undo history must survive application restart");
         await favoriteTrigger.click();
         assert.equal(await page.locator(".favorite-row").count(),1,
-          "Project favorite must survive an application restart");
-        assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A");
+          "Project favorite must survive application restart");
+        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz");
         const saved=await page.evaluate(async()=>{
           const store=await window.Pin2MapIndexedDBProjectStore.open();
           try{return {project:await store.loadProject(),history:await store.loadViewHistory()};}
@@ -203,10 +243,12 @@ async function zoom(page){
         });
         assert.equal(saved.project.favorites.length,1);
         assert.equal(saved.project.favorites[0].layers[0].id,"private");
+        assert.equal(saved.project.favorites[0].name,"Zweiter Platz");
+        assert.equal(saved.project.favorites[0].basemap,"street");
         assert.ok(saved.history?.entries.length>0);
         assert.equal(Object.hasOwn(saved.project,"localMapViewHistory"),false,
-          "Syncable project must not contain device-specific navigation history");
-        await page.locator("#favoritesClose").click();
+          "Project sync data must not contain device-specific history");
+        await page.locator("#favoritesCloseBottom").click();
         assert.deepEqual(errors,[]);
         console.log("[favorites] PASS",viewport.name,
           "map content retained, save/replace/delete, Undo/Redo, restart persistence");
