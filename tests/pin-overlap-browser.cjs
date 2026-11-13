@@ -97,7 +97,7 @@ async function zoom(page){
         await page.locator(".pin-overlap-chooser").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinPanel").isHidden(),true);
         assert.equal(await page.locator(".pin-overlap-choice").count(),2);
-        await page.locator(".pin-overlap-choice").first().click();
+        await page.locator(".pin-overlap-choice").filter({hasText:"Identisch A"}).click();
         await page.locator("#pinPanel").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinName").inputValue(),"Identisch A");
         assert.equal(await page.locator(".pin-overlap-chooser").count(),0);
