@@ -16,7 +16,14 @@
     };
   }
   function openingCorrection({appRect,panelRect,tipRect,margin=12}){
-    const minX=appRect.left+margin,maxX=appRect.right-margin;
+    // On narrow phones the panel is appWidth-16px wide: a fixed 12px
+    // margin on BOTH sides is impossible (only 8px per side remain).
+    // Competing edge corrections otherwise alternate panBy left/right on
+    // every reopen of the same pin. Respect the physically available inset.
+    const panelWidth=panelRect.right-panelRect.left;
+    const appWidth=appRect.right-appRect.left;
+    const horizontalInset=Math.min(margin,Math.max(0,(appWidth-panelWidth)/2));
+    const minX=appRect.left+horizontalInset,maxX=appRect.right-horizontalInset;
     const minY=appRect.top+margin,maxY=appRect.bottom-margin;
     const dx=panelRect.left<minX?minX-panelRect.left:
       panelRect.right>maxX?maxX-panelRect.right:0;
