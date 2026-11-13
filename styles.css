@@ -1456,33 +1456,52 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   padding:13px;background:#f7f8fa;border:1px solid #c2cbd6;border-radius:14px;
   box-shadow:0 8px 28px #142a4460;color:#243b54;
 }
+
+/* v170 favorites panel owns its own controls; never inherit round map-button
+   dimensions for textual actions. Scroll and confirmations stay inside panel. */
 #app .favorites-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}
 #app .favorites-head button{display:inline-flex;align-items:center;justify-content:center;
-  width:35px;height:35px;flex:0 0 35px;border-radius:9px;border:1px solid #b7c5d4;background:white;color:#243b54}
+  width:35px;height:35px;min-width:35px;flex:0 0 35px;border-radius:9px;
+  border:1px solid #b7c5d4;background:#fff;color:#243b54}
 #app .favorites-head svg{width:19px;height:19px}
 #app .favorites-list{overflow-y:auto;min-height:0;overscroll-behavior:contain}
-#app .favorite-row{display:flex;align-items:center;gap:6px;margin:4px 0;padding:4px 3px;
-  border:1px solid #d2dbe5;border-radius:10px;background:white}
+#app .favorite-row{display:flex;align-items:center;gap:7px;margin:4px 0;padding:5px;
+  border:1px solid #d2dbe5;border-radius:10px;background:#fff}
 #app .favorite-row button{cursor:pointer}
-#app .favorite-row .favorite-icon{display:flex;justify-content:center;align-items:center;
-  flex:0 0 38px;width:38px;height:38px;padding:7px;border:1px solid #d4deea;
-  border-radius:8px;background:#f7f9fc;color:#24415d}
+#app .favorite-row .favorite-icon{display:inline-flex;justify-content:center;align-items:center;
+  flex:0 0 38px;width:38px;height:38px;min-width:38px;max-width:38px;
+  padding:7px;border:1px solid #d4deea;border-radius:8px;background:#f7f9fc;color:#24415d}
 #app .favorite-row .favorite-icon svg{width:19px;height:19px}
-#app .favorite-select{flex:1 1 auto;min-width:0;display:flex;justify-content:flex-start;
-  align-items:center;gap:12px;border:0;background:transparent;text-align:left;color:#263b54;padding:8px 2px}
-#app .favorite-select strong{font-size:16px;min-width:20px}
-#app .favorite-select span{font-size:12px;white-space:nowrap}
+#app .favorite-row .favorite-remove{color:#b42330;background:#fff0f0;border-color:#e5abab}
+#app .favorite-open{flex:0 0 25px;min-width:25px;background:transparent;border:0;
+  color:#243b54;font-weight:700;font-size:16px;padding:8px 1px;text-align:center}
+#app .favorite-details{flex:1 1 auto;display:flex;flex-direction:column;gap:3px;min-width:0}
+#app .favorite-name{border:0;background:transparent;padding:3px 0;
+  text-align:left;color:#244c7a;font-weight:600;font-size:14px;line-height:1.25;
+  width:100%;white-space:normal;overflow-wrap:anywhere}
+#app .favorite-date{font-size:11px;color:#64748b}
 #app .favorites-empty{font-size:14px;color:#536779;margin:15px 0}
-#app .favorites-add{display:flex;justify-content:center;align-items:center;gap:8px;
-  min-height:43px;border:1px solid #acc6dc;border-radius:10px;background:#eaf2fc;
-  color:#19436c;font-weight:600;cursor:pointer}
-#app .favorites-add svg{width:20px;height:20px;flex:0 0 20px}
-#app .favorites-message{font-size:12px;color:#455d76;margin:0;min-height:0}
+#app .favorites-footer{display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
+#app .favorites-footer button{display:flex;align-items:center;justify-content:center;gap:8px;
+  box-sizing:border-box;width:100%;min-height:43px;max-height:none;padding:10px 14px;
+  border-radius:9px;border:1px solid #acc6dc;background:#eaf2fc;
+  color:#19436c;font-size:14px;font-weight:600;line-height:1.3;text-align:center;white-space:normal;
+  cursor:pointer}
+#app .favorites-footer .favorites-close-bottom{background:#fff;border-color:#bcc8d5;color:#243b54}
+#app .favorites-footer button svg{width:19px;height:19px;flex:0 0 19px}
+#app .favorites-message{font-size:12px;color:#455d76;margin:0}
 #app .favorites-message:empty{display:none}
-#app .favorite-confirm{padding:9px;margin:3px 0 9px;border:1px solid #acc2d7;
+#app .favorite-confirm{padding:11px;margin:3px 0 9px;border:1px solid #acc2d7;
   border-radius:9px;background:#ecf3fb;font-size:13px}
-#app .favorite-confirm p{margin:0 0 8px}
-#app .favorite-confirm-actions{display:flex;justify-content:flex-end;gap:8px}
-#app .favorite-confirm-actions button{min-height:36px;padding:7px 10px;border-radius:8px;
-  border:1px solid #aebfce;background:white;color:#243b54;cursor:pointer}
-#app .favorite-confirm-actions button:last-child{background:#1764bf;color:white;border-color:#1764bf}
+#app .favorite-confirm-danger{border-color:#e4a5a5;background:#fff0f0}
+#app .favorite-confirm p{margin:0 0 9px}
+#app .favorite-confirm label{display:flex;flex-direction:column;gap:5px;font-weight:600}
+#app .favorite-name-input{width:100%;box-sizing:border-box;min-height:40px;
+  padding:8px 10px;border:1px solid #a9bcd0;border-radius:8px;
+  font-size:16px;font-weight:400;line-height:1.4;background:white;color:#243b54}
+#app .favorite-confirm-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+#app .favorite-confirm-actions button{min-height:38px;padding:8px 12px;border-radius:8px;
+  border:1px solid #aebfce;background:#fff;color:#243b54;cursor:pointer;
+  font-size:13px;font-weight:600;line-height:1.25}
+#app .favorite-confirm-actions .favorite-action-primary{background:#1764bf;color:white;border-color:#1764bf}
+#app .favorite-confirm-actions .favorite-action-danger{background:#bc2833;color:white;border-color:#bc2833}
