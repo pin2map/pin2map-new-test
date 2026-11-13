@@ -109,7 +109,7 @@
   <main id="map" aria-label="Interaktive Karte"></main>
   <button id="favoritesButton" type="button" data-pin-icon="star" class="favorites-map-button" title="Kartenfavoriten" aria-label="Kartenfavoriten öffnen" aria-controls="favoritesPanel" aria-expanded="false"></button>
   <aside id="favoritesPanel" class="favorites-panel hidden" role="dialog" aria-label="Kartenfavoriten">
-    <div class="favorites-head"><strong>Kartenfavoriten</strong><button id="favoritesClose" type="button" data-pin-icon="x" aria-label="Favoriten schließen"></button></div>
+    <div class="favorites-head"><span class="favorites-head-star" data-pin-icon="star" role="img" aria-label="Favoriten"></span><input id="favoritesSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Favoriten suchen" aria-label="Favoriten nach Namen durchsuchen" aria-controls="favoritesList"><button id="favoritesSearchClear" type="button" data-pin-icon="funnel-x" aria-label="Favoritensuche zurücksetzen" title="Favoritensuche zurücksetzen" disabled></button><button id="favoritesClose" type="button" data-pin-icon="x" aria-label="Favoriten schließen"></button></div>
     <div id="favoritesList" class="favorites-list"></div>
     <div class="favorites-footer">
       <button id="favoritesAdd" type="button" class="favorites-add" aria-label="Aktuelle Kartenansicht als neuen Favoriten hinzufügen">Ansicht hinzufügen</button>
