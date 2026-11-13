@@ -3,11 +3,11 @@
  * panel; no native modal, no data/Leaflet/IndexedDB access. */
 (function(root){
   class MapFavoritesPanel{
-    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName}){
+    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName,capacity=7}){
       this.doc=doc;this.el=getElement;this.icons=icons;
       this.onOpen=onOpen;this.onAdd=onAdd;this.onReplace=onReplace;
       this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
-      this.suggestName=suggestName;
+      this.suggestName=suggestName;this.capacity=capacity;
       this.open=false;this.mode=null;this.index=null;this.values=[];
       // iOS Safari shrinks its visual viewport above the on-screen keyboard.
       // Keep the active inline editor inside that visible region.
@@ -116,8 +116,8 @@
       const oldScroll=list.scrollTop;
       list.replaceChildren();
       const add=this.el("favoritesAdd");
-      // Capacity message remains actionable, including after 7 entries.
-      add.disabled=false;
+      add.disabled=values.length>=this.capacity;
+      add.title=add.disabled?"Alle sieben Favoriten A–G belegt – vorhandenen Platz ersetzen":"Neue Ansicht hinzufügen";
       if(!values.length){
         const empty=this.doc.createElement("p");empty.className="favorites-empty";
         empty.textContent="Noch keine Favoriten gespeichert.";list.append(empty);
