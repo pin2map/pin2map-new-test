@@ -567,6 +567,7 @@
       document.createTextNode("Aktuelle Ansicht speichern"));
     $("favoritesButton").addEventListener("click",()=>favoritesPanel.toggle(currentFavorites()));
     $("favoritesClose").addEventListener("click",()=>favoritesPanel.close());
+    $("favoritesCloseBottom").addEventListener("click",()=>favoritesPanel.close());
     favoriteAdd.addEventListener("click",()=>{
       if(currentFavorites().length>=favorites.ACTIVE_CAPACITY){
         setFavoriteMessage("Alle sieben Favoriten A–G sind belegt. Bitte einen vorhandenen Favoriten ersetzen.");
