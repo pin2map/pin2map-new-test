@@ -97,6 +97,10 @@
       let pendingFocus=null;
       values.forEach((item,index)=>{
         const row=this.doc.createElement("div");row.className="favorite-row";
+        // Row/date chooses the view; the name is reserved for inline rename.
+        row.addEventListener("click",event=>{
+          if(!event.target.closest("button"))this.onChoose(index);
+        });
         const replace=this.button("copy-plus","Favorit "+item.letter+" durch aktuelle Ansicht ersetzen",
           ()=>this.start("replace",index),"favorite-icon");
         const open=this.button(null,"Ansicht "+item.letter+" öffnen",()=>this.onChoose(index),"favorite-open");
