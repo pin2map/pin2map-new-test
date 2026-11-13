@@ -100,7 +100,7 @@ test("first autozoom fits every connected pin even if distant members cannot be 
   assert.deepEqual(connectedPins(pins,"0",p=>p).map(p=>p.id),
     ["0","1","2","3","4"]);
   assert.equal(zoomDecision(pins,10,19,projected).zoom,11);
-  const group=[{x:0},{x:10},{x:20},{x:30},{x:40}];
+  const group=[{x:0},{x:5},{x:10},{x:15},{x:20}];
   assert.equal(fittingZoom(group,10,19,projected,{x:350,y:650}),12,
     "Fit constraints must cap zoom before losing initial members");
 });
