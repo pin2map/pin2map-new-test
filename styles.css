@@ -1391,3 +1391,31 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #deleteDialog .dialog-actions button[value="confirm"]{
   background:#bc2837;color:#fff;border-color:#a81f2e;
 }
+
+/* v167: chooser only for overlapping hitboxes that remain inseparable at max zoom. */
+#app .pin-overlap-chooser{
+  position:absolute;z-index:1450;box-sizing:border-box;
+  width:min(290px,calc(100vw - 24px));max-height:min(54dvh,350px);
+  overflow:auto;overscroll-behavior:contain;
+  padding:9px;background:#f7f8fa;border:1px solid #c7d0db;
+  border-radius:12px;box-shadow:0 7px 26px #132e4d50;
+  color:#26394c;
+}
+#app .pin-overlap-chooser-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:5px;padding:2px 3px 6px;font-size:14px;
+}
+#app .pin-overlap-chooser-head button{
+  box-sizing:border-box;min-width:34px;min-height:34px;padding:0;
+  border:1px solid #bdcbd9;border-radius:8px;background:#fff;
+  color:#26394c;font-size:22px;
+}
+#app .pin-overlap-choice{
+  display:block;box-sizing:border-box;width:100%;min-height:40px;
+  margin:3px 0;padding:9px 12px;border:1px solid #c7d0db;
+  border-radius:8px;background:#fff;color:#26394c;
+  text-align:left;overflow-wrap:anywhere;font-size:14px;
+}
+#app .pin-overlap-choice:focus-visible{
+  outline:2px solid #1764bf;outline-offset:1px;
+}
