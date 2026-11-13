@@ -469,7 +469,7 @@
       getMaxZoom:()=>state.basemap==="topo"?17:19,
       onSelect:id=>selectPin(id),
       onBeforeZoom:()=>overlayCoordinator.closeAll(),
-      onHistoryChange:()=>{},
+      onHistoryChange:()=>setTimeout(flushHistoryRecord,0),
       getElement:$,document
     });
     moveView=new window.Pin2MapPinMovePreview.PinMovePreview({
