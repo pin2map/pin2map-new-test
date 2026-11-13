@@ -19,7 +19,7 @@
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
-  let gestures;
+  let gestures,pinOverlapZoom;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
@@ -309,7 +309,15 @@
     if(pin)pinLayerPicker.render({layers:state.layers,selectedLayerId:pin.layerId});
     else pinLayerPicker.setOpen(false);
   }
-  function selectPin(id){pinSession.select(id);}
+  function selectPin(id){
+    pinOverlapZoom?.close();
+    pinSession.select(id);
+  }
+  function handleMarkerTap(id){
+    if(uiState.moveMode||satelliteInspector.isActive())return;
+    if(pinOverlapZoom)pinOverlapZoom.handleTap(id);
+    else selectPin(id);
+  }
   function updateModeUI() {
     const picking=uiState.moveMode&&!moveView.current();
     document.body.classList.toggle("pin-relocation-picking",picking);
@@ -376,6 +384,7 @@
     pinDeleteDialog.bind();
 
     mapAdapter.onMapClick(position=>{
+      pinOverlapZoom?.close();
       if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
       pinInfoMenu.close();mapClickCoordinator.handle(position);
     });
@@ -398,7 +407,7 @@
       getBasemap:()=>state.basemap,
       isMoveMode:()=>uiState.moveMode,
       isInspectMode:()=>satelliteInspector.isActive(),
-      selectPin,addPin,renderMarkers,persistViewport,updatePanelLayout,
+      selectPin:handleMarkerTap,addPin,renderMarkers,persistViewport,updatePanelLayout,
       scheduleFrame:requestAnimationFrame,
       vibrate:duration=>{if(navigator.vibrate)navigator.vibrate(duration);}
     });
@@ -409,8 +418,16 @@
         getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
       }),
       onInfoClick:id=>selectPin(id),
-      onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;selectPin(id);},
+      onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;handleMarkerTap(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
+    });
+    pinOverlapZoom=new window.Pin2MapPinOverlapZoom.PinOverlapZoom({
+      mapPort:mapAdapter,
+      getPins:()=>markerView.visiblePins(),
+      getMaxZoom:()=>state.basemap==="topo"?17:19,
+      onSelect:id=>selectPin(id),
+      onBeforeZoom:()=>overlayCoordinator.closeAll(),
+      getElement:$,document
     });
     moveView=new window.Pin2MapPinMovePreview.PinMovePreview({
       mapAdapter,getElement:$,
