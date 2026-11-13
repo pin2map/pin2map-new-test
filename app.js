@@ -285,6 +285,9 @@
     save();renderLayers();renderMarkers();renderPinPanel();
     favoritesPanel.close();
     setFavoriteMessage("");
+    // Preserve a just-completed zoom/drag even when its animation and
+    // 320ms gesture-coalescing timer have not settled yet.
+    flushHistoryRecord();
     mapAdapter.setView(viewport,{animate:false});
     persistViewport();
   }
@@ -332,6 +335,7 @@
   const scheduleMapOverlayUpdate = ()=>mapOverlayLayout.schedule();
   const keepSelectedAbovePanel = ()=>mapOverlayLayout.keepVisibleAtOpen();
   function fitAllPins(){
+    flushHistoryRecord();
     fitVisiblePins({
       pins:state.pins,layers:state.layers,filter:currentPinFilter,
       pinFilter,mapPort:mapAdapter,onEmpty:()=>showNotice("Keine sichtbaren Pins vorhanden"),
