@@ -3,21 +3,20 @@
  * panel; no native modal, no data/Leaflet/IndexedDB access. */
 (function(root){
   class MapFavoritesPanel{
-    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName,capacity=7}){
+    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName,capacity=7,getSearch=()=>"",onSearchChange=()=>{}}){
       this.doc=doc;this.el=getElement;this.icons=icons;
       this.onOpen=onOpen;this.onAdd=onAdd;this.onReplace=onReplace;
       this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
       this.suggestName=suggestName;this.capacity=capacity;
       this.open=false;this.mode=null;this.index=null;this.values=[];
       // Search is a per-device UI preference, never part of synced favorites.
-      this.searchStorageKey="pin2map-favorites-search-v1";
-      try{this.searchText=this.doc.defaultView?.localStorage?.getItem(this.searchStorageKey)||"";}
-      catch(_){this.searchText="";}
+      this.onSearchChange=onSearchChange;
+      this.searchText=String(getSearch()||"");
       const search=this.el("favoritesSearch");
       search.value=this.searchText;
       search.addEventListener("input",()=>{
         this.searchText=search.value;
-        try{this.doc.defaultView?.localStorage?.setItem(this.searchStorageKey,this.searchText);}catch(_){}
+        this.onSearchChange(this.searchText);
         this.mode=null;this.index=null;
         this.render();
         this.el("favoritesList").scrollTop=0;
@@ -25,7 +24,7 @@
       this.el("favoritesSearchClear").addEventListener("click",()=>{
         if(!this.searchText)return;
         this.searchText="";search.value="";
-        try{this.doc.defaultView?.localStorage?.removeItem(this.searchStorageKey);}catch(_){}
+        this.onSearchChange("");
         this.mode=null;this.index=null;
         this.render();
         this.el("favoritesList").scrollTop=0;
