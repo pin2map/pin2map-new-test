@@ -162,7 +162,7 @@ async function zoom(page){
         await page.locator("#favoritesAdd").click();
         assert.equal(await page.locator(".favorite-row").count(),1);
         assert.equal(await page.locator(".favorite-select strong").first().textContent(),"A");
-        assert.match(await page.locator(".favorite-select span").first().textContent(),/\\d{2}\\.\\d{2}\\.\\d{4}/);
+        assert.match(await page.locator(".favorite-select span").first().textContent(),/\d{2}\.\d{2}\.\d{4}/);
         await page.locator("#favoritesClose").click();
         assert.equal(await page.locator(".pin-zoom-buttons").isVisible(),true);
         await page.locator(".pin-zoom-button").nth(2).click();
