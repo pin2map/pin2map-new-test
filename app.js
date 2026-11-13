@@ -558,7 +558,8 @@
       document,getElement:$,icons:window.Pin2MapIcons,
       onOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();setFavoriteMessage("");},
       onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
-      onRemove:removeMapFavorite,onChoose:openMapFavorite,suggestName:suggestFavoriteName
+      onRemove:removeMapFavorite,onChoose:openMapFavorite,suggestName:suggestFavoriteName,
+      capacity:favorites.ACTIVE_CAPACITY
     });
     // No modal dialog is used: replacement confirmation is inside the panel.
     window.Pin2MapIcons.mount($("favoritesButton"),"star");
