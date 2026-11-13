@@ -91,6 +91,31 @@ async function metrics(page){
     await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
     await page.waitForTimeout(200);
     const m=await metrics(page);
+    if(viewport.width<=375){
+      // Regression for iPhone ping-pong: reopening an unchanged pin must not
+      // alternately move the map just to satisfy impossible 12px side insets.
+      // Keep the pin visible and verify both its position and panel bounds.
+      const selectedMarker=page.locator(".leaflet-marker-icon.pin-icon").last();
+      const pinCenter=async()=>{
+        const box=await selectedMarker.boundingBox();
+        return {x:box.x+box.width/2,y:box.y+box.height/2};
+      };
+      const stable=await pinCenter();
+      for(let repeat=0;repeat<8;repeat++){
+        await page.locator("#closePin").click();
+        await page.locator("#pinPanel").waitFor({state:"hidden"});
+        await selectedMarker.tap({force:true});
+        await page.locator("#pinPanel").waitFor({state:"visible"});
+        const current=await pinCenter(),box=await page.locator("#pinPanel").boundingBox();
+        assert.ok(Math.abs(current.x-stable.x)<=1&&Math.abs(current.y-stable.y)<=1,
+          "Same pin must not ping-pong after re-opening on "+viewport.name+
+          ": "+JSON.stringify({repeat,stable,current}));
+        assert.ok(box.x>=3&&box.x+box.width<=viewport.width-3&&
+          box.y>=3&&box.y+box.height<=viewport.height-3,
+          "Automatic iPhone dialog placement must stay on screen");
+      }
+      console.log("[visual] PASS repeated iPhone open/close without map ping-pong",viewport.name);
+    }
     assert.equal(m.footerItems.length,6,JSON.stringify(m));
     assert.deepEqual(m.footerItems.map(item=>item.id),
      ["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"]);
