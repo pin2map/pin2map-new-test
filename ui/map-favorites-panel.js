@@ -9,6 +9,12 @@
       this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
       this.suggestName=suggestName;
       this.open=false;this.mode=null;this.index=null;this.values=[];
+      // iOS Safari shrinks its visual viewport above the on-screen keyboard.
+      // Keep the active inline editor inside that visible region.
+      this.viewport=this.doc.defaultView?.visualViewport||null;
+      this.onViewportChange=()=>this.keepEditorVisible();
+      this.viewport?.addEventListener("resize",this.onViewportChange);
+      this.viewport?.addEventListener("scroll",this.onViewportChange);
     }
     button(icon,title,action,className=""){
       const button=this.doc.createElement("button");
@@ -30,6 +36,7 @@
       this.el("favoritesPanel").classList.remove("hidden");
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
+      this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten schließen");
       this.render();
       this.onOpen?.();
       this.el("favoritesClose").focus({preventScroll:true});
@@ -39,8 +46,29 @@
       this.el("favoritesPanel").classList.add("hidden");
       this.doc.body.classList.remove("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","false");
+      this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten öffnen");
+      const panel=this.el("favoritesPanel");
+      panel.classList.remove("is-editing");
+      panel.style.removeProperty("--p2m-favorites-keyboard-top");
+      panel.style.removeProperty("--p2m-favorites-keyboard-height");
     }
     toggle(values){this.open?this.close():this.show(values);}
+    keepEditorVisible(){
+      if(!this.open||!this.mode||this.mode==="delete")return;
+      const panel=this.el("favoritesPanel");
+      const vv=this.viewport;
+      if(vv){
+        panel.style.setProperty("--p2m-favorites-keyboard-top",Math.max(5,Math.round(vv.offsetTop+6))+"px");
+        panel.style.setProperty("--p2m-favorites-keyboard-height",Math.max(120,Math.round(vv.height-12))+"px");
+      }
+      const list=this.el("favoritesList"),editor=list.querySelector(".favorite-confirm");
+      if(!editor)return;
+      // Scroll the panel's OWN list, not the page or Leaflet map.
+      const a=list.getBoundingClientRect(),b=editor.getBoundingClientRect();
+      if(b.height>a.height-8)list.scrollTop+=b.top-a.top-6;
+      else if(b.bottom>a.bottom-5)list.scrollTop+=b.bottom-a.bottom+8;
+      else if(b.top<a.top+5)list.scrollTop+=b.top-a.top-8;
+    }
     editor(mode,index){
       const isNew=mode==="new",isRename=mode==="rename",isDelete=mode==="delete";
       const target=this.doc.createElement("section");
@@ -101,7 +129,7 @@
         row.addEventListener("click",event=>{
           if(!event.target.closest("button"))this.onChoose(index);
         });
-        const replace=this.button("copy-plus","Favorit "+item.letter+" durch aktuelle Ansicht ersetzen",
+        const replace=this.button("plus","Favorit "+item.letter+" durch aktuelle Ansicht ersetzen",
           ()=>this.start("replace",index),"favorite-icon");
         const open=this.button(null,"Ansicht "+item.letter+" öffnen",()=>this.onChoose(index),"favorite-open");
         open.textContent=item.letter;
@@ -113,9 +141,11 @@
         when.textContent=Number.isNaN(date.getTime())?"Unbekanntes Datum":
           date.toLocaleString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
         details.append(name,when);
+        const edit=this.button("square-pen","Favorit "+item.letter+" ändern / umbenennen",
+          ()=>this.start("rename",index),"favorite-icon favorite-edit");
         const remove=this.button("star-off","Favorit "+item.letter+" löschen",
           ()=>this.start("delete",index),"favorite-icon favorite-remove");
-        row.append(replace,open,details,remove);list.append(row);
+        row.append(replace,open,details,edit,remove);list.append(row);
         if(this.mode&&this.mode!=="new"&&this.index===index){
           const editor=this.editor(this.mode,index);
           list.append(editor.target);pendingFocus=editor.focus;
@@ -126,9 +156,17 @@
         list.append(editor.target);pendingFocus=editor.focus;
       }
       list.scrollTop=oldScroll;
+      const panel=this.el("favoritesPanel");
+      panel.classList.toggle("is-editing",!!pendingFocus);
       if(pendingFocus){
+        this.keepEditorVisible();
         pendingFocus.focus({preventScroll:true});
-        pendingFocus.closest(".favorite-confirm")?.scrollIntoView?.({block:"nearest"});
+        this.keepEditorVisible();
+        // Safari adjusts the visualViewport after input.focus().
+        this.doc.defaultView?.setTimeout(()=>this.keepEditorVisible(),180);
+      }else{
+        panel.style.removeProperty("--p2m-favorites-keyboard-top");
+        panel.style.removeProperty("--p2m-favorites-keyboard-height");
       }
     }
   }
