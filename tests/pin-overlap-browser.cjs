@@ -145,6 +145,40 @@ async function zoom(page){
         assert.equal(await page.locator("#pinName").inputValue(),"Allein");
         assert.equal(await zoom(page),soloScale);
         await page.locator("#closePin").click();
+        // The debug switch hides paint ONLY, not the 52x56 marker hitbox.
+        const hitbox=page.locator("#map .leaflet-marker-icon.pin-icon").first();
+        const boundsBefore=await hitbox.boundingBox();
+        const visiblePaint=await hitbox.evaluate(el=>({
+          background:getComputedStyle(el).backgroundColor,
+          border:getComputedStyle(el).borderTopColor
+        }));
+        assert.equal(visiblePaint.background,"rgba(255, 224, 0, 0.55)");
+        await page.locator("#settingsButton").click();
+        assert.equal(await page.locator("#showPinHitboxes").isChecked(),true);
+        await page.locator("#showPinHitboxes").uncheck();
+        const hiddenPaint=await hitbox.evaluate(el=>({
+          background:getComputedStyle(el).backgroundColor,
+          border:getComputedStyle(el).borderTopColor
+        }));
+        assert.equal(hiddenPaint.background,"rgba(0, 0, 0, 0)");
+        assert.equal(hiddenPaint.border,"rgba(0, 0, 0, 0)");
+        const boundsAfter=await hitbox.boundingBox();
+        assert.deepEqual({width:boundsAfter.width,height:boundsAfter.height},
+          {width:boundsBefore.width,height:boundsBefore.height},
+          "Hiding yellow hitboxes must not alter touch target dimensions");
+        await page.locator('#settingsPanel [data-close="settingsPanel"]').click();
+        await tap(hitbox);
+        await page.locator("#pinPanel").waitFor({state:"visible",timeout:8000});
+        await page.locator("#closePin").click();
+        await page.reload({waitUntil:"domcontentloaded"});
+        await page.waitForFunction(()=>document.querySelector("#map .pin-icon"),null,{timeout:10000});
+        await page.locator("#settingsButton").click();
+        assert.equal(await page.locator("#showPinHitboxes").isChecked(),false,
+          "The debug visibility switch survives reload independently of the project");
+        await page.locator("#showPinHitboxes").check();
+        await page.locator('#settingsPanel [data-close="settingsPanel"]').click();
+        assert.equal(await hitbox.evaluate(el=>getComputedStyle(el).backgroundColor),
+          "rgba(255, 224, 0, 0.55)");
         // Favorites panel is modeless and must preserve all map content.
         const favoriteTrigger=page.locator("#favoritesButton");
         assert.equal(await favoriteTrigger.getAttribute("data-pin-icon"),"star");
@@ -311,15 +345,15 @@ async function zoom(page){
         assert.ok(saved.history?.entries.length>0);
         assert.equal(Object.hasOwn(saved.project,"localMapViewHistory"),false,
           "Project sync data must not contain device-specific history");
-        // All seven active A-G places can be filled, then add is genuinely
-        // disabled. Replacing or renaming an existing place remains possible.
-        for(let i=1;i<7;i++){
+        // All fifteen active A-O places can be filled, then add is disabled.
+        // Existing slots remain editable/replacable at full capacity.
+        for(let i=1;i<15;i++){
           await page.locator("#favoritesAdd").click();
           await page.locator(".favorite-name-input").fill("Platz "+String.fromCharCode(65+i));
           await page.locator(".favorite-confirm-actions button").last().click();
         }
-        assert.equal(await page.locator(".favorite-row").count(),7);
-        assert.equal(await page.locator(".favorite-open").last().textContent(),"G");
+        assert.equal(await page.locator(".favorite-row").count(),15);
+        assert.equal(await page.locator(".favorite-open").last().textContent(),"O");
         assert.equal(await page.locator("#favoritesAdd").isDisabled(),true);
         assert.equal(await page.locator(".favorite-row").last().locator(".favorite-edit").isEnabled(),true);
         // Simulate a keyboard-shrunken visual area and edit the last row.
