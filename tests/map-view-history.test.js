@@ -38,3 +38,16 @@ test("identical viewport changes never create fake history entries",()=>{
   assert.equal(h.entries.length,1);
   assert.equal(h.canUndo(),false);
 });
+
+test("Leaflet's half-pixel center rounding after undo is not a new branch",()=>{
+  const h=new MapViewHistory();h.load(null,{center:{lat:48.7758,lng:9.1829},zoom:12});
+  h.push({center:{lat:48.7758,lng:9.1829},zoom:19});
+  h.push({center:{lat:48.77607008139675,lng:9.182900637388231},zoom:19});
+  h.undo();
+  assert.equal(h.push({center:{lat:48.77580140767582,lng:9.182900637388231},zoom:19}),false,
+    "Leaflet coordinate quantization must not overwrite Redo history");
+  assert.equal(h.index,1);
+  assert.equal(h.canRedo(),true);
+  assert.equal(h.undo().zoom,12);
+  assert.equal(h.redo().zoom,19);
+});
