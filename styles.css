@@ -1496,6 +1496,35 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   min-height:35px;max-height:35px;flex:0 0 35px;border-radius:50%;
   border:1px solid #b7c5d4;background:#fff;color:#243b54}
 #app .favorites-head svg{width:19px;height:19px}
+/* v174 searchable favorites header: the title becomes a static star. The
+   interactive clear stays circular, red only while it can actually reset. */
+#app .favorites-head .favorites-head-star{
+  box-sizing:border-box;flex:0 0 25px;width:25px;height:25px;
+  display:inline-flex;align-items:center;justify-content:center;color:#243b54;
+}
+#app .favorites-head .favorites-head-star svg{width:23px;height:23px}
+#app .favorites-head #favoritesSearch{
+  box-sizing:border-box;flex:1 1 0;min-width:0;width:auto;min-height:40px;
+  margin:0;padding:7px 9px;border:1px solid #afbfce;border-radius:9px;
+  background:#fff;color:#243b54;font-size:16px;line-height:1.3;
+}
+#app .favorites-head #favoritesSearch::-webkit-search-cancel-button{
+  -webkit-appearance:none;appearance:none;display:none;
+}
+#app .favorites-head #favoritesSearchClear{
+  box-sizing:border-box;flex:0 0 35px;width:35px;height:35px;
+  min-width:35px;min-height:35px;max-width:35px;max-height:35px;
+  border-radius:50%;aspect-ratio:1;color:#bc2833;border-color:#e2adb0;
+  background:#fff3f3;
+}
+#app .favorites-head #favoritesSearchClear .p2m-lucide{
+  stroke:currentColor;color:inherit;
+}
+#app .favorites-head #favoritesSearchClear:disabled{
+  color:#97a1ac;background:#eff1f4;border-color:#ccd2da;
+  opacity:.62;cursor:not-allowed;
+}
+
 #app .favorites-list{overflow-y:auto;min-height:0;overscroll-behavior:contain}
 #app .favorite-row{display:flex;align-items:center;gap:7px;margin:4px 0;padding:5px;
   border:1px solid #d2dbe5;border-radius:10px;background:#fff}
