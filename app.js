@@ -429,6 +429,7 @@
       getMaxZoom:()=>state.basemap==="topo"?17:19,
       onSelect:id=>selectPin(id),
       onBeforeZoom:()=>overlayCoordinator.closeAll(),
+      onHistoryChange:available=>mapAdapter.updateZoomUndo(available),
       getElement:$,document
     });
     moveView=new window.Pin2MapPinMovePreview.PinMovePreview({
@@ -464,7 +465,8 @@
       },
       onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
     });
-    mapAdapter.addZoomControls({onFitAll:fitAllPins});
+    mapAdapter.addZoomControls({onFitAll:fitAllPins,onUndo:()=>pinOverlapZoom.undo()});
+    mapAdapter.updateZoomUndo(pinOverlapZoom.canUndo());
     mapAdapter.addScaleControl();
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
     for(const field of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
