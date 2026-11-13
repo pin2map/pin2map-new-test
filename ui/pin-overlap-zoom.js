@@ -18,21 +18,26 @@
     const points=pins.map(pin=>({...pin,point:project(pin)}));
     const index=points.findIndex(pin=>pin.id===chosenId);
     if(index<0)return [];
-    const buckets=new Map();
+    const buckets=new Map(),locations=[];
     for(let j=0;j<points.length;j++){
       const c=cell(points[j].point,HIT_WIDTH,HIT_HEIGHT);
       const k=key(c.x,c.y);
-      if(!buckets.has(k))buckets.set(k,[]);
-      buckets.get(k).push(j);
+      locations.push(k);
+      if(!buckets.has(k))buckets.set(k,new Set());
+      buckets.get(k).add(j);
     }
     const seen=new Set([index]),queue=[index];
+    buckets.get(locations[index]).delete(index);
     for(let at=0;at<queue.length;at++){
       const current=points[queue[at]];
       const c=cell(current.point,HIT_WIDTH,HIT_HEIGHT);
       for(let x=c.x-1;x<=c.x+1;x++)for(let y=c.y-1;y<=c.y+1;y++){
         for(const j of buckets.get(key(x,y))||[]){
-          if(!seen.has(j)&&overlaps(current.point,points[j].point)){
+          if(overlaps(current.point,points[j].point)){
             seen.add(j);queue.push(j);
+            // Remove discovered entries immediately: thousands of pins
+            // with the same coordinates must not cause quadratic rescans.
+            buckets.get(locations[j]).delete(j);
           }
         }
       }
@@ -125,6 +130,13 @@
       }
       const current=this.map.getViewport().zoom;
       const max=this.getMaxZoom();
+      // Zooming cannot help pins with precisely equal coordinates. Open the
+      // chooser at the CURRENT scale instead of jumping needlessly to z19.
+      if(group.every(pin=>pin.lat===group[0].lat&&pin.lng===group[0].lng)){
+        this.onBeforeZoom();
+        this.showChoices(group,this.map.project(group[0]));
+        return "choices";
+      }
       const choice=zoomDecision(group,current,max,(pin,zoom)=>this.map.projectAtZoom(pin,zoom));
       const values=group.map(pin=>this.map.project(pin));
       const mid={x:(Math.min(...values.map(p=>p.x))+Math.max(...values.map(p=>p.x)))/2,
