@@ -263,14 +263,33 @@
   function currentFavorites(){return favorites.items(state);}
   function setFavoriteMessage(message){$("favoritesMessage").textContent=message;}
   function syncFavoritePanel(){favoritesPanel?.render(currentFavorites());}
-  function addMapFavorite(){
-    const name=favorites.append(state,mapAdapter.getViewport(),state.layers,new Date().toISOString());
-    if(!name){setFavoriteMessage("Alle 26 Favoriten A–Z sind belegt.");return;}
-    save();syncFavoritePanel();setFavoriteMessage("Favorit "+name+" gespeichert.");
+  function suggestFavoriteName(){
+    const size=mapAdapter.getSize(),middle={x:size.x/2,y:size.y/2};
+    let nearest=null,best=Infinity;
+    const visible=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
+    for(const pin of visible){
+      const point=mapAdapter.project(pin);
+      if(point.x<0||point.y<0||point.x>size.x||point.y>size.y)continue;
+      const dist=(point.x-middle.x)**2+(point.y-middle.y)**2;
+      if(dist<best){nearest=pin;best=dist;}
+    }
+    return nearest?.name?.trim()||"Unbekannt "+new Date().toISOString().slice(0,10);
   }
-  function replaceMapFavorite(index){
-    if(favorites.replace(state,index,mapAdapter.getViewport(),state.layers,new Date().toISOString())){
+  function addMapFavorite(name){
+    const letter=favorites.append(state,mapAdapter.getViewport(),state.layers,
+      new Date().toISOString(),name,state.basemap);
+    if(!letter){setFavoriteMessage("Alle sieben Favoriten A–G sind belegt.");return;}
+    save();syncFavoritePanel();setFavoriteMessage("Favorit "+letter+" gespeichert.");
+  }
+  function replaceMapFavorite(index,name){
+    if(favorites.replace(state,index,mapAdapter.getViewport(),state.layers,
+      new Date().toISOString(),name,state.basemap)){
       save();syncFavoritePanel();setFavoriteMessage("Favorit "+favorites.letter(index)+" ersetzt.");
+    }
+  }
+  function renameMapFavorite(index,name){
+    if(favorites.rename(state,index,name)){
+      save();syncFavoritePanel();setFavoriteMessage("Favorit "+favorites.letter(index)+" umbenannt.");
     }
   }
   function removeMapFavorite(index){
@@ -282,6 +301,11 @@
   function openMapFavorite(index){
     const viewport=favorites.apply(state,index);
     if(!viewport)return;
+    const favorite=state.favorites[index];
+    if(favorite?.basemap&&["street","topo","international","satellite","humanitarian"].includes(favorite.basemap)
+      &&state.basemap!==favorite.basemap){
+      satelliteInspector.stop();state.basemap=favorite.basemap;setTileLayer();
+    }
     save();renderLayers();renderMarkers();renderPinPanel();
     favoritesPanel.close();
     setFavoriteMessage("");
@@ -533,18 +557,27 @@
     favoritesPanel=new window.Pin2MapMapFavoritesPanel({
       document,getElement:$,icons:window.Pin2MapIcons,
       onOpen:()=>{overlayCoordinator.closeAll();pinOverlapZoom.close();setFavoriteMessage("");},
-      onAdd:addMapFavorite,onReplace:replaceMapFavorite,
-      onRemove:removeMapFavorite,onChoose:openMapFavorite
+      onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
+      onRemove:removeMapFavorite,onChoose:openMapFavorite,suggestName:suggestFavoriteName
     });
     // No modal dialog is used: replacement confirmation is inside the panel.
     window.Pin2MapIcons.mount($("favoritesButton"),"star");
-    window.Pin2MapIcons.mount($("favoritesClose"),"x");
     const favoriteAdd=$("favoritesAdd");
-    const favoriteIcon=window.Pin2MapIcons.svg("star-plus",document);
-    favoriteAdd.replaceChildren(favoriteIcon,document.createTextNode("Aktuelle Ansicht speichern"));
+    favoriteAdd.replaceChildren(window.Pin2MapIcons.svg("star-plus",document),
+      document.createTextNode("Aktuelle Ansicht speichern"));
     $("favoritesButton").addEventListener("click",()=>favoritesPanel.toggle(currentFavorites()));
     $("favoritesClose").addEventListener("click",()=>favoritesPanel.close());
-    favoriteAdd.addEventListener("click",addMapFavorite);
+    favoriteAdd.addEventListener("click",()=>{
+      if(currentFavorites().length>=favorites.ACTIVE_CAPACITY){
+        setFavoriteMessage("Alle sieben Favoriten A–G sind belegt. Bitte einen vorhandenen Favoriten ersetzen.");
+      }else{setFavoriteMessage("");favoritesPanel.start("new");}
+    });
+    // Every click/tap outside the panel (especially on the map) closes it,
+    // consistent with the existing overlay convention. No map content is hidden.
+    document.addEventListener("pointerdown",event=>{
+      if(favoritesPanel.open&&!event.target.closest("#favoritesPanel,#favoritesButton"))
+        favoritesPanel.close();
+    });
     document.addEventListener("keydown",event=>{
       if(event.key==="Escape"&&favoritesPanel.open){event.preventDefault();favoritesPanel.close();}
     });
