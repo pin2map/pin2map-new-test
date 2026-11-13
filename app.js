@@ -260,7 +260,7 @@
     if(view){pinOverlapZoom?.close();overlayCoordinator.closeAll();
       mapAdapter.setView(view,{animate:false});persistViewport();}
   }
-  function currentFavorites(){return favorites.items(state);}
+  function currentFavorites(){return favorites.items(state).slice(0,favorites.ACTIVE_CAPACITY);}
   function setFavoriteMessage(message){$("favoritesMessage").textContent=message;}
   function syncFavoritePanel(){favoritesPanel?.render(currentFavorites());}
   function suggestFavoriteName(){
