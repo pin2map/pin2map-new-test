@@ -67,13 +67,29 @@
     }
     return {zoom:max,separated:allSeparated(pins,pin=>projectAtZoom(pin,max))};
   }
+  // Keep the entire initial collision component on screen. A second tap can
+  // zoom the smaller residual component, instead of losing distant members.
+  function fittingZoom(pins,current,max,projectAtZoom,size,padding=76){
+    const availableWidth=Math.max(HIT_WIDTH+GAP,size.x-2*padding);
+    const availableHeight=Math.max(HIT_HEIGHT+GAP,size.y-2*padding);
+    let fitting=Math.floor(current);
+    for(let z=Math.floor(current)+1;z<=max;z++){
+      const points=pins.map(pin=>projectAtZoom(pin,z));
+      const width=Math.max(...points.map(p=>p.x))-Math.min(...points.map(p=>p.x))+HIT_WIDTH+GAP;
+      const height=Math.max(...points.map(p=>p.y))-Math.min(...points.map(p=>p.y))+HIT_HEIGHT+GAP;
+      if(width>availableWidth||height>availableHeight)break;
+      fitting=z;
+    }
+    return fitting;
+  }
   class PinOverlapZoom{
-    constructor({mapPort,getPins,getMaxZoom,onSelect,onBeforeZoom,getElement,document:doc}){
+    constructor({mapPort,getPins,getMaxZoom,onSelect,onBeforeZoom,onHistoryChange=()=>{},getElement,document:doc}){
       if(!mapPort||[getPins,getMaxZoom,onSelect,onBeforeZoom,getElement].some(fn=>typeof fn!=="function")||!doc)
         throw new TypeError("Pin overlap dependencies required");
       this.map=mapPort;this.getPins=getPins;this.getMaxZoom=getMaxZoom;
       this.onSelect=onSelect;this.onBeforeZoom=onBeforeZoom;
       this.doc=doc;this.el=getElement;this.menu=null;
+      this.lastViewport=null;this.onHistoryChange=onHistoryChange;
       doc.addEventListener("keydown",event=>{
         if(event.key==="Escape"&&this.menu){event.preventDefault();this.close();}
       });
@@ -81,6 +97,21 @@
         if(this.menu&&!this.menu.contains(event.target)&&!event.target.closest?.(".pin-icon"))
           this.close();
       });
+    }
+    canUndo(){return !!this.lastViewport;}
+    undo(){
+      if(!this.lastViewport)return false;
+      this.close();const previous=this.lastViewport;
+      this.lastViewport=null;this.onHistoryChange(false);
+      this.map.setView(previous,{animate:false});return true;
+    }
+    zoomTo(center,zoom){
+      const before=this.map.getViewport();
+      if(zoom<=before.zoom)return false;
+      this.lastViewport={center:{...before.center},zoom:before.zoom};
+      this.onHistoryChange(true);
+      this.map.setView({center,zoom},{animate:false});
+      return true;
     }
     close(){
       if(this.menu){this.menu.remove();this.menu=null;}
@@ -103,7 +134,7 @@
       pins.forEach((pin,index)=>{
         const button=this.doc.createElement("button");
         button.type="button";button.className="pin-overlap-choice";
-        button.textContent=(pin.name||"Unbenannter Pin")+" · "+(index+1);
+        button.textContent=(pin.name||"Unbenannter Pin")+" · "+(pin.layerName||"Unbekannte Ebene")+" · "+(index+1);
         button.addEventListener("click",()=>{
           this.close();this.onSelect(pin.id);
         });
@@ -130,33 +161,43 @@
       }
       const current=this.map.getViewport().zoom;
       const max=this.getMaxZoom();
-      // Zooming cannot help pins with precisely equal coordinates. Open the
-      // chooser at the CURRENT scale instead of jumping needlessly to z19.
-      if(group.every(pin=>pin.lat===group[0].lat&&pin.lng===group[0].lng)){
-        this.onBeforeZoom();
-        this.showChoices(group,this.map.project(group[0]));
-        return "choices";
-      }
-      const choice=zoomDecision(group,current,max,(pin,zoom)=>this.map.projectAtZoom(pin,zoom));
       const values=group.map(pin=>this.map.project(pin));
       const mid={x:(Math.min(...values.map(p=>p.x))+Math.max(...values.map(p=>p.x)))/2,
         y:(Math.min(...values.map(p=>p.y))+Math.max(...values.map(p=>p.y)))/2};
+      const center=this.map.unproject(mid);
+      const identical=group.every(pin=>pin.lat===group[0].lat&&pin.lng===group[0].lng);
       this.onBeforeZoom();
-      if(choice.zoom>current){
-        const center=this.map.unproject(mid);
-        this.map.setView({center,zoom:choice.zoom},{animate:false});
-      }
-      // When the provider's maximum zoom cannot disentangle a cluster,
-      // provide explicit safe selection instead of picking the topmost pin.
-      if(!choice.separated){
-        const where=this.map.project(group.find(pin=>pin.id===id));
-        this.showChoices(group,where);
+      if(identical){
+        // First touch at overview: bring the actual marker into view, do not
+        // float a chooser over an unrelated overview map. Second touch chooses.
+        if(current<max){
+          this.zoomTo({lat:group[0].lat,lng:group[0].lng},max);
+          return "zoomed";
+        }
+        this.map.setView({center:{lat:group[0].lat,lng:group[0].lng},zoom:current},{animate:false});
+        this.showChoices(group,this.map.project(group[0]));
         return "choices";
       }
-      return "zoomed";
+      const decision=zoomDecision(group,current,max,(pin,z)=>this.map.projectAtZoom(pin,z));
+      const fit=fittingZoom(group,current,max,(pin,z)=>this.map.projectAtZoom(pin,z),this.map.getSize());
+      const target=Math.min(decision.zoom,fit);
+      if(target>current){
+        this.zoomTo(center,target);
+        // The original group remains in the viewport. Residual collisions
+        // are resolved in a subsequent tap on the remaining subgroup.
+        return "zoomed";
+      }
+      if(!decision.separated&&current>=max){
+        this.showChoices(group,this.map.project(group.find(pin=>pin.id===id)));
+        return "choices";
+      }
+      // No useful higher zoom can preserve this entire group on screen.
+      // Keep the view and let the user choose explicitly.
+      this.showChoices(group,this.map.project(group.find(pin=>pin.id===id)));
+      return "choices";
     }
   }
-  const api=Object.freeze({HIT_WIDTH,HIT_HEIGHT,GAP,overlaps,connectedPins,allSeparated,zoomDecision,PinOverlapZoom});
+  const api=Object.freeze({HIT_WIDTH,HIT_HEIGHT,GAP,overlaps,connectedPins,allSeparated,zoomDecision,fittingZoom,PinOverlapZoom});
   root.Pin2MapPinOverlapZoom=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
