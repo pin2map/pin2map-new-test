@@ -148,6 +148,7 @@ async function zoom(page){
         // Favorites panel is modeless and must preserve all map content.
         const favoriteTrigger=page.locator("#favoritesButton");
         assert.equal(await favoriteTrigger.getAttribute("data-pin-icon"),"star");
+        const layerButtonBounds=await page.locator("#layersButton").boundingBox();
         await favoriteTrigger.click();
         assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
         assert.equal(await favoriteTrigger.isVisible(),true,
@@ -158,8 +159,7 @@ async function zoom(page){
         const circle=await favoriteTrigger.boundingBox();
         assert.ok(circle&&Math.abs(circle.width-circle.height)<1,
           "Upper-right favorite trigger must be exactly circular");
-        const layers=await page.locator("#layersButton").boundingBox();
-        assert.ok(layers&&circle.y>layers.y+layers.height,
+        assert.ok(layerButtonBounds&&circle.y>layerButtonBounds.y+layerButtonBounds.height,
           "Favorites trigger must be below the Layers control");
         assert.equal(await page.locator(".pin-icon").count(),1);
         assert.equal(await page.locator("#basemapButton").isHidden(),true);
