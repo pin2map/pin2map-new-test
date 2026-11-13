@@ -21,6 +21,28 @@ test("narrow screens keep prior width formula without silently clamping panel co
   assert.equal(p.panel.width,224);
   assert.equal(p.panel.left,-102);
 });
+test("a centered 304px editor on a 320px iPhone never pans back and forth",()=>{
+  const appRect={left:0,top:0,right:320,bottom:568};
+  const aligned={left:8,right:312,top:100,bottom:420};
+  const tip={bottom:435};
+  for(let i=0;i<12;i++){
+    assert.deepEqual(openingCorrection({appRect,panelRect:aligned,tipRect:tip}),
+      {dx:0,dy:0,needsPan:false},"reopening must keep the existing map center");
+  }
+  // Starting off-center still corrects once to the closest feasible inset.
+  const shifted={...aligned,left:3,right:307};
+  const first=openingCorrection({appRect,panelRect:shifted,tipRect:tip});
+  assert.equal(first.dx,5);
+  assert.equal(first.needsPan,true);
+  const corrected={...shifted,left:shifted.left+first.dx,right:shifted.right+first.dx};
+  assert.deepEqual(openingCorrection({appRect,panelRect:corrected,tipRect:tip}),
+    {dx:0,dy:0,needsPan:false});
+});
+test("wide screens retain the full 12px opening margin",()=>{
+  const appRect={left:0,top:0,right:390,bottom:650};
+  const panelRect={left:5,right:355,top:75,bottom:480};
+  assert.equal(openingCorrection({appRect,panelRect,tipRect:{bottom:495}}).dx,7);
+});
 test("opening correction moves initial dialog inward without modifying pin",()=>{
   assert.deepEqual(openingCorrection({
     appRect:{left:0,top:0,right:320,bottom:500},
