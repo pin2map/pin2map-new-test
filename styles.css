@@ -1512,16 +1512,20 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   -webkit-appearance:none;appearance:none;display:none;
 }
 #app .favorites-head #favoritesSearchClear{
+  --p2m-button-ink:#bc2833;
+  --p2m-button-bg:#fff3f3;
+  --p2m-button-border:#e2adb0;
   box-sizing:border-box;flex:0 0 35px;width:35px;height:35px;
   min-width:35px;min-height:35px;max-width:35px;max-height:35px;
-  border-radius:50%;aspect-ratio:1;color:#bc2833;border-color:#e2adb0;
-  background:#fff3f3;
+  border-radius:50%;aspect-ratio:1;
 }
 #app .favorites-head #favoritesSearchClear .p2m-lucide{
   stroke:currentColor;color:inherit;
 }
 #app .favorites-head #favoritesSearchClear:disabled{
-  color:#97a1ac;background:#eff1f4;border-color:#ccd2da;
+  --p2m-button-ink:#97a1ac;
+  --p2m-button-bg:#eff1f4;
+  --p2m-button-border:#ccd2da;
   opacity:.62;cursor:not-allowed;
 }
 
