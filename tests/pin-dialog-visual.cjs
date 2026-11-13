@@ -219,6 +219,16 @@ async function metrics(page){
     assert.equal(colorContract.root,"#f7f8fa","Exact palette color, no second guessed delete gray");
     assert.equal(colorContract.dialogBackdrop,"rgba(0, 0, 0, 0)","Delete backdrop cannot tint panel surface");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-delete.png"});
+    // On/off contract: the original visible header trigger must be tappable
+    // while the confirmation is open (not inert behind a modal top layer).
+    assert.equal(await page.locator("#deleteDialog").evaluate(el=>el.matches(":modal")),false);
+    await page.locator("#deletePin").click();
+    await page.waitForFunction(()=>!document.querySelector("#deleteDialog").open &&
+      document.querySelector("#deletePin").getAttribute("aria-expanded")==="false");
+    assert.equal(await page.locator("#pinName").inputValue(),"Sicherheits-Testpin");
+    await page.locator("#deletePin").click();
+    await page.locator("#deleteDialog").waitFor({state:"visible"});
+    assert.equal(await page.locator("#deletePin").getAttribute("aria-expanded"),"true");
     await page.locator('#deleteDialog button[value="cancel"]').click();
     assert.equal(await page.locator("#deleteDialog").evaluate(el=>el.open),false);
     await page.waitForFunction(()=>document.querySelector("#deletePin").getAttribute("aria-expanded")==="false");
@@ -413,14 +423,20 @@ async function metrics(page){
      expanded:"true",background:"rgb(23, 100, 191)",
      border:"rgb(23, 100, 191)",ink:"rgb(255, 255, 255)"
    },"Desktop modal trigger must be BLUE, not red or hovered gray");
-   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v165-delete.png"});
+   await page.screenshot({path:"pin-dialog-visual-artifacts/desktop-v166-delete.png"});
+   assert.equal(await page.locator("#deleteDialog").evaluate(el=>el.matches(":modal")),false);
+   await page.locator("#deletePin").click();
+   await page.waitForFunction(()=>!document.querySelector("#deleteDialog").open &&
+     document.querySelector("#deletePin").getAttribute("aria-expanded")==="false");
+   await page.locator("#deletePin").click();
+   await page.locator("#deleteDialog").waitFor({state:"visible"});
    await page.keyboard.press("Escape");
    await page.waitForFunction(()=>document.querySelector("#deleteDialog").open===false&&
      document.querySelector("#deletePin").getAttribute("aria-expanded")==="false");
    assert.equal(await page.locator("#deletePin").getAttribute("aria-expanded"),"false");
    assert.equal(await page.locator("#deletePin").evaluate(el=>el.classList.contains("is-active")),false);
    assert.deepEqual(errors,[]);
-   console.log("[visual] PASS desktop v165 button state, weather and note-corner geometry");
+   console.log("[visual] PASS desktop v166 toggle, button state, weather and note-corner geometry");
   }finally{await desktop.close();}
  }finally{await browser.close();}
 })().catch(error=>{console.error("[visual] FAIL",error.stack||error);process.exitCode=1;});
