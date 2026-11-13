@@ -108,6 +108,9 @@ async function zoom(page){
         const centered=await page.locator(".pin-icon").last().boundingBox();
         assert.ok(centered&&centered.x>viewport.width*.25&&centered.x<viewport.width*.75,
           "Identical-position pins remain visible near the horizontal center");
+        // Emulated mobile tap generates a ghost-click suppression interval;
+        // wait for it to expire before asserting a distinct second gesture.
+        await page.waitForTimeout(720);
         await tap(page.locator(".pin-icon").last());
         await page.locator(".pin-overlap-chooser").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinPanel").isHidden(),true);
