@@ -19,7 +19,7 @@
       return button;
     }
     labeledButton(label,action,kind=""){
-      const b=this.button(null,label,action,"favorite-action"+(kind?" favorite-action-"+kind:""));
+      const b=this.button(null,label,action,"favorite-action"+(kind?" favorite-action-"+kind+" "+kind:""));
       b.textContent=label;return b;
     }
     start(mode,index=null){
