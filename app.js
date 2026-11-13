@@ -21,6 +21,21 @@
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
   const favorites=window.Pin2MapMapFavorites;
+  // Device-local presentation preference only: never include the debug hitbox
+  // overlay switch in syncable project data or alter the 52x56 tap geometry.
+  const HITBOX_DISPLAY_KEY="pin2map-show-yellow-pin-hitboxes-v1";
+  function applyHitboxDisplay(visible){
+    document.body.classList.toggle("pin-hitboxes-hidden",!visible);
+    $("showPinHitboxes").checked=visible;
+  }
+  function readHitboxDisplay(){
+    try{return localStorage.getItem(HITBOX_DISPLAY_KEY)!=="false";}
+    catch(_){return true;}
+  }
+  function writeHitboxDisplay(visible){
+    applyHitboxDisplay(visible);
+    try{localStorage.setItem(HITBOX_DISPLAY_KEY,String(visible));}catch(_){}
+  }
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
@@ -278,7 +293,7 @@
   function addMapFavorite(name){
     const letter=favorites.append(state,mapAdapter.getViewport(),state.layers,
       new Date().toISOString(),name,state.basemap);
-    if(!letter){setFavoriteMessage("Alle sieben Favoriten A–G sind belegt.");return;}
+    if(!letter){setFavoriteMessage("Alle 15 Favoriten A–O sind belegt.");return;}
     save();syncFavoritePanel();setFavoriteMessage("Favorit "+letter+" gespeichert.");
   }
   function replaceMapFavorite(index,name){
@@ -422,6 +437,8 @@
     overlayCoordinator.bind();
     basemapMenu.bind();
     satelliteInspector.bind();
+    applyHitboxDisplay(readHitboxDisplay());
+    $("showPinHitboxes").addEventListener("change",event=>writeHitboxDisplay(event.target.checked));
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
     $("addLayer").addEventListener("click",()=>layerCreation.create());
