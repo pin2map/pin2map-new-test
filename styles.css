@@ -877,6 +877,13 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
 /* Existing focused-pin editor should continue hiding all map controls,
    despite the explicit inline-flex declarations above. */
 body.favorites-open #app > button,
+body.favorites-open #app #basemapButton.basemap-map-button.p2m-icon-control,
+body.favorites-open #app #labelsToggle.labels-toggle.p2m-icon-control,
+body.favorites-open #app #settingsButton.settings-map-button.p2m-icon-control,
+body.favorites-open #app #refreshButton.refresh-map-button.p2m-icon-control,
+body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control,
+body.favorites-open #app #pinInfoButton.pin-info-button.p2m-icon-control,
+body.favorites-open #app #favoritesButton.favorites-map-button.p2m-icon-control,
 body.favorites-open #app .topbar,
 body.favorites-open #app .pin-zoom-buttons,
 body.favorites-open #app #basemapMenu,
