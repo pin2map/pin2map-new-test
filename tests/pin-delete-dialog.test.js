@@ -82,10 +82,6 @@ test("no selected pin does not open a dialog; repeated click while open always c
 });
 test("Escape cancels the nonmodal confirmation and resets blue state",()=>{
   const x=fixture();x.controller.bind();x.button.fire("click");
-  let prevented=false;
-  x.dialog.ownerDocument.addEventListener("keydown",event=>{
-    if(event.key==="Escape")prevented=true;
-  }); // event still reaches registered handler; no destructive confirmation
   x.keydown("Escape");
   assert.equal(x.dialog.open,false);
   assert.equal(x.button.getAttribute("aria-expanded"),"false");
