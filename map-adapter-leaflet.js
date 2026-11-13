@@ -50,6 +50,10 @@
       const p=this.map.containerPointToLatLng(xy(position));
       return {lat:p.lat,lng:p.lng};
     }
+    projectAtZoom(position,zoom){
+      const p=this.map.project(latLng(position),zoom);
+      return {x:p.x,y:p.y};
+    }
     panBy(position,options={}) {
       const p=xy(position);
       this.map.panBy([p.x,p.y],options);
