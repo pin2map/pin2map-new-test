@@ -4,7 +4,7 @@ const fs=require("node:fs"),path=require("node:path");
 const marker=require("../ui/pin-marker-view.js");
 const NoteEditor=require("../ui/pin-note-editor.js");
 const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
-test("compact wide pin has three SVG sectors, a white ring and a separate 44px touch target",()=>{
+test("compact 30x40 pin retains three status sectors and a yellow 52x56 test hitbox",()=>{
  const pin={id:"p",name:"Test",note:"Eine Notiz",url:"obsidian://note/a",gpxKey:"track"};
  const look=marker.appearance({pin,color:"#2474b7",selected:true});
  assert.match(look.html,/pin-marker selected/);
@@ -16,8 +16,10 @@ test("compact wide pin has three SVG sectors, a white ring and a separate 44px t
  assert.match(look.html,/fill="#8f989f"/);
  assert.ok(!look.html.includes("pin-status-column"));
  const css=read("styles.css");
- assert.match(css,/\.pin-marker\{[^}]*width:36px;height:48px/);
- assert.match(read("map-adapter-leaflet.js"),/iconSize:\[52,56\],iconAnchor:\[26,47\]/);
+ assert.match(css,/\.pin-marker\{[^}]*width:30px;height:40px/);
+ assert.match(read("map-adapter-leaflet.js"),/iconSize:\[52,56\],iconAnchor:\[26,39\]/);
+ assert.match(css,/#map \.leaflet-marker-icon\.pin-icon\{[^}]*background:rgba\(255,224,0,\.55\)/);
+ assert.match(read("map-adapter-leaflet.js"),/iconAnchor:\[0,47\]/);
 });
 test("all 8 note URL GPX combinations map to independent sector colors",()=>{
  const fills={note:"#d94f55",url:"#2979d1",gpx:"#8f989f"};
