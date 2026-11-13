@@ -3,16 +3,23 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const f=require("../application/map-favorites.js");
 const view=n=>({center:{lat:50+n/100,lng:10},zoom:8+n});
 const layers=()=>[{id:"private",visible:true},{id:"layer-1",visible:false}];
-test("A-G active cap is seven but internal A-Z schema capacity remains 26",()=>{
+test("A-O trial capacity is fifteen, while 26-place A-Z storage model remains unchanged",()=>{
   const project={layers:layers(),favorites:[]};
   assert.equal(f.CAPACITY,26);
-  assert.equal(f.ACTIVE_CAPACITY,7);
-  for(let i=0;i<7;i++)assert.equal(f.append(project,view(i),project.layers,"2026-11-13T11:00:00.000Z","Hamburg","topo"),String.fromCharCode(65+i));
-  assert.equal(f.items(project).at(-1).letter,"G");
-  assert.equal(f.append(project,view(7),project.layers,"now","Boston","street"),null);
-  assert.equal(project.favorites.length,7);
+  assert.equal(f.ACTIVE_CAPACITY,15);
+  for(let i=0;i<15;i++)assert.equal(
+    f.append(project,view(i),project.layers,"2026-11-13T11:00:00.000Z","Hamburg","topo"),
+    String.fromCharCode(65+i));
+  assert.equal(f.items(project).at(-1).letter,"O");
+  assert.equal(f.append(project,view(15),project.layers,"now","Boston","street"),null);
+  assert.equal(project.favorites.length,15);
   assert.equal(project.favorites[0].name,"Hamburg");
   assert.equal(project.favorites[0].basemap,"topo");
+  // The lückenlos index policy still applies when deleting from a full list.
+  assert.equal(f.remove(project,2),true);
+  assert.equal(f.items(project)[2].letter,"C");
+  assert.equal(f.items(project)[2].name,"Hamburg");
+  assert.equal(f.append(project,view(15),project.layers,"now","Boston","street"),"O");
 });
 test("deletion compacts letters and full replacement discards old record",()=>{
   const project={layers:layers(),favorites:[]};
