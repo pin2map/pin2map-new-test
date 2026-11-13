@@ -318,8 +318,10 @@ body.pin-open .pin-dialog-tip:not(.hidden){display:block}
 }
 button.p2m-icon-control{
   appearance:none;display:inline-flex;align-items:center;justify-content:center;
+  box-sizing:border-box;flex-shrink:0;aspect-ratio:1;
   width:var(--p2m-button-size);height:var(--p2m-button-size);
   min-width:var(--p2m-button-size);min-height:var(--p2m-button-size);
+  max-width:var(--p2m-button-size);max-height:var(--p2m-button-size);
   padding:0;border-radius:50%!important;
   border:1px solid var(--p2m-button-border)!important;
   background:var(--p2m-button-bg)!important;color:var(--p2m-button-ink)!important;
@@ -1456,7 +1458,10 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{z-index:1300}
 #app .favorites-panel{
-  position:absolute;z-index:1280;box-sizing:border-box;
+  /* The inline editor may extend upward into the trigger's screen area on
+     iPhone. The panel must always paint ABOVE its blue opener, never let
+     the star cover a favorite row or the rename/delete controls. */
+  position:absolute;z-index:1350;box-sizing:border-box;
   left:auto;right:var(--p2m-top-corner-inset);
   top:calc(var(--p2m-top-corner-offset) + 2 * var(--p2m-map-circle-size) + 16px + env(safe-area-inset-top,0px));
   bottom:auto;
@@ -1481,7 +1486,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
    dimensions for textual actions. Scroll and confirmations stay inside panel. */
 #app .favorites-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}
 #app .favorites-head button{display:inline-flex;align-items:center;justify-content:center;
-  width:35px;height:35px;min-width:35px;flex:0 0 35px;border-radius:9px;
+  box-sizing:border-box;width:35px;height:35px;min-width:35px;max-width:35px;
+  min-height:35px;max-height:35px;flex:0 0 35px;border-radius:50%;
   border:1px solid #b7c5d4;background:#fff;color:#243b54}
 #app .favorites-head svg{width:19px;height:19px}
 #app .favorites-list{overflow-y:auto;min-height:0;overscroll-behavior:contain}
