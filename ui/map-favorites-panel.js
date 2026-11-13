@@ -38,7 +38,7 @@
       const target=this.el("favoritesList");
       target.replaceChildren();
       const controls=this.el("favoritesAdd");
-      controls.disabled=values.length>=26;
+      controls.disabled=false; // At capacity the app shows a useful message and offers replacement.
       if(!values.length){
         const empty=this.doc.createElement("p");
         empty.className="favorites-empty";empty.textContent="Noch keine Favoriten gespeichert.";
