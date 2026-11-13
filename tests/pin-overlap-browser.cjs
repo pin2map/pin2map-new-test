@@ -21,6 +21,9 @@ async function setPins(page,pins,zoom=12){
         note:"",url:""
       }));
       await store.saveProject(project);
+      // New v169 history intentionally survives reload. Each fixture must
+      // explicitly reset its own device history when replacing the project.
+      await store.saveViewHistory(null);
     }finally{store.close();}
   },{pins,zoom});
   await page.reload({waitUntil:"domcontentloaded",timeout:30000});
