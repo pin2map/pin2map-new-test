@@ -122,7 +122,7 @@ check(app.includes("mapAdapter.setBasemap(state.basemap,{") &&
   app.includes("esriRelief:!!state.esriRelief") &&
   app.includes("satelliteBrightness:state.satelliteBrightness") &&
   map.includes("setSatelliteAppearance(") &&
-  app.includes("mapAdapter.addZoomControls({onFitAll:fitAllPins})"),
+  app.includes("mapAdapter.addZoomControls({onFitAll:fitAllPins,onUndo:()=>pinOverlapZoom.undo()})"),
   "map selection and zoom controls use Leaflet adapter");
 check(html.includes('id="refreshButton"') &&
   app.includes('updateViaCache:"none"'),
