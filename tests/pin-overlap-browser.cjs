@@ -270,6 +270,30 @@ async function zoom(page){
         assert.ok(saved.history?.entries.length>0);
         assert.equal(Object.hasOwn(saved.project,"localMapViewHistory"),false,
           "Project sync data must not contain device-specific history");
+        // All seven active A-G places can be filled, then add is genuinely
+        // disabled. Replacing or renaming an existing place remains possible.
+        for(let i=1;i<7;i++){
+          await page.locator("#favoritesAdd").click();
+          await page.locator(".favorite-name-input").fill("Platz "+String.fromCharCode(65+i));
+          await page.locator(".favorite-confirm-actions button").last().click();
+        }
+        assert.equal(await page.locator(".favorite-row").count(),7);
+        assert.equal(await page.locator(".favorite-open").last().textContent(),"G");
+        assert.equal(await page.locator("#favoritesAdd").isDisabled(),true);
+        assert.equal(await page.locator(".favorite-row").last().locator(".favorite-edit").isEnabled(),true);
+        // Simulate a keyboard-shrunken visual area and edit the last row.
+        await page.locator(".favorite-row").last().locator(".favorite-edit").click();
+        assert.equal(await page.locator("#favoritesPanel.is-editing").count(),1);
+        await page.setViewportSize({width:viewport.width,height:390});
+        await page.waitForTimeout(280);
+        const editorBounds=await page.locator(".favorite-confirm").boundingBox();
+        const viewportBounds=await page.locator("#favoritesPanel").boundingBox();
+        assert.ok(editorBounds&&viewportBounds&&editorBounds.y>=viewportBounds.y-2&&
+          editorBounds.y+Math.min(editorBounds.height,viewportBounds.height-90)<=
+          viewportBounds.y+viewportBounds.height+3,
+          "Favorite name editor must remain accessible inside reduced keyboard viewport");
+        await page.setViewportSize({width:viewport.width,height:viewport.height});
+        await page.locator(".favorite-confirm-actions button").first().click();
         await page.locator("#favoritesCloseBottom").click();
         assert.deepEqual(errors,[]);
         console.log("[favorites] PASS",viewport.name,
