@@ -1375,7 +1375,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
    Keep the original pin-name header visible; unlike bulk deletion it
    must never become an unrelated screen-centred confirmation. */
 #deleteDialog{
-  position:fixed;inset:auto;box-sizing:border-box;max-width:none;max-height:none;
+  /* Nonmodal so the visible #deletePin in the header can toggle it off.
+     Keep the confirmation above the pin panel, with identical geometry. */
+  position:fixed;z-index:1350;inset:auto;box-sizing:border-box;max-width:none;max-height:none;
   margin:0;padding:20px 18px;overflow:auto;
   /* Exactly the same opaque shared surface as #pinPanel, including on iOS. */
   background-color:var(--p2m-pin-dialog-surface);border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
