@@ -59,7 +59,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(scaleBefore.pointerEvents,"none");
     assert.equal(scaleBefore.fontWeight,"600");
     const labelBefore=scaleBefore.text;
-    await page.locator(".pin-zoom-button").nth(1).click();
+    await page.locator(".pin-zoom-button").nth(2).click();
     await page.waitForFunction(before=>
       document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()!==before,
       labelBefore,{timeout:6000});
