@@ -84,9 +84,9 @@ const anchored=anchorGeometry({
   appRect:{left:0,top:0,width:400,height:500},
   panelHeight:140
 });
-check(anchored.panel.left===8 && anchored.panel.top===24 &&
-  anchored.tip.left===200 && anchored.tip.top===164,
-  "pin editor preserves the larger-marker 86px pointer clearance");
+check(anchored.panel.left===8 && anchored.panel.top===16 &&
+  anchored.tip.left===200 && anchored.tip.top===156,
+  "pin editor protects the 94px clearance around upper information label");
 const correction=openingCorrection({
   appRect:{left:0,top:0,right:400,bottom:500},
   panelRect:{left:-10,top:25,right:300,bottom:170},
