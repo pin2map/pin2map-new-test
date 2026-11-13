@@ -363,7 +363,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await page.reload({waitUntil:"domcontentloaded"});
         await page.waitForFunction(()=>Boolean(window.L)&&
           document.querySelector("#map.leaflet-container")&&
-          document.querySelectorAll(".pin-zoom-button").length===3,
+          document.querySelectorAll(".pin-zoom-button").length===4,
           null,{timeout:22000});
         assert.deepEqual(errors,[],"Errors after reload: "+errors.join("; "));
         console.log("PASS live map startup, controls, attribution and reload:",name,url);
