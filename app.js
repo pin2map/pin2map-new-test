@@ -536,9 +536,8 @@
     window.Pin2MapIcons.mount($("favoritesButton"),"star");
     window.Pin2MapIcons.mount($("favoritesClose"),"x");
     const favoriteAdd=$("favoritesAdd");
-    const favoriteAddLabel=favoriteAdd.querySelector("span");
     const favoriteIcon=window.Pin2MapIcons.svg("star-plus",document);
-    favoriteAdd.prepend(favoriteIcon);
+    favoriteAdd.replaceChildren(favoriteIcon,document.createTextNode("Aktuelle Ansicht speichern"));
     $("favoritesButton").addEventListener("click",()=>favoritesPanel.toggle(currentFavorites()));
     $("favoritesClose").addEventListener("click",()=>favoritesPanel.close());
     favoriteAdd.addEventListener("click",addMapFavorite);
