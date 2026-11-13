@@ -69,6 +69,7 @@ async function zoom(page){
         assert.ok(Math.abs(firstBox.x-secondBox.x)<52,
           "Precondition: actual 52px hitboxes overlap at low zoom");
         const initialScale=await zoom(page);
+        assert.equal(await page.locator(".pin-zoom-buttons button").first().getAttribute("title"),"Zurück zur letzten Ansicht");
         await page.screenshot({path:"pin-overlap-artifacts/"+viewport.name+"-before.png"});
         const tap=async locator=>viewport.hasTouch?locator.tap({force:true}):locator.click({force:true});
         await tap(page.locator(".pin-icon").last());
@@ -98,17 +99,27 @@ async function zoom(page){
         ];
         await setPins(page,same);
         await tap(page.locator(".pin-icon").last());
+        assert.equal(await page.locator(".pin-overlap-chooser").count(),0,
+          "Overview tap must first zoom and show the pin");
+        assert.notEqual(await zoom(page),initialScale);
+        const centered=await page.locator(".pin-icon").last().boundingBox();
+        assert.ok(centered&&centered.x>viewport.width*.25&&centered.x<viewport.width*.75,
+          "Identical-position pins remain visible near the horizontal center");
+        await tap(page.locator(".pin-icon").last());
         await page.locator(".pin-overlap-chooser").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinPanel").isHidden(),true);
         assert.equal(await page.locator(".pin-overlap-choice").count(),2);
-        assert.equal(await zoom(page),initialScale,
-          "Identical coordinates must offer choices without needless zoom");
+        assert.match(await page.locator(".pin-overlap-choice").first().textContent(),/Privat/,
+          "Chooser must identify the pin layer");
         await page.screenshot({path:"pin-overlap-artifacts/"+viewport.name+"-exact-chooser.png"});
         await page.locator(".pin-overlap-choice").filter({hasText:"Identisch A"}).click();
         await page.locator("#pinPanel").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinName").inputValue(),"Identisch A");
         assert.equal(await page.locator(".pin-overlap-chooser").count(),0);
         await page.locator("#closePin").click();
+        await page.locator(".pin-zoom-buttons button").first().click();
+        assert.equal(await zoom(page),initialScale,
+          "Lucide undo-2 above zoom+ must restore the prior viewport");
 
         // A single isolated marker still opens immediately and keeps zoom.
         await setPins(page,[{id:"solo",lat:48.7758,lng:9.1829,name:"Allein"}]);
