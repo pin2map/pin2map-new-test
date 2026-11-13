@@ -59,13 +59,13 @@ async function longPress(page,x,y,ms=725){
     assert.equal(scaleBefore.pointerEvents,"none");
     assert.equal(scaleBefore.fontWeight,"600");
     const labelBefore=scaleBefore.text;
-    await page.locator(".pin-zoom-button").first().click();
+    await page.locator(".pin-zoom-button").nth(1).click();
     await page.waitForFunction(before=>
       document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()!==before,
       labelBefore,{timeout:6000});
     assert.equal(await scale.count(),1,"Zoom must not insert a second scale");
     assert.equal(await scale.locator(".leaflet-control-scale-line").count(),1);
-    await page.locator(".pin-zoom-button").nth(1).click();
+    await page.locator(".pin-zoom-button").nth(2).click();
     await page.waitForFunction(before=>
       document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()===before,
       labelBefore,{timeout:6000});
