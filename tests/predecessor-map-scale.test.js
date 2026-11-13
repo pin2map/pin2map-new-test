@@ -15,7 +15,8 @@ test("predecessor native scale is renderer-owned and mounted exactly once",()=>{
   assert.doesNotMatch(get("adapters/storage/indexeddb-project-store.js"),/scaleControl/);
 });
 test("predecessor scale visual contract uses one scoped CSS owner and hides during pin editing",()=>{
-  const css=get("styles.css"),added=css.slice(css.indexOf("/* Predecessor map scale:"));
+  const css=get("styles.css"),start=css.indexOf("/* Predecessor map scale:");
+  const added=css.slice(start,css.indexOf("/* Single-pin deletion is anchored",start));
   assert.match(added,/#map \.leaflet-control-scale\{/);
   assert.match(added,/position:fixed;left:50%;top:max\(76px/);
   assert.match(added,/max-width:600px/);
