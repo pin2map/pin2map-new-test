@@ -579,12 +579,13 @@ body.pin-relocation-picking #map .leaflet-interactive{
   box-shadow:var(--p2m-button-shadow);
 }
 /* Pin OK hover is owned by the common dialog-button rule below. */
-/* Shared blue-open-state contract: dialogs and subordinate menus. */
-#pinPanel .pin-actions button.p2m-icon-control.is-active,
-#pinPanel #pinLayerTrigger[aria-expanded="true"],
-#pinPanel #pinWeather.is-active{
+/* Shared blue-open-state contract for ALL internal Pin-dialog views.
+   Explicit ARIA state beats mouse hover, sticky iOS :active and the red
+   default delete trigger; the confirmation's destructive action stays red. */
+#pinPanel button:is([aria-expanded="true"],[aria-pressed="true"],.is-active):not(#pinNotesExpand),
+#pinPanel #deletePin.p2m-icon-control[aria-expanded="true"]{
   background:#1764bf!important;color:#fff!important;border-color:#1764bf!important;
-  --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;
+  --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;--p2m-button-border:#1764bf;
 }
 #pinPanel #pinUrlButton{position:relative}
 #pinPanel #pinUrlButton.has-url::after{
@@ -1376,7 +1377,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #deleteDialog{
   position:fixed;inset:auto;box-sizing:border-box;max-width:none;max-height:none;
   margin:0;padding:20px 18px;overflow:auto;
-  background:var(--p2m-pin-dialog-surface);border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
+  /* Exactly the same opaque shared surface as #pinPanel, including on iOS. */
+  background-color:var(--p2m-pin-dialog-surface);border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
   box-shadow:0 8px 22px #152c4525;
 }
 #deleteDialog::backdrop{background:transparent}
