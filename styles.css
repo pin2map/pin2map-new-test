@@ -876,7 +876,15 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
    Current positions are owned by the upper-corner and bottom-right rules below. */
 /* Existing focused-pin editor should continue hiding all map controls,
    despite the explicit inline-flex declarations above. */
-body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton),
+body.favorites-open #app > button,
+body.favorites-open #app .topbar,
+body.favorites-open #app .pin-zoom-buttons,
+body.favorites-open #app #basemapMenu,
+body.favorites-open #app #pinInfoMenu,
+body.favorites-open #app #layersPanel,
+body.favorites-open #app #settingsPanel,
+body.pin-open #app #favoritesPanel,
+body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton,#favoritesButton),
 body.pin-open #app #basemapMenu,
 body.pin-open #app #pinInfoMenu,
 body.pin-open #app .topbar,
@@ -1422,3 +1430,50 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 
 /* v168: unavailable viewport history must be visually and functionally inactive. */
 #app #map .pin-zoom-buttons .pin-zoom-button:disabled{opacity:.42;cursor:default}
+
+/* v169 favorites are bottom-left beside the existing fit-all control. The
+   panel, including replacement confirmation, is anchored to that control,
+   never a centered modal. Map contents and attribution remain untouched. */
+#app #favoritesButton.favorites-map-button{
+  position:absolute;z-index:1190;
+  left:calc(10px + var(--p2m-map-circle-size) + 8px);
+  bottom:var(--p2m-bottom-control-baseline);
+}
+#app .favorites-panel{
+  position:absolute;z-index:1280;box-sizing:border-box;
+  left:10px;bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 10px);
+  width:min(390px,calc(100vw - 20px));max-height:min(75dvh,680px);
+  display:flex;flex-direction:column;gap:10px;
+  padding:13px;background:#f7f8fa;border:1px solid #c2cbd6;border-radius:14px;
+  box-shadow:0 8px 28px #142a4460;color:#243b54;
+}
+#app .favorites-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}
+#app .favorites-head button{display:inline-flex;align-items:center;justify-content:center;
+  width:35px;height:35px;flex:0 0 35px;border-radius:9px;border:1px solid #b7c5d4;background:white;color:#243b54}
+#app .favorites-head svg{width:19px;height:19px}
+#app .favorites-list{overflow-y:auto;min-height:0;overscroll-behavior:contain}
+#app .favorite-row{display:flex;align-items:center;gap:6px;margin:4px 0;padding:4px 3px;
+  border:1px solid #d2dbe5;border-radius:10px;background:white}
+#app .favorite-row button{cursor:pointer}
+#app .favorite-row .favorite-icon{display:flex;justify-content:center;align-items:center;
+  flex:0 0 38px;width:38px;height:38px;padding:7px;border:1px solid #d4deea;
+  border-radius:8px;background:#f7f9fc;color:#24415d}
+#app .favorite-row .favorite-icon svg{width:19px;height:19px}
+#app .favorite-select{flex:1 1 auto;min-width:0;display:flex;justify-content:flex-start;
+  align-items:center;gap:12px;border:0;background:transparent;text-align:left;color:#263b54;padding:8px 2px}
+#app .favorite-select strong{font-size:16px;min-width:20px}
+#app .favorite-select span{font-size:12px;white-space:nowrap}
+#app .favorites-empty{font-size:14px;color:#536779;margin:15px 0}
+#app .favorites-add{display:flex;justify-content:center;align-items:center;gap:8px;
+  min-height:43px;border:1px solid #acc6dc;border-radius:10px;background:#eaf2fc;
+  color:#19436c;font-weight:600;cursor:pointer}
+#app .favorites-add svg{width:20px;height:20px;flex:0 0 20px}
+#app .favorites-message{font-size:12px;color:#455d76;margin:0;min-height:0}
+#app .favorites-message:empty{display:none}
+#app .favorite-confirm{padding:9px;margin:3px 0 9px;border:1px solid #acc2d7;
+  border-radius:9px;background:#ecf3fb;font-size:13px}
+#app .favorite-confirm p{margin:0 0 8px}
+#app .favorite-confirm-actions{display:flex;justify-content:flex-end;gap:8px}
+#app .favorite-confirm-actions button{min-height:36px;padding:7px 10px;border-radius:8px;
+  border:1px solid #aebfce;background:white;color:#243b54;cursor:pointer}
+#app .favorite-confirm-actions button:last-child{background:#1764bf;color:white;border-color:#1764bf}
