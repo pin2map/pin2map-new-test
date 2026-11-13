@@ -87,7 +87,7 @@ test("overview duplicates zoom into a centered visible pin before asking for cho
   assert.equal(f.controller.canUndo(),true);
   assert.equal(f.controller.handleTap("b"),"choices");
   assert.deepEqual(f.controller.menu.children.slice(1).map(b=>b.textContent),
-    ["Fulda · Ebene 1 · 1","Fulda · Privat · 2"]);
+    ["Fulda · Privat · 1","Fulda · Ebene 1 · 2"]);
   assert.deepEqual(f.selected,[]);
   assert.equal(f.controller.undo(),true);
   assert.equal(f.pans.at(-1).next.zoom,6);
