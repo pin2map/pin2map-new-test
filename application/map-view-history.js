@@ -10,8 +10,12 @@
     return {center:{lat,lng},zoom};
   }
   function same(a,b){
-    return !!a&&!!b&&Math.abs(a.center.lat-b.center.lat)<1e-8&&
-      Math.abs(a.center.lng-b.center.lng)<1e-8&&Math.abs(a.zoom-b.zoom)<1e-6;
+    if(!a||!b||Math.abs(a.zoom-b.zoom)>1e-6)return false;
+    // Leaflet normalizes setView() to its pixel grid. A half-pixel rounding
+    // delta is NOT a user navigation; recording it would make Undo loop.
+    const halfPixel=0.6*360/(256*2**a.zoom);
+    return Math.abs(a.center.lat-b.center.lat)<halfPixel&&
+      Math.abs(a.center.lng-b.center.lng)<halfPixel;
   }
   class MapViewHistory{
     constructor({onChange=()=>{},onSave=()=>{},maxUndo=LIMIT}={}){
