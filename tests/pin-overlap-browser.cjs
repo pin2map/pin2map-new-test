@@ -172,6 +172,9 @@ async function zoom(page){
         await page.locator(".favorite-select").first().click();
         assert.equal(await zoom(page),soloScale,"Favorit A restores its saved map zoom");
         await page.waitForTimeout(450);
+        console.log("[favorite history diagnostic] pre Undo",viewport.name,
+          JSON.stringify(await inspectHistory()),"scale",await zoom(page),"initial",soloScale,
+          "undo disabled",await page.locator(".pin-zoom-button").first().isDisabled());
         await page.locator(".pin-zoom-button").first().click();
         assert.notEqual(await zoom(page),soloScale,"Undo returns from favorite to previous map view");
         await page.locator(".pin-zoom-button").nth(1).click();
