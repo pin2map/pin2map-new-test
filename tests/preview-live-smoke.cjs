@@ -23,10 +23,22 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         page.on("pageerror",error=>errors.push(error.message));
         const url=base+variant;
         await page.goto(url,{waitUntil:"domcontentloaded",timeout:35000});
-        await page.waitForFunction(()=>Boolean(window.L)&&
-          document.querySelector("#map.leaflet-container")&&
-          document.querySelectorAll(".pin-zoom-button").length===4,
-          null,{timeout:22000});
+        try{
+          await page.waitForFunction(()=>Boolean(window.L)&&
+            document.querySelector("#map.leaflet-container")&&
+            document.querySelectorAll(".pin-zoom-button").length===4,
+            null,{timeout:10000});
+        }catch(error){
+          const state=await page.evaluate(()=>({
+            leaflet:!!window.L,
+            map:!!document.querySelector("#map.leaflet-container"),
+            zoomButtons:document.querySelectorAll(".pin-zoom-button").length,
+            scripts:[...document.scripts].map(el=>el.src).filter(Boolean).slice(-7),
+            bodyText:document.body?.innerText.slice(0,350)
+          }));
+          console.error("LIVE START DIAGNOSTIC",name,JSON.stringify(state),errors);
+          throw error;
+        }
         const loaded=await page.evaluate(()=>({
           leaflet:!!window.L,zoomButtons:document.querySelectorAll(".pin-zoom-button").length,
           map:!!document.querySelector("#map.leaflet-container")
