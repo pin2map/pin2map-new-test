@@ -55,7 +55,7 @@ test("optional GPX row and weather view are isolated from persistence",()=>{
  assert.match(details,/pin\.gpxKey\|\|pin\.gpxTrackId/);
  assert.match(css,/#pinPanel \.pin-gpx-actions/);
  assert.match(css,/#pinPanel #pinUrlButton\.has-url::after/);
- assert.match(css,/#pinPanel #pinWeather\.is-active/);
+ assert.match(css,/#pinPanel button:is\(\[aria-expanded="true"\],\[aria-pressed="true"\],\.is-active\):not\(#pinNotesExpand\)/);
 });
 
 test("every internal pin-dialog view has a shared, device-independent blue open state",()=>{
