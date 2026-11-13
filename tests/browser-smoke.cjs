@@ -65,7 +65,7 @@ async function longPress(page,x,y,ms=725){
       labelBefore,{timeout:6000});
     assert.equal(await scale.count(),1,"Zoom must not insert a second scale");
     assert.equal(await scale.locator(".leaflet-control-scale-line").count(),1);
-    await page.locator(".pin-zoom-button").nth(2).click();
+    await page.locator(".pin-zoom-button").nth(3).click();
     await page.waitForFunction(before=>
       document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()===before,
       labelBefore,{timeout:6000});
