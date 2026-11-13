@@ -150,16 +150,31 @@ async function zoom(page){
         assert.equal(await favoriteTrigger.getAttribute("data-pin-icon"),"star");
         await favoriteTrigger.click();
         assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
+        assert.equal(await favoriteTrigger.isVisible(),true,
+          "Active favorite trigger remains visible below Layers");
+        assert.equal(await favoriteTrigger.getAttribute("aria-expanded"),"true");
+        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)",
+          "Expanded menu trigger must be blue");
+        const circle=await favoriteTrigger.boundingBox();
+        assert.ok(circle&&Math.abs(circle.width-circle.height)<1,
+          "Upper-right favorite trigger must be exactly circular");
+        const layers=await page.locator("#layersButton").boundingBox();
+        assert.ok(layers&&circle.y>layers.y+layers.height,
+          "Favorites trigger must be below the Layers control");
         assert.equal(await page.locator(".pin-icon").count(),1);
         assert.equal(await page.locator("#basemapButton").isHidden(),true);
         assert.equal(await page.locator(".pin-zoom-buttons").isHidden(),true);
         assert.equal(await page.locator("#map .leaflet-control-attribution").isVisible(),true);
         const footer=page.locator("#favoritesAdd");
-        assert.match(await footer.innerText(),/Aktuelle Ansicht speichern/);
+        assert.match(await footer.innerText(),/Ansicht hinzufügen/);
         assert.equal(await footer.locator("svg").count(),1);
         const box=await footer.boundingBox();
-        assert.ok(box&&box.width>130&&box.height<75,
-          "Footer save must be a compact rectangle, not an oversized round icon");
+        const closeBox=await page.locator("#favoritesCloseBottom").boundingBox();
+        assert.ok(box&&box.width>100&&box.height<75,
+          "Add action must stay a compact rectangular text button");
+        assert.ok(closeBox&&Math.abs(closeBox.y-box.y)<2,
+          "Add and Close footer buttons must sit side-by-side");
+        assert.equal(await footer.locator("svg").first().getAttribute("class"),"p2m-lucide");
 
         // New favorite asks for a name and suggests the pin nearest center.
         await footer.click();
@@ -191,16 +206,17 @@ async function zoom(page){
         await page.locator(".pin-zoom-button").nth(1).click();
         assert.equal(await zoom(page),soloScale,"Redo returns to selected favorite");
 
-        // Tapping the name edits it inside the panel, not on the map.
+        // Square-pen edits inside panel. The name is also an edit shortcut.
         await favoriteTrigger.click();
-        await page.locator(".favorite-name").first().click();
+        assert.equal(await page.locator(".favorite-edit").first().getAttribute("data-pin-icon"),"square-pen");
+        await page.locator(".favorite-edit").first().click();
         assert.equal(await page.locator(".favorite-name-input").inputValue(),"Meine Übersicht");
         await page.locator(".favorite-name-input").fill("Umbenannt");
         await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Umbenannt");
 
-        // Replacement needs in-panel confirmation and uses copy-plus.
-        assert.equal(await page.locator(".favorite-row .favorite-icon").first().getAttribute("data-pin-icon"),"copy-plus");
+        // Replacement needs in-panel confirmation and now uses plus.
+        assert.equal(await page.locator(".favorite-row .favorite-icon").first().getAttribute("data-pin-icon"),"plus");
         await page.locator(".favorite-row .favorite-icon").first().click();
         assert.equal(await page.locator(".favorite-confirm").count(),1);
         await page.locator(".favorite-confirm-actions button").first().click();
@@ -220,6 +236,12 @@ async function zoom(page){
         assert.match(await page.locator(".favorite-confirm-actions .favorite-action-danger").textContent(),/Löschen/);
         await page.locator(".favorite-confirm-actions button").first().click();
         assert.equal(await page.locator(".favorite-row").count(),2);
+        const removeCircle=await page.locator(".favorite-row").first().locator(".favorite-remove").boundingBox();
+        assert.ok(removeCircle&&Math.abs(removeCircle.width-removeCircle.height)<1,
+          "Favorite row icon buttons must remain perfectly round");
+        assert.equal(await page.locator(".favorite-row").first().locator(".favorite-remove").evaluate(
+          el=>getComputedStyle(el.querySelector("svg")).color),"rgb(191, 36, 49)",
+          "Remove icon itself must be red");
         await page.locator(".favorite-row").first().locator(".favorite-remove").click();
         await page.locator(".favorite-confirm-actions .favorite-action-danger").click();
         assert.equal(await page.locator(".favorite-open").first().textContent(),"A",
