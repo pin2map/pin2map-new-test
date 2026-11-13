@@ -876,14 +876,13 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
    Current positions are owned by the upper-corner and bottom-right rules below. */
 /* Existing focused-pin editor should continue hiding all map controls,
    despite the explicit inline-flex declarations above. */
-body.favorites-open #app > button,
+body.favorites-open #app > button:not(#favoritesButton),
 body.favorites-open #app #basemapButton.basemap-map-button.p2m-icon-control,
 body.favorites-open #app #labelsToggle.labels-toggle.p2m-icon-control,
 body.favorites-open #app #settingsButton.settings-map-button.p2m-icon-control,
 body.favorites-open #app #refreshButton.refresh-map-button.p2m-icon-control,
 body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control,
 body.favorites-open #app #pinInfoButton.pin-info-button.p2m-icon-control,
-body.favorites-open #app #favoritesButton.favorites-map-button.p2m-icon-control,
 body.favorites-open #app .topbar,
 body.favorites-open #app .pin-zoom-buttons,
 body.favorites-open #app #basemapMenu,
@@ -1023,7 +1022,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #basemapButton.basemap-map-button.p2m-icon-control[aria-expanded="true"],
 #app #pinInfoButton.pin-info-button.p2m-icon-control[aria-expanded="true"],
 #app #layersButton.layers-bottom-button.p2m-icon-control[aria-expanded="true"],
-#app #settingsButton.settings-map-button.p2m-icon-control[aria-expanded="true"]{
+#app #settingsButton.settings-map-button.p2m-icon-control[aria-expanded="true"],
+#app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{
   --p2m-map-control-bg:#1764bf;
   --p2m-map-control-ink:#fff;
 }
@@ -1443,19 +1443,38 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 /* v169 favorites are bottom-left beside the existing fit-all control. The
    panel, including replacement confirmation, is anchored to that control,
    never a centered modal. Map contents and attribution remain untouched. */
-#app #favoritesButton.favorites-map-button{
-  position:absolute;z-index:1190;
-  left:calc(10px + var(--p2m-map-circle-size) + 8px);
-  bottom:var(--p2m-bottom-control-baseline);
+#app #favoritesButton.favorites-map-button.p2m-icon-control{
+  position:absolute;z-index:1300;
+  left:auto!important;right:var(--p2m-top-corner-inset)!important;
+  top:calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;
+  /* Same invariant circle diameter as all other map controls. */
+  width:var(--p2m-map-circle-size)!important;height:var(--p2m-map-circle-size)!important;
+  min-width:var(--p2m-map-circle-size)!important;min-height:var(--p2m-map-circle-size)!important;
+  max-width:var(--p2m-map-circle-size)!important;max-height:var(--p2m-map-circle-size)!important;
+  border-radius:50%!important;aspect-ratio:1;
 }
 #app .favorites-panel{
   position:absolute;z-index:1280;box-sizing:border-box;
-  left:10px;bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 10px);
-  width:min(390px,calc(100vw - 20px));max-height:min(75dvh,680px);
+  left:auto;right:var(--p2m-top-corner-inset);
+  top:calc(var(--p2m-top-corner-offset) + 2 * var(--p2m-map-circle-size) + 16px + env(safe-area-inset-top,0px));
+  bottom:auto;
+  width:min(390px,calc(100vw - 20px));
+  max-height:min(680px,calc(100dvh - var(--p2m-top-corner-offset) - 2 * var(--p2m-map-circle-size) - 28px - env(safe-area-inset-top,0px)));
   display:flex;flex-direction:column;gap:10px;
   padding:13px;background:#f7f8fa;border:1px solid #c2cbd6;border-radius:14px;
   box-shadow:0 8px 28px #142a4460;color:#243b54;
 }
+#app #favoritesPanel.favorites-panel.is-editing{
+  /* Safari visualViewport = actual space above keyboard, not layout viewport. */
+  position:fixed;left:auto;right:var(--p2m-top-corner-inset);
+  top:var(--p2m-favorites-keyboard-top,8px);
+  max-height:var(--p2m-favorites-keyboard-height,calc(100dvh - 16px));
+  bottom:auto;
+}
+#app .favorites-panel.is-editing .favorites-footer{display:none}
+#app .favorites-panel.is-editing .favorites-list{scroll-padding-block:10px}
+
 
 /* v170 favorites panel owns its own controls; never inherit round map-button
    dimensions for textual actions. Scroll and confirmations stay inside panel. */
@@ -1469,10 +1488,14 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   border:1px solid #d2dbe5;border-radius:10px;background:#fff}
 #app .favorite-row button{cursor:pointer}
 #app .favorite-row .favorite-icon{display:inline-flex;justify-content:center;align-items:center;
-  flex:0 0 38px;width:38px;height:38px;min-width:38px;max-width:38px;
-  padding:7px;border:1px solid #d4deea;border-radius:8px;background:#f7f9fc;color:#24415d}
+  box-sizing:border-box;flex:0 0 36px;width:36px;height:36px;
+  min-width:36px;min-height:36px;max-width:36px;max-height:36px;
+  aspect-ratio:1;border-radius:50%;overflow:hidden;
+  padding:7px;border:1px solid #d4deea;background:#f7f9fc;color:#24415d}
 #app .favorite-row .favorite-icon svg{width:19px;height:19px}
-#app .favorite-row .favorite-remove{color:#b42330;background:#fff0f0;border-color:#e5abab}
+#app .favorite-row .favorite-remove{color:#bf2431!important;background:#fff0f0;border-color:#e5abab}
+#app .favorite-row .favorite-remove .p2m-lucide{color:#bf2431!important;stroke:#bf2431!important}
+#app .favorite-row .favorite-edit{color:#24415d}
 #app .favorite-open{flex:0 0 25px;min-width:25px;background:transparent;border:0;
   color:#243b54;font-weight:700;font-size:16px;padding:8px 1px;text-align:center}
 #app .favorite-details{flex:1 1 auto;display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -1481,13 +1504,17 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   width:100%;white-space:normal;overflow-wrap:anywhere}
 #app .favorite-date{font-size:11px;color:#64748b}
 #app .favorites-empty{font-size:14px;color:#536779;margin:15px 0}
-#app .favorites-footer{display:flex;flex-direction:column;gap:8px;flex:0 0 auto}
-#app .favorites-footer button{display:flex;align-items:center;justify-content:center;gap:8px;
+#app .favorites-footer{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);
+  gap:8px;flex:0 0 auto}
+#app .favorites-footer button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;
   box-sizing:border-box;width:100%;min-height:43px;max-height:none;padding:10px 14px;
   border-radius:9px;border:1px solid #acc6dc;background:#eaf2fc;
   color:#19436c;font-size:14px;font-weight:600;line-height:1.3;text-align:center;white-space:normal;
   cursor:pointer}
 #app .favorites-footer .favorites-close-bottom{background:#fff;border-color:#bcc8d5;color:#243b54}
+#app .favorites-footer .favorites-add:disabled{background:#e4e7eb;border-color:#ccd2da;
+  color:#8a949f;cursor:not-allowed;opacity:.75}
+#app .favorites-footer .favorites-add:disabled .p2m-lucide{opacity:.5}
 #app .favorites-footer button svg{width:19px;height:19px;flex:0 0 19px}
 #app .favorites-message{font-size:12px;color:#455d76;margin:0}
 #app .favorites-message:empty{display:none}
