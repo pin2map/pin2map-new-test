@@ -1419,3 +1419,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .pin-overlap-choice:focus-visible{
   outline:2px solid #1764bf;outline-offset:1px;
 }
+
+/* v168: unavailable viewport history must be visually and functionally inactive. */
+#app #map .pin-zoom-buttons .pin-zoom-button:disabled{opacity:.42;cursor:default}
