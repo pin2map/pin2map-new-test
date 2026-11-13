@@ -54,7 +54,9 @@
       this.cleanText=cleanText;this.defaultColor=defaultColor;this.markers=new Map();
       this.getInfoLabel=getInfoLabel;this.formatInfo=formatInfo;this.onInfoClick=onInfoClick;
       this.relocationSourceId=null;
+      this.visiblePinList=[];
     }
+    visiblePins(){return this.visiblePinList;}
     setRelocationSource(id){
       this.relocationSourceId=id||null;
       for(const [pinId,marker] of this.markers){
@@ -67,6 +69,9 @@
         selectedPinId,labelsVisible,
         cleanText:this.cleanText,colorsByLayer,defaultColor:this.defaultColor
       });
+      this.visiblePinList=placements.map(({pin})=>({
+        id:pin.id,lat:pin.lat,lng:pin.lng,name:pin.name
+      }));
       const shown=new Set();
       for(const {pin,appearance:look,label} of placements){
         shown.add(pin.id);
@@ -91,6 +96,7 @@
     dispose(){
       for(const marker of this.markers.values())this.map.removeOverlay(marker);
       this.markers.clear();
+      this.visiblePinList=[];
     }
   }
   const api=Object.freeze({escapeHtml,statusFlags,appearance,layout,PinMarkerView});
