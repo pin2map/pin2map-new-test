@@ -12,6 +12,12 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    "zoom-in": [
+      ["circle",{cx:11,cy:11,r:8}],
+      ["path",{d:"m21 21-4.35-4.35"}],
+      ["path",{d:"M8 11h6"}],
+      ["path",{d:"M11 8v6"}]
+    ],
     "map-pin-plus-inside": [
       ["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],
       ["path",{d:"M12 7v6"}],["path",{d:"M9 10h6"}]
