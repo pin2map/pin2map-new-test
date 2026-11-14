@@ -292,7 +292,10 @@ async function zoom(page){
             Math.abs(filteredBounds.x-standardPanelBounds.x)<=1&&
             Math.abs(filteredBounds.y-standardPanelBounds.y)<=1&&
             Math.abs(filteredBounds.height-standardPanelBounds.height)<=1,
-            "Desktop filtering to zero matches must preserve standard size and position");
+            "Desktop filtering to zero matches must preserve standard size and position: standard="+
+            JSON.stringify(standardPanelBounds)+" filtered="+JSON.stringify(filteredBounds)+
+            " style="+await page.locator("#favoritesPanel").evaluate(el=>el.getAttribute("style"))+
+            " classes="+await page.locator("#favoritesPanel").getAttribute("class"));
           assert.equal(await page.locator(".favorites-footer").isVisible(),true);
         }
         await clear.click();
