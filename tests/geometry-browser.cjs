@@ -235,9 +235,25 @@ const viewports=[
    // Search and settings menus must obey the very same two-step rule.
    await page.locator("#settingsButton").click();
    await page.locator("#settingsPanel").waitFor({state:"visible",timeout:5000});
+   await page.evaluate(()=>{
+     window.__mapTapTrace=[];
+     const snap=(event,phase)=>{
+       const e=document.getElementById("settingsPanel");
+       const menu=document.getElementById("mapActionChooser");
+       window.__mapTapTrace.push({phase,type:event.type,
+         target:String(event.target?.className?.baseVal||event.target?.className||event.target?.tagName),
+         settings:e.classList.contains("hidden"),chooser:menu.classList.contains("hidden")});
+     };
+     window.addEventListener("pointerdown",e=>snap(e,"window-capture"),true);
+     document.addEventListener("pointerdown",e=>snap(e,"document-capture"),true);
+     document.getElementById("map").addEventListener("pointerdown",e=>snap(e,"map-capture"),true);
+     document.addEventListener("click",e=>snap(e,"click-document-capture"),true);
+   });
    await clickMap();
    assert.equal(await page.locator("#settingsPanel").isHidden(),true);
-   assert.equal(await contextMenu.isHidden(),true);
+   assert.equal(await contextMenu.isHidden(),true,
+     "First map tap must not open chooser: "+
+     JSON.stringify(await page.evaluate(()=>window.__mapTapTrace)));
    await clickMap();
    await contextMenu.waitFor({state:"visible",timeout:5000});
    await page.keyboard.press("Escape");
