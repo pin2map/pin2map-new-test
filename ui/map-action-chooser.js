@@ -4,9 +4,10 @@
  */
 (function(root){
   class MapActionChooser{
-    constructor({document:doc,getElement,icons,onZoom,onPin,onArea}){
+    constructor({document:doc,getElement,icons,onZoom,onZoomOut,onPin,onArea}){
       this.doc=doc;this.el=getElement;this.icons=icons;
-      this.onZoom=onZoom;this.onPin=onPin;this.onArea=onArea;
+      this.onZoom=onZoom;this.onZoomOut=onZoomOut;
+      this.onPin=onPin;this.onArea=onArea;
       this.box=this.el("mapActionChooser");
       this.point=null;
     }
@@ -17,7 +18,8 @@
       const rows=[
         ["zoom-in","Heranzoomen",()=>this.onZoom(this.point)],
         ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)],
-        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)]
+        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)],
+        ["zoom-out","Herauszoomen",()=>this.onZoomOut(this.point)]
       ];
       for(const [icon,label,action] of rows){
         const button=this.doc.createElement("button");
