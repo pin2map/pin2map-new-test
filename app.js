@@ -719,7 +719,8 @@
 
     mapAdapter.onMapClick(position=>{
       if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
-      if(gestures.isSuppressed())return;
+      // Move-target acceptance must take precedence over pin ghost-click
+      // suppression; MapClickCoordinator already enforces this contract.
       mapClickCoordinator.handle(position);
     },{allowNonSurface:()=>uiState.moveMode||satelliteInspector.isActive()});
 
