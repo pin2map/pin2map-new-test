@@ -233,6 +233,34 @@ const viewports=[
    assert.equal(river.layerId,"private");
    assert.equal(river.chains[0].length,3);
    await page.locator("#geometryEditor .geometry-ok").click();
+   // A river label must follow the visible course when only part of the
+   // river is in view; the entire river's fixed midpoint is not sufficient.
+   const riverLabel=page.locator(".p2m-river-name-label").first();
+   await riverLabel.waitFor({state:"visible",timeout:5000});
+   const nameBefore=await riverLabel.boundingBox();
+   const mapBounds=await page.locator("#map").boundingBox();
+   assert.ok(nameBefore&&mapBounds&&nameBefore.x>=mapBounds.x-2&&
+     nameBefore.x+nameBefore.width<=mapBounds.x+mapBounds.width+2&&
+     nameBefore.y>=mapBounds.y-2&&
+     nameBefore.y+nameBefore.height<=mapBounds.y+mapBounds.height+2,
+     "River name must be visible within the current map viewport");
+   if(!view.mobile){
+     const mapCenter={x:mapBounds.x+mapBounds.width*.7,
+       y:mapBounds.y+mapBounds.height*.65};
+     await page.mouse.move(mapCenter.x,mapCenter.y);
+     await page.mouse.down();
+     await page.mouse.move(mapCenter.x+170,mapCenter.y+75,{steps:8});
+     await page.mouse.up();
+     await page.waitForTimeout(350);
+     const nameAfter=await riverLabel.boundingBox();
+     assert.ok(nameAfter&&nameAfter.x>=mapBounds.x-2&&
+       nameAfter.x+nameAfter.width<=mapBounds.x+mapBounds.width+2&&
+       nameAfter.y>=mapBounds.y-2&&
+       nameAfter.y+nameAfter.height<=mapBounds.y+mapBounds.height+2,
+       "River label must remain visible after map panning");
+     assert.ok(Math.abs(nameAfter.x-nameBefore.x)>20,
+       "River name should re-anchor when the visible river moves");
+   }
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelectorAll(".p2m-area-name-wrap").length===2,
      null,{timeout:10000});
