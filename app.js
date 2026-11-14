@@ -27,7 +27,7 @@
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
-  let gestures,pinOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
+  let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
   let mapActionChooser,geometryEditor,searchTypeMenu,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
   const favorites=window.Pin2MapMapFavorites;
@@ -254,7 +254,8 @@
       "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
       "pinInfoMenu","mapActionChooser"];
     return ids.some(id=>$(id)&&!$(id).classList.contains("hidden"))||
-      !!pinOverlapZoom?.menu||!!noteEditor?.open||
+      !!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
+      !!noteEditor?.open||
       !!$("deleteDialog")?.open||!!uiState.selectedPinId;
   }
   function closeAllMapMenus(){
@@ -263,6 +264,7 @@
     favoritesPanel?.close();
     geometryEditor?.close(false);
     pinOverlapZoom?.close();
+    featureOverlapZoom?.close();
     pinInfoMenu.close();
     basemapMenu.close();
     pinDetails.closeTransient();
@@ -406,7 +408,10 @@
       areas:(state.areas||[]).filter(a=>visible.has(a.layerId)),
       rivers:(state.rivers||[]).filter(r=>visible.has(r.layerId)),
       layerColors,
-      onAreaLabel:(area,point)=>openGeometryEditor("area",area,point),
+      onAreaLabel:(area,point)=>{
+        if(featureOverlapZoom?.handleTap("area",area.id))return;
+        openGeometryEditor("area",area,point);
+      },
       onRiverLine:(river,point)=>openGeometryEditor("river",river,point)
     });
   }
@@ -490,6 +495,7 @@
   }
   function handleMarkerTap(id){
     if(uiState.moveMode||satelliteInspector.isActive())return;
+    if(featureOverlapZoom?.handleTap("pin",id))return;
     if(pinOverlapZoom)pinOverlapZoom.handleTap(id);
     else selectPin(id);
   }
@@ -768,6 +774,22 @@
       onInfoClick:id=>selectPin(id),
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;handleMarkerTap(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
+    });
+    featureOverlapZoom=new window.Pin2MapFeatureOverlapZoom.FeatureOverlapZoom({
+      mapPort:mapAdapter,
+      getTargets:()=>[...markerView.hitTargets(),...mapAdapter.getAreaLabelTargets()],
+      getMaxZoom:()=>state.basemap==="topo"?17:19,
+      onSelect:(type,id)=>{
+        if(type==="pin"){selectPin(id);return;}
+        const area=(state.areas||[]).find(item=>item.id===id);
+        if(area){
+          const marker=mapAdapter.getAreaLabelTargets().find(t=>t.id===id);
+          if(marker)openGeometryEditor("area",area,marker.position);
+        }
+      },
+      onBeforeZoom:()=>closeAllMapMenus(),
+      onHistoryChange:()=>{persistViewport();setTimeout(flushHistoryRecord,0);},
+      document,getElement:$
     });
     pinOverlapZoom=new window.Pin2MapPinOverlapZoom.PinOverlapZoom({
       mapPort:mapAdapter,
