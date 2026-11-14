@@ -320,6 +320,21 @@
         item.marker.setOpacity(1);
       }
     }
+    getAreaLabelTargets(){
+      const rect=element=>{
+        const r=element.getBoundingClientRect();
+        return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};
+      };
+      return (this.areaNameMarkers||[]).flatMap(item=>{
+        const element=item.marker.getElement()?.querySelector(".p2m-area-name-label");
+        if(!element||item.marker.options.opacity===0)return [];
+        const r=rect(element);
+        if(r.right<=r.left||r.bottom<=r.top)return [];
+        const ll=item.marker.getLatLng();
+        return [{type:"area",id:item.id,name:item.name,kind:item.kind,
+          position:{lat:ll.lat,lng:ll.lng},rects:[r]}];
+      });
+    }
     updateAreaLabels(){
       if(!this.areaNameMarkers?.length)return;
       const {x:width,y:height}=this.getSize();
@@ -384,7 +399,8 @@
           const ll=marker.getLatLng();
           onAreaLabel(area,{lat:ll.lat,lng:ll.lng});
         });
-        this.areaNameMarkers.push({marker,geometry:prepared.geometry,name:area.name});
+        this.areaNameMarkers.push({marker,id:area.id,kind:area.kind,
+          geometry:prepared.geometry,name:area.name});
       }
       for(const river of rivers){
         const color=layerColors[river.layerId]||"#1689e5";
