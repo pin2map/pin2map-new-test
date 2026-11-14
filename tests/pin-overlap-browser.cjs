@@ -188,8 +188,8 @@ async function zoom(page){
         assert.equal(await favoriteTrigger.isVisible(),true,
           "Active favorite trigger remains visible below Layers");
         assert.equal(await favoriteTrigger.getAttribute("aria-expanded"),"true");
-        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)",
-          "Expanded menu trigger must be blue");
+        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(233, 195, 99)",
+          "Expanded favorite trigger uses the warm yellow active tone");
         const circle=await favoriteTrigger.boundingBox();
         assert.ok(circle&&Math.abs(circle.width-circle.height)<1,
           "Upper-right favorite trigger must be exactly circular");
@@ -219,6 +219,22 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").count(),1);
         assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Meine Übersicht");
+        const palette=await page.evaluate(()=>{
+          const get=id=>getComputedStyle(document.querySelector(id)).backgroundColor;
+          return {
+            panel:get("#favoritesPanel"),
+            row:get(".favorite-row"),
+            add:get("#favoritesAdd"),
+            close:get("#favoritesCloseBottom"),
+            edit:get(".favorite-edit"),
+            remove:get(".favorite-remove"),
+            clear:get("#favoritesSearchClear")
+          };
+        });
+        assert.equal(palette.panel,"rgb(240, 215, 138)","Favorites panel should be medium yellow");
+        for(const key of ["row","add","close","edit","remove","clear"])
+          assert.equal(palette[key],"rgb(255, 243, 206)",
+            "All buttons and favorite rows are pale yellow: "+key);
         // Filter substring case-insensitively, keep all original IDs unchanged.
         const search=page.locator("#favoritesSearch");
         const clear=page.locator("#favoritesSearchClear");
@@ -305,9 +321,12 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row .favorite-icon").first().getAttribute("data-pin-icon"),"plus");
         await page.locator(".favorite-row .favorite-icon").first().click();
         assert.equal(await page.locator(".favorite-confirm").count(),1);
+        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Umbenannt");
         await page.locator(".favorite-confirm-actions button").first().click();
         assert.equal(await page.locator(".favorite-confirm").count(),0);
         await page.locator(".favorite-row .favorite-icon").first().click();
+        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Umbenannt",
+          "Replacement must prefill the OLD favorite name, not nearest map pin");
         await page.locator(".favorite-name-input").fill("Ersatz");
         await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Ersatz");
