@@ -63,8 +63,6 @@ const viewports=[
            members:[{type:"way",ref:2,role:"main_stream"},
              {type:"way",ref:3,role:"main_stream"}]}
        ]})}));
-   await page.route(/api\.openstreetmap\.org\/api\/0\.6\/(way|relation)\/.*\.json/,async route=>
-     route.fulfill({status:200,contentType:"application/json",body:'{"elements":[]}'}));
    await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
    await page.waitForFunction(()=>window.Pin2MapAreaGeometry&&
      window.Pin2MapRiverGeometry&&document.querySelector(".leaflet-container"),
