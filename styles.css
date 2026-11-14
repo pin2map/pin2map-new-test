@@ -1030,8 +1030,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #basemapButton.basemap-map-button.p2m-icon-control[aria-expanded="true"],
 #app #pinInfoButton.pin-info-button.p2m-icon-control[aria-expanded="true"],
 #app #layersButton.layers-bottom-button.p2m-icon-control[aria-expanded="true"],
-#app #settingsButton.settings-map-button.p2m-icon-control[aria-expanded="true"],
-#app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{
+#app #settingsButton.settings-map-button.p2m-icon-control[aria-expanded="true"]{
   --p2m-map-control-bg:#1764bf;
   --p2m-map-control-ink:#fff;
 }
@@ -1578,3 +1577,74 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   font-size:13px;font-weight:600;line-height:1.25}
 #app .favorite-confirm-actions .favorite-action-primary{background:#1764bf;color:white;border-color:#1764bf}
 #app .favorite-confirm-actions .favorite-action-danger{background:#bc2833;color:white;border-color:#bc2833}
+
+/* v176: warm, consistent palette belongs only to favorites. Map and
+   non-favorites menus retain the shared blue active control contract. */
+#app #favoritesButton.favorites-map-button.p2m-icon-control{
+  --p2m-map-control-bg:#f7e2a0;
+  --p2m-map-control-pressed:#efcf72;
+  --p2m-map-control-border:#c8a856;
+  --p2m-map-control-ink:#3c331f;
+}
+#app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{
+  --p2m-map-control-bg:#e9c363;
+  --p2m-map-control-pressed:#e0b74d;
+  --p2m-map-control-border:#af8b35;
+  --p2m-map-control-ink:#342911;
+}
+#app #favoritesPanel.favorites-panel{
+  --p2m-favorites-surface:#f0d78a;
+  --p2m-favorites-light:#fff3ce;
+  --p2m-favorites-border:#d3b565;
+  background:var(--p2m-favorites-surface);
+  border-color:var(--p2m-favorites-border);
+}
+#app #favoritesPanel .favorite-row{
+  background:var(--p2m-favorites-light);
+  border-color:#dfc77f;
+}
+#app #favoritesPanel button,
+#app #favoritesPanel .favorites-head button,
+#app #favoritesPanel .favorite-row .favorite-icon,
+#app #favoritesPanel .favorite-row .favorite-remove,
+#app #favoritesPanel .favorites-footer button,
+#app #favoritesPanel .favorites-footer .favorites-close-bottom,
+#app #favoritesPanel .favorite-confirm-actions button,
+#app #favoritesPanel .favorite-confirm-actions .favorite-action-primary,
+#app #favoritesPanel .favorite-confirm-actions .favorite-action-danger{
+  background:var(--p2m-favorites-light);
+  border-color:var(--p2m-favorites-border);
+}
+#app #favoritesPanel .favorite-confirm{
+  background:#fae6ab;
+  border-color:var(--p2m-favorites-border);
+}
+#app #favoritesPanel .favorite-confirm-danger{
+  background:#f7cdcb;
+  border-color:#d88a86;
+}
+#app #favoritesPanel .favorite-confirm-actions .favorite-action-danger{
+  color:#a91e2b;
+  border-color:#d88a86;
+}
+#app #favoritesPanel .favorite-confirm-actions .favorite-action-primary{
+  color:#51400f;
+}
+#app #favoritesPanel #favoritesSearchClear{
+  --p2m-button-bg:var(--p2m-favorites-light);
+  --p2m-button-border:var(--p2m-favorites-border);
+  --p2m-button-ink:#bc2833;
+}
+#app #favoritesPanel #favoritesSearchClear:disabled{
+  --p2m-button-bg:var(--p2m-favorites-light);
+  --p2m-button-border:#dacfae;
+  --p2m-button-ink:#98938a;
+}
+#app #favoritesPanel .favorites-footer .favorites-add:disabled{
+  background:var(--p2m-favorites-light);
+  border-color:#dccda5;
+  color:#99917e;
+}
+#app #favoritesPanel .favorite-remove .p2m-lucide{
+  color:#bf2431!important;stroke:#bf2431!important;
+}
