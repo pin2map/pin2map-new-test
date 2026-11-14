@@ -721,7 +721,7 @@
       if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
       if(gestures.isSuppressed())return;
       mapClickCoordinator.handle(position);
-    });
+    },{allowNonSurface:()=>uiState.moveMode||satelliteInspector.isActive()});
 
     gestures.attachLongPress();
     mapOverlayLayout.bind();
