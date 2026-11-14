@@ -108,6 +108,7 @@
       // Check BEFORE document-level outside-click handlers close overlays.
       // Only a NEW click after dismissal may open the chooser.
       if(onSurfacePointerDown())lastDismissAt=DateNow();
+      else lastDismissAt=0;
     },true);
     container.addEventListener("pointermove",event=>{
       if(heldBackground?.id===event.pointerId&&
@@ -130,9 +131,10 @@
     return Object.freeze({
       attachMarkerLongPress,attachLongPress,
       consumeDismissedTap:()=>{
-        const dismissed=lastDismissAt>0&&DateNow()-lastDismissAt<1100;
-        lastDismissAt=0;
-        return dismissed;
+        // Leaflet/browser may deliver multiple click events for one pointer
+        // gesture. All of them belong to the same dismissal; a NEW
+        // pointerdown (above) explicitly resets the latch.
+        return lastDismissAt>0&&DateNow()-lastDismissAt<1100;
       },
       isSuppressed:()=>DateNow()<suppressMapClickUntil,
       isMarkerPressActive:()=>!!markerPressStart
