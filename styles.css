@@ -1603,6 +1603,16 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   background:var(--p2m-favorites-light);
   border-color:#dfc77f;
 }
+/* Dynamic Lucide mounting adds p2m-icon-control to row buttons. Its shared
+   background has !important; use the canonical token, not a competing paint. */
+#app #favoritesPanel button.p2m-icon-control{
+  --p2m-button-bg:var(--p2m-favorites-light);
+  --p2m-button-border:var(--p2m-favorites-border);
+}
+#app #favoritesPanel button.p2m-icon-control:hover,
+#app #favoritesPanel button.p2m-icon-control:active{
+  background:var(--p2m-favorites-light)!important;
+}
 #app #favoritesPanel button,
 #app #favoritesPanel .favorites-head button,
 #app #favoritesPanel .favorite-row .favorite-icon,
