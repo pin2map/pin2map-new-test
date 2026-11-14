@@ -99,13 +99,32 @@
   function attachLongPress(){
     const container=mapAdapter.getContainer();
     mapAdapter.disableDoubleClickZoom?.();
+    let heldBackground=null;
     container.addEventListener("pointerdown",event=>{
       if(event.button!==0||isMoveMode()||isInspectMode()||
         !mapAdapter.isMapSurface(event.target))return;
-      // Check BEFORE other document-level outside-click handlers close the
-      // overlays; only the NEXT separate map click may open the chooser.
+      heldBackground={id:event.pointerId,x:event.clientX,y:event.clientY,
+        started:DateNow(),moved:false};
+      // Check BEFORE document-level outside-click handlers close overlays.
+      // Only a NEW click after dismissal may open the chooser.
       if(onSurfacePointerDown())lastDismissAt=DateNow();
     },true);
+    container.addEventListener("pointermove",event=>{
+      if(heldBackground?.id===event.pointerId&&
+        Math.hypot(event.clientX-heldBackground.x,
+          event.clientY-heldBackground.y)>10)heldBackground.moved=true;
+    },{passive:true});
+    for(const type of ["pointerup","pointercancel","lostpointercapture"]){
+      container.addEventListener(type,event=>{
+        if(!heldBackground||heldBackground.id!==event.pointerId)return;
+        const hold=type==="pointerup"&&!heldBackground.moved&&
+          DateNow()-heldBackground.started>=550;
+        heldBackground=null;
+        // Longtap is RETIRED as a map menu trigger. Browsers sometimes
+        // synthesize a regular click after a held release: suppress it.
+        if(hold)suppressFor(950);
+      },{passive:true});
+    }
   }
 
     return Object.freeze({
