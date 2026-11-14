@@ -40,12 +40,14 @@ function element(){
     setPointerCapture(){},hasPointerCapture:()=>false,releasePointerCapture(){}
   };
 }
-function harness({basemap="street"}={}){
+function harness({basemap="street",dismiss=false}={}){
   const time=clock(),surface=element(),pinElement=element(),selected=[],added=[],zooms=[],pans=[],vibrations=[];
   let moving=false,panEnabled=true,viewportSaves=0,layoutUpdates=0,markersRendered=0;
+  let dismissRequests=0,nonSurface=false;
   const marker={};
   const adapter={
-    getContainer:()=>surface,isMapSurface:()=>true,unproject:p=>({lat:p.y,lng:p.x}),
+    getContainer:()=>surface,isMapSurface:()=>!nonSurface,unproject:p=>({lat:p.y,lng:p.x}),
+    disableDoubleClickZoom(){},
     on(){},
     getMarkerElement:()=>pinElement,stopMarkerEventPropagation(){},
     isPanEnabled:()=>panEnabled,setPanEnabled:v=>{panEnabled=v;},
@@ -56,34 +58,40 @@ function harness({basemap="street"}={}){
     selectPin:id=>selected.push(id),addPin:(lat,lng,name)=>{added.push({lat,lng,name});return {id:"new"};},
     renderMarkers:()=>markersRendered++,persistViewport:()=>viewportSaves++,
     updatePanelLayout:()=>layoutUpdates++,scheduleFrame:fn=>fn(),
-    vibrate:ms=>vibrations.push(ms),...time});
+    vibrate:ms=>vibrations.push(ms),
+    onSurfacePointerDown:()=>{dismissRequests++;return dismiss;},...time});
   return {time,surface,pinElement,selected,added,zooms,pans,vibrations,gestures,marker,
     setMoving:v=>moving=v,panEnabled:()=>panEnabled,viewportSaves:()=>viewportSaves,layoutUpdates:()=>layoutUpdates,
-    markersRendered:()=>markersRendered};
+    markersRendered:()=>markersRendered,dismissRequests:()=>dismissRequests,
+    setNonSurface:v=>nonSurface=v};
 }
-test("long press on map creates pin at converted pointer position after 650ms",()=>{
+test("a single bare-map tap may dismiss open overlays and is never a pin creation",()=>{
+  const h=harness({dismiss:true});h.gestures.attachLongPress();
+  h.surface.dispatch("pointerdown",{pointerType:"touch"});
+  h.surface.dispatch("pointerup",{pointerType:"touch"});
+  h.time.advance(800);
+  assert.deepEqual(h.added,[]);
+  assert.equal(h.dismissRequests(),1);
+  assert.equal(h.gestures.consumeDismissedTap(),true);
+  assert.equal(h.gestures.consumeDismissedTap(),false);
+});
+test("background longpress, rightclick and doubleclick never open the chooser",()=>{
   const h=harness();h.gestures.attachLongPress();
   h.surface.dispatch("pointerdown",{pointerType:"touch"});
-  h.time.advance(649);assert.equal(h.added.length,0);
-  h.time.advance(1);assert.deepEqual(h.added,[{lat:80,lng:90,name:""}]);
-  assert.equal(h.gestures.isSuppressed(),true);
-  assert.deepEqual(h.vibrations,[15]);
-  assert.equal(h.layoutUpdates(),1);
+  h.time.advance(900);
+  h.surface.dispatch("pointerup",{pointerType:"touch"});
+  h.surface.dispatch("contextmenu",{button:2});
+  h.surface.dispatch("dblclick");
+  assert.deepEqual(h.added,[]);
+  assert.equal(h.dismissRequests(),1);
+  assert.equal(h.gestures.consumeDismissedTap(),false);
 });
-test("moving pointer beyond threshold cancels map long press",()=>{
-  const h=harness();h.gestures.attachLongPress();
-  h.surface.dispatch("pointerdown");
-  h.surface.dispatch("pointermove",{clientX:112});
-  h.time.advance(700);assert.equal(h.added.length,0);
-});
-test("multitouch and move mode cannot create pin",()=>{
-  const h=harness();h.gestures.attachLongPress();
-  h.surface.dispatch("pointerdown",{pointerId:1});
-  h.surface.dispatch("pointerdown",{pointerId:2});
-  h.time.advance(700);assert.equal(h.added.length,0);
-  h.surface.dispatch("pointerup",{pointerId:1});h.surface.dispatch("pointerup",{pointerId:2});
-  h.setMoving(true);h.surface.dispatch("pointerdown",{pointerId:3});
-  h.time.advance(700);assert.equal(h.added.length,0);
+test("map chrome and move mode are not interpreted as background taps",()=>{
+  const h=harness({dismiss:true});h.gestures.attachLongPress();
+  h.setNonSurface(true);h.surface.dispatch("pointerdown");
+  h.setNonSurface(false);h.setMoving(true);h.surface.dispatch("pointerdown");
+  assert.equal(h.dismissRequests(),0);
+  assert.equal(h.gestures.consumeDismissedTap(),false);
 });
 test("a tapped marker selects pin and restores map panning",()=>{
   const h=harness();h.gestures.attachMarkerLongPress(h.marker,"pin-a");
