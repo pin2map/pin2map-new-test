@@ -191,11 +191,12 @@
       return ()=>control.remove();
     }
     // Normalize map clicks to a plain coordinate instead of exposing Leaflet events.
-    onMapClick(callback) {
+    onMapClick(callback,{allowNonSurface=()=>false}={}) {
       const handler=event=>{
-        // Marker/feature clicks own their actions. Only unoccupied map
-        // surface clicks may reach the background menu use case.
-        if(!this.isMapSurface(event.originalEvent?.target))return;
+        // Ordinary background actions need a bare map target. The existing
+        // pin relocation and satellite inspection modes are exceptions:
+        // their own SVG preview target may cover the map click position.
+        if(!this.isMapSurface(event.originalEvent?.target)&&!allowNonSurface())return;
         callback({lat:event.latlng.lat,lng:event.latlng.lng});
       };
       this.map.on("click",handler);
