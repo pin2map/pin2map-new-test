@@ -27,3 +27,52 @@ test("finder keeps matching polygon features and filters water search kinds",asy
   assert.equal(found[0].osm_id,10);
   assert.match(calls[0],/polygon_geojson=1/);
 });
+
+test("NSW hierarchy search is country-scoped but not clipped to 6-degree viewbox",async()=>{
+  globalThis.Pin2MapAreaGeometry=require("../domain/area-geometry.js");
+  const calls=[];
+  const state={
+    osm_type:"relation",osm_id:2316596,name:"New South Wales",
+    namedetails:{"name:de":"Neusüdwales"},
+    type:"administrative",addresstype:"state",extratags:{admin_level:"4"},
+    geojson:{type:"Polygon",coordinates:[[
+      [141,-37.5],[154,-37.5],[154,-28],[141,-28],[141,-37.5]
+    ]]}
+  };
+  const finder=new NominatimAreaFinder({fetchImpl:async url=>{
+    calls.push(url);
+    return {ok:true,json:async()=>[state]};
+  }});
+  const selected=await finder.findContaining({kind:"state",name:"Neusüdwales"},
+    {lat:-35.3,lng:150.3},{countryCode:"au"});
+  assert.equal(selected.osm_id,2316596);
+  const url=new URL(calls[0]);
+  assert.equal(url.searchParams.has("viewbox"),false);
+  assert.equal(url.searchParams.has("bounded"),false);
+  assert.equal(url.searchParams.get("countrycodes"),"au");
+  assert.equal(url.searchParams.get("namedetails"),"1");
+});
+test("trusted reverse-geocoded state hierarchy survives simplified shoreline containment mismatch",async()=>{
+  globalThis.Pin2MapAreaGeometry=require("../domain/area-geometry.js");
+  const state={osm_type:"relation",osm_id:9,name:"New South Wales",
+    namedetails:{"name:de":"Neusüdwales"},addresstype:"state",
+    geojson:{type:"Polygon",coordinates:[[[-150,-37],[-149,-37],[-149,-36],[-150,-37]]]}};
+  const finder=new NominatimAreaFinder({fetchImpl:async()=>({
+    ok:true,json:async()=>[state]
+  })});
+  const found=await finder.findContaining({name:"Neusüdwales",kind:"state"},
+    {lat:-35.3,lng:150.3},{countryCode:"au"});
+  assert.equal(found.osm_id,9);
+});
+test("ambiguous administrative names never select an unrelated polygon automatically",async()=>{
+  globalThis.Pin2MapAreaGeometry=require("../domain/area-geometry.js");
+  const make=id=>({osm_type:"relation",osm_id:id,name:"Springfield",
+    addresstype:"city",geojson:{type:"Polygon",coordinates:[[
+      [10,50],[11,50],[11,51],[10,50]
+    ]]}});
+  const finder=new NominatimAreaFinder({fetchImpl:async()=>({
+    ok:true,json:async()=>[make(1),make(2)]
+  })});
+  assert.equal(await finder.findContaining({kind:"city",name:"Springfield"},
+    {lat:-35,lng:150},{countryCode:"au"}),null);
+});
