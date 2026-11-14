@@ -5,29 +5,16 @@
 (function(root){
   function createMapGestureController({
     mapAdapter,getBasemap,isMoveMode,isInspectMode=()=>false,selectPin,addPin,
-    onMapAction=null,
+    onSurfacePointerDown=()=>false,
     renderMarkers,persistViewport,updatePanelLayout,
     scheduleFrame, vibrate=()=>{}, now=()=>Date.now(),
     setTimer=setTimeout,clearTimer=clearTimeout
   }){
     if(!mapAdapter||typeof isMoveMode!=="function"||typeof addPin!=="function")
       throw new TypeError("Gesture adapter and callbacks required");
-    let longPressTimer=null,longPressStart=null,suppressMapClickUntil=0;
-    const activePointers=new Set();
-    let lastTouchStartAt=0,markerPressTimer=null,markerPressStart=null;
-    let lastSurfaceTap=null,activeSurfaceTap=null,touchDoubleTapConfigured=false;
+    let suppressMapClickUntil=0,lastDismissAt=0,markerPressTimer=null,markerPressStart=null;
     const DateNow=()=>now();
     const suppressFor=ms=>{suppressMapClickUntil=DateNow()+ms;};
-    function openMapChooserAt(clientX,clientY){
-      const rect=mapAdapter.getContainer().getBoundingClientRect();
-      const point=mapAdapter.unproject({
-        x:clientX-rect.left,y:clientY-rect.top
-      });
-      suppressFor(850);
-      if(typeof onMapAction==="function"){
-        onMapAction(point,{x:clientX,y:clientY});vibrate(15);
-      }
-    }
   // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
   // A tap still opens/closes its editor; dragging a pin never moves it.
   function zoomHeldPin(marker){
@@ -106,112 +93,28 @@
     },{passive:false});
   }
 
-  function cancelLongPress() {
-    clearTimer(longPressTimer);
-    longPressTimer = null;
-    longPressStart = null;
-  }
-  function attachLongPress() {
-    const container = mapAdapter.getContainer();
-    const isMapSurface = target => mapAdapter.isMapSurface(target);
-    container.addEventListener("pointerdown", e => {
-      activePointers.add(e.pointerId);
-      if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=DateNow();
-      // A double tap is a map gesture only on touch and on the bare map
-      // surface. Pins, shape labels, river hit-lines, controls and dialogs
-      // must retain their own click/longpress semantics.
-      const surface=e.pointerType==="touch"&&e.button===0&&
-        activePointers.size===1&&!isMoveMode()&&!isInspectMode()&&isMapSurface(e.target);
-      activeSurfaceTap=surface?{id:e.pointerId,x:e.clientX,y:e.clientY,
-        time:DateNow(),moved:false,held:false}:null;
-      if(e.pointerType==="touch"&&!touchDoubleTapConfigured){
-        mapAdapter.disableDoubleClickZoom?.();
-        touchDoubleTapConfigured=true;
-      }
-      if(!surface)lastSurfaceTap=null;
-      cancelLongPress();
-      if (isMoveMode() || isInspectMode() || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
-      longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
-      // Long press works for touch and mouse. Right click remains an alternative.
-      longPressTimer = setTimer(() => {
-        if (!longPressStart || activePointers.size !== 1) return;
-        const start = longPressStart;
-        cancelLongPress();
-        suppressFor(850);
-        lastSurfaceTap=null;
-        if(activeSurfaceTap?.id===start.id)activeSurfaceTap.held=true;
-        const rect = container.getBoundingClientRect();
-        const point = {x:start.x - rect.left, y:start.y - rect.top};
-        const where = mapAdapter.unproject(point);
-        if(typeof onMapAction==="function"){
-          onMapAction(where,{x:start.x,y:start.y});
-          vibrate(15);
-        }else{
-          const pin=addPin(where.lat,where.lng,"");
-          if(pin){vibrate(15);scheduleFrame(updatePanelLayout);}
-        }
-      }, 650);
-    }, { passive: true });
-    container.addEventListener("pointermove", e => {
-      if(activeSurfaceTap?.id===e.pointerId&&
-        Math.hypot(e.clientX-activeSurfaceTap.x,e.clientY-activeSurfaceTap.y)>10)
-        activeSurfaceTap.moved=true;
-      if (longPressStart && e.pointerId === longPressStart.id && Math.hypot(e.clientX - longPressStart.x, e.clientY - longPressStart.y) > 10) cancelLongPress();
-    }, { passive: true });
-    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
-      container.addEventListener(type, e => {
-        activePointers.delete(e.pointerId);
-        const tap=activeSurfaceTap?.id===e.pointerId?activeSurfaceTap:null;
-        if(tap){
-          activeSurfaceTap=null;
-          if(type==="pointerup"&&!tap.moved&&!tap.held&&
-            DateNow()-tap.time<420&&isMapSurface(e.target)&&
-            activePointers.size===0&&!isMoveMode()&&!isInspectMode()){
-            const preceding=lastSurfaceTap;
-            if(preceding&&DateNow()-preceding.time<=380&&
-              Math.hypot(e.clientX-preceding.x,e.clientY-preceding.y)<=26){
-              lastSurfaceTap=null;
-              openMapChooserAt(e.clientX,e.clientY);
-            }else lastSurfaceTap={x:e.clientX,y:e.clientY,time:DateNow()};
-          }else lastSurfaceTap=null;
-        }
-        if(type!=="pointerup")lastSurfaceTap=null;
-        if (!longPressStart || e.pointerId === longPressStart.id) cancelLongPress();
-      }, { passive: true });
-    }
-    mapAdapter.on("dragstart zoomstart",()=>{
-      cancelLongPress();activeSurfaceTap=null;lastSurfaceTap=null;
-    });
-    // Both desktop mouse double-click and mobile double-tap open the
-    // same anchored chooser ONLY on the unoccupied map surface. A real
-    // touch doubletap may already have opened it via pointerup; in that
-    // case suppressFor() prevents the synthesized dblclick from reopening.
-    // Capture before Leaflet's bubbling dblclick handler zooms the map.
-    container.addEventListener("dblclick",e=>{
-      if(DateNow()<suppressMapClickUntil||
-        !isMapSurface(e.target)||isMoveMode()||isInspectMode())return;
-      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-      lastSurfaceTap=null;cancelLongPress();
-      openMapChooserAt(e.clientX,e.clientY);
+  // A background click owns the small chooser; mouse longpress, right-click,
+  // double-click and mobile doubletap are no longer chooser shortcuts.
+  // Pin longpress keeps its separate, established zoom-in/out behavior.
+  function attachLongPress(){
+    const container=mapAdapter.getContainer();
+    mapAdapter.disableDoubleClickZoom?.();
+    container.addEventListener("pointerdown",event=>{
+      if(event.button!==0||isMoveMode()||isInspectMode()||
+        !mapAdapter.isMapSurface(event.target))return;
+      // Check BEFORE other document-level outside-click handlers close the
+      // overlays; only the NEXT separate map click may open the chooser.
+      if(onSurfacePointerDown())lastDismissAt=DateNow();
     },true);
-    // Native desktop context menu is replaced by pin creation. Touch uses the timer above.
-    container.addEventListener("contextmenu", e => {
-      if(!isMapSurface(e.target))return;
-      e.preventDefault();
-      // iOS may synthesize contextmenu after a long touch; only create once.
-      if(DateNow()-lastTouchStartAt<2400 || DateNow()<suppressMapClickUntil)return;
-      if(isMoveMode()||isInspectMode())return;
-      const rect=container.getBoundingClientRect();
-      const location=mapAdapter.unproject({x:e.clientX-rect.left,y:e.clientY-rect.top});
-      if(typeof onMapAction==="function")
-        onMapAction(location,{x:e.clientX,y:e.clientY});
-      else addPin(location.lat,location.lng,"");
-      suppressFor(750);
-    });
   }
 
     return Object.freeze({
       attachMarkerLongPress,attachLongPress,
+      consumeDismissedTap:()=>{
+        const dismissed=lastDismissAt>0&&DateNow()-lastDismissAt<1100;
+        lastDismissAt=0;
+        return dismissed;
+      },
       isSuppressed:()=>DateNow()<suppressMapClickUntil,
       isMarkerPressActive:()=>!!markerPressStart
     });
