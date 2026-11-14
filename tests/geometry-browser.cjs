@@ -80,6 +80,16 @@ const viewports=[
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelector("#searchButton")&&
      document.querySelector(".leaflet-container"),null,{timeout:15000});
+   await page.evaluate(()=>{
+     window.__geometryWrites=[];
+     const prototype=window.Pin2MapIndexedDBProjectStore.prototype;
+     const original=prototype.saveProject;
+     prototype.saveProject=function(project){
+       window.__geometryWrites.push({at:Date.now(),areas:project.areas?.length,
+         rivers:project.rivers?.length,trace:(new Error()).stack?.split("\\n").slice(1,4).join(" | ")});
+       return original.call(this,project);
+     };
+   });
    // Clicking magnifier opens the menu. It does not submit automatically.
    await page.locator("#searchButton").click();
    await page.locator("#searchTypeMenu").waitFor({state:"visible",timeout:5000});
@@ -118,7 +128,7 @@ const viewports=[
        try{const project=await db.loadProject();return {
          keys:Object.keys(project||{}),areas:project?.areas,
          areaCount:project?.areas?.length,allowGeocode:project?.allowGeocode,
-         projectVersion:project?.version};}
+         projectVersion:project?.version,writes:window.__geometryWrites};}
        finally{db.close();}
      });
      throw new Error("Missing persisted area after wait: "+JSON.stringify(diagnostic));
