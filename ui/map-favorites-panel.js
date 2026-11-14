@@ -61,17 +61,6 @@
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten schließen");
-      // A persisted desktop filter may already be active on first opening.
-      // Measure the unfiltered standard layout in the same render turn so
-      // the initial filtered view retains precisely that size as well.
-      if(this.searchText&&!this.desktopSearchHeight&&this.doc.defaultView?.matchMedia?.(
-        "(hover: hover) and (pointer: fine)")?.matches){
-        const savedQuery=this.searchText;
-        this.searchText="";
-        this.render();
-        this.desktopSearchHeight=this.el("favoritesPanel").getBoundingClientRect().height;
-        this.searchText=savedQuery;
-      }
       this.render();
       this.onOpen?.();
       this.el("favoritesClose").focus({preventScroll:true});
@@ -83,11 +72,9 @@
       this.el("favoritesButton").setAttribute("aria-expanded","false");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten öffnen");
       const panel=this.el("favoritesPanel");
-      panel.classList.remove("is-editing","search-focused","desktop-search-layout");
+      panel.classList.remove("is-editing","search-focused");
       panel.style.removeProperty("--p2m-favorites-keyboard-top");
       panel.style.removeProperty("--p2m-favorites-keyboard-height");
-      panel.style.removeProperty("height");
-      // Keep the baseline for reopening with a persistent search query.
     }
     toggle(values){this.open?this.close():this.show(values);}
     keepEditorVisible(){
@@ -100,22 +87,9 @@
       // visualViewport keyboard layout.
       const touchKeyboardLayout=!this.doc.defaultView?.matchMedia?.(
         "(hover: hover) and (pointer: fine)")?.matches;
-      // Capture the full desktop standard height BEFORE marking search as
-      // focused: that state hides the bulk-delete row (about 55px), otherwise
-      // the panel would already have shrunk when measured.
-      if(!touchKeyboardLayout&&searchFocused&&!this.desktopSearchHeight)
-        this.desktopSearchHeight=panel.getBoundingClientRect().height;
+      // Keep the desktop anchor, but let the yellow panel shrink or grow
+      // immediately with the matching rows. Only touch uses keyboard layout.
       panel.classList.toggle("search-focused",searchFocused);
-      panel.classList.toggle("desktop-search-layout",
-        !touchKeyboardLayout&&(searchFocused||!!this.searchText));
-      if(!touchKeyboardLayout){
-        if((searchFocused||this.searchText)&&this.desktopSearchHeight)
-          panel.style.height=this.desktopSearchHeight+"px";
-        else if(!searchFocused&&!this.searchText){
-          panel.style.removeProperty("height");
-          this.desktopSearchHeight=null;
-        }
-      }
       if((!searchFocused&&!editorActive)||!touchKeyboardLayout){
         panel.classList.remove("is-editing");
         panel.style.removeProperty("--p2m-favorites-keyboard-top");
