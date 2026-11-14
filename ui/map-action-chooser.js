@@ -4,9 +4,10 @@
  */
 (function(root){
   class MapActionChooser{
-    constructor({document:doc,getElement,icons,onPin,onArea}){
+    constructor({document:doc,getElement,icons,onZoom,onPin,onArea}){
       this.doc=doc;this.el=getElement;this.icons=icons;
-      this.onPin=onPin;this.onArea=onArea;this.box=this.el("mapActionChooser");
+      this.onZoom=onZoom;this.onPin=onPin;this.onArea=onArea;
+      this.box=this.el("mapActionChooser");
       this.point=null;
     }
     bind(){
@@ -14,17 +15,16 @@
       const b=this.box;
       b.replaceChildren();
       const rows=[
+        ["zoom-in","Heranzoomen",()=>this.onZoom(this.point)],
         ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)],
-        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)],
-        ["x","Abbrechen",()=>{}]
+        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)]
       ];
       for(const [icon,label,action] of rows){
         const button=this.doc.createElement("button");
         button.type="button";button.title=label;button.setAttribute("aria-label",label);
+        // Icon-only, but retain accessible text via title and aria-label.
         button.append(this.icons.svg(icon,this.doc));
-        const span=this.doc.createElement("span");span.textContent=label;
-        button.append(span);
-        button.addEventListener("click",e=>{e.stopPropagation();this.close();if(label!=="Abbrechen")action();});
+        button.addEventListener("click",e=>{e.stopPropagation();this.close();action();});
         b.append(button);
       }
       this.doc.addEventListener("keydown",e=>{
