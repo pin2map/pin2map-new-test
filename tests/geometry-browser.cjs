@@ -101,6 +101,13 @@ const viewports=[
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),4);
    assert.equal(await page.locator("#geometryName").inputValue(),"Testfläche");
+   // Project writes are debounced; the open editor proves in-memory
+   // creation, but persistent storage must be awaited independently.
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject())?.areas?.length>=1;}
+     finally{db.close();}
+   },null,{timeout:10000});
    const savedArea=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas[0];}finally{db.close();}
@@ -128,6 +135,11 @@ const viewports=[
    assert.equal(await page.locator(".result-feature-icon svg").count(),1);
    await page.locator("#searchResults .result").first().click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:8000});
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject())?.areas?.some(a=>a.kind==="lake");}
+     finally{db.close();}
+   },null,{timeout:10000});
    const lake=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas.find(a=>a.kind==="lake");}
@@ -171,6 +183,11 @@ const viewports=[
      .evaluateAll(buttons=>buttons.map(b=>b.getAttribute("aria-label")));
    assert.deepEqual(riverActionOrder,["Entfernen","Ebene ändern","Wikipedia","OK"],
      "River editing row must contain four circular actions in requested order");
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject())?.rivers?.length>=1;}
+     finally{db.close();}
+   },null,{timeout:10000});
    const river=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).rivers[0];}finally{db.close();}
