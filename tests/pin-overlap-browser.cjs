@@ -396,7 +396,8 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz");
         await search.fill("zweiter");
-        await page.locator("#favoritesCloseBottom").click();
+        // During keyboard editing the footer is intentionally hidden.
+        await page.locator("#favoritesClose").click();
         await page.reload({waitUntil:"domcontentloaded"});
         await page.waitForFunction(()=>!!document.querySelector("#favoritesButton"),null,{timeout:10000});
         await favoriteTrigger.click();
@@ -474,7 +475,7 @@ async function zoom(page){
           panelBounds.y+panelBounds.height<=392,
           "Favorites search must remain accessible above the iPhone keyboard");
         await page.setViewportSize({width:viewport.width,height:viewport.height});
-        await page.locator("#favoritesCloseBottom").click();
+        await page.locator("#favoritesClose").click();
         assert.deepEqual(errors,[]);
         console.log("[favorites] PASS",viewport.name,
           "map content retained, save/replace/delete, Undo/Redo, restart persistence");
