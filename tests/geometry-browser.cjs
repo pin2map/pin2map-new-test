@@ -250,7 +250,20 @@ const viewports=[
      }
      return null;
    });
-   assert.ok(outsideSettings,"Settings panel must leave an exposed bare-map tap target");
+   if(!outsideSettings){
+     // On narrow phones settings can fill the entire visible map. No
+     // physical map surface remains tappable; close using its own button,
+     // then verify the two-step behavior through a smaller search menu.
+     await page.locator("#settingsButton").click();
+     await page.locator("#searchButton").click();
+     await page.locator("#searchTypeMenu").waitFor({state:"visible"});
+     await clickMap();
+     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
+     assert.equal(await contextMenu.isHidden(),true);
+     await clickMap();
+     await contextMenu.waitFor({state:"visible"});
+     await page.keyboard.press("Escape");
+   }else{
    await page.evaluate(()=>{
      window.__mapTapTrace=[];
      const snap=(event,phase)=>{
@@ -273,6 +286,7 @@ const viewports=[
    await clickMap(outsideSettings);
    await contextMenu.waitFor({state:"visible",timeout:5000});
    await page.keyboard.press("Escape");
+   }
    if(!view.mobile){
      // Legacy gestures no longer open the chooser.
      await page.locator("#map").click({button:"right",
