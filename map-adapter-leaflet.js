@@ -192,7 +192,12 @@
     }
     // Normalize map clicks to a plain coordinate instead of exposing Leaflet events.
     onMapClick(callback) {
-      const handler=event=>callback({lat:event.latlng.lat,lng:event.latlng.lng});
+      const handler=event=>{
+        // Marker/feature clicks own their actions. Only unoccupied map
+        // surface clicks may reach the background menu use case.
+        if(!this.isMapSurface(event.originalEvent?.target))return;
+        callback({lat:event.latlng.lat,lng:event.latlng.lng});
+      };
       this.map.on("click",handler);
       return ()=>this.map.off("click",handler);
     }
