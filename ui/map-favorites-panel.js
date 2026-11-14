@@ -75,6 +75,8 @@
       panel.classList.remove("is-editing","search-focused");
       panel.style.removeProperty("--p2m-favorites-keyboard-top");
       panel.style.removeProperty("--p2m-favorites-keyboard-height");
+      panel.style.removeProperty("height");
+      this.desktopSearchHeight=null;
     }
     toggle(values){this.open?this.close():this.show(values);}
     keepEditorVisible(){
@@ -88,6 +90,18 @@
       const touchKeyboardLayout=!this.doc.defaultView?.matchMedia?.(
         "(hover: hover) and (pointer: fine)")?.matches;
       panel.classList.toggle("search-focused",searchFocused);
+      if(!touchKeyboardLayout){
+        // Search must not shrink the standard desktop panel when matches
+        // disappear. Capture its normal height before the first input.
+        if(searchFocused&&!this.desktopSearchHeight)
+          this.desktopSearchHeight=panel.getBoundingClientRect().height;
+        if((searchFocused||this.searchText)&&this.desktopSearchHeight)
+          panel.style.height=this.desktopSearchHeight+"px";
+        else if(!searchFocused&&!this.searchText){
+          panel.style.removeProperty("height");
+          this.desktopSearchHeight=null;
+        }
+      }
       if((!searchFocused&&!editorActive)||!touchKeyboardLayout){
         panel.classList.remove("is-editing");
         panel.style.removeProperty("--p2m-favorites-keyboard-top");
