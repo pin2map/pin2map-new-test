@@ -538,6 +538,9 @@ async function zoom(page){
         await clear.click();
         await page.locator("#favoritesClose").focus();
         assert.equal(await removeAllButton.count(),1);
+        // The iOS blur handler defers keyboard/viewport cleanup by 90 ms.
+        // Verify the settled state rather than the intermediate focus frame.
+        await removeAllButton.waitFor({state:"visible",timeout:3000});
         assert.equal(await removeAllButton.isVisible(),true);
         await removeAllButton.click();
         assert.match(await page.locator(".favorite-confirm-danger p").first().textContent(),
