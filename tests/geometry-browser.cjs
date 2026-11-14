@@ -210,44 +210,58 @@ const viewports=[
    // Synthetic right-click is supported on desktop; touch gets a pointer
    // longpress regression through the existing pin browser suite.
    if(!view.mobile){
-     await page.locator("#map").click({button:"right",
-       position:{x:90,y:110},force:true});
-     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
-     assert.equal(await page.locator("#mapActionChooser button").count(),4);
-     const labels=await page.locator("#mapActionChooser button").evaluateAll(
+     const contextMenu=page.locator("#mapActionChooser");
+     const openRightClick=async(x=95,y=115)=>{
+       await page.locator("#map").click({button:"right",
+         position:{x,y},force:true});
+       await contextMenu.waitFor({state:"visible",timeout:5000});
+     };
+     // Double-click must open the same menu, not Leaflet's native +1 zoom.
+     const zoomBefore= (await readStoredProject()).viewport.zoom;
+     await page.locator("#map").dblclick({position:{x:90,y:110},force:true});
+     await contextMenu.waitFor({state:"visible",timeout:5000});
+     assert.equal((await readStoredProject()).viewport.zoom,zoomBefore,
+       "Desktop double-click only opens chooser without immediate zoom");
+     assert.equal(await contextMenu.locator("button").count(),4);
+     const labels=await contextMenu.locator("button").evaluateAll(
        buttons=>buttons.map(button=>button.getAttribute("aria-label")));
      assert.deepEqual(labels,["Heranzoomen","Pin setzen","Gebiet suchen","Herauszoomen"]);
-     assert.equal(await page.locator("#mapActionChooser button span").count(),0,
-       "Context actions must use icons only, without text captions");
-     const chooserRect=await page.locator("#mapActionChooser").boundingBox();
+     assert.equal(await contextMenu.locator("button span").count(),0,
+       "Context actions must use icons only, without captions");
+     const chooserRect=await contextMenu.boundingBox();
      assert.ok(chooserRect&&chooserRect.x>40&&chooserRect.y>75);
      assert.ok(chooserRect.width<=220&&chooserRect.height<=60,
-       "Four circular icon buttons must form a compact anchored chooser");
-     await page.locator('#mapActionChooser button[aria-label="Heranzoomen"]').click();
-     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
-     // The app persists the exact selected zoom level, without creating pins.
-     const stored=await waitForStored(project=>project?.viewport?.zoom===16,
-       "context zoom level 16");
-     assert.equal(stored.viewport.zoom,16);
+       "Four circular buttons must form a compact anchored chooser");
+     await contextMenu.locator('button[aria-label="Heranzoomen"]').click();
+     assert.equal(await contextMenu.isHidden(),true);
+     let expected=Math.min(19,zoomBefore+3);
+     let stored=await waitForStored(project=>project?.viewport?.zoom===expected,
+       "relative +3 zoom");
+     assert.equal(stored.viewport.zoom,expected);
+     // A second context activation adds another three levels rather than
+     // returning to an obsolete fixed level 16.
+     await page.waitForTimeout(900);
+     await openRightClick();
+     await contextMenu.locator('button[aria-label="Heranzoomen"]').click();
+     expected=Math.min(19,expected+3);
+     stored=await waitForStored(project=>project?.viewport?.zoom===expected,
+       "repeated relative +3 zoom");
+     assert.equal(stored.viewport.zoom,expected);
      assert.equal(await page.locator("#pinPanel").isHidden(),true);
-     // The gesture handler intentionally suppresses the synthetic context
-     // click for 750 ms; a fresh user right-click follows that interval.
      await page.waitForTimeout(900);
-     // Dismissal remains available by clicking outside or pressing Escape.
-     await page.locator("#map").click({button:"right",
-       position:{x:110,y:120},force:true});
-     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
+     await openRightClick(110,120);
      await page.keyboard.press("Escape");
-     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
-     // Fourth action must use the same exact click point, at zoom level 8.
-     await page.waitForTimeout(900);
-     await page.locator("#map").click({button:"right",
-       position:{x:115,y:130},force:true});
-     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
-     await page.locator('#mapActionChooser button[aria-label="Herauszoomen"]').click();
-     const zoomOut=await waitForStored(project=>project?.viewport?.zoom===8,
-       "context zoom level 8");
-     assert.equal(zoomOut.viewport.zoom,8);
+     assert.equal(await contextMenu.isHidden(),true);
+     // The - magnifier subtracts three from the CURRENT zoom each time.
+     for(let i=0;i<2;i++){
+       await page.waitForTimeout(900);
+       await openRightClick(115,130);
+       await contextMenu.locator('button[aria-label="Herauszoomen"]').click();
+       expected=Math.max(0,expected-3);
+       const zoomOut=await waitForStored(project=>project?.viewport?.zoom===expected,
+         "relative -3 zoom, repetition "+(i+1));
+       assert.equal(zoomOut.viewport.zoom,expected);
+     }
      assert.equal(await page.locator("#pinPanel").isHidden(),true);
    }else{
      // A single touch must keep the ordinary map behavior. Two short taps
