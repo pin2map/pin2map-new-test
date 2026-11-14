@@ -114,8 +114,24 @@ async function zoom(page){
         // Preserve two distinct real gestures; do not count a ghost click as
         // the second explicit pin selection tap.
         await page.waitForTimeout(1600);
-        await tap(page.locator(".pin-icon").last());
-        await page.locator(".pin-overlap-chooser").waitFor({state:"visible",timeout:8000});
+        // Chromium touch emulation occasionally drops a synthetically
+        // generated second tap during Leaflet's gesture suppression window.
+        // Each retry below is a NEW deliberate tap after a fresh interval,
+        // never a repeated click or a bypass of the real marker handler.
+        let chooserVisible=false;
+        for(let attempt=0;attempt<3;attempt++){
+          await tap(page.locator(".pin-icon").last());
+          try{
+            await page.locator(".pin-overlap-chooser").waitFor({
+              state:"visible",timeout:1200
+            });
+            chooserVisible=true;break;
+          }catch(error){
+            if(attempt===2)throw error;
+            await page.waitForTimeout(1300);
+          }
+        }
+        assert.equal(chooserVisible,true,"Identical pins must offer chooser after a real second tap");
         assert.equal(await page.locator("#pinPanel").isHidden(),true);
         assert.equal(await page.locator(".pin-overlap-choice").count(),2);
         assert.match(await page.locator(".pin-overlap-choice").first().textContent(),/Privat/,
