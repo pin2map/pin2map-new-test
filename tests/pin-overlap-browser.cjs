@@ -419,8 +419,12 @@ async function zoom(page){
         assert.ok(saved.history?.entries.length>0);
         assert.equal(Object.hasOwn(saved.project,"localMapViewHistory"),false,
           "Project sync data must not contain device-specific history");
-        // A first set of fifteen remains below the new 500-favorite cap.
-        // Existing slots remain editable/replacable at full capacity.
+        // The reset button intentionally restores focus to search; while
+        // iOS keyboard focus is active the footer stays hidden. Dismiss the
+        // keyboard before using the rectangular add action.
+        await page.locator("#favoritesClose").focus();
+        await page.waitForTimeout(180);
+        // Fifteen is below the new 500-favorite cap.
         for(let i=1;i<15;i++){
           await page.locator("#favoritesAdd").click();
           await page.locator(".favorite-name-input").fill("Platz "+String.fromCharCode(65+i));
