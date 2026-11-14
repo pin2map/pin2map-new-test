@@ -213,10 +213,10 @@
           list.append(editor.target);pendingFocus=editor.focus;
         }
       });
-      // Bulk deletion belongs to the very end of the scrollable list, NOT
-      // to the persistent Add/Close footer. Filtering never changes the
-      // target set: this always deletes ALL saved favorites, after consent.
-      if(values.length){
+      // Only the standard, unfiltered list offers bulk deletion. Search
+      // mode must never expose an action that destroys invisible favorites.
+      // The button remains at the scrollable list's end, never in the footer.
+      if(values.length&&!query){
         const removeAll=this.button(null,"Alle Favoriten löschen",
           ()=>this.start("deleteAll"),"favorite-delete-all");
         removeAll.textContent="Alle Favoriten löschen";
