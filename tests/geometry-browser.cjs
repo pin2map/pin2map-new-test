@@ -212,9 +212,9 @@ const viewports=[
    const contextMenu=page.locator("#mapActionChooser");
    const mapBox=await page.locator("#map").boundingBox();
    const point={x:mapBox.x+90,y:mapBox.y+160};
-   const clickMap=async()=>{
-     if(view.mobile)await page.touchscreen.tap(point.x,point.y);
-     else await page.mouse.click(point.x,point.y);
+   const clickMap=async(at=point)=>{
+     if(view.mobile)await page.touchscreen.tap(at.x,at.y);
+     else await page.mouse.click(at.x,at.y);
    };
    await clickMap();
    await contextMenu.waitFor({state:"visible",timeout:5000});
@@ -235,6 +235,22 @@ const viewports=[
    // Search and settings menus must obey the very same two-step rule.
    await page.locator("#settingsButton").click();
    await page.locator("#settingsPanel").waitFor({state:"visible",timeout:5000});
+   // The settings panel occupies the upper-left part of the map. Pick a
+   // genuinely exposed map point, rather than clicking INSIDE that panel.
+   const outsideSettings=await page.evaluate(()=>{
+     const map=document.getElementById("map").getBoundingClientRect();
+     const panel=document.getElementById("settingsPanel").getBoundingClientRect();
+     for(const [fx,fy] of [[.86,.62],[.88,.42],[.55,.88],[.40,.75],[.90,.78],[.15,.88]]){
+       const x=map.left+map.width*fx,y=map.top+map.height*fy;
+       if(x>=panel.left&&x<=panel.right&&y>=panel.top&&y<=panel.bottom)continue;
+       const target=document.elementFromPoint(x,y);
+       if(target?.closest?.("#map")&&
+         !target.closest(".leaflet-control,.leaflet-marker-icon,.leaflet-interactive"))
+         return {x,y};
+     }
+     return null;
+   });
+   assert.ok(outsideSettings,"Settings panel must leave an exposed bare-map tap target");
    await page.evaluate(()=>{
      window.__mapTapTrace=[];
      const snap=(event,phase)=>{
@@ -249,12 +265,12 @@ const viewports=[
      document.getElementById("map").addEventListener("pointerdown",e=>snap(e,"map-capture"),true);
      document.addEventListener("click",e=>snap(e,"click-document-capture"),true);
    });
-   await clickMap();
+   await clickMap(outsideSettings);
    assert.equal(await page.locator("#settingsPanel").isHidden(),true);
    assert.equal(await contextMenu.isHidden(),true,
      "First map tap must not open chooser: "+
      JSON.stringify(await page.evaluate(()=>window.__mapTapTrace)));
-   await clickMap();
+   await clickMap(outsideSettings);
    await contextMenu.waitFor({state:"visible",timeout:5000});
    await page.keyboard.press("Escape");
    if(!view.mobile){
