@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v181';
+const CACHE='pin2map-new-v182';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -9,6 +9,9 @@ const CORE=[
   "./index.html",
   "./assets/wikipedia-social.svg",
   "./domain/project-model.js",
+  "./domain/project-features.js",
+  "./domain/area-geometry.js",
+  "./domain/river-geometry.js",
   "./domain/pin-filter.js",
   "./application/pin-operations.js",
   "./application/pin-session.js",
@@ -24,6 +27,8 @@ const CORE=[
   "./application/map-click-coordinator.js",
   "./domain/place-search.js",
   "./adapters/geocoding/nominatim-geocoder.js",
+  "./adapters/geocoding/nominatim-area-finder.js",
+  "./adapters/geocoding/osm-watercourse-finder.js",
   "./application/place-search-service.js",
   "./application/search-pin-transfer.js",
   "./adapters/weather/open-meteo-pin-info.js",
@@ -49,6 +54,9 @@ const CORE=[
   "./ui/pwa-refresh.js",
   "./ui/search-results.js",
   "./ui/search-form.js",
+  "./ui/search-type-menu.js",
+  "./ui/map-action-chooser.js",
+  "./ui/geometry-editor.js",
   "./ui/ui-state.js",
   "./ui/pin-editor.js",
   "./ui/pin-editor-actions.js",
