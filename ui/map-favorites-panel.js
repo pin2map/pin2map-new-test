@@ -82,8 +82,13 @@
       const searchFocused=this.doc.activeElement===this.el("favoritesSearch");
       const editorActive=["new","rename","replace"].includes(this.mode);
       const panel=this.el("favoritesPanel");
+      // A real mouse/keyboard must retain the standard anchored panel,
+      // including its footer. Only touch-first input needs the iOS
+      // visualViewport keyboard layout.
+      const touchKeyboardLayout=!this.doc.defaultView?.matchMedia?.(
+        "(hover: hover) and (pointer: fine)")?.matches;
       panel.classList.toggle("search-focused",searchFocused);
-      if(!searchFocused&&!editorActive){
+      if((!searchFocused&&!editorActive)||!touchKeyboardLayout){
         panel.classList.remove("is-editing");
         panel.style.removeProperty("--p2m-favorites-keyboard-top");
         panel.style.removeProperty("--p2m-favorites-keyboard-height");
@@ -250,8 +255,11 @@
       }
       list.scrollTop=oldScroll;
       const panel=this.el("favoritesPanel");
+      const touchKeyboardLayout=!this.doc.defaultView?.matchMedia?.(
+        "(hover: hover) and (pointer: fine)")?.matches;
       panel.classList.toggle("is-editing",
-        !!pendingFocus||this.doc.activeElement===this.el("favoritesSearch"));
+        touchKeyboardLayout&&
+        (!!pendingFocus||this.doc.activeElement===this.el("favoritesSearch")));
       if(pendingFocus){
         this.keepEditorVisible();
         pendingFocus.focus({preventScroll:true});
