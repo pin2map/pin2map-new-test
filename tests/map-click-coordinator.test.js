@@ -9,13 +9,13 @@ function fixture({move=false,suppressed=false,accepted=false}={}){
     previewMove:pos=>{calls.push(["preview",pos]);return accepted;},
     isSuppressed:()=>{calls.push("suppressed?");return suppressed;},
     onTargetAccepted:()=>calls.push("accepted"),
-    onOrdinaryClick:()=>calls.push("close-all")
+    onOrdinaryClick:pos=>calls.push(["background-action",pos])
   });
   return {coordinator,calls};
 }
 test("ordinary map click closes overlays only when not suppressed",()=>{
   const x=fixture(),pos={lat:49,lng:9};x.coordinator.handle(pos);
-  assert.deepEqual(x.calls,["move?","suppressed?","close-all"]);
+  assert.deepEqual(x.calls,["move?","suppressed?",["background-action",pos]]);
 });
 test("suppressed click after long press does not close overlays",()=>{
   const x=fixture({suppressed:true});x.coordinator.handle({lat:49,lng:9});
