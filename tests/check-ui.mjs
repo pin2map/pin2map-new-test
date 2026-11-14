@@ -110,12 +110,14 @@ check(gestures.includes("attachMarkerLongPress") &&
   gestures.includes("attachLongPress"),
   "touch, mouse and marker gestures live in dedicated controller");
 const mapClick=read("application/map-click-coordinator.js");
-check(map.includes("onMapClick(callback)") &&
+check(map.includes("onMapClick(callback,") &&
   app.includes("mapAdapter.onMapClick(position=>{") &&
   app.includes("if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}") &&
-  app.includes("pinInfoMenu.close();mapClickCoordinator.handle(position);") &&
-  mapClick.includes("handle(position)") && mapClick.includes("this.previewMove(position)"),
-  "map events pass neutral coordinates through application coordinator");
+  app.includes("mapClickCoordinator.handle(position);") &&
+  app.includes("onSurfacePointerDown:") &&
+  mapClick.includes("handle(position)") && mapClick.includes("this.previewMove(position)") &&
+  mapClick.includes("this.onOrdinaryClick(position)"),
+  "map events keep relocation, inspection and coordinate-aware background actions");
 check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
   "application never creates raw Leaflet overlays");
 check(app.includes("mapAdapter.setBasemap(state.basemap,{") &&
