@@ -43,6 +43,9 @@
 </script>
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script defer src="./domain/project-model.js"></script>
+<script defer src="./domain/project-features.js"></script>
+<script defer src="./domain/area-geometry.js"></script>
+<script defer src="./domain/river-geometry.js"></script>
 <script defer src="./domain/pin-filter.js"></script>
 <script defer src="./application/pin-operations.js"></script>
 <script defer src="./application/pin-session.js"></script>
@@ -58,6 +61,8 @@
 <script defer src="./application/map-click-coordinator.js"></script>
 <script defer src="./domain/place-search.js"></script>
 <script defer src="./adapters/geocoding/nominatim-geocoder.js"></script>
+<script defer src="./adapters/geocoding/nominatim-area-finder.js"></script>
+<script defer src="./adapters/geocoding/osm-watercourse-finder.js"></script>
 <script defer src="./application/place-search-service.js"></script>
 <script defer src="./application/search-pin-transfer.js"></script>
 <script defer src="./adapters/weather/open-meteo-pin-info.js"></script>
@@ -83,6 +88,9 @@
 <script defer src="./ui/pwa-refresh.js"></script>
 <script defer src="./ui/search-results.js"></script>
 <script defer src="./ui/search-form.js"></script>
+<script defer src="./ui/search-type-menu.js"></script>
+<script defer src="./ui/map-action-chooser.js"></script>
+<script defer src="./ui/geometry-editor.js"></script>
 <script defer src="./ui/ui-state.js"></script>
 <script defer src="./ui/pin-editor.js"></script>
 <script defer src="./ui/pin-editor-actions.js"></script>
@@ -102,11 +110,13 @@
 <body>
 <div id="app">
   <header class="topbar">
-    <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen" aria-label="Ort weltweit suchen"><button type="button" id="searchClear" class="search-clear hidden" aria-label="Suchfeld leeren" title="Suchfeld leeren"><span aria-hidden="true">×</span></button><button type="submit" id="searchButton" data-pin-icon="search" title="Ort suchen">⌕</button></form>
+    <form id="searchForm" class="search" autocomplete="off"><input id="searchInput" type="search" placeholder="Ort suchen" aria-label="Ort weltweit suchen"><button type="button" id="searchClear" class="search-clear hidden" aria-label="Suchfeld leeren" title="Suchfeld leeren"><span aria-hidden="true">×</span></button><button type="submit" id="searchButton" data-pin-icon="search" title="Suchart wählen" aria-label="Suchart wählen">⌕</button><div id="searchTypeMenu" class="search-type-menu hidden" role="menu" aria-label="Suchart wählen"></div></form>
 
 
   </header>
+  <div id="geometrySearchBusy" class="geometry-search-busy hidden" role="status" aria-live="polite">Suche läuft …</div>
   <main id="map" aria-label="Interaktive Karte"></main>
+  <div id="mapActionChooser" class="map-action-chooser hidden" role="dialog" aria-label="Kartenaktion auswählen"></div>
   <button id="favoritesButton" type="button" data-pin-icon="star" class="favorites-map-button" title="Kartenfavoriten" aria-label="Kartenfavoriten öffnen" aria-controls="favoritesPanel" aria-expanded="false"></button>
   <aside id="favoritesPanel" class="favorites-panel hidden" role="dialog" aria-label="Kartenfavoriten">
     <div class="favorites-head"><span class="favorites-head-star" data-pin-icon="star" role="img" aria-label="Favoriten"></span><input id="favoritesSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Favoriten suchen" aria-label="Favoriten nach Namen durchsuchen" aria-controls="favoritesList"><button id="favoritesSearchClear" type="button" data-pin-icon="funnel-x" aria-label="Favoritensuche zurücksetzen" title="Favoritensuche zurücksetzen" disabled></button><button id="favoritesClose" type="button" data-pin-icon="x" aria-label="Favoriten schließen"></button></div>
