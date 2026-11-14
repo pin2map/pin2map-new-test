@@ -56,6 +56,8 @@ jobs:
         run: node tests/pin-overlap-browser.cjs
       - name: Verify responsive pin dialog, popup containment and capture visual evidence
         run: node tests/pin-dialog-visual.cjs
+      - name: Verify geometry search, polygons, lakes and rivers in Chromium
+        run: node tests/geometry-browser.cjs
       - name: Publish overlap zoom and fallback screenshots
         if: always()
         uses: actions/upload-artifact@v4
