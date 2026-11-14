@@ -5,6 +5,7 @@
 (function(root){
   function createMapGestureController({
     mapAdapter,getBasemap,isMoveMode,isInspectMode=()=>false,selectPin,addPin,
+    onMapAction=null,
     renderMarkers,persistViewport,updatePanelLayout,
     scheduleFrame, vibrate=()=>{}, now=()=>Date.now(),
     setTimer=setTimeout,clearTimer=clearTimeout
@@ -117,10 +118,12 @@
         const rect = container.getBoundingClientRect();
         const point = {x:start.x - rect.left, y:start.y - rect.top};
         const where = mapAdapter.unproject(point);
-        const pin = addPin(where.lat, where.lng, "");
-        if (pin) {
+        if(typeof onMapAction==="function"){
+          onMapAction(where,{x:start.x,y:start.y});
           vibrate(15);
-          scheduleFrame(updatePanelLayout);
+        }else{
+          const pin=addPin(where.lat,where.lng,"");
+          if(pin){vibrate(15);scheduleFrame(updatePanelLayout);}
         }
       }, 650);
     }, { passive: true });
@@ -143,7 +146,9 @@
       if(isMoveMode()||isInspectMode())return;
       const rect=container.getBoundingClientRect();
       const location=mapAdapter.unproject({x:e.clientX-rect.left,y:e.clientY-rect.top});
-      addPin(location.lat,location.lng,"");
+      if(typeof onMapAction==="function")
+        onMapAction(location,{x:e.clientX,y:e.clientY});
+      else addPin(location.lat,location.lng,"");
       suppressFor(750);
     });
   }
