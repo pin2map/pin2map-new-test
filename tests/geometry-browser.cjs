@@ -93,6 +93,29 @@ const viewports=[
    // Clicking magnifier opens the menu. It does not submit automatically.
    await page.locator("#searchButton").click();
    await page.locator("#searchTypeMenu").waitFor({state:"visible",timeout:5000});
+   // A popup inside overflow:hidden was previously reported visible by
+   // Playwright although its entire lower portion was clipped. Verify
+   // actual viewport geometry AND real pointer hit testing.
+   const chooserGeometry=await page.evaluate(()=>{
+     const menu=document.querySelector("#searchTypeMenu");
+     const trigger=document.querySelector("#searchButton").getBoundingClientRect();
+     const app=document.querySelector("#app").getBoundingClientRect();
+     const rect=menu.getBoundingClientRect();
+     const first=menu.querySelector(".search-type-choice").getBoundingClientRect();
+     const at=document.elementFromPoint(first.left+first.width/2,first.top+first.height/2);
+     return {rect:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom},
+       triggerBottom:trigger.bottom,appRight:app.right,appBottom:app.bottom,
+       hit:at?.closest?.(".search-type-choice")?.dataset.searchType||null,
+       parentId:menu.parentElement?.id};
+   });
+   assert.equal(chooserGeometry.parentId,"app","Search chooser must escape clipped form");
+   assert.ok(chooserGeometry.rect.top>=chooserGeometry.triggerBottom-1&&
+     chooserGeometry.rect.right<=chooserGeometry.appRight+1&&
+     chooserGeometry.rect.bottom<=chooserGeometry.appBottom+1,
+     "Search chooser must be fully visible BELOW the magnifier: "+JSON.stringify(chooserGeometry));
+   assert.equal(chooserGeometry.hit,"pin",
+     "First search option must be clickable at its visual center");
+   await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
    assert.equal(await page.locator(".search-type-choice").count(),4);
    for(let i=0;i<modes.length;i++){
      assert.equal(await page.locator(".search-type-choice").nth(i)
@@ -102,7 +125,7 @@ const viewports=[
    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
    await page.locator("#searchInput").fill("Testfläche");
    await page.locator("#searchButton").click();
-   await page.keyboard.press("f");
+   await page.locator('.search-type-choice[data-search-type="area"]').click();
    await page.locator("#searchResults .result").first()
      .waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon").count(),1);
@@ -195,7 +218,7 @@ const viewports=[
    });
    await page.locator("#searchInput").fill("Testfluss");
    await page.locator("#searchButton").click();
-   await page.keyboard.press("u");
+   await page.locator('.search-type-choice[data-search-type="river"]').click();
    await page.waitForFunction(()=>document.querySelector("#geometrySearchBusy")&&
      !document.querySelector("#geometrySearchBusy").classList.contains("hidden"),
      null,{timeout:5000});
