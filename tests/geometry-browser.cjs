@@ -321,6 +321,43 @@ const viewports=[
      null,{timeout:10000});
    assert.equal(await page.locator(".p2m-river-name-label").count(),1);
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-areas-river.png"});
+   // New South Wales regression: clicking near the shore may have the
+   // correct state in reverse hierarchy even when the searched polygon
+   // is outside a legacy 6-degree box or misses that point after provider
+   // simplification. A unique selected state must still resolve.
+   await page.route(/nominatim\\.openstreetmap\\.org\\/reverse/,async route=>
+     route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify({address:{state:"Neusüdwales",country_code:"au"}})}));
+   await page.route(/nominatim\\.openstreetmap\\.org\\/search/,async route=>{
+     const url=new URL(route.request().url());
+     assert.equal(url.searchParams.has("bounded"),false);
+     assert.equal(url.searchParams.get("countrycodes"),"au");
+     await route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify([{osm_type:"relation",osm_id:2316596,
+         name:"New South Wales",namedetails:{"name:de":"Neusüdwales"},
+         addresstype:"state",type:"administrative",
+         geojson:{type:"Polygon",coordinates:[[[
+           141,-37.5],[154,-37.5],[154,-28],[141,-28],[141,-37.5]
+         ]]}}])});
+   });
+   const free=await page.locator("#map").boundingBox();
+   const px=free.x+85,py=free.y+150;
+   if(view.mobile)await page.touchscreen.tap(px,py);
+   else await page.mouse.click(px,py);
+   await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
+   await page.locator('#mapActionChooser button[aria-label="Gebiet suchen"]').click();
+   await page.locator("#searchResults .result").first().waitFor({
+     state:"visible",timeout:12000
+   });
+   assert.match(await page.locator("#searchResults .result").first().textContent(),
+     /Neusüdwales/);
+   await page.locator("#searchResults .result").first().click();
+   const nsw=(await waitForStored(project=>project?.areas?.some(
+     area=>area.name==="Neusüdwales"),"New South Wales via hierarchy")).areas
+     .find(area=>area.name==="Neusüdwales");
+   assert.equal(nsw.layerId,"private");
+   assert.equal(nsw.geometry.type,"Polygon");
+   assert.equal(await page.locator("#searchResults .message").count(),0);
    assert.deepEqual(errors,[],view.name+" page errors");
    console.log("[geometry] PASS",view.name,"search modes, private saved polygons, lake, river and UI");
    await context.close();
