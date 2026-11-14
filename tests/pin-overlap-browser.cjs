@@ -517,6 +517,9 @@ async function zoom(page){
         assert.equal(await page.locator("#favoritesList .favorite-confirm-danger").count(),1);
         assert.match(await page.locator("#favoritesList .favorite-confirm-danger p").first().textContent(),
           /alle 15 Favoriten löschen/);
+        // Avoid measuring the temporary hover shade left by the pointer when
+        // the newly inserted confirmation happens to occupy its last position.
+        await page.mouse.move(0,0);
         assert.equal(await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first()
           .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(255, 224, 223)");
         assert.equal(await page.locator(".favorite-confirm-danger .favorite-action-danger")
