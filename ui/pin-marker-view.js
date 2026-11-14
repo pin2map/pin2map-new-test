@@ -57,6 +57,24 @@
       this.visiblePinList=[];
     }
     visiblePins(){return this.visiblePinList;}
+    hitTargets(){
+      // Include the icon AND its permanent name label. Their real DOM hit
+      // rectangles are what users perceive as a cluster of map objects.
+      const rectangle=element=>{
+        const b=element.getBoundingClientRect();
+        return {left:b.left,right:b.right,top:b.top,bottom:b.bottom};
+      };
+      return this.visiblePinList.flatMap(pin=>{
+        const marker=this.markers.get(pin.id);
+        const icon=marker&&this.map.getMarkerElement(marker);
+        if(!icon)return [];
+        const rects=[rectangle(icon)];
+        const label=marker.getTooltip?.()?.getElement?.();
+        if(label)rects.push(rectangle(label));
+        return [{type:"pin",id:pin.id,name:pin.name,kind:"pin",
+          position:{lat:pin.lat,lng:pin.lng},rects}];
+      });
+    }
     setRelocationSource(id){
       this.relocationSourceId=id||null;
       for(const [pinId,marker] of this.markers){
