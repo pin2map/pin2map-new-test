@@ -20,7 +20,8 @@
   }
   function list(project){
     if(!Array.isArray(project.favorites))project.favorites=[];
-    if(project.favorites.length>CAPACITY)project.favorites=project.favorites.slice(0,CAPACITY);
+    // Do not silently truncate older projects with more than 100 favorites.
+    // The new limit applies to additions only, not existing user data.
     return project.favorites;
   }
   function items(project){return list(project).map((entry,index)=>({...entry,letter:letter(index)}));}
