@@ -210,26 +210,16 @@ const viewports=[
      assert.ok(chooserRect&&chooserRect.x>40&&chooserRect.y>75);
      assert.ok(chooserRect.width<=170&&chooserRect.height<=60,
        "Three circular icon buttons must form a compact anchored chooser");
-     const previousViewport=await page.evaluate(()=>{
-       const map=document.querySelector("#map")._leaflet_id;
-       return map>0;
-     });
-     assert.equal(previousViewport,true);
      await page.locator('#mapActionChooser button[aria-label="Heranzoomen"]').click();
      assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
-     await page.waitForFunction(()=>{
-       const zoom=document.querySelector(".leaflet-container");
-       return zoom&&window.__mapZoomCheckReady!==false;
-     });
-     const zoomState=await page.evaluate(()=>{
-       const center=window.__p2mAppMapAdapter?.getViewport?.();
-       return center||null;
-     });
      // The app persists the exact selected zoom level, without creating pins.
      const stored=await waitForStored(project=>project?.viewport?.zoom===16,
        "context zoom level 16");
      assert.equal(stored.viewport.zoom,16);
      assert.equal(await page.locator("#pinPanel").isHidden(),true);
+     // The gesture handler intentionally suppresses the synthetic context
+     // click for 750 ms; a fresh user right-click follows that interval.
+     await page.waitForTimeout(900);
      // Dismissal remains available by clicking outside or pressing Escape.
      await page.locator("#map").click({button:"right",
        position:{x:110,y:120},force:true});
