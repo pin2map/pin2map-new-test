@@ -713,18 +713,18 @@
         document.body.append(a);a.click();a.remove();
       }
     });
+    function zoomContextAt(point,delta){
+      const current=mapAdapter.getViewport().zoom;
+      const maximum=state.basemap==="topo"?17:19;
+      const zoom=Math.max(0,Math.min(maximum,current+delta));
+      flushHistoryRecord();
+      mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom},{animate:false});
+      persistViewport();
+    }
     mapActionChooser=new window.Pin2MapMapActionChooser({
       document,getElement:$,icons:window.Pin2MapIcons,
-      onZoom:point=>{
-        flushHistoryRecord();
-        mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom:16},{animate:false});
-        persistViewport();
-      },
-      onZoomOut:point=>{
-        flushHistoryRecord();
-        mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom:8},{animate:false});
-        persistViewport();
-      },
+      onZoom:point=>zoomContextAt(point,3),
+      onZoomOut:point=>zoomContextAt(point,-3),
       onPin:point=>addPin(point.lat,point.lng,""),
       onArea:point=>void findAreaAt(point)
     });
