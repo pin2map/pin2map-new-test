@@ -19,7 +19,7 @@
         return;
       }
       if(this.isSuppressed())return;
-      this.onOrdinaryClick();
+      this.onOrdinaryClick(position);
     }
   }
   root.Pin2MapMapClickCoordinator=MapClickCoordinator;
