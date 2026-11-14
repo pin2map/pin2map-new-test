@@ -246,25 +246,17 @@ async function zoom(page){
         assert.equal(await clear.getAttribute("data-pin-icon"),"funnel-x");
         assert.equal(await clear.isDisabled(),true);
         const standardPanelBounds=await page.locator("#favoritesPanel").boundingBox();
-        const standardFooterBounds=await page.locator(".favorites-footer").boundingBox();
         await search.focus();
         if(viewport.name==="desktop"){
           const focusedBounds=await page.locator("#favoritesPanel").boundingBox();
           assert.ok(focusedBounds&&standardPanelBounds&&
             Math.abs(focusedBounds.x-standardPanelBounds.x)<=1&&
             Math.abs(focusedBounds.y-standardPanelBounds.y)<=1&&
-            Math.abs(focusedBounds.height-standardPanelBounds.height)<=1,
-            "Desktop search focus must not move or resize the favorites panel: standard="+
-            JSON.stringify(standardPanelBounds)+" focused="+JSON.stringify(focusedBounds)+
-            " media="+await page.evaluate(()=>matchMedia("(hover: hover) and (pointer: fine)").matches)+
-            " classes="+await page.locator("#favoritesPanel").getAttribute("class"));
+            focusedBounds.height<standardPanelBounds.height,
+            "Desktop search keeps its anchor and shrinks when bulk delete disappears");
           assert.equal(await page.locator("#favoritesPanel.is-editing").count(),0);
           assert.equal(await page.locator(".favorites-footer").isVisible(),true,
-            "Desktop search must retain Add/Close footer");
-          const footerNow=await page.locator(".favorites-footer").boundingBox();
-          assert.ok(standardFooterBounds&&footerNow&&
-            Math.abs(standardFooterBounds.y-footerNow.y)<=1,
-            "Desktop footer must remain in its standard position");
+            "Desktop search retains Add/Close footer");
         }
         await search.fill("ÜBERS");
         assert.equal(await page.locator(".favorite-row").count(),1);
@@ -291,17 +283,24 @@ async function zoom(page){
           assert.ok(filteredBounds&&standardPanelBounds&&
             Math.abs(filteredBounds.x-standardPanelBounds.x)<=1&&
             Math.abs(filteredBounds.y-standardPanelBounds.y)<=1&&
-            Math.abs(filteredBounds.height-standardPanelBounds.height)<=1,
-            "Desktop filtering to zero matches must preserve standard size and position: standard="+
-            JSON.stringify(standardPanelBounds)+" filtered="+JSON.stringify(filteredBounds)+
-            " style="+await page.locator("#favoritesPanel").evaluate(el=>el.getAttribute("style"))+
-            " classes="+await page.locator("#favoritesPanel").getAttribute("class"));
+            filteredBounds.height<standardPanelBounds.height,
+            "Desktop panel/background must shrink for zero matches without moving");
           assert.equal(await page.locator(".favorites-footer").isVisible(),true);
+          const footerBounds=await page.locator(".favorites-footer").boundingBox();
+          assert.ok(footerBounds&&footerBounds.y+footerBounds.height<=
+            filteredBounds.y+filteredBounds.height+1,
+            "Desktop footer remains inside compact yellow background");
         }
         await clear.click();
         assert.equal(await search.inputValue(),"");
         assert.equal(await clear.isDisabled(),true);
         assert.equal(await page.locator(".favorite-row").count(),1);
+        if(viewport.name==="desktop"){
+          const restoredBounds=await page.locator("#favoritesPanel").boundingBox();
+          assert.ok(restoredBounds&&standardPanelBounds&&
+            Math.abs(restoredBounds.y-standardPanelBounds.y)<=1,
+            "Clearing desktop search retains the original anchored position");
+        }
         // The name, date and blank row surface all activate the
         // saved view. Renaming is reserved for the square-pen button only.
         for(const target of [".favorite-name",".favorite-date"]){
