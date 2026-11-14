@@ -249,6 +249,29 @@
     isPrivateLayerVisible:()=>layerById(PRIVATE_ID).visible,
     onRenderMarkers:()=>renderMarkers()
   });
+  function anyMapMenuOpen(){
+    const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel",
+      "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
+      "pinInfoMenu","mapActionChooser"];
+    return ids.some(id=>$(id)&&!$(id).classList.contains("hidden"))||
+      !!pinOverlapZoom?.menu||!!noteEditor?.open||
+      !!$("deleteDialog")?.open||!!uiState.selectedPinId;
+  }
+  function closeAllMapMenus(){
+    mapActionChooser?.close();
+    searchTypeMenu?.close();
+    favoritesPanel?.close();
+    geometryEditor?.close(false);
+    pinOverlapZoom?.close();
+    pinInfoMenu.close();
+    basemapMenu.close();
+    pinDetails.closeTransient();
+    noteEditor.close?.();
+    pinLayerPicker.setOpen(false);
+    cancelGeometrySearch();
+    overlayCoordinator.closeAll();
+    if(uiState.selectedPinId!==null){uiState.clearSelection();renderMarkers();renderPinPanel();}
+  }
   const mapClickCoordinator = new window.Pin2MapMapClickCoordinator({
     isMoveMode:()=>uiState.moveMode,
     previewMove:position=>moveController.previewAt(position),
@@ -258,7 +281,13 @@
       markerView.setRelocationSource(null);
       updateModeUI();
     },
-    onOrdinaryClick:()=>overlayCoordinator.closeAll()
+    onOrdinaryClick:position=>{
+      if(gestures.consumeDismissedTap())return;
+      if(anyMapMenuOpen()){closeAllMapMenus();return;}
+      const rect=mapAdapter.getContainer().getBoundingClientRect();
+      const xy=mapAdapter.project(position);
+      mapActionChooser.open(position,{x:rect.left+xy.x,y:rect.top+xy.y});
+    }
   });
   const mapOverlayLayout = new window.Pin2MapMapOverlayLayoutCoordinator({
     mapPort:{
@@ -683,11 +712,9 @@
     pinDeleteDialog.bind();
 
     mapAdapter.onMapClick(position=>{
-      // A pin touch can synthesize a later Leaflet map click. Do not let that
-      // suppressed ghost click immediately dismiss the new overlap chooser.
-      if(!gestures.isSuppressed())pinOverlapZoom?.close();
       if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
-      pinInfoMenu.close();mapClickCoordinator.handle(position);
+      if(gestures.isSuppressed())return;
+      mapClickCoordinator.handle(position);
     });
 
     gestures.attachLongPress();
@@ -713,25 +740,18 @@
         document.body.append(a);a.click();a.remove();
       }
     });
-    function zoomContextAt(point,delta){
-      const current=mapAdapter.getViewport().zoom;
-      const maximum=state.basemap==="topo"?17:19;
-      const zoom=Math.max(0,Math.min(maximum,current+delta));
-      flushHistoryRecord();
-      mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom},{animate:false});
-      persistViewport();
-    }
     mapActionChooser=new window.Pin2MapMapActionChooser({
       document,getElement:$,icons:window.Pin2MapIcons,
-      onZoom:point=>zoomContextAt(point,3),
-      onZoomOut:point=>zoomContextAt(point,-3),
       onPin:point=>addPin(point.lat,point.lng,""),
       onArea:point=>void findAreaAt(point)
     });
     mapActionChooser.bind();
     gestures=window.Pin2MapMapGestureController({
       mapAdapter,
-      onMapAction:(point,screen)=>{geometryEditor?.close(false);mapActionChooser?.open(point,screen);},
+      onSurfacePointerDown:()=>{
+        if(!anyMapMenuOpen())return false;
+        closeAllMapMenus();return true;
+      },
       getBasemap:()=>state.basemap,
       isMoveMode:()=>uiState.moveMode,
       isInspectMode:()=>satelliteInspector.isActive(),
