@@ -84,10 +84,11 @@
       if(clipped.length<3)continue;
       const holes=rings.slice(1).map(r=>r.map(p=>project({lat:p[1],lng:p[0]})));
       const valid=point=>contains(clipped,point)&&!holes.some(h=>contains(h,point));
-      const xmin=Math.max(left,Math.min(...clipped.map(p=>p.x)));
-      const xmax=Math.min(right,Math.max(...clipped.map(p=>p.x)));
-      const ymin=Math.max(top,Math.min(...clipped.map(p=>p.y)));
-      const ymax=Math.min(bottom,Math.max(...clipped.map(p=>p.y)));
+      let xmin=right,xmax=left,ymin=bottom,ymax=top;
+      for(const point of clipped){
+        xmin=Math.min(xmin,point.x);xmax=Math.max(xmax,point.x);
+        ymin=Math.min(ymin,point.y);ymax=Math.max(ymax,point.y);
+      }
       const cx=(xmin+xmax)/2,cy=(ymin+ymax)/2;
       const candidates=[centroid(clipped),{x:cx,y:cy}];
       // Grid probes handle long narrow lakes and highly concave polygons,
