@@ -325,10 +325,10 @@ const viewports=[
    // correct state in reverse hierarchy even when the searched polygon
    // is outside a legacy 6-degree box or misses that point after provider
    // simplification. A unique selected state must still resolve.
-   await page.route(/nominatim\\.openstreetmap\\.org\\/reverse/,async route=>
+   await page.route(/nominatim\.openstreetmap\.org\/reverse/,async route=>
      route.fulfill({status:200,contentType:"application/json",
        body:JSON.stringify({address:{state:"Neusüdwales",country_code:"au"}})}));
-   await page.route(/nominatim\\.openstreetmap\\.org\\/search/,async route=>{
+   await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
      const url=new URL(route.request().url());
      assert.equal(url.searchParams.has("bounded"),false);
      assert.equal(url.searchParams.get("countrycodes"),"au");
