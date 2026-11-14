@@ -1,12 +1,11 @@
 "use strict";
-/* Small position-anchored action chooser for right-click and longpress.
+/* Small position-anchored action chooser for a single background map click.
  * Consumes a normalized WGS84 point. It never creates pins or queries OSM.
  */
 (function(root){
   class MapActionChooser{
-    constructor({document:doc,getElement,icons,onZoom,onZoomOut,onPin,onArea}){
+    constructor({document:doc,getElement,icons,onPin,onArea}){
       this.doc=doc;this.el=getElement;this.icons=icons;
-      this.onZoom=onZoom;this.onZoomOut=onZoomOut;
       this.onPin=onPin;this.onArea=onArea;
       this.box=this.el("mapActionChooser");
       this.point=null;
@@ -16,10 +15,8 @@
       const b=this.box;
       b.replaceChildren();
       const rows=[
-        ["zoom-in","Heranzoomen",()=>this.onZoom(this.point)],
         ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)],
-        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)],
-        ["zoom-out","Herauszoomen",()=>this.onZoomOut(this.point)]
+        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)]
       ];
       for(const [icon,label,action] of rows){
         const button=this.doc.createElement("button");
