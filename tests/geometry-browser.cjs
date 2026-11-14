@@ -390,6 +390,9 @@ const viewports=[
          ]]}}];
        project.rivers=[];
        await db.saveProject(project);
+       await db.saveViewHistory({entries:[
+         {center:{lat:48.75,lng:9.2},zoom:9}
+       ],index:0});
      }finally{db.close();}
    });
    await page.reload({waitUntil:"domcontentloaded"});
