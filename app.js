@@ -715,6 +715,11 @@
     });
     mapActionChooser=new window.Pin2MapMapActionChooser({
       document,getElement:$,icons:window.Pin2MapIcons,
+      onZoom:point=>{
+        flushHistoryRecord();
+        mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom:16},{animate:false});
+        persistViewport();
+      },
       onPin:point=>addPin(point.lat,point.lng,""),
       onArea:point=>void findAreaAt(point)
     });
