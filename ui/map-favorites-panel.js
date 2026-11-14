@@ -109,7 +109,10 @@
         input=this.doc.createElement("input");
         input.type="text";input.className="favorite-name-input";
         input.maxLength=120;input.setAttribute("aria-label","Favoritenname");
-        input.value=isRename?(this.values[index]?.name||""):
+        // A replacement keeps the saved favorite's title by default. Only
+        // new favorites should derive a suggestion from the current map center.
+        input.value=isRename||mode==="replace"?
+          (this.values[index]?.name||""):
           (this.suggestName?.()||"Unbekannt");
         label.append(input);target.append(label);
       }
