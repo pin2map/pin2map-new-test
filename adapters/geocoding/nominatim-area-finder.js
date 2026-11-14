@@ -83,28 +83,67 @@
       }
       if(result.name)add(result.type||result.category||"OSM-Objekt",result.name,
         "OSM "+(result.osm_type||"")+" "+(result.osm_id||""));
+      // Preserve an exact OSM reference for the returned feature whenever
+      // reverse geocoding itself identified a named polygon.
+      if(rows.length&&result.osm_id&&["relation","way"].includes(result.osm_type)){
+        rows[0].osmType=result.osm_type;
+        rows[0].osmId=result.osm_id;
+      }
       for(const key of ["neighbourhood","quarter","suburb","city_district","borough",
         "village","town","city","municipality","county","state_district","region","state","country"])
         if(address[key])add(key,address[key],key);
       return {rows,countryCode:address.country_code||""};
     }
     async findContaining(entry,point,{countryCode="",signal}={}){
-      const delta=3,params=new URLSearchParams({
-        format:"jsonv2",polygon_geojson:"1",addressdetails:"1",limit:"50",dedupe:"0",
-        q:entry.name,
-        viewbox:[point.lng-delta,point.lat+delta,point.lng+delta,point.lat-delta].join(","),
-        bounded:"1"
+      // Do not restrict a state/country polygon to a six-degree bounding box:
+      // for New South Wales, for example, the polygon extends well beyond
+      // such a box, especially when a user clicks near its eastern boundary.
+      // That bounded search silently removed the correct candidate.
+      const params=new URLSearchParams({
+        format:"jsonv2",polygon_geojson:"1",addressdetails:"1",
+        namedetails:"1",limit:"50",dedupe:"0",q:entry.name
       });
       if(countryCode)params.set("countrycodes",countryCode.toLowerCase());
-      const results=await this.request("https://nominatim.openstreetmap.org/search?"+params,signal);
+      const results=await this.request(
+        "https://nominatim.openstreetmap.org/search?"+params,signal);
       const geometry=root.Pin2MapAreaGeometry;
-      const sameName=x=>String(x.name||x.display_name?.split(",")[0]||"")
-        .toLocaleLowerCase()===entry.name.toLocaleLowerCase();
+      const sameName=x=>matches(x,[entry.name])||
+        normalize(x.display_name?.split(",")[0])===normalize(entry.name);
       const candidates=(Array.isArray(results)?results:[]).filter(x=>
-        x.osm_id&&["relation","way"].includes(x.osm_type)&&sameName(x)&&
-        geometry.containsPoint(x.geojson,point.lng,point.lat));
-      candidates.sort((a,b)=>Number(b.addresstype===entry.kind)-Number(a.addresstype===entry.kind));
-      return candidates[0]||null;
+        x.osm_id&&["relation","way"].includes(x.osm_type)&&
+        ["Polygon","MultiPolygon"].includes(x.geojson?.type)&&sameName(x));
+      const typeMatches=x=>{
+        const addressType=String(x.addresstype||x.type||"").toLowerCase();
+        const adminLevel=String(x.extratags?.admin_level||"");
+        if(entry.kind==="state")return addressType==="state"||adminLevel==="4";
+        if(entry.kind==="country")return addressType==="country"||adminLevel==="2";
+        if(entry.kind==="county")return addressType==="county"||adminLevel==="6";
+        if(entry.kind==="city")return ["city","municipality"].includes(addressType);
+        return addressType===entry.kind;
+      };
+      const scored=candidates.map(candidate=>({
+        candidate,
+        contains:geometry.containsPoint(candidate.geojson,point.lng,point.lat),
+        exact:entry.osmId&&String(candidate.osm_id)===String(entry.osmId)&&
+          candidate.osm_type===entry.osmType,
+        kindMatch:typeMatches(candidate)
+      }));
+      scored.sort((a,b)=>Number(b.exact)-Number(a.exact)||
+        Number(b.contains)-Number(a.contains)||
+        Number(b.kindMatch)-Number(a.kindMatch));
+      if(scored[0]?.contains||scored[0]?.exact)return scored[0].candidate;
+      // The reverse geocoder ALREADY resolved the clicked point to this
+      // administrative hierarchy. If its name and country identify exactly
+      // one admin polygon, prefer that explicit user selection even if the
+      // polygon returned by Nominatim is simplified at a coastline/border.
+      // Never use this fallback for unnamed or ambiguous local features.
+      const adminKinds=new Set(["state","country","county","state_district",
+        "region","municipality","city"]);
+      const adminMatches=scored.filter(x=>x.kindMatch);
+      if(adminKinds.has(entry.kind)&&countryCode&&adminMatches.length===1){
+        return adminMatches[0].candidate;
+      }
+      return null;
     }
     async find(query,{kind="area",signal,onProgress=()=>{}}={}){
       if(!["area","lake"].includes(kind))throw new RangeError("Unknown geometry search type");
