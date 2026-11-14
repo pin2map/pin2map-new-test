@@ -84,10 +84,7 @@ async function metrics(page){
     await page.reload({waitUntil:"domcontentloaded"});
     await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"));
     const at={x:Math.floor(viewport.width/2),y:Math.floor(viewport.height*.7)};
-    await page.mouse.move(at.x,at.y);
-    await page.mouse.down();
-    await page.waitForTimeout(735);
-    await page.mouse.up();
+    await page.mouse.click(at.x,at.y);
     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
@@ -354,10 +351,7 @@ async function metrics(page){
    page.on("pageerror",e=>errors.push(e.message));
    await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
    await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"),null,{timeout:20000});
-   await page.mouse.move(640,570);
-   await page.mouse.down();
-   await page.waitForTimeout(735);
-   await page.mouse.up();
+   await page.mouse.click(640,570);
    await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
    await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
    await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
