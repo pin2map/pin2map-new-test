@@ -510,8 +510,9 @@ async function zoom(page){
         const bulkDimensions=await removeAllButton.boundingBox();
         const rowDimensions=await page.locator(".favorite-row").last().boundingBox();
         assert.ok(bulkDimensions&&rowDimensions&&
-          Math.abs(bulkDimensions.width-rowDimensions.width)<3&&bulkDimensions.height>=65,
-          "Clear-all must look like another favorite card at the list end");
+          Math.abs(bulkDimensions.width-rowDimensions.width)<3&&
+          Math.abs(bulkDimensions.height-rowDimensions.height)<=1,
+          "Clear-all must be exactly as high and as wide as a normal favorite card");
         await removeAllButton.click();
         assert.equal(await page.locator("#favoritesList .favorite-confirm-danger").count(),1);
         assert.match(await page.locator("#favoritesList .favorite-confirm-danger p").first().textContent(),
@@ -523,10 +524,21 @@ async function zoom(page){
         await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first().click();
         assert.equal(await page.locator(".favorite-row").count(),15,
           "Cancel must leave ALL favorites untouched");
-        // Filter down to a single visible favorite: bulk clear still concerns
-        // the full underlying collection, not only the matching result.
+        // In search mode (even before text is typed), deletion of ALL
+        // favorites must be unavailable. A persistent filter also hides it
+        // after closing and reopening the panel.
+        await search.focus();
+        assert.equal(await removeAllButton.isVisible(),false);
         await search.fill("Platz D");
         assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await removeAllButton.count(),0);
+        await page.locator("#favoritesClose").click();
+        await favoriteTrigger.click();
+        assert.equal(await removeAllButton.count(),0);
+        await clear.click();
+        await page.locator("#favoritesClose").focus();
+        assert.equal(await removeAllButton.count(),1);
+        assert.equal(await removeAllButton.isVisible(),true);
         await removeAllButton.click();
         assert.match(await page.locator(".favorite-confirm-danger p").first().textContent(),
           /alle 15 Favoriten löschen/);
