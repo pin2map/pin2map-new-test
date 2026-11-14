@@ -295,8 +295,30 @@
       window.L.DomEvent.disableClickPropagation(element);
       window.L.DomEvent.on(element,"mousedown touchstart",window.L.DomEvent.stopPropagation);
     }
+    updateRiverLabels(){
+      if(!this.riverNameMarkers?.length)return;
+      const {x:width,y:height}=this.getSize();
+      const anchor=window.Pin2MapRiverLabelAnchor;
+      for(const item of this.riverNameMarkers){
+        const point=anchor.findVisibleAnchor(item.chains,
+          latLng=>this.project(latLng),width,height,30);
+        if(!point){
+          item.marker.setOpacity(0);
+          continue;
+        }
+        item.marker.setLatLng(this.map.containerPointToLatLng([point.x,point.y]));
+        item.marker.setOpacity(1);
+      }
+    }
     renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},onRiverLine=()=>{}}={}){
+      // Keep exactly one viewport listener across redraws; do not recreate
+      // geometry layers on map pan/zoom, only reposition lightweight labels.
+      if(!this.riverLabelMoveHandler){
+        this.riverLabelMoveHandler=()=>this.updateRiverLabels();
+        this.map.on("moveend zoomend resize",this.riverLabelMoveHandler);
+      }
       if(this.featureLayers){this.map.removeLayer(this.featureLayers);this.featureLayers=null;}
+      this.riverNameMarkers=[];
       const group=window.L.layerGroup().addTo(this.map);
       this.featureLayers=group;
       const touch=/iPad|iPhone|iPod/.test(navigator.userAgent)||
@@ -330,7 +352,6 @@
       }
       for(const river of rivers){
         const color=layerColors[river.layerId]||"#1689e5";
-        let longest=null,length=0;
         for(const chain of river.chains||[]){
           if(chain.length<2)continue;
           const line=window.L.polyline(chain,{color,weight:5,opacity:.9,
@@ -341,21 +362,21 @@
             window.L.DomEvent.stop(e.originalEvent);
             onRiverLine(river,{lat:e.latlng.lat,lng:e.latlng.lng});
           });
-          // Position the river label midway along its longest chain.
-          let d=0;
-          for(let i=1;i<chain.length;i++)d+=window.L.latLng(chain[i-1]).distanceTo(chain[i]);
-          if(d>length){length=d;longest=chain;}
         }
-        if(longest&&river.name){
-          let mid=longest[Math.floor(longest.length/2)];
-          const name=document.createElement("span");name.textContent=river.name;
-          name.className="p2m-river-name-label";
-          window.L.marker(mid,{interactive:false,keyboard:false,zIndexOffset:300,
+        if((river.chains||[]).some(chain=>chain.length>=2)&&river.name){
+          const name=document.createElement("span");
+          name.textContent=river.name;name.className="p2m-river-name-label";
+          // The initial coordinate is only a placeholder; updateRiverLabels
+          // immediately moves it onto the currently visible section.
+          const marker=window.L.marker([0,0],{
+            interactive:false,keyboard:false,zIndexOffset:300,
             icon:window.L.divIcon({html:name.outerHTML,className:"p2m-river-name-wrap",
               iconSize:[0,0],iconAnchor:[0,0]})
           }).addTo(group);
+          this.riverNameMarkers.push({marker,chains:river.chains});
         }
       }
+      this.updateRiverLabels();
     }
     fitGeometry(item){
       let bbox=null;
@@ -370,7 +391,12 @@
         paddingTopLeft:[45,90],paddingBottomRight:[45,55],maxZoom:11,animate:false
       });
     }
-    destroy() { this.map.remove(); }
+    destroy() {
+      if(this.riverLabelMoveHandler)
+        this.map.off("moveend zoomend resize",this.riverLabelMoveHandler);
+      this.riverNameMarkers=[];
+      this.map.remove();
+    }
   }
   root.Pin2MapLeafletAdapter=LeafletMapAdapter;
 })(window);
