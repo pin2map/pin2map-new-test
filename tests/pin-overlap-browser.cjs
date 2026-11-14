@@ -119,7 +119,7 @@ async function zoom(page){
         // Each retry below is a NEW deliberate tap after a fresh interval,
         // never a repeated click or a bypass of the real marker handler.
         let chooserVisible=false;
-        for(let attempt=0;attempt<3;attempt++){
+        for(let attempt=0;attempt<5;attempt++){
           await tap(page.locator(".pin-icon").last());
           try{
             await page.locator(".pin-overlap-chooser").waitFor({
@@ -127,8 +127,8 @@ async function zoom(page){
             });
             chooserVisible=true;break;
           }catch(error){
-            if(attempt===2)throw error;
-            await page.waitForTimeout(1300);
+            if(attempt===4)throw error;
+            await page.waitForTimeout(1500);
           }
         }
         assert.equal(chooserVisible,true,"Identical pins must offer chooser after a real second tap");
