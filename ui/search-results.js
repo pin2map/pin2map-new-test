@@ -5,7 +5,7 @@
  */
 (function(root){
   class SearchResultsView {
-    constructor({container,document:doc,onChoose,onCancel=()=>{},titleOf,detailOf,kindOf=()=>null,duplicateCoordinates=()=>[]}){
+    constructor({container,document:doc,onChoose,onCancel=()=>{},titleOf,detailOf,kindOf=()=>null,duplicateCoordinates=()=>[],featureIconOf=()=>null,icons=null}){
       if(!container||typeof container.replaceChildren!=="function")
         throw new TypeError("Search result container required");
       if(!doc||typeof doc.createElement!=="function")
@@ -19,6 +19,7 @@
       this.detailOf=detailOf;
       this.kindOf=kindOf;
       this.duplicateCoordinates=duplicateCoordinates;
+      this.featureIconOf=featureIconOf;this.icons=icons;
       this.onCancel=onCancel;
       // Presentation geometry only: the results sheet is attached to the
       // OUTER search block, appears below the outer block and can extend
@@ -144,6 +145,13 @@
         heading.className="result-heading";
         const title=this.document.createElement("strong");
         title.textContent=this.titleOf(result);
+        const featureIcon=this.featureIconOf(result);
+        if(featureIcon&&this.icons){
+          const holder=this.document.createElement("span");
+          holder.className="result-feature-icon";
+          holder.append(this.icons.svg(featureIcon,this.document));
+          heading.append(holder);
+        }
         heading.append(title);
         const kind=this.kindOf(result);
         if(kind?.label){
