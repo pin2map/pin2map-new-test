@@ -720,6 +720,11 @@
         mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom:16},{animate:false});
         persistViewport();
       },
+      onZoomOut:point=>{
+        flushHistoryRecord();
+        mapAdapter.setView({center:{lat:point.lat,lng:point.lng},zoom:8},{animate:false});
+        persistViewport();
+      },
       onPin:point=>addPin(point.lat,point.lng,""),
       onArea:point=>void findAreaAt(point)
     });
