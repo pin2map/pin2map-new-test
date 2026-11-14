@@ -17,7 +17,7 @@
         {id:PRIVATE_ID,name:"Privat",color:DEFAULT_COLORS[0],visible:true},
         {id:"layer-1",name:"Ebene 1",color:DEFAULT_COLORS[1],visible:true}
       ],
-      pins:[],favorites:[],
+      pins:[],areas:[],rivers:[],favorites:[],
       viewport:{lat:48.7758,lng:9.1829,zoom:6},
       basemap:"street",esriRelief:false,satelliteBrightness:120,satelliteRoads:false,labelsVisible:true,pinInfoMode:"off",pinInfoPeriod:"today",pinInfoDailyPeriod:"today",pinInfoPrecipitationPeriod:"today",pinInfoSunPeriod:"today",allowGeocode:false,geoCache:{}
     };
