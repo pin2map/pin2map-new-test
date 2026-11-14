@@ -512,10 +512,15 @@ async function zoom(page){
         await page.waitForTimeout(280);
         const editorBounds=await page.locator(".favorite-confirm").boundingBox();
         const viewportBounds=await page.locator("#favoritesPanel").boundingBox();
-        assert.ok(editorBounds&&viewportBounds&&editorBounds.y>=viewportBounds.y-2&&
-          editorBounds.y+Math.min(editorBounds.height,viewportBounds.height-90)<=
-          viewportBounds.y+viewportBounds.height+3,
-          "Favorite name editor must remain accessible inside reduced keyboard viewport");
+        if(viewport.hasTouch){
+          assert.ok(editorBounds&&viewportBounds&&editorBounds.y>=viewportBounds.y-2&&
+            editorBounds.y+Math.min(editorBounds.height,viewportBounds.height-90)<=
+            viewportBounds.y+viewportBounds.height+3,
+            "Touch favorite editor remains inside reduced keyboard viewport");
+        }else{
+          assert.equal(await page.locator("#favoritesPanel.is-editing").count(),0,
+            "Desktop editor must not activate touch keyboard layout");
+        }
         await page.setViewportSize({width:viewport.width,height:viewport.height});
         await page.locator(".favorite-confirm-actions button").first().click();
         // Searching is also a keyboard-editing state in Safari; it must keep
@@ -527,10 +532,14 @@ async function zoom(page){
           viewport.name==="desktop"?0:1);
         const searchBounds=await search.boundingBox();
         const panelBounds=await page.locator("#favoritesPanel").boundingBox();
-        assert.ok(searchBounds&&panelBounds&&searchBounds.y>=0&&
-          searchBounds.y+searchBounds.height<390&&
-          panelBounds.y+panelBounds.height<=392,
-          "Favorites search must remain accessible above the iPhone keyboard");
+        if(viewport.hasTouch)
+          assert.ok(searchBounds&&panelBounds&&searchBounds.y>=0&&
+            searchBounds.y+searchBounds.height<390&&
+            panelBounds.y+panelBounds.height<=392,
+            "Touch favorites search remains accessible above on-screen keyboard");
+        else
+          assert.equal(await page.locator("#favoritesPanel.is-editing").count(),0,
+            "Desktop search does not invoke on-screen keyboard positioning");
         await page.setViewportSize({width:viewport.width,height:viewport.height});
         await page.locator("#favoritesClose").click();
         // The bulk button MUST be the final element of the SCROLLABLE list,
