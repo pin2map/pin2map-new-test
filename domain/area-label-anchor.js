@@ -74,10 +74,11 @@
     for(const rings of polygons){
       if(!rings?.[0]?.length)continue;
       const outer=rings[0].map(p=>project({lat:p[1],lng:p[0]}));
-      const bounds={
-        minX:Math.min(...outer.map(p=>p.x)),maxX:Math.max(...outer.map(p=>p.x)),
-        minY:Math.min(...outer.map(p=>p.y)),maxY:Math.max(...outer.map(p=>p.y))
-      };
+      const bounds={minX:Infinity,maxX:-Infinity,minY:Infinity,maxY:-Infinity};
+      for(const point of outer){
+        bounds.minX=Math.min(bounds.minX,point.x);bounds.maxX=Math.max(bounds.maxX,point.x);
+        bounds.minY=Math.min(bounds.minY,point.y);bounds.maxY=Math.max(bounds.maxY,point.y);
+      }
       if(bounds.maxX<left||bounds.minX>right||bounds.maxY<top||bounds.minY>bottom)continue;
       const clipped=clipRing(outer,left,top,right,bottom);
       if(clipped.length<3)continue;
@@ -95,7 +96,7 @@
         candidates.push({x:xmin+(xmax-xmin)*ix/12,
           y:ymin+(ymax-ymin)*iy/12});
       // Edges of small clipped components still supply valid candidates.
-      for(let i=0;i<clipped.length;i++){
+      for(let i=0;i<clipped.length;i+=Math.max(1,Math.ceil(clipped.length/48))){
         const a=clipped[i],b=clipped[(i+1)%clipped.length];
         candidates.push({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
       }
