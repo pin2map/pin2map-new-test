@@ -73,7 +73,8 @@ test("a single bare-map tap may dismiss open overlays and is never a pin creatio
   assert.deepEqual(h.added,[]);
   assert.equal(h.dismissRequests(),1);
   assert.equal(h.gestures.consumeDismissedTap(),true);
-  assert.equal(h.gestures.consumeDismissedTap(),false);
+  assert.equal(h.gestures.consumeDismissedTap(),true,
+    "Multiple synthetic clicks from the same tap must stay dismissed");
 });
 test("background longpress, rightclick and doubleclick never open the chooser",()=>{
   const h=harness();h.gestures.attachLongPress();
