@@ -358,6 +358,38 @@ const viewports=[
    assert.equal(nsw.layerId,"private");
    assert.equal(nsw.geometry.type,"Polygon");
    assert.equal(await page.locator("#searchResults .message").count(),0);
+   // True browser regression for a mixed pin + area LABEL at the same map
+   // position. The first click must zoom the group, NOT open either editor.
+   await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{
+       const project=await db.loadProject();
+       project.viewport={lat:48.75,lng:9.2,zoom:9};
+       project.pins=[{id:"mixed-pin",name:"Misch-Pin",
+         lat:48.75,lng:9.2,layerId:"private",note:"",url:""}];
+       project.areas=[{id:"mixed-area",name:"Mischfläche",kind:"area",
+         layerId:"private",note:"",url:"",
+         geometry:{type:"Polygon",coordinates:[[
+           [9,48.6],[9.4,48.6],[9.4,48.9],[9,48.9],[9,48.6]
+         ]]}}];
+       project.rivers=[];
+       await db.saveProject(project);
+     }finally{db.close();}
+   });
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.locator(".p2m-area-name-label").waitFor({state:"visible",timeout:15000});
+   await page.locator(".pin-icon").waitFor({state:"visible",timeout:15000});
+   const overlap=await page.evaluate(()=>{
+     const a=document.querySelector(".p2m-area-name-label").getBoundingClientRect();
+     const b=document.querySelector(".pin-icon").getBoundingClientRect();
+     return a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+   });
+   assert.equal(overlap,true,"Fixture must genuinely overlap pin hitbox and area label");
+   await page.locator(".p2m-area-name-label").first().click({force:true});
+   await waitForStored(project=>project?.viewport?.zoom>9,
+     "mixed pin/area label zoom");
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   assert.equal(await page.locator("#pinPanel").isHidden(),true);
    assert.deepEqual(errors,[],view.name+" page errors");
    console.log("[geometry] PASS",view.name,"search modes, private saved polygons, lake, river and UI");
    await context.close();
