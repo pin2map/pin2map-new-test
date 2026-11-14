@@ -193,6 +193,19 @@ const viewports=[
      "lake")).areas.find(a=>a.kind==="lake");
    assert.equal(lake.layerId,"private");
    await page.locator(".geometry-ok").click();
+   // The area/see name markers must remain legible inside a partially shown
+   // polygon at different zoom levels, not fixed at the complete bounds center.
+   const panelBounds=await page.locator("#map").boundingBox();
+   const areaLabels=page.locator(".p2m-area-name-label");
+   assert.equal(await areaLabels.count(),2);
+   const inViewport=async locator=>{
+     const b=await locator.boundingBox();
+     return !!b&&b.x>=panelBounds.x-2&&b.y>=panelBounds.y-2&&
+       b.x+b.width<=panelBounds.x+panelBounds.width+2&&
+       b.y+b.height<=panelBounds.y+panelBounds.height+2;
+   };
+   assert.ok(await inViewport(areaLabels.nth(0)), "Area label inside current viewport");
+   assert.ok(await inViewport(areaLabels.nth(1)), "Lake label inside current viewport");
 
    // Synthetic right-click is supported on desktop; touch gets a pointer
    // longpress regression through the existing pin browser suite.
@@ -200,16 +213,16 @@ const viewports=[
      await page.locator("#map").click({button:"right",
        position:{x:90,y:110},force:true});
      await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
-     assert.equal(await page.locator("#mapActionChooser button").count(),3);
+     assert.equal(await page.locator("#mapActionChooser button").count(),4);
      const labels=await page.locator("#mapActionChooser button").evaluateAll(
        buttons=>buttons.map(button=>button.getAttribute("aria-label")));
-     assert.deepEqual(labels,["Heranzoomen","Pin setzen","Gebiet suchen"]);
+     assert.deepEqual(labels,["Heranzoomen","Pin setzen","Gebiet suchen","Herauszoomen"]);
      assert.equal(await page.locator("#mapActionChooser button span").count(),0,
        "Context actions must use icons only, without text captions");
      const chooserRect=await page.locator("#mapActionChooser").boundingBox();
      assert.ok(chooserRect&&chooserRect.x>40&&chooserRect.y>75);
-     assert.ok(chooserRect.width<=170&&chooserRect.height<=60,
-       "Three circular icon buttons must form a compact anchored chooser");
+     assert.ok(chooserRect.width<=220&&chooserRect.height<=60,
+       "Four circular icon buttons must form a compact anchored chooser");
      await page.locator('#mapActionChooser button[aria-label="Heranzoomen"]').click();
      assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
      // The app persists the exact selected zoom level, without creating pins.
@@ -226,6 +239,36 @@ const viewports=[
      await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
      await page.keyboard.press("Escape");
      assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
+     // Fourth action must use the same exact click point, at zoom level 8.
+     await page.waitForTimeout(900);
+     await page.locator("#map").click({button:"right",
+       position:{x:115,y:130},force:true});
+     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
+     await page.locator('#mapActionChooser button[aria-label="Herauszoomen"]').click();
+     const zoomOut=await waitForStored(project=>project?.viewport?.zoom===8,
+       "context zoom level 8");
+     assert.equal(zoomOut.viewport.zoom,8);
+     assert.equal(await page.locator("#pinPanel").isHidden(),true);
+   }else{
+     // A single touch must keep the ordinary map behavior. Two short taps
+     // on the BARE map call exactly the same chooser as Longtap.
+     const mapBox=await page.locator("#map").boundingBox();
+     const tx=mapBox.x+mapBox.width*.67,ty=mapBox.y+mapBox.height*.68;
+     await page.touchscreen.tap(tx,ty);
+     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
+     await page.waitForTimeout(110);
+     await page.touchscreen.tap(tx,ty);
+     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:4500});
+     const labels=await page.locator("#mapActionChooser button").evaluateAll(
+       buttons=>buttons.map(b=>b.getAttribute("aria-label")));
+     assert.deepEqual(labels,["Heranzoomen","Pin setzen","Gebiet suchen","Herauszoomen"]);
+     // Dismiss without creating a pin, then ensure a control tap is never
+     // mistaken for a second tap on the map's background.
+     await page.keyboard.press("Escape");
+     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
+     await page.locator("#searchButton").tap();
+     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
+     await page.keyboard.press("Escape");
    }
 
    // Fast mock for the otherwise deliberately slow multi-stage river search.
