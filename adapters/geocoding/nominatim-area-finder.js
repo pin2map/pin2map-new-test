@@ -72,6 +72,40 @@
       if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
       return response.json();
     }
+    async hierarchyAt(point,{signal}={}){
+      const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",zoom:"18",
+        lat:String(point.lat),lon:String(point.lng)});
+      const result=await this.request("https://nominatim.openstreetmap.org/reverse?"+params,signal);
+      const address=result.address||{},seen=new Set(),rows=[];
+      function add(kind,name,detail){
+        if(!name||seen.has(kind+"|"+name))return;
+        seen.add(kind+"|"+name);rows.push({kind,name,detail});
+      }
+      if(result.name)add(result.type||result.category||"OSM-Objekt",result.name,
+        "OSM "+(result.osm_type||"")+" "+(result.osm_id||""));
+      for(const key of ["neighbourhood","quarter","suburb","city_district","borough",
+        "village","town","city","municipality","county","state_district","region","state","country"])
+        if(address[key])add(key,address[key],key);
+      return {rows,countryCode:address.country_code||""};
+    }
+    async findContaining(entry,point,{countryCode="",signal}={}){
+      const delta=3,params=new URLSearchParams({
+        format:"jsonv2",polygon_geojson:"1",addressdetails:"1",limit:"50",dedupe:"0",
+        q:entry.name,
+        viewbox:[point.lng-delta,point.lat+delta,point.lng+delta,point.lat-delta].join(","),
+        bounded:"1"
+      });
+      if(countryCode)params.set("countrycodes",countryCode.toLowerCase());
+      const results=await this.request("https://nominatim.openstreetmap.org/search?"+params,signal);
+      const geometry=root.Pin2MapAreaGeometry;
+      const sameName=x=>String(x.name||x.display_name?.split(",")[0]||"")
+        .toLocaleLowerCase()===entry.name.toLocaleLowerCase();
+      const candidates=(Array.isArray(results)?results:[]).filter(x=>
+        x.osm_id&&["relation","way"].includes(x.osm_type)&&sameName(x)&&
+        geometry.containsPoint(x.geojson,point.lng,point.lat));
+      candidates.sort((a,b)=>Number(b.addresstype===entry.kind)-Number(a.addresstype===entry.kind));
+      return candidates[0]||null;
+    }
     async find(query,{kind="area",signal,onProgress=()=>{}}={}){
       if(!["area","lake"].includes(kind))throw new RangeError("Unknown geometry search type");
       const name=String(query||"").trim();
