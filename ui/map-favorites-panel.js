@@ -72,7 +72,7 @@
       this.el("favoritesButton").setAttribute("aria-expanded","false");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten öffnen");
       const panel=this.el("favoritesPanel");
-      panel.classList.remove("is-editing","search-focused");
+      panel.classList.remove("is-editing","search-focused","desktop-search-layout");
       panel.style.removeProperty("--p2m-favorites-keyboard-top");
       panel.style.removeProperty("--p2m-favorites-keyboard-height");
       panel.style.removeProperty("height");
@@ -95,6 +95,8 @@
       if(!touchKeyboardLayout&&searchFocused&&!this.desktopSearchHeight)
         this.desktopSearchHeight=panel.getBoundingClientRect().height;
       panel.classList.toggle("search-focused",searchFocused);
+      panel.classList.toggle("desktop-search-layout",
+        !touchKeyboardLayout&&(searchFocused||!!this.searchText));
       if(!touchKeyboardLayout){
         if((searchFocused||this.searchText)&&this.desktopSearchHeight)
           panel.style.height=this.desktopSearchHeight+"px";
