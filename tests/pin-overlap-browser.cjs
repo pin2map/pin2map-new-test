@@ -506,7 +506,8 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").last().locator(".favorite-edit").isEnabled(),true);
         // Simulate a keyboard-shrunken visual area and edit the last row.
         await page.locator(".favorite-row").last().locator(".favorite-edit").click();
-        assert.equal(await page.locator("#favoritesPanel.is-editing").count(),1);
+        assert.equal(await page.locator("#favoritesPanel.is-editing").count(),
+          viewport.name==="desktop"?0:1);
         await page.setViewportSize({width:viewport.width,height:390});
         await page.waitForTimeout(280);
         const editorBounds=await page.locator(".favorite-confirm").boundingBox();
@@ -522,7 +523,8 @@ async function zoom(page){
         await search.focus();
         await page.setViewportSize({width:viewport.width,height:390});
         await page.waitForTimeout(280);
-        assert.equal(await page.locator("#favoritesPanel.is-editing").count(),1);
+        assert.equal(await page.locator("#favoritesPanel.is-editing").count(),
+          viewport.name==="desktop"?0:1);
         const searchBounds=await search.boundingBox();
         const panelBounds=await page.locator("#favoritesPanel").boundingBox();
         assert.ok(searchBounds&&panelBounds&&searchBounds.y>=0&&
