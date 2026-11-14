@@ -88,6 +88,8 @@ async function metrics(page){
     await page.mouse.down();
     await page.waitForTimeout(735);
     await page.mouse.up();
+    await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
+    await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
     await page.waitForTimeout(200);
     const m=await metrics(page);
