@@ -441,13 +441,19 @@ async function zoom(page){
           finally{store.close();}
         },null,{timeout:10000});
         // Localized date fragments must match even when absent from the name.
+        // The app writes in a 300ms debounce; let its final write and any
+        // concurrent viewport persistence finish before updating the fixture.
+        await page.waitForTimeout(750);
         await page.evaluate(async()=>{
           const store=await window.Pin2MapIndexedDBProjectStore.open();
-          const project=await store.loadProject();
-          project.favorites[3].savedAt="2024-01-09T12:30:00.000Z";
-          project.favorites[4].name="Favorit-09";
-          await store.saveProject(project);
-          store.close();
+          try{
+            const project=await store.loadProject();
+            if(!Array.isArray(project?.favorites)||project.favorites.length<15)
+              throw Error("Expected 15 persisted favorites, got "+String(project?.favorites?.length));
+            project.favorites[3].savedAt="2024-01-09T12:30:00.000Z";
+            project.favorites[4].name="Favorit-09";
+            await store.saveProject(project);
+          }finally{store.close();}
         });
         await page.locator("#favoritesCloseBottom").click();
         await page.reload({waitUntil:"domcontentloaded"});
