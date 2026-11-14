@@ -16,10 +16,20 @@
     geocoder:new window.Pin2MapNominatimGeocoder({fetchImpl:(...args)=>fetch(...args),language:"de"})
   });
   const layerOps = window.Pin2MapLayerOperations;
+  const projectFeatures=window.Pin2MapProjectFeatures;
+  const riverGeometry=window.Pin2MapRiverGeometry;
+  const areaFinder=new window.Pin2MapNominatimAreaFinder.NominatimAreaFinder({
+    fetchImpl:(...args)=>fetch(...args)
+  });
+  const riverFinder=new window.Pin2MapOsmWatercourseFinder.OsmWatercourseFinder({
+    fetchImpl:(...args)=>fetch(...args)
+  });
   const currentPinFilter = pinFilter.createFilter();
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
+  let mapActionChooser,geometryEditor,searchTypeMenu,featureController=null,featureRun=0;
+  let areaHierarchyPoint=null,areaHierarchyCountry="";
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
   // overlay switch in syncable project data or alter the 52x56 tap geometry.
@@ -46,16 +56,28 @@
   });
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
-    onChoose:result=>choosePlace(result),
-    onCancel:()=>searchForm.cancel(),
-    titleOf:result=>placeDomain.title(result),
-    detailOf:result=>placeDomain.detail(result),
-    kindOf:result=>placeDomain.kind(result),
-    duplicateCoordinates:results=>placeDomain.duplicateCoordinates(results)
+    onChoose:result=>{
+      if(result.__featureType)void chooseGeometryResult(result);
+      else choosePlace(result);
+    },
+    onCancel:()=>{searchForm.cancel();cancelGeometrySearch();},
+    titleOf:result=>result.__featureType?
+      (result.name||result.tags?.name||result.display_name?.split(",")[0]||"Unbenannt"):
+      placeDomain.title(result),
+    detailOf:result=>result.__featureType?
+      (result.detail||result.display_name||result.type||"OpenStreetMap"):
+      placeDomain.detail(result),
+    kindOf:result=>result.__featureType?null:placeDomain.kind(result),
+    featureIconOf:result=>result.__featureType==="river"?"spline":
+      result.__featureType==="lake"?"waves-horizontal":
+      result.__featureType?"vector-polygon":null,
+    icons:window.Pin2MapIcons,
+    duplicateCoordinates:results=>results.some(r=>r.__featureType)?[]:
+      placeDomain.duplicateCoordinates(results)
   });
   const layerView = new window.Pin2MapLayerView({
     getElement:$,document,
-    onVisibility:(id,visible)=>{filterOps.setLayerVisible(state,id,visible);save();renderLayers();renderMarkers();renderPinPanel();},
+    onVisibility:(id,visible)=>{filterOps.setLayerVisible(state,id,visible);save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();},
     onDelete:id=>deleteLayerOrPrivatePins(id)
   });
   const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
@@ -347,6 +369,35 @@
       brightness:state.satelliteBrightness,roads:!!state.satelliteRoads
     });
   }
+  function renderGeometry(){
+    if(!mapAdapter?.renderProjectGeometry)return;
+    const visible=new Set(state.layers.filter(l=>l.visible).map(l=>l.id));
+    const layerColors=Object.fromEntries(state.layers.map(l=>[l.id,l.color]));
+    mapAdapter.renderProjectGeometry({
+      areas:(state.areas||[]).filter(a=>visible.has(a.layerId)),
+      rivers:(state.rivers||[]).filter(r=>visible.has(r.layerId)),
+      layerColors,
+      onAreaLabel:(area,point)=>openGeometryEditor("area",area,point),
+      onRiverLine:(river,point)=>openGeometryEditor("river",river,point)
+    });
+  }
+  function openGeometryEditor(type,item,position){
+    if(!geometryEditor)return;
+    uiState.clearSelection();renderMarkers();renderPinPanel();
+    const xy=mapAdapter.project(position);
+    const rect=mapAdapter.getContainer().getBoundingClientRect();
+    geometryEditor.show(type,item,state.layers,{x:rect.left+xy.x,y:rect.top+xy.y});
+  }
+  function saveGeometry(type,id,patch){
+    const result=projectFeatures.change(state,type,id,patch);
+    if(result){save();renderGeometry();}
+    return result;
+  }
+  function deleteGeometry(type,id){
+    if(projectFeatures.remove(state,type,id)){
+      save();renderGeometry();showNotice(type==="river"?"Fluss entfernt":"Fläche entfernt");
+    }
+  }
   function renderMarkers(){
     if(!markerView)return;
     const visible=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
@@ -367,7 +418,13 @@
     const result=layerOps.deleteLayerOrPins(state,id,PRIVATE_ID);
     if(!result)return;
     if(uiState.selectedPinId&&result.removedPinIds.includes(uiState.selectedPinId))uiState.selectedPinId=null;
-    save();renderLayers();renderMarkers();renderPinPanel();
+    // Existing geometry must never become orphaned when its layer disappears.
+    // Retain it in Private rather than deleting unrelated spatial information.
+    if(!result.privateOnly){
+      for(const x of [...(state.areas||[]),...(state.rivers||[])])
+        if(x.layerId===id)x.layerId=PRIVATE_ID;
+    }
+    save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
     showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
   }
   function renderLayers(){
@@ -414,6 +471,153 @@
   }
   function addPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
+  function setGeometryBusy(message){
+    const element=$("geometrySearchBusy");
+    if(!element)return;
+    element.textContent=message||"Suche läuft …";
+    element.classList.toggle("hidden",!message);
+    if(message){
+      const outer=$("searchForm").getBoundingClientRect();
+      const app=$("app").getBoundingClientRect();
+      element.style.left=Math.max(8,outer.left-app.left)+"px";
+      element.style.top=Math.max(8,outer.bottom-app.top+7)+"px";
+    }
+  }
+  function cancelGeometrySearch(){
+    ++featureRun;
+    featureController?.abort();featureController=null;setGeometryBusy("");
+  }
+  async function findGeometry(kind,query){
+    if(!query.trim()){ $("searchInput").focus();return;}
+    cancelGeometrySearch();
+    searchForm.cancel();
+    if(!state.allowGeocode){
+      searchView.message("Bitte zuerst in den Einstellungen die Nominatim-Suche aktivieren.");
+      return;
+    }
+    const run=featureRun,controller=new AbortController();featureController=controller;
+    searchView.hide();
+    if(kind==="river")setGeometryBusy("Flusssuche läuft …");
+    try{
+      if(kind==="area"||kind==="lake"){
+        const results=await areaFinder.find(query,{kind,signal:controller.signal});
+        if(run!==featureRun)return;
+        if(!results.length){
+          searchView.message(kind==="lake"?"Kein passender kartierter See gefunden.":"Keine passende kartierte Fläche gefunden.");
+          return;
+        }
+        searchView.show(results.map(x=>({...x,__featureType:kind})));
+      }else{
+        const candidates=await riverFinder.find(query,{
+          center:mapAdapter.getViewport().center,signal:controller.signal,
+          onProgress:p=>{
+            if(run!==featureRun)return;
+            const text=p.phase==="alternative"?"Alternative Flussnamen werden geprüft …":
+              "Flusssuche läuft … "+(p.step||1)+"/"+(p.total||1);
+            setGeometryBusy(text);
+          }
+        });
+        if(run!==featureRun)return;
+        const relations=candidates.filter(c=>c.osmType==="relation"&&c.nameScore>=100);
+        const choices=relations.length?relations:candidates;
+        if(choices.length===1)await chooseGeometryResult({
+          __featureType:"river",candidate:choices[0],name:choices[0].tags?.name||query,
+          query
+        });
+        else searchView.show(choices.map(c=>({
+          __featureType:"river",candidate:c,name:c.tags?.name||query,query,
+          detail:[c.osmType==="relation"?"OSM-Relation":"OSM-Way",
+            c.tags?.waterway,c.display].filter(Boolean).join(" · ")
+        })));
+      }
+    }catch(error){
+      if(run!==featureRun||error?.name==="AbortError")return;
+      searchView.message("Suche fehlgeschlagen: "+(error?.message||"Netzwerkfehler"));
+    }finally{
+      if(run===featureRun){featureController=null;setGeometryBusy("");}
+    }
+  }
+  async function chooseGeometryResult(result){
+    searchView.hide();
+    const kind=result.__featureType;
+    if(kind==="areaHierarchy"){
+      if(!areaHierarchyPoint)return;
+      const run=++featureRun,controller=new AbortController();featureController=controller;
+      try{
+        const choice=await areaFinder.findContaining(result,areaHierarchyPoint,{
+          countryCode:areaHierarchyCountry,signal:controller.signal
+        });
+        if(run!==featureRun)return;
+        if(!choice){searchView.message("Keine eindeutige Gebietsgrenze am Klickpunkt gefunden.");return;}
+        createAreaObject(choice,"area",result.name);
+      }catch(error){
+        if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
+      }finally{if(run===featureRun)featureController=null;}
+      return;
+    }
+    if(kind==="area"||kind==="lake"){createAreaObject(result,kind);return;}
+    if(kind==="river"){
+      const run=++featureRun,controller=new AbortController();featureController=controller;
+      setGeometryBusy("Flussverlauf wird geladen …");
+      try{
+        const source=await riverFinder.resolve(result.candidate,{
+          query:result.query||result.name,signal:controller.signal,
+          onProgress:p=>{if(run===featureRun)setGeometryBusy(
+            p.phase==="parent"?"Übergeordnete Flussrelation wird geprüft …":"Flussverlauf wird geladen …");}
+        });
+        if(run!==featureRun)return;
+        const resolved=riverGeometry.resolve(source.data,source.match);
+        const river=projectFeatures.createRiver(state,{
+          id:uid(),name:resolved.name||result.name,chains:resolved.chains
+        },PRIVATE_ID);
+        save();renderGeometry();mapAdapter.fitGeometry(river);
+        const point=river.chains[0][Math.floor(river.chains[0].length/2)];
+        openGeometryEditor("river",river,{lat:point[0],lng:point[1]});
+      }catch(error){
+        if(run===featureRun)searchView.message("Fluss konnte nicht geladen werden: "+error.message);
+      }finally{if(run===featureRun){featureController=null;setGeometryBusy("");}}
+    }
+  }
+  function createAreaObject(source,kind,nameOverride=null){
+    const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
+    const area=projectFeatures.createArea(state,{
+      id:uid(),name,kind,geometry:source.geojson
+    },PRIVATE_ID);
+    save();renderGeometry();mapAdapter.fitGeometry(area);
+    const prepared=window.Pin2MapAreaGeometry.prepare(area.geometry);
+    // Choose a deterministic visible anchor via the map's renderer bounds.
+    const geometry=prepared.geometry;
+    let first=geometry.type==="Polygon"?geometry.coordinates[0][0]:
+      geometry.coordinates[0]?.[0]?.[0];
+    if(first)openGeometryEditor("area",area,{lat:first[1],lng:first[0]});
+  }
+  async function findAreaAt(point){
+    cancelGeometrySearch();
+    searchForm.cancel();searchView.hide();
+    if(!state.allowGeocode){
+      searchView.message("Bitte zuerst in den Einstellungen die Nominatim-Suche aktivieren.");
+      return;
+    }
+    const run=featureRun,controller=new AbortController();featureController=controller;
+    try{
+      const result=await areaFinder.hierarchyAt(point,{signal:controller.signal});
+      if(run!==featureRun)return;
+      areaHierarchyPoint=point;areaHierarchyCountry=result.countryCode;
+      if(!result.rows.length){
+        searchView.message("Keine Gebietshierarchie für diesen Kartenpunkt gefunden.");
+        return;
+      }
+      searchView.show(result.rows.map(row=>({
+        ...row,__featureType:"areaHierarchy"
+      })));
+    }catch(error){
+      if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
+    }finally{if(run===featureRun)featureController=null;}
+  }
+  function runSearchMode(mode){
+    if(mode==="pin"){searchForm.submit();return;}
+    void findGeometry(mode,$("searchInput").value);
+  }
   const searchMessage = msg => searchView.message(msg);
   const choosePlace = result => searchPinTransfer.choose(result);
   const renderResults = list => searchPinTransfer.present(list);
@@ -426,12 +630,16 @@
     }),
     onResults:renderResults,
     onMessage:searchMessage,
-    onInputChange:()=>searchView.hide(),
+    onInputChange:()=>{searchView.hide();cancelGeometrySearch();},
     cancelSearch:()=>placeSearch.cancel()
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
     searchForm.bind();
+    searchTypeMenu=new window.Pin2MapSearchTypeMenu({
+      document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode
+    });
+    searchTypeMenu.bind();
     pinInfoMenu.bind();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click", () => overlayCoordinator.togglePanel("layersPanel"));
@@ -495,9 +703,25 @@
       defaults,privateLayerId:PRIVATE_ID,cleanupSearch:project=>placeSearch.cleanup(project)
     });
     if(!Array.isArray(state.favorites))state.favorites=[];
+    projectFeatures.ensure(state);
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
+    geometryEditor=new window.Pin2MapGeometryEditor({
+      document,icons:window.Pin2MapIcons,onUpdate:saveGeometry,
+      onDelete:deleteGeometry,onWikipedia:name=>{
+        const url="https://de.wikipedia.org/w/index.php?search="+encodeURIComponent(name);
+        const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";
+        document.body.append(a);a.click();a.remove();
+      }
+    });
+    mapActionChooser=new window.Pin2MapMapActionChooser({
+      document,getElement:$,icons:window.Pin2MapIcons,
+      onPin:point=>addPin(point.lat,point.lng,""),
+      onArea:point=>void findAreaAt(point)
+    });
+    mapActionChooser.bind();
     gestures=window.Pin2MapMapGestureController({
       mapAdapter,
+      onMapAction:(point,screen)=>{geometryEditor?.close(false);mapActionChooser?.open(point,screen);},
       getBasemap:()=>state.basemap,
       isMoveMode:()=>uiState.moveMode,
       isInspectMode:()=>satelliteInspector.isActive(),
@@ -630,7 +854,7 @@
       state.pinInfoMode==="sun"?state.pinInfoSunPeriod:state.pinInfoMode==="precipitation"?state.pinInfoPrecipitationPeriod:"today";
     pinInfoService.setMode(state.pinInfoMode,selectedPeriod);
     pinInfoMenu.render(state.pinInfoMode,{daily:state.pinInfoDailyPeriod,precipitation:state.pinInfoPrecipitationPeriod,sun:state.pinInfoSunPeriod});
-    setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
+    setTileLayer();bind();renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateModeUI();updateLabelButton();
     if("serviceWorker" in navigator && (location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname)))navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
   document.addEventListener("DOMContentLoaded",init);
