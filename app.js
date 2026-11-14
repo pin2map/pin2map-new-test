@@ -313,6 +313,13 @@
       setFavoriteMessage("Favorit entfernt. Die Liste wurde lückenlos neu geordnet.");
     }
   }
+  function removeAllMapFavorites(){
+    if(favorites.removeAll(state)){
+      save();
+      syncFavoritePanel();
+      setFavoriteMessage("Alle Favoriten gelöscht.");
+    }
+  }
   function openMapFavorite(index){
     const viewport=favorites.apply(state,index);
     if(!viewport)return;
@@ -575,7 +582,8 @@
       document,getElement:$,icons:window.Pin2MapIcons,
       onOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();setFavoriteMessage("");},
       onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
-      onRemove:removeMapFavorite,onChoose:openMapFavorite,suggestName:suggestFavoriteName,
+      onRemove:removeMapFavorite,onRemoveAll:removeAllMapFavorites,
+      onChoose:openMapFavorite,suggestName:suggestFavoriteName,
       capacity:favorites.ACTIVE_CAPACITY,
       getSearch:()=>{
         try{return localStorage.getItem("pin2map-favorites-search-v1")||"";}
