@@ -61,6 +61,17 @@
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten schließen");
+      // A persisted desktop filter may already be active on first opening.
+      // Measure the unfiltered standard layout in the same render turn so
+      // the initial filtered view retains precisely that size as well.
+      if(this.searchText&&!this.desktopSearchHeight&&this.doc.defaultView?.matchMedia?.(
+        "(hover: hover) and (pointer: fine)")?.matches){
+        const savedQuery=this.searchText;
+        this.searchText="";
+        this.render();
+        this.desktopSearchHeight=this.el("favoritesPanel").getBoundingClientRect().height;
+        this.searchText=savedQuery;
+      }
       this.render();
       this.onOpen?.();
       this.el("favoritesClose").focus({preventScroll:true});
@@ -76,7 +87,7 @@
       panel.style.removeProperty("--p2m-favorites-keyboard-top");
       panel.style.removeProperty("--p2m-favorites-keyboard-height");
       panel.style.removeProperty("height");
-      this.desktopSearchHeight=null;
+      // Keep the baseline for reopening with a persistent search query.
     }
     toggle(values){this.open?this.close():this.show(values);}
     keepEditorVisible(){
