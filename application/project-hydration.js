@@ -11,6 +11,10 @@
     // The private layer is mandatory, but do not replace any existing layer.
     if(!state.layers.some(layer=>layer?.id===privateLayerId))
       state.layers.unshift(defaults().layers[0]);
+    // Older projects remain valid. Geometry collections are additive and
+    // must never overwrite or migrate stored pins, layers or favorites.
+    if(!Array.isArray(state.areas))state.areas=[];
+    if(!Array.isArray(state.rivers))state.rivers=[];
     delete state.activeLayer;
     cleanupSearch(state);
     return state;
