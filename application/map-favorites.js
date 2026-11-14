@@ -3,8 +3,8 @@
  * Stable layer IDs preserve intent across synced devices; unknown/new IDs
  * remain untouched when a favorite is applied. */
 (function(root){
-  const CAPACITY=500;
-  const ACTIVE_CAPACITY=500; // Product limit; original array order remains stable.
+  const CAPACITY=100;
+  const ACTIVE_CAPACITY=100; // Product limit; original array order remains stable.
   const letter=index=>String.fromCharCode(65+index);
   function capture(view,layers,date,name="",basemap="street"){
     const lat=Number(view?.center?.lat),lng=Number(view?.center?.lng),zoom=Number(view?.zoom);
@@ -48,6 +48,12 @@
     if(!Number.isInteger(index)||index<0||index>=values.length)return false;
     values.splice(index,1);return true;
   }
+  function removeAll(project){
+    const values=list(project);
+    if(!values.length)return false;
+    values.splice(0,values.length);
+    return true;
+  }
   function apply(project,index){
     const item=list(project)[index];
     if(!item)return null;
@@ -59,7 +65,7 @@
     // A layer created later is intentionally left in its current visibility.
     return item.viewport;
   }
-  const api=Object.freeze({CAPACITY,ACTIVE_CAPACITY,letter,capture,list,items,append,replace,rename,remove,apply});
+  const api=Object.freeze({CAPACITY,ACTIVE_CAPACITY,letter,capture,list,items,append,replace,rename,remove,removeAll,apply});
   root.Pin2MapMapFavorites=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
