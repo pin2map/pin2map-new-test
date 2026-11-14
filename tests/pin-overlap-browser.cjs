@@ -269,7 +269,7 @@ async function zoom(page){
         assert.equal(await search.inputValue(),"");
         assert.equal(await clear.isDisabled(),true);
         assert.equal(await page.locator(".favorite-row").count(),1);
-        // The letter, name, date and blank row surface ALL activate the
+        // The name, date and blank row surface all activate the
         // saved view. Renaming is reserved for the square-pen button only.
         for(const target of [".favorite-name",".favorite-date"]){
           await page.locator(target).first().click();
@@ -337,7 +337,7 @@ async function zoom(page){
         await page.locator(".favorite-name-input").fill("Zweiter Platz");
         await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-open").count(),0);
-        // A filtered B must keep its ORIGINAL index 1 for the edit operation.
+        // Filtering must preserve the original index for editing the second favorite.
         await search.fill("zweiter");
         assert.equal(await page.locator(".favorite-row").count(),1);
         assert.equal(await page.locator(".favorite-open").count(),0);
@@ -381,8 +381,8 @@ async function zoom(page){
           "Remove icon itself must be red");
         await page.locator(".favorite-row").first().locator(".favorite-remove").click();
         await page.locator(".favorite-confirm-actions .favorite-action-danger").click();
-        assert.equal(await page.locator(".favorite-open").first().textContent(),"A",
-          "Removing A renumbers former B to A without gaps");
+        assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz",
+          "Deleting the first favorite moves the next favorite to the first row");
         assert.equal(await page.locator(".favorite-row").count(),1);
         await page.locator("#favoritesCloseBottom").click();
         await page.waitForTimeout(650);
@@ -428,6 +428,25 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").count(),15);
         assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await page.locator("#favoritesAdd").isEnabled(),true);
+        // Localized date fragments must match even when absent from the name.
+        await page.evaluate(async()=>{
+          const store=await window.Pin2MapIndexedDBProjectStore.open();
+          const project=await store.loadProject();
+          project.favorites[3].savedAt="2024-01-09T12:30:00.000Z";
+          project.favorites[4].name="Favorit-09";
+          await store.saveProject(project);
+          store.close();
+        });
+        await page.locator("#favoritesCloseBottom").click();
+        await page.reload({waitUntil:"domcontentloaded"});
+        await page.waitForFunction(()=>!!document.querySelector("#favoritesButton"),null,{timeout:10000});
+        await favoriteTrigger.click();
+        await search.fill("09");
+        const dateHits=await page.locator(".favorite-name").allTextContents();
+        assert.ok(dateHits.includes("Platz D"),"A saved date 09.01.2024 must match 09");
+        assert.ok(dateHits.includes("Favorit-09"),"A saved name containing 09 must match");
+        await clear.click();
+        assert.equal(await page.locator(".favorite-row").count(),15);
         assert.equal(await page.locator(".favorite-row").last().locator(".favorite-edit").isEnabled(),true);
         // Simulate a keyboard-shrunken visual area and edit the last row.
         await page.locator(".favorite-row").last().locator(".favorite-edit").click();
@@ -442,6 +461,19 @@ async function zoom(page){
           "Favorite name editor must remain accessible inside reduced keyboard viewport");
         await page.setViewportSize({width:viewport.width,height:viewport.height});
         await page.locator(".favorite-confirm-actions button").first().click();
+        // Searching is also a keyboard-editing state in Safari; it must keep
+        // the header and its input inside the shrunken visual viewport.
+        await search.focus();
+        await page.setViewportSize({width:viewport.width,height:390});
+        await page.waitForTimeout(280);
+        assert.equal(await page.locator("#favoritesPanel.is-editing").count(),1);
+        const searchBounds=await search.boundingBox();
+        const panelBounds=await page.locator("#favoritesPanel").boundingBox();
+        assert.ok(searchBounds&&panelBounds&&searchBounds.y>=0&&
+          searchBounds.y+searchBounds.height<390&&
+          panelBounds.y+panelBounds.height<=392,
+          "Favorites search must remain accessible above the iPhone keyboard");
+        await page.setViewportSize({width:viewport.width,height:viewport.height});
         await page.locator("#favoritesCloseBottom").click();
         assert.deepEqual(errors,[]);
         console.log("[favorites] PASS",viewport.name,
