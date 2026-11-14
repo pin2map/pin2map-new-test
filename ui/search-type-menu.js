@@ -38,7 +38,7 @@
         e.preventDefault();e.stopPropagation();this.toggle();
       });
       this.doc.addEventListener("pointerdown",this.onOutside=e=>{
-        if(this.open&&!this.menu.contains(e.target)&&e.target!==this.button)
+        if(this.open&&!this.menu.contains(e.target)&&!this.button.contains(e.target))
           this.close();
       });
       this.doc.addEventListener("keydown",this.onKey=e=>{
