@@ -207,83 +207,60 @@ const viewports=[
    assert.ok(await inViewport(areaLabels.nth(0)), "Area label inside current viewport");
    assert.ok(await inViewport(areaLabels.nth(1)), "Lake label inside current viewport");
 
-   // Synthetic right-click is supported on desktop; touch gets a pointer
-   // longpress regression through the existing pin browser suite.
+   // The free map surface uses one click/tap to open the two-icon chooser.
+   // If any menu is open, the FIRST map tap closes it and MUST NOT reopen.
+   const contextMenu=page.locator("#mapActionChooser");
+   const mapBox=await page.locator("#map").boundingBox();
+   const point={x:mapBox.x+90,y:mapBox.y+160};
+   const clickMap=async()=>{
+     if(view.mobile)await page.touchscreen.tap(point.x,point.y);
+     else await page.mouse.click(point.x,point.y);
+   };
+   await clickMap();
+   await contextMenu.waitFor({state:"visible",timeout:5000});
+   const labels=await contextMenu.locator("button").evaluateAll(buttons=>
+     buttons.map(button=>button.getAttribute("aria-label")));
+   assert.deepEqual(labels,["Pin setzen","Gebiet suchen"]);
+   assert.equal(await contextMenu.locator("button span").count(),0);
+   const chooserRect=await contextMenu.boundingBox();
+   assert.ok(chooserRect&&chooserRect.width<=120&&chooserRect.height<=60,
+     "Two icon actions must remain compact");
+   await clickMap();
+   assert.equal(await contextMenu.isHidden(),true,
+     "First outside click closes chooser without reopening it");
+   await clickMap();
+   await contextMenu.waitFor({state:"visible",timeout:5000});
+   await page.keyboard.press("Escape");
+   assert.equal(await contextMenu.isHidden(),true);
+   // Search and settings menus must obey the very same two-step rule.
+   await page.locator("#settingsButton").click();
+   await page.locator("#settingsPanel").waitFor({state:"visible",timeout:5000});
+   await clickMap();
+   assert.equal(await page.locator("#settingsPanel").isHidden(),true);
+   assert.equal(await contextMenu.isHidden(),true);
+   await clickMap();
+   await contextMenu.waitFor({state:"visible",timeout:5000});
+   await page.keyboard.press("Escape");
    if(!view.mobile){
-     const contextMenu=page.locator("#mapActionChooser");
-     const openRightClick=async(x=95,y=115)=>{
-       await page.locator("#map").click({button:"right",
-         position:{x,y},force:true});
-       await contextMenu.waitFor({state:"visible",timeout:5000});
-     };
-     // Double-click must open the same menu, not Leaflet's native +1 zoom.
-     const zoomBefore= (await readStoredProject()).viewport.zoom;
-     await page.locator("#map").dblclick({position:{x:90,y:110},force:true});
-     await contextMenu.waitFor({state:"visible",timeout:5000});
-     assert.equal((await readStoredProject()).viewport.zoom,zoomBefore,
-       "Desktop double-click only opens chooser without immediate zoom");
-     assert.equal(await contextMenu.locator("button").count(),4);
-     const labels=await contextMenu.locator("button").evaluateAll(
-       buttons=>buttons.map(button=>button.getAttribute("aria-label")));
-     assert.deepEqual(labels,["Heranzoomen","Pin setzen","Gebiet suchen","Herauszoomen"]);
-     assert.equal(await contextMenu.locator("button span").count(),0,
-       "Context actions must use icons only, without captions");
-     const chooserRect=await contextMenu.boundingBox();
-     assert.ok(chooserRect&&chooserRect.x>40&&chooserRect.y>75);
-     assert.ok(chooserRect.width<=220&&chooserRect.height<=60,
-       "Four circular buttons must form a compact anchored chooser");
-     await contextMenu.locator('button[aria-label="Heranzoomen"]').click();
+     // Legacy gestures no longer open the chooser.
+     await page.locator("#map").click({button:"right",
+       position:{x:90,y:160},force:true});
      assert.equal(await contextMenu.isHidden(),true);
-     let expected=Math.min(19,zoomBefore+3);
-     let stored=await waitForStored(project=>project?.viewport?.zoom===expected,
-       "relative +3 zoom");
-     assert.equal(stored.viewport.zoom,expected);
-     // A second context activation adds another three levels rather than
-     // returning to an obsolete fixed level 16.
-     await page.waitForTimeout(900);
-     await openRightClick();
-     await contextMenu.locator('button[aria-label="Heranzoomen"]').click();
-     expected=Math.min(19,expected+3);
-     stored=await waitForStored(project=>project?.viewport?.zoom===expected,
-       "repeated relative +3 zoom");
-     assert.equal(stored.viewport.zoom,expected);
-     assert.equal(await page.locator("#pinPanel").isHidden(),true);
-     await page.waitForTimeout(900);
-     await openRightClick(110,120);
-     await page.keyboard.press("Escape");
+     await page.mouse.move(point.x,point.y);
+     await page.mouse.down();await page.waitForTimeout(750);await page.mouse.up();
      assert.equal(await contextMenu.isHidden(),true);
-     // The - magnifier subtracts three from the CURRENT zoom each time.
-     for(let i=0;i<2;i++){
-       await page.waitForTimeout(900);
-       await openRightClick(115,130);
-       await contextMenu.locator('button[aria-label="Herauszoomen"]').click();
-       expected=Math.max(0,expected-3);
-       const zoomOut=await waitForStored(project=>project?.viewport?.zoom===expected,
-         "relative -3 zoom, repetition "+(i+1));
-       assert.equal(zoomOut.viewport.zoom,expected);
-     }
-     assert.equal(await page.locator("#pinPanel").isHidden(),true);
+     await page.locator("#map").dblclick({position:{x:90,y:160},force:true});
+     assert.equal(await contextMenu.isHidden(),true,
+       "Double-click must not leave the chooser open");
    }else{
-     // A single touch must keep the ordinary map behavior. Two short taps
-     // on the BARE map call exactly the same chooser as Longtap.
-     const mapBox=await page.locator("#map").boundingBox();
-     const tx=mapBox.x+mapBox.width*.67,ty=mapBox.y+mapBox.height*.68;
-     await page.touchscreen.tap(tx,ty);
-     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
-     await page.waitForTimeout(110);
-     await page.touchscreen.tap(tx,ty);
-     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:4500});
-     const labels=await page.locator("#mapActionChooser button").evaluateAll(
-       buttons=>buttons.map(b=>b.getAttribute("aria-label")));
-     assert.deepEqual(labels,["Heranzoomen","Pin setzen","Gebiet suchen","Herauszoomen"]);
-     // Dismiss without creating a pin, then ensure a control tap is never
-     // mistaken for a second tap on the map's background.
-     await page.keyboard.press("Escape");
-     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
-     await page.locator("#searchButton").tap();
-     assert.equal(await page.locator("#mapActionChooser").isHidden(),true);
-     await page.keyboard.press("Escape");
+     // Two sequential taps now open then CLOSE instead of being required
+     // to trigger the initial context menu.
+     await clickMap();await contextMenu.waitFor({state:"visible",timeout:5000});
+     await clickMap();assert.equal(await contextMenu.isHidden(),true);
    }
+   await page.locator("#searchButton").click();
+   assert.equal(await contextMenu.isHidden(),true);
+   await page.keyboard.press("Escape");
 
    // Fast mock for the otherwise deliberately slow multi-stage river search.
    await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
