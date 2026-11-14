@@ -162,6 +162,8 @@
       this.values=values;
       const list=this.el("favoritesList");
       const oldScroll=list.scrollTop;
+      this.bulkSizeObserver?.disconnect();
+      this.bulkSizeObserver=null;
       list.replaceChildren();
       const add=this.el("favoritesAdd");
       const clear=this.el("favoritesSearchClear");
@@ -221,6 +223,22 @@
           ()=>this.start("deleteAll"),"favorite-delete-all");
         removeAll.textContent="Alle Favoriten löschen";
         list.append(removeAll);
+        // Exactly mirror the actual last favorite row (including wrapped
+        // names and responsive layout), not an assumed fixed pixel height.
+        const referenceRow=list.querySelector(".favorite-row:last-of-type")||
+          list.querySelector(".favorite-row");
+        if(referenceRow){
+          const syncHeight=()=>{
+            const height=referenceRow.getBoundingClientRect().height;
+            if(height>0)removeAll.style.height=height+"px";
+          };
+          syncHeight();
+          const ResizeObserver=this.doc.defaultView?.ResizeObserver;
+          if(ResizeObserver){
+            this.bulkSizeObserver=new ResizeObserver(syncHeight);
+            this.bulkSizeObserver.observe(referenceRow);
+          }
+        }
         if(this.mode==="deleteAll"){
           const editor=this.editor("deleteAll");
           list.append(editor.target);pendingFocus=editor.focus;
