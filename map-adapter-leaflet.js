@@ -38,6 +38,11 @@
       ],width:size.x,height:size.y};
     }
     getContainer() { return this.map.getContainer(); }
+    disableDoubleClickZoom(){
+      // Touch double taps belong to the app's context chooser, not Leaflet's
+      // built-in double-click zoom. Desktop double-click behavior is preserved.
+      this.map.doubleClickZoom?.disable();
+    }
     getSize() {
       const size=this.map.getSize();
       return {x:size.x,y:size.y};
