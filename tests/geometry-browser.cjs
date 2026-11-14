@@ -154,7 +154,7 @@ const viewports=[
    assert.equal(await page.locator("#map .leaflet-overlay-pane path").evaluateAll(nodes=>
      nodes.some(n=>!n.classList.contains("leaflet-interactive"))),true,
      "Area polygon must not have the Leaflet interactive hit-target class");
-   await page.locator(".p2m-area-name-wrap").first().click({force:true});
+   await page.locator(".p2m-area-name-label").first().click({force:true});
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:5000});
    assert.equal(await page.locator("#geometryNotes").inputValue(),"Testkommentar");
    await page.locator(".geometry-ok").click();
