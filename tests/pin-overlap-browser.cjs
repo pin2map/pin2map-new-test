@@ -433,6 +433,13 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").count(),15);
         assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await page.locator("#favoritesAdd").isEnabled(),true);
+        // Favorites writes are debounced for 300ms. Wait until the final
+        // in-memory addition is durably committed before updating the fixture.
+        await page.waitForFunction(async()=>{
+          const store=await window.Pin2MapIndexedDBProjectStore.open();
+          try{return (await store.loadProject())?.favorites?.length===15;}
+          finally{store.close();}
+        },null,{timeout:10000});
         // Localized date fragments must match even when absent from the name.
         await page.evaluate(async()=>{
           const store=await window.Pin2MapIndexedDBProjectStore.open();
