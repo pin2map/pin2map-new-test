@@ -166,9 +166,11 @@ const viewports=[
      null,{timeout:5000});
    await page.locator("#geometryEditor.is-river").waitFor({state:"visible",timeout:30000});
    assert.equal(await page.locator("#geometrySearchBusy").isHidden(),true);
-   assert.equal(await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)").count(),3);
-   // The river editor reuses the remove button in its header and 3 footer actions:
-   // layer, Wikipedia, OK; no separate river level is created.
+   assert.equal(await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)").count(),4);
+   const riverActionOrder=await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)")
+     .evaluateAll(buttons=>buttons.map(b=>b.getAttribute("aria-label")));
+   assert.deepEqual(riverActionOrder,["Entfernen","Ebene ändern","Wikipedia","OK"],
+     "River editing row must contain four circular actions in requested order");
    const river=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).rivers[0];}finally{db.close();}
