@@ -15,6 +15,7 @@
     let longPressTimer=null,longPressStart=null,suppressMapClickUntil=0;
     const activePointers=new Set();
     let lastTouchStartAt=0,markerPressTimer=null,markerPressStart=null;
+    let lastSurfaceTap=null,activeSurfaceTap=null,touchDoubleTapConfigured=false;
     const DateNow=()=>now();
     const suppressFor=ms=>{suppressMapClickUntil=DateNow()+ms;};
   // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
@@ -106,6 +107,18 @@
     container.addEventListener("pointerdown", e => {
       activePointers.add(e.pointerId);
       if(e.pointerType==="touch"||e.pointerType==="pen")lastTouchStartAt=DateNow();
+      // A double tap is a map gesture only on touch and on the bare map
+      // surface. Pins, shape labels, river hit-lines, controls and dialogs
+      // must retain their own click/longpress semantics.
+      const surface=e.pointerType==="touch"&&e.button===0&&
+        activePointers.size===1&&!isMoveMode()&&!isInspectMode()&&isMapSurface(e.target);
+      activeSurfaceTap=surface?{id:e.pointerId,x:e.clientX,y:e.clientY,
+        time:DateNow(),moved:false,held:false}:null;
+      if(e.pointerType==="touch"&&!touchDoubleTapConfigured){
+        mapAdapter.disableDoubleClickZoom?.();
+        touchDoubleTapConfigured=true;
+      }
+      if(!surface)lastSurfaceTap=null;
       cancelLongPress();
       if (isMoveMode() || isInspectMode() || e.button !== 0 || !isMapSurface(e.target) || activePointers.size !== 1) return;
       longPressStart = { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -115,6 +128,8 @@
         const start = longPressStart;
         cancelLongPress();
         suppressFor(850);
+        lastSurfaceTap=null;
+        if(activeSurfaceTap?.id===start.id)activeSurfaceTap.held=true;
         const rect = container.getBoundingClientRect();
         const point = {x:start.x - rect.left, y:start.y - rect.top};
         const where = mapAdapter.unproject(point);
@@ -128,15 +143,43 @@
       }, 650);
     }, { passive: true });
     container.addEventListener("pointermove", e => {
+      if(activeSurfaceTap?.id===e.pointerId&&
+        Math.hypot(e.clientX-activeSurfaceTap.x,e.clientY-activeSurfaceTap.y)>10)
+        activeSurfaceTap.moved=true;
       if (longPressStart && e.pointerId === longPressStart.id && Math.hypot(e.clientX - longPressStart.x, e.clientY - longPressStart.y) > 10) cancelLongPress();
     }, { passive: true });
     for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) {
       container.addEventListener(type, e => {
         activePointers.delete(e.pointerId);
+        const tap=activeSurfaceTap?.id===e.pointerId?activeSurfaceTap:null;
+        if(tap){
+          activeSurfaceTap=null;
+          if(type==="pointerup"&&!tap.moved&&!tap.held&&
+            DateNow()-tap.time<420&&isMapSurface(e.target)&&
+            activePointers.size===0&&!isMoveMode()&&!isInspectMode()){
+            const preceding=lastSurfaceTap;
+            if(preceding&&DateNow()-preceding.time<=380&&
+              Math.hypot(e.clientX-preceding.x,e.clientY-preceding.y)<=26){
+              lastSurfaceTap=null;
+              suppressFor(850);
+              const rect=container.getBoundingClientRect();
+              const point=mapAdapter.unproject({
+                x:e.clientX-rect.left,y:e.clientY-rect.top
+              });
+              if(typeof onMapAction==="function"){
+                onMapAction(point,{x:e.clientX,y:e.clientY});
+                vibrate(15);
+              }
+            }else lastSurfaceTap={x:e.clientX,y:e.clientY,time:DateNow()};
+          }else lastSurfaceTap=null;
+        }
+        if(type!=="pointerup")lastSurfaceTap=null;
         if (!longPressStart || e.pointerId === longPressStart.id) cancelLongPress();
       }, { passive: true });
     }
-    mapAdapter.on("dragstart zoomstart", cancelLongPress);
+    mapAdapter.on("dragstart zoomstart",()=>{
+      cancelLongPress();activeSurfaceTap=null;lastSurfaceTap=null;
+    });
     // Native desktop context menu is replaced by pin creation. Touch uses the timer above.
     container.addEventListener("contextmenu", e => {
       if(!isMapSurface(e.target))return;
