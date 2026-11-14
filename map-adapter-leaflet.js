@@ -310,15 +310,40 @@
         item.marker.setOpacity(1);
       }
     }
+    updateAreaLabels(){
+      if(!this.areaNameMarkers?.length)return;
+      const {x:width,y:height}=this.getSize();
+      const anchor=window.Pin2MapAreaLabelAnchor;
+      for(const item of this.areaNameMarkers){
+        // Reserve space for longer labels so the whole tappable name
+        // remains inside the viewport, not merely its zero-sized anchor.
+        const padding=Math.max(45,Math.min(135,item.name.length*3.9));
+        const point=anchor.visibleAnchor(item.geometry,
+          latLng=>this.project(latLng),width,height,{padding});
+        if(!point){
+          item.marker.setOpacity(0);
+          if(item.marker.getElement())item.marker.getElement().style.pointerEvents="none";
+          continue;
+        }
+        item.marker.setLatLng(this.map.containerPointToLatLng([point.x,point.y]));
+        item.marker.setOpacity(1);
+        if(item.marker.getElement())item.marker.getElement().style.pointerEvents="";
+      }
+    }
+    updateFeatureLabels(){
+      this.updateRiverLabels();
+      this.updateAreaLabels();
+    }
     renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},onRiverLine=()=>{}}={}){
       // Keep exactly one viewport listener across redraws; do not recreate
       // geometry layers on map pan/zoom, only reposition lightweight labels.
       if(!this.riverLabelMoveHandler){
-        this.riverLabelMoveHandler=()=>this.updateRiverLabels();
+        this.riverLabelMoveHandler=()=>this.updateFeatureLabels();
         this.map.on("moveend zoomend resize",this.riverLabelMoveHandler);
       }
       if(this.featureLayers){this.map.removeLayer(this.featureLayers);this.featureLayers=null;}
       this.riverNameMarkers=[];
+      this.areaNameMarkers=[];
       const group=window.L.layerGroup().addTo(this.map);
       this.featureLayers=group;
       const touch=/iPad|iPhone|iPod/.test(navigator.userAgent)||
@@ -349,6 +374,7 @@
           const ll=marker.getLatLng();
           onAreaLabel(area,{lat:ll.lat,lng:ll.lng});
         });
+        this.areaNameMarkers.push({marker,geometry:prepared.geometry,name:area.name});
       }
       for(const river of rivers){
         const color=layerColors[river.layerId]||"#1689e5";
@@ -376,7 +402,7 @@
           this.riverNameMarkers.push({marker,chains:river.chains});
         }
       }
-      this.updateRiverLabels();
+      this.updateFeatureLabels();
     }
     fitGeometry(item){
       let bbox=null;
@@ -395,6 +421,7 @@
       if(this.riverLabelMoveHandler)
         this.map.off("moveend zoomend resize",this.riverLabelMoveHandler);
       this.riverNameMarkers=[];
+      this.areaNameMarkers=[];
       this.map.remove();
     }
   }
