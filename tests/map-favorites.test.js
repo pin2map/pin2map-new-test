@@ -3,23 +3,21 @@ const test=require("node:test"),assert=require("node:assert/strict");
 const f=require("../application/map-favorites.js");
 const view=n=>({center:{lat:50+n/100,lng:10},zoom:8+n});
 const layers=()=>[{id:"private",visible:true},{id:"layer-1",visible:false}];
-test("A-O trial capacity is fifteen, while 26-place A-Z storage model remains unchanged",()=>{
+test("five hundred favorites survive without loss; 501st rejected and deletion frees a slot",()=>{
   const project={layers:layers(),favorites:[]};
-  assert.equal(f.CAPACITY,26);
-  assert.equal(f.ACTIVE_CAPACITY,15);
-  for(let i=0;i<15;i++)assert.equal(
-    f.append(project,view(i),project.layers,"2026-11-13T11:00:00.000Z","Hamburg","topo"),
-    String.fromCharCode(65+i));
-  assert.equal(f.items(project).at(-1).letter,"O");
-  assert.equal(f.append(project,view(15),project.layers,"now","Boston","street"),null);
-  assert.equal(project.favorites.length,15);
-  assert.equal(project.favorites[0].name,"Hamburg");
-  assert.equal(project.favorites[0].basemap,"topo");
-  // The lückenlos index policy still applies when deleting from a full list.
-  assert.equal(f.remove(project,2),true);
-  assert.equal(f.items(project)[2].letter,"C");
-  assert.equal(f.items(project)[2].name,"Hamburg");
-  assert.equal(f.append(project,view(15),project.layers,"now","Boston","street"),"O");
+  assert.equal(f.CAPACITY,500);
+  assert.equal(f.ACTIVE_CAPACITY,500);
+  for(let i=0;i<500;i++)assert.ok(
+    f.append(project,view(i%12),project.layers,"2026-11-13T11:00:00.000Z",
+      "Favorite "+i,"topo"));
+  assert.equal(project.favorites.length,500);
+  assert.equal(f.append(project,view(1),project.layers,"now","extra"),null);
+  assert.equal(project.favorites[499].name,"Favorite 499");
+  assert.equal(f.remove(project,249),true);
+  assert.equal(project.favorites[249].name,"Favorite 250");
+  assert.ok(f.append(project,view(4),project.layers,"now","new slot"));
+  assert.equal(project.favorites[499].name,"new slot");
+  assert.equal(project.favorites.length,500);
 });
 test("deletion compacts letters and full replacement discards old record",()=>{
   const project={layers:layers(),favorites:[]};
