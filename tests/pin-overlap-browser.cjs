@@ -254,7 +254,10 @@ async function zoom(page){
             Math.abs(focusedBounds.x-standardPanelBounds.x)<=1&&
             Math.abs(focusedBounds.y-standardPanelBounds.y)<=1&&
             Math.abs(focusedBounds.height-standardPanelBounds.height)<=1,
-            "Desktop search focus must not move or resize the favorites panel");
+            "Desktop search focus must not move or resize the favorites panel: standard="+
+            JSON.stringify(standardPanelBounds)+" focused="+JSON.stringify(focusedBounds)+
+            " media="+await page.evaluate(()=>matchMedia("(hover: hover) and (pointer: fine)").matches)+
+            " classes="+await page.locator("#favoritesPanel").getAttribute("class"));
           assert.equal(await page.locator("#favoritesPanel.is-editing").count(),0);
           assert.equal(await page.locator(".favorites-footer").isVisible(),true,
             "Desktop search must retain Add/Close footer");
