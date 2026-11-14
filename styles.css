@@ -1751,7 +1751,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 /* Geometry-search components own all new styles. Never affect Pin panel. */
 #app .search{position:relative}
 #app .search-type-menu{
-  position:absolute;right:0;top:calc(100% + 7px);z-index:1530;
+  /* Mounted at #app root: a search-form descendant would be clipped by
+     the pill's overflow:hidden. Coordinates are assigned by its UI owner. */
+  position:absolute;z-index:1530;box-sizing:border-box;
   width:min(265px,calc(100vw - 24px));padding:6px;
   border:1px solid #bdc9d9;border-radius:12px;background:#f7f8fa;
   box-shadow:0 8px 26px #142a4460;display:flex;flex-direction:column;gap:3px;
