@@ -196,7 +196,8 @@
         // Ordinary background actions need a bare map target. The existing
         // pin relocation and satellite inspection modes are exceptions:
         // their own SVG preview target may cover the map click position.
-        if(!this.isMapSurface(event.originalEvent?.target)&&!allowNonSurface())return;
+        if(event.originalEvent&&!this.isMapSurface(event.originalEvent.target)&&
+          !allowNonSurface())return;
         callback({lat:event.latlng.lat,lng:event.latlng.lng});
       };
       this.map.on("click",handler);
