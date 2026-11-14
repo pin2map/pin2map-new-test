@@ -112,6 +112,17 @@ const viewports=[
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas[0];}finally{db.close();}
    });
+   if(!savedArea){
+     const diagnostic=await page.evaluate(async()=>{
+       const db=await window.Pin2MapIndexedDBProjectStore.open();
+       try{const project=await db.loadProject();return {
+         keys:Object.keys(project||{}),areas:project?.areas,
+         areaCount:project?.areas?.length,allowGeocode:project?.allowGeocode,
+         projectVersion:project?.version};}
+       finally{db.close();}
+     });
+     throw new Error("Missing persisted area after wait: "+JSON.stringify(diagnostic));
+   }
    assert.equal(savedArea.layerId,"private");
    assert.equal(savedArea.geometry.type,"Polygon");
    await page.locator("#geometryNotes").fill("Testkommentar");
