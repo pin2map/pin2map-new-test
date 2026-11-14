@@ -305,6 +305,11 @@ jobs:
         env:
           PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/pin-dialog-visual.cjs
+      - name: Verify published geometry searches and objects with Chromium
+        working-directory: preview-source
+        env:
+          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
+        run: node tests/geometry-browser.cjs
 
       - name: Archive published overlap autozoom screenshots
         if: always()
