@@ -3,7 +3,7 @@
  * panel; no native modal, no data/Leaflet/IndexedDB access. */
 (function(root){
   class MapFavoritesPanel{
-    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName,capacity=7,getSearch=()=>"",onSearchChange=()=>{}}){
+    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName,capacity=500,getSearch=()=>"",onSearchChange=()=>{}}){
       this.doc=doc;this.el=getElement;this.icons=icons;
       this.onOpen=onOpen;this.onAdd=onAdd;this.onReplace=onReplace;
       this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
@@ -14,6 +14,8 @@
       this.searchText=String(getSearch()||"");
       const search=this.el("favoritesSearch");
       search.value=this.searchText;
+      search.addEventListener("focus",()=>this.keepEditorVisible());
+      search.addEventListener("blur",()=>this.doc.defaultView?.setTimeout(()=>this.keepEditorVisible(),90));
       search.addEventListener("input",()=>{
         this.searchText=search.value;
         this.onSearchChange(this.searchText);
@@ -76,14 +78,25 @@
     }
     toggle(values){this.open?this.close():this.show(values);}
     keepEditorVisible(){
-      if(!this.open||!this.mode||this.mode==="delete")return;
+      if(!this.open)return;
+      const searchFocused=this.doc.activeElement===this.el("favoritesSearch");
+      const editorActive=!!this.mode&&this.mode!=="delete";
       const panel=this.el("favoritesPanel");
+      if(!searchFocused&&!editorActive){
+        panel.classList.remove("is-editing");
+        panel.style.removeProperty("--p2m-favorites-keyboard-top");
+        panel.style.removeProperty("--p2m-favorites-keyboard-height");
+        return;
+      }
+      panel.classList.add("is-editing");
       const vv=this.viewport;
       if(vv){
         panel.style.setProperty("--p2m-favorites-keyboard-top",Math.max(5,Math.round(vv.offsetTop+6))+"px");
         panel.style.setProperty("--p2m-favorites-keyboard-height",Math.max(120,Math.round(vv.height-12))+"px");
       }
-      const list=this.el("favoritesList"),editor=list.querySelector(".favorite-confirm");
+      const list=this.el("favoritesList");
+      if(searchFocused&&!editorActive)return;
+      const editor=list.querySelector(".favorite-confirm");
       if(!editor)return;
       // Scroll the panel's OWN list, not the page or Leaflet map.
       const a=list.getBoundingClientRect(),b=editor.getBoundingClientRect();
@@ -96,11 +109,10 @@
       const target=this.doc.createElement("section");
       target.className="favorite-confirm"+(isDelete?" favorite-confirm-danger":"");
       const title=this.doc.createElement("p");
-      const letter=isNew?String.fromCharCode(65+this.values.length):this.values[index]?.letter;
-      title.textContent=isNew?"Neue Ansicht als Favorit "+letter+" speichern?":
-        isRename?"Favorit "+letter+" umbenennen?":
-        isDelete?"Favorit "+letter+" wirklich löschen?":
-        "Favorit "+letter+" durch die aktuelle Ansicht ersetzen?";
+      title.textContent=isNew?"Neue Ansicht als Favorit speichern?":
+        isRename?"Favorit umbenennen?":
+        isDelete?"Favorit wirklich löschen?":
+        "Favorit durch die aktuelle Ansicht ersetzen?";
       target.append(title);
       let input=null;
       if(!isDelete){
@@ -144,11 +156,18 @@
       const clear=this.el("favoritesSearchClear");
       clear.disabled=!this.searchText.length;
       const query=this.searchText.trim().toLocaleLowerCase("de-DE");
-      const matches=query?values.map((item,index)=>({item,index}))
-        .filter(({item})=>(item.name||"Unbenannt").toLocaleLowerCase("de-DE").includes(query)):
-        values.map((item,index)=>({item,index}));
+      const matches=values.map((item,index)=>({item,index}))
+        .filter(({item})=>{
+          if(!query)return true;
+          const name=(item.name||"Unbenannt").toLocaleLowerCase("de-DE");
+          const date=new Date(item.savedAt);
+          const shownDate=Number.isNaN(date.getTime())?"":date.toLocaleString("de-DE",{
+            year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"
+          }).toLocaleLowerCase("de-DE");
+          return name.includes(query)||shownDate.includes(query);
+        });
       add.disabled=values.length>=this.capacity;
-      add.title=add.disabled?"Alle 15 Favoriten A–O belegt – vorhandenen Platz ersetzen":"Neue Ansicht hinzufügen";
+      add.title=add.disabled?"Maximale Anzahl von 500 Favoriten erreicht – vorhandenen Favoriten ersetzen":"Neue Ansicht hinzufügen";
       if(!matches.length){
         const empty=this.doc.createElement("p");empty.className="favorites-empty";
         empty.textContent=values.length?"Keine passenden Favoriten gefunden.":"Noch keine Favoriten gespeichert.";
@@ -157,29 +176,27 @@
       let pendingFocus=null;
       matches.forEach(({item,index})=>{
         const row=this.doc.createElement("div");row.className="favorite-row";
-        // Letter, name, date and empty row area all open the saved view.
+        // Name, date and empty row area all open the saved view.
         // ONLY the dedicated square-pen control starts renaming.
         row.addEventListener("click",event=>{
           if(!event.target.closest("button"))this.onChoose(index);
         });
-        const replace=this.button("plus","Favorit "+item.letter+" durch aktuelle Ansicht ersetzen",
+        const replace=this.button("plus","Favorit durch aktuelle Ansicht ersetzen",
           ()=>this.start("replace",index),"favorite-icon");
-        const open=this.button(null,"Ansicht "+item.letter+" öffnen",()=>this.onChoose(index),"favorite-open");
-        open.textContent=item.letter;
         const details=this.doc.createElement("div");details.className="favorite-details";
         const name=this.labeledButton(item.name||"Unbenannt",()=>this.onChoose(index),"favorite-name");
-        name.title="Ansicht "+item.letter+" öffnen";
-        name.setAttribute("aria-label","Ansicht "+item.letter+" – "+(item.name||"Unbenannt")+" öffnen");
+        name.title="Favoritenansicht öffnen";
+        name.setAttribute("aria-label","Favoritenansicht "+(item.name||"Unbenannt")+" öffnen");
         const when=this.doc.createElement("small");when.className="favorite-date";
         const date=new Date(item.savedAt);
         when.textContent=Number.isNaN(date.getTime())?"Unbekanntes Datum":
           date.toLocaleString("de-DE",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});
         details.append(name,when);
-        const edit=this.button("square-pen","Favorit "+item.letter+" ändern / umbenennen",
+        const edit=this.button("square-pen","Favorit umbenennen",
           ()=>this.start("rename",index),"favorite-icon favorite-edit");
-        const remove=this.button("star-off","Favorit "+item.letter+" löschen",
+        const remove=this.button("star-off","Favorit löschen",
           ()=>this.start("delete",index),"favorite-icon favorite-remove");
-        row.append(replace,open,details,edit,remove);list.append(row);
+        row.append(replace,details,edit,remove);list.append(row);
         if(this.mode&&this.mode!=="new"&&this.index===index){
           const editor=this.editor(this.mode,index);
           list.append(editor.target);pendingFocus=editor.focus;
@@ -191,7 +208,8 @@
       }
       list.scrollTop=oldScroll;
       const panel=this.el("favoritesPanel");
-      panel.classList.toggle("is-editing",!!pendingFocus);
+      panel.classList.toggle("is-editing",
+        !!pendingFocus||this.doc.activeElement===this.el("favoritesSearch"));
       if(pendingFocus){
         this.keepEditorVisible();
         pendingFocus.focus({preventScroll:true});
@@ -199,8 +217,7 @@
         // Safari adjusts the visualViewport after input.focus().
         this.doc.defaultView?.setTimeout(()=>this.keepEditorVisible(),180);
       }else{
-        panel.style.removeProperty("--p2m-favorites-keyboard-top");
-        panel.style.removeProperty("--p2m-favorites-keyboard-height");
+        this.keepEditorVisible();
       }
     }
   }
