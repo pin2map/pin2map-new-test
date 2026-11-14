@@ -245,6 +245,24 @@ async function zoom(page){
         assert.equal(await page.locator(".favorites-head strong").count(),0);
         assert.equal(await clear.getAttribute("data-pin-icon"),"funnel-x");
         assert.equal(await clear.isDisabled(),true);
+        const standardPanelBounds=await page.locator("#favoritesPanel").boundingBox();
+        const standardFooterBounds=await page.locator(".favorites-footer").boundingBox();
+        await search.focus();
+        if(viewport.name==="desktop"){
+          const focusedBounds=await page.locator("#favoritesPanel").boundingBox();
+          assert.ok(focusedBounds&&standardPanelBounds&&
+            Math.abs(focusedBounds.x-standardPanelBounds.x)<=1&&
+            Math.abs(focusedBounds.y-standardPanelBounds.y)<=1&&
+            Math.abs(focusedBounds.height-standardPanelBounds.height)<=1,
+            "Desktop search focus must not move or resize the favorites panel");
+          assert.equal(await page.locator("#favoritesPanel.is-editing").count(),0);
+          assert.equal(await page.locator(".favorites-footer").isVisible(),true,
+            "Desktop search must retain Add/Close footer");
+          const footerNow=await page.locator(".favorites-footer").boundingBox();
+          assert.ok(standardFooterBounds&&footerNow&&
+            Math.abs(standardFooterBounds.y-footerNow.y)<=1,
+            "Desktop footer must remain in its standard position");
+        }
         await search.fill("ÜBERS");
         assert.equal(await page.locator(".favorite-row").count(),1);
         assert.equal(await page.locator(".favorite-open").count(),0);
@@ -265,6 +283,15 @@ async function zoom(page){
         await search.fill("auss");
         assert.equal(await page.locator(".favorite-row").count(),0);
         assert.match(await page.locator(".favorites-empty").textContent(),/Keine passenden/);
+        if(viewport.name==="desktop"){
+          const filteredBounds=await page.locator("#favoritesPanel").boundingBox();
+          assert.ok(filteredBounds&&standardPanelBounds&&
+            Math.abs(filteredBounds.x-standardPanelBounds.x)<=1&&
+            Math.abs(filteredBounds.y-standardPanelBounds.y)<=1&&
+            Math.abs(filteredBounds.height-standardPanelBounds.height)<=1,
+            "Desktop filtering to zero matches must preserve standard size and position");
+          assert.equal(await page.locator(".favorites-footer").isVisible(),true);
+        }
         await clear.click();
         assert.equal(await search.inputValue(),"");
         assert.equal(await clear.isDisabled(),true);
