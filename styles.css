@@ -1485,6 +1485,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app .favorites-panel.is-editing .favorites-footer{display:none}
 #app .favorites-panel.is-editing .favorites-list{scroll-padding-block:10px}
+/* Desktop search hides the scroll-end delete card but must preserve the
+   standard footer position inside the unchanged panel height. */
+#app #favoritesPanel.desktop-search-layout .favorites-footer{margin-top:auto}
 
 
 /* v170 favorites panel owns its own controls; never inherit round map-button
