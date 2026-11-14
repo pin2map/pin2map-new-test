@@ -294,7 +294,7 @@
     // marker elements or popups. This keeps gesture filtering out of app.js.
     isMapSurface(target) {
       if(!target || typeof target.closest!=="function")return false;
-      return !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, button, input");
+      return !target.closest(".leaflet-control, .leaflet-marker-icon, .leaflet-popup, .leaflet-tooltip, .leaflet-interactive, button, input, textarea, select");
     }
     stopMarkerEventPropagation(element) {
       window.L.DomEvent.disableClickPropagation(element);
