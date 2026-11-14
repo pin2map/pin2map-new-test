@@ -293,18 +293,18 @@
   function addMapFavorite(name){
     const letter=favorites.append(state,mapAdapter.getViewport(),state.layers,
       new Date().toISOString(),name,state.basemap);
-    if(!letter){setFavoriteMessage("Alle 15 Favoriten A–O sind belegt.");return;}
-    save();syncFavoritePanel();setFavoriteMessage("Favorit "+letter+" gespeichert.");
+    if(!letter){setFavoriteMessage("Maximale Anzahl von 500 Favoriten erreicht.");return;}
+    save();syncFavoritePanel();setFavoriteMessage("Favorit gespeichert.");
   }
   function replaceMapFavorite(index,name){
     if(favorites.replace(state,index,mapAdapter.getViewport(),state.layers,
       new Date().toISOString(),name,state.basemap)){
-      save();syncFavoritePanel();setFavoriteMessage("Favorit "+favorites.letter(index)+" ersetzt.");
+      save();syncFavoritePanel();setFavoriteMessage("Favorit ersetzt.");
     }
   }
   function renameMapFavorite(index,name){
     if(favorites.rename(state,index,name)){
-      save();syncFavoritePanel();setFavoriteMessage("Favorit "+favorites.letter(index)+" umbenannt.");
+      save();syncFavoritePanel();setFavoriteMessage("Favorit umbenannt.");
     }
   }
   function removeMapFavorite(index){
