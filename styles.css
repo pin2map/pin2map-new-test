@@ -1746,3 +1746,134 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #favoritesPanel .favorite-confirm-danger .favorite-confirm-actions .favorite-action-danger:hover{
   background:#ae2434;
 }
+
+
+/* Geometry-search components own all new styles. Never affect Pin panel. */
+#app .search{position:relative}
+#app .search-type-menu{
+  position:absolute;right:0;top:calc(100% + 7px);z-index:1530;
+  width:min(265px,calc(100vw - 24px));padding:6px;
+  border:1px solid #bdc9d9;border-radius:12px;background:#f7f8fa;
+  box-shadow:0 8px 26px #142a4460;display:flex;flex-direction:column;gap:3px;
+}
+#app .search-type-menu.hidden{display:none}
+#app .search-type-choice{
+  display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;
+  padding:9px 11px;min-height:42px;border:0;border-radius:9px;
+  background:transparent;color:#243b54;text-align:left;font-size:15px;cursor:pointer;
+}
+#app .search-type-choice.is-selected,
+#app .search-type-choice:hover{background:#dbe9fb}
+#app .search-type-choice .p2m-lucide{width:22px;height:22px;flex:0 0 22px}
+#app .search-type-choice span{flex:1}
+#app .search-type-choice kbd{
+  padding:1px 6px;border:1px solid #ccd4dd;border-radius:5px;background:#fff;
+  color:#52606d;font:12px system-ui;
+}
+#app .geometry-search-busy{
+  position:absolute;top:66px;left:var(--p2m-top-corner-inset,12px);z-index:1300;
+  display:flex;align-items:center;gap:8px;min-width:140px;max-width:min(420px,90vw);
+  padding:8px 12px;border:1px solid #b6c9e4;border-radius:9px;
+  background:#f7f8fa;color:#24466a;font-size:13px;
+  box-shadow:0 3px 12px #1234;
+}
+#app .geometry-search-busy.hidden{display:none}
+#app .geometry-search-busy::before{
+  content:"";width:15px;height:15px;flex:none;border:2px solid #acc3dd;
+  border-top-color:#1764bf;border-radius:50%;animation:p2m-geometry-spin .85s linear infinite;
+}
+@keyframes p2m-geometry-spin{to{transform:rotate(360deg)}}
+#app .search-results .result-heading .result-feature-icon{
+  display:inline-flex;align-items:center;margin-right:7px;vertical-align:middle;
+}
+#app .search-results .result-heading .result-feature-icon .p2m-lucide{
+  width:19px;height:19px;
+}
+#app .map-action-chooser{
+  position:fixed;z-index:1550;display:flex;gap:7px;align-items:center;
+  padding:9px;border:1px solid #c3ccd5;border-radius:13px;
+  background:var(--p2m-pin-dialog-surface,#f7f8fa);
+  box-shadow:0 7px 25px #152b4266;max-width:calc(100vw - 16px);
+}
+#app .map-action-chooser.hidden{display:none}
+#app .map-action-chooser button{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-width:66px;max-width:85px;border:0;background:transparent;color:#243b54;
+  font:600 11px system-ui;cursor:pointer;text-align:center;
+}
+#app .map-action-chooser button .p2m-lucide{
+  width:40px;height:40px;padding:9px;box-sizing:border-box;border-radius:50%;
+  border:1px solid #c5cdd5;background:white;color:#193757;
+}
+#app .map-action-chooser button:hover .p2m-lucide{background:#e4eef9}
+#app .geometry-editor{
+  position:fixed;z-index:1600;display:flex;flex-direction:column;gap:10px;
+  box-sizing:border-box;width:min(365px,calc(100vw - 16px));padding:12px;
+  border:1px solid #c2cbd6;border-radius:14px;
+  background:var(--p2m-pin-dialog-surface,#f7f8fa);
+  box-shadow:0 8px 28px #142a4460;color:#243b54;
+}
+#app .geometry-editor.hidden{display:none}
+#app .geometry-editor .geometry-head{display:flex;align-items:center;gap:9px}
+#app .geometry-editor .geometry-head fieldset{
+  flex:1;min-width:0;margin:0;border:1px solid #c0c8d1;border-radius:9px;padding:4px 9px 7px;
+}
+#app .geometry-editor fieldset legend{padding:0 5px;color:#4c5c6b;font-size:12px;font-weight:600}
+#app .geometry-editor #geometryName{
+  box-sizing:border-box;width:100%;min-height:29px;padding:4px 0;border:0;
+  background:transparent;color:#243b54;font-size:16px;outline:none;
+}
+#app .geometry-editor .geometry-notes{
+  min-width:0;margin:0;padding:5px 10px 8px;border:1px solid #c0c8d1;border-radius:9px;
+}
+#app .geometry-editor .geometry-notes textarea{
+  display:block;box-sizing:border-box;width:100%;height:108px;resize:vertical;
+  border:0;outline:none;background:transparent;color:#243b54;font:16px/1.4 system-ui;
+}
+#app .geometry-editor .geometry-actions{
+  display:flex;justify-content:space-between;align-items:center;gap:9px;
+}
+#app .geometry-editor .geometry-round{
+  display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+  flex:0 0 42px;width:42px;height:42px;min-width:42px;min-height:42px;
+  padding:0;border:1px solid #c2cbd6;border-radius:50%;
+  background:#fff;color:#243b54;cursor:pointer;
+}
+#app .geometry-editor .geometry-round svg{width:22px;height:22px}
+#app .geometry-editor .geometry-remove{background:#8f2034;border-color:#8f2034;color:#fff}
+#app .geometry-editor .geometry-remove svg{stroke:#fff}
+#app .geometry-editor .geometry-ok{background:#24834f;border-color:#24834f;color:#fff}
+#app .geometry-editor .geometry-round[aria-expanded="true"]{
+  background:#1764bf;border-color:#1764bf;color:white;
+}
+#app .geometry-editor .geometry-sub{
+  display:flex;flex-wrap:wrap;gap:7px;padding:10px;
+  border:1px solid #c7d1de;border-radius:9px;background:#edf2f8;
+}
+#app .geometry-editor .geometry-sub.hidden{display:none}
+#app .geometry-editor .geometry-sub strong,
+#app .geometry-editor .geometry-sub p{width:100%;margin:0}
+#app .geometry-editor .geometry-sub textarea{box-sizing:border-box;width:100%;font:16px system-ui}
+#app .geometry-editor .geometry-sub button{
+  padding:7px 10px;border:1px solid #bdc9d6;border-radius:8px;background:white;color:#253a53;
+}
+#app .geometry-editor .geometry-sub button[aria-pressed="true"]{background:#1764bf;color:white}
+#app .geometry-editor .geometry-sub .geometry-confirm-remove{background:#ac283b;color:#fff;border-color:#ac283b}
+#app .geometry-editor.is-river{width:min(320px,calc(100vw - 16px))}
+#app .geometry-editor.is-river .geometry-actions{justify-content:space-around}
+#app .geometry-editor .hidden{display:none}
+#app .geometry-editor .geometry-wiki img{width:24px;height:24px;object-fit:contain}
+#map .p2m-area-name-wrap,#map .p2m-river-name-wrap{
+  background:transparent;border:0;overflow:visible;
+}
+#map .p2m-area-name-label{
+  display:inline-block;position:relative;transform:translate(-50%,-50%);
+  max-width:230px;padding:3px 7px;border:1px solid #6f87a6;border-radius:6px;
+  background:#fffdf2eF;color:#183d6a;font:600 13px system-ui;white-space:nowrap;
+  text-shadow:0 1px #fff;box-shadow:0 1px 3px #1233;cursor:pointer;
+}
+#map .p2m-river-name-label{
+  display:inline-block;transform:translate(-50%,-50%);
+  padding:3px 7px;border:1px solid #8eaed0;border-radius:6px;
+  background:#e7f2fb;color:#243b54;font:600 13px system-ui;white-space:nowrap;
+}
