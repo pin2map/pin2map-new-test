@@ -409,12 +409,12 @@ async function longPress(page,x,y,ms=725){
     assert.deepEqual(viewReloaded,viewAfter,"Viewport must survive reload");
     console.log("[browser] PASS – viewport moveend persistence and reload");
     const center={x:box.x+box.width*.5,y:box.y+box.height*.57};
-    step("long-press offers Pin/Gebiet/Abbrechen, then creates a private pin");
+    step("long-press offers zoom-in, pin, area and zoom-out, then creates a private pin");
     await longPress(page,center.x,center.y);
     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinPanel").isHidden(),true,
       "Long press must never create a pin before user chooses");
-    assert.equal(await page.locator("#mapActionChooser button").count(),3);
+    assert.equal(await page.locator("#mapActionChooser button").count(),4);
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     // Surface any incidental error from the initial long-press separately
