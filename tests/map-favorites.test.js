@@ -17,7 +17,7 @@ test("100 favorites accepted; 101st rejected; deleting one frees a slot",()=>{
   assert.equal(project.favorites[49].name,"Favorite 50");
   assert.ok(f.append(project,view(4),project.layers,"now","new slot"));
   assert.equal(project.favorites[99].name,"new slot");
-  assert.equal(project.favorites.length,500);
+  assert.equal(project.favorites.length,100);
 });
 test("deletion compacts letters and full replacement discards old record",()=>{
   const project={layers:layers(),favorites:[]};
