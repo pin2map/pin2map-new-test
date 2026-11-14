@@ -52,6 +52,7 @@
       actions.append(layer,link,wiki,ok);
       const sub=doc.createElement("div");sub.className="geometry-sub hidden";sub.id="geometrySub";
       panel.append(header,notes,actions,sub);
+      this.header=header;this.actions=actions;
       this.removeButton=remove;this.layerButton=layer;this.linkButton=link;
       this.nameInput=name;this.notesInput=textarea;
       this.notesRow=notes;this.legend=legend;this.sub=sub;
@@ -126,6 +127,11 @@
       this.close(false);
       this.type=type;this.model=item;this.layers=layers.filter(layer=>layer?.id);
       this.panel.classList.toggle("is-river",type==="river");
+      // River controls belong to ONE four-button editing row in the exact
+      // order remove, layer, Wikipedia, OK. The area keeps remove in its
+      // Pin-like first row and has only three content rows.
+      if(type==="river")this.actions.prepend(this.removeButton);
+      else this.header.prepend(this.removeButton);
       this.panel.setAttribute("aria-label",type==="river"?"Fluss bearbeiten":"Fläche bearbeiten");
       this.legend.textContent=type==="river"?"Flussname":"Flächenname";
       this.notesRow.classList.toggle("hidden",type==="river");
