@@ -351,6 +351,12 @@ async function zoom(page){
         await page.locator(".favorite-row").first().locator(".favorite-remove").click();
         assert.equal(await page.locator(".favorite-confirm-danger").count(),1);
         assert.match(await page.locator(".favorite-confirm-actions .favorite-action-danger").textContent(),/Löschen/);
+        assert.equal(await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first()
+          .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(255, 224, 223)",
+          "Cancel in destructive dialog must use a light RED button");
+        assert.equal(await page.locator(".favorite-confirm-danger .favorite-action-danger")
+          .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(197, 46, 62)",
+          "Delete confirmation must use a strong RED button");
         await page.locator(".favorite-confirm-actions button").first().click();
         assert.equal(await page.locator(".favorite-row").count(),2);
         const removeCircle=await page.locator(".favorite-row").first().locator(".favorite-remove").boundingBox();
@@ -492,6 +498,63 @@ async function zoom(page){
           panelBounds.y+panelBounds.height<=392,
           "Favorites search must remain accessible above the iPhone keyboard");
         await page.setViewportSize({width:viewport.width,height:viewport.height});
+        await page.locator("#favoritesClose").click();
+        // The bulk button MUST be the final element of the SCROLLABLE list,
+        // never alongside Add/Close in the persistent footer.
+        await favoriteTrigger.click();
+        const removeAllButton=page.locator("#favoritesList .favorite-delete-all");
+        assert.equal(await removeAllButton.count(),1);
+        assert.equal(await page.locator(".favorites-footer .favorite-delete-all").count(),0);
+        assert.equal(await page.locator("#favoritesList").evaluate(el=>
+          el.lastElementChild?.classList.contains("favorite-delete-all")),true);
+        const bulkDimensions=await removeAllButton.boundingBox();
+        const rowDimensions=await page.locator(".favorite-row").last().boundingBox();
+        assert.ok(bulkDimensions&&rowDimensions&&
+          Math.abs(bulkDimensions.width-rowDimensions.width)<3&&bulkDimensions.height>=65,
+          "Clear-all must look like another favorite card at the list end");
+        await removeAllButton.click();
+        assert.equal(await page.locator("#favoritesList .favorite-confirm-danger").count(),1);
+        assert.match(await page.locator("#favoritesList .favorite-confirm-danger p").first().textContent(),
+          /alle 15 Favoriten löschen/);
+        assert.equal(await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first()
+          .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(255, 224, 223)");
+        assert.equal(await page.locator(".favorite-confirm-danger .favorite-action-danger")
+          .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(197, 46, 62)");
+        await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator(".favorite-row").count(),15,
+          "Cancel must leave ALL favorites untouched");
+        // Filter down to a single visible favorite: bulk clear still concerns
+        // the full underlying collection, not only the matching result.
+        await search.fill("Platz D");
+        assert.equal(await page.locator(".favorite-row").count(),1);
+        await removeAllButton.click();
+        assert.match(await page.locator(".favorite-confirm-danger p").first().textContent(),
+          /alle 15 Favoriten löschen/);
+        await page.locator(".favorite-confirm-danger .favorite-action-danger").click();
+        assert.equal(await page.locator(".favorite-row").count(),0);
+        assert.equal(await removeAllButton.count(),0);
+        assert.equal(await page.locator("#favoritesAdd").isEnabled(),true);
+        assert.match(await page.locator("#favoritesMessage").textContent(),/Alle Favoriten gelöscht/);
+        await page.locator("#favoritesClose").click();
+        await page.waitForTimeout(650);
+        await page.reload({waitUntil:"domcontentloaded"});
+        await page.waitForFunction(()=>!!document.querySelector("#favoritesButton"),null,{timeout:10000});
+        await favoriteTrigger.click();
+        assert.equal(await page.locator(".favorite-row").count(),0);
+        assert.equal(await page.locator(".favorite-delete-all").count(),0);
+        const afterBulk=await page.evaluate(async()=>{
+          const store=await window.Pin2MapIndexedDBProjectStore.open();
+          try{return {project:await store.loadProject(),history:await store.loadViewHistory()};}
+          finally{store.close();}
+        });
+        assert.equal(afterBulk.project.favorites.length,0,
+          "Confirmed clear-all must persist across PWA restart");
+        assert.equal(afterBulk.project.layers.length,saved.project.layers.length,
+          "Clearing favorites must not delete project layers");
+        assert.equal(afterBulk.project.pins.length,saved.project.pins.length,
+          "Clearing favorites must not delete pins");
+        assert.ok(afterBulk.history?.entries.length>0,
+          "Clearing favorites must not erase device-local navigation history");
         await page.locator("#favoritesClose").click();
         assert.deepEqual(errors,[]);
         console.log("[favorites] PASS",viewport.name,
