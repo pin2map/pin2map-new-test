@@ -262,6 +262,7 @@
     mapActionChooser?.close();
     searchTypeMenu?.close();
     favoritesPanel?.close();
+    geometryEditor?.flush();
     geometryEditor?.close(false);
     pinOverlapZoom?.close();
     featureOverlapZoom?.close();
