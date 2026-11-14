@@ -14,6 +14,12 @@
       this.doc=doc;this.el=getElement;this.icons=icons;this.onChoose=onChoose;
       this.menu=this.el("searchTypeMenu");this.button=this.el("searchButton");
       if(!this.menu||!this.button)throw new TypeError("Search menu elements required");
+      this.app=this.el("app");
+      if(!this.app)throw new TypeError("App root required for visible search chooser");
+      // The search form has overflow:hidden to retain its pill shape.
+      // A descendant popup would be clipped regardless of its z-index.
+      // Mount it at the app root, above the search bar and map overlays.
+      this.app.append(this.menu);
       this.open=false;this.active=0;
     }
     bind(){
@@ -62,7 +68,21 @@
         const index=CHOICES.findIndex(c=>c.shortcut===key);
         if(index>=0){e.preventDefault();e.stopPropagation();this.choose(index);}
       },true);
+      this.doc.defaultView?.addEventListener("resize",()=>{if(this.open)this.position();});
       this.bound=true;
+    }
+    position(){
+      const rect=this.button.getBoundingClientRect();
+      const appRect=this.app.getBoundingClientRect();
+      const width=this.menu.offsetWidth||265;
+      const height=this.menu.offsetHeight||200;
+      // Coordinates are relative to #app, not the clipped search form.
+      const left=Math.min(rect.right-appRect.left-width,
+        appRect.width-width-8);
+      this.menu.style.left=Math.max(8,left)+"px";
+      const below=rect.bottom-appRect.top+9;
+      this.menu.style.top=Math.max(8,
+        Math.min(below,appRect.height-height-8))+"px";
     }
     highlight(index){
       this.active=(index+CHOICES.length)%CHOICES.length;
@@ -71,6 +91,7 @@
     show(){
       this.open=true;this.menu.classList.remove("hidden");
       this.button.setAttribute("aria-expanded","true");this.highlight(0);
+      this.position();
     }
     close(){
       this.open=false;this.menu.classList.add("hidden");
