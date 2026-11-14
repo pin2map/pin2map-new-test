@@ -182,13 +182,15 @@
     mapAdapter.on("dragstart zoomstart",()=>{
       cancelLongPress();activeSurfaceTap=null;lastSurfaceTap=null;
     });
-    // Some touch browsers synthesize dblclick from two taps instead of
-    // delivering a second ordinary pointerup. Recognize this ONLY if a
-    // preceding touch began on the map, not on any interactive feature.
+    // Both desktop mouse double-click and mobile double-tap open the
+    // same anchored chooser ONLY on the unoccupied map surface. A real
+    // touch doubletap may already have opened it via pointerup; in that
+    // case suppressFor() prevents the synthesized dblclick from reopening.
+    // Capture before Leaflet's bubbling dblclick handler zooms the map.
     container.addEventListener("dblclick",e=>{
-      if(DateNow()-lastTouchStartAt>700||DateNow()<suppressMapClickUntil||
+      if(DateNow()<suppressMapClickUntil||
         !isMapSurface(e.target)||isMoveMode()||isInspectMode())return;
-      e.preventDefault();e.stopPropagation();
+      e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
       lastSurfaceTap=null;cancelLongPress();
       openMapChooserAt(e.clientX,e.clientY);
     },true);
