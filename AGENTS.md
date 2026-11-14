@@ -11,6 +11,19 @@ Bei einem neuen pin2map-NEW-Auftrag bitte **ohne Rückfrage** zunächst folgende
 4. docs/MODULARCHITEKTUR.md und docs/ENTWICKLUNGSFAHRPLAN.md
 5. Bei Deployment/Preview: docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md; bei UI/Refresh: docs/UI_CONTROLS_AND_PWA_REFRESH_2026-11-10.md.
 
+## Unverhandelbare Arbeitsvereinbarung vom 10. November 2026
+
+Bei **jedem** vom Nutzer beauftragten pin2map-NEW-Implementierungsschritt führt der Assistent den Auftrag eigenständig **bis zur überprüfbar veröffentlichten Preview-Version** durch. Eine bloße Konzept-/Diff-Antwort ist kein Ersatz, solange der im aktuellen Auftrag verfügbare GitHub-Zugriff funktioniert. Die konkrete Abschlusskontrolle lautet:
+
+1. Anforderung prüfen, Quellstand und Schutzbranch feststellen; Implementierung vollständig ausführen.
+2. Modul-/Node-, Architektur- und tatsächliche Chromium-Browsertests ausführen und Fehlermeldungen **im selben Auftrag** beheben; Tests nicht abschwächen, nur um sie grün zu bekommen.
+3. Isolierte GitHub-Pages-Preview veröffentlichen; den grünen Deploy-Gate samt live ausgelieferter Worker-Version und relevanten Assets sowie Live-Browserprüfung belegen.
+4. Verbindliche Entscheidungen und Testnachweise in den bestehenden Projektstatus schreiben.
+5. **Erst danach** eine Fertigmeldung mit Commit, Run-Links, Versionsnummer und Preview-URL senden. Fehlende Gates ausdrücklich offen lassen; ein laufender/fehlgeschlagener Workflow ist kein Erfolg.
+6. Nach einem Chatwechsel das Projektstatus-Dokument lesen und begonnene Arbeit fortsetzen. Eine Behauptung fehlender Repo-Berechtigung erst nach tatsächlicher Prüfung der verfügbaren GitHub-Integration und erneuten Versuchen.
+
+Diese Vereinbarung ist im Repository dokumentiert und gilt unabhängig von einer persönlichen ChatGPT-Memory-Einstellung. Sie ergänzt die bereits bestehende Arbeitsregel in `docs/GRUNDENTSCHEIDUNGEN.md` vom 2026-11-10.
+
 ## Bindende Umsetzungsregeln
 
 - UI und Fachlogik modular entwickeln, keine Rückkehr zur historischen Ein-Datei-Pflicht.
