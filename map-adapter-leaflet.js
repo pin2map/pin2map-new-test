@@ -295,6 +295,81 @@
       window.L.DomEvent.disableClickPropagation(element);
       window.L.DomEvent.on(element,"mousedown touchstart",window.L.DomEvent.stopPropagation);
     }
+    renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},onRiverLine=()=>{}}={}){
+      if(this.featureLayers){this.map.removeLayer(this.featureLayers);this.featureLayers=null;}
+      const group=window.L.layerGroup().addTo(this.map);
+      this.featureLayers=group;
+      const touch=/iPad|iPhone|iPod/.test(navigator.userAgent)||
+        /MacIntel|MacARM/.test(navigator.platform)&&navigator.maxTouchPoints>1;
+      let pointTotal=0;
+      for(const area of areas){
+        if(!["Polygon","MultiPolygon"].includes(area.geometry?.type))continue;
+        const prepared=window.Pin2MapAreaGeometry.prepare(area.geometry,{
+          touchDevice:touch,existingPoints:pointTotal
+        });
+        pointTotal=prepared.totalPoints;
+        const color=layerColors[area.layerId]||"#326cc2";
+        const geo=window.L.geoJSON(prepared.geometry,{
+          interactive:false,style:{color,weight:2,fillColor:color,fillOpacity:.24,interactive:false}
+        }).addTo(group);
+        const bounds=geo.getBounds();
+        if(!bounds.isValid()||!area.name)continue;
+        const content=document.createElement("span");
+        content.className="p2m-area-name-label";
+        content.textContent=area.name;
+        const marker=window.L.marker(bounds.getCenter(),{
+          keyboard:true,interactive:true,zIndexOffset:350,
+          icon:window.L.divIcon({html:content.outerHTML,className:"p2m-area-name-wrap",
+            iconSize:[0,0],iconAnchor:[0,0]})
+        }).addTo(group);
+        marker.on("click",e=>{
+          window.L.DomEvent.stop(e.originalEvent);
+          const ll=marker.getLatLng();
+          onAreaLabel(area,{lat:ll.lat,lng:ll.lng});
+        });
+      }
+      for(const river of rivers){
+        const color=layerColors[river.layerId]||"#1689e5";
+        let longest=null,length=0;
+        for(const chain of river.chains||[]){
+          if(chain.length<2)continue;
+          const line=window.L.polyline(chain,{color,weight:5,opacity:.9,
+            lineCap:"round",lineJoin:"round",interactive:false}).addTo(group);
+          const hit=window.L.polyline(chain,{color,weight:24,opacity:.015,
+            lineCap:"round",lineJoin:"round",interactive:true,bubblingMouseEvents:false}).addTo(group);
+          hit.on("click",e=>{
+            window.L.DomEvent.stop(e.originalEvent);
+            onRiverLine(river,{lat:e.latlng.lat,lng:e.latlng.lng});
+          });
+          // Position the river label midway along its longest chain.
+          let d=0;
+          for(let i=1;i<chain.length;i++)d+=window.L.latLng(chain[i-1]).distanceTo(chain[i]);
+          if(d>length){length=d;longest=chain;}
+        }
+        if(longest&&river.name){
+          let mid=longest[Math.floor(longest.length/2)];
+          const name=document.createElement("span");name.textContent=river.name;
+          name.className="p2m-river-name-label";
+          window.L.marker(mid,{interactive:false,keyboard:false,zIndexOffset:300,
+            icon:window.L.divIcon({html:name.outerHTML,className:"p2m-river-name-wrap",
+              iconSize:[0,0],iconAnchor:[0,0]})
+          }).addTo(group);
+        }
+      }
+    }
+    fitGeometry(item){
+      let bbox=null;
+      if(item.geometry&&["Polygon","MultiPolygon"].includes(item.geometry.type)){
+        const geo=window.L.geoJSON(item.geometry,{interactive:false});
+        bbox=geo.getBounds();
+      }else if(Array.isArray(item.chains)&&item.chains.length){
+        const pts=item.chains.flat().map(p=>[p[0],p[1]]);
+        bbox=window.L.latLngBounds(pts);
+      }
+      if(bbox?.isValid())this.map.fitBounds(bbox,{
+        paddingTopLeft:[45,90],paddingBottomRight:[45,55],maxZoom:11,animate:false
+      });
+    }
     destroy() { this.map.remove(); }
   }
   root.Pin2MapLeafletAdapter=LeafletMapAdapter;
