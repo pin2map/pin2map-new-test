@@ -3,8 +3,8 @@
  * Stable layer IDs preserve intent across synced devices; unknown/new IDs
  * remain untouched when a favorite is applied. */
 (function(root){
-  const CAPACITY=26;
-  const ACTIVE_CAPACITY=15; // Trial UI limit A–O; preserve 26-place data contract.
+  const CAPACITY=500;
+  const ACTIVE_CAPACITY=500; // Product limit; original array order remains stable.
   const letter=index=>String.fromCharCode(65+index);
   function capture(view,layers,date,name="",basemap="street"){
     const lat=Number(view?.center?.lat),lng=Number(view?.center?.lng),zoom=Number(view?.zoom);
