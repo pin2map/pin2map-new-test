@@ -1710,3 +1710,36 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #favoritesPanel .favorites-footer .favorites-add:disabled{
   background:var(--p2m-favorites-light);opacity:.75;
 }
+
+/* v179: final scrollable-list action. Never place this control into the
+   fixed bottom footer: at 100 entries the user must scroll to reach it. */
+#app #favoritesPanel .favorites-list .favorite-delete-all{
+  display:flex;align-items:center;justify-content:center;
+  box-sizing:border-box;width:100%;min-height:76px;
+  margin:10px 0 4px;padding:12px 16px;
+  border:1px solid #dacf79;border-radius:12px;
+  background:var(--p2m-favorites-light);
+  color:#9c2730;font-size:15px;font-weight:650;
+  text-align:center;cursor:pointer;
+}
+#app #favoritesPanel .favorites-list .favorite-delete-all:focus-visible{
+  outline:2px solid #a42c35;outline-offset:2px;
+}
+/* Every action in a destructive confirmation uses a RED family, with a
+   clear distinction between cancelling (soft red) and deleting (solid red).
+   The existing replace/rename dialogs retain the lemon-yellow actions. */
+#app #favoritesPanel .favorite-confirm-danger{
+  background:#f7cdcb;border-color:#d88a86;
+}
+#app #favoritesPanel .favorite-confirm-danger .favorite-confirm-actions button{
+  background:#ffe0df;border-color:#d78f91;color:#8d1f2c;
+}
+#app #favoritesPanel .favorite-confirm-danger .favorite-confirm-actions .favorite-action-danger{
+  background:#c52e3e;border-color:#ad2432;color:#fff;
+}
+#app #favoritesPanel .favorite-confirm-danger .favorite-confirm-actions button:hover{
+  background:#ffd0ce;
+}
+#app #favoritesPanel .favorite-confirm-danger .favorite-confirm-actions .favorite-action-danger:hover{
+  background:#ae2434;
+}
