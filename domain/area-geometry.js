@@ -109,7 +109,26 @@
     }
     return {...result,totalPoints:existingPoints+result.after};
   }
-  const api=Object.freeze({pointCount,tolerance,simplifyRing,withTolerance,simplify,prepare});
+  function containsPoint(geometry,lon,lat){
+    function ringContains(ring){
+      let inside=false;
+      for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+        const a=ring[i],b=ring[j];
+        if((a[1]>lat)!==(b[1]>lat)&&
+          lon<(b[0]-a[0])*(lat-a[1])/(b[1]-a[1])+a[0])inside=!inside;
+      }
+      return inside;
+    }
+    function polygonContains(poly){
+      if(!poly?.length||!ringContains(poly[0]))return false;
+      for(let i=1;i<poly.length;i++)if(ringContains(poly[i]))return false;
+      return true;
+    }
+    if(geometry?.type==="Polygon")return polygonContains(geometry.coordinates);
+    if(geometry?.type==="MultiPolygon")return geometry.coordinates.some(polygonContains);
+    return false;
+  }
+  const api=Object.freeze({pointCount,tolerance,simplifyRing,withTolerance,simplify,prepare,containsPoint});
   root.Pin2MapAreaGeometry=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
