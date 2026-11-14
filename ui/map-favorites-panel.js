@@ -3,10 +3,10 @@
  * panel; no native modal, no data/Leaflet/IndexedDB access. */
 (function(root){
   class MapFavoritesPanel{
-    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRename,onChoose,suggestName,capacity=500,getSearch=()=>"",onSearchChange=()=>{}}){
+    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRemoveAll,onRename,onChoose,suggestName,capacity=100,getSearch=()=>"",onSearchChange=()=>{}}){
       this.doc=doc;this.el=getElement;this.icons=icons;
       this.onOpen=onOpen;this.onAdd=onAdd;this.onReplace=onReplace;
-      this.onRemove=onRemove;this.onRename=onRename;this.onChoose=onChoose;
+      this.onRemove=onRemove;this.onRemoveAll=onRemoveAll;this.onRename=onRename;this.onChoose=onChoose;
       this.suggestName=suggestName;this.capacity=capacity;
       this.open=false;this.mode=null;this.index=null;this.values=[];
       // Search is a per-device UI preference, never part of synced favorites.
@@ -105,15 +105,23 @@
       else if(b.top<a.top+5)list.scrollTop+=b.top-a.top-8;
     }
     editor(mode,index){
-      const isNew=mode==="new",isRename=mode==="rename",isDelete=mode==="delete";
+      const isNew=mode==="new",isRename=mode==="rename";
+      const isDelete=mode==="delete"||mode==="deleteAll";
+      const isDeleteAll=mode==="deleteAll";
       const target=this.doc.createElement("section");
       target.className="favorite-confirm"+(isDelete?" favorite-confirm-danger":"");
       const title=this.doc.createElement("p");
       title.textContent=isNew?"Neue Ansicht als Favorit speichern?":
         isRename?"Favorit umbenennen?":
+        isDeleteAll?"Wirklich alle "+this.values.length+" Favoriten löschen?":
         isDelete?"Favorit wirklich löschen?":
         "Favorit durch die aktuelle Ansicht ersetzen?";
       target.append(title);
+      if(isDeleteAll){
+        const warning=this.doc.createElement("p");
+        warning.textContent="Alle gespeicherten Favoriten werden unwiderruflich entfernt.";
+        target.append(warning);
+      }
       let input=null;
       if(!isDelete){
         const label=this.doc.createElement("label");
@@ -131,13 +139,15 @@
       const actions=this.doc.createElement("div");
       actions.className="favorite-confirm-actions";
       actions.append(this.labeledButton("Abbrechen",()=>this.start(null)));
-      const label=isNew?"Speichern":isRename?"Umbenennen":isDelete?"Löschen":"Ersetzen";
+      const label=isNew?"Speichern":isRename?"Umbenennen":
+        isDeleteAll?"Alle löschen":isDelete?"Löschen":"Ersetzen";
       const confirm=this.labeledButton(label,()=>{
         if(!isDelete&&!input.value.trim()){input.focus();return;}
         const name=input?.value.trim();
         this.mode=null;this.index=null;
         if(isNew)this.onAdd(name);
         else if(isRename)this.onRename(index,name);
+        else if(isDeleteAll)this.onRemoveAll?.();
         else if(isDelete)this.onRemove(index);
         else this.onReplace(index,name);
       },isDelete?"danger":"primary");
@@ -167,7 +177,7 @@
           return name.includes(query)||shownDate.includes(query);
         });
       add.disabled=values.length>=this.capacity;
-      add.title=add.disabled?"Maximale Anzahl von 500 Favoriten erreicht – vorhandenen Favoriten ersetzen":"Neue Ansicht hinzufügen";
+      add.title=add.disabled?"Maximale Anzahl von "+this.capacity+" Favoriten erreicht – vorhandenen Favoriten ersetzen":"Neue Ansicht hinzufügen";
       if(!matches.length){
         const empty=this.doc.createElement("p");empty.className="favorites-empty";
         empty.textContent=values.length?"Keine passenden Favoriten gefunden.":"Noch keine Favoriten gespeichert.";
@@ -202,6 +212,19 @@
           list.append(editor.target);pendingFocus=editor.focus;
         }
       });
+      // Bulk deletion belongs to the very end of the scrollable list, NOT
+      // to the persistent Add/Close footer. Filtering never changes the
+      // target set: this always deletes ALL saved favorites, after consent.
+      if(values.length){
+        const removeAll=this.button(null,"Alle Favoriten löschen",
+          ()=>this.start("deleteAll"),"favorite-delete-all");
+        removeAll.textContent="Alle Favoriten löschen";
+        list.append(removeAll);
+        if(this.mode==="deleteAll"){
+          const editor=this.editor("deleteAll");
+          list.append(editor.target);pendingFocus=editor.focus;
+        }
+      }
       if(this.mode==="new"){
         const editor=this.editor("new");
         list.append(editor.target);pendingFocus=editor.focus;
