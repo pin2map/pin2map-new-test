@@ -110,7 +110,10 @@ async function zoom(page){
           "Identical-position pins remain visible near the horizontal center");
         // Emulated mobile tap generates a ghost-click suppression interval;
         // wait for it to expire before asserting a distinct second gesture.
-        await page.waitForTimeout(1150);
+        // Browser touch emulation can defer a follow-up synthetic click.
+        // Preserve two distinct real gestures; do not count a ghost click as
+        // the second explicit pin selection tap.
+        await page.waitForTimeout(1600);
         await tap(page.locator(".pin-icon").last());
         await page.locator(".pin-overlap-chooser").waitFor({state:"visible",timeout:8000});
         assert.equal(await page.locator("#pinPanel").isHidden(),true);
