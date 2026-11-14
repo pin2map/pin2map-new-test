@@ -18,6 +18,16 @@
     let lastSurfaceTap=null,activeSurfaceTap=null,touchDoubleTapConfigured=false;
     const DateNow=()=>now();
     const suppressFor=ms=>{suppressMapClickUntil=DateNow()+ms;};
+    function openMapChooserAt(clientX,clientY){
+      const rect=mapAdapter.getContainer().getBoundingClientRect();
+      const point=mapAdapter.unproject({
+        x:clientX-rect.left,y:clientY-rect.top
+      });
+      suppressFor(850);
+      if(typeof onMapAction==="function"){
+        onMapAction(point,{x:clientX,y:clientY});vibrate(15);
+      }
+    }
   // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
   // A tap still opens/closes its editor; dragging a pin never moves it.
   function zoomHeldPin(marker){
@@ -161,15 +171,7 @@
             if(preceding&&DateNow()-preceding.time<=380&&
               Math.hypot(e.clientX-preceding.x,e.clientY-preceding.y)<=26){
               lastSurfaceTap=null;
-              suppressFor(850);
-              const rect=container.getBoundingClientRect();
-              const point=mapAdapter.unproject({
-                x:e.clientX-rect.left,y:e.clientY-rect.top
-              });
-              if(typeof onMapAction==="function"){
-                onMapAction(point,{x:e.clientX,y:e.clientY});
-                vibrate(15);
-              }
+              openMapChooserAt(e.clientX,e.clientY);
             }else lastSurfaceTap={x:e.clientX,y:e.clientY,time:DateNow()};
           }else lastSurfaceTap=null;
         }
@@ -180,6 +182,16 @@
     mapAdapter.on("dragstart zoomstart",()=>{
       cancelLongPress();activeSurfaceTap=null;lastSurfaceTap=null;
     });
+    // Some touch browsers synthesize dblclick from two taps instead of
+    // delivering a second ordinary pointerup. Recognize this ONLY if a
+    // preceding touch began on the map, not on any interactive feature.
+    container.addEventListener("dblclick",e=>{
+      if(DateNow()-lastTouchStartAt>700||DateNow()<suppressMapClickUntil||
+        !isMapSurface(e.target)||isMoveMode()||isInspectMode())return;
+      e.preventDefault();e.stopPropagation();
+      lastSurfaceTap=null;cancelLongPress();
+      openMapChooserAt(e.clientX,e.clientY);
+    },true);
     // Native desktop context menu is replaced by pin creation. Touch uses the timer above.
     container.addEventListener("contextmenu", e => {
       if(!isMapSurface(e.target))return;
