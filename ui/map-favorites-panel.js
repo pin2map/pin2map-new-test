@@ -80,7 +80,7 @@
     keepEditorVisible(){
       if(!this.open)return;
       const searchFocused=this.doc.activeElement===this.el("favoritesSearch");
-      const editorActive=!!this.mode&&this.mode!=="delete";
+      const editorActive=["new","rename","replace"].includes(this.mode);
       const panel=this.el("favoritesPanel");
       if(!searchFocused&&!editorActive){
         panel.classList.remove("is-editing");
@@ -237,6 +237,17 @@
         this.keepEditorVisible();
         pendingFocus.focus({preventScroll:true});
         this.keepEditorVisible();
+        if(this.mode==="delete"||this.mode==="deleteAll"){
+          // Destructive confirmations do NOT open a keyboard. Retain the
+          // normal panel and footer, but show the confirmation in the
+          // list's own scrollport, even at the bottom of 100 favorites.
+          const confirm=list.querySelector(".favorite-confirm");
+          if(confirm){
+            const port=list.getBoundingClientRect(),rect=confirm.getBoundingClientRect();
+            if(rect.bottom>port.bottom)list.scrollTop+=rect.bottom-port.bottom+8;
+            if(rect.top<port.top)list.scrollTop+=rect.top-port.top-8;
+          }
+        }
         // Safari adjusts the visualViewport after input.focus().
         this.doc.defaultView?.setTimeout(()=>this.keepEditorVisible(),180);
       }else{
