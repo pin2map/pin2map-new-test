@@ -57,7 +57,7 @@
     show(values){
       this.values=values;this.mode=null;this.index=null;this.open=true;
       this.el("favoritesSearch").value=this.searchText;
-      this.el("favoritesPanel").classList.remove("hidden");
+      this.el("favoritesPanel").classList.remove("hidden","search-focused");
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten schließen");
@@ -72,7 +72,7 @@
       this.el("favoritesButton").setAttribute("aria-expanded","false");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten öffnen");
       const panel=this.el("favoritesPanel");
-      panel.classList.remove("is-editing");
+      panel.classList.remove("is-editing","search-focused");
       panel.style.removeProperty("--p2m-favorites-keyboard-top");
       panel.style.removeProperty("--p2m-favorites-keyboard-height");
     }
@@ -82,6 +82,7 @@
       const searchFocused=this.doc.activeElement===this.el("favoritesSearch");
       const editorActive=["new","rename","replace"].includes(this.mode);
       const panel=this.el("favoritesPanel");
+      panel.classList.toggle("search-focused",searchFocused);
       if(!searchFocused&&!editorActive){
         panel.classList.remove("is-editing");
         panel.style.removeProperty("--p2m-favorites-keyboard-top");
