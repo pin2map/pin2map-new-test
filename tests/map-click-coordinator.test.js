@@ -13,7 +13,7 @@ function fixture({move=false,suppressed=false,accepted=false}={}){
   });
   return {coordinator,calls};
 }
-test("ordinary map click closes overlays only when not suppressed",()=>{
+test("ordinary map click passes location to background action only when not suppressed",()=>{
   const x=fixture(),pos={lat:49,lng:9};x.coordinator.handle(pos);
   assert.deepEqual(x.calls,["move?","suppressed?",["background-action",pos]]);
 });
@@ -37,7 +37,7 @@ test("module wired to app via map adapter and cached for offline startup",()=>{
   assert.match(app,/new window\.Pin2MapMapClickCoordinator/);
   assert.match(app,/mapAdapter\.onMapClick\(position=>\{/);
   assert.match(app,/if\(satelliteInspector\.isActive\(\)\)\{satelliteInspector\.pick\(position\);return;\}/);
-  assert.match(app,/pinInfoMenu\.close\(\);mapClickCoordinator\.handle\(position\);/);
+  assert.match(app,/mapClickCoordinator\.handle\(position\);/);
   assert.ok(html.indexOf("./application/map-click-coordinator.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/application\/map-click-coordinator\.js"/);
   assert.match(sw,/const CACHE='pin2map-new-v\d+'/);
