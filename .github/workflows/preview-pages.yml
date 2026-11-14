@@ -294,6 +294,11 @@ jobs:
           PIN2MAP_LIVE_PREVIEW: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/preview-live-smoke.cjs
 
+      - name: Verify published geometry searches and objects with Chromium
+        working-directory: preview-source
+        env:
+          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
+        run: node tests/geometry-browser.cjs
       - name: Confirm live autozoom disentangles pin hitboxes and allows exact-coordinate choice
         working-directory: preview-source
         env:
@@ -305,11 +310,6 @@ jobs:
         env:
           PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/pin-dialog-visual.cjs
-      - name: Verify published geometry searches and objects with Chromium
-        working-directory: preview-source
-        env:
-          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
-        run: node tests/geometry-browser.cjs
 
       - name: Archive published overlap autozoom screenshots
         if: always()
