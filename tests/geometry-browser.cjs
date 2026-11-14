@@ -115,8 +115,9 @@ const viewports=[
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    // Polygons must be completely noninteractive; ONLY the area name marker
    // opens the area dialog. Canvas/SVG path pointer-events are disabled.
-   assert.equal(await page.locator("#map .leaflet-interactive").evaluateAll(nodes=>
-     nodes.filter(n=>n.matches("path")&&getComputedStyle(n).pointerEvents==="none").length>0),true);
+   assert.equal(await page.locator("#map .leaflet-overlay-pane path").evaluateAll(nodes=>
+     nodes.some(n=>!n.classList.contains("leaflet-interactive"))),true,
+     "Area polygon must not have the Leaflet interactive hit-target class");
    await page.locator(".p2m-area-name-wrap").first().click({force:true});
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:5000});
    assert.equal(await page.locator("#geometryNotes").inputValue(),"Testkommentar");
