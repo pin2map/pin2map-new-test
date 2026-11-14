@@ -1658,3 +1658,55 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #favoritesPanel .favorite-remove .p2m-lucide{
   color:#bf2431!important;stroke:#bf2431!important;
 }
+
+/* v178: Lemon-yellow favorites surfaces. White is the invariant fill for
+   circular buttons INSIDE the panel; rectangular actions retain pale lemon.
+   The external star trigger remains a lemon-yellow menu control. */
+#app #favoritesButton.favorites-map-button.p2m-icon-control{
+  --p2m-map-control-bg:#f5e766;
+  --p2m-map-control-pressed:#ead746;
+  --p2m-map-control-border:#c9b72f;
+}
+#app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{
+  --p2m-map-control-bg:#e9d84b;
+  --p2m-map-control-pressed:#dfcd35;
+  --p2m-map-control-border:#baa928;
+}
+#app #favoritesPanel.favorites-panel{
+  --p2m-favorites-surface:#f4e664;
+  --p2m-favorites-light:#fff9cd;
+  --p2m-favorites-border:#d7c84f;
+}
+#app #favoritesPanel .favorite-row{border-color:#dacf79}
+#app #favoritesPanel .favorite-confirm{background:#f9eea3}
+#app #favoritesPanel .favorite-confirm-danger{background:#f7cdcb}
+#app #favoritesPanel button.p2m-icon-control{
+  --p2m-button-bg:#fff;
+  --p2m-button-border:#c9cbd0;
+}
+#app #favoritesPanel button.p2m-icon-control:hover,
+#app #favoritesPanel button.p2m-icon-control:active{
+  background:#fff!important;
+}
+#app #favoritesPanel .favorite-row .favorite-icon,
+#app #favoritesPanel .favorites-head button,
+#app #favoritesPanel .favorite-row .favorite-remove,
+#app #favoritesPanel #favoritesSearchClear,
+#app #favoritesPanel #favoritesSearchClear:disabled{
+  --p2m-button-bg:#fff;
+  background:#fff;
+}
+#app #favoritesPanel #favoritesSearchClear{
+  --p2m-button-ink:#bc2833;
+}
+#app #favoritesPanel #favoritesSearchClear:disabled{
+  --p2m-button-ink:#98938a;
+  opacity:.62;
+}
+#app #favoritesPanel .favorites-footer button,
+#app #favoritesPanel .favorite-confirm-actions button{
+  background:var(--p2m-favorites-light);
+}
+#app #favoritesPanel .favorites-footer .favorites-add:disabled{
+  background:var(--p2m-favorites-light);opacity:.75;
+}
