@@ -12,6 +12,32 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    "map-pin-plus-inside": [
+      ["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],
+      ["path",{d:"M12 7v6"}],["path",{d:"M9 10h6"}]
+    ],
+    "vector-polygon": [
+      ["rect",{x:2,y:2,width:4,height:4,rx:0.5}],
+      ["rect",{x:18,y:3,width:4,height:4,rx:0.5}],
+      ["rect",{x:17,y:18,width:4,height:4,rx:0.5}],
+      ["rect",{x:3,y:17,width:4,height:4,rx:0.5}],
+      ["path",{d:"M6 4h12M20 7v11M17 20H7L4 17V6"}]
+    ],
+    "waves-horizontal": [
+      ["path",{d:"M2 6c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"}],
+      ["path",{d:"M2 12c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"}],
+      ["path",{d:"M2 18c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"}]
+    ],
+    "spline": [
+      ["circle",{cx:5,cy:5,r:2}],["circle",{cx:19,cy:19,r:2}],
+      ["path",{d:"M7 5h3a9 9 0 0 1 9 9v3"}],
+      ["path",{d:"M5 7v12h12"}]
+    ],
+    "scan-search": [
+      ["path",{d:"M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4"}],
+      ["circle",{cx:11,cy:11,r:4}],["path",{d:"m14 14 3 3"}]
+    ],
+
     /* The predecessor's Apple Maps brand silhouette. The Unicode private-use
        Apple glyph is missing on Chrome/Android, so draw it as a filled SVG. */
     "apple-brand": [["path",{"d":"M17.05 12.54c-.02-2.48 2.03-3.69 2.12-3.75-1.17-1.7-2.98-1.93-3.62-1.95-1.54-.16-3.02.9-3.8.9-.78 0-1.95-.88-3.21-.86-1.64.03-3.18.97-4.02 2.43-1.72 2.98-.44 7.36 1.24 9.77.84 1.18 1.84 2.5 3.14 2.45 1.26-.05 1.74-.79 3.27-.79 1.52 0 1.95.79 3.2.77 1.33-.02 2.17-1.2 3-2.37a10.65 10.65 0 0 0 1.36-2.8c-.03-.01-2.66-1.02-2.68-3.8Z","fill":"currentColor","stroke":"none"}],["path",{"d":"M15.75 4.61c.69-.83 1.16-1.99 1.03-3.15-1 .04-2.2.67-2.92 1.49-.65.74-1.21 1.92-1.06 3.05 1.12.08 2.26-.56 2.95-1.39Z","fill":"currentColor","stroke":"none"}]],
