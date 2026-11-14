@@ -188,7 +188,7 @@ async function zoom(page){
         assert.equal(await favoriteTrigger.isVisible(),true,
           "Active favorite trigger remains visible below Layers");
         assert.equal(await favoriteTrigger.getAttribute("aria-expanded"),"true");
-        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(233, 195, 99)",
+        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(233, 216, 75)",
           "Expanded favorite trigger uses the warm yellow active tone");
         const circle=await favoriteTrigger.boundingBox();
         assert.ok(circle&&Math.abs(circle.width-circle.height)<1,
@@ -217,7 +217,7 @@ async function zoom(page){
         await page.locator(".favorite-name-input").fill("Meine Übersicht");
         await page.locator(".favorite-confirm-actions button").last().click();
         assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Meine Übersicht");
         const palette=await page.evaluate(()=>{
           const get=id=>getComputedStyle(document.querySelector(id)).backgroundColor;
@@ -231,10 +231,13 @@ async function zoom(page){
             clear:get("#favoritesSearchClear")
           };
         });
-        assert.equal(palette.panel,"rgb(240, 215, 138)","Favorites panel should be medium yellow");
-        for(const key of ["row","add","close","edit","remove","clear"])
-          assert.equal(palette[key],"rgb(255, 243, 206)",
-            "All buttons and favorite rows are pale yellow: "+key);
+        assert.equal(palette.panel,"rgb(244, 230, 100)","Favorites panel should be medium yellow");
+        for(const key of ["row","add","close"])
+          assert.equal(palette[key],"rgb(255, 249, 205)",
+            "Favorites and rectangular actions stay pale lemon: "+key);
+        for(const key of ["edit","remove","clear"])
+          assert.equal(palette[key],"rgb(255, 255, 255)",
+            "All circular buttons inside the panel must have white backgrounds: "+key);
         // Filter substring case-insensitively, keep all original IDs unchanged.
         const search=page.locator("#favoritesSearch");
         const clear=page.locator("#favoritesSearchClear");
@@ -244,19 +247,19 @@ async function zoom(page){
         assert.equal(await clear.isDisabled(),true);
         await search.fill("ÜBERS");
         assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await clear.isEnabled(),true);
         assert.equal(await clear.evaluate(el=>getComputedStyle(el).color),"rgb(188, 40, 51)");
         const clearBox=await clear.boundingBox();
         assert.ok(clearBox&&Math.abs(clearBox.width-clearBox.height)<1,
           "The funnel-x reset control remains perfectly circular");
         // Choosing a favorite closes its panel but must NOT lose the filter.
-        await page.locator(".favorite-open").first().click();
+        await page.locator(".favorite-name").first().click();
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         await favoriteTrigger.click();
         assert.equal(await search.inputValue(),"ÜBERS");
         assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await clear.isEnabled(),true);
         assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),"ÜBERS");
         await search.fill("auss");
@@ -268,7 +271,7 @@ async function zoom(page){
         assert.equal(await page.locator(".favorite-row").count(),1);
         // The letter, name, date and blank row surface ALL activate the
         // saved view. Renaming is reserved for the square-pen button only.
-        for(const target of [".favorite-name",".favorite-open",".favorite-date"]){
+        for(const target of [".favorite-name",".favorite-date"]){
           await page.locator(target).first().click();
           assert.equal(await page.locator("#favoritesPanel").isHidden(),true,
             target+" must open the view, not the rename editor");
@@ -292,7 +295,7 @@ async function zoom(page){
         await page.waitForTimeout(450);
         assert.notEqual(await zoom(page),soloScale,"Zoom+ changes viewport after saving favorite");
         await favoriteTrigger.click();
-        await page.locator(".favorite-open").first().click();
+        await page.locator(".favorite-name").first().click();
         assert.equal(await zoom(page),soloScale,"Favorite A restores saved zoom");
         await page.waitForTimeout(450);
         await page.locator(".pin-zoom-button").first().click();
@@ -333,11 +336,11 @@ async function zoom(page){
         await footer.click();
         await page.locator(".favorite-name-input").fill("Zweiter Platz");
         await page.locator(".favorite-confirm-actions button").last().click();
-        assert.equal(await page.locator(".favorite-open").last().textContent(),"B");
+        assert.equal(await page.locator(".favorite-open").count(),0);
         // A filtered B must keep its ORIGINAL index 1 for the edit operation.
         await search.fill("zweiter");
         assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").first().textContent(),"B");
+        assert.equal(await page.locator(".favorite-open").count(),0);
         await page.locator(".favorite-edit").first().click();
         assert.equal(await page.locator(".favorite-name-input").inputValue(),"Zweiter Platz");
         await page.locator(".favorite-confirm-actions button").first().click();
@@ -390,7 +393,7 @@ async function zoom(page){
         await favoriteTrigger.click();
         assert.equal(await page.locator(".favorite-row").count(),1,
           "Project favorite must survive application restart");
-        assert.equal(await page.locator(".favorite-open").first().textContent(),"A");
+        assert.equal(await page.locator(".favorite-open").count(),0);
         assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz");
         await search.fill("zweiter");
         await page.locator("#favoritesCloseBottom").click();
@@ -415,7 +418,7 @@ async function zoom(page){
         assert.ok(saved.history?.entries.length>0);
         assert.equal(Object.hasOwn(saved.project,"localMapViewHistory"),false,
           "Project sync data must not contain device-specific history");
-        // All fifteen active A-O places can be filled, then add is disabled.
+        // A first set of fifteen remains below the new 500-favorite cap.
         // Existing slots remain editable/replacable at full capacity.
         for(let i=1;i<15;i++){
           await page.locator("#favoritesAdd").click();
@@ -423,8 +426,8 @@ async function zoom(page){
           await page.locator(".favorite-confirm-actions button").last().click();
         }
         assert.equal(await page.locator(".favorite-row").count(),15);
-        assert.equal(await page.locator(".favorite-open").last().textContent(),"O");
-        assert.equal(await page.locator("#favoritesAdd").isDisabled(),true);
+        assert.equal(await page.locator(".favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesAdd").isEnabled(),true);
         assert.equal(await page.locator(".favorite-row").last().locator(".favorite-edit").isEnabled(),true);
         // Simulate a keyboard-shrunken visual area and edit the last row.
         await page.locator(".favorite-row").last().locator(".favorite-edit").click();
