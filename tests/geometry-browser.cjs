@@ -126,7 +126,8 @@ const viewports=[
      assert.equal(await option.locator(i<=1?"svg":"img").count(),1,
        "Missing icon "+modes[i][1]);
      assert.equal(await option.locator("kbd").count(),0);
-     assert.equal(await option.locator("strong").innerText(),["P","G","G","S","F"][i]);
+     if(i===0)assert.equal(await option.locator("span").first().innerText(),"Pin");
+     else assert.equal(await option.locator("strong").innerText(),["","G","G","S","F"][i]);
    }
    assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).backgroundColor),
      "rgb(255, 255, 255)");
@@ -165,7 +166,7 @@ const viewports=[
    await page.locator("#gpsPinPrompt").waitFor({state:"visible",timeout:10000});
    await page.locator(".gps-pin-yes").click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
-   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$/);
+   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
    assert.equal(await page.locator("#pinName").evaluate(el=>
      el.selectionStart===0&&el.selectionEnd===el.value.length),true,
      "GPS Pin name must be selected for immediate editing");
