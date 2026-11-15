@@ -19,7 +19,7 @@
    remove.className="plate-area-no";remove.append(this.icons.svg("x",this.doc));
    const move=this.doc.createElement("button");
    move.type="button";move.title="Verschieben";move.setAttribute("aria-label","Verschieben");
-   move.className="plate-area-move";move.append(this.icons.svg("move",this.doc));
+   move.className="plate-area-move";move.append(this.icons.svg("pin-relocate",this.doc));
    move.addEventListener("click",event=>{
      event.stopPropagation();const entry=this.entry;
      this.close();if(entry)this.onMove(entry);
