@@ -864,6 +864,8 @@
     // green preview check opens the isolated layer menu without saving.
     temporaryLayerPicker=new window.Pin2MapTemporaryLayerPicker({
       document,icons:window.Pin2MapIcons,
+      getLayers:()=>state.layers,
+      onCreate:()=>layerCreation.create(),
       onChoose:(entry,layerId)=>{
         const layer=layerById(layerId);
         if(!layer)return;
