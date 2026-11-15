@@ -11,9 +11,11 @@
   const fitVisiblePins = window.Pin2MapFitVisiblePins;
   const filterOps = window.Pin2MapFilterOperations;
   const placeDomain = window.Pin2MapPlaceSearch;
+  const geocoder=new window.Pin2MapNominatimGeocoder({
+    fetchImpl:(...args)=>fetch(...args),language:"de"
+  });
   const placeSearch = new window.Pin2MapPlaceSearchService({
-    domain:placeDomain,
-    geocoder:new window.Pin2MapNominatimGeocoder({fetchImpl:(...args)=>fetch(...args),language:"de"})
+    domain:placeDomain,geocoder
   });
   const layerOps = window.Pin2MapLayerOperations;
   const projectFeatures=window.Pin2MapProjectFeatures;
@@ -528,9 +530,55 @@
     document.body.classList.toggle("pin-relocation-picking",picking);
     mapAdapter.getContainer().style.cursor = picking ? "crosshair" : "";
   }
+  // Reverse name lookups are user-triggered only; no requests when the
+  // user has disabled Nominatim. An outdated response must never touch a
+  // replaced/removed/saved preview. Cache successful names in memory only.
+  const manualNames=new Map();
+  let manualNameController=null,manualNameRevision=0,activePreviewEntry=null;
+  let lastManualNameRequest=0;
+  function cancelManualNameLookup(){
+    ++manualNameRevision;
+    manualNameController?.abort();
+    manualNameController=null;
+  }
+  async function nameManualPin(entry){
+    if(!state.allowGeocode||entry!==activePreviewEntry)return;
+    const key=entry.point.lat.toFixed(4)+","+entry.point.lng.toFixed(4);
+    const cached=manualNames.get(key);
+    if(cached){
+      entry.label=entry.name=cached;
+      mapAdapter.updateTemporaryPinLabel(entry);
+      return;
+    }
+    const revision=manualNameRevision;
+    const controller=new AbortController();manualNameController=controller;
+    try{
+      // Best-effort browser-local throttle; Nominatim's public 1 req/s limit
+      // is aggregate across clients, so this is a low-volume opt-in pilot.
+      const delay=Math.max(0,1300-(Date.now()-lastManualNameRequest));
+      if(delay)await new Promise(resolve=>setTimeout(resolve,delay));
+      if(revision!==manualNameRevision||controller.signal.aborted)return;
+      lastManualNameRequest=Date.now();
+      const result=await geocoder.reverse(entry.point,{signal:controller.signal});
+      if(revision!==manualNameRevision||controller.signal.aborted||
+         activePreviewEntry!==entry)return;
+      const name=placeDomain.nearbyLocalityName(result);
+      if(!name)return;
+      if(manualNames.size>=100)manualNames.delete(manualNames.keys().next().value);
+      manualNames.set(key,name);
+      entry.name=entry.label=name;
+      mapAdapter.updateTemporaryPinLabel(entry);
+    }catch(error){
+      // Missing names or a network failure leave "Neuer Pin" unchanged.
+    }finally{
+      if(manualNameController===controller)manualNameController=null;
+    }
+  }
   // All creation pathways must stage an ephemeral object first. These
   // previews are map-only and never enter state, IndexedDB or project layers.
   function showObjectPreview(entry){
+    cancelManualNameLookup();
+    activePreviewEntry=entry;
     const onTap=position=>platePanel.show(entry,position);
     if(entry.kind==="point")mapAdapter.showTemporaryPin(entry,onTap);
     else if(entry.kind==="river")mapAdapter.showTemporaryRiver(entry,onTap);
@@ -542,7 +590,9 @@
        !Number.isFinite(lng)||Math.abs(lng)>180)return null;
     closeAllMapMenus();
     const entry={kind:"point",point:{lat,lng},label:name||"Neuer Pin",name:name||""};
-    return showObjectPreview(entry);
+    showObjectPreview(entry);
+    if(!name)void nameManualPin(entry);
+    return entry;
   }
   function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
@@ -559,6 +609,8 @@
     }
   }
   function clearObjectPreview(){
+    cancelManualNameLookup();
+    activePreviewEntry=null;
     platePanel?.close();
     gpsLocation?.close();
     mapAdapter?.clearTemporaryPlateArea?.();
