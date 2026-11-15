@@ -11,7 +11,7 @@
     }
     // Called only for an explicit user-created pin and only when existing
     // geocoding consent is enabled. No automatic grid or background scans.
-    async reverse(point,{signal}={}){
+    async reverse(point,{signal,zoom=10}={}){
       const lat=Number(point?.lat),lon=Number(point?.lng);
       if(!Number.isFinite(lat)||Math.abs(lat)>90||
          !Number.isFinite(lon)||Math.abs(lon)>180)
@@ -21,7 +21,10 @@
       url.searchParams.set("lon",String(lon));
       url.searchParams.set("format","jsonv2");
       url.searchParams.set("addressdetails","1");
-      url.searchParams.set("zoom","14");
+      if(!Number.isInteger(zoom)||zoom<0||zoom>18)
+        throw new RangeError("Invalid reverse geocoding detail level");
+      url.searchParams.set("zoom",String(zoom));
+      url.searchParams.set("layer","address");
       url.searchParams.set("accept-language",this.language||"de");
       const response=await this.fetchImpl(url.toString(),{
         method:"GET",signal,headers:{Accept:"application/json"}
