@@ -19,8 +19,20 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
     for(const {name,viewport,variant} of targets){
       const context=await browser.newContext({viewport,serviceWorkers:"allow"});
       try{
-        const page=await context.newPage(),errors=[];
+        const page=await context.newPage(),errors=[],assetFailures=[];
         page.on("pageerror",error=>errors.push(error.message));
+        // A successful Pages upload does not guarantee every CDN edge has
+        // served the matching script generation to an actual browser. Keep
+        // the publication gate strict; include precise network diagnostics.
+        const isCoreScript=url=>/\/(?:domain\/license-plate|application\/license-plate-search|app\.js)/.test(url);
+        page.on("requestfailed",request=>{
+          if(isCoreScript(request.url()))
+            assetFailures.push(request.url()+" "+String(request.failure()||"failed"));
+        });
+        page.on("response",response=>{
+          if(isCoreScript(response.url())&&response.status()>=400)
+            assetFailures.push(response.url()+" HTTP "+response.status());
+        });
         const url=base+variant;
         await page.goto(url,{waitUntil:"domcontentloaded",timeout:35000});
         try{
@@ -31,12 +43,16 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         }catch(error){
           const state=await page.evaluate(()=>({
             leaflet:!!window.L,
+            plateCatalog:!!window.Pin2MapLicensePlateCatalog?.lookup,
+            plateResolver:!!window.Pin2MapLicensePlateSearch,
+            areaFinder:!!window.Pin2MapNominatimAreaFinder?.NominatimAreaFinder,
             map:!!document.querySelector("#map.leaflet-container"),
             zoomButtons:document.querySelectorAll(".pin-zoom-button").length,
             scripts:[...document.scripts].map(el=>el.src).filter(Boolean).slice(-7),
             bodyText:document.body?.innerText.slice(0,350)
           }));
-          console.error("LIVE START DIAGNOSTIC",name,JSON.stringify(state),errors);
+          console.error("LIVE START DIAGNOSTIC",name,
+            JSON.stringify(state),errors,"core asset failures:",assetFailures);
           throw error;
         }
         const loaded=await page.evaluate(()=>({
@@ -66,7 +82,15 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(await page.locator(".pin-zoom-button").first().getAttribute("data-pin-icon"),"undo-2");
         assert.equal(await page.locator(".pin-zoom-button").first().isDisabled(),true);
         assert.equal(loaded.map,true);
-        assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; "));
+        const livePorts=await page.evaluate(()=>({
+          catalog:!!window.Pin2MapLicensePlateCatalog?.lookup,
+          resolver:!!window.Pin2MapLicensePlateSearch,
+          areaFinder:!!window.Pin2MapNominatimAreaFinder?.NominatimAreaFinder
+        }));
+        assert.deepEqual(livePorts,{catalog:true,resolver:true,areaFinder:true},
+          "Published registration-area ports and source delivery: "+JSON.stringify(assetFailures));
+        assert.deepEqual(errors,[],"Browser JS errors: "+errors.join("; ")+
+          "; core asset failures: "+JSON.stringify(assetFailures));
         // Cross-platform search clear works without the browser-native X.
         const search=page.locator("#searchInput"),clear=page.locator("#searchClear");
         assert.equal(await clear.isHidden(),true);
