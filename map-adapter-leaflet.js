@@ -181,32 +181,74 @@
       this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
       reposition();
     }
-    showTemporaryPlatePoint(entry,onLabel){
+    // Shared transient object renderer: no project records or persistence.
+    // Pin and reference-place previews have the same 52x56 pin geometry.
+    showTemporaryPin(entry,onLabel){
       this.clearTemporaryPlateArea();
       const p=latLng(entry.point);
       if(!Number.isFinite(p.lat)||Math.abs(p.lat)>90||
-        !Number.isFinite(p.lng)||Math.abs(p.lng)>180)
-        throw new TypeError("Invalid reference point");
+         !Number.isFinite(p.lng)||Math.abs(p.lng)>180)
+        throw new TypeError("Invalid temporary pin position");
       const group=window.L.layerGroup().addTo(this.map);
-      window.L.circleMarker([p.lat,p.lng],{
-        radius:7,color:"#fff",weight:3,fillColor:"#e64294",
-        fillOpacity:1,interactive:false
+      const html='<div class="pin-marker" style="color:#e64294">'+
+        '<svg class="pin-marker-shape" viewBox="0 0 30 40" aria-hidden="true">'+
+        '<path d="M15 38C10 30 2 21 2 15a13 13 0 0 1 26 0c0 6-8 15-13 23Z" '+
+        'fill="currentColor" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'+
+        '<circle cx="15" cy="14" r="8" fill="#fff0f7" stroke="#fff" stroke-width="1.1"/>'+
+        '</svg></div>';
+      const pin=window.L.marker([p.lat,p.lng],{
+        keyboard:true,interactive:true,zIndexOffset:420,
+        icon:window.L.divIcon({html,className:"pin-icon p2m-temporary-pin",
+          iconSize:[52,56],iconAnchor:[26,39]})
       }).addTo(group);
       const label=document.createElement("span");
-      label.className="p2m-plate-label p2m-plate-reference";
-      label.textContent=entry.label+" – "+entry.referencePlace+" (Ersatzort)";
-      const marker=window.L.marker([p.lat,p.lng],{
-        keyboard:true,interactive:true,zIndexOffset:420,
+      label.className="p2m-plate-label p2m-temporary-pin-label";
+      label.textContent=entry.label||entry.name||"Pin";
+      const tag=window.L.marker([p.lat,p.lng],{
+        keyboard:true,interactive:true,zIndexOffset:421,
         icon:window.L.divIcon({html:label.outerHTML,
-          className:"p2m-plate-label-wrap p2m-plate-point-wrap",
-          iconSize:[0,0],iconAnchor:[0,18]})
+          className:"p2m-plate-label-wrap p2m-temporary-pin-wrap",
+          iconSize:[0,0],iconAnchor:[-23,48]})
       }).addTo(group);
-      marker.on("click",event=>{
-        window.L.DomEvent.stop(event.originalEvent);
+      const click=event=>{
+        if(event.originalEvent)window.L.DomEvent.stop(event.originalEvent);
         onLabel?.({lat:p.lat,lng:p.lng});
-      });
+      };
+      pin.on("click",click);tag.on("click",click);
       this.temporaryPlateArea={group,reposition:()=>{}};
       this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
+    }
+    showTemporaryPlatePoint(entry,onLabel){
+      this.showTemporaryPin(entry,onLabel);
+    }
+    showTemporaryRiver(entry,onLabel){
+      this.clearTemporaryPlateArea();
+      if(!Array.isArray(entry.chains)||!entry.chains.length)
+        throw new TypeError("Temporary river requires line geometry");
+      const group=window.L.layerGroup().addTo(this.map);
+      const lines=entry.chains.filter(chain=>Array.isArray(chain)&&chain.length>=2)
+        .map(chain=>chain.map(point=>[point[0],point[1]]));
+      if(!lines.length){this.map.removeLayer(group);throw new TypeError("Empty river geometry");}
+      const shape=window.L.polyline(lines,{
+        color:"#e64294",weight:5,opacity:0.96,interactive:true
+      }).addTo(group);
+      const bounds=shape.getBounds();
+      const label=document.createElement("span");
+      label.className="p2m-plate-label";
+      label.textContent=entry.label||entry.name||"Fluss";
+      const marker=window.L.marker(bounds.getCenter(),{
+        keyboard:true,interactive:true,zIndexOffset:420,
+        icon:window.L.divIcon({html:label.outerHTML,
+          className:"p2m-plate-label-wrap",iconSize:[0,0],iconAnchor:[0,0]})
+      }).addTo(group);
+      const click=event=>{
+        if(event.originalEvent)window.L.DomEvent.stop(event.originalEvent);
+        const p=event.latlng||marker.getLatLng();
+        onLabel?.({lat:p.lat,lng:p.lng});
+      };
+      marker.on("click",click);shape.on("click",click);
+      this.temporaryPlateArea={group,reposition:()=>{}};
+      this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
     }
     showTemporaryGpsPoint(position){
       this.clearTemporaryGpsPoint();
