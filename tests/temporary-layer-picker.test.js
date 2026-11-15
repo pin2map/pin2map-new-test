@@ -5,8 +5,10 @@ const Picker=require("../ui/temporary-layer-picker.js");
 class El{
  constructor(){this.children=[];this.style={};this.attributes={};this.handlers={};
   this.className="";this.textContent="";this.value="";
-  this.hidden=true;this.classList={add:()=>this.hidden=true,
-   remove:()=>this.hidden=false,contains:()=>this.hidden};
+  this.hidden=true;this.classList={
+   add:key=>{if(key==="hidden")this.hidden=true;else if(!this.className.split(" ").includes(key))this.className+=" "+key;},
+   remove:key=>{if(key==="hidden")this.hidden=false;else this.className=this.className.split(" ").filter(v=>v!==key).join(" ");},
+   contains:key=>key==="hidden"?this.hidden:this.className.split(" ").includes(key)};
   this.scrollHeight=110;
  }
  append(...children){this.children.push(...children);}
@@ -165,5 +167,5 @@ test("temporary hidden layer shows eye between color and struck-through name",()
  assert.equal(hidden.children[0].className,"pin-layer-dot");
  assert.equal(hidden.children[1].children[0].iconName,"eye-off");
  assert.equal(hidden.children[2].textContent,"unsichtbare Ebene");
- assert.match(hidden.className,/is-invisible-layer/);
+ assert.equal(hidden.classList.contains("is-invisible-layer"),true);
 });
