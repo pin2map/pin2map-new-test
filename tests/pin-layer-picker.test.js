@@ -50,7 +50,7 @@ test("selected layer trigger uses Lucide icon and colored dot; menu keeps full l
   assert.equal(trigger.children[1].style.backgroundColor,"#235baa");
   assert.match(trigger.attrs["aria-label"],/Arbeit, Ausgeblendet/);
   assert.equal(elements.pinLayerMenu.children.length,4);
-  assert.equal(elements.pinLayerMenu.children[2].children[2].children[0].iconName,"eye-off");
+  assert.equal(elements.pinLayerMenu.children[2].children[1].children[0].iconName,"eye-off");
   assert.equal(elements.pinLayerMenu.children[2].attrs["aria-selected"],"true");
 });
 test("selecting a layer dispatches the existing native change event exactly once",()=>{
@@ -155,4 +155,14 @@ test("regular pin can select a filtered hidden layer through unchanged native ch
  assert.equal(elements.pinLayer.value,"work");
  assert.equal(changes,1);
  assert.equal(picker.open,false);
+});
+
+test("hidden layer places eye between colored dot and red struck-through name",()=>{
+ const {picker,elements,layers}=fixture();
+ picker.render({layers,selectedLayerId:"private"});
+ const hidden=elements.pinLayerMenu.children[2];
+ assert.equal(hidden.children[0].className,"pin-layer-dot");
+ assert.equal(hidden.children[1].children[0].iconName,"eye-off");
+ assert.equal(hidden.children[2].textContent,"Arbeit");
+ assert.equal(hidden.classList.contains("is-invisible-layer"),true);
 });

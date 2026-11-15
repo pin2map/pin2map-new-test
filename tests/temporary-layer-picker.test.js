@@ -158,3 +158,12 @@ test("temporary layer filter resets when reopened and never saves while typing",
  assert.equal(x.picker.options.every(o=>!o.button.hidden),true);
  assert.equal(x.chosen.length,0);
 });
+
+test("temporary hidden layer shows eye between color and struck-through name",()=>{
+ const x=fixture();x.picker.show({kind:"point"},x.layers,{top:150,bottom:190,left:180,right:220});
+ const hidden=x.picker.options[2].button;
+ assert.equal(hidden.children[0].className,"pin-layer-dot");
+ assert.equal(hidden.children[1].children[0].iconName,"eye-off");
+ assert.equal(hidden.children[2].textContent,"unsichtbare Ebene");
+ assert.equal(hidden.classList.contains("is-invisible-layer"),true);
+});

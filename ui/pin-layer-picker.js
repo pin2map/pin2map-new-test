@@ -132,7 +132,8 @@
         status.setAttribute("aria-label",this.visibilityLabel(layer.visible));
         status.append(this.visibilityIcon(layer.visible));
         option.setAttribute("aria-label",layer.name+", "+this.visibilityLabel(layer.visible));
-        option.append(dot,name,status);
+        option.append(dot,status,name);
+        if(!layer.visible)option.classList.add("is-invisible-layer");
         option.addEventListener("click",()=>{
           const select=this.el("pinLayer");
           if(select.value!==layer.id){

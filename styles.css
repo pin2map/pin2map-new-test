@@ -2062,3 +2062,11 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .search-results .result-area-hierarchy .result-area-symbol{width:20px;height:20px;flex:none;object-fit:contain}
 #app .search-results .result-area-hierarchy .result-heading strong{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;text-align:left}
 #app .search-results .result-area-hierarchy .result-area-type{margin-left:auto;flex:0 1 42%;font-size:12px;color:#61748a;text-align:right;overflow-wrap:anywhere}
+
+/* Visibility status belongs between color and name in every selection menu. */
+#pinLayerMenu .pin-layer-option .pin-layer-visibility,
+#temporaryLayerPicker .temporary-layer-option .pin-layer-visibility{margin-left:0;flex:0 0 18px}
+#pinLayerMenu .pin-layer-option.is-invisible-layer .pin-layer-name,
+#temporaryLayerPicker .temporary-layer-option.is-invisible-layer .pin-layer-name{
+  color:#be2538;text-decoration:line-through;text-decoration-thickness:1.5px;
+}

@@ -78,7 +78,8 @@
      icon.classList.add("pin-layer-visibility-icon");
      eye.append(icon);
      row.setAttribute("aria-label",layer.name+", "+(layer.visible?"Sichtbar":"Ausgeblendet"));
-     row.append(dot,name,eye);
+     row.append(dot,eye,name);
+     if(!layer.visible)row.classList.add("is-invisible-layer");
      row.addEventListener("click",event=>{
        event.stopPropagation();
        if(this.entry!==entry)return;
