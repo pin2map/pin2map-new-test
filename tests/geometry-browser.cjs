@@ -168,9 +168,11 @@ const viewports=[
    await page.locator(".gps-pin-yes").click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-   assert.equal(await page.locator("#pinName").evaluate(el=>
-     el.selectionStart===0&&el.selectionEnd===el.value.length),true,
-     "GPS Pin name must be selected for immediate editing");
+   await page.waitForFunction(()=>{
+     const el=document.querySelector("#pinName");
+     return !!el&&el.value.length>0&&document.activeElement===el&&
+       el.selectionStart===0&&el.selectionEnd===el.value.length;
+   },null,{timeout:4000});
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length===1;}finally{db.close();}
@@ -627,8 +629,11 @@ const viewports=[
    await page.locator(".plate-area-yes").click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
-   assert.equal(await page.locator("#pinName").evaluate(el=>
-     el.selectionStart===0&&el.selectionEnd===el.value.length),true);
+   await page.waitForFunction(()=>{
+     const el=document.querySelector("#pinName");
+     return !!el&&el.value.length>0&&document.activeElement===el&&
+       el.selectionStart===0&&el.selectionEnd===el.value.length;
+   },null,{timeout:4000});
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.some(pin=>
