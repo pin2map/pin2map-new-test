@@ -10,6 +10,7 @@ Bei einem neuen pin2map-NEW-Auftrag bitte **ohne Rückfrage** zunächst folgende
 3. docs/GRUNDENTSCHEIDUNGEN.md (fachliche Entscheidungen; Qualitäts- und Abschlussregel 2026-11-10)
 4. docs/MODULARCHITEKTUR.md und docs/ENTWICKLUNGSFAHRPLAN.md
 5. Bei Deployment/Preview: docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md; bei UI/Refresh: docs/UI_CONTROLS_AND_PWA_REFRESH_2026-11-10.md.
+6. **Bei jeder GitHub-Änderung:** docs/ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md (gebündelte Commits, schrittweise Gates, Umgang mit Schnittstellenlimits).
 
 ## Unverhandelbare Arbeitsvereinbarung vom 10. November 2026
 
@@ -33,3 +34,7 @@ Diese Vereinbarung ist im Repository dokumentiert und gilt unabhängig von einer
 - Tatsächliche iPhone-Gesten ohne entsprechenden realen Test nicht als auf iPhone geprüft bezeichnen.
 - Vereinbarte Entscheidungen dauerhaft in den vorhandenen maßgeblichen Dokumenten statt als konkurrierende verstreute Kopien festhalten.
 - **GitHub-Zugriff bei Ausfall wiederholt versuchen:** Wenn Repository-, Branch-, Lese-/Schreib- oder GitHub-Actions-Zugriffe vorübergehend fehlschlagen, nicht beim ersten Fehler aufgeben und nicht sofort auf bloße Diff-Beschreibungen oder einen neuen Chat ausweichen. Den Zugriff im laufenden Auftrag mehrfach erneut prüfen, auch nach einer kurzen Unterbrechung bzw. über alternative verfügbare GitHub-Zugriffswege; bei wiederhergestelltem Zugriff die beauftragte Umsetzung und Verifikation fortsetzen. Nur wenn wiederholte Versuche innerhalb des aktuellen Arbeitslaufs nachweislich erfolglos bleiben, die konkrete Blockade und den nicht erledigten Status ehrlich melden. Niemals eine nicht nachgewiesene Veröffentlichung behaupten.
+
+## Verbindliche GitHub-Arbeitsorganisation ab 15. November 2026
+
+Die operative Regel steht vollständig in [docs/ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md](docs/ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md). Zusammengehörende Änderungen zuerst vollständig vorbereiten und prüfen, nach Möglichkeit **als einen zusammenhängenden Commit** mit atomarem Tree-/Commit-/Ref-Update auf dem Feature-Branch veröffentlichen. Ein Limit einzelner Connector-/Code-Mode-Ausführungen ist **kein** GitHub-Repository-Limit: Aufgaben in begrenzte Ausführungsblöcke teilen; zunächst lokale oder isolierte Prüfungen, dann Commit und vollständige CI-/HTTPS-Preview-Gates. GitHub-Ausfälle und echte Testfehler getrennt diagnostizieren. Bei notwendigem Zwischencommit die Ursache nennen und veraltete/abgebrochene Runs nicht als Beleg verwerten. Bei dokumentationsreinen Commits keine PWA-Version erhöhen und keine unangeforderte Preview auslösen. **Alle bisherigen Abschluss- und Schutzgates bleiben unverändert.**

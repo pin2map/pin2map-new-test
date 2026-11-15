@@ -54,6 +54,10 @@ Die Liste wurde anhand des GitHub-Branchvergleichs main → feature/leaflet-modu
 - **UI-PoC:** https://pin2map.github.io/pin2map-poc/ (getrenntes Repository).
 - **Historische Planungsquellen:** pin2map-2/AGENTS.md, docs/PROJECT_STATE.md, docs/DECISIONS.md, docs/ARCHITECTURE.md, docs/NEW_DEVELOPMENT_STRATEGY.md, docs/REQUIREMENTS.md und docs/POC_HANDOFF.md, soweit vorhanden. Manche ältere Texte verlangen noch eine Ein-Datei-App; D-341–D-345 haben diese Pflicht ausdrücklich abgelöst.
 
+## Operativer GitHub- und Testablauf (ab 2026-11-15)
+
+Der verbindliche [Entwicklungsarbeitsablauf](ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md) ergänzt die Abschlussregel: möglichst gebündelte, atomare Commit-Übertragung, kleine verifizierbare Änderungseinheiten, begrenzte Connector-Aufrufblöcke, lokale/isolierte Vorprüfungen und klare Freigabegates. Er ändert weder Modulgrenzen noch Produktentscheidungen oder die Schutzgrenzen von `main`, `reference/*` und Preview-Daten.
+
 ## Arbeits- und Abschlussregel
 
 Für einen Anwendungsauftrag sind **Implementierung, technische Tests, wirklicher Browser-Test, erfolgreicher Deploy und Live-Funktionsprüfung** ein zusammengehörender Auftrag. Erst bei überprüftem Live-Ergebnis „abgeschlossen“ melden. Unbekannter GitHub-Actions-Status oder nicht verifizierte Veröffentlichungs-URL = **offen**, auch wenn Commits vorliegen. Für spezifische iPhone-Behauptungen ist ein entsprechender Gerätetest erforderlich. Fundstelle: docs/GRUNDENTSCHEIDUNGEN.md, Entscheidung vom 2026-11-10.

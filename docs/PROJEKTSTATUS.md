@@ -5,6 +5,8 @@
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
 
+> **Verbindliche Optimierung vom 2026-11-15:** Der GitHub-/Test-Ablauf ist in [ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md](ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md) geregelt. Nach dem bei v190 beobachteten Code-Mode-Werkzeugaufruflimit werden Dateiänderungen vorbereitet und nach Möglichkeit atomar gebündelt; Tests und Freigabegates bleiben zwingend. Dies ist eine reine Dokumentations-/Prozessänderung ohne neue App-Version und ohne Änderung am bestätigten v190-Funktionsstand.
+
 ## 1. Arbeitsumgebung und Schutzgrenzen
 
 - **Repository:** `pin2map/pin2map-new-test`.
