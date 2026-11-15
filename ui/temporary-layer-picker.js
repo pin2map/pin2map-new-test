@@ -33,6 +33,12 @@
    this.entry=entry;
    this.position=anchor||{left:0,right:0,top:0,bottom:0};
    this.box.replaceChildren();
+   const heading=this.doc.createElement("h3");
+   heading.className="temporary-layer-heading";
+   heading.textContent=entry.kind==="point"?"Pin hinzufügen zu:":
+     entry.kind==="river"?"Fluss hinzufügen zu:":
+     entry.featureKind==="lake"?"See hinzufügen zu:":"Fläche hinzufügen zu:";
+   this.box.append(heading);
    const available=Array.isArray(layers)?layers.filter(l=>l?.id):[];
    for(const layer of available){
      const row=this.doc.createElement("button");
