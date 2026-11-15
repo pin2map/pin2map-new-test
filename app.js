@@ -677,7 +677,7 @@
     const area=projectFeatures.createArea(state,{
       id:uid(),name,kind,geometry:source.geojson
     },layerId);
-    save();renderGeometry();
+    save();renderLayers();renderGeometry();
     return area;
   }
   async function findAreaAt(point){
@@ -864,6 +864,10 @@
         if(!layer)return;
         // The preview remains untouched unless a real layer was selected.
         clearObjectPreview();
+        // Quick save never leaves a previously selected editor open.
+        uiState.clearSelection();
+        geometryEditor?.close(false);
+        renderPinPanel();
         if(entry.kind==="point"){
           const name=entry.referencePlace?
             entry.label+" – "+entry.referencePlace+" (Ersatzort)":entry.name||entry.label;
@@ -875,7 +879,7 @@
           projectFeatures.createRiver(state,{
             id:uid(),name:entry.label,chains:entry.chains
           },layerId);
-          save();renderGeometry();
+          save();renderLayers();renderGeometry();
         }else createAreaObject({name:entry.label,geojson:entry.geojson},
           entry.featureKind||"area",null,layerId);
         if(!layer.visible)showNotice("Objekt in ausgeblendeter Ebene „"+layer.name+"“ gespeichert");
