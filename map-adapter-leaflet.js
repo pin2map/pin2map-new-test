@@ -253,8 +253,18 @@
         onLabel?.({lat:p.lat,lng:p.lng});
       };
       marker.on("click",click);hit.on("click",click);
-      this.temporaryPlateArea={group,reposition:()=>{}};
+      const reposition=()=>{
+        const {x:width,y:height}=this.getSize();
+        const anchor=window.Pin2MapRiverLabelAnchor.findVisibleAnchor(
+          entry.chains,p=>this.project(p),width,height,40);
+        if(!anchor){marker.setOpacity(0);return;}
+        marker.setLatLng(this.map.containerPointToLatLng([anchor.x,anchor.y]));
+        marker.setOpacity(1);
+      };
+      this.temporaryPlateArea={group,reposition};
+      this.map.on("moveend zoomend resize",reposition);
       this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
+      reposition();
     }
     showTemporaryGpsPoint(position){
       this.clearTemporaryGpsPoint();
