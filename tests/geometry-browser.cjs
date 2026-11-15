@@ -11,10 +11,10 @@ const poly={type:"Polygon",coordinates:[[
   [9.13,48.74],[9.23,48.74],[9.23,48.82],[9.13,48.82],[9.13,48.74]
 ]]};
 const modes=[
-  ["pin","map-pin-plus-inside"],
-  ["area","vector-polygon"],
-  ["lake","waves-horizontal"],
-  ["river","spline"]
+  ["pin","map-pin"],
+  ["area","region.svg"],
+  ["lake","lake.svg"],
+  ["river","river.svg"]
 ];
 const viewports=[
   {name:"desktop",width:1100,height:780,mobile:false},
@@ -90,41 +90,53 @@ const viewports=[
        return original.call(this,project);
      };
    });
-   // Clicking magnifier opens the menu. It does not submit automatically.
-   await page.locator("#searchButton").click();
+   // Focusing the search input opens the menu without clicking the magnifier.
+   await page.locator("#searchInput").click();
    await page.locator("#searchTypeMenu").waitFor({state:"visible",timeout:5000});
    // A popup inside overflow:hidden was previously reported visible by
    // Playwright although its entire lower portion was clipped. Verify
    // actual viewport geometry AND real pointer hit testing.
    const chooserGeometry=await page.evaluate(()=>{
      const menu=document.querySelector("#searchTypeMenu");
-     const trigger=document.querySelector("#searchButton").getBoundingClientRect();
+     const trigger=document.querySelector("#searchForm").getBoundingClientRect();
      const app=document.querySelector("#app").getBoundingClientRect();
      const rect=menu.getBoundingClientRect();
      const first=menu.querySelector(".search-type-choice").getBoundingClientRect();
      const at=document.elementFromPoint(first.left+first.width/2,first.top+first.height/2);
      return {rect:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom},
-       triggerBottom:trigger.bottom,appRight:app.right,appBottom:app.bottom,
+       triggerBottom:trigger.bottom,triggerCenter:trigger.left+trigger.width/2,
+       menuCenter:rect.left+rect.width/2,appRight:app.right,appBottom:app.bottom,
        hit:at?.closest?.(".search-type-choice")?.dataset.searchType||null,
        parentId:menu.parentElement?.id};
    });
    assert.equal(chooserGeometry.parentId,"app","Search chooser must escape clipped form");
    assert.ok(chooserGeometry.rect.top>=chooserGeometry.triggerBottom-1&&
      chooserGeometry.rect.right<=chooserGeometry.appRight+1&&
-     chooserGeometry.rect.bottom<=chooserGeometry.appBottom+1,
+     chooserGeometry.rect.bottom<=chooserGeometry.appBottom+1&&
+     Math.abs(chooserGeometry.triggerCenter-chooserGeometry.menuCenter)<2,
      "Search chooser must be fully visible BELOW the magnifier: "+JSON.stringify(chooserGeometry));
    assert.equal(chooserGeometry.hit,"pin",
      "First search option must be clickable at its visual center");
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
    assert.equal(await page.locator(".search-type-choice").count(),4);
    for(let i=0;i<modes.length;i++){
-     assert.equal(await page.locator(".search-type-choice").nth(i)
-       .locator("svg").count(),1,"Missing Lucide "+modes[i][1]);
+     const option=page.locator(".search-type-choice").nth(i);
+     assert.equal(await option.locator(i===0?"svg":"img").count(),1,
+       "Missing icon "+modes[i][1]);
+     assert.equal(await option.locator("kbd").count(),0);
+     assert.equal(await option.locator("strong").innerText(),["P","G","S","F"][i]);
    }
+   assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).backgroundColor),
+     "rgb(255, 255, 255)");
+   await page.keyboard.press("ArrowDown");
+   assert.equal(await page.locator(".search-type-choice.is-selected").getAttribute("data-search-type"),"pin");
+   await page.keyboard.press("ArrowDown");
+   assert.equal(await page.locator(".search-type-choice.is-selected").getAttribute("data-search-type"),"area");
+   await page.locator("#searchInput").focus();
    await page.keyboard.press("Escape");
    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
    await page.locator("#searchInput").fill("Testfläche");
-   await page.locator("#searchButton").click();
+   await page.locator("#searchInput").focus();
    await page.locator('.search-type-choice[data-search-type="area"]').click();
    await page.locator("#searchResults .result").first()
      .waitFor({state:"visible",timeout:12000});
@@ -183,7 +195,8 @@ const viewports=[
    await page.locator(".geometry-ok").click();
 
    await page.locator("#searchInput").fill("Testsee");
-   await page.locator("#searchButton").click();
+   await page.keyboard.press("Tab");
+   assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.searchType),"pin");
    await page.keyboard.press("s");
    await page.locator("#searchResults .result").first().waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon svg").count(),1);
@@ -318,7 +331,6 @@ const viewports=[
            display_name:"Testfluss",lat:"48.77",lon:"9.17"}]:[])});
    });
    await page.locator("#searchInput").fill("Testfluss");
-   await page.locator("#searchButton").click();
    await page.locator('.search-type-choice[data-search-type="river"]').click();
    await page.waitForFunction(()=>document.querySelector("#geometrySearchBusy")&&
      !document.querySelector("#geometrySearchBusy").classList.contains("hidden"),

@@ -1755,7 +1755,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
      the pill's overflow:hidden. Coordinates are assigned by its UI owner. */
   position:absolute;z-index:1530;box-sizing:border-box;
   width:min(265px,calc(100vw - 24px));padding:6px;
-  border:1px solid #bdc9d9;border-radius:12px;background:#f7f8fa;
+  border:1px solid #bdc9d9;border-radius:12px;background:#fff;
   box-shadow:0 8px 26px #142a4460;display:flex;flex-direction:column;gap:3px;
 }
 #app .search-type-menu.hidden{display:none}
@@ -1766,12 +1766,10 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app .search-type-choice.is-selected,
 #app .search-type-choice:hover{background:#dbe9fb}
-#app .search-type-choice .p2m-lucide{width:22px;height:22px;flex:0 0 22px}
+#app .search-type-choice .p2m-lucide,
+#app .search-type-choice .search-type-icon{width:22px;height:22px;flex:0 0 22px;display:block}
 #app .search-type-choice span{flex:1}
-#app .search-type-choice kbd{
-  padding:1px 6px;border:1px solid #ccd4dd;border-radius:5px;background:#fff;
-  color:#52606d;font:12px system-ui;
-}
+#app .search-type-choice strong{font-weight:750;text-decoration:underline;text-underline-offset:2px}
 #app .geometry-search-busy{
   position:absolute;top:66px;left:var(--p2m-top-corner-inset,12px);z-index:1300;
   display:flex;align-items:center;gap:8px;min-width:140px;max-width:min(420px,90vw);
