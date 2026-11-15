@@ -72,6 +72,8 @@ test("six difficult codes retain explicit, country-specific area and fallback hi
    assert.equal(item.query,query);
    assert.equal(item.referencePlace,place);
    assert.equal(item.admin,admin);
+   assert.equal(item.status,"current","Officially documented code must not say unknown: "+code);
+   assert.equal(item.source,"official-2026");
  }
 });
 test("no matching polygon uses a validated reference town, not an invented area",async()=>{

@@ -77,7 +77,7 @@
    unique.set(key,Object.freeze({
      code:normalized,country,flag:countries[country],name,
      query:hint.query||query,admin:hint.admin||admin,
-     status,source,
+     status:hint.status||status,source:hint.source||source,
      referencePlace:hint.referencePlace||null,
      placeRelation:hint.placeRelation||null,
      relatedArea:hint.relatedArea||null,
