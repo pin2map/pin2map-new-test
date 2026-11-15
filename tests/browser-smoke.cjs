@@ -425,7 +425,7 @@ async function longPress(page,x,y,ms=725){
     }),0,"Temporary pin must never enter project persistence");
     await page.locator(".p2m-temporary-pin").click();
     await page.locator("#plateAreaConfirm").waitFor({state:"visible",timeout});
-    await page.locator(".plate-area-no").click();
+    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
     await page.locator(".p2m-temporary-pin").click();
     await page.locator(".plate-area-yes").click();
