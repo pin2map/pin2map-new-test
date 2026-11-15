@@ -24,6 +24,13 @@
       ["path",{d:"M8 11h6"}]
     ],
     "map-pin": [["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],["circle",{cx:12,cy:10,r:2}]],
+    "car-front": [
+      ["path",{d:"M5 17H3v-5l2-6h14l2 6v5h-2"}],
+      ["path",{d:"M5 17h14v-5H5z"}],
+      ["path",{d:"M5 12h14"}],
+      ["circle",{cx:7.5,cy:17.5,r:1.5}],
+      ["circle",{cx:16.5,cy:17.5,r:1.5}]
+    ],
     "locate-fixed": [
       ["path",{d:"M12 2v2M12 20v2M2 12h2M20 12h2"}],
       ["circle",{cx:12,cy:12,r:8}],["circle",{cx:12,cy:12,r:3}]

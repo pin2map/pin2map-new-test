@@ -62,10 +62,12 @@
 <script defer src="./application/pin-move-controller.js"></script>
 <script defer src="./application/map-click-coordinator.js"></script>
 <script defer src="./domain/place-search.js"></script>
+<script defer src="./domain/license-plate-catalog.js"></script>
 <script defer src="./adapters/geocoding/nominatim-geocoder.js"></script>
 <script defer src="./adapters/geocoding/nominatim-area-finder.js"></script>
 <script defer src="./adapters/geocoding/osm-watercourse-finder.js"></script>
 <script defer src="./application/place-search-service.js"></script>
+<script defer src="./application/license-plate-search.js"></script>
 <script defer src="./application/search-pin-transfer.js"></script>
 <script defer src="./adapters/weather/open-meteo-pin-info.js"></script>
 <script defer src="./adapters/weather/nasa-power-climatology.js"></script>
@@ -91,6 +93,7 @@
 <script defer src="./ui/search-results.js"></script>
 <script defer src="./ui/search-form.js"></script>
 <script defer src="./ui/search-type-menu.js"></script>
+<script defer src="./ui/license-plate-panel.js"></script>
 <script defer src="./ui/gps-location.js"></script>
 <script defer src="./ui/map-action-chooser.js"></script>
 <script defer src="./ui/geometry-editor.js"></script>
@@ -118,6 +121,7 @@
 
 
   </header>
+  <div id="plateAreaConfirm" class="plate-area-confirm hidden" role="dialog" aria-label="Kennzeichenbereich speichern?"></div>
   <div id="gpsPinPrompt" class="gps-pin-prompt hidden" role="dialog" aria-label="GPS-Standort: Pin setzen?"></div>
   <div id="geometrySearchBusy" class="geometry-search-busy hidden" role="status" aria-live="polite">Suche läuft …</div>
   <main id="map" aria-label="Interaktive Karte"></main>

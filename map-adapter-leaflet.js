@@ -134,6 +134,53 @@
         }).addTo(this.map);
       }
     }
+    clearTemporaryPlateArea(){
+      if(!this.temporaryPlateArea)return;
+      const old=this.temporaryPlateArea;
+      this.map.off("moveend zoomend resize",old.reposition);
+      this.map.removeLayer(old.group);
+      this.temporaryPlateArea=null;
+    }
+    showTemporaryPlateArea(entry,onLabel){
+      this.clearTemporaryPlateArea();
+      if(!["Polygon","MultiPolygon"].includes(entry?.geojson?.type))
+        throw new TypeError("Temporary plate area requires a polygon");
+      const prepared=window.Pin2MapAreaGeometry.prepare(entry.geojson,{
+        touchDevice:/iPad|iPhone|iPod/.test(navigator.userAgent)||navigator.maxTouchPoints>1
+      });
+      const group=window.L.layerGroup().addTo(this.map);
+      const shape=window.L.geoJSON(prepared.geometry,{
+        interactive:false,style:{color:"#e64294",weight:3,
+          fillColor:"#f35ba9",fillOpacity:0.32,interactive:false}
+      }).addTo(group);
+      const bounds=shape.getBounds();
+      if(!bounds.isValid()){this.map.removeLayer(group);throw new Error("Ungültige Gebietsgrenze");}
+      const label=document.createElement("span");
+      label.className="p2m-plate-label";label.textContent=entry.label;
+      const marker=window.L.marker(bounds.getCenter(),{
+        keyboard:true,interactive:true,zIndexOffset:420,
+        icon:window.L.divIcon({html:label.outerHTML,className:"p2m-plate-label-wrap",
+          iconSize:[0,0],iconAnchor:[0,0]})
+      }).addTo(group);
+      marker.on("click",event=>{
+        window.L.DomEvent.stop(event.originalEvent);
+        const p=marker.getLatLng();
+        onLabel?.({lat:p.lat,lng:p.lng});
+      });
+      const reposition=()=>{
+        const size=this.getSize();
+        const point=window.Pin2MapAreaLabelAnchor.visibleAnchor(prepared.geometry,
+          p=>this.project(p),size.x,size.y,{padding:85});
+        if(point){
+          marker.setLatLng(this.map.containerPointToLatLng([point.x,point.y]));
+          marker.setOpacity(1);
+        }else marker.setOpacity(0);
+      };
+      this.temporaryPlateArea={group,reposition};
+      this.map.on("moveend zoomend resize",reposition);
+      this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
+      reposition();
+    }
     showTemporaryGpsPoint(position){
       this.clearTemporaryGpsPoint();
       const p=latLng(position);

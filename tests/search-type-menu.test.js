@@ -4,13 +4,14 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const {CHOICES}=require("../ui/search-type-menu.js");
-test("five search modes retain accessible icon and keyboard contracts",()=>{
+test("six search modes retain accessible icon and keyboard contracts",()=>{
   assert.deepEqual(CHOICES.map(x=>[x.id,x.label,x.shortcut]),[
     ["pin","Pin",null],["gps","GPS-Standort","p"],["area","Gebiet","g"],
-    ["lake","See","s"],["river","Fluss","f"]]);
+    ["lake","See","s"],["river","Fluss","f"],["plate","Kennzeichen","k"]]);
   assert.equal(CHOICES[0].icon,"map-pin");
   assert.equal(CHOICES[1].icon,"locate-fixed");
-  for(const option of CHOICES.slice(2)){
+  assert.equal(CHOICES[5].icon,"car-front");
+  for(const option of CHOICES.filter(o=>o.asset)){
     const filename=path.join(__dirname,"../assets",option.asset);
     assert.match(fs.readFileSync(filename,"utf8"),/^<svg[^>]+viewBox="0 0 24 24"/);
   }
@@ -22,6 +23,7 @@ test("all icons are available in offline shell and search controller does not ow
   for(const name of ["region","lake","river"])assert.ok(sw.includes('./assets/'+name+'.svg'));
   assert.match(icons,/"map-pin":/);
   assert.match(icons,/"locate-fixed":/);
+  assert.match(icons,/"car-front":/);
   assert.match(source,/this\.highlight\(null\);this\.position\(\)/);
   assert.match(source,/this\.input\.addEventListener\("focus"/);
   assert.match(source,/if\(key==="tab"&&inInput&&!e\.shiftKey\)/);

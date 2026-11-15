@@ -6,7 +6,8 @@
     {id:"gps",label:"GPS-Standort",shortcut:"p",icon:"locate-fixed"},
     {id:"area",label:"Gebiet",shortcut:"g",asset:"region.svg"},
     {id:"lake",label:"See",shortcut:"s",asset:"lake.svg"},
-    {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"}
+    {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"},
+    {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car-front"}
   ]);
   class SearchTypeMenu{
     constructor({document:doc,getElement,icons,onChoose}){

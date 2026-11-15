@@ -21,6 +21,9 @@
   const areaFinder=new window.Pin2MapNominatimAreaFinder.NominatimAreaFinder({
     fetchImpl:(...args)=>fetch(...args)
   });
+  const plateSearch=new window.Pin2MapLicensePlateSearch({
+    catalog:window.Pin2MapLicensePlateCatalog,areaFinder
+  });
   const riverFinder=new window.Pin2MapOsmWatercourseFinder.OsmWatercourseFinder({
     fetchImpl:(...args)=>fetch(...args)
   });
@@ -28,7 +31,7 @@
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
-  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,featureController=null,featureRun=0;
+  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
@@ -57,22 +60,26 @@
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
     onChoose:result=>{
-      if(result.__featureType)void chooseGeometryResult(result);
+      if(result.__plateEntry)void choosePlateResult(result.__plateEntry);
+      else if(result.__featureType)void chooseGeometryResult(result);
       else choosePlace(result);
     },
     onCancel:()=>{searchForm.cancel();cancelGeometrySearch();},
-    titleOf:result=>result.__featureType?
+    titleOf:result=>result.__plateEntry?result.label:result.__featureType?
       (result.name||result.tags?.name||result.display_name?.split(",")[0]||"Unbenannt"):
       placeDomain.title(result),
-    detailOf:result=>result.__featureType?
+    detailOf:result=>result.__plateEntry?
+      (result.status==="historic"?"Historischer Code · ":"")+
+        result.country+" · "+result.admin+" · geographische Verortung":
+      result.__featureType?
       (result.detail||result.display_name||result.type||"OpenStreetMap"):
       placeDomain.detail(result),
-    kindOf:result=>result.__featureType?null:placeDomain.kind(result),
-    featureIconOf:result=>result.__featureType==="river"?"spline":
+    kindOf:result=>result.__plateEntry||result.__featureType?null:placeDomain.kind(result),
+    featureIconOf:result=>result.__plateEntry?"car-front":result.__featureType==="river"?"spline":
       result.__featureType==="lake"?"waves-horizontal":
       result.__featureType?"vector-polygon":null,
     icons:window.Pin2MapIcons,
-    duplicateCoordinates:results=>results.some(r=>r.__featureType)?[]:
+    duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry)?[]:
       placeDomain.duplicateCoordinates(results)
   });
   const layerView = new window.Pin2MapLayerView({
@@ -252,7 +259,7 @@
   function anyMapMenuOpen(){
     const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel",
       "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
-      "pinInfoMenu","mapActionChooser","gpsPinPrompt"];
+      "pinInfoMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm"];
     return ids.some(id=>$(id)&&!$(id).classList.contains("hidden"))||
       !!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
       !!noteEditor?.open||
@@ -262,6 +269,7 @@
     mapActionChooser?.close();
     searchTypeMenu?.close();
     gpsLocation?.close();
+    platePanel?.close();
     favoritesPanel?.close();
     geometryEditor?.flush();
     geometryEditor?.close(false);
@@ -520,6 +528,10 @@
       element.style.top=Math.max(8,outer.bottom-app.top+7)+"px";
     }
   }
+  function clearPlatePreview(){
+    platePanel?.close();
+    mapAdapter?.clearTemporaryPlateArea?.();
+  }
   function cancelGeometrySearch(){
     ++featureRun;
     featureController?.abort();featureController=null;setGeometryBusy("");
@@ -629,6 +641,7 @@
     if(first)openGeometryEditor("area",area,{lat:first[1],lng:first[0]});
   }
   async function findAreaAt(point){
+    clearPlatePreview();
     cancelGeometrySearch();
     searchForm.cancel();searchView.hide();
     if(!state.allowGeocode){
@@ -651,7 +664,40 @@
       if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
     }finally{if(run===featureRun)featureController=null;}
   }
+  function findPlateCode(code){
+    const input=String(code||"").trim();
+    cancelGeometrySearch();searchForm.cancel();searchView.hide();
+    if(!input){$("searchInput").focus();return;}
+    const matches=plateSearch.find(input);
+    if(!matches.length){
+      searchView.message("Für „"+input+"“ ist noch kein überprüfter Kennzeichencode im lokalen Katalog hinterlegt.");
+      return;
+    }
+    searchView.show(matches.map(entry=>({...entry,__plateEntry:entry})));
+  }
+  async function choosePlateResult(entry){
+    searchView.hide();cancelGeometrySearch();searchForm.cancel();
+    if(!state.allowGeocode){
+      searchView.message("Gebietsgrenzen benötigen die in Einstellungen aktivierte Nominatim-Suche.");
+      return;
+    }
+    const run=featureRun,controller=new AbortController();
+    featureController=controller;
+    setGeometryBusy("Kennzeichengebiet wird gesucht …");
+    try{
+      const resolved=await plateSearch.resolve(entry,{signal:controller.signal});
+      if(run!==featureRun)return;
+      mapAdapter.showTemporaryPlateArea(resolved,point=>platePanel.show(resolved,point));
+    }catch(error){
+      if(run===featureRun&&error?.name!=="AbortError")
+        searchView.message("Kennzeichengebiet: "+error.message);
+    }finally{
+      if(run===featureRun){featureController=null;setGeometryBusy("");}
+    }
+  }
   function runSearchMode(mode){
+    clearPlatePreview();
+    if(mode==="plate"){findPlateCode($("searchInput").value);return;}
     if(mode==="gps"){gpsLocation?.locate();return;}
     if(mode==="pin"){searchForm.submit();return;}
     void findGeometry(mode,$("searchInput").value);
@@ -662,10 +708,10 @@
 
   const searchForm = new window.Pin2MapSearchFormController({
     getElement:$,
-    search:(query,hooks)=>placeSearch.search(query,{
+    search:(query,hooks)=>{clearPlatePreview();cancelGeometrySearch();return placeSearch.search(query,{
       state,allowed:state.allowGeocode,
       ...hooks,onCacheWrite:save
-    }),
+    });},
     onResults:renderResults,
     onMessage:searchMessage,
     onInputChange:()=>{searchView.hide();cancelGeometrySearch();},
@@ -774,6 +820,14 @@
       }
     });
     gpsLocation.bind();
+    platePanel=new window.Pin2MapLicensePlatePanel({
+      document,getElement:$,mapPort:mapAdapter,
+      onAccept:entry=>{
+        clearPlatePreview();
+        createAreaObject({name:entry.label,geojson:entry.geojson},"area");
+      }
+    });
+    platePanel.bind();
     gestures=window.Pin2MapMapGestureController({
       mapAdapter,
       onSurfacePointerDown:()=>{

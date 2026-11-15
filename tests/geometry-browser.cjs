@@ -15,7 +15,8 @@ const modes=[
   ["gps","locate-fixed"],
   ["area","region.svg"],
   ["lake","lake.svg"],
-  ["river","river.svg"]
+  ["river","river.svg"],
+  ["plate","car-front"]
 ];
 const viewports=[
   {name:"desktop",width:1100,height:780,mobile:false},
@@ -119,15 +120,15 @@ const viewports=[
    assert.equal(chooserGeometry.hit,"pin",
      "First search option must be clickable at its visual center");
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
-   assert.equal(await page.locator(".search-type-choice").count(),5);
+   assert.equal(await page.locator(".search-type-choice").count(),6);
    assert.equal(await page.locator(".search-type-choice.is-selected").count(),0,"Opening must not prehighlight Pin");
    for(let i=0;i<modes.length;i++){
      const option=page.locator(".search-type-choice").nth(i);
-     assert.equal(await option.locator(i<=1?"svg":"img").count(),1,
+     assert.equal(await option.locator((i<=1||i===5)?"svg":"img").count(),1,
        "Missing icon "+modes[i][1]);
      assert.equal(await option.locator("kbd").count(),0);
      if(i===0)assert.equal(await option.locator("span").first().innerText(),"Pin");
-     else assert.equal(await option.locator("strong").innerText(),["","G","G","S","F"][i]);
+     else assert.equal(await option.locator("strong").innerText(),["","G","G","S","F","K"][i]);
    }
    assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).backgroundColor),
      "rgb(255, 255, 255)");
@@ -191,9 +192,65 @@ const viewports=[
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelector("#searchInput")&&
      document.querySelector(".leaflet-container"),null,{timeout:15000});
+   // The offline catalog yields multiple regions; a boundary must match
+   // both the selected code and country.
+   await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
+     const name=new URL(route.request().url()).searchParams.get("q");
+     if(name!=="Berlin"){await route.fallback();return;}
+     await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify([
+       {osm_type:"relation",osm_id:62422,name:"Berlin",display_name:"Berlin, Deutschland",
+         addresstype:"city",type:"administrative",class:"boundary",
+         address:{country_code:"de"},geojson:poly}
+     ])});
+   });
+   await page.locator("#searchInput").fill("B");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   const candidates=page.locator("#searchResults .result");
+   await candidates.first().waitFor({state:"visible"});
+   assert.ok(await candidates.count()>=2);
+   assert.ok((await candidates.allInnerTexts()).some(t=>t.includes("Bukarest")));
+   await candidates.filter({hasText:"Berlin"}).first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator(".p2m-plate-label").innerText(),"🇩🇪 B (Berlin)");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.length;}finally{db.close();}
+   }),0,"Pink preview must not be stored in project areas");
+   await page.locator(".p2m-plate-label").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   await page.locator(".plate-area-no").click();
+   assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
+   await page.locator(".p2m-plate-label").click();
+   await page.locator(".plate-area-yes").click();
+   await page.locator("#geometryEditor").waitFor({state:"visible"});
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.length===1;}finally{db.close();}
+   },null,{timeout:8000});
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{
+       const area=(await db.loadProject()).areas[0];
+       return area.layerId==="private"&&area.name==="🇩🇪 B (Berlin)"&&area.kind==="area";
+     }finally{db.close();}
+   }),true);
+   await page.locator(".geometry-ok").click();
+   await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{const project=await db.loadProject();
+       project.areas=[];await db.saveProject(project);}finally{db.close();}
+   });
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.waitForFunction(()=>document.querySelector("#searchInput")&&
+     document.querySelector(".leaflet-container"),null,{timeout:15000});
+   await page.locator("#searchInput").fill("B");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator("#searchResults .result").filter({hasText:"Berlin"}).first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
    await page.locator("#searchInput").fill("Testfläche");
-   await page.locator("#searchInput").focus();
    await page.locator('.search-type-choice[data-search-type="area"]').click();
+   assert.equal(await page.locator(".p2m-plate-label").count(),0,
+     "New regular area search removes the temporary license plate area");
    await page.locator("#searchResults .result").first()
      .waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon").count(),1);
