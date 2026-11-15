@@ -48,7 +48,7 @@ test("CO without polygons uses reviewed reference point, not invented city area"
   }
  }});
  const result=await svc.resolve(e);
- assert.deepEqual(calls,["Coburg","Landkreis Coburg"]);
+ assert.deepEqual(calls,["Coburg","Landkreis Coburg","Coburg"]);
  assert.equal(result.kind,"point");
  assert.equal(result.geojson,undefined);
  assert.deepEqual(result.point,{lat:50.26,lng:10.96});
@@ -89,4 +89,22 @@ test("all composite secondary choices remain independently typed",()=>{
    assert.doesNotMatch(opt.areaName,/\b(?:Stadt|Landkreis) .+ und (?:Stadt|Landkreis)\b/i,key);
   }
  }
+});
+
+test("county search retries short OSM name but rejects wrong country and city polygon",async()=>{
+ const e=catalog.lookup("CO").find(x=>x.country==="DE"),queries=[];
+ const svc=new Resolver({catalog,areaFinder:{find:async query=>{
+  queries.push(query);
+  if(query==="Landkreis Coburg")return [];
+  if(queries.length===1)return [area("city")];
+  return [
+   {...area("county"),osm_id:999,address:{country_code:"at"}},
+   area("city"),area("county")
+  ];
+ }}});
+ const result=await svc.resolve(e);
+ assert.equal(result.kind,"choices");
+ assert.deepEqual(queries,["Coburg","Landkreis Coburg","Coburg"]);
+ assert.deepEqual(result.choices.map(x=>x.label),[
+  "🇩🇪 CO (Stadt Coburg)","🇩🇪 CO (Landkreis Coburg)"]);
 });
