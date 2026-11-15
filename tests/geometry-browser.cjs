@@ -12,6 +12,7 @@ const poly={type:"Polygon",coordinates:[[
 ]]};
 const modes=[
   ["pin","map-pin"],
+  ["gps","locate-fixed"],
   ["area","region.svg"],
   ["lake","lake.svg"],
   ["river","river.svg"]
@@ -118,18 +119,21 @@ const viewports=[
    assert.equal(chooserGeometry.hit,"pin",
      "First search option must be clickable at its visual center");
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
-   assert.equal(await page.locator(".search-type-choice").count(),4);
+   assert.equal(await page.locator(".search-type-choice").count(),5);
+   assert.equal(await page.locator(".search-type-choice.is-selected").count(),0,"Opening must not prehighlight Pin");
    for(let i=0;i<modes.length;i++){
      const option=page.locator(".search-type-choice").nth(i);
-     assert.equal(await option.locator(i===0?"svg":"img").count(),1,
+     assert.equal(await option.locator(i<=1?"svg":"img").count(),1,
        "Missing icon "+modes[i][1]);
      assert.equal(await option.locator("kbd").count(),0);
-     assert.equal(await option.locator("strong").innerText(),["P","G","S","F"][i]);
+     assert.equal(await option.locator("strong").innerText(),["P","G","G","S","F"][i]);
    }
    assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).backgroundColor),
      "rgb(255, 255, 255)");
-   await page.keyboard.press("ArrowDown");
+   await page.keyboard.press("Tab");
    assert.equal(await page.locator(".search-type-choice.is-selected").getAttribute("data-search-type"),"pin");
+   await page.keyboard.press("ArrowDown");
+   assert.equal(await page.locator(".search-type-choice.is-selected").getAttribute("data-search-type"),"gps");
    await page.keyboard.press("ArrowDown");
    assert.equal(await page.locator(".search-type-choice.is-selected").getAttribute("data-search-type"),"area");
    await page.locator("#searchInput").focus();
@@ -139,6 +143,49 @@ const viewports=[
    await page.keyboard.press("Enter");
    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,
      "Enter from the input launches default Pin search and closes chooser");
+   // GPS permission and coordinates are controlled within this isolated context.
+   await context.grantPermissions(["geolocation"],{origin:new URL(base).origin});
+   await context.setGeolocation({latitude:47.6501,longitude:9.1802,accuracy:8});
+   await page.locator("#searchInput").fill("bodensee");
+   await page.keyboard.press("Tab");
+   await page.keyboard.press("p");
+   await page.locator("#gpsPinPrompt").waitFor({state:"visible",timeout:10000});
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.length;}finally{db.close();}
+   }),0,"Locating GPS must not create a Pin");
+   await page.locator(".gps-pin-no").click();
+   assert.equal(await page.locator("#gpsPinPrompt").isHidden(),true);
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.length;}finally{db.close();}
+   }),0,"No must leave the temporary point unsaved");
+   await page.locator("#searchInput").click();
+   await page.locator('.search-type-choice[data-search-type="gps"]').click();
+   await page.locator("#gpsPinPrompt").waitFor({state:"visible",timeout:10000});
+   await page.locator(".gps-pin-yes").click();
+   await page.locator("#pinPanel").waitFor({state:"visible"});
+   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$/);
+   assert.equal(await page.locator("#pinName").evaluate(el=>
+     el.selectionStart===0&&el.selectionEnd===el.value.length),true,
+     "GPS Pin name must be selected for immediate editing");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{
+       const pins=(await db.loadProject()).pins;
+       return pins.length===1&&pins[0].layerId==="private"&&
+         Math.abs(pins[0].lat-47.6501)<0.001;
+     }finally{db.close();}
+   }),true,"Yes creates exactly one private GPS Pin");
+   await page.locator("#closePin").click();
+   await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{const project=await db.loadProject();project.pins=[];await db.saveProject(project);}
+     finally{db.close();}
+   });
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.waitForFunction(()=>document.querySelector("#searchInput")&&
+     document.querySelector(".leaflet-container"),null,{timeout:15000});
    await page.locator("#searchInput").fill("Testfläche");
    await page.locator("#searchInput").focus();
    await page.locator('.search-type-choice[data-search-type="area"]').click();
