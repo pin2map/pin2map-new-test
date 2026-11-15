@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-15 (aktueller Feature- und vollständig verifizierter Preview-Stand **v195**; Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates bestanden; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme der neuen Pin-Dialog-Bedienung gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-15 (aktueller Feature-Quellstand **v196**; letzter im Projektstatus vollständig verifizierter Preview-Stand **v195**; v196 Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates im Sicherungsauftrag erneut nachzuweisen; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -1104,3 +1104,16 @@
 **Offene nächste Priorität:** Zunächst amtliche KBA-/BKG-KFZ250-Rohdaten mit Regionalschlüssel lizenzrichtig für DE 648 Kandidaten einlesen und gegen die Städte-/Landkreis-Historie abgleichen, ggf. Mehrfachcodes nicht zusammenführen; danach nationale amtliche Register insbesondere RS/HR/MK/ME/SI/UA/BY/BG und Polens individuelle Powiat-Bezeichnungen, frühere Kennzeichen und Sonderkennungen pflegen. Keine weiteren Kandidaten ungeprüft als `jurisdictionVerified` kennzeichnen.
 
 **Preview:** https://pin2map.github.io/pin2map-new-test/preview/
+
+
+## v196 – Architektur-Sicherungsrunde vor weiteren Inhalten (2026-11-15)
+
+**Bestandsprüfung:** Direkter GitHub-Branch-Head vor der Sicherung `e6f0124f639aee5b05aab64591f8acf8fa8b8d84`; aktive App-Shell `pin2map-new-v196`. Die vorhandene Dokumentation v196 umfasst Kennzeichengebiete (u. a. TT/RV/ÜB), die Evidenzstufen und Suchmenü-Shortcuts; der bisherige Abschlussabschnitt v195 darf **nicht** mit einer bestätigten v196-Abnahme verwechselt werden. Globale repositoryweite Kachelcache-Commits gehören nicht zwingend zum Feature-Branch; für die Bewertung zählt ausschließlich der Branchvergleich.
+
+**Gezielte sofortige Sicherung:** Neuer ausführbarer `tests/sw-lifecycle-safety.test.js` für die echten Service-Worker-Handler `install`, `activate`, `fetch`. Fünf Szenarien: kein Aktivieren bei fehlendem Offline-Asset; erfolgreiche atomare App-Shell-Vorbereitung; Löschung alter App-Caches **ohne** Kachel-/Metadatenverlust; Offline-Fallback bereits betrachteter Kacheln trotz fehlender Metadaten; Offline-Fallback einer gecachten App-Datei. Test-Commit `afc93b92a8588b7b230938efc03f60e41520091d`. Weitere Erläuterung im vorhandenen `docs/ARCHITEKTUR_STABILISIERUNG_2026-11-12.md`; dokumentarischer Folgecommit `5fa3b9b03b92e8e66c8e9103bd1b7a9bd86606d4`.
+
+**Architekturwertung:** Leaflet-Aufrufe bleiben im Kartenadapter; die Domain-/Application-/UI-Grenzen werden statisch durch `tests/check-architecture.mjs` bewacht, die Offline-Ladereihenfolge und isolierte Preview durch bestehende Gates. `app.js` nicht ohne konkret nachgewiesenen Schichtverstoß refaktorieren. `styles.css` hat in der aktuellen Quelltextinventur 284 `!important`; die pausierte CSS-Sanierung B38 ist **nicht** abgeschlossen, aber das Testbudget 298 wird eingehalten.
+
+**Freigabe-Gates weiter offen:** Syntaxprüfung des neu entworfenen Node-Testcodes ist kein vollständiger SW-Lauf; im aktuellen Zugriff ließen sich weder grüne CI-/Architektur-/Chromium-Runs für den exakten neuen Funktionsstand noch ein erfolgreicher neuer Pages-Deploy oder ausgelieferte HTTPS-Worker-Version unabhängig nachweisen. **Keine Fertigmeldung und keine Freigabe für `main`** ohne diese Gates. Der testreine Commit erhöht die SW-Version bewusst nicht. Reale iPhone-Safari-Abnahme ist separat. Protected branches, IndexedDB-Projektdaten und bestehende Kachel-Caches unverändert.
+
+**Als Nächstes:** Den exakten Testcommit in GitHub Actions (Node, Architektur, Chromium) und den Pages-/HTTPS-Live-Smokes verifizieren; ggf. Test-/Anwendungsfehler gezielt korrigieren, danach die Run-Links hier ergänzen. Bei Änderungen an `sw.js` gegenüber v196 ist eine neue `pin2map-new-vNNN`-Kennung mit getesteter Cache-Migration erforderlich.
