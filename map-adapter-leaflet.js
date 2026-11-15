@@ -223,8 +223,22 @@
         onLabel?.({lat:p.lat,lng:p.lng});
       };
       pin.on("click",click);tag.on("click",click);
-      this.temporaryPlateArea={group,reposition:()=>{}};
+      const updateLabel=()=>{
+        label.textContent=entry.referencePlace
+          ?(entry.label+" – "+entry.referencePlace+" (Ersatzort)")
+          :(entry.label||entry.name||"Pin");
+        tag.setIcon(window.L.divIcon({html:label.outerHTML,
+          className:"p2m-plate-label-wrap p2m-temporary-pin-wrap",
+          iconSize:[0,0],iconAnchor:[-23,48]}));
+      };
+      this.temporaryPlateArea={group,entry,updateLabel,reposition:()=>{}};
       this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
+    }
+    updateTemporaryPinLabel(entry){
+      const preview=this.temporaryPlateArea;
+      if(preview?.entry!==entry)return false;
+      preview.updateLabel();
+      return true;
     }
     showTemporaryPlatePoint(entry,onLabel){
       this.showTemporaryPin(entry,onLabel);
