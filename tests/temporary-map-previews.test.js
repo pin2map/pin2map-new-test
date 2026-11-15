@@ -15,6 +15,7 @@ function layer(options={}){
   getLatLng(){return this.position;},
   setLatLng(pos){this.position=Array.isArray(pos)?{lat:pos[0],lng:pos[1]}:pos;return this;},
   setOpacity(value){this.opacity=value;return this;},
+  setIcon(icon){this.options.icon=icon;return this;},
   getBounds:()=>bounds
  };
  all.push(item);return item;
@@ -69,6 +70,23 @@ test("full pink pin is clickable without persistence and labels reference places
  pin.handlers.click({originalEvent:{}});
  label.handlers.click({originalEvent:{}});
  assert.equal(tapped,2);
+});
+test("locality label updates without moving, re-creating or saving a pink pin",()=>{
+ let tapped;
+ const entry={kind:"point",point:{lat:55.1,lng:14.8},label:"Neuer Pin",name:""};
+ adapter.showTemporaryPin(entry,()=>tapped++);
+ const preview=adapter.temporaryPlateArea,marker=preview.group.children[0];
+ const labelMarker=preview.group.children[1];
+ const originalPosition=marker.getLatLng();
+ const originalGroup=preview.group;
+ entry.name=entry.label="Knudsker";
+ assert.equal(adapter.updateTemporaryPinLabel(entry),true);
+ assert.equal(adapter.temporaryPlateArea.group,originalGroup);
+ assert.deepEqual(marker.getLatLng(),originalPosition);
+ assert.match(labelMarker.options.icon.html,/Knudsker/);
+ assert.doesNotMatch(labelMarker.options.icon.html,/Neuer Pin/);
+ assert.equal(adapter.updateTemporaryPinLabel({...entry}),false,
+   "Replaced previews must not accept stale updates");
 });
 test("pink polygon replaces old pin overlay and offers a tappable label",()=>{
  let tapped=0;
