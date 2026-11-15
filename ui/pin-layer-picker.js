@@ -11,6 +11,7 @@
       this.el=getElement;this.document=doc;this.icons=icons;
       if(!icons||typeof icons.svg!=="function")throw new TypeError("Lucide icons required");
       this.open=false;
+      this.filterText="";this.options=[];
       // The menu is a viewport-level overlay. Keeping it inside the
       // scroll-limited pin panel caused nested scrollbars on iPhone.
       const menu=this.el("pinLayerMenu");
@@ -60,10 +61,25 @@
     }
     setOpen(open){
       this.open=Boolean(open);
+      if(this.open)this.filterText="";
       this.el("pinLayerMenu").classList.toggle("hidden",!this.open);
       this.el("pinLayerTrigger").setAttribute("aria-expanded",String(this.open));
       this.el("pinPanel").classList.toggle("pin-layer-open",this.open);
-      if(this.open)this.positionMenu();
+      if(this.open){
+        this.filterText="";
+        this.applyFilter();
+        this.positionMenu();
+      }
+    }
+    applyFilter(){
+      const query=this.filterText.trim().toLocaleLowerCase("de-DE");
+      let count=0;
+      for(const {button,name} of this.options){
+        button.hidden=Boolean(query)&&!name.toLocaleLowerCase("de-DE").includes(query);
+        if(!button.hidden)count++;
+      }
+      if(this.emptyMessage)this.emptyMessage.hidden=count>0;
+      if(this.clearButton)this.clearButton.disabled=!this.filterText;
     }
     render({layers,selectedLayerId}){
       const trigger=this.el("pinLayerTrigger"),menu=this.el("pinLayerMenu");
@@ -77,6 +93,31 @@
         trigger.append(icon,dot);
       }
       menu.replaceChildren();
+      this.options=[];
+      const filter=this.document.createElement("div");
+      filter.className="pin-layer-filter";
+      const input=this.document.createElement("input");
+      input.type="search";input.className="pin-layer-filter-input";
+      input.setAttribute("placeholder","Ebenen filtern");
+      input.setAttribute("aria-label","Ebenen nach Namen filtern");
+      input.setAttribute("autocomplete","off");
+      input.value=this.filterText;
+      const clear=this.document.createElement("button");
+      clear.type="button";clear.className="pin-layer-filter-clear";
+      clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
+      clear.setAttribute("title","Ebenenfilter zurücksetzen");
+      clear.append(this.icons.svg("funnel-x",this.document));
+      input.addEventListener("input",()=>{
+        this.filterText=input.value;
+        this.applyFilter();
+      });
+      clear.addEventListener("click",()=>{
+        this.filterText="";input.value="";this.applyFilter();
+        input.focus();
+      });
+      filter.append(input,clear);
+      menu.append(filter);
+      this.clearButton=clear;
       for(const layer of layers){
         const option=this.document.createElement("button");
         option.type="button";option.className="pin-layer-option";
@@ -101,7 +142,13 @@
           trigger.focus();
         });
         menu.append(option);
+        this.options.push({button:option,name:layer.name||""});
       }
+      const empty=this.document.createElement("p");
+      empty.className="pin-layer-filter-empty";
+      empty.textContent="Keine passende Ebene.";
+      menu.append(empty);this.emptyMessage=empty;
+      this.applyFilter();
     }
   }
   root.Pin2MapPinLayerPicker=PinLayerPicker;
