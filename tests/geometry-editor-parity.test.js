@@ -96,3 +96,17 @@ test("area enlarged notes reuse the mobile pin note editor and save on change",(
   assert.equal(editor.noteEditor.open,false);
   assert.equal(editor.notesInput.value,"Flächennotiz");
 });
+
+test("area URL overlay stays within editor and ends above footer actions",()=>{
+  const {editor}=fixture();
+  editor.panel.getBoundingClientRect=()=>({left:120,right:510,top:80,bottom:555,width:390,height:475});
+  editor.header.getBoundingClientRect=()=>({left:130,right:500,top:95,bottom:166,width:370,height:71});
+  editor.actions.getBoundingClientRect=()=>({left:130,right:500,top:474,bottom:535,width:370,height:61});
+  editor.linkButton.click();
+  const popupTop=parseFloat(editor.urlPopup.style.top);
+  const popupHeight=parseFloat(editor.urlPopup.style.height);
+  assert.ok(popupTop>=166,"URL must not overlap the editor name row");
+  assert.ok(popupTop+popupHeight<=466,"URL must end above bottom buttons");
+  assert.ok(parseFloat(editor.urlPopup.style.left)>=120);
+  assert.equal(editor.urlPopup.classList.contains("hidden"),false);
+});
