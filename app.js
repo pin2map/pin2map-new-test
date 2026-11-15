@@ -69,8 +69,11 @@
       (result.name||result.tags?.name||result.display_name?.split(",")[0]||"Unbenannt"):
       placeDomain.title(result),
     detailOf:result=>result.__plateEntry?
-      (result.status==="historic"?"Historischer Code · ":"")+
-        result.country+" · "+result.admin+" · geographische Verortung":
+      (result.status==="historic"?"Historischer Code · ":
+        result.status==="unknown"?"Heutige Vergabe ungeprüft · ":"")+
+        result.country+" · "+result.admin+
+        (result.source==="community-check-2026"?" · Regionscode aus Referenzliste":"")+
+        " · geografische Verortung":
       result.__featureType?
       (result.detail||result.display_name||result.type||"OpenStreetMap"):
       placeDomain.detail(result),

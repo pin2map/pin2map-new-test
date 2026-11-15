@@ -1,13 +1,15 @@
 "use strict";
 /* Versioned offline plate-code registry. A code identifies a geographic
  * registration area, NEVER the current location of a vehicle or its owner.
- * Only reviewed entries are published: missing countries are reported as
- * incomplete, never guessed. Status is current or historic.
+ * Data is source-tagged and may be historic or of unknown present-day
+ * validity. Never infer a polygon or the current holder location from a code.
  */
 (function(root){
  const countries={
   DE:"🇩🇪",AT:"🇦🇹",CH:"🇨🇭",FR:"🇫🇷",IT:"🇮🇹",PL:"🇵🇱",
-  CZ:"🇨🇿",RO:"🇷🇴",TR:"🇹🇷",ES:"🇪🇸",SK:"🇸🇰"
+  CZ:"🇨🇿",RO:"🇷🇴",TR:"🇹🇷",ES:"🇪🇸",SK:"🇸🇰",
+  IE:"🇮🇪",HR:"🇭🇷",SI:"🇸🇮",BG:"🇧🇬",RS:"🇷🇸",
+  ME:"🇲🇪",MK:"🇲🇰",BY:"🇧🇾",UA:"🇺🇦"
  };
  // tuple: code, ISO country, German name, OSM name-query, admin kind, status
  const data=[
@@ -61,16 +63,30 @@
   ["BA","SK","Bratislava (alter Bezirkscode)","Bratislava","city","historic"],
   ["KE","SK","Košice (alter Bezirkscode)","Košice","city","historic"]
  ];
- const records=Object.freeze(data.map(([code,country,name,query,admin,status="current"])=>Object.freeze({
-   code,country,flag:countries[country],name,query,admin,status,
-   label:countries[country]+" "+code+" ("+name+")"
- })));
+ // The original 54 carefully curated labels stay authoritative. Additional
+ // region-code facts are loaded from separate offline source-tagged modules.
+ // Deduplication is by country+code, NEVER by code alone (B spans countries).
+ const extras=Array.isArray(root.Pin2MapPlateDataParts)?root.Pin2MapPlateDataParts:[];
+ const unique=new Map();
+ const add=([code,country,name,query,admin,status="current",source="seed-v191"])=>{
+   if(!countries[country]||!code||!name)return;
+   const normalized=String(code).normalize("NFKC").toLocaleUpperCase("de-DE");
+   const key=country+"|"+normalized;
+   if(unique.has(key))return;
+   unique.set(key,Object.freeze({
+     code:normalized,country,flag:countries[country],name,query,admin,status,source,
+     label:countries[country]+" "+normalized+" ("+name+")"
+   }));
+ };
+ data.forEach(add);
+ extras.forEach(add);
+ const records=Object.freeze([...unique.values()]);
  const lookup=term=>{
    const code=String(term??"").normalize("NFKC").trim().toLocaleUpperCase("de-DE");
-   if(!/^[A-Z0-9ÄÖÜ]{1,5}$/.test(code))return [];
+   if(!/^[\p{L}0-9]{1,5}$/u.test(code))return [];
    return records.filter(row=>row.code===code);
  };
- const api=Object.freeze({lookup,records,countries:Object.freeze(countries),version:"2026-11-15-seed-1"});
+ const api=Object.freeze({lookup,records,countries:Object.freeze(countries),version:"2026-11-15-expanded-2"});
  root.Pin2MapLicensePlateCatalog=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

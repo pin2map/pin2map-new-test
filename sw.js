@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v191';
+const CACHE='pin2map-new-v192';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -31,6 +31,10 @@ const CORE=[
   "./application/pin-move-controller.js",
   "./application/map-click-coordinator.js",
   "./domain/place-search.js",
+  "./domain/license-plate-data-dach.js",
+  "./domain/license-plate-data-europe.js",
+  "./domain/license-plate-data-central.js",
+  "./domain/license-plate-data-east.js",
   "./domain/license-plate-catalog.js",
   "./adapters/geocoding/nominatim-geocoder.js",
   "./adapters/geocoding/nominatim-area-finder.js",
