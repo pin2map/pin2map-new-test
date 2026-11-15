@@ -2105,3 +2105,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #geometryUrlBlock .pin-url-actions button.has-url{background:#c9eecb;color:#245b30}
 #geometryMobileNoteEditor #geometryNoteEditorText{box-sizing:border-box;flex:1;min-height:70px;width:100%;padding:12px;border:1px solid #c7cfd9;border-radius:11px;resize:none;overflow-y:auto;font:400 16px/1.4 system-ui}
 #geometryMobileNoteEditor #geometryNoteEditorDone{background:#c9eecb;color:#245b30;border-color:#a6ceaa}
+
+/* The destructive area action uses the same region asset as search, visibly crossed out. */
+#app .geometry-editor .geometry-remove{position:relative}
+#app .geometry-editor .geometry-region-off-icon{width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(1)}
+#app .geometry-editor .geometry-remove:has(.geometry-region-off-icon)::after{content:"";position:absolute;width:29px;height:2px;background:#fff;transform:rotate(-45deg);border-radius:2px;pointer-events:none}

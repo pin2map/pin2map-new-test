@@ -165,5 +165,5 @@ test("temporary hidden layer shows eye between color and struck-through name",()
  assert.equal(hidden.children[0].className,"pin-layer-dot");
  assert.equal(hidden.children[1].children[0].iconName,"eye-off");
  assert.equal(hidden.children[2].textContent,"unsichtbare Ebene");
- assert.equal(hidden.classList.contains("is-invisible-layer"),true);
+ assert.match(hidden.className,/is-invisible-layer/);
 });

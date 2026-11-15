@@ -16,7 +16,12 @@
       const button=this.doc.createElement("button");
       button.type="button";button.className="geometry-round "+extra;
       button.title=label;button.setAttribute("aria-label",label);
-      if(icon==="wikipedia"){
+      if(icon==="region-off"){
+        const image=this.doc.createElement("img");
+        image.src="./assets/region.svg";image.alt="";
+        image.className="geometry-region-off-icon";
+        button.append(image);
+      }else if(icon==="wikipedia"){
         const img=this.doc.createElement("img");
         img.src="./assets/wikipedia-social.svg";img.alt="";img.className="pin-wikipedia-logo";
         button.append(img);
