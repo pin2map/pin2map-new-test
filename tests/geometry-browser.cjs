@@ -354,6 +354,10 @@ const viewports=[
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    await page.locator(".plate-area-no").click();
    assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.length;}finally{db.close();}
+   }),0,"No must not create area data");
    await page.locator(".p2m-plate-label").click();
    await page.locator(".plate-area-yes").click();
    await page.locator("#geometryEditor").waitFor({state:"visible"});
@@ -410,6 +414,10 @@ const viewports=[
    await page.locator("#searchResults .result").first().click();
    await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.length;}finally{db.close();}
+   }),0,"Area selection must stage pink preview without persisting");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    await page.locator(".plate-area-no").click();
@@ -476,6 +484,11 @@ const viewports=[
    assert.equal(await page.locator(".result-feature-icon svg").count(),1);
    await page.locator("#searchResults .result").first().click();
    await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:8000});
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.some(a=>a.kind==="lake");}
+     finally{db.close();}
+   }),false,"A pink lake preview must not be stored");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.match(await page.locator("#plateAreaConfirm").innerText(),/See speichern/);
@@ -619,6 +632,10 @@ const viewports=[
      null,{timeout:5000});
    await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:30000});
    assert.equal(await page.locator("#geometryEditor.is-river").isHidden(),true);
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).rivers.length;}finally{db.close();}
+   }),0,"River line must be temporary before confirmation");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.match(await page.locator("#plateAreaConfirm").innerText(),/Fluss speichern/);
