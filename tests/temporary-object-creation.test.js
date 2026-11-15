@@ -22,16 +22,17 @@ class Element{
  getBoundingClientRect(){return {left:0,top:0,width:800,height:700};}
 }
 function fixture(){
- const box=new Element(),app=new Element(),mapElement=new Element(),accepted=[],removed=[];
+ const box=new Element(),app=new Element(),mapElement=new Element(),accepted=[],removed=[],moved=[];
  const events={};
  const map={on(){},getContainer:()=>mapElement,project:()=>({x:250,y:250})};
  const doc={createElement:()=>new Element(),addEventListener:(type,cb)=>events[type]=cb};
  const panel=new Panel({document:doc,getElement:id=>id==="app"?app:box,
   icons:{svg:name=>({iconName:name})},
-  mapPort:map,onAccept:entry=>accepted.push(entry),onRemove:entry=>removed.push(entry)});
+  mapPort:map,onAccept:entry=>accepted.push(entry),onRemove:entry=>removed.push(entry),
+  onMove:entry=>moved.push(entry)});
  panel.bind();
- return {panel,box,accepted,removed,save:box.children[1],
-  remove:box.children[0],events};
+ return {panel,box,accepted,removed,moved,save:box.children[2],
+  move:box.children[1],remove:box.children[0],events};
 }
 for(const entry of [
  {kind:"point",label:"GPS - 2026",point:{lat:47,lng:9}},
@@ -43,12 +44,15 @@ for(const entry of [
  test("Speichern commits only after explicit click for "+entry.label,()=>{
   const x=fixture();
   x.panel.show(entry,{lat:47,lng:9});
-  assert.equal(x.box.children.length,2);
+  assert.equal(x.box.children.length,3);
   assert.equal(x.box.children[0].getAttribute("aria-label"),"Entfernen");
-  assert.equal(x.box.children[1].getAttribute("aria-label"),"Speichern");
+  assert.equal(x.box.children[1].getAttribute("aria-label"),"Verschieben");
+  assert.equal(x.box.children[2].getAttribute("aria-label"),"Speichern");
+  assert.equal(x.move.hidden,entry.kind!=="point");
   assert.equal(x.save.getAttribute("aria-label"),"Speichern");
   assert.equal(x.remove.getAttribute("aria-label"),"Entfernen");
   assert.equal(x.save.children[0].iconName,"check");
+  assert.equal(x.move.children[0].iconName,"pin-relocate");
   assert.equal(x.remove.children[0].iconName,"x");
   assert.equal(x.accepted.length,0);
   x.save.handlers.click({stopPropagation(){}});
@@ -77,6 +81,15 @@ for(const entry of [
   assert.equal(x.removed.length,0);
  });
 }
+test("move on a temporary pin opens move UI without removing or saving",()=>{
+ const x=fixture(),entry={kind:"point",point:{lat:47,lng:9},name:"Knudsker"};
+ x.panel.show(entry,{lat:47,lng:9});
+ x.move.handlers.click({stopPropagation(){}});
+ assert.deepEqual(x.moved,[entry]);
+ assert.deepEqual(x.accepted,[]);
+ assert.deepEqual(x.removed,[]);
+ assert.equal(x.box.hidden,true);
+});
 test("every new object creation is routed through temporary preview",()=>{
  const app=read("app.js"),map=read("map-adapter-leaflet.js");
  assert.match(app,/function showObjectPreview\(entry\)/);
@@ -87,6 +100,7 @@ test("every new object creation is routed through temporary preview",()=>{
  assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,""\)/);
  assert.match(app,/onAccept:\(point,name\)=>addPin\(point.lat,point.lng,name\)/);
  assert.match(app,/onAccept:\(entry,anchor\)=>temporaryLayerPicker\.show\(entry,state\.layers,anchor\)/);
+ assert.match(app,/onMove:entry=>beginTemporaryMove\(entry\)/);
  assert.match(app,/onChoose:\(entry,layerId\)=>\{/);
  assert.match(app,/if\(!layer\)return;/);
  assert.match(map,/showTemporaryPin\(entry,onLabel\)/);
