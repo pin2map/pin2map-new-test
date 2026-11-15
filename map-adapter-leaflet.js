@@ -134,6 +134,18 @@
         }).addTo(this.map);
       }
     }
+    showTemporaryGpsPoint(position){
+      this.clearTemporaryGpsPoint();
+      const p=latLng(position);
+      this.temporaryGpsPoint=window.L.circleMarker([p.lat,p.lng],{
+        radius:7,color:"#fff",weight:3,fillColor:"#777d86",fillOpacity:1,
+        opacity:1,interactive:false,bubblingMouseEvents:false
+      }).addTo(this.map);
+      this.temporaryGpsPoint.bringToFront();
+    }
+    clearTemporaryGpsPoint(){
+      if(this.temporaryGpsPoint){this.map.removeLayer(this.temporaryGpsPoint);this.temporaryGpsPoint=null;}
+    }
     showSatelliteSelection(position){
       this.clearSatelliteSelection();
       const p=latLng(position);
