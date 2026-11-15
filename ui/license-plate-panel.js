@@ -19,13 +19,14 @@
    remove.className="plate-area-no";remove.append(this.icons.svg("x",this.doc));
    save.addEventListener("click",event=>{
      event.stopPropagation();const entry=this.entry;
-     this.close();if(entry)this.onAccept(entry);
+     const anchor=save.getBoundingClientRect();
+     this.close();if(entry)this.onAccept(entry,anchor);
    });
    remove.addEventListener("click",event=>{
      event.stopPropagation();const entry=this.entry;
      this.close();if(entry)this.onRemove(entry);
    });
-   this.box.append(save,remove);
+   this.box.append(remove,save);
    this.doc.addEventListener("keydown",event=>{
      if(event.key==="Escape"&&!this.box.classList.contains("hidden")){
        event.preventDefault();this.close();
