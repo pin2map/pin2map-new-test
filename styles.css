@@ -776,6 +776,22 @@ body.pin-note-editor-open{overflow:hidden}
 }
 #temporaryLayerPicker .pin-layer-visibility-icon{width:18px;height:18px}
 #temporaryLayerPicker .pin-layer-visibility.is-hidden{color:#a66b78}
+#temporaryLayerPicker .temporary-layer-info{
+  padding:8px 10px;margin:0;font-size:12px;color:#5c6b7c;
+  line-height:1.35;border-top:1px solid #e5e9ee;
+}
+#temporaryLayerPicker .temporary-layer-create{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;min-height:44px;margin-top:3px;padding:8px;
+  border:1px solid #c8d3df;border-radius:8px;background:#f3f6fa;
+  color:#2d506f;font-size:13px;cursor:pointer;
+}
+#temporaryLayerPicker .temporary-layer-create svg{
+  width:18px;height:18px;flex:none;
+}
+#temporaryLayerPicker .temporary-layer-create:focus-visible{
+  outline:3px solid #5b99e5;outline-offset:1px;
+}
 /* Wide but panel-contained URL popover; textarea grows vertically to fill
    the measured space between the navigation buttons and footer. */
 #pinUrlBlock.pin-url-popup{
