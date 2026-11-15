@@ -230,7 +230,13 @@
         .map(chain=>chain.map(point=>[point[0],point[1]]));
       if(!lines.length){this.map.removeLayer(group);throw new TypeError("Empty river geometry");}
       const shape=window.L.polyline(lines,{
-        color:"#e64294",weight:5,opacity:0.96,interactive:true
+        color:"#e64294",weight:5,opacity:0.96,interactive:false
+      }).addTo(group);
+      // The thin visible river line needs an iPhone-sized invisible tap
+      // corridor, just like permanently saved river objects.
+      const hit=window.L.polyline(lines,{
+        color:"#e64294",weight:24,opacity:0.015,
+        interactive:true,bubblingMouseEvents:false
       }).addTo(group);
       const bounds=shape.getBounds();
       const label=document.createElement("span");
@@ -246,7 +252,7 @@
         const p=event.latlng||marker.getLatLng();
         onLabel?.({lat:p.lat,lng:p.lng});
       };
-      marker.on("click",click);shape.on("click",click);
+      marker.on("click",click);hit.on("click",click);
       this.temporaryPlateArea={group,reposition:()=>{}};
       this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
     }
