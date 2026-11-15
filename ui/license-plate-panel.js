@@ -1,5 +1,5 @@
 "use strict";
-/* Transient plate-area confirmation. Never owns stored areas or renderer API. */
+/* Shared transient object confirmation. Never owns stored data or Leaflet. */
 (function(root){
  class LicensePlatePanel{
   constructor({document:doc,getElement,mapPort,onAccept}){
@@ -37,7 +37,9 @@
   }
   show(entry,position){
    this.entry=entry;this.positionOnMap=position;
-   this.title.textContent=entry.kind==="point"?"Ersatzort als Pin speichern?":"Bereich speichern?";
+   this.title.textContent=entry.kind==="point"?"Pin speichern?":
+     entry.kind==="river"?"Fluss speichern?":
+     entry.featureKind==="lake"?"See speichern?":"Bereich speichern?";
    this.box.classList.remove("hidden");this.position();
   }
   position(){
