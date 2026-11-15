@@ -502,7 +502,7 @@ const viewports=[
    }),false,"A pink lake preview must not be stored");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Speichern[\\s\\S]*Entfernen/);
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Speichern[\s\S]*Entfernen/);
    await page.locator(".plate-area-yes").click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:8000});
    const lake=(await waitForStored(project=>project?.areas?.some(a=>a.kind==="lake"),
@@ -649,7 +649,7 @@ const viewports=[
    }),0,"River line must be temporary before confirmation");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Speichern[\\s\\S]*Entfernen/);
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Speichern[\s\S]*Entfernen/);
    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
    assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
    await page.locator(".p2m-plate-label").click();
@@ -800,7 +800,7 @@ const viewports=[
    });
    await page.locator(".p2m-temporary-pin-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Speichern[\\s\\S]*Entfernen/);
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Speichern[\s\S]*Entfernen/);
    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
    assert.equal(await page.locator(".p2m-temporary-pin").isVisible(),true);
    assert.equal(await page.evaluate(async()=>{
