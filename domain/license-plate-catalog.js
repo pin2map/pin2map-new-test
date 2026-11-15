@@ -73,8 +73,14 @@
    const normalized=String(code).normalize("NFKC").toLocaleUpperCase("de-DE");
    const key=country+"|"+normalized;
    if(unique.has(key))return;
+   const hint=root.Pin2MapLicensePlateGeoHints?.[key]||{};
    unique.set(key,Object.freeze({
-     code:normalized,country,flag:countries[country],name,query,admin,status,source,
+     code:normalized,country,flag:countries[country],name,
+     query:hint.query||query,admin:hint.admin||admin,
+     status,source,
+     referencePlace:hint.referencePlace||null,
+     placeRelation:hint.placeRelation||null,
+     relatedArea:hint.relatedArea||null,
      label:countries[country]+" "+normalized+" ("+name+")"
    }));
  };

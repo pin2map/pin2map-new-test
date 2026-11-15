@@ -586,6 +586,67 @@ const viewports=[
      "mixed pin/area label zoom");
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+   // Country-neutral fallback: no valid administrative polygon but a
+   // geocoder-validated reference city. User consent alone creates a Pin.
+   await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
+     const query=new URL(route.request().url()).searchParams.get("q");
+     if(query==="Landkreis Havelland"||query==="Bezirk Graz-Umgebung"){
+       await route.fulfill({status:200,contentType:"application/json",body:"[]"});
+       return;
+     }
+     if(query==="Rathenow"||query==="Gratkorn"){
+       await route.fulfill({status:200,contentType:"application/json",
+         body:JSON.stringify([{name:query,display_name:query+", Testland",
+           lat:query==="Rathenow"?"52.605":"47.134",
+           lon:query==="Rathenow"?"12.333":"15.337",
+           addresstype:"town",type:"town",
+           address:{country_code:query==="Rathenow"?"de":"at"}}])});
+       return;
+     }
+     await route.fallback();
+   });
+   await page.locator("#searchInput").fill("HVL");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator('#searchResults .result').filter({hasText:"HVL"}).first().click();
+   await page.locator(".p2m-plate-reference").waitFor({state:"visible",timeout:12000});
+   assert.match(await page.locator(".p2m-plate-reference").innerText(),/Rathenow.*Ersatzort/);
+   const beforePins=await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.length;}finally{db.close();}
+   });
+   await page.locator(".p2m-plate-reference").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Ersatzort als Pin speichern/);
+   await page.locator(".plate-area-no").click();
+   assert.equal(await page.locator(".p2m-plate-reference").isVisible(),true);
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.length;}finally{db.close();}
+   }),beforePins,"No must not persist a reference town");
+   await page.locator(".p2m-plate-reference").click();
+   await page.locator(".plate-area-yes").click();
+   await page.locator("#pinPanel").waitFor({state:"visible"});
+   assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
+   assert.equal(await page.locator("#pinName").evaluate(el=>
+     el.selectionStart===0&&el.selectionEnd===el.value.length),true);
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.some(pin=>
+       pin.layerId==="private"&&pin.name.includes("HVL")&&
+       Math.abs(pin.lat-52.605)<0.001);}
+     finally{db.close();}
+   },null,{timeout:12000});
+   await page.locator("#closePin").click();
+   await page.locator("#searchInput").fill("GU");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator("#searchResults .result").filter({hasText:"Graz"}).first().click();
+   await page.locator(".p2m-plate-reference").waitFor({state:"visible",timeout:12000});
+   assert.match(await page.locator(".p2m-plate-reference").innerText(),/Gratkorn.*Ersatzort/);
+   await page.locator("#searchInput").fill("B");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   assert.equal(await page.locator(".p2m-plate-reference").count(),0,
+     "Any new search clears the temporary Austrian fallback point");
+   await page.locator("#searchResults .result").first().waitFor({state:"visible"});
    assert.deepEqual(errors,[],view.name+" page errors");
    console.log("[geometry] PASS",view.name,"search modes, private saved polygons, lake, river and UI");
    await context.close();

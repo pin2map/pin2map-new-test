@@ -145,6 +145,17 @@
       }
       return null;
     }
+    async findPlace(query,{countryCode="",signal}={}){
+      const params=new URLSearchParams({
+        format:"jsonv2",addressdetails:"1",limit:"8",q:String(query||"")
+      });
+      if(countryCode)params.set("countrycodes",countryCode.toLowerCase());
+      const response=await this.request(
+        "https://nominatim.openstreetmap.org/search?"+params,signal);
+      return (Array.isArray(response)?response:[]).filter(x=>
+        Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lon))&&
+        String(x.address?.country_code||"").toUpperCase()===countryCode.toUpperCase());
+    }
     async find(query,{kind="area",signal,onProgress=()=>{}}={}){
       if(!["area","lake"].includes(kind))throw new RangeError("Unknown geometry search type");
       const name=String(query||"").trim();

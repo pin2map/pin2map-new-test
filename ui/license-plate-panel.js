@@ -12,7 +12,7 @@
    if(this.bound)return;
    this.box.replaceChildren();
    const title=this.doc.createElement("span");
-   title.textContent="Bereich speichern?";
+   title.textContent="Bereich speichern?";this.title=title;
    const yes=this.doc.createElement("button");yes.type="button";yes.textContent="Ja";
    yes.className="plate-area-yes";
    const no=this.doc.createElement("button");no.type="button";no.textContent="Nein";
@@ -37,6 +37,7 @@
   }
   show(entry,position){
    this.entry=entry;this.positionOnMap=position;
+   this.title.textContent=entry.kind==="point"?"Ersatzort als Pin speichern?":"Bereich speichern?";
    this.box.classList.remove("hidden");this.position();
   }
   position(){

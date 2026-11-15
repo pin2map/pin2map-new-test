@@ -181,6 +181,33 @@
       this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
       reposition();
     }
+    showTemporaryPlatePoint(entry,onLabel){
+      this.clearTemporaryPlateArea();
+      const p=latLng(entry.point);
+      if(!Number.isFinite(p.lat)||Math.abs(p.lat)>90||
+        !Number.isFinite(p.lng)||Math.abs(p.lng)>180)
+        throw new TypeError("Invalid reference point");
+      const group=window.L.layerGroup().addTo(this.map);
+      window.L.circleMarker([p.lat,p.lng],{
+        radius:7,color:"#fff",weight:3,fillColor:"#e64294",
+        fillOpacity:1,interactive:false
+      }).addTo(group);
+      const label=document.createElement("span");
+      label.className="p2m-plate-label p2m-plate-reference";
+      label.textContent=entry.label+" – "+entry.referencePlace+" (Ersatzort)";
+      const marker=window.L.marker([p.lat,p.lng],{
+        keyboard:true,interactive:true,zIndexOffset:420,
+        icon:window.L.divIcon({html:label.outerHTML,
+          className:"p2m-plate-label-wrap p2m-plate-point-wrap",
+          iconSize:[0,0],iconAnchor:[0,18]})
+      }).addTo(group);
+      marker.on("click",event=>{
+        window.L.DomEvent.stop(event.originalEvent);
+        onLabel?.({lat:p.lat,lng:p.lng});
+      });
+      this.temporaryPlateArea={group,reposition:()=>{}};
+      this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
+    }
     showTemporaryGpsPoint(position){
       this.clearTemporaryGpsPoint();
       const p=latLng(position);

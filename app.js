@@ -60,15 +60,18 @@
   const searchView = new window.Pin2MapSearchResultsView({
     container:$("searchResults"),document,
     onChoose:result=>{
-      if(result.__plateEntry)void choosePlateResult(result.__plateEntry);
+      if(result.__plateChoice)showPlateSelection(result.__plateChoice);
+      else if(result.__plateEntry)void choosePlateResult(result.__plateEntry);
       else if(result.__featureType)void chooseGeometryResult(result);
       else choosePlace(result);
     },
     onCancel:()=>{searchForm.cancel();cancelGeometrySearch();},
-    titleOf:result=>result.__plateEntry?result.label:result.__featureType?
+    titleOf:result=>result.__plateChoice?result.choiceTitle:
+      result.__plateEntry?result.label:result.__featureType?
       (result.name||result.tags?.name||result.display_name?.split(",")[0]||"Unbenannt"):
       placeDomain.title(result),
-    detailOf:result=>result.__plateEntry?
+    detailOf:result=>result.__plateChoice?result.choiceDetail:
+      result.__plateEntry?
       (result.status==="historic"?"Historischer Code · ":
         result.status==="unknown"?"Heutige Vergabe ungeprüft · ":"")+
         result.country+" · "+result.admin+
@@ -77,12 +80,15 @@
       result.__featureType?
       (result.detail||result.display_name||result.type||"OpenStreetMap"):
       placeDomain.detail(result),
-    kindOf:result=>result.__plateEntry||result.__featureType?null:placeDomain.kind(result),
-    featureIconOf:result=>result.__plateEntry?"car-front":result.__featureType==="river"?"spline":
+    kindOf:result=>result.__plateEntry||result.__plateChoice||result.__featureType?
+      null:placeDomain.kind(result),
+    featureIconOf:result=>result.__plateChoice?
+      (result.kind==="point"?"map-pin":"vector-polygon"):
+      result.__plateEntry?"car-front":result.__featureType==="river"?"spline":
       result.__featureType==="lake"?"waves-horizontal":
       result.__featureType?"vector-polygon":null,
     icons:window.Pin2MapIcons,
-    duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry)?[]:
+    duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry||r.__plateChoice)?[]:
       placeDomain.duplicateCoordinates(results)
   });
   const layerView = new window.Pin2MapLayerView({
@@ -678,6 +684,14 @@
     }
     searchView.show(matches.map(entry=>({...entry,__plateEntry:entry})));
   }
+  function showPlateSelection(result){
+    searchView.hide();
+    if(result.kind==="point"){
+      mapAdapter.showTemporaryPlatePoint(result,p=>platePanel.show(result,p));
+      return;
+    }
+    mapAdapter.showTemporaryPlateArea(result,p=>platePanel.show(result,p));
+  }
   async function choosePlateResult(entry){
     searchView.hide();cancelGeometrySearch();searchForm.cancel();
     if(!state.allowGeocode){
@@ -690,7 +704,9 @@
     try{
       const resolved=await plateSearch.resolve(entry,{signal:controller.signal});
       if(run!==featureRun)return;
-      mapAdapter.showTemporaryPlateArea(resolved,point=>platePanel.show(resolved,point));
+      if(resolved.kind==="choices"){
+        searchView.show(resolved.choices.map(choice=>({...choice,__plateChoice:choice})));
+      }else showPlateSelection(resolved);
     }catch(error){
       if(run===featureRun&&error?.name!=="AbortError")
         searchView.message("Kennzeichengebiet: "+error.message);
@@ -827,9 +843,20 @@
       document,getElement:$,mapPort:mapAdapter,
       onAccept:entry=>{
         clearPlatePreview();
+        if(entry.kind==="point"){
+          const name=entry.label+" – "+entry.referencePlace+" (Ersatzort)";
+          const pin=addPin(entry.point.lat,entry.point.lng,name);
+          if(!pin)return;
+          void dbWrite().catch(()=>showNotice("Kennzeichen-Ersatzort konnte nicht gespeichert werden"));
+          requestAnimationFrame(()=>{
+            const input=$("pinName");
+            if(input&&!$("pinPanel").classList.contains("hidden")){
+              input.focus({preventScroll:true});input.select();
+            }
+          });
+          return;
+        }
         createAreaObject({name:entry.label,geojson:entry.geojson},"area");
-        // Explicit consent commits the real area immediately rather than
-        // relying on a later viewport/debounced write.
         void dbWrite().catch(()=>showNotice("Kennzeichenbereich konnte nicht gespeichert werden"));
       }
     });

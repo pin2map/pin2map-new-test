@@ -34,3 +34,16 @@ Die Code-Suche von pin2map ist eine **geografische Einordnung**, keine Bestimmun
 Alle vier Datenmodule werden als PWA-App-Shell-Assets **vor** `domain/license-plate-catalog.js` geladen. Der Katalog ist deterministisch, source-tagged und bleibt ohne Internet suchbar. Zusätzlich zu den bestehenden Node-/Chromium-/Architektur- und Live-Pages-Prüfungen gibt es `tests/license-plate-bulk.test.js` für Menge, Ländervielfalt, Schreibweise, Dubletten, Beispiele, Lizenzquellen-Assets und den Offline-Vertrag.
 
 V192 ist ein umfangreicher **Daten-Ausbau**, keine Behauptung, jeder Code liefere bereits zuverlässig ein passendes GeoJSON-Polygon. Die genaue Zahl der aktiven Einträge und die GitHub-Actions-Referenzen werden in `docs/PROJEKTSTATUS.md` nach den erfolgreichen Gates festgehalten.
+
+
+## v193 – Quellenbelegte geografische Ersatzorte und Länderübergreifende Fallback-Strategie
+
+Die ergänzten **Referenzorte** sind keine geografischen Flächen des Kennzeichenbezirks. Sie werden ausschließlich als gekennzeichnete Punktalternative verwendet, wenn keine eindeutig verifizierbare Verwaltungsfläche ermittelt werden kann.
+
+- **DE NAU / HVL:** Offizielle Landkreis-Havelland-Kennzeichenreservierung mit NAU als Unterscheidungskennzeichen sowie Zulassungsstellen in Nauen und Rathenow: https://www.havelland.de/wirtschaft-verkehr/verkehr/kfz-zulassungsbehoerde/kennzeichenreservierung . Nauen (historisch namensgebend) und der heutige Landkreis Havelland sind **verschiedene geografische Auswahlebenen**.
+- **DE LRO:** Landkreis Rostock bestätigt als gültige Kennzeichencodes ausdrücklich LRO/DBR/GÜ/ROS/BÜZ/TET, Hauptsitz **Güstrow**: https://www.landkreis-rostock.de/de/zustaendigkeit-bau-undverkehrsamt/leistung/313/kfz-wunschkennzeichen_erstmalig_reservieren.html .
+- **DE BÜS:** Gemeinde Büsingen am Hochrhein bestätigt Sonderkennzeichen BÜS (Verwaltungszugehörigkeit Landkreis Konstanz): https://www.buesingen.de/de/Unser-Buesingen/Deutsche-Insel-in-der-Schweiz/FAQ-Fragen-und-Antworten . Im Kartenmodell ist das **Gemeindegebiet**, nicht die Schweizer Umgebung, die gewünschte Fläche.
+- **DE FRI:** Landkreis Friesland (Jever) führt FRI im offiziellen Zulassungsverkehr: https://www.friesland.de/ ; dort veröffentlichter Fachbereich Straßenverkehr mit Dienststelle Jever. Bei unbekannter Verwaltungsgrenze nur **Jever als Referenzort**.
+- **AT GU:** Offizielles österreichisches Kennzeichenverzeichnis nennt GU ausdrücklich als Bezirk **Graz-Umgebung**, **nicht Stadt Graz**: https://www.oesterreich.gv.at/.syndication?pageId=fc7d016b-8f01-403f-984d-fc006879bb1e . Die steirische Statistik führt **Gratkorn** als Gemeinde im Bezirk Graz-Umgebung: https://www.landesentwicklung.steiermark.at/cms/dokumente/12256479_141979478/37005d34/60613.pdf . Deshalb wurde Graz als falscher Kreis-Referenzpunkt ausdrücklich ausgeschlossen.
+
+**Geometriequelle:** Existierende OSM-/Nominatim-Objekte werden ausschließlich auf Benutzeraktion abgefragt. Hier wird kein Polygon kopiert. Die Herkunft des Referenzortdatensatzes sowie ggf. OSM-Attribution bleiben getrennt von den allgemeinen Kennzeichencodelizenzen; CC0/ODbL/Rechtepflichten aus v192 gelten unverändert. Die Regel gilt unabhängig von Staat und Kennzeichensprache. Für bislang nicht nachprüfbare Kreis-Referenzorte erfolgt **kein** spekulativer Punkt-Fallback.

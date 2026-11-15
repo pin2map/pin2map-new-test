@@ -1909,6 +1909,11 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   box-shadow:0 2px 9px #6123424d;cursor:pointer;
 }
 
+#map .p2m-plate-point-wrap{border:0;background:transparent;overflow:visible;}
+#map .p2m-plate-reference{
+  position:relative;transform:translate(-50%,-45px);
+  color:#8b165a;border-style:dashed;
+}
 #app .gps-pin-prompt button{
   min-width:44px;min-height:34px;border:1px solid #b7c5d4;
   border-radius:9px;background:#eef3f8;color:#243b54;font-weight:650;
