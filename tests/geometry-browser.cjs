@@ -175,7 +175,18 @@ const viewports=[
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length;}finally{db.close();}
-   }),0,"No must leave the temporary point unsaved");
+   }),0,"Outside click must leave the temporary GPS pin unsaved");
+   await page.locator(".p2m-temporary-pin").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   assert.deepEqual(await page.locator("#plateAreaConfirm button").allInnerTexts(),
+     ["Speichern","Entfernen"]);
+   await page.locator("#plateAreaConfirm .plate-area-no").click();
+   assert.equal(await page.locator(".p2m-temporary-pin").count(),0,
+     "Entfernen must delete the temporary GPS pin immediately");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.length;}finally{db.close();}
+   }),0,"Entfernen must not persist GPS pin");
    await page.locator("#searchInput").click();
    await page.locator('.search-type-choice[data-search-type="gps"]').click();
    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout:10000});
