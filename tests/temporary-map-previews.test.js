@@ -45,7 +45,8 @@ global.document={createElement:()=>({
  get outerHTML(){return '<span class="'+this.className+'">'+this.textContent+'</span>';}
 })};
 global.navigator={userAgent:"Node test",maxTouchPoints:0};
-const Adapter=require("../map-adapter-leaflet.js");
+require("../map-adapter-leaflet.js");
+const Adapter=global.window.Pin2MapLeafletAdapter;
 const adapter=new Adapter(map);
 const poly={type:"Polygon",coordinates:[[[9,48],[10,48],[10,49],[9,49],[9,48]]]};
 test("full pink pin is clickable without persistence and labels reference places accurately",()=>{
@@ -90,4 +91,5 @@ test("river draws pink line and a separate 24px invisible tap corridor",()=>{
  adapter.clearTemporaryPlateArea();
  assert.equal(adapter.temporaryPlateArea,null);
 });
-test.after(()=>{for(const k of Object.keys(saved))global[k]=saved[k];});
+const {after}=require("node:test");
+after(()=>{for(const k of Object.keys(saved))global[k]=saved[k];});
