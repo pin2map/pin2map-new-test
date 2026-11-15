@@ -90,17 +90,19 @@
    const height=viewport?.height||view?.innerHeight||window.innerHeight;
    const margin=12,gap=8,menuWidth=Math.min(260,width-2*margin);
    const a=this.position;
-   const above=a.top-(top+margin)-gap;
-   const below=(top+height-margin)-a.bottom-gap;
-   const placeAbove=above>=Math.min(238,below);
+   const above=Math.max(0,a.top-(top+margin)-gap);
+   const below=Math.max(0,(top+height-margin)-a.bottom-gap);
+   // Prefer the side with enough room for ALL project layers rather than
+   // clipping the menu to a single row near the top or bottom of a phone.
+   const placeAbove=above>below;
    const space=Math.max(72,placeAbove?above:below);
-   const maxHeight=Math.min(260,space);
+   const maxHeight=Math.min(440,space);
    this.box.style.width=menuWidth+"px";
    this.box.style.maxHeight=maxHeight+"px";
    this.box.style.left=Math.max(left+margin,Math.min(a.left,left+width-menuWidth-margin))+"px";
    this.box.style.top=(placeAbove
      ?Math.max(top+margin,a.top-gap-Math.min(this.box.scrollHeight,maxHeight))
-     :Math.min(top+height-margin-maxHeight,a.bottom+gap))+"px";
+     :Math.max(top+margin,Math.min(top+height-margin-Math.min(this.box.scrollHeight,maxHeight),a.bottom+gap)))+"px";
   }
   close(notify=true){
    if(!this.entry)return;
