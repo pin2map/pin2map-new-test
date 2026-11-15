@@ -194,6 +194,47 @@ const viewports=[
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelector("#searchInput")&&
      document.querySelector(".leaflet-container"),null,{timeout:15000});
+   // Registration jurisdiction is not necessarily the namesake city.
+   // KN = Landkreis Konstanz; an equally named city polygon must not win.
+   await page.route(/nominatim\\.openstreetmap\\.org\\/search/,async route=>{
+     const q=new URL(route.request().url()).searchParams.get("q");
+     if(q!=="Landkreis Konstanz"){await route.fallback();return;}
+     const county={type:"Polygon",coordinates:[[[
+       8.5,47.54],[9.5,47.54],[9.5,47.87],[8.5,47.87],[8.5,47.54]
+     ]]};
+     const city={type:"Polygon",coordinates:[[[
+       9.10,47.65],[9.20,47.65],[9.20,47.71],[9.10,47.71],[9.10,47.65]
+     ]]};
+     await route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify([
+         {osm_type:"relation",osm_id:111,name:"Konstanz",
+           display_name:"Konstanz, Baden-Württemberg, Deutschland",
+           addresstype:"city",type:"administrative",class:"boundary",
+           address:{country_code:"de"},geojson:city},
+         {osm_type:"relation",osm_id:222,name:"Landkreis Konstanz",
+           display_name:"Landkreis Konstanz, Baden-Württemberg, Deutschland",
+           addresstype:"county",type:"administrative",class:"boundary",
+           address:{country_code:"de"},geojson:county}
+       ])});
+   });
+   await page.locator("#searchInput").fill("KN");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   const kn=page.locator("#searchResults .result")
+     .filter({hasText:"Landkreis Konstanz"}).first();
+   await kn.waitFor({state:"visible",timeout:12000});
+   await kn.click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator(".p2m-plate-label").innerText(),
+     "🇩🇪 KN (Landkreis Konstanz)");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.length;}
+     finally{db.close();}
+   }),0,"KN Landkreis must remain temporary until confirmed");
+   await page.locator("#searchInput").fill("B");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   assert.equal(await page.locator(".p2m-plate-label").count(),0,
+     "Next search removes temporary Landkreis KN polygon");
    // The offline catalog yields multiple regions; a boundary must match
    // both the selected code and country.
    await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{

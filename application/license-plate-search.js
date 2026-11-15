@@ -9,7 +9,7 @@
    .replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
  const validTypes={
    state:new Set(["state","region","province"]),
-   county:new Set(["county","state_district","district","province","municipality"]),
+   county:new Set(["county","state_district","district","province"]),
    city:new Set(["city","town","municipality","administrative","village"])
  };
  function isMatchingArea(entry,x){
@@ -18,6 +18,10 @@
    const type=String(x.addresstype||x.type||"").toLowerCase();
    const category=String(x.class||x.category||"").toLowerCase();
    const level=String(x.extratags?.admin_level||"");
+   // Explicitly reviewed districts must never accept a city/municipality
+   // polygon as a county just because both share the same namesake.
+   if(entry.jurisdictionVerified&&entry.admin==="county"&&
+      ["city","town","village","municipality"].includes(type))return false;
    if(validTypes[entry.admin]?.has(type))return true;
    if(category!=="boundary")return false;
    if(entry.admin==="state")return level==="4";
@@ -70,7 +74,7 @@
    async resolve(entry,{signal}={}){
      if(!entry||!this.catalog.records.includes(entry))
        throw new TypeError("Unknown license plate catalog entry");
-     const key=entry.country+"|"+entry.code+"|"+entry.query;
+     const key=entry.country+"|"+entry.code+"|"+entry.query+"|"+entry.admin;
      if(this.cache.has(key))return this.cache.get(key);
      const results=await this.finder.find(entry.query,{kind:"area",signal});
      if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});

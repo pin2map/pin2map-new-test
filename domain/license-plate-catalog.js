@@ -74,14 +74,24 @@
    const key=country+"|"+normalized;
    if(unique.has(key))return;
    const hint=root.Pin2MapLicensePlateGeoHints?.[key]||{};
+   const jurisdiction=root.Pin2MapLicensePlateJurisdictions?.[key]||null;
+   // A reviewed registration district ALWAYS takes precedence over the
+   // namesake-place heuristic in the imported regional-code directories.
+   const areaName=jurisdiction?.areaName||name;
    unique.set(key,Object.freeze({
-     code:normalized,country,flag:countries[country],name,
-     query:hint.query||query,admin:hint.admin||admin,
-     status:hint.status||status,source:hint.source||source,
-     referencePlace:hint.referencePlace||null,
-     placeRelation:hint.placeRelation||null,
+     code:normalized,country,flag:countries[country],name:areaName,
+     query:jurisdiction?.areaQuery||hint.query||query,
+     admin:jurisdiction?.admin||hint.admin||admin,
+     status:jurisdiction?.status||hint.status||status,
+     source:jurisdiction?.source||hint.source||source,
+     sourceUrl:jurisdiction?.sourceUrl||null,
+     registrationArea:jurisdiction?.areaName||null,
+     namesakePlace:jurisdiction?.namesakePlace||null,
+     jurisdictionVerified:!!jurisdiction,
+     referencePlace:jurisdiction?.referencePlace||hint.referencePlace||null,
+     placeRelation:jurisdiction?.placeRelation||hint.placeRelation||null,
      relatedArea:hint.relatedArea||null,
-     label:countries[country]+" "+normalized+" ("+name+")"
+     label:countries[country]+" "+normalized+" ("+areaName+")"
    }));
  };
  data.forEach(add);

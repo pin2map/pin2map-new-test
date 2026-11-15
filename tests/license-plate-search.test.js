@@ -3,6 +3,7 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 require("../domain/license-plate-data-dach.js");
 require("../domain/license-plate-geo-hints.js");
+require("../domain/license-plate-jurisdictions.js");
 const cat=require("../domain/license-plate-catalog.js");
 const Resolver=require("../application/license-plate-search.js");
 const poly={type:"Polygon",coordinates:[[[13.1,52.3],[13.7,52.3],[13.7,52.7],[13.1,52.7],[13.1,52.3]]]};
@@ -158,4 +159,53 @@ test("without known safe reference places the resolver never fabricates a point"
  const entry=cat.lookup("67").find(x=>x.country==="FR");
  const svc=new Resolver({catalog:cat,areaFinder:{find:async()=>[]}});
  await assert.rejects(svc.resolve(entry),/noch kein geprüfter Ersatzort/);
+});
+
+test("KN belongs to Landkreis Konstanz rather than the eponymous city",()=>{
+ const entry=cat.lookup("KN").find(r=>r.country==="DE");
+ assert.ok(entry);
+ assert.equal(entry.name,"Landkreis Konstanz");
+ assert.equal(entry.query,"Landkreis Konstanz");
+ assert.equal(entry.admin,"county");
+ assert.equal(entry.registrationArea,"Landkreis Konstanz");
+ assert.equal(entry.namesakePlace,"Konstanz");
+ assert.equal(entry.referencePlace,"Konstanz");
+ assert.equal(entry.jurisdictionVerified,true);
+ assert.equal(entry.source,"landkreis-konstanz-2026");
+ assert.equal(entry.status,"current");
+ assert.equal(entry.label,"🇩🇪 KN (Landkreis Konstanz)");
+ assert.match(entry.sourceUrl,/lrakn.de/);
+});
+test("KN selects only a county, never a same-named city or municipality",async()=>{
+ const entry=cat.lookup("KN").find(r=>r.country==="DE");
+ const city={name:"Konstanz",osm_type:"relation",osm_id:111,
+   geojson:poly,address:{country_code:"de"},addresstype:"city",type:"administrative"};
+ const municipality={name:"Konstanz",osm_type:"relation",osm_id:112,
+   geojson:poly,address:{country_code:"de"},addresstype:"municipality",type:"administrative"};
+ const county={name:"Landkreis Konstanz",osm_type:"relation",osm_id:222,
+   geojson:poly,address:{country_code:"de"},addresstype:"county",type:"administrative"};
+ const svc=new Resolver({catalog:cat,areaFinder:{
+   find:async query=>{assert.equal(query,"Landkreis Konstanz");return [city,municipality,county];},
+   findPlace:async()=>{throw Error("Unique county must not trigger a place lookup");}
+ }});
+ const r=await svc.resolve(entry);
+ assert.equal(r.kind,"area");
+ assert.equal(r.osmId,222);
+ assert.equal(r.label,"🇩🇪 KN (Landkreis Konstanz)");
+ assert.equal(r.geojson,poly);
+});
+test("KN never substitutes a city polygon if the county is absent",async()=>{
+ const entry=cat.lookup("KN").find(r=>r.country==="DE");
+ const city={name:"Konstanz",osm_type:"relation",osm_id:111,
+   geojson:poly,address:{country_code:"de"},addresstype:"city"};
+ const svc=new Resolver({catalog:cat,areaFinder:{
+   find:async()=>[city],
+   findPlace:async()=>[{name:"Konstanz",lat:"47.66",lon:"9.17",
+     addresstype:"city",address:{country_code:"de"}}]
+ }});
+ const result=await svc.resolve(entry);
+ assert.equal(result.kind,"point");
+ assert.equal(result.referencePlace,"Konstanz");
+ assert.match(result.choiceDetail,/kein vollständiges Zulassungsgebiet/);
+ assert.equal(result.geojson,undefined);
 });

@@ -74,7 +74,10 @@
       result.__plateEntry?
       (result.status==="historic"?"Historischer Code · ":
         result.status==="unknown"?"Heutige Vergabe ungeprüft · ":"")+
-        result.country+" · "+result.admin+
+        result.country+" · "+(result.jurisdictionVerified?
+          "Zulassungsgebiet: "+result.registrationArea+
+          (result.namesakePlace?" · namensgebender Ort: "+result.namesakePlace:""):
+          result.admin)+
         (result.source==="community-check-2026"?" · Regionscode aus Referenzliste":"")+
         " · geografische Verortung":
       result.__featureType?

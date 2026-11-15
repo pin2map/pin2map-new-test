@@ -5,6 +5,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 for(const moduleName of ["dach","europe","central","east"])
   require("../domain/license-plate-data-"+moduleName+".js");
+require("../domain/license-plate-jurisdictions.js");
 const cat=require("../domain/license-plate-catalog.js");
 const pick=(code,country)=>cat.lookup(code).find(x=>x.country===country);
 test("large offline catalog remains deterministic and country-distinct",()=>{
@@ -67,4 +68,18 @@ test("offline source files do not fetch network data or access persistence",()=>
   }
   assert.ok(index.indexOf("domain/license-plate-data-east.js") <
     index.indexOf("domain/license-plate-catalog.js"));
+});
+
+test("reviewed jurisdiction data is loaded before catalog and kept offline",()=>{
+ const entry=pick("KN","DE");
+ assert.equal(entry.jurisdictionVerified,true);
+ assert.equal(entry.admin,"county");
+ assert.equal(entry.name,"Landkreis Konstanz");
+ assert.equal(entry.namesakePlace,"Konstanz");
+ const index=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const sw=fs.readFileSync(path.join(__dirname,"../sw.js"),"utf8");
+ assert.ok(index.includes("./domain/license-plate-jurisdictions.js"));
+ assert.ok(sw.includes("./domain/license-plate-jurisdictions.js"));
+ assert.ok(index.indexOf("license-plate-jurisdictions.js")<
+   index.indexOf("license-plate-catalog.js"));
 });
