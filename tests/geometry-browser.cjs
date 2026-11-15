@@ -617,7 +617,16 @@ const viewports=[
    await page.waitForFunction(()=>document.querySelector("#geometrySearchBusy")&&
      !document.querySelector("#geometrySearchBusy").classList.contains("hidden"),
      null,{timeout:5000});
-   await page.locator("#geometryEditor.is-river").waitFor({state:"visible",timeout:30000});
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:30000});
+   assert.equal(await page.locator("#geometryEditor.is-river").isHidden(),true);
+   await page.locator(".p2m-plate-label").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Fluss speichern/);
+   await page.locator(".plate-area-no").click();
+   assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
+   await page.locator(".p2m-plate-label").click();
+   await page.locator(".plate-area-yes").click();
+   await page.locator("#geometryEditor.is-river").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometrySearchBusy").isHidden(),true);
    assert.equal(await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)").count(),4);
    const riverActionOrder=await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)")
