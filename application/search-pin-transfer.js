@@ -1,5 +1,6 @@
 "use strict";
-/* Apply a selected geocoder result to a pin and the map using injected ports.
+/* Stage a selected geocoder result as a temporary pin preview via an injected
+ * callback. Permanent Pin creation and persistence happen ONLY after Yes in app.
  * Provider/network, UI rendering and project persistence remain elsewhere. */
 (function(root){
   class SearchPinTransfer{
