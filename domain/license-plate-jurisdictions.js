@@ -94,6 +94,20 @@
      status:"current",source:"de-a-official-2026",
      sourceUrl:"https://www.landkreis-augsburg.de/landrat-landratsamt/landratsamt/sicherheit-und-ordnung-kommunales-und-verbraucherschutz/auto-verkehr/fahrzeugzulassung/online-services-kfz-zulassung/"
    }),
+   // Stadt und Landkreis betreiben nachweislich eine gemeinsame
+   // Zulassungsstelle. Beides sind eigenständige Verwaltungsgebiete:
+   // ein Stadtpolygon darf nicht die Landkreisfläche vertreten.
+   "DE|CO":Object.freeze({
+     areaName:"Stadt Coburg und Landkreis Coburg",admin:"county",
+     areaOptions:[
+       {areaName:"Stadt Coburg",query:"Coburg",admin:"city"},
+       {areaName:"Landkreis Coburg",query:"Landkreis Coburg",admin:"county"}
+     ],
+     namesakePlace:"Coburg",referencePlace:"Coburg",
+     placeRelation:"Stadt Coburg als Referenzort, nicht als Landkreisfläche",
+     status:"current",source:"coburg-joint-authority-2026",
+     sourceUrl:"https://www.landkreis-coburg.de/buergerservice/zulassungs-und-fahrerlaubnisbehoerde"
+   }),
    "DE|KN":Object.freeze({
      areaName:"Landkreis Konstanz",
      areaQuery:"Landkreis Konstanz",
