@@ -33,7 +33,7 @@
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
-  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,featureController=null,featureRun=0;
+  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,temporaryMoveEntry=null,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
@@ -302,8 +302,8 @@
     if(uiState.selectedPinId!==null){uiState.clearSelection();renderMarkers();renderPinPanel();}
   }
   const mapClickCoordinator = new window.Pin2MapMapClickCoordinator({
-    isMoveMode:()=>uiState.moveMode,
-    previewMove:position=>moveController.previewAt(position),
+    isMoveMode:()=>uiState.moveMode||!!temporaryMoveEntry,
+    previewMove:position=>temporaryMoveEntry?previewTemporaryMove(position):moveController.previewAt(position),
     isSuppressed:()=>gestures.isSuppressed(),
     onTargetAccepted:()=>{
       moveGuide.stop();
@@ -527,7 +527,7 @@
     else selectPin(id);
   }
   function updateModeUI() {
-    const picking=uiState.moveMode&&!moveView.current();
+    const picking=(uiState.moveMode||!!temporaryMoveEntry)&&!moveView.current();
     document.body.classList.toggle("pin-relocation-picking",picking);
     mapAdapter.getContainer().style.cursor = picking ? "crosshair" : "";
   }
@@ -537,11 +537,56 @@
     allowed:()=>state.allowGeocode,
     onName:entry=>mapAdapter.updateTemporaryPinLabel(entry)
   });
+  // Reuse the saved pin's target picker, drag preview, guide and confirm
+  // bar. The temporary object's position changes ONLY on confirm; no pin or
+  // project record is created while moving it.
+  function beginTemporaryMove(entry){
+    if(entry?.kind!=="point"||uiState.moveMode||temporaryMoveEntry)return false;
+    temporaryLayerPicker?.close();
+    platePanel?.close();
+    manualPinLocality.invalidate();
+    temporaryMoveEntry=entry;
+    moveView.clear();
+    moveGuide.start({lat:entry.point.lat,lng:entry.point.lng});
+    updateModeUI();
+    return true;
+  }
+  function previewTemporaryMove(position){
+    if(!temporaryMoveEntry)return false;
+    moveView.show(position,{lat:temporaryMoveEntry.point.lat,
+      lng:temporaryMoveEntry.point.lng});
+    return true;
+  }
+  function cancelTemporaryMove(){
+    if(!temporaryMoveEntry)return false;
+    temporaryMoveEntry=null;
+    moveGuide.stop();
+    moveView.clear();
+    updateModeUI();
+    return true;
+  }
+  function confirmTemporaryMove(){
+    if(!temporaryMoveEntry||!moveView.current())return false;
+    const entry=temporaryMoveEntry;
+    let position;
+    try{
+      const point=moveView.current();
+      position=projectModel.position(point.lat,point.lng);
+    }catch(_error){return false;}
+    cancelTemporaryMove();
+    entry.point=position;
+    if(entry.autoNamed){
+      entry.name="";entry.label="Neuer Pin";
+    }
+    showObjectPreview(entry);
+    if(entry.autoNamed)void manualPinLocality.resolve(entry);
+    return true;
+  }
   // All creation pathways must stage an ephemeral object first. These
   // previews are map-only and never enter state, IndexedDB or project layers.
   function showObjectPreview(entry){
     manualPinLocality.setCurrent(entry);
-    const onTap=position=>platePanel.show(entry,position);
+    const onTap=position=>{if(!temporaryMoveEntry)platePanel.show(entry,position);};
     if(entry.kind==="point")mapAdapter.showTemporaryPin(entry,onTap);
     else if(entry.kind==="river")mapAdapter.showTemporaryRiver(entry,onTap);
     else mapAdapter.showTemporaryPlateArea(entry,onTap);
@@ -554,7 +599,7 @@
     // Capture the user's original map scale before the preview adapter may
     // automatically zoom in to display the temporary pin.
     const mapZoom=mapAdapter.getViewport().zoom;
-    const entry={kind:"point",point:{lat,lng},mapZoom,
+    const entry={kind:"point",point:{lat,lng},mapZoom,autoNamed:!name,
       label:name||"Neuer Pin",name:name||""};
     showObjectPreview(entry);
     if(!name)void manualPinLocality.resolve(entry);
@@ -575,6 +620,7 @@
     }
   }
   function clearObjectPreview(){
+    cancelTemporaryMove();
     temporaryLayerPicker?.close();
     manualPinLocality.invalidate();
     platePanel?.close();
@@ -813,8 +859,8 @@
       $(id).addEventListener("click",()=>pinDetails.closeTransient());
     }
     $("movePin").addEventListener("click",()=>moveController.begin());
-    $("cancelMove").addEventListener("click",()=>moveController.cancel());
-    $("confirmMove").addEventListener("click",()=>moveController.confirm());
+    $("cancelMove").addEventListener("click",()=>temporaryMoveEntry?cancelTemporaryMove():moveController.cancel());
+    $("confirmMove").addEventListener("click",()=>temporaryMoveEntry?confirmTemporaryMove():moveController.confirm());
     pinDeleteDialog.bind();
 
     mapAdapter.onMapClick(position=>{
@@ -822,7 +868,7 @@
       // Move-target acceptance must take precedence over pin ghost-click
       // suppression; MapClickCoordinator already enforces this contract.
       mapClickCoordinator.handle(position);
-    },{allowNonSurface:()=>uiState.moveMode||satelliteInspector.isActive()});
+    },{allowNonSurface:()=>uiState.moveMode||!!temporaryMoveEntry||satelliteInspector.isActive()});
 
     gestures.attachLongPress();
     mapOverlayLayout.bind();
@@ -897,7 +943,8 @@
     platePanel=new window.Pin2MapLicensePlatePanel({
       document,getElement:$,icons:window.Pin2MapIcons,mapPort:mapAdapter,
       onRemove:()=>clearObjectPreview(),
-      onAccept:(entry,anchor)=>temporaryLayerPicker.show(entry,state.layers,anchor)
+      onAccept:(entry,anchor)=>temporaryLayerPicker.show(entry,state.layers,anchor),
+      onMove:entry=>beginTemporaryMove(entry)
     });
     platePanel.bind();
     gestures=window.Pin2MapMapGestureController({
@@ -907,7 +954,7 @@
         closeAllMapMenus();return true;
       },
       getBasemap:()=>state.basemap,
-      isMoveMode:()=>uiState.moveMode,
+      isMoveMode:()=>uiState.moveMode||!!temporaryMoveEntry,
       isInspectMode:()=>satelliteInspector.isActive(),
       selectPin:handleMarkerTap,addPin,renderMarkers,persistViewport,updatePanelLayout,
       scheduleFrame:requestAnimationFrame,
@@ -956,7 +1003,7 @@
       mapAdapter,getElement:$,
       getAppRect:()=>$("app").getBoundingClientRect(),
       getViewport:()=>window.visualViewport||{offsetLeft:0,offsetTop:0,width:window.innerWidth,height:window.innerHeight},
-      onPosition:position=>moveController.previewAt(position)
+      onPosition:position=>temporaryMoveEntry?previewTemporaryMove(position):moveController.previewAt(position)
     });
     moveGuide=new window.Pin2MapPinMoveGuide({
       mapAdapter,requestFrame:callback=>window.requestAnimationFrame(callback),
