@@ -76,6 +76,7 @@ test("app never opens the full editor on initial commit",()=>{
  const block=app.split("onChoose:(entry,layerId)=>{")[1].split("temporaryLayerPicker.bind();")[0];
  assert.doesNotMatch(block,/openGeometryEditor|pinSession\.add\(/);
  assert.match(block,/pinOps\.createPin/);
- assert.match(block,/projectFeatures\.createRiver/);
- assert.match(block,/createAreaObject/);
+ assert.match(block,/id:uid\(\),lat:entry\.point\.lat,lng:entry\.point\.lng,name,layerId/);
+ assert.match(block,/projectFeatures\.createRiver\(state,[\s\S]*?,layerId\)/);
+ assert.match(block,/createAreaObject\([\s\S]*?layerId\)/);
 });
