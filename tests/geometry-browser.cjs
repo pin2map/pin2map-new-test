@@ -180,7 +180,7 @@ const viewports=[
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
      buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Speichern"]);
+     ["Entfernen","Verschieben","Speichern"]);
    await page.locator("#plateAreaConfirm .plate-area-no").click();
    assert.equal(await page.locator(".p2m-temporary-pin").count(),0,
      "Entfernen must delete the temporary GPS pin immediately");
@@ -520,7 +520,7 @@ const viewports=[
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
      buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Speichern"]);
+     ["Entfernen","Verschieben","Speichern"]);
    await page.locator(".plate-area-yes").click();
    await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
@@ -673,7 +673,7 @@ const viewports=[
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
      buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Speichern"]);
+     ["Entfernen","Verschieben","Speichern"]);
    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
    assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
    await page.locator(".p2m-plate-label").click();
@@ -830,7 +830,7 @@ const viewports=[
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
      buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Speichern"]);
+     ["Entfernen","Verschieben","Speichern"]);
    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
    assert.equal(await page.locator(".p2m-temporary-pin").isVisible(),true);
    assert.equal(await page.evaluate(async()=>{
