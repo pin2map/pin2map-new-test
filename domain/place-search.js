@@ -26,6 +26,25 @@
     }
     return name;
   }
+  // Reverse geocoding is not a nearest-settlement calculation. Prefer
+  // explicit small settlement/address components; never label a manual pin
+  // with a random road, shop, house number, county or large state.
+  function nearbyLocalityName(result){
+    const address=result?.address||{};
+    const keys=["village","hamlet","suburb","quarter","neighbourhood",
+      "city_district","locality","town","city","municipality"];
+    for(const key of keys){
+      const name=String(address[key]||"").trim();
+      if(name&&name.length<=120)return name;
+    }
+    const type=String(result?.addresstype||result?.type||"").toLowerCase();
+    if(["village","hamlet","suburb","quarter","neighbourhood",
+        "city_district","locality","town","city","municipality"].includes(type)){
+      const name=title(result);
+      if(name&&name.length<=120)return name;
+    }
+    return "";
+  }
   function kind(result){
     const type=String(result?.addresstype||result?.type||"").toLowerCase();
     const category=String(result?.class||result?.category||"").toLowerCase();
@@ -70,7 +89,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({title,detail,pinName,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({title,detail,pinName,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
