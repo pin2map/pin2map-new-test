@@ -203,7 +203,9 @@
       }).addTo(group);
       const label=document.createElement("span");
       label.className="p2m-plate-label p2m-temporary-pin-label";
-      label.textContent=entry.label||entry.name||"Pin";
+      label.textContent=entry.referencePlace
+        ?(entry.label+" – "+entry.referencePlace+" (Ersatzort)")
+        :(entry.label||entry.name||"Pin");
       const tag=window.L.marker([p.lat,p.lng],{
         keyboard:true,interactive:true,zIndexOffset:421,
         icon:window.L.divIcon({html:label.outerHTML,
