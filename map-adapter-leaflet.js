@@ -194,7 +194,13 @@
         '<svg class="pin-marker-shape" viewBox="0 0 30 40" aria-hidden="true">'+
         '<path d="M15 38C10 30 2 21 2 15a13 13 0 0 1 26 0c0 6-8 15-13 23Z" '+
         'fill="currentColor" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'+
-        '<circle cx="15" cy="14" r="8" fill="#fff0f7" stroke="#fff" stroke-width="1.1"/>'+
+        '<g class="pin-status-segments">'+
+        '<path d="M15 14 8.1 18A8 8 0 0 1 15 6Z" fill="#e8edf2"/>'+
+        '<path d="M15 14 15 6A8 8 0 0 1 21.9 18Z" fill="#e8edf2"/>'+
+        '<path d="M15 14 21.9 18A8 8 0 0 1 8.1 18Z" fill="#e8edf2"/>'+
+        '<circle cx="15" cy="14" r="8" fill="none" stroke="#fff" stroke-width="1.1"/>'+
+        '<path d="M15 14V6M15 14 8.1 18M15 14 21.9 18" '+
+        'stroke="#fff" stroke-width="1.05" stroke-linecap="round"/></g>'+
         '</svg></div>';
       const pin=window.L.marker([p.lat,p.lng],{
         keyboard:true,interactive:true,zIndexOffset:420,
