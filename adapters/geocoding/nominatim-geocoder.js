@@ -9,6 +9,29 @@
       this.fetchImpl=fetchImpl;this.language=language;this.endpoint=endpoint;
       this.resultLimit=25;
     }
+    // Called only for an explicit user-created pin and only when existing
+    // geocoding consent is enabled. No automatic grid or background scans.
+    async reverse(point,{signal}={}){
+      const lat=Number(point?.lat),lon=Number(point?.lng);
+      if(!Number.isFinite(lat)||Math.abs(lat)>90||
+         !Number.isFinite(lon)||Math.abs(lon)>180)
+        throw new RangeError("Invalid reverse geocoding coordinate");
+      const url=new URL(this.endpoint.replace(/\/search\/?$/,"/reverse"));
+      url.searchParams.set("lat",String(lat));
+      url.searchParams.set("lon",String(lon));
+      url.searchParams.set("format","jsonv2");
+      url.searchParams.set("addressdetails","1");
+      url.searchParams.set("zoom","14");
+      url.searchParams.set("accept-language",this.language||"de");
+      const response=await this.fetchImpl(url.toString(),{
+        method:"GET",signal,headers:{Accept:"application/json"}
+      });
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const result=await response.json();
+      if(!result||typeof result!=="object"||Array.isArray(result))
+        throw new Error("Ungültige Ortsantwort");
+      return result;
+    }
     async search(query,{signal}={}){
       const url=new URL(this.endpoint);
       url.searchParams.set("q",query);
