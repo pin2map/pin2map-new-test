@@ -26,7 +26,7 @@ test("no boundary can be supplied for another country or ambiguous result",async
  const areaFinder={find:async()=>[{name:"Berlin",geojson:poly,
    address:{country_code:"ro"},addresstype:"city"}]};
  const svc=new Resolver({catalog:cat,areaFinder});
- await assert.rejects(svc.resolve(de),/Keine eindeutige/);
+ await assert.rejects(svc.resolve(de),/Weder eindeutige Verwaltungsgrenze/);
  areaFinder.find=async()=>[1,2].map(id=>({name:"Berlin",osm_id:id,
    geojson:poly,address:{country_code:"de"},addresstype:"city"}));
  const multiple=await svc.resolve(de);
@@ -53,7 +53,7 @@ test("catalog has unique country/code pairs and explicit ISO country code",()=>{
  for(const r of cat.records){
    assert.match(r.country,/^[A-Z]{2}$/);
    assert.ok(["city","county","state"].includes(r.admin));
-   assert.ok(["current","historic"].includes(r.status));
+   assert.ok(["current","historic","unknown"].includes(r.status));
  }
 });
 
@@ -152,7 +152,8 @@ test("historic NAU can offer separately verified city and county polygons",async
  assert.match(result.choices[1].choiceTitle,/heutiger Landkreis/);
 });
 test("without known safe reference places the resolver never fabricates a point",async()=>{
- const entry=cat.lookup("B").find(x=>x.country==="DE");
+ // A COUNTY has no implicit reference town: only reviewed city hints qualify.
+ const entry=cat.lookup("67").find(x=>x.country==="FR");
  const svc=new Resolver({catalog:cat,areaFinder:{find:async()=>[]}});
  await assert.rejects(svc.resolve(entry),/noch kein geprüfter Ersatzort/);
 });
