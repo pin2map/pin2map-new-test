@@ -528,7 +528,23 @@
     document.body.classList.toggle("pin-relocation-picking",picking);
     mapAdapter.getContainer().style.cursor = picking ? "crosshair" : "";
   }
-  function addPin(lat,lng,name){return pinSession.add(lat,lng,name);}
+  // All creation pathways must stage an ephemeral object first. These
+  // previews are map-only and never enter state, IndexedDB or project layers.
+  function showObjectPreview(entry){
+    const onTap=position=>platePanel.show(entry,position);
+    if(entry.kind==="point")mapAdapter.showTemporaryPin(entry,onTap);
+    else if(entry.kind==="river")mapAdapter.showTemporaryRiver(entry,onTap);
+    else mapAdapter.showTemporaryPlateArea(entry,onTap);
+    return entry;
+  }
+  function addPin(lat,lng,name){
+    if(!Number.isFinite(lat)||Math.abs(lat)>90||
+       !Number.isFinite(lng)||Math.abs(lng)>180)return null;
+    closeAllMapMenus();
+    const entry={kind:"point",point:{lat,lng},label:name||"Neuer Pin",name:name||""};
+    return showObjectPreview(entry);
+  }
+  function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
   function setGeometryBusy(message){
     const element=$("geometrySearchBusy");
@@ -612,13 +628,13 @@
         });
         if(run!==featureRun)return;
         if(!choice){searchView.message("Keine eindeutige Gebietsgrenze am Klickpunkt gefunden.");return;}
-        createAreaObject(choice,"area",result.name);
+        previewAreaObject(choice,"area",result.name);
       }catch(error){
         if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
       }finally{if(run===featureRun)featureController=null;}
       return;
     }
-    if(kind==="area"||kind==="lake"){createAreaObject(result,kind);return;}
+    if(kind==="area"||kind==="lake"){previewAreaObject(result,kind);return;}
     if(kind==="river"){
       const run=++featureRun,controller=new AbortController();featureController=controller;
       setGeometryBusy("Flussverlauf wird geladen …");
@@ -630,16 +646,17 @@
         });
         if(run!==featureRun)return;
         const resolved=riverGeometry.resolve(source.data,source.match);
-        const river=projectFeatures.createRiver(state,{
-          id:uid(),name:resolved.name||result.name,chains:resolved.chains
-        },PRIVATE_ID);
-        save();renderGeometry();mapAdapter.fitGeometry(river);
-        const point=river.chains[0][Math.floor(river.chains[0].length/2)];
-        openGeometryEditor("river",river,{lat:point[0],lng:point[1]});
+        showObjectPreview({kind:"river",label:resolved.name||result.name,
+          chains:resolved.chains});
       }catch(error){
         if(run===featureRun)searchView.message("Fluss konnte nicht geladen werden: "+error.message);
       }finally{if(run===featureRun){featureController=null;setGeometryBusy("");}}
     }
+  }
+  function previewAreaObject(source,kind,nameOverride=null){
+    const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
+    return showObjectPreview({kind:"area",featureKind:kind,
+      label:name,geojson:source.geojson});
   }
   function createAreaObject(source,kind,nameOverride=null){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
@@ -691,11 +708,7 @@
   }
   function showPlateSelection(result){
     searchView.hide();
-    if(result.kind==="point"){
-      mapAdapter.showTemporaryPlatePoint(result,p=>platePanel.show(result,p));
-      return;
-    }
-    mapAdapter.showTemporaryPlateArea(result,p=>platePanel.show(result,p));
+    showObjectPreview(result);
   }
   async function choosePlateResult(entry){
     searchView.hide();cancelGeometrySearch();searchForm.cancel();
@@ -829,19 +842,8 @@
     gpsLocation=new window.Pin2MapGpsLocationController({
       document,getElement:$,geolocation:navigator.geolocation,
       mapPort:mapAdapter,onNotice:showNotice,
-      onAccept:(point,name)=>{
-        const pin=addPin(point.lat,point.lng,name);
-        if(!pin)return;
-        // The accepted GPS position becomes a real Pin: commit now rather than
-        // leaving its durability to the usual debounced viewport save.
-        void dbWrite().catch(()=>showNotice("GPS-Pin konnte nicht gespeichert werden"));
-        requestAnimationFrame(()=>{
-          const input=$("pinName");
-          if(input&&!$("pinPanel").classList.contains("hidden")){
-            input.focus({preventScroll:true});input.select();
-          }
-        });
-      }
+      // GPS fixes are staged as complete pink pins, never persisted here.
+      onAccept:(point,name)=>addPin(point.lat,point.lng,name)
     });
     gpsLocation.bind();
     platePanel=new window.Pin2MapLicensePlatePanel({
@@ -849,10 +851,11 @@
       onAccept:entry=>{
         clearPlatePreview();
         if(entry.kind==="point"){
-          const name=entry.label+" – "+entry.referencePlace+" (Ersatzort)";
-          const pin=addPin(entry.point.lat,entry.point.lng,name);
+          const name=entry.referencePlace?
+            entry.label+" – "+entry.referencePlace+" (Ersatzort)":entry.name;
+          const pin=commitPin(entry.point.lat,entry.point.lng,name||entry.label);
           if(!pin)return;
-          void dbWrite().catch(()=>showNotice("Kennzeichen-Ersatzort konnte nicht gespeichert werden"));
+          void dbWrite().catch(()=>showNotice("Pin konnte nicht gespeichert werden"));
           requestAnimationFrame(()=>{
             const input=$("pinName");
             if(input&&!$("pinPanel").classList.contains("hidden")){
@@ -861,8 +864,16 @@
           });
           return;
         }
-        createAreaObject({name:entry.label,geojson:entry.geojson},"area");
-        void dbWrite().catch(()=>showNotice("Kennzeichenbereich konnte nicht gespeichert werden"));
+        if(entry.kind==="river"){
+          const river=projectFeatures.createRiver(state,{
+            id:uid(),name:entry.label,chains:entry.chains
+          },PRIVATE_ID);
+          save();renderGeometry();
+          const chain=river.chains[0],point=chain[Math.floor(chain.length/2)];
+          openGeometryEditor("river",river,{lat:point[0],lng:point[1]});
+        }else createAreaObject({name:entry.label,geojson:entry.geojson},
+          entry.featureKind||"area");
+        void dbWrite().catch(()=>showNotice("Objekt konnte nicht gespeichert werden"));
       }
     });
     platePanel.bind();
