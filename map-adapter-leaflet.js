@@ -223,6 +223,11 @@
         onLabel?.({lat:p.lat,lng:p.lng});
       };
       pin.on("click",click);tag.on("click",click);
+      if(this.temporaryPinGesture){
+        const tap=()=>onLabel?.({lat:p.lat,lng:p.lng});
+        this.temporaryPinGesture(pin,tap,pin);
+        this.temporaryPinGesture(tag,tap,pin);
+      }
       const updateLabel=()=>{
         label.textContent=entry.referencePlace
           ?(entry.label+" – "+entry.referencePlace+" (Ersatzort)")
@@ -233,6 +238,9 @@
       };
       this.temporaryPlateArea={group,entry,updateLabel,reposition:()=>{}};
       this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
+    }
+    setTemporaryPinGestureHandler(handler){
+      this.temporaryPinGesture=handler;
     }
     updateTemporaryPinLabel(entry){
       const preview=this.temporaryPlateArea;
