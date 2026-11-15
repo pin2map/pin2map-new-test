@@ -265,6 +265,12 @@ test("Polish legal Powiat classification does not fabricate a county proper name
  const urban=cat.lookup("BI").find(r=>r.country==="PL");
  assert.equal(urban.admin,"city");
  assert.equal(urban.adminRuleVerified,true);
+ for(const cityCode of ["GA","GSP","SK","SD","SJJ","SRS","SJZ","ZS","ZSW"]){
+   const city=cat.lookup(cityCode).find(r=>r.country==="PL");
+   assert.ok(city,cityCode+" must be in the Polish catalog");
+   assert.equal(city.admin,"city",cityCode+" is a city with powiat rights");
+   assert.equal(city.adminRuleVerified,true);
+ }
  const district=cat.lookup("BIA").find(r=>r.country==="PL");
  assert.equal(district.admin,"county");
  assert.equal(district.adminRuleVerified,true);

@@ -7,7 +7,7 @@
 (function(root){
  const urban=new Set(("BI BL BS CB CG CT CW DB DJ DL DW EL EP ES FG FZ GD GS "+
    "KN KR KT LB LC LU LZ NE NO OP PK PKO PL PO RK RP RT RZ SB SC SG SR ST "+
-   "TK WO WP WR WS ZK WA GA GSP SD SH SI SJJ SK SLR SM SO SPI SRS SW SY SZ SZO SJZ").split(" "));
+   "TK WO WP WR WS ZK WA GA GSP SD SH SI SJJ SK SLR SM SO SPI SRS SW SY SZ SZO SJZ ZS ZSW").trim().split(/\s+/));
  const kinds=Object.freeze({
    PL:Object.freeze({
      source:"pl-2024-legal-structure",
