@@ -61,6 +61,9 @@ test("full pink pin is clickable without persistence and labels reference places
  assert.equal(group.children.length,2);
  const pin=group.children[0],label=group.children[1];
  assert.match(pin.options.icon.html,/pin-marker-shape/);
+ assert.match(pin.options.icon.html,/pin-status-segments/);
+ assert.equal(pin.options.icon.className,"pin-icon p2m-temporary-pin");
+ assert.deepEqual(pin.options.icon.iconSize,[52,56]);
  assert.match(pin.options.icon.html,/#e64294/);
  assert.match(label.options.icon.html,/Ersatzort/);
  pin.handlers.click({originalEvent:{}});
