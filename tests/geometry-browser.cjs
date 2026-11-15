@@ -162,21 +162,25 @@ const viewports=[
    await page.locator("#searchInput").fill("bodensee");
    await page.keyboard.press("Tab");
    await page.keyboard.press("l");
-   await page.locator("#gpsPinPrompt").waitFor({state:"visible",timeout:10000});
+   await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length;}finally{db.close();}
    }),0,"Locating GPS must not create a Pin");
-   await page.locator(".gps-pin-no").click();
    assert.equal(await page.locator("#gpsPinPrompt").isHidden(),true);
+   await page.locator(".p2m-temporary-pin").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   await page.locator(".plate-area-no").click();
+   assert.equal(await page.locator(".p2m-temporary-pin").isVisible(),true);
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length;}finally{db.close();}
    }),0,"No must leave the temporary point unsaved");
    await page.locator("#searchInput").click();
    await page.locator('.search-type-choice[data-search-type="gps"]').click();
-   await page.locator("#gpsPinPrompt").waitFor({state:"visible",timeout:10000});
-   await page.locator(".gps-pin-yes").click();
+   await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout:10000});
+   await page.locator(".p2m-temporary-pin").click();
+   await page.locator(".plate-area-yes").click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
    await page.waitForFunction(()=>{
@@ -404,6 +408,14 @@ const viewports=[
      .waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon").count(),1);
    await page.locator("#searchResults .result").first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator(".p2m-plate-label").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   await page.locator(".plate-area-no").click();
+   assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
+   await page.locator(".p2m-plate-label").click();
+   await page.locator(".plate-area-yes").click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),4);
@@ -463,6 +475,11 @@ const viewports=[
    await page.locator("#searchResults .result").first().waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon svg").count(),1);
    await page.locator("#searchResults .result").first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:8000});
+   await page.locator(".p2m-plate-label").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/See speichern/);
+   await page.locator(".plate-area-yes").click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:8000});
    const lake=(await waitForStored(project=>project?.areas?.some(a=>a.kind==="lake"),
      "lake")).areas.find(a=>a.kind==="lake");
@@ -738,22 +755,22 @@ const viewports=[
    await page.locator("#searchInput").fill("HVL");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator('#searchResults .result').filter({hasText:"HVL"}).first().click();
-   await page.locator(".p2m-plate-reference").waitFor({state:"visible",timeout:12000});
-   assert.match(await page.locator(".p2m-plate-reference").innerText(),/Rathenow.*Ersatzort/);
+   await page.locator(".p2m-temporary-pin-label").waitFor({state:"visible",timeout:12000});
+   assert.match(await page.locator(".p2m-temporary-pin-label").innerText(),/Rathenow.*Ersatzort/);
    const beforePins=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length;}finally{db.close();}
    });
-   await page.locator(".p2m-plate-reference").click();
+   await page.locator(".p2m-temporary-pin-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Ersatzort als Pin speichern/);
+   assert.match(await page.locator("#plateAreaConfirm").innerText(),/Pin speichern/);
    await page.locator(".plate-area-no").click();
-   assert.equal(await page.locator(".p2m-plate-reference").isVisible(),true);
+   assert.equal(await page.locator(".p2m-temporary-pin").isVisible(),true);
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length;}finally{db.close();}
    }),beforePins,"No must not persist a reference town");
-   await page.locator(".p2m-plate-reference").click();
+   await page.locator(".p2m-temporary-pin-label").click();
    await page.locator(".plate-area-yes").click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
