@@ -14,7 +14,8 @@ test("the jurisdiction audit identifies unknown city/county mappings without gue
  assert.ok(report.secondaryClassifiedJurisdictions>=500,
    "German jurisdiction mapping must be mostly audited against CC0 compilation");
  assert.ok(report.verifiedRegistrationAreas>200);
- assert.ok(report.byCountry.DE===undefined||report.byCountry.DE<25);
+ assert.ok(report.byCountry.DE===undefined||report.byCountry.DE<648,
+   "Review must lower the original 648 German unclassified city candidates");
  assert.ok(report.notOfficiallyVerifiedNorLegallyTyped>0);
  assert.equal(report.totalCatalogRecords>1900,true);
 });

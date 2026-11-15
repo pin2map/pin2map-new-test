@@ -82,7 +82,7 @@
    const areaName=jurisdiction?.areaName||(
      rule?.admin==="county"?name+" – Powiat":name);
    const secondary=jurisdiction?.reviewStatus==="secondary";
-   const importedCityUnverified=!jurisdiction&&!rule&&admin==="city"&&
+   const importedCityUnverified=!jurisdiction&&!rule&&!hint.source&&admin==="city"&&
      ["cc0-offene-daten","community-check-2026"].includes(source);
    unique.set(key,Object.freeze({
      code:normalized,country,flag:countries[country],name:areaName,
