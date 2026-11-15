@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const Picker=require("../ui/temporary-layer-picker.js");
 class El{
  constructor(){this.children=[];this.style={};this.attributes={};this.handlers={};
-  this.className="";this.textContent="";
+  this.className="";this.textContent="";this.value="";
   this.hidden=true;this.classList={add:()=>this.hidden=true,
    remove:()=>this.hidden=false,contains:()=>this.hidden};
   this.scrollHeight=110;
@@ -41,7 +41,7 @@ test("no default selection and no saving by opening the picker",()=>{
  const x=fixture(),entry={kind:"point",label:"Knudsker"};
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
  assert.equal(x.chosen.length,0);
- assert.equal(x.picker.box.children.length,5);
+ assert.equal(x.picker.box.children.length,7);
  assert.equal(x.picker.box.children[0].textContent,"Pin hinzufügen zu:");
  assert.deepEqual(x.picker.box.children.filter(row=>row.getAttribute("role")==="option")
   .map(row=>row.getAttribute("aria-selected")),
@@ -59,17 +59,17 @@ test("all layers including hidden ones are displayed with no default selection",
 test("single layer warns about project-specific list and offers create without saving pin",()=>{
  const x=fixture(),entry={kind:"point"};
  x.picker.show(entry,x.layers.slice(0,1),{top:150,bottom:190,left:180,right:220});
- assert.equal(x.picker.box.children[2].textContent,
+ assert.equal(x.picker.box.children[3].textContent,
   "In diesem Projekt ist nur eine Ebene vorhanden.");
- assert.equal(x.picker.box.children[3].getAttribute("aria-label"),"Neue Ebene erstellen");
- x.picker.box.children[3].handlers.click({stopPropagation(){}});
+ assert.equal(x.picker.box.children[4].getAttribute("aria-label"),"Neue Ebene erstellen");
+ x.picker.box.children[4].handlers.click({stopPropagation(){}});
  assert.equal(x.chosen.length,0,"Creating an available layer must not save the preview");
  assert.equal(x.picker.box.children.filter(r=>r.getAttribute("role")==="option").length,4);
 });
 test("explicit nonprivate layer selection commits exactly once",()=>{
  const x=fixture(),entry={kind:"point",label:"Knudsker"};
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
- const selected=x.picker.box.children[2];
+ const selected=x.picker.box.children[3];
  assert.match(selected.getAttribute("aria-label"),/kostenlose Parkhäuser/);
  selected.handlers.click({stopPropagation(){}});
  assert.deepEqual(x.chosen,[{entry,id:"other"}]);
@@ -91,7 +91,7 @@ test("outside tap or Escape cancels without saving or removing the preview",()=>
 test("hidden layer is visible and explicitly selectable",()=>{
  const x=fixture(),entry={kind:"river"};
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
- const row=x.picker.box.children[3];
+ const row=x.picker.box.children[4];
  assert.match(row.getAttribute("aria-label"),/Ausgeblendet/);
  row.handlers.click({stopPropagation(){}});
  assert.equal(x.chosen[0].id,"hidden");
@@ -118,4 +118,42 @@ test("app never opens the full editor on initial commit",()=>{
  assert.match(block,/id:uid\(\),lat:entry\.point\.lat,lng:entry\.point\.lng,name,layerId/);
  assert.match(block,/projectFeatures\.createRiver\(state,[\s\S]*?,layerId\)/);
  assert.match(block,/createAreaObject\([\s\S]*?layerId\)/);
+});
+
+test("temporary layer search filters all project layers and retains hidden matches",()=>{
+ const x=fixture(),entry={kind:"point"};
+ x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
+ const filter=x.picker.filterInput;
+ filter.value="UNSICHT";filter.handlers.input();
+ assert.deepEqual(x.picker.options.map(o=>o.button.hidden),[true,true,false]);
+ assert.equal(x.picker.options[2].button.getAttribute("aria-selected"),"false");
+ assert.equal(x.chosen.length,0);
+ assert.equal(x.picker.emptyMessage.hidden,true);
+ x.picker.options[2].button.handlers.click({stopPropagation(){}});
+ assert.equal(x.chosen[0].id,"hidden");
+});
+test("temporary menu no-result filter does not commit, reset restores all",()=>{
+ const x=fixture(),entry={kind:"point"};
+ x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
+ x.picker.filterInput.value="xyz-does-not-exist";
+ x.picker.filterInput.handlers.input();
+ assert.equal(x.picker.emptyMessage.hidden,false);
+ assert.equal(x.picker.options.every(o=>o.button.hidden),true);
+ assert.equal(x.chosen.length,0);
+ x.picker.clearButton.handlers.click({stopPropagation(){}});
+ assert.equal(x.picker.filterInput.value,"");
+ assert.equal(x.picker.options.every(o=>!o.button.hidden),true);
+ assert.equal(x.chosen.length,0);
+});
+test("temporary layer filter resets when reopened and never saves while typing",()=>{
+ const x=fixture(),entry={kind:"point"};
+ x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
+ x.picker.filterInput.value="private";
+ x.picker.filterInput.handlers.input();
+ assert.equal(x.chosen.length,0);
+ x.picker.close();
+ x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
+ assert.equal(x.picker.filterInput.value,"");
+ assert.equal(x.picker.options.every(o=>!o.button.hidden),true);
+ assert.equal(x.chosen.length,0);
 });
