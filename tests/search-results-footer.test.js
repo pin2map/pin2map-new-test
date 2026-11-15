@@ -119,3 +119,16 @@ test("predecessor keyboard contract cycles, selects with Enter and cancels with 
   view.dispose();
   assert.equal(listeners.has("keydown"),false);
 });
+
+test("administrative hierarchy rows show territory asset, left name and right German type",()=>{
+  const {container,view}=fixture();
+  view.show([{__featureType:"areaHierarchy",kind:"country",name:"Deutschland"},
+    {__featureType:"areaHierarchy",kind:"village",name:"Gerthausen"}]);
+  const [country,village]=container.children[0].children;
+  assert.equal(country.classList.contains("result-area-hierarchy"),true);
+  assert.equal(country.children.length,1);
+  assert.equal(country.children[0].children[0].src,"./assets/region.svg");
+  assert.equal(country.children[0].children[1].textContent,"Deutschland");
+  assert.equal(country.children[0].children[2].textContent,"Land");
+  assert.equal(village.children[0].children[2].textContent,"Ort");
+});

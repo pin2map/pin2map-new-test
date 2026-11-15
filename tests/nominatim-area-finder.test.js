@@ -76,3 +76,17 @@ test("ambiguous administrative names never select an unrelated polygon automatic
   assert.equal(await finder.findContaining({kind:"city",name:"Springfield"},
     {lat:-35,lng:150},{countryCode:"au"}),null);
 });
+
+test("reverse area hierarchy removes roads, subdistricts and POIs and displays country first",async()=>{
+  const finder=new NominatimAreaFinder({fetchImpl:async()=>({ok:true,json:async()=>({
+    osm_type:"way",osm_id:451319630,name:"Kolonnenweg",type:"path",
+    address:{suburb:"Helmershausen",village:"Gerthausen",city:"Rhönblick",
+      county:"Landkreis Schmalkalden-Meiningen",state:"Thüringen",country:"Deutschland",country_code:"de"}
+  })})});
+  const result=await finder.hierarchyAt({lat:50.6,lng:10.1});
+  assert.deepEqual(result.rows.map(x=>x.kind),["country","state","county","city","village"]);
+  assert.deepEqual(result.rows.map(x=>x.name),["Deutschland","Thüringen",
+    "Landkreis Schmalkalden-Meiningen","Rhönblick","Gerthausen"]);
+  assert.equal(result.rows.some(x=>x.name==="Kolonnenweg"||x.name==="Helmershausen"),false);
+  assert.equal(result.countryCode,"de");
+});

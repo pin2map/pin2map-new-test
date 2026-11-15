@@ -145,7 +145,17 @@
         heading.className="result-heading";
         const title=this.document.createElement("strong");
         title.textContent=this.titleOf(result);
-        const featureIcon=this.featureIconOf(result);
+        const hierarchy=result.__featureType==="areaHierarchy";
+        if(hierarchy){
+          item.classList.add("result-area-hierarchy");
+          const symbol=this.document.createElement("img");
+          symbol.className="result-area-symbol";
+          symbol.src="./assets/region.svg";
+          symbol.alt="";
+          symbol.setAttribute("aria-hidden","true");
+          heading.append(symbol);
+        }
+        const featureIcon=hierarchy?null:this.featureIconOf(result);
         if(featureIcon&&this.icons){
           const holder=this.document.createElement("span");
           holder.className="result-feature-icon";
@@ -153,6 +163,17 @@
           heading.append(holder);
         }
         heading.append(title);
+        if(hierarchy){
+          const types={country:"Land",state:"Bundesland/Region",
+            region:"Region",state_district:"Regierungsbezirk",
+            county:"Landkreis/Kreis",municipality:"Gemeinde",
+            city:"Stadt",town:"Stadt",village:"Ort"};
+          const type=this.document.createElement("span");
+          type.className="result-area-type";
+          type.textContent=types[result.kind]||"Gebiet";
+          heading.append(type);
+          item.setAttribute("aria-label",title.textContent+", "+type.textContent);
+        }
         const kind=this.kindOf(result);
         if(kind?.label){
           const badge=this.document.createElement("span");
@@ -162,7 +183,8 @@
         }
         const detail=this.document.createElement("small");
         detail.textContent=this.detailOf(result);
-        item.append(heading,detail);
+        item.append(heading);
+        if(!hierarchy)item.append(detail);
         if(duplicateNotes[index]){
           const coords=this.document.createElement("span");
           coords.className="result-coordinates";

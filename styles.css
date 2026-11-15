@@ -2056,3 +2056,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   cursor:pointer;
 }
 #app .gps-pin-prompt button:focus-visible{outline:2px solid #287cff}
+
+/* Administrative area chooser only: region icon, name at left, German type at right. */
+#app .search-results .result-area-hierarchy .result-heading{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:9px}
+#app .search-results .result-area-hierarchy .result-area-symbol{width:20px;height:20px;flex:none;object-fit:contain}
+#app .search-results .result-area-hierarchy .result-heading strong{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;text-align:left}
+#app .search-results .result-area-hierarchy .result-area-type{margin-left:auto;flex:0 1 42%;font-size:12px;color:#61748a;text-align:right;overflow-wrap:anywhere}

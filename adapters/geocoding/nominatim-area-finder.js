@@ -81,16 +81,12 @@
         if(!name||seen.has(kind+"|"+name))return;
         seen.add(kind+"|"+name);rows.push({kind,name,detail});
       }
-      if(result.name)add(result.type||result.category||"OSM-Objekt",result.name,
-        "OSM "+(result.osm_type||"")+" "+(result.osm_id||""));
-      // Preserve an exact OSM reference for the returned feature whenever
-      // reverse geocoding itself identified a named polygon.
-      if(rows.length&&result.osm_id&&["relation","way"].includes(result.osm_type)){
-        rows[0].osmType=result.osm_type;
-        rows[0].osmId=result.osm_id;
-      }
-      for(const key of ["neighbourhood","quarter","suburb","city_district","borough",
-        "village","town","city","municipality","county","state_district","region","state","country"])
+      // Reverse's top-level match may be a road, building or POI, not a
+      // selectable boundary. Use only the administrative hierarchy supplied
+      // in address, ordered from the largest to the smallest territory.
+      // Geometry is verified separately when the user selects a row.
+      for(const key of ["country","state","region","state_district","county",
+        "municipality","city","town","village"])
         if(address[key])add(key,address[key],key);
       return {rows,countryCode:address.country_code||""};
     }
