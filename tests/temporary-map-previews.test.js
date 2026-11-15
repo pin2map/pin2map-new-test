@@ -88,6 +88,25 @@ test("locality label updates without moving, re-creating or saving a pink pin",(
  assert.equal(adapter.updateTemporaryPinLabel({...entry}),false,
    "Replaced previews must not accept stale updates");
 });
+test("temporary pin long-press attaches to both hit targets and survives renamed label",()=>{
+ const attachments=[];
+ adapter.setTemporaryPinGestureHandler((marker,onTap,target)=>{
+  attachments.push({marker,onTap,target});
+ });
+ const entry={kind:"point",label:"Neuer Pin",name:"",point:{lat:55.1,lng:14.8}};
+ adapter.showTemporaryPin(entry,()=>{});
+ assert.equal(attachments.length,2);
+ const pin=adapter.temporaryPlateArea.group.children[0];
+ const label=adapter.temporaryPlateArea.group.children[1];
+ assert.equal(attachments[0].marker,pin);
+ assert.equal(attachments[1].marker,label);
+ assert.equal(attachments[1].target,pin,"Label uses same zoom toggle as pin");
+ entry.label="Knudsker";
+ adapter.updateTemporaryPinLabel(entry);
+ assert.equal(attachments.length,3,"Reattached after Leaflet setIcon");
+ assert.equal(attachments[2].marker,label);
+ adapter.setTemporaryPinGestureHandler(null);
+});
 test("pink polygon replaces old pin overlay and offers a tappable label",()=>{
  let tapped=0;
  const old=adapter.temporaryPlateArea.group;
