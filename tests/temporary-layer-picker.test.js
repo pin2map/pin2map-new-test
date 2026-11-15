@@ -11,6 +11,7 @@ class El{
  }
  append(...children){this.children.push(...children);}
  replaceChildren(){this.children=[];}
+ focus(){this.focused=true;}
  setAttribute(k,v){this.attributes[k]=String(v);}
  getAttribute(k){return this.attributes[k];}
  addEventListener(k,fn){this.handlers[k]=fn;}
