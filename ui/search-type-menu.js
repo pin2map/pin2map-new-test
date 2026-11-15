@@ -2,7 +2,8 @@
 /* Focus-driven search chooser. Search execution is delegated to onChoose. */
 (function(root){
   const CHOICES=Object.freeze([
-    {id:"pin",label:"Pin",shortcut:"p",icon:"map-pin"},
+    {id:"pin",label:"Pin",shortcut:null,icon:"map-pin"},
+    {id:"gps",label:"GPS-Standort",shortcut:"p",icon:"locate-fixed"},
     {id:"area",label:"Gebiet",shortcut:"g",asset:"region.svg"},
     {id:"lake",label:"See",shortcut:"s",asset:"lake.svg"},
     {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"}
@@ -36,13 +37,13 @@
           button.append(icon);
         }
         const label=this.doc.createElement("span");
-        const initial=this.doc.createElement("strong");
+        const initial=this.doc.createElement(choice.shortcut?"strong":"span");
         initial.textContent=choice.label[0];
         const rest=this.doc.createTextNode(choice.label.slice(1));
         label.append(initial,rest);
         button.append(label);
         button.addEventListener("click",()=>this.choose(i));
-        button.addEventListener("mouseenter",()=>this.highlight(i));
+        // Hover must not set keyboard selection.
         this.menu.append(button);
       });
       this.button.setAttribute("aria-haspopup","menu");
@@ -80,7 +81,8 @@
         }
         if(key==="arrowdown"||key==="arrowup"){
           e.preventDefault();
-          this.highlight(inInput?(key==="arrowdown"?0:CHOICES.length-1):
+          this.highlight(inInput||!this.menu.querySelector(".is-selected")?
+            (key==="arrowdown"?0:CHOICES.length-1):
             this.active+(key==="arrowdown"?1:-1));
           this.menu.children[this.active].focus({preventScroll:true});
           return;
@@ -108,10 +110,11 @@
       this.menu.style.top=Math.max(8,Math.min(below,appRect.height-height-8))+"px";
     }
     highlight(index){
-      this.active=(index+CHOICES.length)%CHOICES.length;
+      const selected=Number.isInteger(index);
+      if(selected)this.active=(index+CHOICES.length)%CHOICES.length;
       [...this.menu.children].forEach((b,i)=>{
-        b.classList.toggle("is-selected",i===this.active);
-        b.setAttribute("aria-current",i===this.active?"true":"false");
+        b.classList.toggle("is-selected",selected&&i===this.active);
+        b.setAttribute("aria-current",selected&&i===this.active?"true":"false");
       });
     }
     show(){
@@ -119,7 +122,7 @@
       this.open=true;this.menu.classList.remove("hidden");
       this.button.setAttribute("aria-expanded","true");
       this.input.setAttribute("aria-expanded","true");
-      this.highlight(0);this.position();
+      this.active=0;this.highlight(null);this.position();
     }
     close(){
       this.open=false;this.menu.classList.add("hidden");
