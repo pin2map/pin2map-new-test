@@ -743,7 +743,7 @@ const viewports=[
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    assert.equal(await page.locator("#pinPanel").isHidden(),true);
    // Country-neutral fallback: no valid administrative polygon but a
-   // geocoder-validated reference city. User consent alone creates a Pin.
+   // geocoder-validated reference city. Only a subsequent tap and Yes creates the real Pin.
    await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
      const query=new URL(route.request().url()).searchParams.get("q");
      if(query==="Landkreis Havelland"||query==="Bezirk Graz-Umgebung"){
@@ -799,11 +799,11 @@ const viewports=[
    await page.locator("#searchInput").fill("GU");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"Graz"}).first().click();
-   await page.locator(".p2m-plate-reference").waitFor({state:"visible",timeout:12000});
-   assert.match(await page.locator(".p2m-plate-reference").innerText(),/Gratkorn.*Ersatzort/);
+   await page.locator(".p2m-temporary-pin-label").waitFor({state:"visible",timeout:12000});
+   assert.match(await page.locator(".p2m-temporary-pin-label").innerText(),/Gratkorn.*Ersatzort/);
    await page.locator("#searchInput").fill("B");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
-   assert.equal(await page.locator(".p2m-plate-reference").count(),0,
+   assert.equal(await page.locator(".p2m-temporary-pin-label").count(),0,
      "Any new search clears the temporary Austrian fallback point");
    await page.locator("#searchResults .result").first().waitFor({state:"visible"});
    assert.deepEqual(errors,[],view.name+" page errors");
