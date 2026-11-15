@@ -558,7 +558,7 @@
       element.style.top=Math.max(8,outer.bottom-app.top+7)+"px";
     }
   }
-  function clearPlatePreview(){
+  function clearObjectPreview(){
     platePanel?.close();
     gpsLocation?.close();
     mapAdapter?.clearTemporaryPlateArea?.();
@@ -673,7 +673,7 @@
     if(first)openGeometryEditor("area",area,{lat:first[1],lng:first[0]});
   }
   async function findAreaAt(point){
-    clearPlatePreview();
+    clearObjectPreview();
     cancelGeometrySearch();
     searchForm.cancel();searchView.hide();
     if(!state.allowGeocode){
@@ -734,7 +734,7 @@
     }
   }
   function runSearchMode(mode){
-    clearPlatePreview();
+    clearObjectPreview();
     if(mode==="plate"){findPlateCode($("searchInput").value);return;}
     if(mode==="gps"){gpsLocation?.locate();return;}
     if(mode==="pin"){searchForm.submit();return;}
@@ -746,7 +746,7 @@
 
   const searchForm = new window.Pin2MapSearchFormController({
     getElement:$,
-    search:(query,hooks)=>{clearPlatePreview();cancelGeometrySearch();return placeSearch.search(query,{
+    search:(query,hooks)=>{clearObjectPreview();cancelGeometrySearch();return placeSearch.search(query,{
       state,allowed:state.allowGeocode,
       ...hooks,onCacheWrite:save
     });},
@@ -850,7 +850,7 @@
     platePanel=new window.Pin2MapLicensePlatePanel({
       document,getElement:$,mapPort:mapAdapter,
       onAccept:entry=>{
-        clearPlatePreview();
+        clearObjectPreview();
         if(entry.kind==="point"){
           const name=entry.referencePlace?
             entry.label+" – "+entry.referencePlace+" (Ersatzort)":entry.name;
