@@ -33,7 +33,7 @@
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
-  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,featureController=null,featureRun=0;
+  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
@@ -275,7 +275,7 @@
   function anyMapMenuOpen(){
     const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel",
       "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
-      "pinInfoMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm"];
+      "pinInfoMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm","temporaryLayerPicker"];
     return ids.some(id=>$(id)&&!$(id).classList.contains("hidden"))||
       !!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
       !!noteEditor?.open||
@@ -286,6 +286,7 @@
     searchTypeMenu?.close();
     gpsLocation?.close();
     platePanel?.close();
+    temporaryLayerPicker?.close();
     favoritesPanel?.close();
     geometryEditor?.flush();
     geometryEditor?.close(false);
@@ -569,6 +570,7 @@
     }
   }
   function clearObjectPreview(){
+    temporaryLayerPicker?.close();
     manualPinLocality.invalidate();
     platePanel?.close();
     gpsLocation?.close();
@@ -670,18 +672,13 @@
     return showObjectPreview({kind:"area",featureKind:kind,
       label:name,geojson:source.geojson});
   }
-  function createAreaObject(source,kind,nameOverride=null){
+  function createAreaObject(source,kind,nameOverride=null,layerId=PRIVATE_ID){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
     const area=projectFeatures.createArea(state,{
       id:uid(),name,kind,geometry:source.geojson
-    },PRIVATE_ID);
-    save();renderGeometry();mapAdapter.fitGeometry(area);
-    const prepared=window.Pin2MapAreaGeometry.prepare(area.geometry);
-    // Choose a deterministic visible anchor via the map's renderer bounds.
-    const geometry=prepared.geometry;
-    let first=geometry.type==="Polygon"?geometry.coordinates[0][0]:
-      geometry.coordinates[0]?.[0]?.[0];
-    if(first)openGeometryEditor("area",area,{lat:first[1],lng:first[0]});
+    },layerId);
+    save();renderGeometry();
+    return area;
   }
   async function findAreaAt(point){
     clearObjectPreview();
@@ -858,36 +855,38 @@
       onAccept:(point,name)=>addPin(point.lat,point.lng,name)
     });
     gpsLocation.bind();
-    platePanel=new window.Pin2MapLicensePlatePanel({
-      document,getElement:$,icons:window.Pin2MapIcons,mapPort:mapAdapter,
-      onRemove:()=>clearObjectPreview(),
-      onAccept:entry=>{
+    // Selecting a layer is the ONLY commit action. Merely pressing the
+    // green preview check opens the isolated layer menu without saving.
+    temporaryLayerPicker=new window.Pin2MapTemporaryLayerPicker({
+      document,icons:window.Pin2MapIcons,
+      onChoose:(entry,layerId)=>{
+        const layer=layerById(layerId);
+        if(!layer)return;
+        // The preview remains untouched unless a real layer was selected.
         clearObjectPreview();
         if(entry.kind==="point"){
           const name=entry.referencePlace?
-            entry.label+" – "+entry.referencePlace+" (Ersatzort)":entry.name;
-          const pin=commitPin(entry.point.lat,entry.point.lng,name||entry.label);
-          if(!pin)return;
-          void dbWrite().catch(()=>showNotice("Pin konnte nicht gespeichert werden"));
-          requestAnimationFrame(()=>{
-            const input=$("pinName");
-            if(input&&!$("pinPanel").classList.contains("hidden")){
-              input.focus({preventScroll:true});input.select();
-            }
-          });
-          return;
-        }
-        if(entry.kind==="river"){
-          const river=projectFeatures.createRiver(state,{
+            entry.label+" – "+entry.referencePlace+" (Ersatzort)":entry.name||entry.label;
+          pinOps.createPin(state,{
+            id:uid(),lat:entry.point.lat,lng:entry.point.lng,name,layerId
+          },{validatePosition:projectModel.position,cleanText});
+          save();renderLayers();renderMarkers();
+        }else if(entry.kind==="river"){
+          projectFeatures.createRiver(state,{
             id:uid(),name:entry.label,chains:entry.chains
-          },PRIVATE_ID);
+          },layerId);
           save();renderGeometry();
-          const chain=river.chains[0],point=chain[Math.floor(chain.length/2)];
-          openGeometryEditor("river",river,{lat:point[0],lng:point[1]});
         }else createAreaObject({name:entry.label,geojson:entry.geojson},
-          entry.featureKind||"area");
+          entry.featureKind||"area",null,layerId);
+        if(!layer.visible)showNotice("Objekt in ausgeblendeter Ebene „"+layer.name+"“ gespeichert");
         void dbWrite().catch(()=>showNotice("Objekt konnte nicht gespeichert werden"));
       }
+    });
+    temporaryLayerPicker.bind();
+    platePanel=new window.Pin2MapLicensePlatePanel({
+      document,getElement:$,icons:window.Pin2MapIcons,mapPort:mapAdapter,
+      onRemove:()=>clearObjectPreview(),
+      onAccept:(entry,anchor)=>temporaryLayerPicker.show(entry,state.layers,anchor)
     });
     platePanel.bind();
     gestures=window.Pin2MapMapGestureController({
@@ -903,6 +902,10 @@
       scheduleFrame:requestAnimationFrame,
       vibrate:duration=>{if(navigator.vibrate)navigator.vibrate(duration);}
     });
+    mapAdapter.setTemporaryPinGestureHandler((marker,onTap,zoomMarker)=>
+      gestures.attachMarkerLongPress(marker,null,{
+        onTap,transient:true,zoomMarker
+      }));
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
       getInfoLabel:pin=>pinInfoService.label(pin),
