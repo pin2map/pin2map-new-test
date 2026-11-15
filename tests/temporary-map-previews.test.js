@@ -107,6 +107,19 @@ test("temporary pin long-press attaches to both hit targets and survives renamed
  assert.equal(attachments[2].marker,label);
  adapter.setTemporaryPinGestureHandler(null);
 });
+test("synthetic click following temporary pin long-press zoom cannot open save menu",()=>{
+ let count=0,blocked=true;
+ adapter.setTemporaryPinGestureHandler(()=>{},()=>blocked);
+ const entry={kind:"point",label:"Test",point:{lat:49,lng:10}};
+ adapter.showTemporaryPin(entry,()=>count++);
+ const marker=adapter.temporaryPlateArea.group.children[0];
+ marker.handlers.click({originalEvent:{}});
+ assert.equal(count,0);
+ blocked=false;
+ marker.handlers.click({originalEvent:{}});
+ assert.equal(count,1);
+ adapter.setTemporaryPinGestureHandler(null);
+});
 test("pink polygon replaces old pin overlay and offers a tappable label",()=>{
  let tapped=0;
  const old=adapter.temporaryPlateArea.group;
