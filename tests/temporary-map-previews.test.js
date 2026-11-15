@@ -1,7 +1,11 @@
 "use strict";
 const test=require("node:test");
 const assert=require("node:assert/strict");
-const saved={window:global.window,document:global.document,navigator:global.navigator};
+const saved=Object.fromEntries(["window","document","navigator"].map(
+ key=>[key,Object.getOwnPropertyDescriptor(global,key)]));
+const expose=(key,value)=>Object.defineProperty(global,key,{
+ configurable:true,writable:true,value
+});
 const all=[];
 const bounds={isValid:()=>true,getCenter:()=>({lat:49,lng:10})};
 function layer(options={}){
@@ -27,7 +31,7 @@ const map={
  off(event,fn){this.events=this.events.filter(x=>x.fn!==fn);},
  removeLayer(item){this.removed.push(item);}
 };
-global.window={
+expose("window",{
  L:{
   layerGroup:()=>({children:[],addTo(){return this;}}),
   marker:(pos,options)=>{const x=layer(options);x.setLatLng(pos);return x;},
@@ -39,12 +43,12 @@ global.window={
  Pin2MapAreaGeometry:{prepare:geometry=>({geometry})},
  Pin2MapAreaLabelAnchor:{visibleAnchor:()=>({x:200,y:200})},
  Pin2MapRiverLabelAnchor:{findVisibleAnchor:()=>({x:200,y:200})}
-};
-global.document={createElement:()=>({
+});
+expose("document",{createElement:()=>({
  className:"",textContent:"",
  get outerHTML(){return '<span class="'+this.className+'">'+this.textContent+'</span>';}
-})};
-global.navigator={userAgent:"Node test",maxTouchPoints:0};
+})});
+expose("navigator",{userAgent:"Node test",maxTouchPoints:0});
 require("../map-adapter-leaflet.js");
 const Adapter=global.window.Pin2MapLeafletAdapter;
 const adapter=new Adapter(map);
@@ -92,4 +96,9 @@ test("river draws pink line and a separate 24px invisible tap corridor",()=>{
  assert.equal(adapter.temporaryPlateArea,null);
 });
 const {after}=require("node:test");
-after(()=>{for(const k of Object.keys(saved))global[k]=saved[k];});
+after(()=>{
+ for(const [key,descriptor] of Object.entries(saved)){
+  if(descriptor)Object.defineProperty(global,key,descriptor);
+  else delete global[key];
+ }
+});
