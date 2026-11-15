@@ -170,6 +170,10 @@ const viewports=[
    assert.equal(await page.locator("#pinName").evaluate(el=>
      el.selectionStart===0&&el.selectionEnd===el.value.length),true,
      "GPS Pin name must be selected for immediate editing");
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.length===1;}finally{db.close();}
+   },null,{timeout:8000});
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{
