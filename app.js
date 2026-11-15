@@ -909,7 +909,7 @@
     mapAdapter.setTemporaryPinGestureHandler((marker,onTap,zoomMarker)=>
       gestures.attachMarkerLongPress(marker,null,{
         onTap,transient:true,zoomMarker
-      }));
+      }),()=>gestures.isSuppressed());
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
       getInfoLabel:pin=>pinInfoService.label(pin),
