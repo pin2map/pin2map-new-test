@@ -75,6 +75,7 @@ const CORE=[
   "./ui/search-form.js",
   "./ui/search-type-menu.js",
   "./ui/license-plate-panel.js",
+  "./ui/temporary-layer-picker.js",
   "./ui/gps-location.js",
   "./ui/map-action-chooser.js",
   "./ui/geometry-editor.js",
