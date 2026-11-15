@@ -2,10 +2,10 @@
 /* Shared transient object confirmation. Never owns stored data or Leaflet. */
 (function(root){
  class LicensePlatePanel{
-  constructor({document:doc,getElement,icons,mapPort,onAccept,onRemove}){
+  constructor({document:doc,getElement,icons,mapPort,onAccept,onRemove,onMove=()=>{}}){
    if(!doc||!icons||typeof icons.svg!=="function"||!mapPort||typeof getElement!=="function"||typeof onAccept!=="function"||typeof onRemove!=="function")
      throw new TypeError("License plate prompt ports required");
-   this.doc=doc;this.el=getElement;this.icons=icons;this.mapPort=mapPort;this.onAccept=onAccept;this.onRemove=onRemove;
+   this.doc=doc;this.el=getElement;this.icons=icons;this.mapPort=mapPort;this.onAccept=onAccept;this.onRemove=onRemove;this.onMove=onMove;
    this.box=getElement("plateAreaConfirm");this.entry=null;
   }
   bind(){
@@ -17,6 +17,13 @@
    const remove=this.doc.createElement("button");
    remove.type="button";remove.title="Entfernen";remove.setAttribute("aria-label","Entfernen");
    remove.className="plate-area-no";remove.append(this.icons.svg("x",this.doc));
+   const move=this.doc.createElement("button");
+   move.type="button";move.title="Verschieben";move.setAttribute("aria-label","Verschieben");
+   move.className="plate-area-move";move.append(this.icons.svg("move",this.doc));
+   move.addEventListener("click",event=>{
+     event.stopPropagation();const entry=this.entry;
+     this.close();if(entry)this.onMove(entry);
+   });
    save.addEventListener("click",event=>{
      event.stopPropagation();const entry=this.entry;
      const anchor=save.getBoundingClientRect();
@@ -26,7 +33,7 @@
      event.stopPropagation();const entry=this.entry;
      this.close();if(entry)this.onRemove(entry);
    });
-   this.box.append(remove,save);
+   this.box.append(remove,move,save);
    this.doc.addEventListener("keydown",event=>{
      if(event.key==="Escape"&&!this.box.classList.contains("hidden")){
        event.preventDefault();this.close();
