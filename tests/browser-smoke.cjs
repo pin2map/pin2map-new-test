@@ -416,6 +416,15 @@ async function longPress(page,x,y,ms=725){
       "Long press must never create a pin before user chooses");
     assert.equal(await page.locator("#mapActionChooser button").count(),2);
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
+    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
+    assert.equal(await page.locator("#pinPanel").isHidden(),true,
+      "New pin must remain temporary until its pink marker is tapped and Yes is chosen");
+    await page.locator(".p2m-temporary-pin").click();
+    await page.locator("#plateAreaConfirm").waitFor({state:"visible",timeout});
+    await page.locator(".plate-area-no").click();
+    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    await page.locator(".p2m-temporary-pin").click();
+    await page.locator(".plate-area-yes").click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     // Surface any incidental error from the initial long-press separately
     // from a later preview error, rather than hiding it in a final count.
@@ -663,6 +672,10 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#searchResults button.result").count(),2);
     assert.equal(await page.locator(".pin-marker").count(),0,"Multiple results must not auto-create pins");
     await page.locator("#searchResults button.result").first().click();
+    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
+    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    await page.locator(".p2m-temporary-pin").click();
+    await page.locator(".plate-area-yes").click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinName").inputValue(),"Stuttgart");
     assert.equal(await page.locator(".pin-marker").count(),1);
@@ -682,6 +695,9 @@ async function longPress(page,x,y,ms=725){
     assert.ok(Math.abs(projectAfterSelection.viewport.lat-48.7758)<0.25,
       "Choosing place keeps the selected location near the visible map center");
     await runCachedSearch("singlehit");
+    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
+    await page.locator(".p2m-temporary-pin").click();
+    await page.locator(".plate-area-yes").click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinName").inputValue(),"Frankfurt");
     assert.equal(await page.locator(".pin-marker").count(),2);
