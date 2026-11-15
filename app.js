@@ -28,7 +28,7 @@
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
-  let mapActionChooser,geometryEditor,searchTypeMenu,featureController=null,featureRun=0;
+  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
@@ -252,7 +252,7 @@
   function anyMapMenuOpen(){
     const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel",
       "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
-      "pinInfoMenu","mapActionChooser"];
+      "pinInfoMenu","mapActionChooser","gpsPinPrompt"];
     return ids.some(id=>$(id)&&!$(id).classList.contains("hidden"))||
       !!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
       !!noteEditor?.open||
@@ -261,6 +261,7 @@
   function closeAllMapMenus(){
     mapActionChooser?.close();
     searchTypeMenu?.close();
+    gpsLocation?.close();
     favoritesPanel?.close();
     geometryEditor?.flush();
     geometryEditor?.close(false);
@@ -651,6 +652,7 @@
     }finally{if(run===featureRun)featureController=null;}
   }
   function runSearchMode(mode){
+    if(mode==="gps"){gpsLocation?.locate();return;}
     if(mode==="pin"){searchForm.submit();return;}
     void findGeometry(mode,$("searchInput").value);
   }
@@ -754,6 +756,21 @@
       onArea:point=>void findAreaAt(point)
     });
     mapActionChooser.bind();
+    gpsLocation=new window.Pin2MapGpsLocationController({
+      document,getElement:$,geolocation:navigator.geolocation,
+      mapPort:mapAdapter,onNotice:showNotice,
+      onAccept:(point,name)=>{
+        const pin=addPin(point.lat,point.lng,name);
+        if(!pin)return;
+        requestAnimationFrame(()=>{
+          const input=$("pinName");
+          if(input&&!$("pinPanel").classList.contains("hidden")){
+            input.focus({preventScroll:true});input.select();
+          }
+        });
+      }
+    });
+    gpsLocation.bind();
     gestures=window.Pin2MapMapGestureController({
       mapAdapter,
       onSurfacePointerDown:()=>{
