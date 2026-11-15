@@ -3,10 +3,11 @@
  * Leaflet belongs here. An outside tap cancels selection without saving. */
 (function(root){
  class TemporaryLayerPicker{
-  constructor({document:doc,icons,onChoose,onClose=()=>{}}){
+  constructor({document:doc,icons,onChoose,onCreate=()=>null,getLayers=()=>[],onClose=()=>{}}){
    if(!doc||typeof icons?.svg!=="function"||typeof onChoose!=="function")
      throw new TypeError("Temporary layer picker ports required");
-   this.doc=doc;this.icons=icons;this.onChoose=onChoose;this.onClose=onClose;
+   this.doc=doc;this.icons=icons;this.onChoose=onChoose;
+   this.onCreate=onCreate;this.getLayers=getLayers;this.onClose=onClose;
    this.entry=null;this.position=null;
    this.box=doc.createElement("section");
    this.box.id="temporaryLayerPicker";
@@ -32,7 +33,8 @@
    this.entry=entry;
    this.position=anchor||{left:0,right:0,top:0,bottom:0};
    this.box.replaceChildren();
-   for(const layer of layers.filter(l=>l?.id)){
+   const available=Array.isArray(layers)?layers.filter(l=>l?.id):[];
+   for(const layer of available){
      const row=this.doc.createElement("button");
      row.type="button";row.className="temporary-layer-option";
      row.setAttribute("role","option");
@@ -56,7 +58,26 @@
      });
      this.box.append(row);
    }
-   if(!this.box.children.length){this.close();return;}
+   if(available.length===1){
+     const info=this.doc.createElement("p");
+     info.className="temporary-layer-info";
+     info.textContent="In diesem Projekt ist nur eine Ebene vorhanden.";
+     this.box.append(info);
+   }
+   const create=this.doc.createElement("button");
+   create.type="button";create.className="temporary-layer-create";
+   create.setAttribute("aria-label","Neue Ebene erstellen");
+   const icon=this.icons.svg("plus",this.doc);
+   create.append(icon,this.doc.createTextNode(" Neue Ebene erstellen"));
+   create.addEventListener("click",event=>{
+     event.stopPropagation();
+     if(this.entry!==entry)return;
+     const added=this.onCreate();
+     // Creating a layer does not create or save the temporary object.
+     if(added)this.show(entry,this.getLayers(),this.position);
+   });
+   this.box.append(create);
+   if(!available.length){this.close();return;}
    this.box.classList.remove("hidden");
    this.positionMenu();
   }
