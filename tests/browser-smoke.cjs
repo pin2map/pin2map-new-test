@@ -419,6 +419,10 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinPanel").isHidden(),true,
       "New pin must remain temporary until its pink marker is tapped and Yes is chosen");
+    assert.equal(await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject()).pins.length;}finally{store.close();}
+    }),0,"Temporary pin must never enter project persistence");
     await page.locator(".p2m-temporary-pin").click();
     await page.locator("#plateAreaConfirm").waitFor({state:"visible",timeout});
     await page.locator(".plate-area-no").click();
