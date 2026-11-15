@@ -6,7 +6,7 @@ const path=require("node:path");
 const Panel=require("../ui/license-plate-panel.js");
 const read=name=>fs.readFileSync(path.resolve(__dirname,"..",name),"utf8");
 class Element{
- constructor(){this.handlers={};this.children=[];this.style={};this.textContent="";
+ constructor(){this.handlers={};this.children=[];this.style={};this.textContent="";this.attributes={};
   this.hidden=true;this.classList={
    add:()=>this.hidden=true,remove:()=>this.hidden=false,
    contains:()=>this.hidden
@@ -14,6 +14,8 @@ class Element{
  replaceChildren(){this.children=[];}
  append(...nodes){this.children.push(...nodes);}
  addEventListener(type,handler){this.handlers[type]=handler;}
+ setAttribute(key,value){this.attributes[key]=value;}
+ getAttribute(key){return this.attributes[key];}
  contains(){return false;}
  get offsetWidth(){return 150;}
  get offsetHeight(){return 50;}
@@ -25,6 +27,7 @@ function fixture(){
  const map={on(){},getContainer:()=>mapElement,project:()=>({x:250,y:250})};
  const doc={createElement:()=>new Element(),addEventListener:(type,cb)=>events[type]=cb};
  const panel=new Panel({document:doc,getElement:id=>id==="app"?app:box,
+  icons:{svg:name=>({iconName:name})},
   mapPort:map,onAccept:entry=>accepted.push(entry),onRemove:entry=>removed.push(entry)});
  panel.bind();
  return {panel,box,accepted,removed,save:box.children[0],
@@ -41,8 +44,10 @@ for(const entry of [
   const x=fixture();
   x.panel.show(entry,{lat:47,lng:9});
   assert.equal(x.box.children.length,2);
-  assert.equal(x.save.textContent,"Speichern");
-  assert.equal(x.remove.textContent,"Entfernen");
+  assert.equal(x.save.getAttribute("aria-label"),"Speichern");
+  assert.equal(x.remove.getAttribute("aria-label"),"Entfernen");
+  assert.equal(x.save.children[0].iconName,"check");
+  assert.equal(x.remove.children[0].iconName,"x");
   assert.equal(x.accepted.length,0);
   x.save.handlers.click({stopPropagation(){}});
   assert.deepEqual(x.accepted,[entry]);
