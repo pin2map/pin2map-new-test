@@ -26,22 +26,38 @@
     }
     return name;
   }
-  // Reverse geocoding is not a nearest-settlement calculation. Prefer
-  // explicit small settlement/address components; never label a manual pin
-  // with a random road, shop, house number, county or large state.
-  function nearbyLocalityName(result){
+  // Use the map zoom AT THE USER'S TAP, not the adapter's subsequent
+  // automatic zoom. Nominatim zoom 10 returns a city-level address; zoom 13
+  // allows standalone villages at close scales without seeking neighbourhoods.
+  function reversePlaceZoom(mapZoom){
+    return Number.isFinite(mapZoom)&&mapZoom>=15?13:10;
+  }
+  // An OSM reverse hit may be a nearby object whose small place component
+  // belongs to an adjacent village. Prefer the main settlement (city/town)
+  // even on a detailed map. Small localities are fallback ONLY if no city or
+  // town is present. Never choose quarter/suburb/neighbourhood as a city name.
+  function nearbyLocalityName(result,{mapZoom=10}={}){
     const address=result?.address||{};
-    const keys=["village","hamlet","suburb","quarter","neighbourhood",
-      "city_district","locality","town","city","municipality"];
-    for(const key of keys){
+    const read=key=>{
       const name=String(address[key]||"").trim();
-      if(name&&name.length<=120)return name;
+      return name&&name.length<=120?name:"";
+    };
+    for(const key of ["city","town"]){
+      const name=read(key);if(name)return name;
     }
+    if(reversePlaceZoom(mapZoom)===10){
+      const name=read("municipality");if(name)return name;
+    }
+    for(const key of ["village","hamlet","locality"]){
+      const name=read(key);if(name)return name;
+    }
+    const municipality=read("municipality");
+    if(municipality)return municipality;
+    // Nominatim's addresstype/name may describe a near-by suburb, not the
+    // clicked main town; accept only a standalone settlement classification.
     const type=String(result?.addresstype||result?.type||"").toLowerCase();
-    if(["village","hamlet","suburb","quarter","neighbourhood",
-        "city_district","locality","town","city","municipality"].includes(type)){
-      const name=title(result);
-      if(name&&name.length<=120)return name;
+    if(["city","town","village","hamlet"].includes(type)){
+      const name=title(result);if(name&&name.length<=120)return name;
     }
     return "";
   }
@@ -89,7 +105,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({title,detail,pinName,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({title,detail,pinName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
