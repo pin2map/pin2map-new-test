@@ -848,7 +848,7 @@
     });
     gpsLocation.bind();
     platePanel=new window.Pin2MapLicensePlatePanel({
-      document,getElement:$,mapPort:mapAdapter,
+      document,getElement:$,icons:window.Pin2MapIcons,mapPort:mapAdapter,
       onRemove:()=>clearObjectPreview(),
       onAccept:entry=>{
         clearObjectPreview();
