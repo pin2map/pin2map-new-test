@@ -47,6 +47,7 @@ const CORE=[
   "./adapters/geocoding/nominatim-area-finder.js",
   "./adapters/geocoding/osm-watercourse-finder.js",
   "./application/place-search-service.js",
+  "./application/manual-pin-locality.js",
   "./application/license-plate-search.js",
   "./application/search-pin-transfer.js",
   "./adapters/weather/open-meteo-pin-info.js",
