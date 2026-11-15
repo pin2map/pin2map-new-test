@@ -35,3 +35,11 @@ Die Suchoption **Kennzeichen** ergänzt Pin, GPS-Standort, Gebiet, See und Fluss
 UI: `ui/license-plate-panel.js`; Domain: `domain/license-plate-catalog.js`; Use-Case: `application/license-plate-search.js`; Kartenrendering ausschließlich `map-adapter-leaflet.js`; `app.js` nur Verdrahtung. Keine neue IndexedDB-Struktur.
 
 Tests müssen Mehrfachtreffer, Historienflag, Länderprüfung, eindeutige Polygonauflösung, temporäre Nichtpersistenz, Nein, Ja/Privat, Suchwechsel-Cleanup sowie vorhandene Pin-/Gebiet-/GPS-Regressionsfälle umfassen. Automatisierte Chromium-Emulation ersetzt keine physische Safari-Nutzerabnahme. **Technischer Abschluss erst bei grünen Node-/Architektur-/Browser- und HTTPS-Preview-Gates.**
+
+## v192 – Erweiterte Datenversorgung (2026-11-15, ersetzt die v191-Zahlenangaben)
+
+Der erste v191-Starterkatalog mit 54 Beispielen wurde um vier getrennte lokale Datenmodule ergänzt. Mit Länder+Code-Deduplikation sind jetzt **1.899 Einträge aus 20 Ländern** verfügbar; alle offline, ohne neue Datenbank. Vollständige Mengen je Land, Quellen, Lizenzhinweise und Quality-Gates stehen in [license-plate-sources.md](license-plate-sources.md) und dem v192-Eintrag in [PROJEKTSTATUS.md](PROJEKTSTATUS.md).
+
+Drei Gültigkeitskategorien gelten nun verbindlich: `current`, `historic`, `unknown`. Der neue Wert `unknown` ist für noch nicht unabhängig bestätigte aktuelle Vergabe und bei CC0-/Community-Referenzlisten **verpflichtend**, damit aus der geografischen Zuordnung keine falsche Aussage zur heutigen Ausgabe folgt. Der Katalog priorisiert bisher geprüfte Starttreffer; neue Länder behalten eigene Treffer bei identischem Code. Unicode und führende Nullen sind Teil des Vertrages.
+
+Grenzen bleiben auf Einzelabfrage mit Nominatim-Nutzerfreigabe beschränkt. Ein Offline-Katalogeintrag garantiert **keinen** georeferenzierten Polygonerfolg. Der gesamte temporäre rosa Kartenmodus und das ausdrückliche Speichern nach Ja bleiben fachlich unverändert. Die spätere vollständige Abdeckung von UK, NO, GR usw. sowie Sonder-/Mehrfachgebiete (z. B. BÖ) und historisch datierte Kataloge bleiben gesonderte Aufgaben; nicht über einen künstlichen Polygon-Fallback kaschieren.
