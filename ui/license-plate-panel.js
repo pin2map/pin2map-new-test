@@ -2,19 +2,21 @@
 /* Shared transient object confirmation. Never owns stored data or Leaflet. */
 (function(root){
  class LicensePlatePanel{
-  constructor({document:doc,getElement,mapPort,onAccept,onRemove}){
-   if(!doc||!mapPort||typeof getElement!=="function"||typeof onAccept!=="function"||typeof onRemove!=="function")
+  constructor({document:doc,getElement,icons,mapPort,onAccept,onRemove}){
+   if(!doc||!icons||typeof icons.svg!=="function"||!mapPort||typeof getElement!=="function"||typeof onAccept!=="function"||typeof onRemove!=="function")
      throw new TypeError("License plate prompt ports required");
-   this.doc=doc;this.el=getElement;this.mapPort=mapPort;this.onAccept=onAccept;this.onRemove=onRemove;
+   this.doc=doc;this.el=getElement;this.icons=icons;this.mapPort=mapPort;this.onAccept=onAccept;this.onRemove=onRemove;
    this.box=getElement("plateAreaConfirm");this.entry=null;
   }
   bind(){
    if(this.bound)return;
    this.box.replaceChildren();
    const save=this.doc.createElement("button");
-   save.type="button";save.textContent="Speichern";save.className="plate-area-yes";
+   save.type="button";save.title="Speichern";save.setAttribute("aria-label","Speichern");
+   save.className="plate-area-yes";save.append(this.icons.svg("check",this.doc));
    const remove=this.doc.createElement("button");
-   remove.type="button";remove.textContent="Entfernen";remove.className="plate-area-no";
+   remove.type="button";remove.title="Entfernen";remove.setAttribute("aria-label","Entfernen");
+   remove.className="plate-area-no";remove.append(this.icons.svg("x",this.doc));
    save.addEventListener("click",event=>{
      event.stopPropagation();const entry=this.entry;
      this.close();if(entry)this.onAccept(entry);
