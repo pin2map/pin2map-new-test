@@ -61,12 +61,13 @@
     }
     setOpen(open){
       this.open=Boolean(open);
-      if(this.open)this.filterText="";
+      if(this.open){
+        this.filterText="";if(this.filterInput)this.filterInput.value="";
+      }
       this.el("pinLayerMenu").classList.toggle("hidden",!this.open);
       this.el("pinLayerTrigger").setAttribute("aria-expanded",String(this.open));
       this.el("pinPanel").classList.toggle("pin-layer-open",this.open);
       if(this.open){
-        this.filterText="";
         this.applyFilter();
         this.positionMenu();
       }
@@ -117,7 +118,7 @@
       });
       filter.append(input,clear);
       menu.append(filter);
-      this.clearButton=clear;
+      this.clearButton=clear;this.filterInput=input;
       for(const layer of layers){
         const option=this.document.createElement("button");
         option.type="button";option.className="pin-layer-option";
