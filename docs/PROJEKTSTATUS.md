@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-15 (aktueller Feature-Quellstand **v207**; letzter im Projektstatus vollständig verifizierter Preview-Stand **v195**; v207 Node-/Chromium-/Architektur-/Pages-/HTTPS-Live-Gates noch nachzuweisen; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
+**Stand:** 2026-11-15 (aktueller Feature-Quellstand **v208**; letzter vollständig freigegebener Preview-Stand **v195**; v208 Node-/Architekturgates grün und HTTPS ausgeliefert, vollständige Chromium-/Geometrie-Browser-Gates weiterhin rot; frühere Nutzerabnahmen bleiben gültig, gezielte reale iPhone-Abnahme gesondert) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.  
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
