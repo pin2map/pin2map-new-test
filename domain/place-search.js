@@ -26,39 +26,54 @@
     }
     return name;
   }
-  // Use the map zoom AT THE USER'S TAP, not the adapter's subsequent
-  // automatic zoom. Nominatim zoom 10 returns a city-level address; zoom 13
-  // allows standalone villages at close scales without seeking neighbourhoods.
+  // Original click scale; raster labels cannot be read from a tile.
+  // Nominatim zoom 10=city, 13=village/suburb, 15=settlement.
   function reversePlaceZoom(mapZoom){
-    return Number.isFinite(mapZoom)&&mapZoom>=15?13:10;
+    return !Number.isFinite(mapZoom)||mapZoom<12?10:mapZoom<15?13:15;
   }
-  // An OSM reverse hit may be a nearby object whose small place component
-  // belongs to an adjacent village. Prefer the main settlement (city/town)
-  // even on a detailed map. Small localities are fallback ONLY if no city or
-  // town is present. Never choose quarter/suburb/neighbourhood as a city name.
-  function nearbyLocalityName(result,{mapZoom=10}={}){
+  function groundDistanceMeters(a,b){
+    const lat1=Number(a?.lat),lon1=Number(a?.lng),
+      lat2=Number(b?.lat),lon2=Number(b?.lon);
+    if(![lat1,lon1,lat2,lon2].every(Number.isFinite))return null;
+    const rad=Math.PI/180,dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad;
+    const h=Math.sin(dLat/2)**2+
+      Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)**2;
+    return 12742000*Math.asin(Math.min(1,Math.sqrt(h)));
+  }
+  // A named, directly resolved OSM settlement is stronger evidence than an
+  // address component which may belong to a neighbouring administrative area.
+  // Do NOT prefer arbitrary suburb/district tags over main-city names.
+  function nearbyLocalityName(result,{mapZoom=10,point=null}={}){
     const address=result?.address||{};
     const read=key=>{
       const name=String(address[key]||"").trim();
       return name&&name.length<=120?name:"";
     };
-    for(const key of ["city","town"]){
-      const name=read(key);if(name)return name;
+    const kind=String(result?.addresstype||result?.type||"").toLowerCase();
+    const direct=title(result);
+    const city=read("city")||read("town");
+    const village=read("village")||read("hamlet")||read("locality");
+    if(reversePlaceZoom(mapZoom)>=13){
+      const isSettlement=["village","hamlet","locality"].includes(kind);
+      const isDirect=isSettlement&&direct&&direct.length<=120&&
+        (!village||direct===village);
+      if(isDirect){
+        const distance=groundDistanceMeters(point,result);
+        const limit=mapZoom>=15?1100:1800;
+        if(distance===null||distance<=limit)return direct;
+      }
+      // Some reverse responses provide a village in the address hierarchy,
+      // but name only the surrounding administration. Use it only when no
+      // distinct city/town is given, never override a known main city.
+      if(!city&&village)return village;
     }
-    if(reversePlaceZoom(mapZoom)===10){
-      const name=read("municipality");if(name)return name;
-    }
-    for(const key of ["village","hamlet","locality"]){
-      const name=read(key);if(name)return name;
-    }
+    if(city)return city;
     const municipality=read("municipality");
+    if(reversePlaceZoom(mapZoom)===10&&municipality)return municipality;
+    if(village)return village;
     if(municipality)return municipality;
-    // Nominatim's addresstype/name may describe a near-by suburb, not the
-    // clicked main town; accept only a standalone settlement classification.
-    const type=String(result?.addresstype||result?.type||"").toLowerCase();
-    if(["city","town","village","hamlet"].includes(type)){
-      const name=title(result);if(name&&name.length<=120)return name;
-    }
+    if(["city","town","village","hamlet"].includes(kind)&&
+      direct&&direct.length<=120)return direct;
     return "";
   }
   function kind(result){
