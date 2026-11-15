@@ -825,6 +825,9 @@
       onAccept:entry=>{
         clearPlatePreview();
         createAreaObject({name:entry.label,geojson:entry.geojson},"area");
+        // Explicit consent commits the real area immediately rather than
+        // relying on a later viewport/debounced write.
+        void dbWrite().catch(()=>showNotice("Kennzeichenbereich konnte nicht gespeichert werden"));
       }
     });
     platePanel.bind();
