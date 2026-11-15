@@ -259,17 +259,32 @@
           Math.max(top+margin,trigger.top-8-Math.min(popup.scrollHeight,parseFloat(popup.style.maxHeight))):
           trigger.bottom+8)+"px";
       }else{
+        // Same overlay relationship as the pin URL: inside the editor,
+        // over the notes, ending ABOVE the bottom action buttons. Never
+        // extend a fixed popup from the panel top to the viewport bottom.
         const popup=this.urlPopup;
-        popup.style.width=Math.min(Math.max(180,panel.width-20),width-24)+"px";
-        popup.style.left=Math.max(left+12,panel.left+10)+"px";
+        const header=this.header.getBoundingClientRect();
+        const actions=this.actions.getBoundingClientRect();
+        const margin=12,inset=10,gap=8;
+        const popupWidth=Math.min(Math.max(180,panel.width-inset*2),width-margin*2);
+        popup.style.width=popupWidth+"px";
+        popup.style.left=Math.max(left+margin,Math.min(panel.left+inset,left+width-popupWidth-margin))+"px";
+        const preferredTop=Math.max(panel.top+gap,header.bottom+gap);
+        const bottom=Math.min(actions.top-gap,top+height-margin);
         if(keyboard&&this.urlKeyboardAnchor){
+          // Reuse pin-style anchored viewport compensation while iOS
+          // animates its software keyboard; do not jump to the footer.
           const anchor=this.urlKeyboardAnchor;
           const desired=anchor.top+top-anchor.visualOffsetTop;
-          popup.style.top=Math.max(top+8,Math.min(desired,top+height-popup.offsetHeight-8))+"px";
-        }else if(!keyboard){
-          popup.style.top=Math.max(top+12,Math.min(panel.top+Math.min(80,panel.height*.2),top+height-190))+"px";
+          popup.style.top=Math.max(top+gap,Math.min(desired,top+height-popup.offsetHeight-gap))+"px";
+          popup.style.height=Math.max(100,Math.min(bottom-parseFloat(popup.style.top),top+height-parseFloat(popup.style.top)-margin))+"px";
+        }else{
+          const available=Math.max(0,bottom-Math.max(top+gap,preferredTop));
+          const heightNeeded=Math.min(320,Math.max(145,available));
+          const popupTop=Math.max(top+gap,Math.min(preferredTop,bottom-heightNeeded));
+          popup.style.top=popupTop+"px";
+          popup.style.height=Math.max(100,bottom-popupTop)+"px";
         }
-        popup.style.height=Math.max(150,Math.min(300,top+height-parseFloat(popup.style.top)-12))+"px";
       }
     }
     showAreaPopup(mode){
