@@ -31,7 +31,7 @@
     marker._heldZoomClose=!second;
     persistViewport();updatePanelLayout();
   }
-  function attachMarkerLongPress(marker,id){
+  function attachMarkerLongPress(marker,id,{onTap=null,transient=false,zoomMarker=marker}={}){
     const element=mapAdapter.getMarkerElement(marker);
     if(!element || element.dataset.pinGestureBound)return;
     element.dataset.pinGestureBound="true";
@@ -72,8 +72,9 @@
         const tap=!gesture.activated&&!gesture.cancelled;
         suppressFor(600);
         cleanup();
-        if(tap)selectPin(id);
-        else renderMarkers();
+        if(tap){
+          if(onTap)onTap();else selectPin(id);
+        }else if(!transient)renderMarkers();
       };
       const onCancel=e=>{
         if(e.pointerId!==gesture.id || gesture.finished)return;
@@ -87,7 +88,7 @@
         if(markerPressStart!==gesture || gesture.finished || gesture.cancelled)return;
         gesture.activated=true;
         suppressFor(900);
-        zoomHeldPin(marker);
+        zoomHeldPin(zoomMarker);
         vibrate(15);
       },550);
     },{passive:false});
