@@ -5,7 +5,7 @@ require("../ui/pin-note-editor.js");
 const GeometryEditor=require("../ui/geometry-editor.js");
 class Element{
   constructor(tag="div"){
-    this.tagName=tag;this.children=[];this.attrs={};this.listeners={};this.style={};
+    this.tagName=tag;this.children=[];this.attrs={};this.listeners={};this.style={};this.dataset={};
     this.className="";this.textContent="";this.value="";this.hidden=false;
     this.offsetWidth=350;this.offsetHeight=280;this.scrollHeight=210;
     const cls=new Set();
