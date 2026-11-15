@@ -575,6 +575,8 @@
     }catch(_error){return false;}
     cancelTemporaryMove();
     entry.point=position;
+    // New naming reflects the scale at which the relocation target was chosen.
+    entry.mapZoom=mapAdapter.getViewport().zoom;
     if(entry.autoNamed){
       entry.name="";entry.label="Neuer Pin";
     }
@@ -592,17 +594,18 @@
     else mapAdapter.showTemporaryPlateArea(entry,onTap);
     return entry;
   }
-  function addPin(lat,lng,name){
+  function addPin(lat,lng,name,source="search"){
     if(!Number.isFinite(lat)||Math.abs(lat)>90||
        !Number.isFinite(lng)||Math.abs(lng)>180)return null;
     closeAllMapMenus();
     // Capture the user's original map scale before the preview adapter may
     // automatically zoom in to display the temporary pin.
     const mapZoom=mapAdapter.getViewport().zoom;
-    const entry={kind:"point",point:{lat,lng},mapZoom,autoNamed:!name,
+    const entry={kind:"point",point:{lat,lng},mapZoom,
+      autoNamed:source==="map"&&!name,
       label:name||"Neuer Pin",name:name||""};
     showObjectPreview(entry);
-    if(!name)void manualPinLocality.resolve(entry);
+    if(entry.autoNamed)void manualPinLocality.resolve(entry);
     return entry;
   }
   function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
@@ -895,7 +898,7 @@
     });
     mapActionChooser=new window.Pin2MapMapActionChooser({
       document,getElement:$,icons:window.Pin2MapIcons,
-      onPin:point=>addPin(point.lat,point.lng,""),
+      onPin:point=>addPin(point.lat,point.lng,"","map"),
       onArea:point=>void findAreaAt(point)
     });
     mapActionChooser.bind();
