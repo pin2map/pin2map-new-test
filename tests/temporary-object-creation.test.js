@@ -20,32 +20,54 @@ class Element{
  getBoundingClientRect(){return {left:0,top:0,width:800,height:700};}
 }
 function fixture(){
- const box=new Element(),app=new Element(),mapElement=new Element(),accepted=[];
+ const box=new Element(),app=new Element(),mapElement=new Element(),accepted=[],removed=[];
+ const events={};
  const map={on(){},getContainer:()=>mapElement,project:()=>({x:250,y:250})};
- const doc={createElement:()=>new Element(),addEventListener:()=>{}};
+ const doc={createElement:()=>new Element(),addEventListener:(type,cb)=>events[type]=cb};
  const panel=new Panel({document:doc,getElement:id=>id==="app"?app:box,
-  mapPort:map,onAccept:entry=>accepted.push(entry)});
+  mapPort:map,onAccept:entry=>accepted.push(entry),onRemove:entry=>removed.push(entry)});
  panel.bind();
- return {panel,box,accepted,yes:box.children[1],no:box.children[2]};
+ return {panel,box,accepted,removed,save:box.children[0],
+  remove:box.children[1],events};
 }
-for(const [entry,title] of [
- [{kind:"point",label:"GPS - 2026",point:{lat:47,lng:9}},"Pin speichern?"],
- [{kind:"point",label:"🇩🇪 KN (Ersatzort)",point:{lat:47,lng:9}},"Pin speichern?"],
- [{kind:"area",label:"Gebiet",geojson:{type:"Polygon",coordinates:[]}},"Bereich speichern?"],
- [{kind:"area",featureKind:"lake",label:"See",geojson:{type:"Polygon",coordinates:[]}},"See speichern?"],
- [{kind:"river",label:"Fluss",chains:[[[1,2],[3,4]]]},"Fluss speichern?"]
+for(const entry of [
+ {kind:"point",label:"GPS - 2026",point:{lat:47,lng:9}},
+ {kind:"point",label:"🇩🇪 KN (Ersatzort)",point:{lat:47,lng:9}},
+ {kind:"area",label:"Gebiet",geojson:{type:"Polygon",coordinates:[]}},
+ {kind:"area",featureKind:"lake",label:"See",geojson:{type:"Polygon",coordinates:[]}},
+ {kind:"river",label:"Fluss",chains:[[[1,2],[3,4]]]}
 ]){
- test("Only explicit Yes commits "+title+" "+entry.label,()=>{
+ test("Speichern commits only after explicit click for "+entry.label,()=>{
   const x=fixture();
   x.panel.show(entry,{lat:47,lng:9});
-  assert.equal(x.box.children[0].textContent,title);
+  assert.equal(x.box.children.length,2);
+  assert.equal(x.save.textContent,"Speichern");
+  assert.equal(x.remove.textContent,"Entfernen");
   assert.equal(x.accepted.length,0);
-  x.no.handlers.click({stopPropagation(){}});
-  assert.equal(x.accepted.length,0);
-  x.panel.show(entry,{lat:47,lng:9});
-  x.yes.handlers.click({stopPropagation(){}});
+  x.save.handlers.click({stopPropagation(){}});
   assert.deepEqual(x.accepted,[entry]);
+  assert.equal(x.removed.length,0);
   assert.equal(x.box.hidden,true);
+ });
+ test("Entfernen discards the preview immediately for "+entry.label,()=>{
+  const x=fixture();
+  x.panel.show(entry,{lat:47,lng:9});
+  x.remove.handlers.click({stopPropagation(){}});
+  assert.deepEqual(x.removed,[entry]);
+  assert.equal(x.accepted.length,0);
+  assert.equal(x.box.hidden,true);
+ });
+ test("outside pointerdown only closes dialog for "+entry.label,()=>{
+  const x=fixture();
+  x.panel.show(entry,{lat:47,lng:9});
+  x.events.pointerdown({target:new Element()});
+  assert.equal(x.box.hidden,true);
+  assert.equal(x.accepted.length,0);
+  assert.equal(x.removed.length,0);
+  x.panel.show(entry,{lat:47,lng:9});
+  x.events.keydown({key:"Escape",preventDefault(){}});
+  assert.equal(x.box.hidden,true);
+  assert.equal(x.removed.length,0);
  });
 }
 test("every new object creation is routed through temporary preview",()=>{
