@@ -220,6 +220,9 @@
       }).addTo(group);
       const click=event=>{
         if(event.originalEvent)window.L.DomEvent.stop(event.originalEvent);
+        // A held zoom may generate a synthetic Leaflet click. Never open
+        // the save actions on that ghost click.
+        if(this.temporaryPinTapSuppressed?.())return;
         onLabel?.({lat:p.lat,lng:p.lng});
       };
       pin.on("click",click);tag.on("click",click);
@@ -244,8 +247,9 @@
       this.temporaryPlateArea={group,entry,updateLabel,reposition:()=>{}};
       this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
     }
-    setTemporaryPinGestureHandler(handler){
+    setTemporaryPinGestureHandler(handler,isSuppressed=()=>false){
       this.temporaryPinGesture=handler;
+      this.temporaryPinTapSuppressed=isSuppressed;
     }
     updateTemporaryPinLabel(entry){
       const preview=this.temporaryPlateArea;
