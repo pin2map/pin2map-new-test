@@ -57,7 +57,7 @@ test("every new object creation is routed through temporary preview",()=>{
  assert.match(app,/if\(kind==="area"\|\|kind==="lake"\)\{previewAreaObject/);
  assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,""\)/);
  assert.match(app,/onAccept:\(point,name\)=>addPin\(point.lat,point.lng,name\)/);
- assert.match(app,/onAccept:entry=>\{\s*clearPlatePreview\(\)/);
+ assert.match(app,/onAccept:entry=>\{\s*clearObjectPreview\(\)/);
  assert.match(map,/showTemporaryPin\(entry,onLabel\)/);
  assert.match(map,/showTemporaryRiver\(entry,onLabel\)/);
  assert.match(map,/showTemporaryPlateArea\(entry,onLabel\)/);
