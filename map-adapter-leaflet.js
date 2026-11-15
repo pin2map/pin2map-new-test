@@ -268,17 +268,13 @@
       this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
       reposition();
     }
-    showTemporaryGpsPoint(position){
-      this.clearTemporaryGpsPoint();
-      const p=latLng(position);
-      this.temporaryGpsPoint=window.L.circleMarker([p.lat,p.lng],{
-        radius:7,color:"#fff",weight:3,fillColor:"#777d86",fillOpacity:1,
-        opacity:1,interactive:false,bubblingMouseEvents:false
-      }).addTo(this.map);
-      this.temporaryGpsPoint.bringToFront();
+    // Compatibility port: a GPS location is now ALWAYS a full pink
+    // temporary pin, never the old gray circle marker.
+    showTemporaryGpsPoint(position,onLabel){
+      this.showTemporaryPin({kind:"point",point:position,label:"GPS-Location"},onLabel);
     }
     clearTemporaryGpsPoint(){
-      if(this.temporaryGpsPoint){this.map.removeLayer(this.temporaryGpsPoint);this.temporaryGpsPoint=null;}
+      this.clearTemporaryPlateArea();
     }
     showSatelliteSelection(position){
       this.clearSatelliteSelection();
