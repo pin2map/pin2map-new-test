@@ -235,6 +235,38 @@ const viewports=[
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    assert.equal(await page.locator(".p2m-plate-label").count(),0,
      "Next search removes temporary Landkreis KN polygon");
+   // A single German prefix can belong to a city and a separate county.
+   // Never collapse both jurisdictions into the first matching polygon.
+   await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
+     const name=new URL(route.request().url()).searchParams.get("q");
+     if(!["Karlsruhe","Landkreis Karlsruhe"].includes(name)){
+       await route.fallback();return;
+     }
+     await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify([{
+       osm_type:"relation",
+       osm_id:name==="Karlsruhe"?421:422,name,
+       display_name:name+", Baden-Württemberg, Deutschland",
+       addresstype:name==="Karlsruhe"?"city":"county",
+       type:"administrative",class:"boundary",address:{country_code:"de"},
+       geojson:poly
+     }])});
+   });
+   await page.locator("#searchInput").fill("KA");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator("#searchResults .result")
+     .filter({hasText:"Stadt und Landkreis Karlsruhe"}).first().click();
+   const kaChoices=page.locator("#searchResults .result");
+   await kaChoices.filter({hasText:"Landkreis Karlsruhe"}).first()
+     .waitFor({state:"visible",timeout:12000});
+   assert.ok((await kaChoices.allInnerTexts()).some(t=>t.includes("Stadt Karlsruhe")));
+   await kaChoices.filter({hasText:"Landkreis Karlsruhe"}).first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator(".p2m-plate-label").innerText(),
+     "🇩🇪 KA (Landkreis Karlsruhe)");
+   await page.locator("#searchInput").fill("B");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   assert.equal(await page.locator(".p2m-plate-label").count(),0,
+     "New plate search removes selected temporary city/county preview");
    // The offline catalog yields multiple regions; a boundary must match
    // both the selected code and country.
    await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{

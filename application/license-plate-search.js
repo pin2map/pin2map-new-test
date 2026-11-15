@@ -10,7 +10,7 @@
  const validTypes={
    state:new Set(["state","region","province"]),
    county:new Set(["county","state_district","district","province"]),
-   city:new Set(["city","town","municipality","administrative","village"])
+   city:new Set(["city","town","municipality","village"])
  };
  function isMatchingArea(entry,x){
    const country=String(x.address?.country_code||"").toUpperCase();
@@ -20,7 +20,7 @@
    const level=String(x.extratags?.admin_level||"");
    // Explicitly reviewed districts must never accept a city/municipality
    // polygon as a county just because both share the same namesake.
-   if(entry.jurisdictionVerified&&entry.admin==="county"&&
+   if((entry.jurisdictionVerified||entry.adminRuleVerified)&&entry.admin==="county"&&
       ["city","town","village","municipality"].includes(type))return false;
    if(validTypes[entry.admin]?.has(type))return true;
    if(category!=="boundary")return false;
@@ -76,6 +76,37 @@
        throw new TypeError("Unknown license plate catalog entry");
      const key=entry.country+"|"+entry.code+"|"+entry.query+"|"+entry.admin;
      if(this.cache.has(key))return this.cache.get(key);
+     if(entry.geometryPolicy==="unmapped-historic")
+       throw Error("Historischer Zulassungsbezirk ohne heutige eindeutige Verwaltungsgrenze.");
+     if(entry.geometryPolicy==="reference-only"){
+       const result=await this.referencePoint(entry,{signal});
+       if(!result)throw Error("Mehrgemeindiger oder besonderer Zulassungsbereich: kein verlässlicher Referenzort.");
+       this.cache.set(key,result);return result;
+     }
+     if(Array.isArray(entry.areaOptions)&&entry.areaOptions.length){
+       const seen=new Set(),choices=[];
+       for(const option of entry.areaOptions){
+         const scoped={...entry,admin:option.admin,query:option.query,
+           name:option.areaName,
+           label:entry.flag+" "+entry.code+" ("+option.areaName+")"};
+         const found=await this.finder.find(option.query,{kind:"area",signal});
+         if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+         for(const candidate of Array.isArray(found)?found:[]){
+           if(!isMatchingArea(scoped,candidate))continue;
+           const identity=candidate.osm_type+":"+candidate.osm_id;
+           if(seen.has(identity))continue;
+           seen.add(identity);
+           choices.push(Object.freeze({...areaChoice(scoped,candidate),
+             choiceTitle:option.areaName+" – "+(option.admin==="city"?"Stadt":"Landkreis")}));
+         }
+       }
+       if(!choices.length)
+         throw Error("Keine geprüfte Stadt- oder Landkreisgrenze für dieses gemeinsam genutzte Kennzeichen gefunden.");
+       // Keep explicit selection even when only one side is available:
+       // never imply that the only found boundary represents the whole code.
+       const result=Object.freeze({kind:"choices",entry,choices:Object.freeze(choices)});
+       this.cache.set(key,result);return result;
+     }
      const results=await this.finder.find(entry.query,{kind:"area",signal});
      if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
      const seen=new Set();

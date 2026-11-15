@@ -75,19 +75,28 @@
    if(unique.has(key))return;
    const hint=root.Pin2MapLicensePlateGeoHints?.[key]||{};
    const jurisdiction=root.Pin2MapLicensePlateJurisdictions?.[key]||null;
+   const rule=jurisdiction?null:
+     root.Pin2MapPlateJurisdictionKinds?.[country]?.classify(normalized,{admin,name,query})||null;
    // A reviewed registration district ALWAYS takes precedence over the
    // namesake-place heuristic in the imported regional-code directories.
-   const areaName=jurisdiction?.areaName||name;
+   const areaName=jurisdiction?.areaName||(
+     rule?.admin==="county"?name+" – Powiat":name);
    unique.set(key,Object.freeze({
      code:normalized,country,flag:countries[country],name:areaName,
      query:jurisdiction?.areaQuery||hint.query||query,
-     admin:jurisdiction?.admin||hint.admin||admin,
+     admin:jurisdiction?.admin||rule?.admin||hint.admin||admin,
      status:jurisdiction?.status||hint.status||status,
      source:jurisdiction?.source||hint.source||source,
      sourceUrl:jurisdiction?.sourceUrl||null,
      registrationArea:jurisdiction?.areaName||null,
-     namesakePlace:jurisdiction?.namesakePlace||null,
+     namesakePlace:jurisdiction?.namesakePlace||
+       (rule?.admin==="county"?name:null),
      jurisdictionVerified:!!jurisdiction,
+     adminRuleVerified:!!rule,
+     classificationSource:rule?
+       root.Pin2MapPlateJurisdictionKinds?.[country]?.source:null,
+     areaOptions:jurisdiction?.areaOptions||null,
+     geometryPolicy:jurisdiction?.geometryPolicy||null,
      referencePlace:jurisdiction?.referencePlace||hint.referencePlace||null,
      placeRelation:jurisdiction?.placeRelation||hint.placeRelation||null,
      relatedArea:hint.relatedArea||null,

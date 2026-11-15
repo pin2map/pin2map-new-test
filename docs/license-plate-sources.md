@@ -56,3 +56,32 @@ Die ergänzten **Referenzorte** sind keine geografischen Flächen des Kennzeiche
 Diese konkret geprüfte Zuordnung wird unter `landkreis-konstanz-2026` in `domain/license-plate-jurisdictions.js` gespeichert. Herkunfts-/Lizenzhinweis: Nur Gebiets- und Behördenfakten, keine vollständigen Behördenverzeichnisse, Fotos oder fremde GeoJSON-Daten übernommen. Nominatim/OSM-Grenzgeometrien werden weiterhin nur nach ausdrücklicher Benutzeraktion gemäß bestehenden Nutzungs-/Attributionsbedingungen nachgeladen.
 
 **Weitere Länder:** Die importierten Datensätze enthalten häufig nur namensgebende Städte. `node scripts/audit-plate-jurisdictions.cjs --json` liefert einen reproduzierbaren Qualitätssicherungs-Backlog der besonders prüfbedürftigen Stadtangaben in DE, PL und anderen Ländern. Die Liste beweist keine Kreiszugehörigkeit; sie dient dem gestuften, amtlich quellenbelegten Ausbau der vorrangigen Gebietstabelle. Erst nach dieser Prüfung dürfen `areaName` und `admin` autoritativ überschrieben werden.
+
+
+## v195 – Prüfinventar mit amtlichen europäischen Gebietstypen
+
+**Österreich – amtliche Liste, Stand 12.03.2026.** Die Kennzeichen sind nach der Zulassungsbehörde organisiert. Die amtlichen tabellarischen Abkürzungen und Bezirksbezeichnungen jeder Region werden als **Text-/Gebietsfakten** übernommen, nicht als kopiertes Register samt Darstellungen:
+
+- Burgenland https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061402
+- Kärnten https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061403
+- Niederösterreich https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061404
+- Oberösterreich https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061405
+- Salzburg https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061406
+- Steiermark https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061407
+- Tirol https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061408
+- Vorarlberg https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061409
+- Wien https://www.oesterreich.gv.at/de/themen/mobilitaet/kfz/5/1/Seite.061410
+
+**Besonders wichtig:** `E` gilt in der Zulassung für **Eisenstadt und Rust**; `SW` für Schwechat **und Teile des Wiener Flughafens**; `BA` ab 2026 für vier Gemeinden im Ausseerland; `GB` für die Expositur Gröbming. Dies sind *keine* exakten Ein-Gemeinde-Polygone. Historische `WU`-Kennzeichen bleiben nach Bezirksauflösung gültig, ohne einen heutigen Bezirk zu bezeichnen. `KG` bezeichnet die Gemeinde Klosterneuburg. In diesen Fällen sind die amtlich benannten Beschränkungen bzw. historischen Zustände zentraler Datenbestand.
+
+**Polen – amtliche Gebietsstruktur und Codearten.** `§ 30, § 31 und Anlage 13` der Verordnung vom 08.11.2024 (Gesetzblatt DU 2024/1709): https://eli.gov.pl/api/acts/DU/2024/1709/text.html . Das System definiert die Kürzel für Wojewodschaften und Powiaten, darunter eigenständige Städte mit Powiat-Rechten; derselbe Ortsname kann Stadt und Landpowiat bezeichnen. Die aus dieser Rechtsnorm abgeleitete *Gebietstypklasse* wird separat von einem **noch nicht quellenbestätigten, grammatikalisch amtlichen Powiat-Namen** geführt. Daher können Nominatim-Polygone bei unbekanntem offiziellen Namen weiterhin fehlen; es wird dann kein falsches Stadtpolygon substituiert. Die aktuellen/stillgelegten Ausgabestände einzelner 2024-Codes müssen gesondert bestätigt werden.
+
+**Deutschland – eine Kennung, mehrere Zuständigkeitsgebiete.** Die allgemeine Rechtsgrundlage ist § 9 FZV https://www.gesetze-im-internet.de/fzv_2023/__9.html ; die zuständigen Bundes-/Landesdaten enthalten Kennzeichen, Kreise und Gemeinden: BKG KFZ250 https://gdz.bkg.bund.de/index.php/default/digitale-geodaten/nicht-administrative-gebietseinheiten/kfz-kennzeichen-1-250-000-kfz250.html (Stand 11.2022; veröffentlichte Datenlizenz Deutschland Namensnennung 2.0 mit vorgeschriebenem Quellenvermerk; **die BKG-Rohdaten sind für v195 noch nicht als Komplettbestand importiert**). Als dokumentierte Einzelbelege der gemeinsamen Kfz-Zulassungskennung:
+- `KA`: Landkreis Karlsruhe bestätigt ausdrücklich gemeinsame Kennzeichenverwaltung mit der **Stadt Karlsruhe**: https://www.landkreis-karlsruhe.de/PDF/14112024_TOP_007.PDF
+- `HN`: Landkreis Heilbronn differenziert die eigene Kennzeichenreservierung ausdrücklich von der **Stadt Heilbronn**: https://service.landkreis-heilbronn.de/ihr-anliegen/zulassung/wunschkennzeichen-reservieren
+- `UL`: Alb-Donau-Kreis bestätigt die gemeinsame Kfz-Zulassungsbehörde für **Stadt Ulm und Alb-Donau-Kreis**: https://www.alb-donau-kreis.de/-/behoerdenwegweiser/gemeinsame-kfz-zulassung-des-alb-donau-kreises-und-der-stadt-ulm-landratsamt-alb-donau-kreis/oe6011593
+- `WÜ`: Landkreis Würzburg bestätigt WÜ als Landkreiskennzeichen https://www.landkreis-wuerzburg.de/Wunschkennzeichen ; Stadt Würzburg ist eigenständige Zulassungsbehörde (Stadt und Landkreis getrennte Verwaltungsgebiete).
+- `BA`: Landkreis Bamberg bestätigt BA für den Landkreis https://www.landkreis-bamberg.de/Landratsamt/B%C3%BCrgerservice-/Wunschkennzeichen-online/ ; Stadt Bamberg mit eigenständiger Zulassungsstelle.
+- `A`: Landkreis Augsburg bestätigt eigenständige Kfz-Zulassungsstelle: https://www.landkreis-augsburg.de/landrat-landratsamt/landratsamt/sicherheit-und-ordnung-kommunales-und-verbraucherschutz/auto-verkehr/fahrzeugzulassung/online-services-kfz-zulassung/ ; Stadt Augsburg ist eigenständige kreisfreie Stadt.
+
+**Lizenzqualität:** Wir übernehmen hier nur behördlich begründete Kennzeichen-/Gebietszuordnungen und Verweise, **keine** fremden PDF-Texte, ZIP-Geodaten oder Bildbestände. BKG stellt seinen umfangreichen KFZ250-Datensatz unter Deutschland Namensnennung 2.0 bereit und fordert den Quellenvermerk `© Bundesamt für Kartographie und Geodäsie (Jahr), Datenquellen: Kraftfahrt-Bundesamt, Flensburg` bei tatsächlicher Datennutzung. Solange dessen Rohdaten nicht übernommen wurden, wird er **nur als recherchierte Prüfquelle** zitiert, nicht als importierte Datei ausgegeben. Für weitere Datenimporte Lizenz- und Quellenangaben vor der Verteilung einplanen.

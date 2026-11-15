@@ -2,7 +2,10 @@
 const test=require("node:test");
 const assert=require("node:assert/strict");
 require("../domain/license-plate-data-dach.js");
+require("../domain/license-plate-data-europe.js");
+require("../domain/license-plate-jurisdiction-kinds.js");
 require("../domain/license-plate-geo-hints.js");
+require("../domain/license-plate-jurisdictions-at.js");
 require("../domain/license-plate-jurisdictions.js");
 const cat=require("../domain/license-plate-catalog.js");
 const Resolver=require("../application/license-plate-search.js");
@@ -74,7 +77,7 @@ test("six difficult codes retain explicit, country-specific area and fallback hi
    assert.equal(item.referencePlace,place);
    assert.equal(item.admin,admin);
    assert.equal(item.status,"current","Officially documented code must not say unknown: "+code);
-   assert.equal(item.source,"official-2026");
+   assert.equal(item.source,code==="GU"?"at-official-2026":"official-2026");
  }
 });
 test("no matching polygon uses a validated reference town, not an invented area",async()=>{
@@ -208,4 +211,118 @@ test("KN never substitutes a city polygon if the county is absent",async()=>{
  assert.equal(result.referencePlace,"Konstanz");
  assert.match(result.choiceDetail,/kein vollständiges Zulassungsgebiet/);
  assert.equal(result.geojson,undefined);
+});
+
+test("Austrian official 2026 jurisdiction tables cover 98 codes plus historic WU",()=>{
+ const groups=globalThis.Pin2MapAustriaJurisdictionGroups;
+ const codes=Object.values(groups).flatMap(s=>s.split(" "));
+ assert.equal(codes.length,98);
+ assert.equal(new Set(codes).size,codes.length);
+ for(const code of codes){
+   const row=cat.lookup(code).find(r=>r.country==="AT");
+   assert.ok(row,"Missing Austrian code "+code);
+   assert.equal(row.jurisdictionVerified,true,"Missing jurisdiction "+code);
+   assert.equal(row.source,"at-official-2026");
+   assert.equal(row.status,"current");
+   assert.ok(row.sourceUrl.startsWith("https://www.oesterreich.gv.at/"));
+ }
+ const historic=cat.lookup("WU").find(r=>r.country==="AT");
+ assert.equal(historic?.status,"historic");
+ assert.equal(historic.geometryPolicy,"unmapped-historic");
+ for(const [code,kind] of [["AM","county"],["B","county"],
+   ["GU","county"],["KR","county"],["SL","county"],
+   ["K","city"],["W","city"],["KS","city"],["S","city"],
+   ["KG","city"],["BA","county"]]){
+   assert.equal(cat.lookup(code).find(r=>r.country==="AT")?.admin,kind,code);
+ }
+ assert.equal(cat.lookup("BA").some(r=>r.country==="AT"),true);
+ assert.equal(cat.lookup("KG").some(r=>r.country==="AT"),true);
+});
+test("Multi-municipality Austrian zones never silently become city polygons",async()=>{
+ const entry=cat.lookup("E").find(r=>r.country==="AT");
+ const provider={
+   find:async()=>{throw Error("A composite Austrian jurisdiction MUST NOT query a city polygon");},
+   findPlace:async()=>[{name:"Eisenstadt",lat:47.84,lon:16.52,
+     addresstype:"city",address:{country_code:"at"}}]
+ };
+ assert.equal(entry.geometryPolicy,"reference-only");
+ assert.match(entry.name,/Rust/);
+ const resolved=await new Resolver({catalog:cat,areaFinder:provider}).resolve(entry);
+ assert.equal(resolved.kind,"point");
+ assert.match(resolved.choiceDetail,/kein vollständiges Zulassungsgebiet/);
+ const former=cat.lookup("WU").find(r=>r.country==="AT");
+ await assert.rejects(new Resolver({catalog:cat,areaFinder:provider}).resolve(former),
+   /Historischer Zulassungsbezirk/);
+});
+test("Polish legal Powiat classification does not fabricate a county proper name",()=>{
+ const augustow=cat.lookup("BAU").find(r=>r.country==="PL");
+ assert.ok(augustow);
+ assert.equal(augustow.admin,"county");
+ assert.equal(augustow.adminRuleVerified,true);
+ assert.equal(augustow.jurisdictionVerified,false);
+ assert.match(augustow.label,/Powiat/);
+ assert.equal(augustow.query,"Augustów");
+ const urban=cat.lookup("BI").find(r=>r.country==="PL");
+ assert.equal(urban.admin,"city");
+ assert.equal(urban.adminRuleVerified,true);
+ const district=cat.lookup("BIA").find(r=>r.country==="PL");
+ assert.equal(district.admin,"county");
+ assert.equal(district.adminRuleVerified,true);
+ const region=cat.lookup("D").find(r=>r.country==="PL");
+ assert.equal(region.admin,"state");
+});
+test("Polish powiat candidate excludes a same-named city geometry",async()=>{
+ const entry=cat.lookup("BAU").find(r=>r.country==="PL");
+ const county={name:"Augustów",osm_id:222,osm_type:"relation",
+   addresstype:"county",geojson:poly,address:{country_code:"pl"}};
+ const city={name:"Augustów",osm_id:111,osm_type:"relation",
+   addresstype:"city",geojson:poly,address:{country_code:"pl"}};
+ const result=await new Resolver({catalog:cat,areaFinder:{
+   find:async()=>[city,county],
+   findPlace:async()=>{throw Error("Area is unique");}
+ }}).resolve(entry);
+ assert.equal(result.kind,"area");
+ assert.equal(result.osmId,222);
+});
+test("German shared prefixes demand an explicit city-or-county choice",async()=>{
+ for(const [code,label] of [["KA","Karlsruhe"],["HN","Heilbronn"],
+   ["UL","Ulm"],["WÜ","Würzburg"],["BA","Bamberg"],["A","Augsburg"]]){
+   const entry=cat.lookup(code).find(r=>r.country==="DE");
+   assert.ok(entry,"Missing "+code);
+   assert.equal(entry.jurisdictionVerified,true);
+   assert.equal(entry.areaOptions.length,2);
+   assert.match(entry.name,/Stadt/);
+ }
+ const entry=cat.lookup("KA").find(r=>r.country==="DE");
+ const calls=[];
+ const svc=new Resolver({catalog:cat,areaFinder:{find:async query=>{
+   calls.push(query);
+   return query==="Karlsruhe"?[{
+     name:"Karlsruhe",osm_type:"relation",osm_id:11,geojson:poly,
+     addresstype:"city",address:{country_code:"de"}
+   }]:[{
+     name:"Landkreis Karlsruhe",osm_type:"relation",osm_id:22,geojson:poly,
+     addresstype:"county",address:{country_code:"de"}
+   }];
+ }}});
+ const out=await svc.resolve(entry);
+ assert.equal(out.kind,"choices");
+ assert.deepEqual(out.choices.map(x=>x.osmId),[11,22]);
+ assert.deepEqual(out.choices.map(x=>x.label),[
+   "🇩🇪 KA (Stadt Karlsruhe)","🇩🇪 KA (Landkreis Karlsruhe)"
+ ]);
+ assert.deepEqual(calls,["Karlsruhe","Landkreis Karlsruhe"]);
+});
+test("Shared prefix with only one resolved region still asks which area is available",async()=>{
+ const entry=cat.lookup("KA").find(r=>r.country==="DE");
+ const svc=new Resolver({catalog:cat,areaFinder:{find:async query=>
+   query==="Karlsruhe"?[{
+     name:"Karlsruhe",osm_type:"relation",osm_id:11,geojson:poly,
+     addresstype:"city",address:{country_code:"de"}
+   }]:[]
+ }});
+ const out=await svc.resolve(entry);
+ assert.equal(out.kind,"choices");
+ assert.equal(out.choices.length,1);
+ assert.equal(out.choices[0].label,"🇩🇪 KA (Stadt Karlsruhe)");
 });

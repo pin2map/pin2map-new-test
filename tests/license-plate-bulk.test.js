@@ -5,6 +5,8 @@ const fs=require("node:fs");
 const path=require("node:path");
 for(const moduleName of ["dach","europe","central","east"])
   require("../domain/license-plate-data-"+moduleName+".js");
+require("../domain/license-plate-jurisdiction-kinds.js");
+require("../domain/license-plate-jurisdictions-at.js");
 require("../domain/license-plate-jurisdictions.js");
 const cat=require("../domain/license-plate-catalog.js");
 const pick=(code,country)=>cat.lookup(code).find(x=>x.country===country);
@@ -79,6 +81,10 @@ test("reviewed jurisdiction data is loaded before catalog and kept offline",()=>
  const index=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
  const sw=fs.readFileSync(path.join(__dirname,"../sw.js"),"utf8");
  assert.ok(index.includes("./domain/license-plate-jurisdictions.js"));
+ assert.ok(index.includes("./domain/license-plate-jurisdictions-at.js"));
+ assert.ok(index.includes("./domain/license-plate-jurisdiction-kinds.js"));
+ assert.ok(sw.includes("./domain/license-plate-jurisdictions-at.js"));
+ assert.ok(sw.includes("./domain/license-plate-jurisdiction-kinds.js"));
  assert.ok(sw.includes("./domain/license-plate-jurisdictions.js"));
  assert.ok(index.indexOf("license-plate-jurisdictions.js")<
    index.indexOf("license-plate-catalog.js"));
