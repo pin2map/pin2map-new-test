@@ -13,8 +13,16 @@
       /(?:kreis|landkreis)$/i.test(name))return "county";
    return null;
  };
+ // Secondary source occasionally combines two independently governed areas
+ // in ONE string ("Stadt Coburg und Landkreis Coburg"). Split only the
+ // explicit city/county pattern; never split geographical names such as
+ // "Landkreis Oder-Spree" or authority labels with "und".
+ const splitAreas=areas=>areas.flatMap(name=>{
+   const match=name.match(/^(Stadt [^,]+|Landkreis [^,]+) und (Stadt [^,]+|Landkreis [^,]+)$/i);
+   return match?[match[1],match[2]]:[name];
+ });
  const parse=(code,areas)=>{
-   const options=areas.map(areaName=>{
+   const options=splitAreas(areas).map(areaName=>{
      const admin=classify(areaName);
      // Exact contemporary boundaries do not equal statements about
      // explicitly excluded municipalities or historical subterritories.
