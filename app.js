@@ -533,6 +533,7 @@
   }
   const manualPinLocality=new window.Pin2MapManualPinLocality({
     geocoder,pickName:placeDomain.nearbyLocalityName,
+    detailZoom:placeDomain.reversePlaceZoom,
     allowed:()=>state.allowGeocode,
     onName:entry=>mapAdapter.updateTemporaryPinLabel(entry)
   });
@@ -550,7 +551,11 @@
     if(!Number.isFinite(lat)||Math.abs(lat)>90||
        !Number.isFinite(lng)||Math.abs(lng)>180)return null;
     closeAllMapMenus();
-    const entry={kind:"point",point:{lat,lng},label:name||"Neuer Pin",name:name||""};
+    // Capture the user's original map scale before the preview adapter may
+    // automatically zoom in to display the temporary pin.
+    const mapZoom=mapAdapter.getViewport().zoom;
+    const entry={kind:"point",point:{lat,lng},mapZoom,
+      label:name||"Neuer Pin",name:name||""};
     showObjectPreview(entry);
     if(!name)void manualPinLocality.resolve(entry);
     return entry;
