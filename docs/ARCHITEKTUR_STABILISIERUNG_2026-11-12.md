@@ -36,3 +36,12 @@
 Keine App-UI, keine Datenmodelle, keine Persistenz/Schema- oder Offline-Kachel-Policy, keine Kartenanbieter, keine Server-/Sync-Architektur, keine Historienlöschung, kein größerer CSS-Umbau und keine Umstellung des Modulsystems. Der Nutzen dieses Inkrements ist eine kleinere und besser prüfbare Preview sowie ein fester technischer Vorbereitungsvertrag für die nächste Feature-Phase.
 
 **Veröffentlichungs- und Testergebnisse:** Im jeweils aktuellsten Eintrag von `docs/PROJEKTSTATUS.md` festhalten. Gesonderte echte iPhone-Abnahme ist für dieses nicht-visuelle Packaging-Inkrement nicht vorwegzunehmen.
+
+
+## Sicherungsnachtrag vom 2026-11-15 – Service-Worker-Lebenszyklus auf v196
+
+Bei der Architekturprüfung wurde der aktuelle Branch-Head ausdrücklich unabhängig vom repositoryweiten Commitverlauf festgestellt. Die Kachelcache-Commits in der globalen GitHub-Suche sind **nicht** automatisch neue Feature-Branch-Commits; die überprüfte Entwicklungsquelle bleibt `feature/leaflet-modular-core`.
+
+Zur bereits vorhandenen statischen `tests/offline-shell.test.js`-, `tests/sw-release-cache.test.js`- und Refresh-Prüfung kommt `tests/sw-lifecycle-safety.test.js` hinzu. Die fünf ausführbaren Szenarien simulieren im Node-VM-Kontext die tatsächlichen `install`-, `activate`- und `fetch`-Handler der aktuellen `sw.js`: fehlgeschlagene Installation darf kein `skipWaiting` erreichen; erfolgreiche Installation muss HTML, CSS und JS vor Aktivierung cachen; Aktivierung muss getrennte Kachel- und Metadaten-Caches erhalten; bereits betrachtete OSM-Kacheln müssen bei Netzfehler auch ohne Gültigkeitsmetadaten zurückkommen; die App-Shell muss bei Offline-Zugriff auf die kanonische gecachte Datei zurückgreifen. Der Test verwendet ausschließlich isolierte Mock-Caches und keine realen Nutzerdaten oder öffentlichen Tile-Anbieter.
+
+**Freigabestatus:** Commit `afc93b92a8588b7b230938efc03f60e41520091d` ergänzt nur Tests; die `sw.js`-Version bleibt deshalb `pin2map-new-v196`. Die lokal geprüfte Test-Dateisyntax ersetzt weder einen vollständig ausgeführten Node-Test gegen die aktuelle SW-Datei noch das GitHub-Actions-, Chromium-, Pages- und HTTPS-Live-Gate. Ohne deren Ergebnisse bleibt die neue Sicherung **nicht als vollständig abgenommen** gekennzeichnet. Bei künftigen inhaltlichen Service-Worker-Änderungen muss eine neue App-Shell-Version verwendet werden; Update-Tests müssen alte aktive Clients und bestehende Projekt-/Kachelbestände schützen.
