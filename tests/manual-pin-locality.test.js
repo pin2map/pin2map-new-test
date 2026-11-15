@@ -28,13 +28,30 @@ test("prioritize the main city even when a suburb, district, or nearby village i
     city+" must win over "+district+" at map zoom "+mapZoom);
  }
 });
-test("map zoom selects city-level or village-level reverse detail without asking for suburbs",()=>{
- for(const level of [5,10,12,13,14])
-  assert.equal(domain.reversePlaceZoom(level),10);
- for(const level of [15,16,17,19])
-  assert.equal(domain.reversePlaceZoom(level),13);
+test("map zoom selects city, village or settlement detail",()=>{
+ for(const level of [5,10,11])assert.equal(domain.reversePlaceZoom(level),10);
+ for(const level of [12,13,14])assert.equal(domain.reversePlaceZoom(level),13);
+ for(const level of [15,16,17,19])assert.equal(domain.reversePlaceZoom(level),15);
  assert.equal(domain.nearbyLocalityName({address:{suburb:"Overhagen"}}),"");
  assert.equal(domain.nearbyLocalityName({address:{town:"Lippstadt",suburb:"Overhagen"}}),"Lippstadt");
+});
+test("Klein-Krotzenburg place=village wins over Hainburg when clicked near its label",()=>{
+ const result={name:"Klein-Krotzenburg",addresstype:"village",
+  lat:"50.07486",lon:"8.96598",address:{village:"Klein-Krotzenburg",city:"Hainburg"}};
+ const point={lat:50.075,lng:8.966};
+ assert.equal(domain.nearbyLocalityName(result,{mapZoom:13,point}),"Klein-Krotzenburg");
+ assert.equal(domain.nearbyLocalityName(result,{mapZoom:10,point}),"Hainburg");
+});
+test("a remote village node cannot override the main city's name",()=>{
+ const result={name:"Bad Westernkotten",addresstype:"village",
+  lat:"51.6",lon:"8.34",address:{village:"Bad Westernkotten",town:"Erwitte"}};
+ assert.equal(domain.nearbyLocalityName(result,{
+  mapZoom:17,point:{lat:51.62,lng:8.34}}),"Erwitte");
+});
+test("a separately named village can be used even when admin name is different",()=>{
+ const result={name:"VG der Stadt Eberbach",addresstype:"administrative",
+  address:{village:"Schönbrunn",municipality:"VG der Stadt Eberbach"}};
+ assert.equal(domain.nearbyLocalityName(result,{mapZoom:15}),"Schönbrunn");
 });
 test("at a detailed scale standalone hamlets may still be named",()=>{
  const result={address:{hamlet:"Knudsker",municipality:"Rønne"}};
@@ -110,7 +127,7 @@ test("reverse lookup uses original tap zoom and keeps city even on detailed map"
  const detail={point:{lat:50.938,lng:6.96},mapZoom:17,name:"",label:"Neuer Pin"};
  service.setCurrent(detail);await service.resolve(detail);
  assert.equal(detail.label,"Köln");
- assert.deepEqual(calls,[10,13],
+ assert.deepEqual(calls,[10,15],
    "The preview's automatic setView must not change naming detail");
 });
 test("consent disabled and already named pins issue no reverse requests",async()=>{
