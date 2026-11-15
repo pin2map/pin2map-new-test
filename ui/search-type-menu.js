@@ -2,12 +2,12 @@
 /* Focus-driven search chooser. Search execution is delegated to onChoose. */
 (function(root){
   const CHOICES=Object.freeze([
-    {id:"pin",label:"Pin",shortcut:null,icon:"map-pin"},
-    {id:"gps",label:"GPS-Standort",shortcut:"p",icon:"locate-fixed"},
+    {id:"pin",label:"Pin",shortcut:"p",icon:"map-pin"},
+    {id:"gps",label:"GPS-Location",shortcut:"l",icon:"locate-fixed"},
     {id:"area",label:"Gebiet",shortcut:"g",asset:"region.svg"},
     {id:"lake",label:"See",shortcut:"s",asset:"lake.svg"},
     {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"},
-    {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car-front"}
+    {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"}
   ]);
   class SearchTypeMenu{
     constructor({document:doc,getElement,icons,onChoose}){
@@ -38,10 +38,13 @@
           button.append(icon);
         }
         const label=this.doc.createElement("span");
-        const initial=this.doc.createElement(choice.shortcut?"strong":"span");
-        initial.textContent=choice.label[0];
-        const rest=this.doc.createTextNode(choice.label.slice(1));
-        label.append(initial,rest);
+        const shortcutIndex=choice.label.toLowerCase().indexOf(choice.shortcut);
+        if(shortcutIndex<0)throw new Error("Search shortcut not in visible label: "+choice.id);
+        // Mark the exact shortcut letter, even when it occurs inside GPS-Location.
+        label.append(this.doc.createTextNode(choice.label.slice(0,shortcutIndex)));
+        const key=this.doc.createElement("strong");
+        key.textContent=choice.label[shortcutIndex];
+        label.append(key,this.doc.createTextNode(choice.label.slice(shortcutIndex+1)));
         button.append(label);
         button.addEventListener("click",()=>this.choose(i));
         // Hover must not set keyboard selection.

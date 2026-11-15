@@ -6,6 +6,40 @@
  */
 (function(root){
  const data=Object.freeze({
+   // Lake Constance: code refers to present-day registration districts, not
+   // necessarily the historic naming town. ÜB spans three current districts.
+   "DE|FN":Object.freeze({
+     areaName:"Bodenseekreis",areaQuery:"Bodenseekreis",admin:"county",
+     namesakePlace:"Friedrichshafen",referencePlace:"Friedrichshafen",
+     placeRelation:"Kreisstadt im Bodenseekreis (nicht die Kreisfläche)",
+     status:"current",source:"bodenseekreis-official-2024",
+     sourceUrl:"https://www.bodenseekreis.de/fileadmin/07_politik_verwaltung/kreisfinanzen/downloads/haushalt/rechenschaftsbericht_2024.pdf"
+   }),
+   "DE|TT":Object.freeze({
+     areaName:"Bodenseekreis",areaQuery:"Bodenseekreis",
+     admin:"county",namesakePlace:"Tettnang",
+     referencePlace:"Tettnang",placeRelation:"Namensgebender Ort im Bodenseekreis",
+     status:"current",source:"bw-landtag-2023",
+     sourceUrl:"https://www.landtag-bw.de/resource/blob/261158/0922ad35381fc0af7b8e156a7478da4a/17_4183_D.pdf"
+   }),
+   "DE|RV":Object.freeze({
+     areaName:"Landkreis Ravensburg",areaQuery:"Landkreis Ravensburg",admin:"county",
+     namesakePlace:"Ravensburg",referencePlace:"Ravensburg",
+     placeRelation:"Kreisstadt des Landkreises Ravensburg",
+     status:"current",source:"bw-landtag-2023",
+     sourceUrl:"https://www.landtag-bw.de/resource/blob/261158/0922ad35381fc0af7b8e156a7478da4a/17_4183_D.pdf"
+   }),
+   "DE|ÜB":Object.freeze({
+     areaName:"Bodenseekreis, Ravensburg oder Sigmaringen",
+     admin:"county",namesakePlace:"Überlingen",status:"current",
+     areaOptions:[
+       {areaName:"Bodenseekreis",query:"Bodenseekreis",admin:"county"},
+       {areaName:"Landkreis Ravensburg",query:"Landkreis Ravensburg",admin:"county"},
+       {areaName:"Landkreis Sigmaringen",query:"Landkreis Sigmaringen",admin:"county"}
+     ],
+     source:"bw-landtag-2023",
+     sourceUrl:"https://www.landtag-bw.de/resource/blob/261158/0922ad35381fc0af7b8e156a7478da4a/17_4183_D.pdf"
+   }),
    "DE|KA":Object.freeze({
      areaName:"Stadt und Landkreis Karlsruhe",admin:"county",
      areaOptions:[

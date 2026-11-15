@@ -16,7 +16,7 @@ const modes=[
   ["area","region.svg"],
   ["lake","lake.svg"],
   ["river","river.svg"],
-  ["plate","car-front"]
+  ["plate","car"]
 ];
 const viewports=[
   {name:"desktop",width:1100,height:780,mobile:false},
@@ -119,6 +119,15 @@ const viewports=[
      "Search chooser must be fully visible BELOW the magnifier: "+JSON.stringify(chooserGeometry));
    assert.equal(chooserGeometry.hit,"pin",
      "First search option must be clickable at its visual center");
+   // The cancel × must be precisely centered, even with Safari font metrics.
+   await page.locator("#searchInput").fill("S");
+   await page.locator("#searchClear").waitFor({state:"visible"});
+   assert.equal(await page.locator("#searchClear span").evaluate(el=>{
+     const b=getComputedStyle(el,"::before"),a=getComputedStyle(el,"::after");
+     return b.left==="11.5px"&&b.top==="11.5px"&&
+       a.left==="11.5px"&&a.top==="11.5px"&&
+       getComputedStyle(el).fontSize==="0px";
+   }),true,"Search clear × must use centered CSS strokes, not a font baseline");
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
    assert.equal(await page.locator(".search-type-choice").count(),6);
    assert.equal(await page.locator(".search-type-choice.is-selected").count(),0,"Opening must not prehighlight Pin");
@@ -127,8 +136,10 @@ const viewports=[
      assert.equal(await option.locator((i<=1||i===5)?"svg":"img").count(),1,
        "Missing icon "+modes[i][1]);
      assert.equal(await option.locator("kbd").count(),0);
-     if(i===0)assert.equal(await option.locator("span").first().innerText(),"Pin");
-     else assert.equal(await option.locator("strong").innerText(),["","G","G","S","F","K"][i]);
+     assert.equal(await option.locator("strong").innerText(),["P","L","G","S","F","K"][i]);
+     assert.equal(await option.locator("strong").evaluate(el=>
+       getComputedStyle(el).textDecorationLine.includes("underline")),true);
+     if(i===1)assert.equal(await option.locator("span").first().innerText(),"GPS-Location");
    }
    assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).backgroundColor),
      "rgb(255, 255, 255)");
@@ -150,7 +161,7 @@ const viewports=[
    await context.setGeolocation({latitude:47.6501,longitude:9.1802,accuracy:8});
    await page.locator("#searchInput").fill("bodensee");
    await page.keyboard.press("Tab");
-   await page.keyboard.press("p");
+   await page.keyboard.press("l");
    await page.locator("#gpsPinPrompt").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
@@ -194,6 +205,50 @@ const viewports=[
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelector("#searchInput")&&
      document.querySelector(".leaflet-container"),null,{timeout:15000});
+   // Bodenseekreis case: two previously absent historical prefixes and
+   // a shared 3-district prefix must stay geographically unambiguous.
+   await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
+     const query=new URL(route.request().url()).searchParams.get("q");
+     const districts=["Bodenseekreis","Landkreis Ravensburg","Landkreis Sigmaringen"];
+     if(!districts.includes(query)){await route.fallback();return;}
+     await route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify([{osm_type:"relation",osm_id:380+districts.indexOf(query),
+         name:query,display_name:query+", Baden-Württemberg, Deutschland",
+         addresstype:"county",type:"administrative",class:"boundary",
+         address:{country_code:"de"},geojson:poly}])});
+   });
+   await page.locator("#searchInput").fill("TT");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator("#searchResults .result").filter({hasText:"Bodenseekreis"}).first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator(".p2m-plate-label").innerText(),
+     "🇩🇪 TT (Bodenseekreis)");
+   await page.locator("#searchInput").fill("RV");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator("#searchResults .result").filter({hasText:"Landkreis Ravensburg"}).first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator(".p2m-plate-label").innerText(),
+     "🇩🇪 RV (Landkreis Ravensburg)");
+   await page.locator("#searchInput").fill("ÜB");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   await page.locator("#searchResults .result").filter({hasText:"ÜB"}).first().click();
+   await page.locator("#searchResults .result")
+     .filter({hasText:"Landkreis Sigmaringen"}).first().waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator("#searchResults .result").count(),3,
+     "ÜB is shared by exactly three administrative districts");
+   await page.locator("#searchResults .result")
+     .filter({hasText:"Landkreis Sigmaringen"}).first().click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:12000});
+   assert.equal(await page.locator(".p2m-plate-label").innerText(),
+     "🇩🇪 ÜB (Landkreis Sigmaringen)");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.length;}
+     finally{db.close();}
+   }),0,"None of the temporary Bodensee preview areas may persist");
+   await page.locator("#searchInput").fill("B");
+   await page.locator('.search-type-choice[data-search-type="plate"]').click();
+   assert.equal(await page.locator(".p2m-plate-label").count(),0);
    // Registration jurisdiction is not necessarily the namesake city.
    // KN = Landkreis Konstanz; an equally named city polygon must not win.
    await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{

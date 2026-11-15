@@ -6,14 +6,22 @@
  */
 for(const part of ["dach","europe","central","east"])
   require("../domain/license-plate-data-"+part+".js");
+require("../domain/license-plate-data-verified-de.js");
 require("../domain/license-plate-jurisdiction-kinds.js");
 require("../domain/license-plate-geo-hints.js");
+require("../domain/license-plate-jurisdictions-de-secondary.js");
+require("../domain/license-plate-jurisdictions-official-regions.js");
 require("../domain/license-plate-jurisdictions-at.js");
 require("../domain/license-plate-jurisdictions.js");
 const catalog=require("../domain/license-plate-catalog.js");
 const unverified=catalog.records.filter(row=>
   !row.jurisdictionVerified && !row.adminRuleVerified && row.admin==="city" &&
   ["cc0-offene-daten","community-check-2026","pl-2024-regulation"].includes(row.source));
+const secondary=catalog.records.filter(row=>row.jurisdictionEvidence==="secondary");
+const secondaryByCountry=Object.fromEntries([...new Set(secondary.map(x=>x.country))]
+ .sort().map(country=>[country,secondary.filter(r=>r.country===country).length]));
+const unknownJurisdictions=catalog.records.filter(row=>!row.jurisdictionVerified
+  &&!row.adminRuleVerified);
 const perCountry=Object.fromEntries(
   [...new Set(unverified.map(x=>x.country))].sort().map(country=>[
     country,unverified.filter(x=>x.country===country).length
@@ -21,6 +29,9 @@ const perCountry=Object.fromEntries(
 const report={
   totalCatalogRecords:catalog.records.length,
   verifiedRegistrationAreas:catalog.records.filter(x=>x.jurisdictionVerified).length,
+  secondaryClassifiedJurisdictions:secondary.length,
+  secondaryByCountry,
+  notOfficiallyVerifiedNorLegallyTyped:unknownJurisdictions.length,
   legallyClassifiedByCountryRules:catalog.records.filter(x=>x.adminRuleVerified).length,
   jurisdictionCodeConflicts:catalog.records.filter(x=>x.areaOptions?.length>1).length,
   cityClassificationsNeedingJurisdictionAudit:unverified.length,
@@ -34,6 +45,8 @@ if(require.main===module){
   else{
     console.log("Kennzeichen: "+report.totalCatalogRecords+" Einträge; "+
       report.verifiedRegistrationAreas+" gesicherte Zulassungsgebiete");
+    console.log("Sekundär abgeglichene Zulassungsbereiche: "+secondary.length+
+      " (keine amtliche Einzelfallprüfung)");
     console.log("Zur Prüfung vorgemerkte Stadtklassifizierungen: "+
       unverified.length+"; Länder: "+JSON.stringify(perCountry));
     console.log("Einzelzuordnungen bitte anhand behördlicher Quelle prüfen.");

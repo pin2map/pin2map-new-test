@@ -5,7 +5,11 @@ const fs=require("node:fs");
 const path=require("node:path");
 for(const moduleName of ["dach","europe","central","east"])
   require("../domain/license-plate-data-"+moduleName+".js");
+require("../domain/license-plate-data-verified-de.js");
 require("../domain/license-plate-jurisdiction-kinds.js");
+require("../domain/license-plate-geo-hints.js");
+require("../domain/license-plate-jurisdictions-de-secondary.js");
+require("../domain/license-plate-jurisdictions-official-regions.js");
 require("../domain/license-plate-jurisdictions-at.js");
 require("../domain/license-plate-jurisdictions.js");
 const cat=require("../domain/license-plate-catalog.js");
@@ -88,4 +92,31 @@ test("reviewed jurisdiction data is loaded before catalog and kept offline",()=>
  assert.ok(sw.includes("./domain/license-plate-jurisdictions.js"));
  assert.ok(index.indexOf("license-plate-jurisdictions.js")<
    index.indexOf("license-plate-catalog.js"));
+});
+
+test("Bodensee reissued historic prefixes are part of the complete offline shell",()=>{
+ const index=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const sw=fs.readFileSync(path.join(__dirname,"../sw.js"),"utf8");
+ assert.ok(index.includes("./domain/license-plate-data-verified-de.js"));
+ assert.ok(sw.includes("./domain/license-plate-data-verified-de.js"));
+ assert.equal(pick("TT","DE").registrationArea,"Bodenseekreis");
+ assert.equal(pick("RV","DE").registrationArea,"Landkreis Ravensburg");
+ assert.equal(pick("ÜB","DE").areaOptions.length,3);
+});
+
+test("offline German and official regional modules have provenance and load before catalog",()=>{
+ const index=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const sw=fs.readFileSync(path.join(__dirname,"../sw.js"),"utf8");
+ for(const suffix of ["jurisdictions-de-secondary","jurisdictions-official-regions"]){
+   const pathName="domain/license-plate-"+suffix+".js";
+   assert.ok(index.includes("./"+pathName),pathName);
+   assert.ok(sw.includes("./"+pathName),pathName);
+   assert.ok(index.indexOf(pathName)<index.indexOf("domain/license-plate-catalog.js"));
+ }
+ const ab=pick("AB","DE");
+ assert.equal(ab.jurisdictionEvidence,"secondary");
+ assert.equal(ab.jurisdictionVerified,false);
+ assert.equal(pick("KN","DE").jurisdictionVerified,true);
+ assert.equal(pick("ZG","HR").geometryPolicy,"reference-only");
+ assert.equal(pick("TU","ME").source,"me-government-2019");
 });

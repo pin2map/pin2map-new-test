@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v195';
+const CACHE='pin2map-new-v196';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -35,8 +35,11 @@ const CORE=[
   "./domain/license-plate-data-europe.js",
   "./domain/license-plate-data-central.js",
   "./domain/license-plate-data-east.js",
+  "./domain/license-plate-data-verified-de.js",
   "./domain/license-plate-jurisdiction-kinds.js",
   "./domain/license-plate-geo-hints.js",
+  "./domain/license-plate-jurisdictions-de-secondary.js",
+  "./domain/license-plate-jurisdictions-official-regions.js",
   "./domain/license-plate-jurisdictions-at.js",
   "./domain/license-plate-jurisdictions.js",
   "./domain/license-plate-catalog.js",

@@ -77,7 +77,9 @@
         result.country+" · "+(result.jurisdictionVerified?
           "Zulassungsgebiet: "+result.registrationArea+
           (result.namesakePlace?" · namensgebender Ort: "+result.namesakePlace:""):
-          result.admin)+
+          result.jurisdictionEvidence==="secondary"?
+            "Zulassungsgebiet aus Sekundärquelle, amtlich ungeprüft · "+result.admin:
+            result.admin)+
         (result.source==="community-check-2026"?" · Regionscode aus Referenzliste":"")+
         " · geografische Verortung":
       result.__featureType?
@@ -87,7 +89,7 @@
       null:placeDomain.kind(result),
     featureIconOf:result=>result.__plateChoice?
       (result.kind==="point"?"map-pin":"vector-polygon"):
-      result.__plateEntry?"car-front":result.__featureType==="river"?"spline":
+      result.__plateEntry?"car":result.__featureType==="river"?"spline":
       result.__featureType==="lake"?"waves-horizontal":
       result.__featureType?"vector-polygon":null,
     icons:window.Pin2MapIcons,

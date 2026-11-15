@@ -81,6 +81,9 @@
    // namesake-place heuristic in the imported regional-code directories.
    const areaName=jurisdiction?.areaName||(
      rule?.admin==="county"?name+" – Powiat":name);
+   const secondary=jurisdiction?.reviewStatus==="secondary";
+   const importedCityUnverified=!jurisdiction&&!rule&&admin==="city"&&
+     ["cc0-offene-daten","community-check-2026"].includes(source);
    unique.set(key,Object.freeze({
      code:normalized,country,flag:countries[country],name:areaName,
      query:jurisdiction?.areaQuery||hint.query||query,
@@ -91,12 +94,17 @@
      registrationArea:jurisdiction?.areaName||null,
      namesakePlace:jurisdiction?.namesakePlace||
        (rule?.admin==="county"?name:null),
-     jurisdictionVerified:!!jurisdiction,
+     jurisdictionVerified:!!jurisdiction&&!secondary,
+     jurisdictionClassified:!!jurisdiction,
+     jurisdictionEvidence:secondary?"secondary":jurisdiction?"official":null,
      adminRuleVerified:!!rule,
      classificationSource:rule?
        root.Pin2MapPlateJurisdictionKinds?.[country]?.source:null,
      areaOptions:jurisdiction?.areaOptions||null,
-     geometryPolicy:jurisdiction?.geometryPolicy||null,
+     // Without a validated registration scope an imported "city" is
+     // only a namesake. Never display it as the entire license district.
+     geometryPolicy:jurisdiction?.geometryPolicy||
+       (importedCityUnverified?"reference-only":null),
      referencePlace:jurisdiction?.referencePlace||hint.referencePlace||null,
      placeRelation:jurisdiction?.placeRelation||hint.placeRelation||null,
      relatedArea:hint.relatedArea||null,

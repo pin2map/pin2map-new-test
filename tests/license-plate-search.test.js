@@ -3,8 +3,13 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 require("../domain/license-plate-data-dach.js");
 require("../domain/license-plate-data-europe.js");
+require("../domain/license-plate-data-central.js");
+require("../domain/license-plate-data-east.js");
+require("../domain/license-plate-data-verified-de.js");
 require("../domain/license-plate-jurisdiction-kinds.js");
 require("../domain/license-plate-geo-hints.js");
+require("../domain/license-plate-jurisdictions-de-secondary.js");
+require("../domain/license-plate-jurisdictions-official-regions.js");
 require("../domain/license-plate-jurisdictions-at.js");
 require("../domain/license-plate-jurisdictions.js");
 const cat=require("../domain/license-plate-catalog.js");
@@ -331,4 +336,99 @@ test("Shared prefix with only one resolved region still asks which area is avail
  assert.equal(out.kind,"choices");
  assert.equal(out.choices.length,1);
  assert.equal(out.choices[0].label,"🇩🇪 KA (Stadt Karlsruhe)");
+});
+
+test("TT and ÜB are present, RV refers to Ravensburg, FN to Bodenseekreis",()=>{
+ const expected=[
+  ["TT","Bodenseekreis","Tettnang"],
+  ["FN","Bodenseekreis","Friedrichshafen"],
+  ["RV","Landkreis Ravensburg","Ravensburg"]
+ ];
+ for(const [code,area,namesake] of expected){
+  const row=cat.lookup(code).find(r=>r.country==="DE");
+  assert.ok(row,code+" missing");
+  assert.equal(row.registrationArea,area);
+  assert.equal(row.namesakePlace,namesake);
+  assert.equal(row.jurisdictionVerified,true);
+  assert.equal(row.admin,"county");
+  assert.equal(row.status,"current");
+ }
+ const ueb=cat.lookup("ÜB").find(r=>r.country==="DE");
+ assert.ok(ueb,"ÜB must retain umlaut code");
+ assert.equal(ueb.namesakePlace,"Überlingen");
+ assert.equal(ueb.areaOptions.length,3);
+ assert.deepEqual(ueb.areaOptions.map(x=>x.areaName),[
+   "Bodenseekreis","Landkreis Ravensburg","Landkreis Sigmaringen"
+ ]);
+});
+test("ÜB gives three distinct districts and never silently chooses Überlingen",async()=>{
+ const entry=cat.lookup("ÜB").find(r=>r.country==="DE");
+ let queried=[];
+ const svc=new Resolver({catalog:cat,areaFinder:{find:async query=>{
+  queried.push(query);
+  const id={"Bodenseekreis":101,"Landkreis Ravensburg":202,
+     "Landkreis Sigmaringen":303}[query];
+  return [{name:query,osm_type:"relation",osm_id:id,
+    geojson:poly,addresstype:"county",address:{country_code:"de"}}];
+ }}});
+ const result=await svc.resolve(entry);
+ assert.equal(result.kind,"choices");
+ assert.deepEqual(queried,[
+  "Bodenseekreis","Landkreis Ravensburg","Landkreis Sigmaringen"
+ ]);
+ assert.deepEqual(result.choices.map(x=>x.osmId),[101,202,303]);
+ assert.ok(result.choices.every(x=>x.label.includes("ÜB")));
+ assert.ok(result.choices.every(x=>!x.label.includes("Überlingen")));
+});
+
+test("German secondary source provides county scopes without claiming governmental verification",()=>{
+ const cases=[["AB","Stadt Aschaffenburg","Landkreis Aschaffenburg"],
+  ["AA","Ostalbkreis"],["BK","Rems-Murr-Kreis","Landkreis Schwäbisch Hall","Landkreis Börde"]];
+ for(const [code,...regions] of cases){
+  const e=cat.lookup(code).find(r=>r.country==="DE");
+  assert.ok(e,code);
+  assert.equal(e.jurisdictionVerified,false);
+  assert.equal(e.jurisdictionEvidence,"secondary");
+  assert.equal(e.jurisdictionClassified,true);
+  if(regions.length>1)assert.deepEqual(e.areaOptions.map(o=>o.areaName),regions);
+  else assert.equal(e.name,regions[0]);
+ }
+ assert.equal(cat.lookup("KN").find(x=>x.country==="DE").jurisdictionVerified,true);
+ assert.equal(cat.lookup("TT").find(x=>x.country==="DE").jurisdictionVerified,true);
+ assert.equal(cat.lookup("NAU").find(x=>x.country==="DE").source,"official-2026");
+});
+test("official multi-municipality regions never become city area polygons",async()=>{
+ for(const [country,code] of [["HR","ZG"],["SI","LJ"],["RS","BG"],["ME","AN"]]){
+  const e=cat.lookup(code).find(x=>x.country===country);
+  assert.ok(e,country+" "+code);
+  assert.equal(e.geometryPolicy,"reference-only");
+  assert.equal(e.admin,"county");
+  assert.equal(e.source,"official-scope-"+country.toLowerCase());
+  assert.ok(e.sourceUrl.startsWith("https://"));
+  assert.match(e.name,/Zulassungsregion/);
+  const svc=new Resolver({catalog:cat,areaFinder:{
+   find:async()=>{throw Error("No city polygon may pretend to cover a registration region");},
+   findPlace:async()=>[{name:e.referencePlace,lat:"45.1",lon:"15.2",
+     addresstype:"city",address:{country_code:country.toLowerCase()}}]
+  }});
+  const result=await svc.resolve(e);
+  assert.equal(result.kind,"point");
+  assert.equal(result.geojson,undefined);
+  assert.match(result.choiceDetail,/kein vollständiges Zulassungsgebiet/);
+ }
+});
+test("foreign community city codes without proven scope are reference-only",()=>{
+ for(const [cc,code] of [["MK","SK"],["BY","7"],["UA","AA"]]){
+  const e=cat.lookup(code).find(x=>x.country===cc);
+  assert.ok(e,cc+" "+code);
+  assert.equal(e.jurisdictionVerified,false);
+  assert.equal(e.geometryPolicy,"reference-only");
+ }
+});
+test("Munich M is shared by city and Landkreis, not restricted to namesake city",()=>{
+ const e=cat.lookup("M").find(x=>x.country==="DE");
+ assert.ok(e);assert.equal(e.jurisdictionEvidence,"secondary");
+ assert.deepEqual(e.areaOptions.map(x=>x.areaName),[
+   "Stadt München","Landkreis München"
+ ]);
 });

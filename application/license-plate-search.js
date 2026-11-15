@@ -20,7 +20,7 @@
    const level=String(x.extratags?.admin_level||"");
    // Explicitly reviewed districts must never accept a city/municipality
    // polygon as a county just because both share the same namesake.
-   if((entry.jurisdictionVerified||entry.adminRuleVerified)&&entry.admin==="county"&&
+   if((entry.jurisdictionClassified||entry.adminRuleVerified)&&entry.admin==="county"&&
       ["city","town","village","municipality"].includes(type))return false;
    if(validTypes[entry.admin]?.has(type))return true;
    if(category!=="boundary")return false;

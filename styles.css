@@ -831,9 +831,23 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
   border-radius:50%;box-shadow:none;cursor:pointer;
 }
 #app #searchClear.search-clear span{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:23px;height:23px;line-height:1;border-radius:50%;
-  background:#6f7378;color:#fff;font-size:20px;font-weight:500;
+  position:relative;display:inline-flex;align-items:center;justify-content:center;
+  width:23px;height:23px;line-height:0;border-radius:50%;
+  background:#6f7378;color:transparent;font-size:0;flex:none;
+}
+/* Draw the × around the exact center instead of relying on font ascenders
+   and baseline metrics (which vary noticeably on iPhone Safari). */
+#app #searchClear.search-clear span::before,
+#app #searchClear.search-clear span::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:13px;height:2.6px;border-radius:2px;background:#fff;
+  transform-origin:50% 50%;
+}
+#app #searchClear.search-clear span::before{
+  transform:translate(-50%,-50%) rotate(45deg);
+}
+#app #searchClear.search-clear span::after{
+  transform:translate(-50%,-50%) rotate(-45deg);
 }
 #app #searchClear.search-clear:focus-visible{outline:2px solid #235b9a;outline-offset:-1px}
 
