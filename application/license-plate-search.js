@@ -100,8 +100,14 @@
              choiceTitle:option.areaName+" – "+(option.admin==="city"?"Stadt":"Landkreis")}));
          }
        }
-       if(!choices.length)
-         throw Error("Keine geprüfte Stadt- oder Landkreisgrenze für dieses gemeinsam genutzte Kennzeichen gefunden.");
+       if(!choices.length){
+         // A source-reviewed reference city is a safe last resort when the
+         // provider cannot return either administrative boundary. It is
+         // NEVER a replacement polygon for the whole shared jurisdiction.
+         const point=await this.referencePoint(entry,{signal});
+         if(point){this.cache.set(key,point);return point;}
+         throw Error("Keine passende Stadt- oder Landkreisgrenze gefunden; für dieses Kennzeichen ist kein geprüfter Ersatzort hinterlegt.");
+       }
        // Keep explicit selection even when only one side is available:
        // never imply that the only found boundary represents the whole code.
        const result=Object.freeze({kind:"choices",entry,choices:Object.freeze(choices)});
