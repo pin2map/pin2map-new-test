@@ -1764,8 +1764,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   padding:9px 11px;min-height:42px;border:0;border-radius:9px;
   background:transparent;color:#243b54;text-align:left;font-size:15px;cursor:pointer;
 }
-#app .search-type-choice.is-selected,
-#app .search-type-choice:hover{background:#dbe9fb}
+#app .search-type-choice.is-selected{background:#dbe9fb}
+#app .search-type-choice:hover:not(.is-selected){background:#f3f6fa}
 #app .search-type-choice .p2m-lucide,
 #app .search-type-choice .search-type-icon{width:22px;height:22px;flex:0 0 22px;display:block}
 #app .search-type-choice span{flex:1}
@@ -1880,3 +1880,19 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   padding:3px 7px;border:1px solid #8eaed0;border-radius:6px;
   background:#e7f2fb;color:#243b54;font:600 13px system-ui;white-space:nowrap;
 }
+
+/* GPS point confirmation floats beside the temporary grey location dot. */
+#app .gps-pin-prompt{
+  position:absolute;z-index:1560;display:flex;align-items:center;gap:8px;
+  width:max-content;max-width:calc(100% - 16px);box-sizing:border-box;
+  padding:8px 10px;border:1px solid #b7c5d4;border-radius:12px;
+  background:white;color:#243b54;box-shadow:0 6px 22px #142a4450;
+  font-size:14px;
+}
+#app .gps-pin-prompt.hidden{display:none}
+#app .gps-pin-prompt button{
+  min-width:44px;min-height:34px;border:1px solid #b7c5d4;
+  border-radius:9px;background:#eef3f8;color:#243b54;font-weight:650;
+  cursor:pointer;
+}
+#app .gps-pin-prompt button:focus-visible{outline:2px solid #287cff}
