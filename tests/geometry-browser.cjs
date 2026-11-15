@@ -251,6 +251,25 @@ const viewports=[
    await page.locator('.search-type-choice[data-search-type="area"]').click();
    assert.equal(await page.locator(".p2m-plate-label").count(),0,
      "New regular area search removes the temporary license plate area");
+   // Restore an isolated empty test fixture after the plate scenario. Otherwise
+   // delayed viewport writes from the previous test may restore the saved
+   // confirmation area during the later two-area regression (especially iPhone).
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.waitForFunction(()=>document.querySelector(".leaflet-container"),
+     null,{timeout:15000});
+   await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{
+       const project=window.Pin2MapProjectModel.defaultProject();
+       project.allowGeocode=true;
+       await db.saveProject(project);
+     }finally{db.close();}
+   });
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.waitForFunction(()=>document.querySelector("#searchInput")&&
+     document.querySelector(".leaflet-container"),null,{timeout:15000});
+   await page.locator("#searchInput").fill("Testfläche");
+   await page.locator('.search-type-choice[data-search-type="area"]').click();
    await page.locator("#searchResults .result").first()
      .waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon").count(),1);
