@@ -196,7 +196,7 @@ const viewports=[
      document.querySelector(".leaflet-container"),null,{timeout:15000});
    // Registration jurisdiction is not necessarily the namesake city.
    // KN = Landkreis Konstanz; an equally named city polygon must not win.
-   await page.route(/nominatim\\.openstreetmap\\.org\\/search/,async route=>{
+   await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
      const q=new URL(route.request().url()).searchParams.get("q");
      if(q!=="Landkreis Konstanz"){await route.fallback();return;}
      const county={type:"Polygon",coordinates:[[[
