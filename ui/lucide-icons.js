@@ -24,6 +24,10 @@
       ["path",{d:"M8 11h6"}]
     ],
     "map-pin": [["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],["circle",{cx:12,cy:10,r:2}]],
+    "locate-fixed": [
+      ["path",{d:"M12 2v2M12 20v2M2 12h2M20 12h2"}],
+      ["circle",{cx:12,cy:12,r:8}],["circle",{cx:12,cy:12,r:3}]
+    ],
     "map-pin-plus-inside": [
       ["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],
       ["path",{d:"M12 7v6"}],["path",{d:"M9 10h6"}]
