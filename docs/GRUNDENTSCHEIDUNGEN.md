@@ -2137,3 +2137,10 @@ Neue verbindliche Regel: Bezirksklassifikationen werden durch **nationale amtlic
 ## v201 – Kompakter Symbol-Dialog für alle pinken Vorschauobjekte (15.11.2026)
 
 Der Dialog für ein temporäres Objekt übernimmt die kompakte Zwei-Button-Form des Kartenklick-Menüs: **links graue runde Schaltfläche mit grünem Lucide-Haken `check` (Speichern)**, **rechts dunkelrote runde Schaltfläche mit weißem Lucide-X `x` (Entfernen)**. Beide bleiben 42×42 Pixel große antippbare Schaltflächen mit `title` und `aria-label` „Speichern“ bzw. „Entfernen“, aber **ohne sichtbaren Text**. Der bestehende fachliche v200-Vertrag bleibt: Speichern legt erstmals einen Privat-Datensatz an; Entfernen löscht das temporäre Kartenobjekt sofort ohne Persistenz; außerhalb klicken/Escape schließt nur die Symbolauswahl und lässt das Vorschauobjekt unverändert. Icons ausschließlich über den bestehenden `Pin2MapIcons`-Port, keine neue UI-Library, kein Datenbank-Schema.
+
+
+## Naturräume – verbindlicher Datenquellenrahmen (15.11.2026)
+
+**Explizite Nutzerentscheidung:** In der Naturräume-/Landschaftensuche dürfen ausschließlich bereits vorhandene, belegte echte **Polygon- oder MultiPolygon-Geometrien** angeboten und als Gebiet gespeichert werden. **Keine** Ersatz-/Referenzpins, keine aus Punkten/Linien geschätzten Grenzen, keine selbst erfundenen Gebietspolygone. **Keine API-Key-pflichtigen Datenanbieter**. Die bestehenden Rasterkachel-Hintergrundkarten bleiben erhalten; fertig vorliegende GeoJSON-/GIS-Polygone sind **Suchdaten**, keine neue Hintergrundkartenart. Bei nicht verfügbarer qualifizierter Fläche wird kein Treffer vorgetäuscht.
+
+RESOLVE Ecoregions 2017 ist zunächst **nur Datentestkandidat**, nicht automatisch neues produktives Feature. Die Ergebnisse von 847 Inventareinträgen und 14/14 erfolgreich mit den pin2map-Fachfunktionen geprüften echten Polygondateien sowie die nachgewiesenen Namens-/Semantikgrenzen stehen in `docs/NATURRAEUME_POLYGON_PILOT_2026-11-15.md`. Der aktuelle Produkt-/Preview-/IndexedDB-Code wurde für den Datentest nicht verändert. Die getrennte Benutzerentscheidung, welche Regionen und Quellen tatsächlich integriert werden, bleibt vorbehalten.
