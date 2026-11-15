@@ -754,6 +754,10 @@ body.pin-note-editor-open{overflow:hidden}
   box-shadow:0 10px 30px #152c4550;
 }
 #temporaryLayerPicker.temporary-layer-picker.hidden{display:none}
+#temporaryLayerPicker .temporary-layer-heading{
+  flex:0 0 auto;padding:9px 10px 7px;margin:0;
+  font-size:14px;line-height:1.35;font-weight:700;color:#253e58;
+}
 #temporaryLayerPicker .temporary-layer-option{
   display:flex;align-items:center;gap:10px;flex:0 0 auto;
   width:100%;min-height:44px;padding:7px 10px;text-align:left;
@@ -1977,6 +1981,14 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app .plate-area-confirm button.plate-area-no{
   border:1px solid #742033;background:#8c2336;color:#fff;
+}
+#app .plate-area-confirm button.plate-area-move{
+  border:1px solid #bbc3ca;background:#e9ecef;color:#38536e;
+}
+#app .plate-area-confirm button.plate-area-move:hover{background:#dce1e5}
+#app .plate-area-confirm button.plate-area-move[hidden]{display:none}
+#app .plate-area-confirm button.plate-area-move .p2m-relocate-icon{
+  width:27px;height:23px;flex:none;
 }
 #app .plate-area-confirm button .p2m-lucide{
   width:24px;height:24px;flex:none;
