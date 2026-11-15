@@ -2,27 +2,28 @@
 /* Shared transient object confirmation. Never owns stored data or Leaflet. */
 (function(root){
  class LicensePlatePanel{
-  constructor({document:doc,getElement,mapPort,onAccept}){
-   if(!doc||!mapPort||typeof getElement!=="function"||typeof onAccept!=="function")
+  constructor({document:doc,getElement,mapPort,onAccept,onRemove}){
+   if(!doc||!mapPort||typeof getElement!=="function"||typeof onAccept!=="function"||typeof onRemove!=="function")
      throw new TypeError("License plate prompt ports required");
-   this.doc=doc;this.el=getElement;this.mapPort=mapPort;this.onAccept=onAccept;
+   this.doc=doc;this.el=getElement;this.mapPort=mapPort;this.onAccept=onAccept;this.onRemove=onRemove;
    this.box=getElement("plateAreaConfirm");this.entry=null;
   }
   bind(){
    if(this.bound)return;
    this.box.replaceChildren();
-   const title=this.doc.createElement("span");
-   title.textContent="Bereich speichern?";this.title=title;
-   const yes=this.doc.createElement("button");yes.type="button";yes.textContent="Ja";
-   yes.className="plate-area-yes";
-   const no=this.doc.createElement("button");no.type="button";no.textContent="Nein";
-   no.className="plate-area-no";
-   yes.addEventListener("click",event=>{
+   const save=this.doc.createElement("button");
+   save.type="button";save.textContent="Speichern";save.className="plate-area-yes";
+   const remove=this.doc.createElement("button");
+   remove.type="button";remove.textContent="Entfernen";remove.className="plate-area-no";
+   save.addEventListener("click",event=>{
      event.stopPropagation();const entry=this.entry;
      this.close();if(entry)this.onAccept(entry);
    });
-   no.addEventListener("click",event=>{event.stopPropagation();this.close();});
-   this.box.append(title,yes,no);
+   remove.addEventListener("click",event=>{
+     event.stopPropagation();const entry=this.entry;
+     this.close();if(entry)this.onRemove(entry);
+   });
+   this.box.append(save,remove);
    this.doc.addEventListener("keydown",event=>{
      if(event.key==="Escape"&&!this.box.classList.contains("hidden")){
        event.preventDefault();this.close();
@@ -37,9 +38,6 @@
   }
   show(entry,position){
    this.entry=entry;this.positionOnMap=position;
-   this.title.textContent=entry.kind==="point"?"Pin speichern?":
-     entry.kind==="river"?"Fluss speichern?":
-     entry.featureKind==="lake"?"See speichern?":"Bereich speichern?";
    this.box.classList.remove("hidden");this.position();
   }
   position(){
