@@ -9,6 +9,7 @@
    this.doc=doc;this.icons=icons;this.onChoose=onChoose;
    this.onCreate=onCreate;this.getLayers=getLayers;this.onClose=onClose;
    this.entry=null;this.position=null;
+   this.filterText="";this.options=[];
    this.box=doc.createElement("section");
    this.box.id="temporaryLayerPicker";
    this.box.className="temporary-layer-picker hidden";
@@ -30,6 +31,7 @@
   }
   show(entry,layers,anchor){
    this.close(false);
+   this.filterText="";
    this.entry=entry;
    this.position=anchor||{left:0,right:0,top:0,bottom:0};
    this.box.replaceChildren();
@@ -39,6 +41,27 @@
      entry.kind==="river"?"Fluss hinzufügen zu:":
      entry.featureKind==="lake"?"See hinzufügen zu:":"Fläche hinzufügen zu:";
    this.box.append(heading);
+   const searchRow=this.doc.createElement("div");
+   searchRow.className="pin-layer-filter";
+   const search=this.doc.createElement("input");
+   search.type="search";search.className="pin-layer-filter-input";
+   search.setAttribute("placeholder","Ebenen filtern");
+   search.setAttribute("aria-label","Ebenen nach Namen filtern");
+   search.setAttribute("autocomplete","off");
+   const clear=this.doc.createElement("button");
+   clear.type="button";clear.className="pin-layer-filter-clear";
+   clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
+   clear.append(this.icons.svg("funnel-x",this.doc));
+   search.addEventListener("input",()=>{
+     this.filterText=search.value;this.applyFilter();
+   });
+   clear.addEventListener("click",event=>{
+     event.stopPropagation();
+     this.filterText="";search.value="";this.applyFilter();search.focus();
+   });
+   searchRow.append(search,clear);this.box.append(searchRow);
+   this.filterInput=search;this.clearButton=clear;
+   this.options=[];
    const available=Array.isArray(layers)?layers.filter(l=>l?.id):[];
    for(const layer of available){
      const row=this.doc.createElement("button");
@@ -63,6 +86,7 @@
        this.onChoose(entry,layer.id);
      });
      this.box.append(row);
+     this.options.push({button:row,name:layer.name||""});
    }
    if(available.length===1){
      const info=this.doc.createElement("p");
@@ -83,9 +107,24 @@
      if(added)this.show(entry,this.getLayers(),this.position);
    });
    this.box.append(create);
+   const empty=this.doc.createElement("p");
+   empty.className="pin-layer-filter-empty";
+   empty.textContent="Keine passende Ebene.";
+   this.box.append(empty);this.emptyMessage=empty;
+   this.applyFilter();
    if(!available.length){this.close();return;}
    this.box.classList.remove("hidden");
    this.positionMenu();
+  }
+  applyFilter(){
+   const query=this.filterText.trim().toLocaleLowerCase("de-DE");
+   let count=0;
+   for(const {button,name} of this.options){
+     button.hidden=Boolean(query)&&!name.toLocaleLowerCase("de-DE").includes(query);
+     if(!button.hidden)count++;
+   }
+   if(this.emptyMessage)this.emptyMessage.hidden=count>0;
+   if(this.clearButton)this.clearButton.disabled=!this.filterText;
   }
   positionMenu(){
    if(!this.entry)return;
