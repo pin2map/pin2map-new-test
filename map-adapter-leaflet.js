@@ -235,6 +235,11 @@
         tag.setIcon(window.L.divIcon({html:label.outerHTML,
           className:"p2m-plate-label-wrap p2m-temporary-pin-wrap",
           iconSize:[0,0],iconAnchor:[-23,48]}));
+        // setIcon replaces its DOM node; restore touch/hold behavior.
+        if(this.temporaryPinGesture){
+          const tap=()=>onLabel?.({lat:p.lat,lng:p.lng});
+          this.temporaryPinGesture(tag,tap,pin);
+        }
       };
       this.temporaryPlateArea={group,entry,updateLabel,reposition:()=>{}};
       this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
