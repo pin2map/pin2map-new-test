@@ -14,7 +14,7 @@ test("Knudsker is selected from the actual locality, not the closest road",()=>{
 });
 test("prioritize the main city even when a suburb, district, or nearby village is present",()=>{
  for(const [city,district] of [
-  ["Gütersloh","Bad Westernkotten"],
+  ["Erwitte","Bad Westernkotten"],
   ["Lippstadt","Overhagen"],
   ["Brilon","Gudenhagen"],
   ["Wetzlar","Altstadt"],
