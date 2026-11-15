@@ -55,8 +55,8 @@ test("invalid GPS coordinates do not stage objects",()=>{
 test("GPS discovery remains UI-only and is part of the offline app shell",()=>{
  const read=p=>fs.readFileSync(path.resolve(__dirname,"..",p),"utf8");
  const sw=read("sw.js"),app=read("app.js"),source=read("ui/gps-location.js");
- assert.match(sw,/ui\\/gps-location\\.js/);
- assert.match(app,/new window\\.Pin2MapGpsLocationController/);
+ assert.ok(sw.includes("ui/gps-location.js"));
+ assert.ok(app.includes("new window.Pin2MapGpsLocationController"));
  assert.match(app,/onAccept:\(point,name\)=>addPin\(point\.lat,point\.lng,name\)/);
  assert.doesNotMatch(source,/\bL\.|\bindexedDB\b/);
 });
