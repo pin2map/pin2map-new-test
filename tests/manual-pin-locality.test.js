@@ -94,6 +94,25 @@ test("manual preview receives an in-place Knudsker label without persistence",as
  assert.equal(entry.label,"Knudsker");
  assert.deepEqual(updates,["Knudsker"]);
 });
+test("reverse lookup uses original tap zoom and keeps city even on detailed map",async()=>{
+ const calls=[];
+ const service=new ManualPinLocality({
+  geocoder:{reverse:async(_point,{zoom})=>{
+   calls.push(zoom);
+   return {address:{city:"Köln",suburb:"Altstadt-Nord"}};
+  }},
+  pickName:domain.nearbyLocalityName,
+  detailZoom:domain.reversePlaceZoom,allowed:()=>true,onName:()=>{}
+ });
+ const overview={point:{lat:50.938,lng:6.96},mapZoom:9,name:"",label:"Neuer Pin"};
+ service.setCurrent(overview);await service.resolve(overview);
+ assert.equal(overview.label,"Köln");
+ const detail={point:{lat:50.938,lng:6.96},mapZoom:17,name:"",label:"Neuer Pin"};
+ service.setCurrent(detail);await service.resolve(detail);
+ assert.equal(detail.label,"Köln");
+ assert.deepEqual(calls,[10,13],
+   "The preview's automatic setView must not change naming detail");
+});
 test("consent disabled and already named pins issue no reverse requests",async()=>{
  let calls=0,allowed=false;
  const service=new ManualPinLocality({
