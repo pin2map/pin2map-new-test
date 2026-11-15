@@ -73,7 +73,7 @@
         if(this.popupMode==="url"&&!e.target.closest?.("#geometryUrlBlock,#geometryEditor .geometry-link"))this.dismissPopup();
       });
       this.doc.addEventListener("keydown",e=>{
-        if(e.key==="Escape"&&!panel.classList.contains("hidden")){
+        if(e.key==="Escape"&&!panel.classList.contains("hidden")&&!this.noteEditor?.open){
           e.preventDefault();
           if(this.popupMode)this.dismissPopup();
           else if(!sub.classList.contains("hidden"))this.toggleSub(null);
@@ -172,6 +172,13 @@
       input.addEventListener("input",()=>{
         open.disabled=!validate();open.classList.toggle("has-url",!open.disabled);
       });
+      input.addEventListener("focus",()=>{
+        if(this.popupMode!=="url")return;
+        const vv=this.doc.defaultView?.visualViewport;
+        this.urlKeyboardAnchor={top:parseFloat(popup.style.top)||popup.getBoundingClientRect().top,
+          visualOffsetTop:vv?.offsetTop||0};
+      });
+      input.addEventListener("blur",()=>{this.urlKeyboardAnchor=null;});
       save.addEventListener("click",()=>{
         const value=input.value.trim();
         if(value&&!validate()){
@@ -231,6 +238,7 @@
       this.popupMode=null;
       if(this.layerMenu)this.layerMenu.classList.add("hidden");
       if(this.urlPopup)this.urlPopup.classList.add("hidden");
+      this.urlKeyboardAnchor=null;
       this.layerButton?.setAttribute("aria-expanded","false");
       this.linkButton?.setAttribute("aria-expanded","false");
       if(this.layerMenu)this.layerMenu.replaceChildren();
@@ -254,10 +262,14 @@
         const popup=this.urlPopup;
         popup.style.width=Math.min(Math.max(180,panel.width-20),width-24)+"px";
         popup.style.left=Math.max(left+12,panel.left+10)+"px";
-        if(!keyboard){
+        if(keyboard&&this.urlKeyboardAnchor){
+          const anchor=this.urlKeyboardAnchor;
+          const desired=anchor.top+top-anchor.visualOffsetTop;
+          popup.style.top=Math.max(top+8,Math.min(desired,top+height-popup.offsetHeight-8))+"px";
+        }else if(!keyboard){
           popup.style.top=Math.max(top+12,Math.min(panel.top+Math.min(80,panel.height*.2),top+height-190))+"px";
         }
-        popup.style.height=Math.max(170,Math.min(300,top+height-parseFloat(popup.style.top)-12))+"px";
+        popup.style.height=Math.max(150,Math.min(300,top+height-parseFloat(popup.style.top)-12))+"px";
       }
     }
     showAreaPopup(mode){
