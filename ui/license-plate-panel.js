@@ -34,6 +34,7 @@
      this.close();if(entry)this.onRemove(entry);
    });
    this.box.append(remove,move,save);
+   this.moveButton=move;
    this.doc.addEventListener("keydown",event=>{
      if(event.key==="Escape"&&!this.box.classList.contains("hidden")){
        event.preventDefault();this.close();
@@ -47,6 +48,7 @@
    this.bound=true;
   }
   show(entry,position){
+   this.moveButton.hidden=entry.kind!=="point";
    this.entry=entry;this.positionOnMap=position;
    this.box.classList.remove("hidden");this.position();
   }
