@@ -744,6 +744,38 @@ body.pin-note-editor-open{overflow:hidden}
 #pinLayerMenu .pin-layer-visibility{display:inline-flex;flex:0 0 18px;color:#52677b}
 #pinLayerMenu .pin-layer-visibility-icon{width:18px;height:18px}
 #pinLayerMenu .pin-layer-visibility.is-hidden{color:#a66b78}
+/* Layer-first quick save for pink previews. Only an explicit row selection
+   creates an object; these rows intentionally have no preselected item. */
+#temporaryLayerPicker.temporary-layer-picker{
+  position:fixed;z-index:1700;display:flex;flex-direction:column;gap:2px;
+  box-sizing:border-box;padding:6px;margin:0;overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;background:#fff;
+  border:1px solid #c7d0db;border-radius:12px;
+  box-shadow:0 10px 30px #152c4550;
+}
+#temporaryLayerPicker.temporary-layer-picker.hidden{display:none}
+#temporaryLayerPicker .temporary-layer-option{
+  display:flex;align-items:center;gap:10px;flex:0 0 auto;
+  width:100%;min-height:44px;padding:7px 10px;text-align:left;
+  border:1px solid transparent;border-radius:8px;
+  background:#fff;color:#26394c;font-size:13px;line-height:1.3;
+  cursor:pointer;
+}
+#temporaryLayerPicker .temporary-layer-option:hover{background:#f1f6fb}
+#temporaryLayerPicker .temporary-layer-option:focus-visible{
+  outline:3px solid #5b99e5;outline-offset:-3px;
+}
+#temporaryLayerPicker .pin-layer-dot{
+  display:block;flex:0 0 11px;width:11px;height:11px;border-radius:50%;
+}
+#temporaryLayerPicker .pin-layer-name{
+  flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#temporaryLayerPicker .pin-layer-visibility{
+  display:inline-flex;flex:0 0 18px;color:#52677b;
+}
+#temporaryLayerPicker .pin-layer-visibility-icon{width:18px;height:18px}
+#temporaryLayerPicker .pin-layer-visibility.is-hidden{color:#a66b78}
 /* Wide but panel-contained URL popover; textarea grows vertically to fill
    the measured space between the navigation buttons and footer. */
 #pinUrlBlock.pin-url-popup{
