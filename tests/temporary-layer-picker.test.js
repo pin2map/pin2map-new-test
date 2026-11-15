@@ -42,7 +42,8 @@ test("no default selection and no saving by opening the picker",()=>{
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
  assert.equal(x.chosen.length,0);
  assert.equal(x.picker.box.children.length,4);
- assert.deepEqual(x.picker.box.children.map(row=>row.getAttribute("aria-selected")),
+ assert.deepEqual(x.picker.box.children.filter(row=>row.getAttribute("role")==="option")
+  .map(row=>row.getAttribute("aria-selected")),
   ["false","false","false"]);
  assert.equal(x.picker.box.hidden,false);
 });
