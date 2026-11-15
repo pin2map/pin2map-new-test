@@ -747,6 +747,7 @@ body.pin-note-editor-open{overflow:hidden}
 /* Same compact name filter in both layer popups; does not select a layer. */
 #pinLayerMenu .pin-layer-filter,
 #temporaryLayerPicker .pin-layer-filter{
+  position:sticky;top:0;z-index:2;background:#fff;
   display:flex;align-items:center;gap:5px;flex:0 0 auto;
   box-sizing:border-box;width:100%;padding:4px 3px 7px;
 }
