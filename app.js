@@ -762,6 +762,9 @@
       onAccept:(point,name)=>{
         const pin=addPin(point.lat,point.lng,name);
         if(!pin)return;
+        // The accepted GPS position becomes a real Pin: commit now rather than
+        // leaving its durability to the usual debounced viewport save.
+        void dbWrite().catch(()=>showNotice("GPS-Pin konnte nicht gespeichert werden"));
         requestAnimationFrame(()=>{
           const input=$("pinName");
           if(input&&!$("pinPanel").classList.contains("hidden")){
