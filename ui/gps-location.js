@@ -46,7 +46,10 @@
         },{enableHighAccuracy:true,timeout:15000,maximumAge:0});
       }catch(_){this.onNotice("Standortzugriff nicht möglich. Bitte Geräteeinstellungen prüfen.");}
     }
-    close(){this.box.classList.add("hidden");}
+    close(){
+      ++this.request; // invalidate a GPS callback from an abandoned search
+      this.box.classList.add("hidden");
+    }
 
   }
   root.Pin2MapGpsLocationController=GpsLocationController;
