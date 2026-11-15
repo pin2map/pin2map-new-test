@@ -430,6 +430,16 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".p2m-temporary-pin").click();
     await page.locator(".plate-area-yes").click();
     await page.locator("#temporaryLayerPicker").waitFor({state:"visible",timeout});
+    const quickFilter=page.locator("#temporaryLayerPicker .pin-layer-filter-input");
+    await quickFilter.fill("does-not-exist");
+    assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),0);
+    assert.equal(await page.locator("#temporaryLayerPicker .pin-layer-filter-empty").isVisible(),true);
+    await page.locator("#temporaryLayerPicker .pin-layer-filter-clear").click();
+    assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),1);
+    assert.equal(await page.evaluate(async()=>{
+      const db=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await db.loadProject()).pins.length;}finally{db.close();}
+    }),0,"Filtering cannot save a temporary pin");
     assert.equal(await page.locator("#pinPanel").isHidden(),true,
       "Green check opens layer list, not the full pin editor");
     assert.equal(await page.evaluate(async()=>{
@@ -549,6 +559,18 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#layersButton").click();
     await page.locator(".leaflet-marker-icon").first().click({force:true});
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
+    await page.locator("#pinLayerTrigger").click();
+    const regularFilter=page.locator("#pinLayerMenu .pin-layer-filter-input");
+    await regularFilter.fill("REIS");
+    assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),1);
+    assert.match(await page.locator("#pinLayerMenu [role='option']:visible").innerText(),/Reisen/);
+    assert.equal(await page.locator("#pinLayer").inputValue(),"private",
+      "Filtering regular layer choices cannot silently reassign a pin");
+    await page.locator("#pinLayerMenu .pin-layer-filter-clear").click();
+    assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),2);
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("#pinLayer").inputValue(),"private");
+    console.log("[browser] PASS – layer filters do not change assignments");
     console.log("[browser] PASS – private bulk-delete cancel preserves the pin");
 
     step("cancellation retains original coordinates");
