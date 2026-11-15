@@ -127,3 +127,23 @@ test("marker pointer movement cancels zoom, without selecting a pin",()=>{
   h.time.advance(600);assert.deepEqual(h.zooms,[]);
   assert.deepEqual(h.selected,[]);assert.equal(h.panEnabled(),true);
 });
+
+test("temporary pin alternates long-press 18/14 without saving, selecting or opening editor",()=>{
+ const h=harness(),taps=[];
+ h.gestures.attachMarkerLongPress(h.marker,null,{
+  transient:true,zoomMarker:h.marker,onTap:()=>taps.push("preview")
+ });
+ for(let i=0;i<2;i++){
+  h.pinElement.dispatch("pointerdown");
+  h.time.advance(550);h.pinElement.dispatch("pointerup");
+ }
+ assert.deepEqual(h.zooms,[18,14]);
+ assert.deepEqual(taps,[]);
+ assert.deepEqual(h.selected,[]);
+ assert.deepEqual(h.added,[]);
+ assert.equal(h.markersRendered(),0);
+ assert.equal(h.panEnabled(),true);
+ h.pinElement.dispatch("pointerdown");
+ h.time.advance(50);h.pinElement.dispatch("pointerup");
+ assert.deepEqual(taps,["preview"],"Short tap still opens temporary actions");
+});
