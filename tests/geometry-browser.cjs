@@ -174,14 +174,14 @@ const viewports=[
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length===1;}finally{db.close();}
    },null,{timeout:8000});
-   assert.equal(await page.evaluate(async()=>{
+   const savedGpsPins=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{
-       const pins=(await db.loadProject()).pins;
-       return pins.length===1&&pins[0].layerId==="private"&&
-         Math.abs(pins[0].lat-47.6501)<0.001;
-     }finally{db.close();}
-   }),true,"Yes creates exactly one private GPS Pin");
+     try{return (await db.loadProject()).pins;}finally{db.close();}
+   });
+   assert.equal(savedGpsPins.length,1,"Yes creates exactly one private GPS Pin: "+JSON.stringify(savedGpsPins));
+   assert.equal(savedGpsPins[0].layerId,"private");
+   assert.ok(Math.abs(savedGpsPins[0].lat-47.6501)<0.001,
+     "GPS position must match mocked coordinates: "+JSON.stringify(savedGpsPins[0]));
    await page.locator("#closePin").click();
    await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
