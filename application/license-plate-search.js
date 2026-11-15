@@ -91,7 +91,18 @@
            label:entry.flag+" "+entry.code+" ("+option.areaName+")"};
          const found=await this.finder.find(option.query,{kind:"area",signal});
          if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
-         for(const candidate of Array.isArray(found)?found:[]){
+         // OSM often indexes a Landkreis simply under its geographic name
+         // ("Coburg"), not "Landkreis Coburg". Retry the bare name ONLY if
+         // no correctly typed, country-matched boundary was found.
+         let candidates=Array.isArray(found)?found:[];
+         if(option.admin==="county"&&/^Landkreis\s+/i.test(option.query)&&
+             !candidates.some(x=>isMatchingArea(scoped,x))){
+           const shortName=option.query.replace(/^Landkreis\s+/i,"");
+           const alternate=await this.finder.find(shortName,{kind:"area",signal});
+           if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+           candidates=[...candidates,...(Array.isArray(alternate)?alternate:[])];
+         }
+         for(const candidate of candidates){
            if(!isMatchingArea(scoped,candidate))continue;
            const identity=candidate.osm_type+":"+candidate.osm_id;
            if(seen.has(identity))continue;
