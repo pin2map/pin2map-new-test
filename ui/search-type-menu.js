@@ -52,6 +52,8 @@
       this.input.setAttribute("aria-haspopup","menu");
       this.input.setAttribute("aria-expanded","false");
       this.input.addEventListener("focus",()=>this.show());
+      // Typing after Escape must restore the chooser even if input stayed focused.
+      this.input.addEventListener("input",()=>{if(!this.open)this.show();});
       this.button.addEventListener("click",e=>{
         e.preventDefault();e.stopPropagation();this.toggle();
       });
