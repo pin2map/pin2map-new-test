@@ -193,6 +193,11 @@ const viewports=[
    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout:10000});
    await page.locator(".p2m-temporary-pin").click();
    await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   assert.equal(await page.locator("#pinPanel").isHidden(),true);
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   assert.equal(await page.locator("#pinPanel").isHidden(),true);
+   await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
    await page.waitForFunction(()=>{
@@ -372,6 +377,11 @@ const viewports=[
    }),0,"No must not create area data");
    await page.locator(".p2m-plate-label").click();
    await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator(".p2m-area-name-label").first().click();
    await page.locator("#geometryEditor").waitFor({state:"visible"});
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
@@ -436,6 +446,11 @@ const viewports=[
    assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
    await page.locator(".p2m-plate-label").click();
    await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator(".p2m-area-name-label").first().click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),4);
@@ -507,6 +522,10 @@ const viewports=[
      buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
      ["Speichern","Entfernen"]);
    await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator(".p2m-area-name-label").last().click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:8000});
    const lake=(await waitForStored(project=>project?.areas?.some(a=>a.kind==="lake"),
      "lake")).areas.find(a=>a.kind==="lake");
@@ -659,6 +678,10 @@ const viewports=[
    assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
    await page.locator(".p2m-plate-label").click();
    await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   await page.locator(".p2m-river-name-label").first().click();
    await page.locator("#geometryEditor.is-river").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometrySearchBusy").isHidden(),true);
    assert.equal(await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)").count(),4);
@@ -816,6 +839,11 @@ const viewports=[
    }),beforePins,"No must not persist a reference town");
    await page.locator(".p2m-temporary-pin-label").click();
    await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   assert.equal(await page.locator("#pinPanel").isHidden(),true);
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   assert.equal(await page.locator("#pinPanel").isHidden(),true);
+   await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
    await page.waitForFunction(()=>{
