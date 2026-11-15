@@ -49,9 +49,9 @@ test("selected layer trigger uses Lucide icon and colored dot; menu keeps full l
   picker.render({layers,selectedLayerId:"work"});
   assert.equal(trigger.children[1].style.backgroundColor,"#235baa");
   assert.match(trigger.attrs["aria-label"],/Arbeit, Ausgeblendet/);
-  assert.equal(elements.pinLayerMenu.children.length,2);
-  assert.equal(elements.pinLayerMenu.children[1].children[2].children[0].iconName,"eye-off");
-  assert.equal(elements.pinLayerMenu.children[1].attrs["aria-selected"],"true");
+  assert.equal(elements.pinLayerMenu.children.length,4);
+  assert.equal(elements.pinLayerMenu.children[2].children[2].children[0].iconName,"eye-off");
+  assert.equal(elements.pinLayerMenu.children[2].attrs["aria-selected"],"true");
 });
 test("selecting a layer dispatches the existing native change event exactly once",()=>{
   const {picker,elements,layers}=fixture();
@@ -61,14 +61,14 @@ test("selecting a layer dispatches the existing native change event exactly once
   elements.pinLayerTrigger.click();
   assert.equal(elements.pinLayerTrigger.attrs["aria-expanded"],"true");
   assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),true);
-  elements.pinLayerMenu.children[1].click();
+  elements.pinLayerMenu.children[2].click();
   assert.equal(elements.pinLayer.value,"work");
   assert.equal(changes,1);
   assert.equal(elements.pinLayerTrigger.attrs["aria-expanded"],"false");
   assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),false);
   assert.equal(elements.pinLayerTrigger.focused,true);
   // Re-selecting identical value must not create redundant save events.
-  elements.pinLayerMenu.children[1].click();
+  elements.pinLayerMenu.children[2].click();
   assert.equal(changes,1);
 });
 test("outside press and Escape close selector without changing assignment",()=>{
@@ -110,4 +110,49 @@ test("layer picker uses fixed popup outside the scrolling panel and a circular t
  const ids=["movePin","pinLayerPicker","pinUrlButton","pinWikipedia","pinWeather","closePin"];
  let last=-1;
  for(const id of ids){const next=footer.indexOf('id="'+id+'"');assert.ok(next>last,"Footer action order: "+id);last=next;}
+});
+
+test("regular pin layer filter matches names ignoring case, preserves selected layer",()=>{
+ const {picker,elements,layers}=fixture();
+ picker.render({layers,selectedLayerId:"private"});
+ picker.setOpen(true);
+ const input=picker.filterInput;
+ input.value="ARb";input.listeners.input();
+ assert.equal(picker.options[0].button.hidden,true);
+ assert.equal(picker.options[1].button.hidden,false);
+ assert.equal(elements.pinLayer.value,"private");
+ assert.equal(picker.options[0].button.attrs["aria-selected"],"true");
+ assert.equal(picker.clearButton.disabled,false);
+ picker.clearButton.click();
+ assert.equal(input.value,"");
+ assert.equal(picker.options[0].button.hidden,false);
+ assert.equal(picker.options[1].button.hidden,false);
+ assert.equal(elements.pinLayer.value,"private");
+});
+test("filtering zero results never assigns a layer and reopening resets the filter",()=>{
+ const {picker,elements,layers}=fixture();
+ picker.render({layers,selectedLayerId:"private"});
+ picker.setOpen(true);
+ picker.filterInput.value="gibt es nicht";
+ picker.filterInput.listeners.input();
+ assert.equal(picker.emptyMessage.hidden,false);
+ assert.equal(picker.options.every(x=>x.button.hidden),true);
+ assert.equal(elements.pinLayer.value,"private");
+ picker.setOpen(false);picker.setOpen(true);
+ assert.equal(picker.filterInput.value,"");
+ assert.equal(picker.emptyMessage.hidden,true);
+ assert.equal(picker.options.every(x=>!x.button.hidden),true);
+});
+test("regular pin can select a filtered hidden layer through unchanged native change",()=>{
+ const {picker,elements,layers}=fixture();
+ let changes=0;
+ elements.pinLayer.addEventListener("change",()=>changes++);
+ picker.render({layers,selectedLayerId:"private"});
+ picker.setOpen(true);
+ picker.filterInput.value="arbeit";
+ picker.filterInput.listeners.input();
+ picker.options[1].button.click();
+ assert.equal(elements.pinLayer.value,"work");
+ assert.equal(changes,1);
+ assert.equal(picker.open,false);
 });
