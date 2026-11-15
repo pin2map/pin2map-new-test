@@ -10,6 +10,7 @@ class Element {
   }
   append(...items){this.children.push(...items);}
   replaceChildren(...items){this.children=[...items];}
+  setAttribute(name,value){this[name]=String(value);}
   addEventListener(type,fn){this.listeners[type]=fn;}
   click(){this.listeners.click?.();}
 }
