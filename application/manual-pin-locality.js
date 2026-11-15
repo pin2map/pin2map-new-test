@@ -43,7 +43,7 @@
         const result=await this.geocoder.reverse(entry.point,{signal:controller.signal,zoom});
         if(this.current!==entry||this.revision!==revision||
            controller.signal.aborted||!this.allowed())return;
-        const name=this.pickName(result,{mapZoom:entry.mapZoom});
+        const name=this.pickName(result,{mapZoom:entry.mapZoom,point:entry.point});
         if(!name)return;
         if(this.names.size>=100)this.names.delete(this.names.keys().next().value);
         this.names.set(key,name);
