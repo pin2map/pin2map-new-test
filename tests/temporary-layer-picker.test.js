@@ -41,7 +41,8 @@ test("no default selection and no saving by opening the picker",()=>{
  const x=fixture(),entry={kind:"point",label:"Knudsker"};
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
  assert.equal(x.chosen.length,0);
- assert.equal(x.picker.box.children.length,4);
+ assert.equal(x.picker.box.children.length,5);
+ assert.equal(x.picker.box.children[0].textContent,"Pin hinzufügen zu:");
  assert.deepEqual(x.picker.box.children.filter(row=>row.getAttribute("role")==="option")
   .map(row=>row.getAttribute("aria-selected")),
   ["false","false","false"]);
@@ -58,17 +59,17 @@ test("all layers including hidden ones are displayed with no default selection",
 test("single layer warns about project-specific list and offers create without saving pin",()=>{
  const x=fixture(),entry={kind:"point"};
  x.picker.show(entry,x.layers.slice(0,1),{top:150,bottom:190,left:180,right:220});
- assert.equal(x.picker.box.children[1].textContent,
+ assert.equal(x.picker.box.children[2].textContent,
   "In diesem Projekt ist nur eine Ebene vorhanden.");
- assert.equal(x.picker.box.children[2].getAttribute("aria-label"),"Neue Ebene erstellen");
- x.picker.box.children[2].handlers.click({stopPropagation(){}});
+ assert.equal(x.picker.box.children[3].getAttribute("aria-label"),"Neue Ebene erstellen");
+ x.picker.box.children[3].handlers.click({stopPropagation(){}});
  assert.equal(x.chosen.length,0,"Creating an available layer must not save the preview");
  assert.equal(x.picker.box.children.filter(r=>r.getAttribute("role")==="option").length,4);
 });
 test("explicit nonprivate layer selection commits exactly once",()=>{
  const x=fixture(),entry={kind:"point",label:"Knudsker"};
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
- const selected=x.picker.box.children[1];
+ const selected=x.picker.box.children[2];
  assert.match(selected.getAttribute("aria-label"),/kostenlose Parkhäuser/);
  selected.handlers.click({stopPropagation(){}});
  assert.deepEqual(x.chosen,[{entry,id:"other"}]);
@@ -90,10 +91,23 @@ test("outside tap or Escape cancels without saving or removing the preview",()=>
 test("hidden layer is visible and explicitly selectable",()=>{
  const x=fixture(),entry={kind:"river"};
  x.picker.show(entry,x.layers,{top:150,bottom:190,left:180,right:220});
- const row=x.picker.box.children[2];
+ const row=x.picker.box.children[3];
  assert.match(row.getAttribute("aria-label"),/Ausgeblendet/);
  row.handlers.click({stopPropagation(){}});
  assert.equal(x.chosen[0].id,"hidden");
+});
+test("heading reflects the type without selecting or saving a layer",()=>{
+ const x=fixture();
+ for(const [entry,title] of [
+  [{kind:"point"},"Pin hinzufügen zu:"],
+  [{kind:"area"},"Fläche hinzufügen zu:"],
+  [{kind:"area",featureKind:"lake"},"See hinzufügen zu:"],
+  [{kind:"river"},"Fluss hinzufügen zu:"]
+ ]){
+  x.picker.show(entry,x.layers,{top:100,bottom:130,left:120,right:160});
+  assert.equal(x.picker.box.children[0].textContent,title);
+  assert.equal(x.chosen.length,0);
+ }
 });
 test("app never opens the full editor on initial commit",()=>{
  const fs=require("node:fs"),path=require("node:path");
