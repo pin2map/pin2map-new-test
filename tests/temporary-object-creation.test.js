@@ -30,8 +30,8 @@ function fixture(){
   icons:{svg:name=>({iconName:name})},
   mapPort:map,onAccept:entry=>accepted.push(entry),onRemove:entry=>removed.push(entry)});
  panel.bind();
- return {panel,box,accepted,removed,save:box.children[0],
-  remove:box.children[1],events};
+ return {panel,box,accepted,removed,save:box.children[1],
+  remove:box.children[0],events};
 }
 for(const entry of [
  {kind:"point",label:"GPS - 2026",point:{lat:47,lng:9}},
@@ -44,6 +44,8 @@ for(const entry of [
   const x=fixture();
   x.panel.show(entry,{lat:47,lng:9});
   assert.equal(x.box.children.length,2);
+  assert.equal(x.box.children[0].getAttribute("aria-label"),"Entfernen");
+  assert.equal(x.box.children[1].getAttribute("aria-label"),"Speichern");
   assert.equal(x.save.getAttribute("aria-label"),"Speichern");
   assert.equal(x.remove.getAttribute("aria-label"),"Entfernen");
   assert.equal(x.save.children[0].iconName,"check");
@@ -84,7 +86,9 @@ test("every new object creation is routed through temporary preview",()=>{
  assert.match(app,/if\(kind==="area"\|\|kind==="lake"\)\{previewAreaObject/);
  assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,""\)/);
  assert.match(app,/onAccept:\(point,name\)=>addPin\(point.lat,point.lng,name\)/);
- assert.match(app,/onAccept:entry=>\{\s*clearObjectPreview\(\)/);
+ assert.match(app,/onAccept:\(entry,anchor\)=>temporaryLayerPicker\.show\(entry,state\.layers,anchor\)/);
+ assert.match(app,/onChoose:\(entry,layerId\)=>\{/);
+ assert.match(app,/if\(!layer\)return;/);
  assert.match(map,/showTemporaryPin\(entry,onLabel\)/);
  assert.match(map,/showTemporaryRiver\(entry,onLabel\)/);
  assert.match(map,/showTemporaryPlateArea\(entry,onLabel\)/);
