@@ -849,6 +849,7 @@
     gpsLocation.bind();
     platePanel=new window.Pin2MapLicensePlatePanel({
       document,getElement:$,mapPort:mapAdapter,
+      onRemove:()=>clearObjectPreview(),
       onAccept:entry=>{
         clearObjectPreview();
         if(entry.kind==="point"){
