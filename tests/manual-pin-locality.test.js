@@ -5,6 +5,7 @@ const fs=require("node:fs");
 const path=require("node:path");
 const domain=require("../domain/place-search.js");
 const Geocoder=require("../adapters/geocoding/nominatim-geocoder.js");
+const ManualPinLocality=require("../application/manual-pin-locality.js");
 test("Knudsker is selected from the actual locality, not the closest road",()=>{
  const result={name:"Snorrebakken",addresstype:"road",
   address:{road:"Snorrebakken",hamlet:"Knudsker",municipality:"Rønne",
@@ -54,12 +55,70 @@ test("malformed coordinates are rejected without network access",async()=>{
  }
  assert.equal(calls,0);
 });
-test("manual reverse request only starts for unnamed map pins with geocoding consent",()=>{
+test("manual preview receives an in-place Knudsker label without persistence",async()=>{
+ const updates=[];
+ const service=new ManualPinLocality({
+  geocoder:{reverse:async()=>({address:{road:"Snorrebakken",hamlet:"Knudsker",
+    county:"Bornholm"}})},
+  pickName:domain.nearbyLocalityName,allowed:()=>true,
+  onName:entry=>updates.push(entry.label)
+ });
+ const entry={kind:"point",point:{lat:55.1,lng:14.8},label:"Neuer Pin",name:""};
+ service.setCurrent(entry);
+ await service.resolve(entry);
+ assert.equal(entry.name,"Knudsker");
+ assert.equal(entry.label,"Knudsker");
+ assert.deepEqual(updates,["Knudsker"]);
+});
+test("consent disabled and already named pins issue no reverse requests",async()=>{
+ let calls=0,allowed=false;
+ const service=new ManualPinLocality({
+  geocoder:{reverse:async()=>{calls++;return {address:{village:"Knudsker"}}}},
+  pickName:domain.nearbyLocalityName,allowed:()=>allowed,onName:()=>{}
+ });
+ const entry={point:{lat:55.1,lng:14.8},name:"",label:"Neuer Pin"};
+ service.setCurrent(entry);await service.resolve(entry);
+ allowed=true;entry.name="GPS position";await service.resolve(entry);
+ assert.equal(calls,0);
+ assert.equal(entry.label,"Neuer Pin");
+});
+test("late reply cannot rename a replaced or removed preview",async()=>{
+ let finish;
+ let seenSignal;
+ const service=new ManualPinLocality({
+  geocoder:{reverse:async(_p,{signal})=>{
+   seenSignal=signal;
+   return new Promise(resolve=>finish=resolve);
+  }},
+  pickName:domain.nearbyLocalityName,allowed:()=>true,onName:()=>{throw Error("Stale update");}
+ });
+ const a={point:{lat:55.1,lng:14.8},name:"",label:"Neuer Pin"};
+ service.setCurrent(a);const first=service.resolve(a);
+ await Promise.resolve();
+ const b={point:{lat:55.2,lng:14.9},name:"",label:"Neuer Pin"};
+ service.setCurrent(b);
+ assert.equal(seenSignal.aborted,true);
+ finish({address:{village:"Knudsker"}});
+ await first;
+ assert.equal(a.label,"Neuer Pin");
+ assert.equal(b.label,"Neuer Pin");
+ service.invalidate();
+});
+test("fallback keeps original name when provider has no settlement",async()=>{
+ const entry={point:{lat:55.1,lng:14.8},name:"",label:"Neuer Pin"};
+ const service=new ManualPinLocality({
+  geocoder:{reverse:async()=>({address:{road:"Main",county:"County"}})},
+  pickName:domain.nearbyLocalityName,allowed:()=>true,onName:()=>{throw Error("No update expected")}
+ });
+ service.setCurrent(entry);await service.resolve(entry);
+ assert.equal(entry.label,"Neuer Pin");
+});
+test("app passes manual unnamed pin to naming service with cleanup on save",()=>{
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
- assert.match(app,/if\(!state\.allowGeocode\|\|entry!==activePreviewEntry\)return/);
- assert.match(app,/if\(!name\)void nameManualPin\(entry\)/);
- assert.match(app,/activePreviewEntry!==entry\)return/);
- assert.match(app,/cancelManualNameLookup\(\);\s*activePreviewEntry=null/);
+ assert.match(app,/allowed:\(\)=>state\.allowGeocode/);
+ assert.match(app,/if\(!name\)void manualPinLocality\.resolve\(entry\)/);
+ assert.match(app,/manualPinLocality\.setCurrent\(entry\)/);
+ assert.match(app,/function clearObjectPreview\(\)\{\s*manualPinLocality\.invalidate\(\)/);
  assert.match(app,/mapAdapter\.updateTemporaryPinLabel\(entry\)/);
  assert.match(app,/const name=entry\.referencePlace\?/);
 });
