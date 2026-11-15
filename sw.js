@@ -60,6 +60,7 @@ const CORE=[
   "./ui/search-results.js",
   "./ui/search-form.js",
   "./ui/search-type-menu.js",
+  "./ui/gps-location.js",
   "./ui/map-action-chooser.js",
   "./ui/geometry-editor.js",
   "./ui/ui-state.js",
