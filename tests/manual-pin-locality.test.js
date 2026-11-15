@@ -10,13 +10,36 @@ test("Knudsker is selected from the actual locality, not the closest road",()=>{
  const result={name:"Snorrebakken",addresstype:"road",
   address:{road:"Snorrebakken",hamlet:"Knudsker",municipality:"Rønne",
    county:"Bornholm",country:"Denmark"}};
- assert.equal(domain.nearbyLocalityName(result),"Knudsker");
+ assert.equal(domain.nearbyLocalityName(result,{mapZoom:17}),"Knudsker");
 });
-test("prefer a village/suburb over higher administrative geography",()=>{
- assert.equal(domain.nearbyLocalityName({address:{suburb:"Knudsker",
-  city:"Rønne",county:"Bornholm"}}),"Knudsker");
- assert.equal(domain.nearbyLocalityName({address:{village:"Example village",
-  city:"Example city"}}),"Example village");
+test("prioritize the main city even when a suburb, district, or nearby village is present",()=>{
+ for(const [city,district] of [
+  ["Gütersloh","Bad Westernkotten"],
+  ["Lippstadt","Overhagen"],
+  ["Brilon","Gudenhagen"],
+  ["Wetzlar","Altstadt"],
+  ["Köln","Altstadt-Nord"],
+  ["Paderborn","Schloß Neuhaus"]
+ ]){
+  const result={name:district,addresstype:"suburb",
+   address:{city,suburb:district,quarter:district,village:district}};
+  for(const mapZoom of [8,11,13,15,17,19])
+   assert.equal(domain.nearbyLocalityName(result,{mapZoom}),city,
+    city+" must win over "+district+" at map zoom "+mapZoom);
+ }
+});
+test("map zoom selects city-level or village-level reverse detail without asking for suburbs",()=>{
+ for(const level of [5,10,12,13,14])
+  assert.equal(domain.reversePlaceZoom(level),10);
+ for(const level of [15,16,17,19])
+  assert.equal(domain.reversePlaceZoom(level),13);
+ assert.equal(domain.nearbyLocalityName({address:{suburb:"Overhagen"}}),"");
+ assert.equal(domain.nearbyLocalityName({address:{town:"Lippstadt",suburb:"Overhagen"}}),"Lippstadt");
+});
+test("at a detailed scale standalone hamlets may still be named",()=>{
+ const result={address:{hamlet:"Knudsker",municipality:"Rønne"}};
+ assert.equal(domain.nearbyLocalityName(result,{mapZoom:17}),"Knudsker");
+ assert.equal(domain.nearbyLocalityName(result,{mapZoom:10}),"Rønne");
 });
 test("do not use road, building, county, country, feature title, or blank names",()=>{
  for(const result of [
@@ -30,7 +53,7 @@ test("locality-only reverse result can provide a place name",()=>{
  assert.equal(domain.nearbyLocalityName({name:"Knudsker",
   addresstype:"village",address:{}}),"Knudsker");
 });
-test("reverse uses zoom 14, address details, German language and coordinates",async()=>{
+test("reverse uses requested city detail, address layer, German and coordinates",async()=>{
  let url,signal;
  const geocoder=new Geocoder({fetchImpl:async(input,options)=>{
   url=new URL(input);signal=options.signal;
@@ -41,7 +64,8 @@ test("reverse uses zoom 14, address details, German language and coordinates",as
  assert.equal(url.pathname,"/reverse");
  assert.equal(url.searchParams.get("lat"),"55.1001");
  assert.equal(url.searchParams.get("lon"),"14.8002");
- assert.equal(url.searchParams.get("zoom"),"14");
+ assert.equal(url.searchParams.get("zoom"),"10");
+ assert.equal(url.searchParams.get("layer"),"address");
  assert.equal(url.searchParams.get("addressdetails"),"1");
  assert.equal(url.searchParams.get("accept-language"),"de");
  assert.equal(signal,abort.signal);
@@ -116,6 +140,8 @@ test("fallback keeps original name when provider has no settlement",async()=>{
 test("app passes manual unnamed pin to naming service with cleanup on save",()=>{
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  assert.match(app,/allowed:\(\)=>state\.allowGeocode/);
+ assert.match(app,/detailZoom:placeDomain\.reversePlaceZoom/);
+ assert.match(app,/const mapZoom=mapAdapter\.getViewport\(\)\.zoom/);
  assert.match(app,/if\(!name\)void manualPinLocality\.resolve\(entry\)/);
  assert.match(app,/manualPinLocality\.setCurrent\(entry\)/);
  assert.match(app,/function clearObjectPreview\(\)\{\s*manualPinLocality\.invalidate\(\)/);
