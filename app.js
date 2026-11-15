@@ -560,6 +560,7 @@
   }
   function clearPlatePreview(){
     platePanel?.close();
+    gpsLocation?.close();
     mapAdapter?.clearTemporaryPlateArea?.();
   }
   function cancelGeometrySearch(){
