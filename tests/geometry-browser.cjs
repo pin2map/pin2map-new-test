@@ -135,6 +135,10 @@ const viewports=[
    await page.locator("#searchInput").focus();
    await page.keyboard.press("Escape");
    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
+   await page.locator("#searchInput").fill("");
+   await page.keyboard.press("Enter");
+   assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,
+     "Enter from the input launches default Pin search and closes chooser");
    await page.locator("#searchInput").fill("Testfläche");
    await page.locator("#searchInput").focus();
    await page.locator('.search-type-choice[data-search-type="area"]').click();
@@ -331,7 +335,10 @@ const viewports=[
            display_name:"Testfluss",lat:"48.77",lon:"9.17"}]:[])});
    });
    await page.locator("#searchInput").fill("Testfluss");
-   await page.locator('.search-type-choice[data-search-type="river"]').click();
+   await page.keyboard.press("Tab");
+   await page.keyboard.press("f");
+   assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,
+     "F activates Fluss search only after keyboard focus enters chooser");
    await page.waitForFunction(()=>document.querySelector("#geometrySearchBusy")&&
      !document.querySelector("#geometrySearchBusy").classList.contains("hidden"),
      null,{timeout:5000});
