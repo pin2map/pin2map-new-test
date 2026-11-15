@@ -22,6 +22,8 @@ Für Chatwechsel und die nächste konkrete Aufgabe zuerst [PROJEKTSTATUS.md](PRO
 
 Die unter 1–6 genannten Dokumente sind maßgeblich für ihren jeweiligen Bereich. Bei scheinbaren Widersprüchen neuere ausdrücklich beschlossene Regeln und deren Geltungsbereich beachten, nie stillschweigend historische Vorgaben erneut aktivieren.
 
+**Kennzeichen-Suchvertrag (v191):** [KENNZEICHEN_SUCHE_2026-11-15.md](KENNZEICHEN_SUCHE_2026-11-15.md) – sechs Sucharten, Offline-Startkatalog, temporäre Polygon-Vorschau, Land-/Polygonprüfung und offen dokumentierte Europa-Abdeckung.
+
 ## Weitere nachgewiesene technische Dokumentation (aktiver Branch)
 
 - **Karten- und Offline-Technik:** docs/KARTENMIGRATION.md; docs/PMTILES-OFFLINE-ARCHITEKTUR.md; docs/PMTILES-STUTTGART.md.
