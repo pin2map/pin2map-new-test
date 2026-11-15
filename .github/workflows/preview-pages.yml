@@ -5,6 +5,7 @@ on:
     branches: [feature/leaflet-modular-core]
     paths-ignore:
       - 'docs/**'
+      - 'AGENTS.md' # Operational instructions only; no app assets change.
   workflow_dispatch:
 
 permissions:
