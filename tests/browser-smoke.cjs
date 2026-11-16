@@ -646,11 +646,10 @@ async function longPress(page,x,y,ms=725){
     await page.locator('#pinPanel [data-close="pinPanel"]').click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator("#layersButton").click();
-    const privateRow=page.locator("#layersList .layer-row").filter({hasText:"Privat"});
-    const privateCheckbox=privateRow.locator('input[type="checkbox"]');
-    await privateCheckbox.uncheck();
+    const privateRow=page.locator("#layersList .list-dialog-row").filter({hasText:"Privat"});
+    await privateRow.getByRole("button",{name:"Ebene ausblenden"}).click();
     await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===0);
-    await privateCheckbox.check();
+    await privateRow.getByRole("button",{name:"Ebene einblenden"}).click();
     await page.waitForFunction(()=>document.querySelectorAll(".pin-marker").length===1);
     await page.locator("#layersButton").click();
     // Reopen the marker before checking its unchanged persisted position.
