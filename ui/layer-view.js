@@ -28,7 +28,10 @@
    const Observer=document.defaultView?.MutationObserver;
    if(Observer&&this.el("layersPanel")){
     this.visibilityObserver=new Observer(()=>{
-     if(this.el("layersPanel").classList.contains("hidden"))this.open=false;
+     if(this.el("layersPanel").classList.contains("hidden")){
+        this.open=false;this.mergeMode=false;this.mergeTargetId=null;
+        this.selectedIds.clear();
+      }
     });
     this.visibilityObserver.observe(this.el("layersPanel"),
       {attributes:true,attributeFilter:["class"]});
@@ -36,6 +39,7 @@
   }
   show(){
    this.open=true;this.mode=null;this.index=null;
+   this.mergeMode=false;this.mergeTargetId=null;this.selectedIds.clear();
    this.el("layersPanel").classList.remove("hidden");
    this.render();
    this.onOpen();

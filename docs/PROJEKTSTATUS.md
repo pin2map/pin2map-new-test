@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-16 (Entwicklung **v218**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur als Testversion veröffentlicht, **keine Gesamtfreigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-16 (Entwicklung **v219**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur als Testversion veröffentlicht, **keine Gesamtfreigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -1358,3 +1358,8 @@ Die ersten v217-Runs belegten: Architektur und Node bestanden; der gemeinsame De
 
 
 **v218 CI-Diagnose (16.11.2026):** Beim ersten v218-Node-Lauf 494/497 Tests bestanden. Drei historische Quelltextverträge in `gps-location.test.js`, `temporary-object-creation.test.js` und `temporary-pin-relocation.test.js` erwarteten noch die frühere GPS-Übergabe ohne das jetzt ausdrücklich notwendige flüchtige Herkunftsmerkmal `"gps"`. Nur diese Vertragsbedingungen wurden aktualisiert, ohne Prüfungen gegen ungewollte Speicherung und Ortsnamensumbenennung abzuschwächen. [Node-/Chromium-Run](https://github.com/pin2map/pin2map-new-test/actions/runs/43908767522), [erste fehlgeschlagene Pages-Pipeline](https://github.com/pin2map/pin2map-new-test/actions/runs/43908767475), [grünes Architekturgate](https://github.com/pin2map/pin2map-new-test/actions/runs/43908767441). Erneute CI- und HTTPS-Abnahme noch offen.
+
+
+### v219 – Merge-Commit im Browser und Dialog-Abbruchschutz (16.11.2026)
+
+Der vollständige Dialog-Chromium-Test prüft jetzt auf 390×844 und 1280×800 nicht nur Zielwahl und Abbrechen, sondern führt danach die Zusammenführung wirklich aus, kontrolliert das Verschwinden der Quelle, Erhalt von Ziel und Privat und liest die neue Ebenenliste erneut aus IndexedDB. Beim erneuten Öffnen eines durch Außenklick/Overlay-Wechsel versteckten Ebenendialogs werden nur flüchtige Merge-Auswahl-/Zielzustände verworfen, ohne Daten zu verändern. Service-Worker-Kennung v219. Die v218-Node-Regressionsverträge für explizites `source="gps"` sind nachgezogene Tests, keine neuen Persistenzregeln. Abschlussbelege der v219-Pipeline sind getrennt zu prüfen; keine Freigabe für `main` ohne grüne Gates.

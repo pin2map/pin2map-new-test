@@ -106,6 +106,23 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await deleteDialog.isVisible(),true);
     assert.equal(await deleteDialog.getByRole("button",{name:"Die Ebene als Ganzes"}).count(),1);
     await deleteDialog.getByRole("button",{name:"Abbrechen"}).click();
+    // End-to-end confirmation: only the selected target survives, including reload.
+    await firstLayer.locator(".layer-merge-check").check();
+    await layer.locator(".layer-merge-check").check();
+    await page.locator("#layersUnite").click();
+    await layer.getByRole("button",{name:"Contract Test Layer"}).click();
+    await page.locator("#layersList .layer-merge-guidance")
+      .getByRole("button",{name:"Zusammenführen"}).click();
+    assert.equal(await firstLayer.count(),0,"Source layer must be removed");
+    assert.equal(await layer.count(),1,"Chosen target layer remains");
+    assert.equal(await privateRow.count(),1,"Private remains untouched");
+    const persistedLayers=await page.evaluate(async()=>{
+      const db=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await db.loadProject()).layers.map(l=>l.name);}finally{db.close();}
+    });
+    assert.equal(persistedLayers.includes("Ebene 1"),false);
+    assert.equal(persistedLayers.includes("Contract Test Layer"),true);
+    assert.equal(persistedLayers.includes("Privat"),true);
     await page.locator("#layersCloseBottom").click();
     await page.locator("#settingsButton").click();
     await page.locator("#settingsColorsTab").click();
