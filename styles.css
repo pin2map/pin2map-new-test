@@ -1651,8 +1651,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   aspect-ratio:1;border-radius:50%;overflow:hidden;
   padding:7px;border:1px solid #d4deea;background:#f7f9fc;color:#24415d}
 #app .favorite-row .favorite-icon svg{width:19px;height:19px}
-#app .favorite-row .favorite-remove{color:#bf2431!important;background:#fff0f0;border-color:#e5abab}
-#app .favorite-row .favorite-remove .p2m-lucide{color:#bf2431!important;stroke:#bf2431!important}
+#app .favorite-row .favorite-remove:not(.list-toggle-active){color:#bf2431!important;background:#fff;border-color:#e5abab}
+#app .favorite-row .favorite-remove:not(.list-toggle-active) .p2m-lucide{color:#bf2431!important;stroke:#bf2431!important}
 #app .favorite-row .favorite-edit{color:#24415d}
 #app .favorite-open{flex:0 0 25px;min-width:25px;background:transparent;border:0;
   color:#243b54;font-weight:700;font-size:16px;padding:8px 1px;text-align:center}

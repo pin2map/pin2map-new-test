@@ -36,6 +36,20 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(editStyle.color,"rgb(255, 255, 255)",JSON.stringify({viewport,editStyle}));
     await editButton.click();
     assert.equal(await page.locator("#favoritesList .favorite-confirm").count(),0);
+    for(const action of ["Favorit löschen","Favorit durch aktuelle Ansicht ersetzen"]){
+     const button=favorite.getByRole("button",{name:action});
+     await button.click();
+     const colors=await button.evaluate(el=>{
+      const css=getComputedStyle(el),icon=getComputedStyle(el.querySelector("svg"));
+      return {background:css.backgroundColor,foreground:css.color,stroke:icon.stroke};
+     });
+     assert.equal(await button.getAttribute("aria-pressed"),"true");
+     assert.equal(colors.background,"rgb(23, 100, 191)",JSON.stringify({action,colors}));
+     assert.equal(colors.foreground,"rgb(255, 255, 255)",JSON.stringify({action,colors}));
+     assert.equal(colors.stroke,"rgb(255, 255, 255)",JSON.stringify({action,colors}));
+     await button.click();
+     assert.equal(await page.locator("#favoritesList .favorite-confirm").count(),0);
+    }
     const search=page.locator("#favoritesSearch");
     await search.fill("not-existing-entry");
     assert.equal(await page.locator("#favoritesList .favorite-row:visible").count(),0);
