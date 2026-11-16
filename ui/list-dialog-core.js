@@ -211,7 +211,7 @@
    },danger?"danger":"primary");
    actions.append(cancel,confirm);
    if(renderExtra)renderExtra({section,actions,input,confirm});
-   section.append(actions);
+   if(!section.contains(actions))section.append(actions);
    if(input)input.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();confirm.click();}
    });
