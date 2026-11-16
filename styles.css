@@ -2441,11 +2441,11 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 /* The color circle has no visible frame: the actual layer color is the
    complete outer surface. Native checkbox focus remains keyboard accessible. */
 #app #layersPanel .layer-leading .layer-color-checkbox{
- border-color:transparent!important;
+ border-color:transparent;
  box-shadow:none;
 }
 #app #layersPanel .layer-color-checkbox .layer-merge-check{
- outline:none!important;
+ outline:none;
 }
 #app #layersPanel .layer-reorder-help{
  white-space:normal;line-height:1.35;font-size:11px;
@@ -2493,7 +2493,7 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 }
 #app #layersPanel .layer-inline-editor .layer-palette-dot{
  width:100%;min-width:0;aspect-ratio:1;
- border-radius:50%!important;padding:0;
+ border-radius:50%;padding:0;
 }
 #app #layersPanel .favorite-confirm-danger .favorite-confirm-actions .favorite-action-cancel-soft-red{
  background:#ffe0df!important;border-color:#d78f91!important;
