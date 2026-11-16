@@ -3,6 +3,8 @@ const test=require("node:test");
 const assert=require("node:assert/strict");
 require("../ui/pin-note-editor.js");
 require("../ui/pin-layer-picker.js");
+require("../ui/search-type-menu.js");
+require("../ui/object-dialog-core.js");
 const GeometryEditor=require("../ui/geometry-editor.js");
 class Element{
   constructor(tag="div"){
@@ -50,8 +52,8 @@ function fixture(){
 }
 test("area editor uses area deletion artwork and pin-style layer indicator",()=>{
   const {editor}=fixture();
-  assert.equal(editor.removeButton.children[0].className,"geometry-region-off-icon");
-  assert.equal(editor.removeButton.children[0].src,"./assets/region.svg");
+  assert.equal(editor.removeButton.children[0].className,"object-delete-art");
+  assert.equal(editor.removeButton.children[0].children[0].src,"./assets/region.svg");
   assert.equal(editor.layerButton.children[0].iconName,"layers-arrow-down");
   assert.equal(editor.layerDot.style.backgroundColor,"#326cc2");
   assert.equal(editor.expandButton.classList.contains("hidden"),false);

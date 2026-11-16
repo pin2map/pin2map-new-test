@@ -63,7 +63,7 @@
       name.addEventListener("change",()=>this.update({name:name.value}));
       field.append(legend,name);header.append(remove,field);
       const parts=this.core.makeNotes(doc,{
-        type:"area",onChange:value=>this.update({note:value}),
+        type:"area",icons:this.icons,onChange:value=>this.update({note:value}),
         onExpand:()=>this.expandNotes()
       });
       const notes=parts.note,notesLegend=parts.legend,textarea=parts.input,expand=parts.expand;

@@ -48,7 +48,7 @@
    button.setAttribute("aria-haspopup","dialog");
    button.setAttribute("aria-expanded","false");
   }
-  static makeNotes(doc,{type,value="",onChange,onExpand}){
+  static makeNotes(doc,{type,value="",onChange,onExpand,icons=root.Pin2MapIcons}){
    const note=doc.createElement("fieldset");note.className="object-editor-notes";
    const legend=doc.createElement("legend");
    legend.className="object-editor-notes-legend";
@@ -59,7 +59,7 @@
    expand.className="object-editor-expand";
    expand.setAttribute("aria-label","Notizeditor vergrößern");
    expand.setAttribute("title","Notizeditor vergrößern");
-   expand.append(root.Pin2MapIcons.svg("square-chevron-right",doc));
+   expand.append(icons.svg("square-chevron-right",doc));
    if(onChange)input.addEventListener("input",()=>onChange(input.value));
    if(onExpand)expand.addEventListener("click",onExpand);
    note.append(legend,input,expand);
