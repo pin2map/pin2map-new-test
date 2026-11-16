@@ -569,6 +569,8 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".leaflet-marker-icon").first().click({force:true});
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     await page.locator("#pinLayerTrigger").click();
+    const regularLayersBeforeFilter=await page.locator("#pinLayerMenu [role='option']:visible").count();
+    assert.ok(regularLayersBeforeFilter>=2,"Pin layer chooser must list all available layers");
     const regularFilter=page.locator("#pinLayerMenu .pin-layer-filter-input");
     await regularFilter.fill("REIS");
     assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),1);
@@ -576,7 +578,8 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinLayer").inputValue(),"private",
       "Filtering regular layer choices cannot silently reassign a pin");
     await page.locator("#pinLayerMenu .pin-layer-filter-clear").click();
-    assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),2);
+    assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),
+      regularLayersBeforeFilter,"Pin filter reset must restore every originally visible layer");
     await page.keyboard.press("Escape");
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
     console.log("[browser] PASS – layer filters do not change assignments");
