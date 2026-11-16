@@ -1768,7 +1768,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   border-color:#dccda5;
   color:#99917e;
 }
-#app #favoritesPanel .favorite-remove .p2m-lucide{
+#app #favoritesPanel .favorite-remove:not(.list-toggle-active) .p2m-lucide{
   color:#bf2431!important;stroke:#bf2431!important;
 }
 
