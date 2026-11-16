@@ -88,28 +88,40 @@
   }
   paletteEditor({section,actions,input}){
    if(!input)return;
-   const line=this.doc.createElement("div");line.className="layer-color-name";
-   const square=this.button(null,"Ebenenfarbe auswählen",()=>{
-    palette.classList.toggle("hidden");
-    actions.classList.toggle("hidden",!palette.classList.contains("hidden"));
-   },"layer-swatch");
-   square.style.backgroundColor=this.draftColor;
-   square.setAttribute("aria-label","Ebenenfarbe auswählen");
-   input.parentElement.insertBefore(square,input);
-   input.parentElement.classList.add("layer-name-with-color");
+   // Both layer editors share their exact layout and the same height when
+   // changing from action buttons to twelve palette choices.
+   section.classList.add("layer-inline-editor");
+   const label=input.parentElement;
+   input.id="layerNameDraft";
+   label.textContent="Farbe und Name der Ebene:";
+   label.htmlFor=input.id;
+   label.classList.add("layer-name-caption");
+   const line=this.doc.createElement("div");line.className="layer-name-with-color";
+   const slot=this.doc.createElement("div");slot.className="layer-editor-bottom";
    const palette=this.doc.createElement("div");palette.className="layer-palette-choice hidden";
-   const colors=this.getPalette();
-   for(const [index,color] of colors.entries()){
+   const showPalette=show=>{
+    palette.classList.toggle("hidden",!show);
+    actions.classList.toggle("hidden",show);
+    square.setAttribute("aria-expanded",String(show));
+   };
+   const square=this.button(null,"Ebenenfarbe auswählen",()=>
+    showPalette(palette.classList.contains("hidden")),"layer-swatch");
+   square.style.backgroundColor=this.draftColor;
+   square.setAttribute("aria-expanded","false");
+   square.setAttribute("aria-controls","layerPaletteChoices");
+   palette.id="layerPaletteChoices";
+   line.append(square,input);
+   for(const [index,color] of this.getPalette().entries()){
     const dot=this.button(null,"Farbe "+(index+1),()=>{
      this.draftColor=color;this.draftIndex=index;
-     square.style.backgroundColor=color;
-     palette.classList.add("hidden");actions.classList.remove("hidden");
+     square.style.backgroundColor=color;showPalette(false);
      input.focus({preventScroll:true});
     },"layer-palette-dot");
     dot.style.backgroundColor=color;
     palette.append(dot);
    }
-   section.append(palette);
+   slot.append(actions,palette);
+   section.append(line,slot);
   }
   editor(mode,index){
    const layer=this.values[index];
@@ -119,8 +131,8 @@
       (Number.isInteger(layer.paletteIndex)?layer.paletteIndex:0);
     this.draftColor=creating?this.getPalette()[this.draftIndex]:layer.color;
     return this.actionEditor({
-     mode,index,title:creating?"Neue Ebene hinzufügen?":"Ebene umbenennen?",
-     nameLabel:"Name der Ebene",nameValue:name,
+     mode,index,title:creating?"Neue Ebene erstellen:":"Ebene umbenennen?",
+     nameLabel:"Farbe und Name der Ebene:",nameValue:name,
      confirmLabel:creating?"Erstellen":"Übernehmen",
      onConfirm:value=>{
       if(creating)this.onCreate(value,this.draftColor,this.draftIndex);
@@ -137,7 +149,7 @@
     title.textContent=privateLayer?
      'Alle Objekte in der Ebene „Privat“ löschen?':"Was soll gelöscht werden?";
     const actions=this.doc.createElement("div");actions.className="favorite-confirm-actions";
-    actions.append(this.labeledButton("Abbrechen",()=>this.start(null)));
+    actions.append(this.labeledButton("Abbrechen",()=>this.start(null),"cancel-soft-red"));
     const execute=(callback)=>{this.mode=null;this.index=null;callback(layer.id);};
     actions.append(this.labeledButton("Alle Objekte der Ebene",()=>execute(this.onDeleteContents),"danger"));
     if(!privateLayer)actions.append(
@@ -250,7 +262,7 @@
    }
    list.scrollTop=scroll;
    if(!this.mergeMode&&!this.mode&&!this.searchText)
-     this.wireReorder({activation:"drag",handle:"row",allow:id=>id!=="private",
+     this.wireReorder({activation:"longpress",holdMs:450,handle:"row",allow:id=>id!=="private",
        onMove:(from,to)=>this.onReorder(from,to)});
    const unite=this.el("layersUnite"),reset=this.el("layersSearchClear");
    if(unite&&reset){
