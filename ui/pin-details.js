@@ -117,6 +117,7 @@
    this.onLayout(false);
   }
   normalizedUrl(raw){
+   if(root.Pin2MapObjectDialogCore)return root.Pin2MapObjectDialogCore.normalizedUrl(raw);
    try{
     if(!raw.trim())return null;
     const url=new URL(raw.trim());

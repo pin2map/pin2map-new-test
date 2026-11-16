@@ -2119,3 +2119,29 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .geometry-editor .geometry-remove{position:relative}
 #app .geometry-editor .geometry-region-off-icon{width:24px;height:24px;object-fit:contain;filter:brightness(0) invert(1)}
 #app .geometry-editor .geometry-remove:has(.geometry-region-off-icon)::after{content:"";position:absolute;width:29px;height:2px;background:#fff;transform:rotate(-45deg);border-radius:2px;pointer-events:none}
+
+/* Shared object-dialog owner: all four variants receive the same core controls. */
+.object-editor .object-editor-actions .object-dialog-ok{
+  border-radius:50%;background:#c9eecb;color:#245b30;
+  border:1px solid #a6ceaa;font-weight:750;
+}
+#app .geometry-editor .geometry-ok.object-dialog-ok{background:#c9eecb;color:#245b30;border-color:#a6ceaa}
+#app .geometry-editor .geometry-ok.object-dialog-ok svg{display:none}
+#app .geometry-editor .geometry-ok.object-dialog-ok{font-size:14px}
+.object-delete-art{position:relative;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px}
+.object-delete-art img,.object-delete-art svg{width:24px;height:24px;object-fit:contain}
+.object-delete-art img{filter:brightness(0) invert(1)}
+.object-delete-art::after{content:"";position:absolute;left:-2px;top:11px;width:28px;height:2px;transform:rotate(-45deg);background:currentColor;border-radius:2px;pointer-events:none}
+#app .geometry-editor .object-delete-trigger .object-delete-art{color:#fff}
+#app .geometry-editor .geometry-remove[aria-expanded="true"]{background:#1764bf;border-color:#1764bf;color:#fff}
+#app .geometry-editor .object-editor-notes{position:relative}
+#app .geometry-editor .object-editor-notes-input{box-sizing:border-box;width:100%;height:145px;min-height:0;resize:none;font-size:16px}
+#app .geometry-editor .object-editor-expand{position:absolute;right:0;bottom:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;min-width:24px;min-height:24px;border:0;background:#fff;color:#243b54;border-radius:0;padding:0}
+#app .geometry-editor .object-editor-expand svg{width:21px;height:21px}
+#geometryLayerMenu .pin-layer-filter-clear{
+ box-sizing:border-box;flex:0 0 34px;width:34px;height:34px;
+ min-width:34px;max-width:34px;min-height:34px;max-height:34px;
+ padding:0;aspect-ratio:1;border-radius:50%;
+}
+#geometryLayerMenu .pin-layer-filter-clear:disabled{color:#98a4af;opacity:.55}
+#geometryLayerMenu .pin-layer-filter-input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}

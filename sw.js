@@ -60,6 +60,7 @@ const CORE=[
   "./ui/pin-info-menu.js",
   "./ui/layer-view.js",
   "./ui/bulk-delete-dialog.js",
+  "./ui/object-dialog-core.js",
   "./ui/pin-delete-dialog.js",
   "./ui/pin-layer-picker.js",
   "./adapters/storage/indexeddb-project-store.js",

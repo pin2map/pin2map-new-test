@@ -9,6 +9,15 @@
    if(typeof getElement!=="function"||!doc||typeof scheduleFrame!=="function")
      throw new TypeError("Pin editor dependencies required");
    this.element=getElement;this.document=doc;this.scheduleFrame=scheduleFrame;
+   const core=root.Pin2MapObjectDialogCore;
+   if(core){
+    core.configureSurface(this.element("pinPanel"),
+      this.element("pinPanel").querySelector?.(".pin-editor-head"),
+      this.element("pinPanel").querySelector?.(".pin-detail-region"),
+      this.element("pinPanel").querySelector?.(".pin-actions"));
+    core.configureOk(this.element("closePin"));
+    core.mountDeleteSymbol(this.element("deletePin"),"pin",doc,root.Pin2MapIcons);
+   }
   }
   render({pin,moving=false,layerVisible=true,onLayout}){
    const panel=this.element("pinPanel");

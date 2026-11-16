@@ -5,7 +5,8 @@
 (function(root){
   class GeometryEditor{
     constructor({document:doc,icons,onUpdate,onDelete,onClose,onWikipedia}){
-      this.doc=doc;this.icons=icons;
+      this.doc=doc;this.icons=icons;this.core=root.Pin2MapObjectDialogCore;
+      if(!this.core)throw new TypeError("Object dialog core must be loaded");
       this.onUpdate=onUpdate;this.onDelete=onDelete;
       this.onClose=onClose||(()=>{});this.onWikipedia=onWikipedia;
       this.model=null;this.type=null;this.layers=[];
@@ -51,9 +52,9 @@
     build(){
       const doc=this.doc;
       const panel=doc.createElement("section");
-      panel.id="geometryEditor";panel.className="geometry-editor hidden";
+      panel.id="geometryEditor";panel.className="geometry-editor object-editor hidden";
       panel.setAttribute("role","dialog");panel.setAttribute("aria-label","Objekt bearbeiten");
-      const header=doc.createElement("div");header.className="geometry-head pin-editor-head";
+      const header=doc.createElement("div");header.className="geometry-head pin-editor-head object-editor-head";
       const remove=this.makeButton("region-off","Fläche löschen",()=>this.toggleSub("delete"),"geometry-remove");
       const field=doc.createElement("fieldset");field.className="pin-name-field";
       const legend=doc.createElement("legend");legend.id="geometryNameLegend";
@@ -61,22 +62,20 @@
       name.type="text";name.maxLength=120;name.setAttribute("aria-label","Objektname");
       name.addEventListener("change",()=>this.update({name:name.value}));
       field.append(legend,name);header.append(remove,field);
-      const notes=doc.createElement("fieldset");
-      notes.className="geometry-notes";notes.id="geometryNotesRow";
-      const notesLegend=doc.createElement("legend");notesLegend.textContent="Flächen Kommentare";
-      const textarea=doc.createElement("textarea");
-      textarea.id="geometryNotes";textarea.rows=4;
-      textarea.placeholder="Kommentar eingeben …";
-      textarea.addEventListener("change",()=>this.update({note:textarea.value}));
-      notes.append(notesLegend,textarea);
-      const expand=this.makeButton("square-chevron-right","Notizeditor vergrößern",()=>this.expandNotes(),"geometry-expand");
-      notes.append(expand);
-      const actions=doc.createElement("div");actions.className="geometry-actions";
+      const parts=this.core.makeNotes(doc,{
+        type:"area",onChange:value=>this.update({note:value}),
+        onExpand:()=>this.expandNotes()
+      });
+      const notes=parts.note,notesLegend=parts.legend,textarea=parts.input,expand=parts.expand;
+      notes.classList.add("geometry-notes");notes.id="geometryNotesRow";
+      textarea.id="geometryNotes";expand.classList.add("geometry-expand");
+      const actions=doc.createElement("div");actions.className="geometry-actions object-editor-actions";
       const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleSub("layer"),"geometry-layer");
       const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
       const link=this.makeButton("link-2","Link",()=>this.toggleSub("link"),"geometry-link");
       const wiki=this.makeButton("wikipedia","Wikipedia",()=>this.onWikipedia(this.model?.name||""),"geometry-wiki");
       const ok=this.makeButton("check","OK",()=>{this.flush();this.close();},"geometry-ok");
+      this.core.configureOk(ok);
       actions.append(layer,link,wiki,ok);
       const sub=doc.createElement("div");sub.className="geometry-sub hidden";sub.id="geometrySub";
       panel.append(header,notes,actions,sub);
@@ -84,6 +83,7 @@
       this.removeButton=remove;this.layerButton=layer;this.linkButton=link;
       this.nameInput=name;this.notesInput=textarea;
       this.notesRow=notes;this.notesLegend=notesLegend;this.legend=legend;this.sub=sub;this.expandButton=expand;
+      this.core.configureSurface(panel,header,notes,actions);
       this.createAreaPopups();
       this.doc.getElementById("app").append(panel);
       this.doc.addEventListener("pointerdown",e=>{
@@ -240,6 +240,7 @@
       });
     }
     normalizedUrl(raw){
+      return this.core.normalizedUrl(raw);
       try{
         if(!String(raw||"").trim())return null;
         const url=new URL(raw.trim());
@@ -338,10 +339,11 @@
       // Pin-like first row and has only three content rows.
       this.header.prepend(this.removeButton);
       this.panel.setAttribute("aria-label",type==="river"?"Fluss bearbeiten":"Fläche bearbeiten");
-      const kind=item.kind==="lake"?"See":type==="river"?"Fluss":"Fläche";
-      this.legend.textContent=kind+"name";
-      this.notesLegend.textContent=kind+" Notizen";
-      this.urlLegend.textContent=kind+"-URL";
+      const kind=item.kind==="lake"?"lake":type==="river"?"river":"area";
+      this.core.configureName({legend:this.legend,input:this.nameInput,type:kind,name:item.name});
+      this.core.configureNotes({legend:this.notesLegend,input:this.notesInput,type:kind,value:item.note});
+      this.core.configureUrlLegend(this.urlLegend,kind);
+      this.core.mountDeleteSymbol(this.removeButton,kind,this.doc,this.icons);
       this.notesRow.classList.remove("hidden");
       this.linkButton.classList.remove("hidden");
       this.expandButton.classList.remove("hidden");

@@ -139,6 +139,7 @@
       this.onChoose(choice.id);
     }
   }
+  SearchTypeMenu.CHOICES=CHOICES;
   root.Pin2MapSearchTypeMenu=SearchTypeMenu;
   if(typeof module!=="undefined"&&module.exports)module.exports={SearchTypeMenu,CHOICES};
 })(typeof window!=="undefined"?window:globalThis);
