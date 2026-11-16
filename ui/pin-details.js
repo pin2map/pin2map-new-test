@@ -9,6 +9,10 @@
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
    this.onWikipedia=onWikipedia;this.onLayout=onLayout;
    this.pinId=null;this.mode="notes";this.urlSnapshot="";this.weatherMode=false;
+   // The URL overlay is viewport-positioned. Keep it out of the pin
+   // panel's stacking/overflow context, exactly as in the reference UI.
+   // The shared controller still constrains it to the panel rectangle.
+   doc.body?.append?.(this.el("pinUrlBlock"));
    const Url=root.Pin2MapObjectUrlPopup;
    if(!Url)throw new Error("Shared URL popup controller missing");
    this.urlController=new Url({
