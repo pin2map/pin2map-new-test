@@ -232,22 +232,22 @@ async function zoom(page){
 
         // New favorite asks for a name and suggests the pin nearest center.
         await footer.click();
-        assert.equal(await page.locator(".favorite-confirm").count(),1);
-        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Allein");
-        await page.locator(".favorite-name-input").fill("Meine Übersicht");
-        await page.locator(".favorite-confirm-actions button").last().click();
-        assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").count(),0);
-        assert.equal(await page.locator(".favorite-name").first().textContent(),"Meine Übersicht");
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-name-input").inputValue(),"Allein");
+        await page.locator("#favoritesPanel .favorite-name-input").fill("Meine Übersicht");
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-name").first().textContent(),"Meine Übersicht");
         const palette=await page.evaluate(()=>{
           const get=id=>getComputedStyle(document.querySelector(id)).backgroundColor;
           return {
             panel:get("#favoritesPanel"),
-            row:get(".favorite-row"),
+            row:get("#favoritesPanel .favorite-row"),
             add:get("#favoritesAdd"),
             close:get("#favoritesCloseBottom"),
-            edit:get(".favorite-edit"),
-            remove:get(".favorite-remove"),
+            edit:get("#favoritesPanel .favorite-edit"),
+            remove:get("#favoritesPanel .favorite-remove"),
             clear:get("#favoritesSearchClear")
           };
         });
@@ -261,7 +261,7 @@ async function zoom(page){
         // Filter substring case-insensitively, keep all original IDs unchanged.
         const search=page.locator("#favoritesSearch");
         const clear=page.locator("#favoritesSearchClear");
-        assert.equal(await page.locator(".favorites-head-star svg").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorites-head-star svg").count(),1);
         assert.equal(await page.locator(".favorites-head strong").count(),0);
         assert.equal(await clear.getAttribute("data-pin-icon"),"funnel-x");
         assert.equal(await clear.isDisabled(),true);
@@ -275,29 +275,29 @@ async function zoom(page){
             focusedBounds.height<standardPanelBounds.height,
             "Desktop search keeps its anchor and shrinks when bulk delete disappears");
           assert.equal(await page.locator("#favoritesPanel.is-editing").count(),0);
-          assert.equal(await page.locator(".favorites-footer").isVisible(),true,
+          assert.equal(await page.locator("#favoritesPanel .favorites-footer").isVisible(),true,
             "Desktop search retains Add/Close footer");
         }
         await search.fill("ÜBERS");
-        assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
         assert.equal(await clear.isEnabled(),true);
         assert.equal(await clear.evaluate(el=>getComputedStyle(el).color),"rgb(188, 40, 51)");
         const clearBox=await clear.boundingBox();
         assert.ok(clearBox&&Math.abs(clearBox.width-clearBox.height)<1,
           "The funnel-x reset control remains perfectly circular");
         // Choosing a favorite closes its panel but must NOT lose the filter.
-        await page.locator(".favorite-name").first().click();
+        await page.locator("#favoritesPanel .favorite-name").first().click();
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         await favoriteTrigger.click();
         assert.equal(await search.inputValue(),"ÜBERS");
-        assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
         assert.equal(await clear.isEnabled(),true);
         assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),"ÜBERS");
         await search.fill("auss");
-        assert.equal(await page.locator(".favorite-row").count(),0);
-        assert.match(await page.locator(".favorites-empty").textContent(),/Keine passenden/);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),0);
+        assert.match(await page.locator("#favoritesPanel .favorites-empty").textContent(),/Keine passenden/);
         if(viewport.name==="desktop"){
           const filteredBounds=await page.locator("#favoritesPanel").boundingBox();
           assert.ok(filteredBounds&&standardPanelBounds&&
@@ -305,8 +305,8 @@ async function zoom(page){
             Math.abs(filteredBounds.y-standardPanelBounds.y)<=1&&
             filteredBounds.height<standardPanelBounds.height,
             "Desktop panel/background must shrink for zero matches without moving");
-          assert.equal(await page.locator(".favorites-footer").isVisible(),true);
-          const footerBounds=await page.locator(".favorites-footer").boundingBox();
+          assert.equal(await page.locator("#favoritesPanel .favorites-footer").isVisible(),true);
+          const footerBounds=await page.locator("#favoritesPanel .favorites-footer").boundingBox();
           assert.ok(footerBounds&&footerBounds.y+footerBounds.height<=
             filteredBounds.y+filteredBounds.height+1,
             "Desktop footer remains inside compact yellow background");
@@ -314,7 +314,7 @@ async function zoom(page){
         await clear.click();
         assert.equal(await search.inputValue(),"");
         assert.equal(await clear.isDisabled(),true);
-        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
         if(viewport.name==="desktop"){
           const restoredBounds=await page.locator("#favoritesPanel").boundingBox();
           assert.ok(restoredBounds&&standardPanelBounds&&
@@ -323,18 +323,18 @@ async function zoom(page){
         }
         // The name, date and blank row surface all activate the
         // saved view. Renaming is reserved for the square-pen button only.
-        for(const target of [".favorite-name",".favorite-date"]){
+        for(const target of ["#favoritesPanel .favorite-name","#favoritesPanel .favorite-date"]){
           await page.locator(target).first().click();
           assert.equal(await page.locator("#favoritesPanel").isHidden(),true,
             target+" must open the view, not the rename editor");
-          assert.equal(await page.locator(".favorite-confirm").count(),0);
+          assert.equal(await page.locator("#favoritesPanel .favorite-confirm").count(),0);
           await favoriteTrigger.click();
         }
-        await page.locator(".favorite-row").first().click({position:{x:135,y:4}});
+        await page.locator("#favoritesPanel .favorite-row").first().click({position:{x:135,y:4}});
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true,
           "Clicking a blank part of a favorite row opens the saved view");
         await favoriteTrigger.click();
-        assert.match(await page.locator(".favorite-date").first().textContent(),/\d{2}\.\d{2}\.\d{4}/);
+        assert.match(await page.locator("#favoritesPanel .favorite-date").first().textContent(),/\d{2}\.\d{2}\.\d{4}/);
 
         // Any pointer interaction outside the dialog dismisses it.
         await page.locator("#map").click({position:{x:viewport.width/2,y:100}});
@@ -347,7 +347,7 @@ async function zoom(page){
         await page.waitForTimeout(450);
         assert.notEqual(await zoom(page),soloScale,"Zoom+ changes viewport after saving favorite");
         await favoriteTrigger.click();
-        await page.locator(".favorite-name").first().click();
+        await page.locator("#favoritesPanel .favorite-name").first().click();
         assert.equal(await zoom(page),soloScale,"Favorite A restores saved zoom");
         await page.waitForTimeout(450);
         await page.locator(".pin-zoom-button").first().click();
@@ -359,7 +359,7 @@ async function zoom(page){
         await favoriteTrigger.click();
         assert.equal(await page.locator(".favorite-edit").first().getAttribute("data-pin-icon"),"square-pen");
         await page.locator(".favorite-edit").first().click();
-        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Meine Übersicht");
+        assert.equal(await page.locator("#favoritesPanel .favorite-name-input").inputValue(),"Meine Übersicht");
         const stacking=await page.evaluate(()=>{
           const star=document.querySelector("#favoritesButton");
           const panel=document.querySelector("#favoritesPanel");
@@ -368,57 +368,57 @@ async function zoom(page){
         });
         assert.ok(stacking.panel>stacking.star,
           "Favorite list and inline editor must stack ABOVE the active star button");
-        await page.locator(".favorite-name-input").fill("Umbenannt");
-        await page.locator(".favorite-confirm-actions button").last().click();
-        assert.equal(await page.locator(".favorite-name").first().textContent(),"Umbenannt");
+        await page.locator("#favoritesPanel .favorite-name-input").fill("Umbenannt");
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-name").first().textContent(),"Umbenannt");
 
         // Replacement needs in-panel confirmation and now uses plus.
-        assert.equal(await page.locator(".favorite-row .favorite-icon").first().getAttribute("data-pin-icon"),"plus");
-        await page.locator(".favorite-row .favorite-icon").first().click();
-        assert.equal(await page.locator(".favorite-confirm").count(),1);
-        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Umbenannt");
-        await page.locator(".favorite-confirm-actions button").first().click();
-        assert.equal(await page.locator(".favorite-confirm").count(),0);
-        await page.locator(".favorite-row .favorite-icon").first().click();
-        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Umbenannt",
+        assert.equal(await page.locator("#favoritesPanel .favorite-row .favorite-icon").first().getAttribute("data-pin-icon"),"plus");
+        await page.locator("#favoritesPanel .favorite-row .favorite-icon").first().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-name-input").inputValue(),"Umbenannt");
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm").count(),0);
+        await page.locator("#favoritesPanel .favorite-row .favorite-icon").first().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-name-input").inputValue(),"Umbenannt",
           "Replacement must prefill the OLD favorite name, not nearest map pin");
-        await page.locator(".favorite-name-input").fill("Ersatz");
-        await page.locator(".favorite-confirm-actions button").last().click();
-        assert.equal(await page.locator(".favorite-name").first().textContent(),"Ersatz");
+        await page.locator("#favoritesPanel .favorite-name-input").fill("Ersatz");
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-name").first().textContent(),"Ersatz");
         await footer.click();
-        await page.locator(".favorite-name-input").fill("Zweiter Platz");
-        await page.locator(".favorite-confirm-actions button").last().click();
-        assert.equal(await page.locator(".favorite-open").count(),0);
+        await page.locator("#favoritesPanel .favorite-name-input").fill("Zweiter Platz");
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").last().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
         // Filtering must preserve the original index for editing the second favorite.
         await search.fill("zweiter");
-        assert.equal(await page.locator(".favorite-row").count(),1);
-        assert.equal(await page.locator(".favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
         await page.locator(".favorite-edit").first().click();
-        assert.equal(await page.locator(".favorite-name-input").inputValue(),"Zweiter Platz");
-        await page.locator(".favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-name-input").inputValue(),"Zweiter Platz");
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").first().click();
         await clear.click();
-        assert.equal(await page.locator(".favorite-row").count(),2);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),2);
 
         // Delete is red and requires explicit in-panel confirmation.
-        await page.locator(".favorite-row").first().locator(".favorite-remove").click();
-        assert.equal(await page.locator(".favorite-confirm-danger").count(),1);
-        assert.match(await page.locator(".favorite-confirm-actions .favorite-action-danger").textContent(),/Löschen/);
-        assert.equal(await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first()
+        await page.locator("#favoritesPanel .favorite-row").first().locator(".favorite-remove").click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm-danger").count(),1);
+        assert.match(await page.locator("#favoritesPanel .favorite-confirm-actions .favorite-action-danger").textContent(),/Löschen/);
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm-danger .favorite-confirm-actions button").first()
           .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(255, 224, 223)",
           "Cancel in destructive dialog must use a light RED button");
-        assert.equal(await page.locator(".favorite-confirm-danger .favorite-action-danger")
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm-danger .favorite-action-danger")
           .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(197, 46, 62)",
           "Delete confirmation must use a strong RED button");
-        await page.locator(".favorite-confirm-actions button").first().click();
-        assert.equal(await page.locator(".favorite-row").count(),2);
-        const removeCircle=await page.locator(".favorite-row").first().locator(".favorite-remove").boundingBox();
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),2);
+        const removeCircle=await page.locator("#favoritesPanel .favorite-row").first().locator(".favorite-remove").boundingBox();
         assert.ok(removeCircle&&Math.abs(removeCircle.width-removeCircle.height)<1,
           "Favorite row icon buttons must remain perfectly round");
         // Audits ALL visible buttons that present as round: map controls,
         // favorites actions, pin dialog / toolbar and overlay close controls.
         const geometryProblems=await page.evaluate(()=>{
           const roundCandidates=[
-            ...document.querySelectorAll("button.p2m-icon-control, .favorite-row .favorite-icon, #favoritesClose")
+            ...document.querySelectorAll("button.p2m-icon-control, #favoritesPanel .favorite-row .favorite-icon, #favoritesClose")
           ];
           return roundCandidates.filter(el=>{
             const css=getComputedStyle(el),box=el.getBoundingClientRect();
@@ -434,14 +434,14 @@ async function zoom(page){
         });
         assert.deepEqual(geometryProblems,[],
           "Every visible round control must have equal rendered width and height");
-        assert.equal(await page.locator(".favorite-row").first().locator(".favorite-remove").evaluate(
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").first().locator(".favorite-remove").evaluate(
           el=>getComputedStyle(el.querySelector("svg")).color),"rgb(191, 36, 49)",
           "Remove icon itself must be red");
-        await page.locator(".favorite-row").first().locator(".favorite-remove").click();
-        await page.locator(".favorite-confirm-actions .favorite-action-danger").click();
-        assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz",
+        await page.locator("#favoritesPanel .favorite-row").first().locator(".favorite-remove").click();
+        await page.locator("#favoritesPanel .favorite-confirm-actions .favorite-action-danger").click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-name").first().textContent(),"Zweiter Platz",
           "Deleting the first favorite moves the next favorite to the first row");
-        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
         await page.locator("#favoritesCloseBottom").click();
         await page.waitForTimeout(650);
         await page.reload({waitUntil:"domcontentloaded"});
@@ -449,10 +449,10 @@ async function zoom(page){
         assert.equal(await page.locator(".pin-zoom-button").first().isEnabled(),true,
           "Local Undo history must survive application restart");
         await favoriteTrigger.click();
-        assert.equal(await page.locator(".favorite-row").count(),1,
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1,
           "Project favorite must survive application restart");
-        assert.equal(await page.locator(".favorite-open").count(),0);
-        assert.equal(await page.locator(".favorite-name").first().textContent(),"Zweiter Platz");
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-name").first().textContent(),"Zweiter Platz");
         await search.fill("zweiter");
         // During keyboard editing the footer is intentionally hidden.
         await page.locator("#favoritesClose").click();
@@ -461,7 +461,7 @@ async function zoom(page){
         await favoriteTrigger.click();
         assert.equal(await search.inputValue(),"zweiter",
           "Favoritenfilter bleibt auch nach einem Neustart bestehen");
-        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
         await clear.click();
         assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),null);
         assert.equal(await search.inputValue(),"");
@@ -485,11 +485,11 @@ async function zoom(page){
         // Fifteen is below the new 500-favorite cap.
         for(let i=1;i<15;i++){
           await page.locator("#favoritesAdd").click();
-          await page.locator(".favorite-name-input").fill("Platz "+String.fromCharCode(65+i));
-          await page.locator(".favorite-confirm-actions button").last().click();
+          await page.locator("#favoritesPanel .favorite-name-input").fill("Platz "+String.fromCharCode(65+i));
+          await page.locator("#favoritesPanel .favorite-confirm-actions button").last().click();
         }
-        assert.equal(await page.locator(".favorite-row").count(),15);
-        assert.equal(await page.locator(".favorite-open").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),15);
+        assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
         assert.equal(await page.locator("#favoritesAdd").isEnabled(),true);
         // Favorites writes are debounced for 300ms. Wait until the final
         // in-memory addition is durably committed before updating the fixture.
@@ -518,19 +518,19 @@ async function zoom(page){
         await page.waitForFunction(()=>!!document.querySelector("#favoritesButton"),null,{timeout:10000});
         await favoriteTrigger.click();
         await search.fill("09");
-        const dateHits=await page.locator(".favorite-name").allTextContents();
+        const dateHits=await page.locator("#favoritesPanel .favorite-name").allTextContents();
         assert.ok(dateHits.includes("Platz D"),"A saved date 09.01.2024 must match 09");
         assert.ok(dateHits.includes("Favorit-09"),"A saved name containing 09 must match");
         await clear.click();
-        assert.equal(await page.locator(".favorite-row").count(),15);
-        assert.equal(await page.locator(".favorite-row").last().locator(".favorite-edit").isEnabled(),true);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),15);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").last().locator(".favorite-edit").isEnabled(),true);
         // Simulate a keyboard-shrunken visual area and edit the last row.
-        await page.locator(".favorite-row").last().locator(".favorite-edit").click();
+        await page.locator("#favoritesPanel .favorite-row").last().locator(".favorite-edit").click();
         assert.equal(await page.locator("#favoritesPanel.is-editing").count(),
           viewport.name==="desktop"?0:1);
         await page.setViewportSize({width:viewport.width,height:390});
         await page.waitForTimeout(280);
-        const editorBounds=await page.locator(".favorite-confirm").boundingBox();
+        const editorBounds=await page.locator("#favoritesPanel .favorite-confirm").boundingBox();
         const viewportBounds=await page.locator("#favoritesPanel").boundingBox();
         if(viewport.hasTouch){
           assert.ok(editorBounds&&viewportBounds&&editorBounds.y>=viewportBounds.y-2&&
@@ -542,7 +542,7 @@ async function zoom(page){
             "Desktop editor must not activate touch keyboard layout");
         }
         await page.setViewportSize({width:viewport.width,height:viewport.height});
-        await page.locator(".favorite-confirm-actions button").first().click();
+        await page.locator("#favoritesPanel .favorite-confirm-actions button").first().click();
         // Searching is also a keyboard-editing state in Safari; it must keep
         // the header and its input inside the shrunken visual viewport.
         await search.focus();
@@ -567,11 +567,11 @@ async function zoom(page){
         await favoriteTrigger.click();
         const removeAllButton=page.locator("#favoritesList .favorite-delete-all");
         assert.equal(await removeAllButton.count(),1);
-        assert.equal(await page.locator(".favorites-footer .favorite-delete-all").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorites-footer .favorite-delete-all").count(),0);
         assert.equal(await page.locator("#favoritesList").evaluate(el=>
           el.lastElementChild?.classList.contains("favorite-delete-all")),true);
         const bulkDimensions=await removeAllButton.boundingBox();
-        const rowDimensions=await page.locator(".favorite-row").last().boundingBox();
+        const rowDimensions=await page.locator("#favoritesPanel .favorite-row").last().boundingBox();
         assert.ok(bulkDimensions&&rowDimensions&&
           Math.abs(bulkDimensions.width-rowDimensions.width)<3&&
           Math.abs(bulkDimensions.height-rowDimensions.height)<=1,
@@ -583,12 +583,12 @@ async function zoom(page){
         // Avoid measuring the temporary hover shade left by the pointer when
         // the newly inserted confirmation happens to occupy its last position.
         await page.mouse.move(0,0);
-        assert.equal(await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first()
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm-danger .favorite-confirm-actions button").first()
           .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(255, 224, 223)");
-        assert.equal(await page.locator(".favorite-confirm-danger .favorite-action-danger")
+        assert.equal(await page.locator("#favoritesPanel .favorite-confirm-danger .favorite-action-danger")
           .evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(197, 46, 62)");
-        await page.locator(".favorite-confirm-danger .favorite-confirm-actions button").first().click();
-        assert.equal(await page.locator(".favorite-row").count(),15,
+        await page.locator("#favoritesPanel .favorite-confirm-danger .favorite-confirm-actions button").first().click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),15,
           "Cancel must leave ALL favorites untouched");
         // In search mode (even before text is typed), deletion of ALL
         // favorites must be unavailable. A persistent filter also hides it
@@ -596,7 +596,7 @@ async function zoom(page){
         await search.focus();
         assert.equal(await removeAllButton.isVisible(),false);
         await search.fill("Platz D");
-        assert.equal(await page.locator(".favorite-row").count(),1);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
         assert.equal(await removeAllButton.count(),0);
         await page.locator("#favoritesClose").click();
         await favoriteTrigger.click();
@@ -609,10 +609,10 @@ async function zoom(page){
         await removeAllButton.waitFor({state:"visible",timeout:3000});
         assert.equal(await removeAllButton.isVisible(),true);
         await removeAllButton.click();
-        assert.match(await page.locator(".favorite-confirm-danger p").first().textContent(),
+        assert.match(await page.locator("#favoritesPanel .favorite-confirm-danger p").first().textContent(),
           /alle 15 Favoriten löschen/);
-        await page.locator(".favorite-confirm-danger .favorite-action-danger").click();
-        assert.equal(await page.locator(".favorite-row").count(),0);
+        await page.locator("#favoritesPanel .favorite-confirm-danger .favorite-action-danger").click();
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),0);
         assert.equal(await removeAllButton.count(),0);
         assert.equal(await page.locator("#favoritesAdd").isEnabled(),true);
         assert.match(await page.locator("#favoritesMessage").textContent(),/Alle Favoriten gelöscht/);
@@ -621,8 +621,8 @@ async function zoom(page){
         await page.reload({waitUntil:"domcontentloaded"});
         await page.waitForFunction(()=>!!document.querySelector("#favoritesButton"),null,{timeout:10000});
         await favoriteTrigger.click();
-        assert.equal(await page.locator(".favorite-row").count(),0);
-        assert.equal(await page.locator(".favorite-delete-all").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),0);
+        assert.equal(await page.locator("#favoritesPanel .favorite-delete-all").count(),0);
         const afterBulk=await page.evaluate(async()=>{
           const store=await window.Pin2MapIndexedDBProjectStore.open();
           try{return {project:await store.loadProject(),history:await store.loadViewHistory()};}
