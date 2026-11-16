@@ -65,6 +65,25 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     const privateRow=page.locator("#layersList .list-dialog-row").filter({hasText:"Privat"});
     assert.equal(await privateRow.count(),1);
     assert.equal(await privateRow.getByRole("button",{name:"Ebene bearbeiten"}).count(),0);
+    assert.equal(await privateRow.locator(".layer-merge-check").isEnabled(),true);
+    assert.equal(await page.locator("#layersButton").getAttribute("aria-pressed"),"true");
+    assert.equal(await page.locator("#layersSearch").evaluate(el=>
+      getComputedStyle(el).borderTopLeftRadius),"7px");
+    assert.equal(await page.locator("#layersVisibilityCycle").isVisible(),true);
+    const visibleBefore=await page.locator("#layersList .layer-eye").evaluateAll(
+      buttons=>buttons.map(b=>b.classList.contains("is-visible")));
+    await page.locator("#layersVisibilityCycle").click();
+    const inverted=await page.locator("#layersList .layer-eye").evaluateAll(
+      buttons=>buttons.map(b=>b.classList.contains("is-visible")));
+    assert.deepEqual(inverted,visibleBefore.map(x=>!x));
+    await page.locator("#layersVisibilityCycle").click();
+    assert.equal(await page.locator("#layersList .layer-eye.is-invisible").count(),0);
+    await page.locator("#layersVisibilityCycle").click();
+    assert.equal(await page.locator("#layersList .layer-eye.is-visible").count(),0);
+    await page.locator("#layersVisibilityCycle").click();
+    const restored=await page.locator("#layersList .layer-eye").evaluateAll(
+      buttons=>buttons.map(b=>b.classList.contains("is-visible")));
+    assert.deepEqual(restored,visibleBefore);
     await page.locator("#addLayer").click();
     const editor=page.locator("#layersList .favorite-confirm");
     await editor.waitFor({state:"visible"});
@@ -83,6 +102,16 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await layer.getByRole("button",{name:"Ebene bearbeiten"}).getAttribute("aria-pressed"),"true");
     await layer.getByRole("button",{name:"Ebene bearbeiten"}).click();
     assert.equal(await page.locator("#layersList .favorite-confirm").count(),0);
+    // Private can be marked as source, but never appears among target choices.
+    await privateRow.locator(".layer-merge-check").check();
+    await layer.locator(".layer-merge-check").check();
+    await page.locator("#layersUnite").click();
+    assert.equal(await page.locator("#layersList .list-dialog-row").count(),1);
+    assert.equal(await privateRow.count(),0);
+    await page.locator("#layersList .layer-merge-guidance")
+      .getByRole("button",{name:"Abbrechen"}).click();
+    await privateRow.locator(".layer-merge-check").uncheck();
+    await layer.locator(".layer-merge-check").uncheck();
     await page.locator("#layersSearch").fill("CONTRACT");
     assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),1);
     await page.locator("#layersSearchClear").click();
@@ -132,7 +161,32 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(persistedLayers.includes("Ebene 1"),false,JSON.stringify(persistedLayers));
     assert.equal(persistedLayers.includes("Contract Test Layer"),true);
     assert.equal(persistedLayers.includes("Privat"),true);
+    // Long-press on a layer name activates the shared reorder indicator.
+    if(viewport.width>500){
+      await page.locator("#addLayer").click();
+      const addAgain=page.locator("#layersList .favorite-confirm");
+      await addAgain.locator(".layer-swatch").click();
+      await addAgain.locator(".layer-palette-dot").first().click();
+      await addAgain.locator(".favorite-name-input").fill("Reorder Demo");
+      await addAgain.getByRole("button",{name:"Erstellen"}).click();
+      const source=page.locator("#layersList .list-dialog-row")
+        .filter({hasText:"Contract Test Layer"}).locator(".favorite-name");
+      const target=page.locator("#layersList .list-dialog-row")
+        .filter({hasText:"Reorder Demo"}).locator(".favorite-name");
+      const a=await source.boundingBox(),b=await target.boundingBox();
+      await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
+      await page.mouse.down();
+      await page.waitForTimeout(530);
+      assert.equal(await page.locator("#layersList").evaluate(el=>
+        el.classList.contains("list-reorder-active")),true);
+      assert.equal(await page.locator(".list-reorder-insert").count(),1);
+      await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:5});
+      await page.mouse.up();
+      assert.equal(await page.locator("#layersList").evaluate(el=>
+        el.classList.contains("list-reorder-active")),false);
+    }
     await page.locator("#layersCloseBottom").click();
+    assert.equal(await page.locator("#layersButton").getAttribute("aria-pressed"),"false");
     await page.locator("#settingsButton").click();
     await page.locator("#settingsColorsTab").click();
     assert.equal(await page.locator("#standardColorGrid .settings-color-item").count(),12);

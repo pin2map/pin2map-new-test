@@ -66,7 +66,16 @@
     // A layer created later is intentionally left in its current visibility.
     return item.viewport;
   }
-  const api=Object.freeze({CAPACITY,ACTIVE_CAPACITY,letter,capture,list,items,append,replace,rename,remove,removeAll,apply});
+  function reorder(project,fromIndex,toIndex){
+    const values=list(project);
+    if(!Number.isInteger(fromIndex)||!Number.isInteger(toIndex)||
+       fromIndex<0||toIndex<0||fromIndex>=values.length||toIndex>=values.length||
+       fromIndex===toIndex)return false;
+    const [favorite]=values.splice(fromIndex,1);
+    values.splice(toIndex,0,favorite);
+    return true;
+  }
+  const api=Object.freeze({CAPACITY,ACTIVE_CAPACITY,letter,capture,list,items,append,replace,rename,remove,removeAll,apply,reorder});
   root.Pin2MapMapFavorites=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

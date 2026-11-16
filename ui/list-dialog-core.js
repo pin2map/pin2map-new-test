@@ -94,6 +94,94 @@
    });
    return row;
   }
+  // Shared pointer reordering. Long-press only on the text label; all list
+  // consumers supply their own persistence/application callback and ID policy.
+  wireReorder({onMove,allow=()=>true}){
+   const list=this.el(this.listId);
+   if(!list||typeof onMove!=="function"||typeof list.querySelectorAll!=="function")return;
+   const doc=this.doc,win=doc.defaultView;
+   for(const row of list.querySelectorAll(".list-dialog-row[data-item-id]")){
+    const grip=row.querySelector(".favorite-name");
+    if(!grip||!allow(row.dataset.itemId))continue;
+    grip.classList.add("list-reorder-handle");
+    grip.addEventListener("pointerdown",event=>{
+     if(event.button!==0||this.mode||event.isPrimary===false)return;
+     const sourceId=row.dataset.itemId,origin={x:event.clientX,y:event.clientY};
+     let active=false,targetId=null,timeout=null;
+     const line=doc.createElement("div");
+     line.className="list-reorder-insert";
+     line.setAttribute("aria-hidden","true");
+     const rows=()=>[...list.querySelectorAll(".list-dialog-row[data-item-id]")];
+     const cleanup=()=>{
+      if(timeout!==null)win.clearTimeout(timeout);
+      doc.removeEventListener("pointermove",move);
+      doc.removeEventListener("pointerup",up);
+      doc.removeEventListener("pointercancel",cancel);
+      row.classList.remove("list-reorder-source");
+      list.classList.remove("list-reorder-active");
+      line.remove();
+     };
+     const targetAt=y=>{
+      const peers=rows().filter(candidate=>
+       candidate!==row&&allow(candidate.dataset.itemId));
+      if(!peers.length)return null;
+      let best=peers[0],dist=Infinity;
+      for(const candidate of peers){
+       const r=candidate.getBoundingClientRect(),delta=Math.abs(y-(r.top+r.bottom)/2);
+       if(delta<dist){best=candidate;dist=delta;}
+      }
+      return best;
+     };
+     const move=ev=>{
+      if(ev.pointerId!==event.pointerId)return;
+      if(!active){
+       if(Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)>11)cancel();
+       return;
+      }
+      if(ev.cancelable)ev.preventDefault();
+      const candidate=targetAt(ev.clientY);
+      targetId=candidate?.dataset.itemId||null;
+      if(candidate){
+       const rect=candidate.getBoundingClientRect(),frame=list.getBoundingClientRect();
+       const after=rows().indexOf(row)<rows().indexOf(candidate);
+       line.style.top=(rect.top-frame.top+list.scrollTop+(after?rect.height:0))+"px";
+       line.style.display="block";
+      }else line.style.display="none";
+     };
+     const up=ev=>{
+      if(ev.pointerId!==event.pointerId)return;
+      const committed=active&&targetId&&targetId!==sourceId;
+      if(active){
+       this.reorderSuppressClick=true;
+       win.setTimeout(()=>{this.reorderSuppressClick=false;},350);
+      }
+      cleanup();
+      if(committed)onMove(sourceId,targetId);
+     };
+     const cancel=()=>cleanup();
+     timeout=win.setTimeout(()=>{
+      active=true;list.classList.add("list-reorder-active");
+      row.classList.add("list-reorder-source");
+      list.append(line);
+      const candidate=targetAt(origin.y);
+      targetId=candidate?.dataset.itemId||null;
+      if(candidate){
+       const rect=candidate.getBoundingClientRect(),frame=list.getBoundingClientRect();
+       line.style.top=(rect.top-frame.top+list.scrollTop)+"px";
+      }
+     },480);
+     doc.addEventListener("pointermove",move,{passive:false});
+     doc.addEventListener("pointerup",up);
+     doc.addEventListener("pointercancel",cancel);
+    });
+    // Suppress the synthetic click emitted after a long press was released.
+    grip.addEventListener("click",event=>{
+     if(this.reorderSuppressClick){
+      event.preventDefault();event.stopImmediatePropagation();
+     }
+    },true);
+   }
+  }
   actionEditor({mode,index,title,nameLabel="Name",nameValue="",confirmLabel="OK",
     onConfirm,allowEmpty=false,maxLength=120,warning="",renderExtra=null}){
    const danger=mode==="delete"||mode==="deleteAll";

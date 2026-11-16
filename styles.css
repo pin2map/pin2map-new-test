@@ -2283,3 +2283,91 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .settings-color-item{display:flex;flex-direction:column;gap:5px;min-width:0}
 #app .settings-color-swatch{display:block;width:100%;aspect-ratio:1;border-radius:12px;border:1px solid #aab8c8;cursor:pointer}
 #app .settings-color-hex{min-width:0;width:100%;box-sizing:border-box;font-size:12px;text-align:center}
+
+
+/* List-dialog design contract (v224): ONLY symbol-only controls are circular.
+   Every text-labeled action and text input is rectangular. */
+#app :is(#layersPanel,#favoritesPanel) :is(
+ .favorite-name,.favorite-action,.favorite-delete-all,
+ .favorites-footer button,.favorite-name-input,.layer-merge-guidance button){
+ border-radius:7px;
+}
+#app #layersPanel .favorites-head #layersSearch{
+ box-sizing:border-box;flex:1 1 0;min-width:0;width:auto;min-height:40px;
+ padding:7px 9px;border:1px solid #afbfce;border-radius:7px;
+ background:#fff;color:#243b54;font-size:16px;line-height:1.3;
+ appearance:none;-webkit-appearance:none;
+}
+#app #layersPanel #layersSearch::-webkit-search-cancel-button{display:none}
+#app #layersPanel .layer-leading{gap:9px;margin-right:10px}
+#app #layersPanel .layer-merge-check{
+ box-sizing:border-box;flex:0 0 17px;width:17px;height:17px;
+ margin:0;cursor:pointer;
+}
+#app #layersPanel .favorite-row .favorite-details{min-width:0}
+#app #layersPanel .favorite-row .favorite-name{padding-left:3px}
+#app #layersPanel .layer-helpers{
+ display:flex;align-items:center;justify-content:flex-start;
+ box-sizing:border-box;min-height:52px;padding:5px 5px 5px;
+ margin-top:6px;margin-bottom:0;
+}
+#app #layersPanel .layer-helpers #layersVisibilityCycle{
+ box-sizing:border-box;width:36px;height:36px;min-width:36px;min-height:36px;
+ border-radius:50%;border:1px solid #a9c5df;
+ display:inline-flex;align-items:center;justify-content:center;
+ --p2m-button-bg:#d6eaff;--p2m-button-ink:#244c7a;
+ --p2m-button-border:#a9c5df;
+ background:#d6eaff;color:#244c7a;cursor:pointer;
+}
+#app #layersPanel .layer-helpers #layersVisibilityCycle svg{width:19px;height:19px}
+#app #layersPanel .layer-merge-guidance{background:transparent;border:0;padding:0;margin:0 0 8px}
+#app #layersPanel .layer-merge-guidance p{color:#243b54}
+#app #layersPanel .layer-merge-guidance .favorite-action{
+ border-radius:7px;background:#eaf3ff;border:1px solid #a9c5df;
+ color:#19436c;font-weight:600;min-height:39px;
+ padding:8px 14px;margin:4px 8px 5px 0;
+}
+#app #layersPanel .layer-merge-guidance .favorite-action-danger{
+ background:#d6eaff;border-color:#8db9e8;color:#19436c;
+}
+#app #layersPanel .favorites-footer button{
+ border-radius:7px;background:#eaf3ff;color:#19436c;
+}
+#app #layersPanel .favorites-footer .favorites-close-bottom{
+ background:#eaf3ff;border-color:#a9c5df;color:#19436c;
+}
+/* In-layer icon-only eye buttons retain their white circular surface. */
+#app #layersPanel .layer-eye{
+ border:1px solid #c9d5e1;border-radius:50%;background:#fff;
+ --p2m-button-bg:#fff;--p2m-button-border:#c9d5e1;
+}
+/* The launcher color matches its respective panel; blue means expanded. */
+#app #layersButton.layers-bottom-button.p2m-icon-control{
+ --p2m-map-control-bg:#d6eaff;
+ --p2m-map-control-pressed:#c0dffb;
+ --p2m-map-control-border:#8db9e8;
+ --p2m-map-control-ink:#244c7a;
+}
+#app #layersButton.layers-bottom-button.p2m-icon-control[aria-expanded="true"],
+#app #favoritesButton.favorites-map-button.p2m-icon-control[aria-expanded="true"]{
+ --p2m-map-control-bg:#1764bf;
+ --p2m-map-control-pressed:#1764bf;
+ --p2m-map-control-border:#1764bf;
+ --p2m-map-control-ink:#fff;
+}
+/* One longpress/reorder affordance shared by Layers, Favorites, future Filters. */
+#app .favorites-list{position:relative}
+#app .list-reorder-handle{touch-action:none;-webkit-user-select:none;user-select:none}
+#app .favorites-list.list-reorder-active{touch-action:none;overflow-y:auto}
+#app .favorites-list.list-reorder-active .list-dialog-row{
+ transform:scale(.96);transform-origin:center;
+ margin-block:9px;transition:transform .12s ease,margin .12s ease;
+}
+#app .favorites-list.list-reorder-active .list-dialog-row.list-reorder-source{
+ opacity:.62;outline:2px solid #1764bf;outline-offset:-2px;
+}
+#app .list-reorder-insert{
+ position:absolute;z-index:5;left:8px;right:8px;height:3px;
+ border-radius:2px;background:#1764bf;pointer-events:none;
+ box-shadow:0 0 0 1px #fff;
+}

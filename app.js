@@ -134,6 +134,15 @@
     getPalette:()=>palette.colors(state).standard,
     getNextIndex:()=>palette.nextLayerColorIndex(state),
     getSuggestedName:()=>"Ebene "+palette.nextLayerNumber(state),
+    onVisibilityCycle:visibleById=>{
+      for(const [id,visible] of Object.entries(visibleById))
+        filterOps.setLayerVisible(state,id,visible);
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+    },
+    onReorder:(fromId,toId)=>{
+      if(!layerOps.reorder(state,fromId,toId))return;
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+    },
     onMergeRequest:(selectedIds,targetId)=>{
       const result=layerOps.merge(state,selectedIds,targetId);
       if(!result){showNotice("Ungültige Zusammenführung");return false;}
@@ -1138,6 +1147,10 @@
       onOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();setFavoriteMessage("");},
       onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
       onRemove:removeMapFavorite,onRemoveAll:removeAllMapFavorites,
+      onReorder:(from,to)=>{
+        if(!favorites.reorder(state,from,to))return;
+        save();syncFavoritePanel();
+      },
       onChoose:openMapFavorite,suggestName:suggestFavoriteName,
       capacity:favorites.ACTIVE_CAPACITY,
       getSearch:()=>{

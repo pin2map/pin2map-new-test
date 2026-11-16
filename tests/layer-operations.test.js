@@ -35,7 +35,6 @@ test("merge is validated and retains all objects and protected layers",()=>{
  state.pins=[{id:"p",layerId:"a"},{id:"q",layerId:"private"}];
  state.areas=[{id:"lake",kind:"lake",layerId:"a"}];
  state.rivers=[{id:"river",layerId:"a"}];
- assert.equal(layers.merge(state,["private","a"],"a"),false);
  assert.equal(layers.merge(state,["a","b"],"private"),false);
  assert.equal(layers.merge(state,["a","a"],"a"),false);
  assert.deepEqual(layers.merge(state,["a","b"],"b"),
@@ -43,4 +42,27 @@ test("merge is validated and retains all objects and protected layers",()=>{
  assert.deepEqual(state.layers.map(x=>x.id),["private","layer-1","b"]);
  assert.equal(state.pins[0].layerId,"b");assert.equal(state.pins[1].layerId,"private");
  assert.equal(state.areas[0].layerId,"b");assert.equal(state.rivers[0].layerId,"b");
+});
+
+test("Private may be a merge source but survives even after its contents move",()=>{
+ const state=model.defaultProject();
+ state.pins.push({id:"p",layerId:"private"});
+ state.areas.push({id:"lake",kind:"lake",layerId:"private"});
+ state.rivers.push({id:"river",layerId:"private"});
+ const result=layers.merge(state,["private","layer-1"],"layer-1");
+ assert.deepEqual(result,{targetId:"layer-1",sourceIds:["private"],
+  moved:{pins:1,areas:1,rivers:1}});
+ assert.deepEqual(state.layers.map(l=>l.id),["private","layer-1"]);
+ assert.deepEqual(state.pins.map(p=>p.layerId),["layer-1"]);
+ assert.equal(state.areas[0].layerId,"layer-1");
+ assert.equal(state.rivers[0].layerId,"layer-1");
+ assert.equal(layers.merge(state,["private","layer-1"],"private"),false);
+});
+test("Layer reordering preserves Private in first position",()=>{
+ const state=model.defaultProject();
+ state.layers.push({id:"a"},{id:"b"});
+ assert.equal(layers.reorder(state,"private","b"),false);
+ assert.equal(layers.reorder(state,"a","private"),false);
+ assert.equal(layers.reorder(state,"b","layer-1"),true);
+ assert.deepEqual(state.layers.map(l=>l.id),["private","b","layer-1","a"]);
 });

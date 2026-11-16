@@ -90,3 +90,11 @@ test("legacy project with over 100 favorites is not silently truncated",()=>{
   assert.equal(f.removeAll(project),true);
   assert.equal(project.favorites.length,0);
 });
+
+test("reorder favorite entries changes only order, preserving their data",()=>{
+ const project={favorites:[{name:"A",layers:[]},{name:"B",layers:[]},{name:"C",layers:[]}]};
+ assert.equal(f.reorder(project,0,2),true);
+ assert.deepEqual(project.favorites.map(x=>x.name),["B","C","A"]);
+ assert.equal(f.reorder(project,-1,1),false);
+ assert.equal(f.reorder(project,1,1),false);
+});

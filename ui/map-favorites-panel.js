@@ -5,13 +5,13 @@
   const Core=root.Pin2MapListDialogCore||
     (typeof require==="function"?require("./list-dialog-core.js"):null);
   class MapFavoritesPanel extends Core{
-    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRemoveAll,onRename,onChoose,suggestName,capacity=100,getSearch=()=>"",onSearchChange=()=>{}}){
+    constructor({document:doc,getElement,icons,onOpen,onAdd,onReplace,onRemove,onRemoveAll,onRename,onChoose,onReorder=()=>{},suggestName,capacity=100,getSearch=()=>"",onSearchChange=()=>{}}){
       super({document:doc,getElement,icons,panelId:"favoritesPanel",
         listId:"favoritesList",searchId:"favoritesSearch",
         clearId:"favoritesSearchClear",getSearch,onSearchChange});
       this.onOpen=onOpen;this.onAdd=onAdd;this.onReplace=onReplace;
       this.onRemove=onRemove;this.onRemoveAll=onRemoveAll;
-      this.onRename=onRename;this.onChoose=onChoose;
+      this.onRename=onRename;this.onChoose=onChoose;this.onReorder=onReorder;
       this.suggestName=suggestName;this.capacity=capacity;
       this.bindFilter();
     }
@@ -21,6 +21,7 @@
       this.el("favoritesPanel").classList.remove("hidden","search-focused");
       this.doc.body.classList.add("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","true");
+      this.el("favoritesButton").setAttribute("aria-pressed","true");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten schließen");
       this.render();
       this.onOpen?.();
@@ -31,6 +32,7 @@
       this.el("favoritesPanel").classList.add("hidden");
       this.doc.body.classList.remove("favorites-open");
       this.el("favoritesButton").setAttribute("aria-expanded","false");
+      this.el("favoritesButton").setAttribute("aria-pressed","false");
       this.el("favoritesButton").setAttribute("aria-label","Kartenfavoriten öffnen");
       const panel=this.el("favoritesPanel");
       panel.classList.remove("is-editing","search-focused");
@@ -102,7 +104,7 @@
           });
         const row=this.row({name:item.name||"Unbenannt",detail,
           onChoose:()=>this.onChoose(index),extra:replace,edit,remove,
-          selectedMode:this.mode,selectedIndex:index});
+          selectedMode:this.mode,selectedIndex:index,itemId:String(index)});
         list.append(row);
         if(this.mode&&this.mode!=="new"&&this.index===index){
           const editor=this.editor(this.mode,index);
@@ -143,6 +145,8 @@
         list.append(editor.target);pendingFocus=editor.focus;
       }
       list.scrollTop=oldScroll;
+      if(!this.mode&&!query)
+       this.wireReorder({onMove:(from,to)=>this.onReorder(Number(from),Number(to))});
       this.finishRender(pendingFocus);
     }
   }

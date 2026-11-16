@@ -53,25 +53,45 @@
     project.layers=project.layers.filter(l=>l.id!==id);
     return true;
   }
+  // Private can donate its contents but cannot be the target or be deleted.
   function merge(project,selectedIds,targetId){
     if(!Array.isArray(selectedIds)||selectedIds.length<2||
-      new Set(selectedIds).size!==selectedIds.length||
-      selectedIds.includes("private")||!selectedIds.includes(targetId)||
-      selectedIds.some(id=>!find(project,id)))return false;
+       new Set(selectedIds).size!==selectedIds.length||
+       targetId==="private"||!selectedIds.includes(targetId)||
+       selectedIds.some(id=>!find(project,id)))return false;
     const sources=new Set(selectedIds.filter(id=>id!==targetId));
     const moved={pins:0,areas:0,rivers:0};
     for(const key of ["pins","areas","rivers"])
       for(const item of project[key]||[])
         if(sources.has(item.layerId)){item.layerId=targetId;moved[key]++;}
-    project.layers=project.layers.filter(layer=>!sources.has(layer.id));
-    for(const favorite of project.favorites||[])
+    project.layers=project.layers.filter(layer=>layer.id==="private"||!sources.has(layer.id));
+    // Favorites remember layer visibility as objects, not only layer IDs.
+    for(const favorite of project.favorites||[]){
+      if(!favorite||typeof favorite!=="object")continue;
+      if(Array.isArray(favorite.layers)){
+        const target=favorite.layers.find(l=>l.id===targetId);
+        const visible=selectedIds.some(id=>favorite.layers.some(l=>l.id===id&&l.visible));
+        favorite.layers=favorite.layers.filter(l=>!sources.has(l.id)||l.id==="private");
+        if(target)target.visible=visible;
+      }
       for(const key of ["layerIds","visibleLayerIds"])
         if(Array.isArray(favorite[key]))
           favorite[key]=[...new Set(favorite[key].map(id=>sources.has(id)?targetId:id))];
+    }
     return {targetId,sourceIds:[...sources],moved};
   }
+  function reorder(project,fromId,toId){
+    const layers=project.layers;
+    if(fromId==="private"||toId==="private"||fromId===toId)return false;
+    const from=layers.findIndex(l=>l.id===fromId);
+    const to=layers.findIndex(l=>l.id===toId);
+    if(from<0||to<0)return false;
+    const [layer]=layers.splice(from,1);
+    layers.splice(to,0,layer);
+    return true;
+  }
   const api=Object.freeze({find,nextName,create,deletionInfo,deleteLayerOrPins,
-    renameAndColor,deleteContents,removeEntireLayer,merge});
+    renameAndColor,deleteContents,removeEntireLayer,merge,reorder});
   root.Pin2MapLayerOperations=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

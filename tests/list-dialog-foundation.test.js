@@ -69,3 +69,13 @@ test("filter resets without hiding default entries or losing user focus",()=>{
  assert.deepEqual(Core.search(names,"Bahn",x=>x.name).map(x=>x.index),[1]);
  assert.equal(Core.search(names,"",x=>x.name).length,2);
 });
+
+test("central list reordering is reusable by Layers, Favorites and future Filters",()=>{
+ const core=read("ui/list-dialog-core.js");
+ const layer=read("ui/layer-view.js"),favorite=read("ui/map-favorites-panel.js");
+ assert.match(core,/wireReorder\(/);
+ assert.match(core,/pointerdown/);assert.match(core,/list-reorder-insert/);
+ assert.match(layer,/this\.wireReorder\(/);
+ assert.match(favorite,/this\.wireReorder\(/);
+ assert.match(read("styles.css"),/list-reorder-active/);
+});

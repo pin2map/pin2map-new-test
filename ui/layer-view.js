@@ -7,6 +7,7 @@
  class LayerView extends Core{
   constructor({getElement,document,onVisibility,onDelete,onRename=()=>{},
    onCreate=()=>{},onDeleteContents=null,onDeleteLayer=null,onMergeRequest=()=>{},
+   onVisibilityCycle=()=>{},onReorder=()=>{},
    getPalette=()=>[],getSuggestedName=()=>"Ebene 1",getNextIndex=()=>0,
    onClose=()=>{},onOpen=()=>{}}){
    super({getElement,document,icons:root.Pin2MapIcons||{
@@ -17,11 +18,14 @@
    this.onRename=onRename;this.onCreate=onCreate;
    this.onDeleteContents=onDeleteContents||onDelete;
    this.onDeleteLayer=onDeleteLayer||onDelete;
-   this.onMergeRequest=onMergeRequest;this.getPalette=getPalette;
+   this.onMergeRequest=onMergeRequest;this.onVisibilityCycle=onVisibilityCycle;
+   this.onReorder=onReorder;this.getPalette=getPalette;
    this.getSuggestedName=getSuggestedName;this.getNextIndex=getNextIndex;
    this.onClose=onClose;this.onOpen=onOpen;
    this.selectedIds=new Set();this.mergeMode=false;this.mergeTargetId=null;
    this.counts={};this.geometryCounts={};this.selectedLayerId=null;
+   this.visibilityCycle=0;this.originalVisibility=null;
+   this.el("layersVisibilityCycle")?.addEventListener("click",()=>this.cycleVisibility());
    if(this.el("layersSearch")&&this.el("layersSearchClear"))this.bindFilter();
    // Other map overlays can hide our panel. Mirror that close into the
    // shared controller so the next opening cannot be mistaken for a toggle-off.
@@ -31,6 +35,8 @@
      if(this.el("layersPanel").classList.contains("hidden")){
         this.open=false;this.mergeMode=false;this.mergeTargetId=null;
         this.selectedIds.clear();
+        this.el("layersButton")?.setAttribute("aria-expanded","false");
+        this.el("layersButton")?.setAttribute("aria-pressed","false");
       }
     });
     this.visibilityObserver.observe(this.el("layersPanel"),
@@ -40,7 +46,10 @@
   show(){
    this.open=true;this.mode=null;this.index=null;
    this.mergeMode=false;this.mergeTargetId=null;this.selectedIds.clear();
+   this.resetVisibilityCycle();
    this.el("layersPanel").classList.remove("hidden");
+   this.el("layersButton")?.setAttribute("aria-expanded","true");
+   this.el("layersButton")?.setAttribute("aria-pressed","true");
    this.render();
    this.onOpen();
    this.el("layersClose")?.focus?.({preventScroll:true});
@@ -48,18 +57,33 @@
   close(){
    this.open=false;this.mode=null;this.index=null;this.mergeMode=false;this.mergeTargetId=null;
    this.el("layersPanel").classList.add("hidden");
+   this.el("layersButton")?.setAttribute("aria-expanded","false");
+   this.el("layersButton")?.setAttribute("aria-pressed","false");
    this.selectedIds.clear();
    this.keepEditorVisible();
    this.onClose();
   }
   toggle(){this.open?this.close():this.show();}
   beginMerge(){
-   if(this.selectedIds.size<2||this.selectedIds.has("private"))return;
+   if(this.selectedIds.size<2||![...this.selectedIds].some(id=>id!=="private"))return;
    this.mergeMode=true;this.mergeTargetId=null;this.mode=null;this.index=null;this.render();
   }
+  cycleVisibility(){
+   if(!this.values.length)return;
+   if(this.visibilityCycle===0)
+     this.originalVisibility=Object.fromEntries(this.values.map(l=>[l.id,!!l.visible]));
+   this.visibilityCycle=(this.visibilityCycle%4)+1;
+   const next=Object.fromEntries(this.values.map(l=>[l.id,
+     this.visibilityCycle===1?!this.originalVisibility[l.id]:
+     this.visibilityCycle===2?true:this.visibilityCycle===3?false:
+     this.originalVisibility[l.id]]));
+   this.onVisibilityCycle(next);
+   if(this.visibilityCycle===4){this.visibilityCycle=0;this.originalVisibility=null;}
+  }
+  resetVisibilityCycle(){this.visibilityCycle=0;this.originalVisibility=null;}
   cancelMerge(){this.mergeMode=false;this.mergeTargetId=null;this.render();}
   chooseMergeTarget(id){
-   if(!this.mergeMode||!this.selectedIds.has(id))return;
+   if(!this.mergeMode||id==="private"||!this.selectedIds.has(id))return;
    this.mergeTargetId=id;this.render();
   }
   paletteEditor({section,actions,input}){
@@ -141,8 +165,15 @@
    select.value=selectedLayerId??previous;
    if(this.el("layersSearchClear"))this.configureFilter();
    const matches=Core.search(this.mergeMode?
-      layers.filter(l=>this.selectedIds.has(l.id)):layers,
+      layers.filter(l=>l.id!=="private"&&this.selectedIds.has(l.id)):layers,
       this.mergeMode?"":this.searchText,l=>l.name);
+    const cycleButton=this.el("layersVisibilityCycle");
+    if(cycleButton){
+      cycleButton.setAttribute("aria-label",
+       ["Sichtbarkeit invertieren","Alle Ebenen sichtbar machen",
+        "Alle Ebenen ausblenden","Ursprüngliche Sichtbarkeit wiederherstellen"][this.visibilityCycle]);
+      cycleButton.title=cycleButton.getAttribute("aria-label");
+    }
     if(this.mergeMode){
      const banner=this.doc.createElement("section");
      banner.className="layer-merge-guidance list-dialog-confirm";
@@ -175,10 +206,10 @@
     const id=layer.id,privateLayer=id==="private";
     const eye=this.mergeMode?null:this.button(layer.visible?"eye":"eye-off",
      layer.visible?"Ebene ausblenden":"Ebene einblenden",
-     ()=>this.onVisibility(id,!layer.visible),"favorite-icon layer-eye"+(layer.visible?" is-visible":" is-invisible"));
+     ()=>{this.resetVisibilityCycle();this.onVisibility(id,!layer.visible);},"favorite-icon layer-eye"+(layer.visible?" is-visible":" is-invisible"));
     const check=this.doc.createElement("input");check.type="checkbox";
     check.className="layer-merge-check";check.checked=this.selectedIds.has(id);
-     check.disabled=privateLayer||this.mergeMode;
+     check.disabled=this.mergeMode;
     check.setAttribute("aria-label",layer.name+" zum Verbinden auswählen");
     check.addEventListener("change",()=>{
       if(check.checked)this.selectedIds.add(id);else this.selectedIds.delete(id);
@@ -196,7 +227,8 @@
       "Alle Objekte in Privat löschen":"Ebene oder ihre Objekte löschen",
      ()=>this.start("delete",index),"favorite-icon favorite-remove");
     const row=this.row({name:layer.name,detail,iconLeft:leading,edit,remove,
-     onChoose:()=>this.mergeMode?this.chooseMergeTarget(id):this.onVisibility(id,!layer.visible),
+     onChoose:()=>this.mergeMode?this.chooseMergeTarget(id):
+       (this.resetVisibilityCycle(),this.onVisibility(id,!layer.visible)),
      selectedMode:this.mode,selectedIndex:index,itemId:id});
     row.classList.toggle("layer-is-hidden",!layer.visible);
     list.append(row);
@@ -210,9 +242,12 @@
     pendingFocus=editor.focus;
    }
    list.scrollTop=scroll;
+   if(!this.mergeMode&&!this.mode&&!this.searchText)
+     this.wireReorder({allow:id=>id!=="private",
+       onMove:(from,to)=>this.onReorder(from,to)});
    const unite=this.el("layersUnite"),reset=this.el("layersSearchClear");
    if(unite&&reset){
-    const shown=this.selectedIds.size>=2;
+    const shown=this.selectedIds.size>=2&&[...this.selectedIds].some(id=>id!=="private");
     unite.classList.toggle("hidden",!shown||this.mergeMode);
     reset.classList.toggle("hidden",shown||this.mergeMode);
    }
