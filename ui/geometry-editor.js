@@ -10,7 +10,7 @@
       this.onUpdate=onUpdate;this.onDelete=onDelete;
       this.onClose=onClose||(()=>{});this.onWikipedia=onWikipedia;
       this.model=null;this.type=null;this.layers=[];
-      this.popupMode=null;this.noteEditor=null;this.filterText="";
+      this.popupMode=null;this.noteEditor=null;
       this.panel=this.build();
       this.buildDeleteOverlay();
       const Url=root.Pin2MapObjectUrlPopup;
@@ -49,12 +49,7 @@
       const button=this.doc.createElement("button");
       button.type="button";button.className="geometry-round "+extra;
       button.title=label;button.setAttribute("aria-label",label);
-      if(icon==="region-off"){
-        const image=this.doc.createElement("img");
-        image.src="./assets/region.svg";image.alt="";
-        image.className="geometry-region-off-icon";
-        button.append(image);
-      }else if(icon==="wikipedia"){
+      if(icon===null){}else if(icon==="wikipedia"){
         const img=this.doc.createElement("img");
         img.src="./assets/wikipedia-social.svg";img.alt="";img.className="pin-wikipedia-logo";
         button.append(img);
@@ -68,7 +63,7 @@
       panel.id="geometryEditor";panel.className="geometry-editor object-editor hidden";
       panel.setAttribute("role","dialog");panel.setAttribute("aria-label","Objekt bearbeiten");
       const header=doc.createElement("div");header.className="geometry-head pin-editor-head object-editor-head";
-      const remove=this.makeButton("region-off","Fläche löschen",()=>{},"geometry-remove");
+      const remove=this.makeButton(null,"Objekt löschen",()=>{},"geometry-remove");
       const field=doc.createElement("fieldset");field.className="pin-name-field";
       const legend=doc.createElement("legend");legend.id="geometryNameLegend";
       const name=doc.createElement("input");name.id="geometryName";
@@ -90,12 +85,11 @@
       const ok=this.makeButton("check","OK",()=>{this.flush();this.close();},"geometry-ok");
       this.core.configureOk(ok);
       actions.append(layer,link,wiki,ok);
-      const sub=doc.createElement("div");sub.className="geometry-sub hidden";sub.id="geometrySub";
-      panel.append(header,notes,actions,sub);
+      panel.append(header,notes,actions);
       this.header=header;this.actions=actions;
       this.removeButton=remove;this.layerButton=layer;this.linkButton=link;
       this.nameInput=name;this.notesInput=textarea;
-      this.notesRow=notes;this.notesLegend=notesLegend;this.legend=legend;this.sub=sub;this.expandButton=expand;
+      this.notesRow=notes;this.notesLegend=notesLegend;this.legend=legend;this.expandButton=expand;
       this.core.configureSurface(panel,header,notes,actions);
       this.createAreaPopups();
       const tip=doc.createElement("div");
@@ -110,7 +104,6 @@
         if(e.key==="Escape"&&!panel.classList.contains("hidden")&&!this.noteEditor?.open&&!this.deleteController?.dialog.open){
           e.preventDefault();
           if(this.popupMode)this.dismissPopup();
-          else if(!sub.classList.contains("hidden"))this.toggleSub(null);
           else this.close();
         }
       });
@@ -131,51 +124,9 @@
       if(changed)this.model=changed;
     }
     toggleSub(type){
-      if(this.model&&(type==="layer"||type==="link")){
-        this.showAreaPopup(type==="layer"?"layer":"url");return;
-      }
+      if(type==="layer")return this.showAreaPopup("layer");
+      if(type==="link")return this.showAreaPopup("url");
       this.dismissPopup();
-      this.sub.replaceChildren();
-      this.sub.classList.toggle("hidden",!type);
-      this.sub.dataset.mode=type||"";
-      this.layerButton.setAttribute("aria-expanded",String(type==="layer"));
-      this.linkButton.setAttribute("aria-expanded",String(type==="link"));
-      this.removeButton.setAttribute("aria-expanded",String(type==="delete"));
-      if(!type)return;
-      if(type==="layer"){
-        const title=this.doc.createElement("strong");title.textContent="Ebene auswählen";
-        this.sub.append(title);
-        for(const layer of this.layers){
-          const row=this.doc.createElement("button");row.type="button";
-          row.className="geometry-layer-choice";
-          row.textContent=layer.name;
-          row.setAttribute("aria-pressed",String(layer.id===this.model.layerId));
-          row.addEventListener("click",()=>{
-            this.update({layerId:layer.id});this.toggleSub(null);
-          });
-          this.sub.append(row);
-        }
-      }else if(type==="link"){
-        const heading=this.doc.createElement("strong");heading.textContent="Objekt-URL";
-        const input=this.doc.createElement("textarea");input.rows=3;
-        input.value=this.model.url||"";input.setAttribute("aria-label","Objekt-URL");
-        const save=this.doc.createElement("button");save.type="button";save.textContent="Übernehmen";
-        save.addEventListener("click",()=>{this.update({url:input.value.trim()});this.toggleSub(null);});
-        const cancel=this.doc.createElement("button");cancel.type="button";cancel.textContent="Abbrechen";
-        cancel.addEventListener("click",()=>this.toggleSub(null));
-        this.sub.append(heading,input,save,cancel);input.focus({preventScroll:true});
-      }else if(type==="delete"){
-        const heading=this.doc.createElement("p");heading.textContent=this.type==="river"?
-          "Fluss wirklich entfernen?":"Fläche wirklich entfernen?";
-        const confirm=this.doc.createElement("button");confirm.type="button";
-        confirm.className="geometry-confirm-remove";confirm.textContent="Löschen";
-        confirm.addEventListener("click",()=>{
-          this.onDelete(this.type,this.model.id);this.close();
-        });
-        const cancel=this.doc.createElement("button");cancel.type="button";
-        cancel.textContent="Abbrechen";cancel.addEventListener("click",()=>this.toggleSub(null));
-        this.sub.append(heading,confirm,cancel);
-      }
     }
 
     buildDeleteOverlay(){
@@ -262,15 +213,7 @@
       }
 
     }
-    normalizedUrl(raw){
-      return this.core.normalizedUrl(raw);
-      try{
-        if(!String(raw||"").trim())return null;
-        const url=new URL(raw.trim());
-        if(["javascript:","data:","vbscript:","file:","blob:","about:"].includes(url.protocol.toLowerCase()))return null;
-        return /^[a-z][a-z0-9+.-]*:$/.test(url.protocol)?url.href:null;
-      }catch{return null;}
-    }
+    normalizedUrl(raw){return this.core.normalizedUrl(raw);}
     expandNotes(){
       if(!this.model||!this.noteEditor)return;
       this.dismissPopup();
@@ -287,53 +230,6 @@
       this.layerButton?.setAttribute("aria-expanded","false");
       this.linkButton?.setAttribute("aria-expanded","false");
       if(this.layerMenu)this.layerMenu.replaceChildren();
-    }
-    positionAreaPopup(mode,keyboard=false){
-      const win=this.doc.defaultView, vv=win?.visualViewport;
-      const panel=this.panel.getBoundingClientRect(),width=vv?.width||win.innerWidth;
-      const height=vv?.height||win.innerHeight,top=vv?.offsetTop||0,left=vv?.offsetLeft||0;
-      if(mode==="layer"){
-        // The area picker floats over the notes inside the editor, like
-        // the pin picker. Long lists scroll rather than escaping the panel.
-        const popup=this.layerMenu,margin=10,gap=8;
-        const header=this.header.getBoundingClientRect();
-        const actions=this.actions.getBoundingClientRect();
-        const popupWidth=Math.min(260,Math.max(120,panel.width-margin*2),width-24);
-        const upper=Math.max(panel.top+gap,header.bottom+gap,top+gap);
-        const lower=Math.min(panel.bottom-gap,actions.top-gap,top+height-gap);
-        popup.style.width=popupWidth+"px";
-        popup.style.maxHeight=Math.min(310,Math.max(56,lower-upper))+"px";
-        popup.style.left=Math.max(left+gap,Math.min(
-          panel.left+(panel.width-popupWidth)/2,left+width-popupWidth-gap))+"px";
-        popup.style.top=upper+"px";
-      }else{
-        // Same overlay relationship as the pin URL: inside the editor,
-        // over the notes, ending ABOVE the bottom action buttons. Never
-        // extend a fixed popup from the panel top to the viewport bottom.
-        const popup=this.urlPopup;
-        const header=this.header.getBoundingClientRect();
-        const actions=this.actions.getBoundingClientRect();
-        const margin=12,inset=10,gap=8;
-        const popupWidth=Math.min(Math.max(180,panel.width-inset*2),width-margin*2);
-        popup.style.width=popupWidth+"px";
-        popup.style.left=Math.max(left+margin,Math.min(panel.left+inset,left+width-popupWidth-margin))+"px";
-        const preferredTop=Math.max(panel.top+gap,header.bottom+gap);
-        const bottom=Math.min(actions.top-gap,top+height-margin);
-        if(keyboard&&this.urlKeyboardAnchor){
-          // Reuse pin-style anchored viewport compensation while iOS
-          // animates its software keyboard; do not jump to the footer.
-          const anchor=this.urlKeyboardAnchor;
-          const desired=anchor.top+top-anchor.visualOffsetTop;
-          popup.style.top=Math.max(top+gap,Math.min(desired,top+height-popup.offsetHeight-gap))+"px";
-          popup.style.height=Math.max(100,Math.min(bottom-parseFloat(popup.style.top),top+height-parseFloat(popup.style.top)-margin))+"px";
-        }else{
-          const available=Math.max(0,bottom-Math.max(top+gap,preferredTop));
-          const heightNeeded=Math.min(320,Math.max(145,available));
-          const popupTop=Math.max(top+gap,Math.min(preferredTop,bottom-heightNeeded));
-          popup.style.top=popupTop+"px";
-          popup.style.height=Math.max(100,bottom-popupTop)+"px";
-        }
-      }
     }
     showAreaPopup(mode){
       if(!this.model)return;
@@ -354,9 +250,8 @@
       this.close(false);
       this.type=type;this.model=item;this.layers=layers.filter(layer=>layer?.id);
       this.panel.classList.remove("is-river");
-      // River controls belong to ONE four-button editing row in the exact
-      // order remove, layer, Wikipedia, OK. The area keeps remove in its
-      // Pin-like first row and has only three content rows.
+      // All three geometry types keep the identical shared header, notes
+      // and footer; the Pin's Navi/Routing/Meteo/Move are explicit extensions.
       this.header.prepend(this.removeButton);
       this.panel.setAttribute("aria-label",type==="river"?"Fluss bearbeiten":"Fläche bearbeiten");
       const kind=item.kind==="lake"?"lake":type==="river"?"river":"area";
@@ -388,14 +283,14 @@
       this.tip.style.left=(geometry?.tip.left??screen.x)+"px";
       this.tip.style.top=(geometry?.tip.top??screen.y-94)+"px";
       this.tip.classList.remove("hidden");
-      this.removeButton.classList.toggle("river-remove",type==="river");
+      this.removeButton.classList.remove("river-remove");
     }
     close(notify=true){
       if(notify)this.onClose();
       this.dismissPopup();
       this.deleteController?.close();
       if(this.noteEditor?.open)this.noteEditor.close();
-      this.toggleSub(null);this.panel.classList.add("hidden");
+      this.panel.classList.add("hidden");
       this.tip?.classList.add("hidden");
       this.model=null;this.type=null;
     }
