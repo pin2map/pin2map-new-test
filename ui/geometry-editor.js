@@ -11,6 +11,25 @@
       this.model=null;this.type=null;this.layers=[];
       this.popupMode=null;this.noteEditor=null;this.filterText="";
       this.panel=this.build();
+      const Picker=root.Pin2MapObjectLayerPicker;
+      if(!Picker)throw new TypeError("Shared object layer picker must load before geometry editor");
+      this.layerPicker=new Picker({
+        document:this.doc,icons:this.icons,
+        getElement:id=>({
+          geometryLayerMenu:this.layerMenu,geometryLayerTrigger:this.layerButton,
+          geometryEditor:this.panel
+        })[id]||this.doc.getElementById(id),
+        triggerId:"geometryLayerTrigger",menuId:"geometryLayerMenu",
+        panelId:"geometryEditor",pickerId:"geometryLayerTrigger",
+        contained:true,header:this.header,actions:this.actions,bindTrigger:false,
+        onSelect:(id,layer)=>{
+          if(!this.model)return;
+          this.update({layerId:id});
+          this.layerDot.style.backgroundColor=layer.color;
+          this.layerButton.setAttribute("aria-label","Ebene: "+layer.name);
+          this.popupMode=null;
+        }
+      });
     }
     makeButton(icon,label,callback,extra=""){
       const button=this.doc.createElement("button");
@@ -54,7 +73,7 @@
       notes.append(expand);
       const actions=doc.createElement("div");actions.className="geometry-actions";
       const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleSub("layer"),"geometry-layer");
-      const colorDot=doc.createElement("span");colorDot.className="geometry-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
+      const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
       const link=this.makeButton("link-2","Link",()=>this.toggleSub("link"),"geometry-link");
       const wiki=this.makeButton("wikipedia","Wikipedia",()=>this.onWikipedia(this.model?.name||""),"geometry-wiki");
       const ok=this.makeButton("check","OK",()=>{this.flush();this.close();},"geometry-ok");
@@ -68,7 +87,7 @@
       this.createAreaPopups();
       this.doc.getElementById("app").append(panel);
       this.doc.addEventListener("pointerdown",e=>{
-        if(this.type!=="area")return;
+        if(!this.model)return;
         if(this.popupMode==="layer"&&!e.target.closest?.("#geometryLayerMenu,#geometryEditor .geometry-layer"))this.dismissPopup();
         if(this.popupMode==="url"&&!e.target.closest?.("#geometryUrlBlock,#geometryEditor .geometry-link"))this.dismissPopup();
       });
@@ -87,7 +106,7 @@
       const changes={};
       if(this.nameInput.value.trim()&&this.nameInput.value.trim()!==this.model.name)
         changes.name=this.nameInput.value.trim();
-      if(this.type==="area"&&this.notesInput.value!==this.model.note)
+      if(this.notesInput.value!==this.model.note)
         changes.note=this.notesInput.value;
       if(Object.keys(changes).length)this.update(changes);
     }
@@ -97,7 +116,7 @@
       if(changed)this.model=changed;
     }
     toggleSub(type){
-      if(this.type==="area"&&(type==="layer"||type==="link")){
+      if(this.model&&(type==="layer"||type==="link")){
         this.showAreaPopup(type==="layer"?"layer":"url");return;
       }
       this.dismissPopup();
@@ -210,7 +229,7 @@
       if(root.Pin2MapPinNoteEditor){
         this.noteEditor=new root.Pin2MapPinNoteEditor({
           getElement:id=>this.noteNodes[id],document:doc,
-          onChange:value=>{if(this.type==="area"&&this.model){
+          onChange:value=>{if(this.model){
             this.notesInput.value=value;this.update({note:value});}},
           onClose:()=>{}
         });
@@ -229,14 +248,15 @@
       }catch{return null;}
     }
     expandNotes(){
-      if(this.type!=="area"||!this.model||!this.noteEditor)return;
+      if(!this.model||!this.noteEditor)return;
       this.dismissPopup();
       this.noteEditor.show({name:this.model.name,note:this.notesInput.value,
         desktop:this.doc.defaultView?.matchMedia?.("(min-width: 750px) and (pointer: fine)")?.matches||false});
     }
     dismissPopup(){
       this.popupMode=null;
-      if(this.layerMenu)this.layerMenu.classList.add("hidden");
+      if(this.layerPicker)this.layerPicker.setOpen(false);
+      else if(this.layerMenu)this.layerMenu.classList.add("hidden");
       if(this.urlPopup)this.urlPopup.classList.add("hidden");
       this.urlKeyboardAnchor=null;
       this.layerButton?.setAttribute("aria-expanded","false");
@@ -291,7 +311,7 @@
       }
     }
     showAreaPopup(mode){
-      if(this.type!=="area"||!this.model)return;
+      if(!this.model)return;
       if(this.popupMode===mode){this.dismissPopup();return;}
       this.dismissPopup();this.popupMode=mode;
       const button=mode==="layer"?this.layerButton:this.linkButton;
@@ -304,62 +324,27 @@
         this.positionAreaPopup("url");
         return;
       }
-      this.layerMenu.replaceChildren();
-      const filter=this.doc.createElement("div");filter.className="pin-layer-filter";
-      const input=this.doc.createElement("input");input.type="search";
-      input.className="pin-layer-filter-input";input.placeholder="Ebenen filtern";
-      input.setAttribute("aria-label","Ebenen nach Namen filtern");
-      const clear=this.doc.createElement("button");clear.type="button";
-      clear.className="pin-layer-filter-clear";
-      clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
-      clear.append(this.icons.svg("funnel-x",this.doc));
-      filter.append(input,clear);this.layerMenu.append(filter);
-      const rows=[];
-      for(const layer of this.layers){
-        const row=this.doc.createElement("button");row.type="button";
-        row.className="pin-layer-option"+(layer.visible?"":" is-invisible-layer");
-        row.setAttribute("role","option");
-        row.setAttribute("aria-selected",String(layer.id===this.model.layerId));
-        row.setAttribute("aria-label",layer.name+", "+(layer.visible?"Sichtbar":"Ausgeblendet"));
-        const dot=this.doc.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=layer.color;
-        const eye=this.doc.createElement("span");eye.className="pin-layer-visibility";
-        eye.append(this.icons.svg(layer.visible?"eye":"eye-off",this.doc));
-        const name=this.doc.createElement("span");name.className="pin-layer-name";name.textContent=layer.name;
-        row.append(dot,eye,name);
-        row.addEventListener("click",()=>{
-          this.update({layerId:layer.id});this.layerDot.style.backgroundColor=layer.color;
-          this.layerButton.setAttribute("aria-label","Ebene: "+layer.name);
-          this.dismissPopup();
-        });
-        rows.push({row,name:layer.name});this.layerMenu.append(row);
-      }
-      const empty=this.doc.createElement("p");empty.className="pin-layer-filter-empty";
-      empty.textContent="Keine passende Ebene.";this.layerMenu.append(empty);
-      const apply=()=>{
-        const q=input.value.trim().toLocaleLowerCase("de-DE");let count=0;
-        for(const {row,name} of rows){row.hidden=Boolean(q)&&!name.toLocaleLowerCase("de-DE").includes(q);if(!row.hidden)count++;}
-        empty.hidden=count>0;clear.disabled=!input.value;
-      };
-      input.addEventListener("input",apply);
-      clear.addEventListener("click",()=>{input.value="";apply();input.focus();});
-      apply();this.layerMenu.classList.remove("hidden");
-      this.positionAreaPopup("layer");
+      this.layerPicker.render({layers:this.layers,selectedLayerId:this.model.layerId});
+      this.layerDot=this.layerButton.children[1];
+      this.layerPicker.setOpen(true);
     }
 
     show(type,item,layers,screen){
       this.close(false);
       this.type=type;this.model=item;this.layers=layers.filter(layer=>layer?.id);
-      this.panel.classList.toggle("is-river",type==="river");
+      this.panel.classList.remove("is-river");
       // River controls belong to ONE four-button editing row in the exact
       // order remove, layer, Wikipedia, OK. The area keeps remove in its
       // Pin-like first row and has only three content rows.
-      if(type==="river")this.actions.prepend(this.removeButton);
-      else this.header.prepend(this.removeButton);
+      this.header.prepend(this.removeButton);
       this.panel.setAttribute("aria-label",type==="river"?"Fluss bearbeiten":"Fläche bearbeiten");
-      this.legend.textContent=type==="river"?"Flussname":"Flächenname";
-      this.notesRow.classList.toggle("hidden",type==="river");
-      this.linkButton.classList.toggle("hidden",type==="river");
-      this.expandButton.classList.toggle("hidden",type==="river");
+      const kind=item.kind==="lake"?"See":type==="river"?"Fluss":"Fläche";
+      this.legend.textContent=kind+"name";
+      this.notesRow.querySelector("legend").textContent=kind+" Notizen";
+      this.urlPopup.querySelector("legend").textContent=kind+"-URL";
+      this.notesRow.classList.remove("hidden");
+      this.linkButton.classList.remove("hidden");
+      this.expandButton.classList.remove("hidden");
       this.layerDot.style.backgroundColor=this.layers.find(l=>l.id===item.layerId)?.color||"#a4b0bd";
       this.layerButton.setAttribute("aria-label","Ebene: "+(this.layers.find(l=>l.id===item.layerId)?.name||"Privat"));
       this.nameInput.value=item.name||"";
