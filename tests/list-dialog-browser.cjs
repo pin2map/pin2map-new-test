@@ -70,6 +70,24 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await page.locator("#layersSearch").evaluate(el=>
       getComputedStyle(el).borderTopLeftRadius),"7px");
     assert.equal(await page.locator("#layersVisibilityCycle").isVisible(),true);
+    const helper=page.locator("#layersHelpers");
+    assert.equal(await helper.isVisible(),true);
+    assert.match(await helper.textContent(),/Zum verschieben einer Ebene/);
+    assert.equal(await helper.evaluate(el=>getComputedStyle(el).minHeight),"38px");
+    const firstVisibleLayer=page.locator("#layersList .list-dialog-row").filter({hasText:"Ebene 1"});
+    const eyeBefore=await firstVisibleLayer.locator(".layer-eye").getAttribute("class");
+    await firstVisibleLayer.locator(".favorite-name").click();
+    assert.equal(await firstVisibleLayer.locator(".layer-eye").getAttribute("class"),eyeBefore,
+      "Text tap must never toggle a layer's visibility");
+    await firstVisibleLayer.locator(".layer-eye").click();
+    assert.notEqual(await firstVisibleLayer.locator(".layer-eye").getAttribute("class"),eyeBefore,
+      "Only an explicit eye tap toggles visibility");
+    await firstVisibleLayer.locator(".layer-eye").click();
+    assert.equal(await firstVisibleLayer.locator(".layer-eye").getAttribute("class"),eyeBefore);
+    const coloredCircle=firstVisibleLayer.locator(".layer-color-checkbox");
+    assert.equal(await coloredCircle.count(),1);
+    assert.equal(await coloredCircle.locator("input[type=checkbox]").count(),1);
+    assert.notEqual(await coloredCircle.evaluate(el=>el.style.backgroundColor),"");
     const visibleBefore=await page.locator("#layersList .layer-eye").evaluateAll(
       buttons=>buttons.map(b=>b.classList.contains("is-visible")));
     await page.locator("#layersVisibilityCycle").click();
@@ -106,6 +124,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await privateRow.locator(".layer-merge-check").check();
     await layer.locator(".layer-merge-check").check();
     await page.locator("#layersUnite").click();
+    assert.equal(await page.locator("#layersHelpers").isHidden(),true);
+    const mergeGuide=page.locator("#layersList .layer-merge-guidance");
+    assert.equal(await mergeGuide.locator(":scope > :first-child").textContent(),"Abbrechen");
+    assert.equal(await mergeGuide.locator("p").first().textContent(),
+      "Alle Objekte aus den gewählten Ebenen sollen verschoben werden in die Ebene (bitte anklicken):");
     assert.equal(await page.locator("#layersList .list-dialog-row").count(),1);
     assert.equal(await privateRow.count(),0);
     await page.locator("#layersList .layer-merge-guidance")
@@ -176,7 +199,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const a=await source.boundingBox(),b=await target.boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
       await page.mouse.down();
-      await page.waitForTimeout(530);
+      // Layers now activate on movement, never by waiting 480ms.
+      await page.mouse.move(a.x+a.width/2,a.y+a.height/2+14,{steps:4});
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),true);
       assert.equal(await page.locator(".list-reorder-insert").count(),1);

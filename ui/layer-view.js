@@ -174,14 +174,14 @@
         "Alle Ebenen ausblenden","Ursprüngliche Sichtbarkeit wiederherstellen"][this.visibilityCycle]);
       cycleButton.title=cycleButton.getAttribute("aria-label");
     }
+    const helpers=this.el("layersHelpers");
+    if(helpers)helpers.classList.toggle("hidden",this.mergeMode||!matches.length);
     if(this.mergeMode){
      const banner=this.doc.createElement("section");
      banner.className="layer-merge-guidance list-dialog-confirm";
      const title=this.doc.createElement("p");
-     title.textContent=this.mergeTargetId?
-       "Zusammenführung bestätigen: Alle Objekte wechseln in die Zielebene.":
-       "Zielebene wählen: Tippen Sie auf eine der markierten Ebenen.";
-     banner.append(title,this.labeledButton("Abbrechen",()=>this.cancelMerge()));
+     title.textContent="Alle Objekte aus den gewählten Ebenen sollen verschoben werden in die Ebene (bitte anklicken):";
+     banner.append(this.labeledButton("Abbrechen",()=>this.cancelMerge()),title);
      if(this.mergeTargetId){
       const target=layers.find(l=>l.id===this.mergeTargetId);
       const note=this.doc.createElement("p");
@@ -217,7 +217,15 @@
     });
     const leading=this.doc.createElement("div");leading.className="layer-leading";
     if(eye)leading.append(eye);
-     if(!this.mergeMode)leading.append(check);
+    if(!this.mergeMode){
+      const colorCircle=this.doc.createElement("label");
+      colorCircle.className="layer-color-checkbox";
+      // Use the layer's actual currently configured color.
+      colorCircle.style.backgroundColor=layer.color||"#ffffff";
+      colorCircle.title="Ebene "+layer.name+" zum Zusammenführen auswählen";
+      colorCircle.append(check);
+      leading.append(colorCircle);
+    }
     const data=this.geometryCounts[id]||{};
     const detail=(this.counts[id]||0)+" Pins · "+(data.areas||0)+
      " Flächen · "+(data.waters||0)+" Gewässer";
@@ -227,8 +235,7 @@
       "Alle Objekte in Privat löschen":"Ebene oder ihre Objekte löschen",
      ()=>this.start("delete",index),"favorite-icon favorite-remove");
     const row=this.row({name:layer.name,detail,iconLeft:leading,edit,remove,
-     onChoose:()=>this.mergeMode?this.chooseMergeTarget(id):
-       (this.resetVisibilityCycle(),this.onVisibility(id,!layer.visible)),
+     onChoose:()=>{if(this.mergeMode)this.chooseMergeTarget(id);},
      selectedMode:this.mode,selectedIndex:index,itemId:id});
     row.classList.toggle("layer-is-hidden",!layer.visible);
     list.append(row);
@@ -243,7 +250,7 @@
    }
    list.scrollTop=scroll;
    if(!this.mergeMode&&!this.mode&&!this.searchText)
-     this.wireReorder({allow:id=>id!=="private",
+     this.wireReorder({activation:"drag",handle:"row",allow:id=>id!=="private",
        onMove:(from,to)=>this.onReorder(from,to)});
    const unite=this.el("layersUnite"),reset=this.el("layersSearchClear");
    if(unite&&reset){

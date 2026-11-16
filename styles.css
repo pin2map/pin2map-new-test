@@ -2375,3 +2375,10 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #refreshButton.refresh-map-button.p2m-icon-control{
  z-index:1400!important;
 }
+
+/* v229: the currently open Favorites panel must retain control of its
+   own close button. A different round launcher can still be reached when
+   it sits outside that panel; do not layer the Layers button over its X. */
+body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control{
+ z-index:1190!important;
+}

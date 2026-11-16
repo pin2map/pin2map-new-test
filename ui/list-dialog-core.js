@@ -96,16 +96,18 @@
   }
   // Shared pointer reordering. Long-press only on the text label; all list
   // consumers supply their own persistence/application callback and ID policy.
-  wireReorder({onMove,allow=()=>true}){
+  wireReorder({onMove,allow=()=>true,activation="longpress",handle="name"}){
    const list=this.el(this.listId);
    if(!list||typeof onMove!=="function"||typeof list.querySelectorAll!=="function")return;
    const doc=this.doc,win=doc.defaultView;
    for(const row of list.querySelectorAll(".list-dialog-row[data-item-id]")){
-    const grip=row.querySelector(".favorite-name");
+    const grip=handle==="row"?row:row.querySelector(".favorite-name");
     if(!grip||!allow(row.dataset.itemId))continue;
     grip.classList.add("list-reorder-handle");
     grip.addEventListener("pointerdown",event=>{
      if(event.button!==0||this.mode||event.isPrimary===false)return;
+     if(handle==="row"&&event.target.closest?.("input,.layer-merge-check,.layer-eye,.layer-color-checkbox,.favorite-edit,.favorite-remove"))return;
+     if(handle==="row"&&event.target.closest?.("button")&&!event.target.closest?.(".favorite-name"))return;
      const sourceId=row.dataset.itemId,origin={x:event.clientX,y:event.clientY};
      let active=false,moved=false,targetId=null,timeout=null;
      const line=doc.createElement("div");
@@ -135,8 +137,12 @@
      const move=ev=>{
       if(ev.pointerId!==event.pointerId)return;
       if(!active){
-       if(Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)>11)cancel();
-       return;
+       const distance=Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y);
+       if(activation==="drag"&&distance>=8){
+        if(timeout!==null)win.clearTimeout(timeout);
+        activate();
+       }else if(distance>11)cancel();
+       if(!active)return;
       }
       if(ev.cancelable)ev.preventDefault();
       if(Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)<8)return;
@@ -161,14 +167,15 @@
       if(committed)onMove(sourceId,targetId);
      };
      const cancel=()=>cleanup();
-     timeout=win.setTimeout(()=>{
+     const activate=()=>{
       active=true;list.classList.add("list-reorder-active");
       row.classList.add("list-reorder-source");
       list.append(line);
       const candidate=targetAt(origin.y);
       targetId=null;
       line.style.display="none";
-     },480);
+     };
+     if(activation!=="drag")timeout=win.setTimeout(activate,480);
      doc.addEventListener("pointermove",move,{passive:false});
      doc.addEventListener("pointerup",up);
      doc.addEventListener("pointercancel",cancel);
