@@ -56,7 +56,7 @@ assert.equal(view.selectedIds.size,0,"No level selected by default");
 workRow.children[0].children[1].checked=true;
 workRow.children[0].children[1].trigger("change");
 assert.equal(view.selectedIds.has("a"),true);
-assert.equal(els.layersSearchClear.classList.contains("hidden"),true,
+assert.equal(els.layersUnite.classList.contains("hidden"),true,
  "Merge control replaces filter only when two or more layers selected");
 workRow.children[3].trigger("click");
 assert.equal(view.mode,"delete");
