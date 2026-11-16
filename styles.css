@@ -1950,14 +1950,18 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app .geometry-editor .geometry-round{
   display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
-  flex:0 0 42px;width:42px;height:42px;min-width:42px;min-height:42px;
+  --p2m-button-size:var(--p2m-pin-dialog-action-size);
+  flex:0 0 var(--p2m-pin-dialog-action-size);flex-shrink:0;aspect-ratio:1;
+  width:var(--p2m-pin-dialog-action-size);height:var(--p2m-pin-dialog-action-size);
+  min-width:var(--p2m-pin-dialog-action-size);min-height:var(--p2m-pin-dialog-action-size);
+  max-width:var(--p2m-pin-dialog-action-size);max-height:var(--p2m-pin-dialog-action-size);
   padding:0;border:1px solid #c2cbd6;border-radius:50%;
   background:#fff;color:#243b54;cursor:pointer;
 }
 #app .geometry-editor .geometry-round svg{width:22px;height:22px}
-#app .geometry-editor .geometry-remove{background:#8f2034;border-color:#8f2034;color:#fff}
+#app .geometry-editor .geometry-remove{background:#bc2837;border-color:#a81f2e;color:#fff}
 #app .geometry-editor .geometry-remove svg{stroke:#fff}
-#app .geometry-editor .geometry-ok{background:#24834f;border-color:#24834f;color:#fff}
+#app .geometry-editor .geometry-ok{background:#c9eecb;border-color:#a6ceaa;color:#245b30}
 #app .geometry-editor .geometry-round[aria-expanded="true"]{
   background:#1764bf;border-color:#1764bf;color:white;
 }
@@ -1974,9 +1978,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app .geometry-editor .geometry-sub button[aria-pressed="true"]{background:#1764bf;color:white}
 #app .geometry-editor .geometry-sub .geometry-confirm-remove{background:#ac283b;color:#fff;border-color:#ac283b}
-#app .geometry-editor.is-river{width:min(320px,calc(100vw - 16px))}
-#app .geometry-editor.is-river .geometry-actions{justify-content:space-around}
-#app .geometry-editor .hidden{display:none}
+ #app .geometry-editor .hidden{display:none}
 #app .geometry-editor .geometry-wiki img{width:24px;height:24px;object-fit:contain}
 #map .p2m-area-name-wrap,#map .p2m-river-name-wrap{
   background:transparent;border:0;overflow:visible;
@@ -2072,7 +2074,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 
 /* Area editor: share the pin dialog surface, floating layer / URL and note editor contracts. */
-#app .geometry-editor:not(.is-river){width:min(390px,calc(100vw - 16px));gap:11px;padding:13px;border-radius:17px}
+#app .geometry-editor{width:min(var(--p2m-object-dialog-width,390px),calc(100vw - 16px));gap:11px;padding:13px;border-radius:15px}
 #app .geometry-editor:not(.is-river) .geometry-head{gap:10px}
 #app .geometry-editor:not(.is-river) .geometry-head fieldset{border-radius:12px}
 #app .geometry-editor:not(.is-river) .geometry-notes{position:relative;border-radius:12px}
@@ -2136,8 +2138,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .geometry-editor .geometry-remove[aria-expanded="true"]{background:#1764bf;border-color:#1764bf;color:#fff}
 #app .geometry-editor .object-editor-notes{position:relative}
 #app .geometry-editor .object-editor-notes-input{box-sizing:border-box;width:100%;height:145px;min-height:0;resize:none;font-size:16px}
-#app .geometry-editor .object-editor-expand{position:absolute;right:0;bottom:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:24px;height:24px;min-width:24px;min-height:24px;border:0;background:#fff;color:#243b54;border-radius:0;padding:0}
-#app .geometry-editor .object-editor-expand svg{width:21px;height:21px}
+#app .geometry-editor .object-editor-expand{position:absolute;right:-1px;bottom:-1px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:20px;height:20px;min-width:20px;min-height:20px;border:0;background:#fff;color:#243b54;border-radius:0;padding:0}
+#app .geometry-editor .object-editor-expand svg{width:20px;height:20px}
 #geometryLayerMenu .pin-layer-filter-clear{
  box-sizing:border-box;flex:0 0 34px;width:34px;height:34px;
  min-width:34px;max-width:34px;min-height:34px;max-height:34px;
@@ -2170,3 +2172,31 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 .object-delete-dialog .dialog-actions .danger{background:#bd2638;color:#fff}
 .object-delete-dialog .dialog-actions .secondary{background:#fff;color:#26394c}
+
+/* One sizing source for the four object editors (PinPanelPositioner reads it). */
+:root{--p2m-object-dialog-width:390px}
+#app .geometry-editor .geometry-round[aria-expanded="true"]{
+ background:#1764bf;border-color:#1764bf;color:#fff;
+}
+#app .geometry-editor .geometry-round[aria-expanded="true"] .object-delete-art{color:#fff}
+#app .geometry-editor .geometry-notes .object-editor-notes-input{
+ height:145px;font:400 16px/1.35 system-ui,-apple-system,sans-serif;
+}
+#app .geometry-editor .pin-layer-trigger-icon{width:23px;height:23px}
+#app .geometry-editor .geometry-layer>.pin-layer-dot{
+ position:absolute;right:1px;bottom:1px;display:block;
+ width:10px;height:10px;border:2px solid #fff;border-radius:50%;
+ box-shadow:0 0 0 1px #a7b4c1;
+}
+#app .geometry-editor .geometry-wiki .pin-wikipedia-logo{width:25px;height:25px}
+#app .geometry-editor .geometry-head legend{font-size:11px;font-weight:700;color:#6a7785}
+#pinUrlBlock .pin-url-field legend{margin:0 auto 0 2px;text-align:left}
+
+#app .object-editor-tip{
+ position:fixed;z-index:1599;pointer-events:none;
+ width:0;height:0;transform:translateX(-50%);
+ border-left:11px solid transparent;border-right:11px solid transparent;
+ border-top:15px solid var(--p2m-pin-dialog-surface,#f7f8fa);
+ filter:drop-shadow(0 2px 1px #172e4650);
+}
+#app .object-editor-tip.hidden{display:none}

@@ -98,7 +98,9 @@
       this.notesRow=notes;this.notesLegend=notesLegend;this.legend=legend;this.sub=sub;this.expandButton=expand;
       this.core.configureSurface(panel,header,notes,actions);
       this.createAreaPopups();
-      this.doc.getElementById("app").append(panel);
+      const tip=doc.createElement("div");
+      tip.className="object-editor-tip hidden";tip.setAttribute("aria-hidden","true");
+      this.doc.getElementById("app").append(panel,tip);this.tip=tip;
       this.doc.addEventListener("pointerdown",e=>{
         if(!this.model)return;
         if(this.popupMode==="layer"&&!e.target.closest?.("#geometryLayerMenu,#geometryEditor .geometry-layer"))this.dismissPopup();
@@ -371,10 +373,21 @@
       this.notesInput.value=item.note||"";
       this.linkButton.classList.toggle("has-url",Boolean(item.url));
       this.panel.classList.remove("hidden");
-      const ww=this.doc.defaultView.innerWidth,wh=this.doc.defaultView.innerHeight;
+      const app=this.doc.getElementById("app");
+      const rect=app.getBoundingClientRect();
+      const geometry=root.Pin2MapPinPanelPositioner?.anchorGeometry({
+        point:{x:screen.x,y:screen.y},mapRect:rect,appRect:rect,
+        panelHeight:this.panel.offsetHeight,maxWidth:390,padding:16,offset:94
+      });
+      const win=this.doc.defaultView;
       const w=this.panel.offsetWidth,h=this.panel.offsetHeight;
-      this.panel.style.left=Math.max(8,Math.min(screen.x+12,ww-w-8))+"px";
-      this.panel.style.top=Math.max(8,Math.min(screen.y-h/2,wh-h-8))+"px";
+      const idealLeft=geometry?.panel.left??screen.x-w/2;
+      const idealTop=geometry?.panel.top??screen.y-h-94;
+      this.panel.style.left=Math.max(8,Math.min(idealLeft,win.innerWidth-w-8))+"px";
+      this.panel.style.top=Math.max(8,Math.min(idealTop,win.innerHeight-h-8))+"px";
+      this.tip.style.left=(geometry?.tip.left??screen.x)+"px";
+      this.tip.style.top=(geometry?.tip.top??screen.y-94)+"px";
+      this.tip.classList.remove("hidden");
       this.removeButton.classList.toggle("river-remove",type==="river");
     }
     close(notify=true){
@@ -383,6 +396,7 @@
       this.deleteController?.close();
       if(this.noteEditor?.open)this.noteEditor.close();
       this.toggleSub(null);this.panel.classList.add("hidden");
+      this.tip?.classList.add("hidden");
       this.model=null;this.type=null;
     }
   }
