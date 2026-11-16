@@ -778,6 +778,20 @@ const viewports=[
    assert.match(await page.locator("#searchResults .result").first().textContent(),
      /Neusüdwales/);
    await page.locator("#searchResults .result").first().click();
+   // Search selects a temporary preview, not a stored geometry. Confirm
+   // the object and explicitly choose its destination layer.
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.some(x=>x.name==="Neusüdwales");}
+     finally{db.close();}
+   }),false,"Selecting New South Wales must not bypass the temporary preview");
+   await page.locator(".p2m-plate-label").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   await page.locator(".plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   await page.locator('#temporaryLayerPicker [role="option"]')
+     .filter({hasText:"Privat"}).click();
    const nsw=(await waitForStored(project=>project?.areas?.some(
      area=>area.name==="Neusüdwales"),"New South Wales via hierarchy")).areas
      .find(area=>area.name==="Neusüdwales");
