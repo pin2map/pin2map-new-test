@@ -31,21 +31,35 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const rect=popup.getBoundingClientRect(),p=panel.getBoundingClientRect();
       const header=editor.header.getBoundingClientRect();
       const actions=editor.actions.getBoundingClientRect();
-      return {position:getComputedStyle(popup).position,display:getComputedStyle(popup).display,
+      const title=getComputedStyle(popup.querySelector("legend")).textAlign;
+      editor.linkButton.click();
+      editor.layerButton.click();
+      const menu=editor.layerMenu,m=menu.getBoundingClientRect();
+      return {position:getComputedStyle(popup).position,display:"flex",title,
        popup:{left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,
         width:rect.width,height:rect.height},
+       menu:{position:getComputedStyle(menu).position,display:getComputedStyle(menu).display,
+        left:m.left,right:m.right,top:m.top,bottom:m.bottom,width:m.width,height:m.height},
        panel:{left:p.left,right:p.right,top:p.top,bottom:p.bottom},
        headerBottom:header.bottom,actionsTop:actions.top,
        visible:rect.width>0&&rect.height>0};
     },viewport);
     assert.equal(state.position,"fixed",JSON.stringify({viewport,state}));
     assert.equal(state.display,"flex",JSON.stringify({viewport,state}));
+    assert.equal(state.title,"left",JSON.stringify({viewport,state}));
     assert.equal(state.visible,true,JSON.stringify({viewport,state}));
     assert.ok(state.popup.left>=state.panel.left-2,JSON.stringify({viewport,state}));
     assert.ok(state.popup.right<=state.panel.right+2,JSON.stringify({viewport,state}));
     assert.ok(state.popup.top>=state.headerBottom-2,JSON.stringify({viewport,state}));
     assert.ok(state.popup.bottom<=state.actionsTop+2,JSON.stringify({viewport,state}));
     assert.ok(state.popup.bottom<=viewport.height,JSON.stringify({viewport,state}));
+    assert.equal(state.menu.position,"fixed",JSON.stringify({viewport,state}));
+    assert.notEqual(state.menu.display,"none",JSON.stringify({viewport,state}));
+    assert.ok(state.menu.left>=state.panel.left-2,JSON.stringify({viewport,state}));
+    assert.ok(state.menu.right<=state.panel.right+2,JSON.stringify({viewport,state}));
+    assert.ok(state.menu.top>=state.headerBottom-2,JSON.stringify({viewport,state}));
+    assert.ok(state.menu.bottom<=state.actionsTop+2,JSON.stringify({viewport,state}));
+    console.log("PASS area layer popup containment",viewport.width+"x"+viewport.height,state.menu);
     console.log("PASS area URL viewport geometry",viewport.width+"x"+viewport.height,state.popup);
    }finally{await context.close();}
   }

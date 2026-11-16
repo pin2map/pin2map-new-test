@@ -2106,7 +2106,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #geometryUrlBlock.pin-url-popup.hidden{display:none}
 
 #geometryUrlBlock .pin-url-field{display:flex;flex-direction:column;flex:1;min-height:0;margin:0 0 10px;padding:2px 8px 7px;border:1px solid #c7d0db;border-radius:10px}
-#geometryUrlBlock .pin-url-field legend{display:table;margin:0 2px 0 auto;padding:0 5px;color:#657689;font-size:11px;font-weight:700;text-align:right}
+#geometryUrlBlock .pin-url-field legend{display:table;margin:0 auto 0 2px;padding:0 5px;color:#657689;font-size:11px;font-weight:700;text-align:left}
 #geometryUrlBlock #geometryUrl{flex:1;box-sizing:border-box;width:100%;min-height:80px;padding:6px 4px;border:0;resize:none;font:400 16px/1.3 system-ui}
 #geometryUrlBlock .pin-url-actions{display:flex;justify-content:flex-end;gap:8px}
 #geometryUrlBlock .pin-url-actions button{min-height:34px;padding:0 12px;border:1px solid #bdcbd9;border-radius:8px;background:#eef1f4;color:#26394c;font-size:12px;font-weight:700}

@@ -248,16 +248,19 @@
       const panel=this.panel.getBoundingClientRect(),width=vv?.width||win.innerWidth;
       const height=vv?.height||win.innerHeight,top=vv?.offsetTop||0,left=vv?.offsetLeft||0;
       if(mode==="layer"){
-        const trigger=this.layerButton.getBoundingClientRect();
-        const popup=this.layerMenu,margin=12,limit=Math.min(280,width-24);
-        const availableAbove=trigger.top-top-20,availableBelow=top+height-trigger.bottom-20;
-        const above=availableAbove>availableBelow;
-        popup.style.width=limit+"px";
-        popup.style.maxHeight=Math.min(310,Math.max(80,above?availableAbove:availableBelow))+"px";
-        popup.style.left=Math.max(left+margin,Math.min(trigger.left,left+width-limit-margin))+"px";
-        popup.style.top=(above?
-          Math.max(top+margin,trigger.top-8-Math.min(popup.scrollHeight,parseFloat(popup.style.maxHeight))):
-          trigger.bottom+8)+"px";
+        // The area picker floats over the notes inside the editor, like
+        // the pin picker. Long lists scroll rather than escaping the panel.
+        const popup=this.layerMenu,margin=10,gap=8;
+        const header=this.header.getBoundingClientRect();
+        const actions=this.actions.getBoundingClientRect();
+        const popupWidth=Math.min(260,Math.max(120,panel.width-margin*2),width-24);
+        const upper=Math.max(panel.top+gap,header.bottom+gap,top+gap);
+        const lower=Math.min(panel.bottom-gap,actions.top-gap,top+height-gap);
+        popup.style.width=popupWidth+"px";
+        popup.style.maxHeight=Math.min(310,Math.max(56,lower-upper))+"px";
+        popup.style.left=Math.max(left+gap,Math.min(
+          panel.left+(panel.width-popupWidth)/2,left+width-popupWidth-gap))+"px";
+        popup.style.top=upper+"px";
       }else{
         // Same overlay relationship as the pin URL: inside the editor,
         // over the notes, ending ABOVE the bottom action buttons. Never
