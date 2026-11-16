@@ -72,8 +72,19 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await page.locator("#layersVisibilityCycle").isVisible(),true);
     const helper=page.locator("#layersHelpers");
     assert.equal(await helper.isVisible(),true);
-    assert.match(await helper.textContent(),/Zum verschieben einer Ebene/);
+    assert.match(await helper.textContent(),/Ebene verschieben: kurz festhalten, dann verschieben\./);
+    assert.match(await helper.textContent(),/Ebenen zusammenführen: in das Farbfeld klicken\./);
     assert.equal(await helper.evaluate(el=>getComputedStyle(el).minHeight),"38px");
+    // The original CSS-only test missed the button's final computed radius.
+    for(const selector of ["#addLayer","#layersCloseBottom"]){
+     const radius=await page.locator(selector).evaluate(el=>parseFloat(getComputedStyle(el).borderTopLeftRadius));
+     assert.ok(radius<=8,"Text action must remain rectangular: "+selector+" radius "+radius);
+    }
+    const dialogAboveLauncher=await page.locator("#layersPanel").evaluate(panel=>{
+     const launcher=document.querySelector("#favoritesButton");
+     return Number(getComputedStyle(panel).zIndex)>Number(getComputedStyle(launcher).zIndex);
+    });
+    assert.equal(dialogAboveLauncher,true,"Dialog must paint above map launchers");
     const firstVisibleLayer=page.locator("#layersList .list-dialog-row").filter({hasText:"Ebene 1"});
     const eyeBefore=await firstVisibleLayer.locator(".layer-eye").getAttribute("class");
     await firstVisibleLayer.locator(".favorite-name").click();
@@ -88,6 +99,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await coloredCircle.count(),1);
     assert.equal(await coloredCircle.locator("input[type=checkbox]").count(),1);
     assert.notEqual(await coloredCircle.evaluate(el=>el.style.backgroundColor),"");
+    assert.equal(await coloredCircle.evaluate(el=>getComputedStyle(el).borderTopColor),
+      "rgba(0, 0, 0, 0)","Colored checkbox circle must have no frame");
     const visibleBefore=await page.locator("#layersList .layer-eye").evaluateAll(
       buttons=>buttons.map(b=>b.classList.contains("is-visible")));
     await page.locator("#layersVisibilityCycle").click();
@@ -105,18 +118,36 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await page.locator("#addLayer").click();
     const editor=page.locator("#layersList .favorite-confirm");
     await editor.waitFor({state:"visible"});
+    assert.equal(await editor.locator(".layer-editor-title").textContent(),"Neue Ebene erstellen:");
+    assert.equal(await editor.locator(".layer-name-caption").textContent(),"Farbe und Name der Ebene:");
     const defaultName=await editor.locator(".favorite-name-input").inputValue();
+    const editorHeight=await editor.evaluate(el=>el.getBoundingClientRect().height);
+    const bottomHeight=await editor.locator(".layer-editor-bottom").evaluate(el=>el.getBoundingClientRect().height);
     assert.match(defaultName,/^Ebene \d+$/);
     await editor.locator(".layer-swatch").click();
     assert.equal(await editor.locator(".layer-palette-choice .layer-palette-dot").count(),12);
+    assert.ok(Math.abs((await editor.evaluate(el=>el.getBoundingClientRect().height))-editorHeight)<1,
+      "Changing to palette must not change new-layer editor height");
+    assert.equal(await editor.locator(".layer-editor-bottom").evaluate(el=>el.getBoundingClientRect().height),bottomHeight);
     assert.equal(await editor.getByRole("button",{name:"Erstellen"}).isVisible(),false);
     await editor.locator(".layer-palette-dot").nth(2).click();
     assert.equal(await editor.getByRole("button",{name:"Erstellen"}).isVisible(),true);
+    assert.ok(Math.abs((await editor.evaluate(el=>el.getBoundingClientRect().height))-editorHeight)<1,
+      "Returning from palette must preserve editor height");
     await editor.locator(".favorite-name-input").fill("Contract Test Layer");
     await editor.getByRole("button",{name:"Erstellen"}).click();
     const layer=page.locator("#layersList .list-dialog-row").filter({hasText:"Contract Test Layer"});
     await layer.waitFor({state:"visible"});
     await layer.getByRole("button",{name:"Ebene bearbeiten"}).click();
+    const renameEditor=page.locator("#layersList .layer-inline-editor");
+    assert.equal(await renameEditor.locator(".layer-editor-title").textContent(),"Ebene umbenennen?");
+    assert.equal(await renameEditor.locator(".layer-name-caption").textContent(),"Farbe und Name der Ebene:");
+    const renameHeight=await renameEditor.evaluate(el=>el.getBoundingClientRect().height);
+    await renameEditor.locator(".layer-swatch").click();
+    assert.ok(Math.abs((await renameEditor.evaluate(el=>el.getBoundingClientRect().height))-renameHeight)<1,
+      "Renaming palette must never resize the editor");
+    await renameEditor.locator(".layer-palette-dot").first().click();
+    assert.ok(Math.abs((await renameEditor.evaluate(el=>el.getBoundingClientRect().height))-renameHeight)<1);
     assert.equal(await layer.getByRole("button",{name:"Ebene bearbeiten"}).getAttribute("aria-pressed"),"true");
     await layer.getByRole("button",{name:"Ebene bearbeiten"}).click();
     assert.equal(await page.locator("#layersList .favorite-confirm").count(),0);
@@ -157,6 +188,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     const deleteDialog=page.locator("#layersList .favorite-confirm-danger");
     assert.equal(await deleteDialog.isVisible(),true);
     assert.equal(await deleteDialog.getByRole("button",{name:"Die Ebene als Ganzes"}).count(),1);
+    assert.equal(await deleteDialog.getByRole("button",{name:"Abbrechen"}).evaluate(el=>
+      getComputedStyle(el).backgroundColor),"rgb(255, 224, 223)",
+      "Delete cancellation must be soft red");
     await deleteDialog.getByRole("button",{name:"Abbrechen"}).click();
     // End-to-end confirmation: only the selected target survives, including reload.
     await firstLayer.locator(".layer-merge-check").check();
@@ -184,7 +218,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(persistedLayers.includes("Ebene 1"),false,JSON.stringify(persistedLayers));
     assert.equal(persistedLayers.includes("Contract Test Layer"),true);
     assert.equal(persistedLayers.includes("Privat"),true);
-    // Long-press on a layer name activates the shared reorder indicator.
+    // Holding a layer for 450ms activates small rows and a centered gap marker.
     if(viewport.width>500){
       await page.locator("#addLayer").click();
       const addAgain=page.locator("#layersList .favorite-confirm");
@@ -199,12 +233,20 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const a=await source.boundingBox(),b=await target.boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
       await page.mouse.down();
-      // Layers now activate on movement, never by waiting 480ms.
-      await page.mouse.move(a.x+a.width/2,a.y+a.height/2+14,{steps:4});
+      await page.waitForTimeout(510);
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),true);
-      assert.equal(await page.locator(".list-reorder-insert").count(),1);
       await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:5});
+      assert.equal(await page.locator(".list-reorder-insert").count(),1);
+      const centered=await page.locator("#layersList .list-reorder-insert").evaluate(marker=>{
+       const siblings=[...document.querySelectorAll("#layersList .list-dialog-row:not(.list-reorder-source)")];
+       const y=marker.getBoundingClientRect().top+marker.getBoundingClientRect().height/2;
+       const before=siblings.filter(el=>el.getBoundingClientRect().bottom<=y).at(-1);
+       const after=siblings.find(el=>el.getBoundingClientRect().top>=y);
+       return before&&after?Math.abs((y-before.getBoundingClientRect().bottom)-
+         (after.getBoundingClientRect().top-y)):0;
+      });
+      assert.ok(centered<=2,"Insertion marker must bisect the gap between adjacent rows");
       await page.mouse.up();
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),false);
