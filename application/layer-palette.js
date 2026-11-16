@@ -17,7 +17,9 @@
  }
  function setColor(project,kind,key,value){
   const parsed=hex(value);if(!parsed)throw new RangeError("Ungültiger HEX-Farbwert");
-  if(!project.colorSettings)project.colorSettings=colors(project);
+  // Old projects and partially synchronized settings may omit one group.
+  // Normalize missing slots without rewriting user-selected valid colors.
+  project.colorSettings=colors(project);
   if(kind==="standard"){
    if(!Number.isInteger(key)||key<0||key>=12)throw new RangeError("Unbekannte Standardfarbe");
    project.colorSettings.standard[key]=parsed;
