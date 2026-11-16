@@ -602,10 +602,17 @@
           // The initial coordinate is only a placeholder; updateRiverLabels
           // immediately moves it onto the currently visible section.
           const marker=window.L.marker([0,0],{
-            interactive:false,keyboard:false,zIndexOffset:300,
+            interactive:true,keyboard:true,zIndexOffset:300,
             icon:window.L.divIcon({html:name.outerHTML,className:"p2m-river-name-wrap",
               iconSize:[0,0],iconAnchor:[0,0]})
           }).addTo(group);
+          // A river name is a real object entry point. The broad transparent
+          // line hit target must not steal pointer events from the label.
+          marker.on("click",event=>{
+            window.L.DomEvent.stop(event.originalEvent);
+            const point=marker.getLatLng();
+            onRiverLine(river,{lat:point.lat,lng:point.lng});
+          });
           this.riverNameMarkers.push({marker,chains:river.chains});
         }
       }
