@@ -123,11 +123,13 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
         return !names.includes("Ebene 1")&&names.includes("Contract Test Layer")&&names.includes("Privat");
       }finally{db.close();}
     },null,{timeout:10000});
+    // Wait beyond the existing 300ms debounced save, then verify the durable record.
+    await page.waitForTimeout(600);
     const persistedLayers=await page.evaluate(async()=>{
       const db=await window.Pin2MapIndexedDBProjectStore.open();
       try{return (await db.loadProject()).layers.map(l=>l.name);}finally{db.close();}
     });
-    assert.equal(persistedLayers.includes("Ebene 1"),false);
+    assert.equal(persistedLayers.includes("Ebene 1"),false,JSON.stringify(persistedLayers));
     assert.equal(persistedLayers.includes("Contract Test Layer"),true);
     assert.equal(persistedLayers.includes("Privat"),true);
     await page.locator("#layersCloseBottom").click();
