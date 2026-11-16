@@ -6,13 +6,14 @@
   constructor({getElement,document:doc,icons=root.Pin2MapIcons,
     triggerId="pinLayerTrigger",menuId="pinLayerMenu",panelId="pinPanel",
     pickerId="pinLayerPicker",selectId="pinLayer",onSelect=null,
-    contained=false,header=null,actions=null,bindTrigger=true}){
+    contained=false,header=null,actions=null,bindTrigger=true,onOpenChange=()=>{}}){
    if(typeof getElement!=="function"||!doc||!icons?.svg)
      throw new TypeError("Object layer picker dependencies required");
    this.el=getElement;this.doc=doc;this.icons=icons;this.document=doc;
    this.triggerId=triggerId;this.menuId=menuId;this.panelId=panelId;
    this.pickerId=pickerId;this.selectId=selectId;this.onSelect=onSelect;
    this.contained=contained;this.header=header;this.actions=actions;
+   this.onOpenChange=onOpenChange;
    this.open=false;this.filterText="";this.options=[];
    const menu=this.el(menuId),trigger=this.el(triggerId);
    if(!menu||!trigger)throw new TypeError("Layer menu and trigger required");
@@ -86,6 +87,7 @@
    trigger.classList.toggle("is-active",this.open);
    this.el(this.panelId)?.classList.toggle("pin-layer-open",this.open);
    if(this.open){this.applyFilter();this.positionMenu();}
+   this.onOpenChange(this.open);
   }
   applyFilter(){
    const q=this.filterText.trim().toLocaleLowerCase("de-DE");

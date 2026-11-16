@@ -35,6 +35,7 @@
         triggerId:"geometryLayerTrigger",menuId:"geometryLayerMenu",
         panelId:"geometryEditor",pickerId:"geometryLayerTrigger",
         contained:true,header:this.header,actions:this.actions,bindTrigger:false,
+        onOpenChange:open=>{if(open)this.popupMode="layer";else if(this.popupMode==="layer")this.popupMode=null;},
         onSelect:(id,layer)=>{
           if(!this.model)return;
           this.update({layerId:id});
