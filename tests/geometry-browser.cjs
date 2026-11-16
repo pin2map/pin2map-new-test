@@ -533,7 +533,18 @@ const viewports=[
    await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
-   await page.locator(".p2m-area-name-label").last().click();
+   // Overlapping area labels intentionally zoom first, then show an object
+   // chooser at maximum zoom. Follow that real interaction instead of
+   // assuming the first label tap must always open an editor.
+   for(let attempt=0;attempt<8;attempt++){
+     if(await page.locator("#geometryEditor").isVisible())break;
+     const chooser=page.locator(".feature-overlap-chooser");
+     if(await chooser.isVisible()){
+       await chooser.getByRole("button",{name:/^See:/}).click();
+       break;
+     }
+     await page.locator(".p2m-area-name-label").last().click();
+   }
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:8000});
    const lake=(await waitForStored(project=>project?.areas?.some(a=>a.kind==="lake"),
      "lake")).areas.find(a=>a.kind==="lake");
