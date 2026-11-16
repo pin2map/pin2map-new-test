@@ -227,16 +227,16 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       await addAgain.locator(".favorite-name-input").fill("Reorder Demo");
       await addAgain.getByRole("button",{name:"Erstellen"}).click();
       const source=page.locator("#layersList .list-dialog-row")
-        .filter({hasText:"Contract Test Layer"}).locator(".favorite-name");
-      const target=page.locator("#layersList .list-dialog-row")
         .filter({hasText:"Reorder Demo"}).locator(".favorite-name");
+      const target=page.locator("#layersList .list-dialog-row")
+        .filter({hasText:"Contract Test Layer"}).locator(".favorite-name");
       const a=await source.boundingBox(),b=await target.boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
       await page.mouse.down();
       await page.waitForTimeout(510);
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),true);
-      await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:5});
+      await page.mouse.move(b.x+b.width/2,b.y+4,{steps:5});
       assert.equal(await page.locator(".list-reorder-insert").count(),1);
       const centered=await page.locator("#layersList .list-reorder-insert").evaluate(marker=>{
        const siblings=[...document.querySelectorAll("#layersList .list-dialog-row:not(.list-reorder-source)")];
@@ -244,9 +244,10 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
        const before=siblings.filter(el=>el.getBoundingClientRect().bottom<=y).at(-1);
        const after=siblings.find(el=>el.getBoundingClientRect().top>=y);
        return before&&after?Math.abs((y-before.getBoundingClientRect().bottom)-
-         (after.getBoundingClientRect().top-y)):0;
+         (after.getBoundingClientRect().top-y)):null;
       });
-      assert.ok(centered<=2,"Insertion marker must bisect the gap between adjacent rows");
+      assert.ok(centered!==null&&centered<=2,
+        "Insertion marker must bisect a real gap between two adjacent rows");
       await page.mouse.up();
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),false);
