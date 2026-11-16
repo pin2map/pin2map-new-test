@@ -6,7 +6,7 @@
   constructor({getElement,document:doc,icons=root.Pin2MapIcons,
     triggerId="pinLayerTrigger",menuId="pinLayerMenu",panelId="pinPanel",
     pickerId="pinLayerPicker",selectId="pinLayer",onSelect=null,
-    contained=false,header=null,actions=null}){
+    contained=false,header=null,actions=null,bindTrigger=true}){
    if(typeof getElement!=="function"||!doc||!icons?.svg)
      throw new TypeError("Object layer picker dependencies required");
    this.el=getElement;this.doc=doc;this.icons=icons;this.document=doc;
@@ -20,7 +20,7 @@
    this.onViewportChange=()=>{if(this.open)this.positionMenu();};
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
    doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
-   trigger.addEventListener("click",()=>this.setOpen(!this.open));
+   if(bindTrigger)trigger.addEventListener("click",()=>this.setOpen(!this.open));
    menu.addEventListener("keydown",event=>{
     if(event.key==="Escape"){
      event.preventDefault();event.stopPropagation();
