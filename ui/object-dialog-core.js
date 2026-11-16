@@ -67,7 +67,8 @@
    return {note,legend,input,expand};
   }
   static configureNotes({legend,input,type,value}){
-   legend.textContent=this.objectType(type)+" Notizen";
+   const labels={pin:"Pin Notizen",area:"Flächen Notizen",lake:"See Notizen",river:"Fluss Notizen"};
+   legend.textContent=labels[type]||"Notizen";
    if(value!==undefined)input.value=String(value??"");
   }
   static createFooter(doc,buttons){
@@ -76,11 +77,13 @@
    return footer;
   }
   static configureName({legend,input,type,name}){
-   legend.textContent=this.objectType(type)+" Name";
+   const labels={pin:"Pin Name",area:"Flächenname",lake:"Seename",river:"Flussname"};
+   legend.textContent=labels[type]||"Name";
    if(name!==undefined)input.value=String(name??"");
   }
   static configureUrlLegend(legend,type){
-   legend.textContent=this.objectType(type)+"-URL";
+   const labels={pin:"Pin-URL",area:"Flächen-URL",lake:"See-URL",river:"Fluss-URL"};
+   legend.textContent=labels[type]||"Objekt-URL";
    legend.classList.add("object-url-title");
   }
   static normalizedUrl(raw){

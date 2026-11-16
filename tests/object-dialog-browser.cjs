@@ -48,7 +48,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       picker.filterInput.dispatchEvent(new Event("input",{bubbles:true}));
       const after=picker.options.map(x=>!x.button.hidden);
       const clear=picker.clearButton.getBoundingClientRect();
-      const clearCss=getComputedStyle(picker.clearButton);
+      const clearRadius=getComputedStyle(picker.clearButton).borderRadius;
       picker.clearButton.click();
       const reset=picker.options.map(x=>!x.button.hidden);
       const menu=editor.layerMenu.getBoundingClientRect();
@@ -85,7 +85,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
        notesVisible,footer,panel:{left:panel.left,right:panel.right},
-       before,after,reset,clear:{width:clear.width,height:clear.height,radius:clearCss.borderRadius},
+       before,after,reset,clear:{width:clear.width,height:clear.height,radius:clearRadius},
        menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom},
        selected,url:{left:url.left,right:url.right,top:url.top,bottom:url.bottom},
        headerBottom:header.bottom,actionsTop:actions.top,legend,legendAlign,canOpen,
@@ -126,4 +126,4 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
   }
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
-function windowName(type){return type==="area"?"Fläche Name":type==="lake"?"See Name":"Fluss Name";}
+function windowName(type){return type==="area"?"Flächenname":type==="lake"?"Seename":"Flussname";}
