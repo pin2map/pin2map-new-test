@@ -11,7 +11,10 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
  try{
   const sizes=[{width:390,height:844},{width:820,height:1180},{width:1280,height:800}];
   for(const viewport of sizes){
-   const context=await browser.newContext({viewport,serviceWorkers:"block"});
+   const context=await browser.newContext({
+    viewport,serviceWorkers:"block",
+    hasTouch:viewport.width<=820,isMobile:viewport.width<=390
+   });
    try{
     const page=await context.newPage();
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:35000});
@@ -21,6 +24,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       window.Pin2MapSearchTypeMenu?.CHOICES,
       null,{timeout:15000});
     for(const type of ["area","lake","river"]){
+     if(type!=="area"){
+      await page.reload({waitUntil:"domcontentloaded",timeout:35000});
+      await page.waitForFunction(()=>window.Pin2MapGeometryEditor&&
+        window.Pin2MapObjectLayerPicker&&window.Pin2MapObjectDialogCore);
+     }
      const state=await page.evaluate(({type,viewport})=>{
       const updates=[],deletions=[],wikis=[];
       const item={id:"synthetic-"+type,name:type==="river"?"Testfluss":type==="lake"?"Testsee":"Testgebiet",
@@ -100,6 +108,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
         const box=el.getBoundingClientRect();
         return {width:box.width,height:box.height};
       });
+      window.__p2mDialogFixture={editor,item,layers,type};
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
        notesVisible,footer,panel:{left:panel.left,right:panel.right},
@@ -156,6 +165,53 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      assert.equal(state.deletions,0);
      for(const button of state.buttons)assert.ok(Math.abs(button.width-button.height)<1.5,
        JSON.stringify({type,viewport,button}));
+     // End-to-end pointer/touch interaction instead of DOM .click() mock:
+     // the original bug was hidden by an assertion on button.hidden while
+     // author CSS continued to render the button.
+     await page.evaluate(()=>{
+      const {editor,item,layers,type}=window.__p2mDialogFixture;
+      editor.show(type==="river"?"river":"area",item,layers,
+       {x:innerWidth*.5,y:innerHeight*.65});
+     });
+     const layerButton=page.locator("#geometryEditor .geometry-layer");
+     await layerButton.click();
+     assert.equal(await page.locator("#geometryLayerMenu").isVisible(),true);
+     await page.locator("#geometryLayerMenu .pin-layer-filter-input").fill("bahN");
+     const visible=await page.locator("#geometryLayerMenu .pin-layer-option:visible").allTextContents();
+     assert.equal(visible.length,1,JSON.stringify({type,viewport,visible}));
+     assert.match(visible[0],/Bahnhöfe/);
+     await layerButton.click();
+     assert.equal(await page.locator("#geometryLayerMenu").isHidden(),true,
+       "Layer button must toggle OFF on actual pointer click");
+     await layerButton.click();
+     assert.equal(await page.locator("#geometryLayerMenu").isVisible(),true,
+       "Layer button must toggle ON again");
+     await page.locator("#geometryLayerMenu .pin-layer-filter-input").fill("bah");
+     await page.locator("#geometryLayerMenu .pin-layer-filter-clear").click();
+     assert.equal(await page.locator("#geometryLayerMenu .pin-layer-option:visible").count(),3,
+       "Reset must show all layers via computed CSS visibility");
+     await layerButton.click();
+     const notes=page.locator("#geometryEditor .object-editor-notes-input");
+     await notes.click();
+     const mobileEditor=page.locator("#geometryMobileNoteEditor");
+     if(viewport.width<=820){
+      assert.equal(await mobileEditor.isVisible(),true,
+       "Mobile/touch notes must open editor on field focus");
+      const rect=await mobileEditor.boundingBox();
+      if(viewport.width<=390)assert.ok(Math.abs(rect.width-viewport.width)<=1.5,
+        "Mobile note editor must occupy visual viewport width");
+      await page.locator("#geometryNoteEditorDone").click();
+      assert.equal(await mobileEditor.isHidden(),true);
+     }else{
+      assert.equal(await mobileEditor.isHidden(),true,
+       "Desktop note textarea must remain inline until expanded");
+      await page.locator("#geometryEditor .object-editor-expand").click();
+      assert.equal(await mobileEditor.isVisible(),true,
+       "Explicit expand button must open desktop note window");
+      await page.locator("#geometryNoteEditorDone").click();
+     }
+     await page.evaluate(()=>window.__p2mDialogFixture.editor.close());
+     console.log("PASS shared REAL interaction",type,viewport.width+"x"+viewport.height);
      console.log("PASS shared object dialog",type,viewport.width+"x"+viewport.height);
     }
    }finally{await context.close();}
