@@ -189,7 +189,8 @@ jobs:
           # Custom layer selector must be in the published bundle, not only CI.
           assert 'id="pinLayerPicker"' in preview
           picker = Path("site-root/preview/ui/pin-layer-picker.js").read_text(encoding="utf-8")
-          assert "class PinLayerPicker" in picker
+          assert "class ObjectLayerPicker" in picker
+          assert "root.Pin2MapPinLayerPicker=ObjectLayerPicker" in picker
           assert ".pin-layer-trigger" in Path("site-root/preview/styles.css").read_text(encoding="utf-8")
           sw = Path("site-root/preview/sw.js").read_text(encoding="utf-8")
           assert "name.startsWith('pin2map-preview-')" in sw
@@ -236,7 +237,7 @@ jobs:
               "vendor/leaflet/leaflet.css": ("text/css", ".leaflet-container"),
               "styles.css": ("text/css", ".pin-panel"),
               "app.js": ("javascript", "Pin2MapPwaRefresh.refresh"),
-              "ui/pin-layer-picker.js": ("javascript", "class PinLayerPicker"),
+              "ui/pin-layer-picker.js": ("javascript", "class ObjectLayerPicker"),
               "ui/search-results.js": ("javascript", "results-footer"),
               "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
               "sw.js": ("javascript", expected_version),
