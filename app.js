@@ -124,15 +124,9 @@
       save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
     },
     onCreate:(name,color,index)=>{
-      const ordinal=palette.nextLayerNumber(state);
-      let layer;
-      try{
-        layer=layerOps.create(state,{id:"layer-"+ordinal,name,cleanText,
-          colors:[color]});
-      }catch(error){showNotice(error.message);return;}
-      palette.recordLayer(state,layer,index);
-      save();renderLayers();renderMarkers();renderGeometry();
-      layerView.start(null);showNotice("Ebene hinzugefügt");
+      const result=layerCreation.createConfigured(name,color,index);
+      if(!result)return;
+      renderGeometry();layerView.start(null);showNotice("Ebene hinzugefügt");
     },
     getPalette:()=>palette.colors(state).standard,
     getNextIndex:()=>palette.nextLayerColorIndex(state),

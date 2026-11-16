@@ -110,7 +110,7 @@
     option.value=layer.id;option.textContent=layer.name;select.append(option);
    }
    select.value=selectedLayerId??previous;
-   this.configureFilter();
+   if(this.el("layersSearchClear"))this.configureFilter();
    const matches=Core.search(layers,this.searchText,l=>l.name);
    let pendingFocus=null;
    if(!matches.length){
@@ -161,7 +161,7 @@
     unite.classList.toggle("hidden",!shown);
     reset.classList.toggle("hidden",shown);
    }
-   this.finishRender(pendingFocus);
+   if(this.el("layersPanel"))this.finishRender(pendingFocus);
   }
  }
  root.Pin2MapLayerView=LayerView;

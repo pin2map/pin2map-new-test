@@ -11,6 +11,22 @@
       this.createId=createId;this.cleanText=cleanText;this.colors=colors;
       this.onNotice=onNotice;this.onRender=onRender;this.onSave=onSave;
     }
+    createConfigured(name,color,index){
+      const state=this.getProject();
+      const palette=root.Pin2MapLayerPalette;
+      if(!palette||!palette.hex(color))throw new RangeError("Ungültiger HEX-Farbwert");
+      let layer;
+      try{
+        layer=this.operations.create(state,{id:this.createId(),name,
+          cleanText:this.cleanText,colors:[color]});
+      }catch(error){
+        this.onNotice(error.message==="Duplicate layer name"?
+          "Der Ebenenname ist bereits vergeben":"Ebene konnte nicht erstellt werden");
+        return null;
+      }
+      palette.recordLayer(state,layer,index);
+      this.onRender();this.onSave();return layer;
+    }
     create(){
       const state=this.getProject();
       const name=this.askName(this.operations.nextName(state));

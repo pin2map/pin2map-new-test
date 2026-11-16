@@ -263,9 +263,9 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   font-size:25px;text-align:center;
 }
 #layersPanel{
-  position:absolute!important;z-index:1200!important;
-  width:min(350px,calc(100vw - 20px))!important;
-  overflow-y:auto;
+  position:absolute;z-index:1350;
+  width:min(390px,calc(100vw - 20px));
+  overflow:visible;
 }
 
 
