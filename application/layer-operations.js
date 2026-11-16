@@ -31,7 +31,30 @@
     if(!info.privateOnly)project.layers=project.layers.filter(layer=>layer.id!==id);
     return {...info,removedPinIds};
   }
-  const api=Object.freeze({find,nextName,create,deletionInfo,deleteLayerOrPins});
+  function renameAndColor(project,id,name,color,cleanText,hex){
+    if(id==="private")return false;
+    const layer=find(project,id);if(!layer)return false;
+    const next=cleanText(name);
+    if(!next||project.layers.some(l=>l.id!==id&&l.name.toLocaleLowerCase("de-DE")===
+      next.toLocaleLowerCase("de-DE")))return false;
+    const chosen=hex(color);if(!chosen)return false;
+    layer.name=next;layer.color=chosen;
+    return layer;
+  }
+  function deleteContents(project,id){
+    if(!find(project,id))return false;
+    for(const key of ["pins","areas","rivers"])
+      if(Array.isArray(project[key]))project[key]=project[key].filter(x=>x.layerId!==id);
+    return true;
+  }
+  function removeEntireLayer(project,id){
+    if(id==="private"||!find(project,id))return false;
+    if(!deleteContents(project,id))return false;
+    project.layers=project.layers.filter(l=>l.id!==id);
+    return true;
+  }
+  const api=Object.freeze({find,nextName,create,deletionInfo,deleteLayerOrPins,
+    renameAndColor,deleteContents,removeEntireLayer});
   root.Pin2MapLayerOperations=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
