@@ -430,12 +430,15 @@ async function longPress(page,x,y,ms=725){
     await page.locator(".p2m-temporary-pin").click();
     await page.locator(".plate-area-yes").click();
     await page.locator("#temporaryLayerPicker").waitFor({state:"visible",timeout});
+    const visibleLayersBeforeFilter=await page.locator("#temporaryLayerPicker [role='option']:visible").count();
+    assert.ok(visibleLayersBeforeFilter>=1,"Temporary picker must show available layers before filtering");
     const quickFilter=page.locator("#temporaryLayerPicker .pin-layer-filter-input");
     await quickFilter.fill("does-not-exist");
     assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),0);
     assert.equal(await page.locator("#temporaryLayerPicker .pin-layer-filter-empty").isVisible(),true);
     await page.locator("#temporaryLayerPicker .pin-layer-filter-clear").click();
-    assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),1);
+    assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),
+      visibleLayersBeforeFilter,"Reset must restore EVERY available layer, not just the private layer");
     assert.equal(await page.evaluate(async()=>{
       const db=await window.Pin2MapIndexedDBProjectStore.open();
       try{return (await db.loadProject()).pins.length;}finally{db.close();}
