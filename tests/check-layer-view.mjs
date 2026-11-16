@@ -49,12 +49,17 @@ assert.equal(workRow.children.length,4,"Standard row has eye, selection, edit an
 assert.match(workRow.children[1].children[1].textContent,/2 Pins/);
 assert.match(workRow.children[1].children[1].textContent,/Flächen/);
 assert.match(workRow.children[1].children[1].textContent,/Gewässer/);
-assert.equal(workRow.children[0].children[1].type,"checkbox");
+assert.equal(workRow.children[0].children[1].className,"layer-color-checkbox");
+assert.equal(workRow.children[0].children[1].children[0].type,"checkbox");
+assert.equal(workRow.children[0].children[1].style.backgroundColor,"#555555");
 workRow.children[0].children[0].trigger("click");
 assert.deepEqual(changed,[["a",true]]);
 assert.equal(view.selectedIds.size,0,"No level selected by default");
-workRow.children[0].children[1].checked=true;
-workRow.children[0].children[1].trigger("change");
+workRow.children[1].children[0].trigger("click");
+assert.deepEqual(changed,[["a",true]],
+ "Clicking a layer name must not change its visibility");
+workRow.children[0].children[1].children[0].checked=true;
+workRow.children[0].children[1].children[0].trigger("change");
 assert.equal(view.selectedIds.has("a"),true);
 assert.equal(els.layersUnite.classList.contains("hidden"),true,
  "Merge control replaces filter only when two or more layers selected");

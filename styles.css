@@ -2295,9 +2295,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #layersPanel .favorite-row .favorite-details{min-width:0}
 #app #layersPanel .favorite-row .favorite-name{padding-left:3px}
 #app #layersPanel .layer-helpers{
- display:flex;align-items:center;justify-content:flex-start;
- box-sizing:border-box;min-height:52px;padding:5px 5px 5px;
- margin-top:6px;margin-bottom:0;
+ display:flex;align-items:center;justify-content:flex-start;gap:9px;
+ box-sizing:border-box;min-height:38px;padding:0 5px;
+ margin-top:2px;margin-bottom:5px;
 }
 #app #layersPanel .layer-helpers #layersVisibilityCycle{
  box-sizing:border-box;width:36px;height:36px;min-width:36px;min-height:36px;
@@ -2382,3 +2382,31 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control{
  z-index:1190!important;
 }
+
+/* v230 - compact text help, merge-specific visibility and real layer color. */
+#app #layersPanel .layer-helpers.hidden{display:none!important}
+#app #layersPanel .layer-reorder-help{
+ flex:1;min-width:0;font-size:11px;line-height:1.2;
+ color:#34516e;letter-spacing:0;
+}
+#app #layersPanel .layer-helpers #layersVisibilityCycle{
+ flex:0 0 36px;margin:0;align-self:center;
+}
+#app #layersPanel .layer-leading .layer-color-checkbox{
+ display:inline-flex;align-items:center;justify-content:center;
+ box-sizing:border-box;flex:0 0 36px;width:36px;height:36px;
+ border:1px solid #95aec6;border-radius:50%;cursor:pointer;
+ box-shadow:0 1px 4px #1d3f6033;
+}
+#app #layersPanel .layer-color-checkbox .layer-merge-check{
+ margin:0;flex:0 0 18px;width:18px;height:18px;
+ accent-color:#1764bf;outline:1px solid #fff;
+}
+#app #layersPanel .list-dialog-row.list-reorder-handle{
+ touch-action:none;cursor:grab;
+}
+#app #layersPanel .list-dialog-row.list-reorder-source{cursor:grabbing}
+#app #layersPanel .layer-merge-guidance{
+ display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+}
+#app #layersPanel .layer-merge-guidance p{margin:0}
