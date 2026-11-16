@@ -889,6 +889,25 @@
     });
     searchTypeMenu.bind();
     pinInfoMenu.bind();
+    // Circular map-launchers close competing menus without hiding any other
+    // map buttons. The capture handler precedes each launcher's own toggle.
+    const mapLauncherSelector=[
+      "#favoritesButton","#layersButton","#settingsButton","#basemapButton",
+      "#pinInfoButton","#searchButton","#searchTypeButton","#refreshButton",
+      "#labelsToggle",".pin-zoom-buttons button"
+    ].join(",");
+    document.addEventListener("click",event=>{
+      const button=event.target?.closest?.(mapLauncherSelector);
+      if(!button)return;
+      const id=button.id;
+      const ownOpen=(id==="favoritesButton"&&favoritesPanel?.open)||
+        (id==="layersButton"&&!$("layersPanel").classList.contains("hidden"))||
+        (id==="settingsButton"&&!$("settingsPanel").classList.contains("hidden"))||
+        (id==="basemapButton"&&!$("basemapMenu").classList.contains("hidden"))||
+        (id==="pinInfoButton"&&!$("pinInfoMenu").classList.contains("hidden"));
+      // A second tap on the active launcher still closes its own menu.
+      if(!ownOpen)closeAllMapMenus();
+    },true);
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click",()=>{
       if(!$("layersPanel").classList.contains("hidden")){layerView.close();return;}

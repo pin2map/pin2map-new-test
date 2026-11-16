@@ -216,8 +216,38 @@ async function zoom(page){
         assert.ok(layerButtonBounds&&circle.y>layerButtonBounds.y+layerButtonBounds.height,
           "Favorites trigger must be below the Layers control");
         assert.equal(await page.locator(".pin-icon").count(),1);
-        assert.equal(await page.locator("#basemapButton").isHidden(),true);
-        assert.equal(await page.locator(".pin-zoom-buttons").isHidden(),true);
+        for(const control of [
+          "#basemapButton","#layersButton","#settingsButton","#pinInfoButton",
+          "#labelsToggle","#refreshButton","#favoritesButton"
+        ]){
+          assert.equal(await page.locator(control).isVisible(),true,
+            "Map button must remain visible while Favorites is open: "+control);
+        }
+        assert.equal(await page.locator(".pin-zoom-buttons").isVisible(),true,
+          "Map zoom/navigation controls must remain visible while Favorites is open");
+        // Each map launcher closes every competing menu, not other map buttons.
+        await page.locator("#settingsButton").click();
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
+        assert.equal(await page.locator("#settingsPanel").isVisible(),true);
+        assert.equal(await page.locator("#favoritesButton").isVisible(),true);
+        await page.locator("#settingsButton").click();
+        assert.equal(await page.locator("#settingsPanel").isHidden(),true);
+        await page.locator("#favoritesButton").click();
+        assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
+        await page.locator("#basemapButton").click();
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
+        assert.equal(await page.locator("#basemapMenu").isVisible(),true);
+        assert.equal(await page.locator("#favoritesButton").isVisible(),true);
+        await page.locator("#favoritesButton").click();
+        assert.equal(await page.locator("#basemapMenu").isHidden(),true);
+        assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
+        await page.locator("#layersButton").click();
+        assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
+        assert.equal(await page.locator("#layersPanel").isVisible(),true);
+        await page.locator("#favoritesButton").click();
+        assert.equal(await page.locator("#layersPanel").isHidden(),true);
+        assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
+        assert.equal(await page.locator("#layersButton").isVisible(),true);
         assert.equal(await page.locator("#map .leaflet-control-attribution").isVisible(),true);
         const footer=page.locator("#favoritesAdd");
         assert.match(await footer.innerText(),/Ansicht hinzufügen/);
