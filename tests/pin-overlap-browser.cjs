@@ -230,6 +230,19 @@ async function zoom(page){
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         assert.equal(await page.locator("#settingsPanel").isVisible(),true);
         assert.equal(await page.locator("#favoritesButton").isVisible(),true);
+        // Regression v231: the high-stacked Favorites launcher must never
+        // intercept the Settings dialog's own close button.
+        const settingsClose=page.locator('#settingsPanel [data-close="settingsPanel"]');
+        assert.equal(await settingsClose.evaluate(button=>{
+          const rect=button.getBoundingClientRect();
+          const atPoint=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
+          return atPoint===button||button.contains(atPoint);
+        }),true,"Settings close must be the real center-point pointer target");
+        await settingsClose.click();
+        assert.equal(await page.locator("#settingsPanel").isHidden(),true,
+          "Closing Settings must work with the Favorites launcher still visible");
+        await page.locator("#settingsButton").click();
+        assert.equal(await page.locator("#settingsPanel").isVisible(),true);
         await page.locator("#settingsButton").click();
         assert.equal(await page.locator("#settingsPanel").isHidden(),true);
         await page.locator("#favoritesButton").click();
