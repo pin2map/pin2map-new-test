@@ -36,6 +36,7 @@
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,temporaryMoveEntry=null,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
+  let pendingNewGpsPinId=null;
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
   // overlay switch in syncable project data or alter the 52x56 tap geometry.
@@ -563,6 +564,16 @@
   function selectPin(id){
     pinOverlapZoom?.close();
     pinSession.select(id);
+    if(id===pendingNewGpsPinId){
+      pendingNewGpsPinId=null;
+      requestAnimationFrame(()=>{
+        if(uiState.selectedPinId!==id)return;
+        const input=$("pinName");
+        if(input&&!$("pinPanel").classList.contains("hidden")){
+          input.focus({preventScroll:true});input.select();
+        }
+      });
+    }
   }
   function handleMarkerTap(id){
     if(uiState.moveMode||satelliteInspector.isActive())return;
@@ -647,7 +658,7 @@
     const mapZoom=mapAdapter.getViewport().zoom;
     const entry={kind:"point",point:{lat,lng},mapZoom,
       autoNamed:source==="map"&&!name,
-      label:name||"Neuer Pin",name:name||""};
+      label:name||"Neuer Pin",name:name||"",source};
     showObjectPreview(entry);
     if(entry.autoNamed)void manualPinLocality.resolve(entry);
     return entry;
@@ -971,7 +982,7 @@
       document,getElement:$,geolocation:navigator.geolocation,
       mapPort:mapAdapter,onNotice:showNotice,
       // GPS fixes are staged as complete pink pins, never persisted here.
-      onAccept:(point,name)=>addPin(point.lat,point.lng,name)
+      onAccept:(point,name)=>addPin(point.lat,point.lng,name,"gps")
     });
     gpsLocation.bind();
     // Selecting a layer is the ONLY commit action. Merely pressing the
@@ -992,9 +1003,10 @@
         if(entry.kind==="point"){
           const name=entry.referencePlace?
             entry.label+" – "+entry.referencePlace+" (Ersatzort)":entry.name||entry.label;
-          pinOps.createPin(state,{
+          const pin=pinOps.createPin(state,{
             id:uid(),lat:entry.point.lat,lng:entry.point.lng,name,layerId
           },{validatePosition:projectModel.position,cleanText});
+          if(entry.source==="gps")pendingNewGpsPinId=pin.id;
           save();renderLayers();renderMarkers();
         }else if(entry.kind==="river"){
           projectFeatures.createRiver(state,{

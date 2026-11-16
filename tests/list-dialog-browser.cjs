@@ -98,7 +98,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await page.locator("#layersList .list-dialog-row").filter({hasText:"Contract Test Layer"})
       .getByRole("button",{name:"Contract Test Layer"}).click();
     assert.equal(await page.getByRole("button",{name:"Zusammenführen"}).count(),1);
-    await page.getByRole("button",{name:"Abbrechen"}).click();
+    await page.locator("#layersList .layer-merge-guidance").getByRole("button",{name:"Abbrechen"}).click();
     await firstLayer.locator(".layer-merge-check").uncheck();
     await layer.locator(".layer-merge-check").uncheck();
     await layer.getByRole("button",{name:"Ebene oder ihre Objekte löschen"}).click();

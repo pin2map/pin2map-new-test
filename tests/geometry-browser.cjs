@@ -200,10 +200,19 @@ const viewports=[
    await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-   // Saved GPS pins do not automatically select name when opened later.
-    assert.equal(await page.locator("#pinName").evaluate(el=>
-      document.activeElement===el&&el.selectionStart===0&&
-      el.selectionEnd===el.value.length),false);
+   // Only the first opening of this newly saved GPS pin selects its name.
+   await page.waitForFunction(()=>{
+     const el=document.querySelector("#pinName");
+     return !!el&&el.value.length>0&&document.activeElement===el&&
+       el.selectionStart===0&&el.selectionEnd===el.value.length;
+   },null,{timeout:4000});
+   await page.locator("#closePin").click();
+   await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
+   await page.locator("#pinPanel").waitFor({state:"visible"});
+   assert.equal(await page.locator("#pinName").evaluate(el=>
+     document.activeElement===el&&el.selectionStart===0&&
+     el.selectionEnd===el.value.length),false,
+     "Reopening a saved GPS pin must not auto-select its name");
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length===1;}finally{db.close();}
