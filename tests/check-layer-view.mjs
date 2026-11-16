@@ -68,4 +68,9 @@ assert.equal(removed.length,0);
 actions.children[1].trigger("click");
 assert.deepEqual(removed,["a"]);
 assert.deepEqual(deleted,[]);
+const reordered=[layers[1],layers[0]];
+view.render({layers:reordered,counts:{private:0,a:2},selectedLayerId:"a"});
+assert.equal(els.layersList.children[0].dataset.itemId,"private",
+ "Private must be first in the UI even when stored layers are out of order");
+assert.equal(reordered[0].id,"a","UI sorting must never rewrite stored layer order");
 console.log("Layer view: shared list layout, visibility, merge selection and safe inline deletion pass.");
