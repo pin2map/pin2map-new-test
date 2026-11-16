@@ -47,6 +47,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await page.locator("#layersButton").click();
     const panel=page.locator("#layersPanel");
     await panel.waitFor({state:"visible"});
+    const originalLayerCount=await page.locator("#layersList .list-dialog-row:visible").count();
     const privateRow=page.locator("#layersList .list-dialog-row").filter({hasText:"Privat"});
     assert.equal(await privateRow.count(),1);
     assert.equal(await privateRow.getByRole("button",{name:"Ebene bearbeiten"}).count(),0);
@@ -71,7 +72,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await page.locator("#layersSearch").fill("CONTRACT");
     assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),1);
     await page.locator("#layersSearchClear").click();
-    assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),2);
+    assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),originalLayerCount+1,
+      "Reset restores both existing project layers and the newly created layer");
     await layer.getByRole("button",{name:"Ebene oder ihre Objekte löschen"}).click();
     const deleteDialog=page.locator("#layersList .favorite-confirm-danger");
     assert.equal(await deleteDialog.isVisible(),true);
