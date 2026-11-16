@@ -71,10 +71,15 @@
    legend.textContent=labels[type]||"Notizen";
    if(value!==undefined)input.value=String(value??"");
   }
-  static createFooter(doc,buttons){
+  static createFooter(doc,actions){
    const footer=doc.createElement("div");footer.className="object-editor-actions";
-   for(const button of buttons)if(button)footer.append(button);
+   this.arrangeFooter(footer,actions);
    return footer;
+  }
+  static arrangeFooter(footer,{move=null,layer,url,wiki,meteo=null,ok}){
+   // One footer ordering contract, with two Pin-only extensions.
+   for(const node of [move,layer,url,wiki,meteo,ok])
+    if(node)footer.append(node);
   }
   static configureName({legend,input,type,name}){
    const labels={pin:"Pin Name",area:"Flächenname",lake:"Seename",river:"Flussname"};

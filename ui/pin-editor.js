@@ -16,6 +16,20 @@
       this.element("pinPanel").querySelector?.(".pin-detail-region"),
       this.element("pinPanel").querySelector?.(".pin-actions"));
     core.configureOk(this.element("closePin"));
+    const panel=this.element("pinPanel");
+    core.configureName({
+     legend:panel.querySelector?.(".pin-name-field legend"),
+     input:this.element("pinName"),type:"pin"
+    });
+    core.configureNotes({
+     legend:this.element("pinDetailTitle"),
+     input:this.element("pinNotes"),type:"pin"
+    });
+    core.arrangeFooter(panel.querySelector?.(".pin-actions"),{
+     move:this.element("movePin"),layer:this.element("pinLayerPicker"),
+     url:this.element("pinUrlButton"),wiki:this.element("pinWikipedia"),
+     meteo:this.element("pinWeather"),ok:this.element("closePin")
+    });
     core.mountDeleteSymbol(this.element("deletePin"),"pin",doc,root.Pin2MapIcons);
    }
   }

@@ -77,14 +77,15 @@
       const notes=parts.note,notesLegend=parts.legend,textarea=parts.input,expand=parts.expand;
       notes.classList.add("geometry-notes");notes.id="geometryNotesRow";
       textarea.id="geometryNotes";expand.classList.add("geometry-expand");
-      const actions=doc.createElement("div");actions.className="geometry-actions object-editor-actions";
+      let actions;
       const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleSub("layer"),"geometry-layer");
       const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
       const link=this.makeButton("link-2","Link",()=>this.toggleSub("link"),"geometry-link");
       const wiki=this.makeButton("wikipedia","Wikipedia",()=>this.onWikipedia(this.model?.name||""),"geometry-wiki");
-      const ok=this.makeButton("check","OK",()=>{this.flush();this.close();},"geometry-ok");
+      const ok=this.makeButton(null,this.core.okLabel,()=>{this.flush();this.close();},"geometry-ok");
       this.core.configureOk(ok);
-      actions.append(layer,link,wiki,ok);
+      actions=this.core.createFooter(doc,{layer,url:link,wiki,ok});
+      actions.classList.add("geometry-actions");
       panel.append(header,notes,actions);
       this.header=header;this.actions=actions;
       this.removeButton=remove;this.layerButton=layer;this.linkButton=link;
