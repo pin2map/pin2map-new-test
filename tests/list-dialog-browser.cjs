@@ -124,6 +124,12 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await editor.locator(".layer-editor-title").textContent(),"Neue Ebene erstellen:");
     assert.equal(await editor.locator(".layer-name-caption").textContent(),"Farbe und Name der Ebene:");
     const defaultName=await editor.locator(".favorite-name-input").inputValue();
+    assert.equal(await editor.getByRole("button",{name:"Abbrechen"}).evaluate(el=>
+      getComputedStyle(el).backgroundColor),"rgb(234, 243, 255)",
+      "New layer cancellation must be light blue");
+    assert.equal(await editor.getByRole("button",{name:"Erstellen"}).evaluate(el=>
+      getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)",
+      "New layer creation must be blue");
     const editorHeight=await editor.evaluate(el=>el.getBoundingClientRect().height);
     const bottomHeight=await editor.locator(".layer-editor-bottom").evaluate(el=>el.getBoundingClientRect().height);
     assert.match(defaultName,/^Ebene \d+$/);
