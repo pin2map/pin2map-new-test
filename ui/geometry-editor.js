@@ -71,8 +71,7 @@
       name.addEventListener("change",()=>this.update({name:name.value}));
       field.append(legend,name);header.append(remove,field);
       const parts=this.core.makeNotes(doc,{
-        type:"area",icons:this.icons,onChange:value=>this.update({note:value}),
-        onExpand:()=>this.expandNotes()
+        type:"area",icons:this.icons,onChange:value=>this.update({note:value})
       });
       const notes=parts.note,notesLegend=parts.legend,textarea=parts.input,expand=parts.expand;
       notes.classList.add("geometry-notes");notes.id="geometryNotesRow";
@@ -219,16 +218,16 @@
           onClose:()=>{}
         });
         this.noteEditor.bind();
+        this.core.bindNoteLaunch({
+          textarea:this.notesInput,expand:this.expandButton,editor:this.noteEditor,
+          getName:()=>this.model?.name||"",getNote:()=>this.notesInput.value,
+          closeTransient:()=>this.dismissPopup(),
+          matchMedia:query=>this.doc.defaultView?.matchMedia?.(query)
+        });
       }
 
     }
     normalizedUrl(raw){return this.core.normalizedUrl(raw);}
-    expandNotes(){
-      if(!this.model||!this.noteEditor)return;
-      this.dismissPopup();
-      this.noteEditor.show({name:this.model.name,note:this.notesInput.value,
-        desktop:this.doc.defaultView?.matchMedia?.("(min-width: 750px) and (pointer: fine)")?.matches||false});
-    }
     dismissPopup(){
       this.popupMode=null;
       if(this.layerPicker)this.layerPicker.setOpen(false);

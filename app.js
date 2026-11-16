@@ -845,18 +845,12 @@
     pinEditorActions.bind();
     pinDetails.bind();
     noteEditor.bind();
-    $("pinNotesExpand").addEventListener("click",()=>{
-      const pin=selectedPin();if(!pin||noteEditor.open)return;
-      pinDetails.closeTransient();
-      noteEditor.show({name:pin.name,note:pin.note,desktop:true});
-    });
-    $("pinNotes").addEventListener("focus",()=>{
-      const pin=selectedPin();
-      if(!pin||noteEditor.open)return;
-      if(window.matchMedia("(max-width: 700px), (pointer: coarse)").matches){
-        $("pinNotes").blur();
-        noteEditor.show({name:pin.name,note:pin.note});
-      }
+    window.Pin2MapObjectDialogCore.bindNoteLaunch({
+      textarea:$("pinNotes"),expand:$("pinNotesExpand"),editor:noteEditor,
+      getName:()=>selectedPin()?.name||"",
+      getNote:()=>selectedPin()?.note||"",
+      closeTransient:()=>pinDetails.closeTransient(),
+      matchMedia:query=>window.matchMedia(query)
     });
     for(const id of ["deletePin","movePin","pinLayerTrigger","closePin"]){
       $(id).addEventListener("click",()=>pinDetails.closeTransient());

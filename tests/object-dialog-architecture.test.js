@@ -56,6 +56,9 @@ test("single green OK label and four-part footer can be changed in one place",()
  assert.match(pin,/core\.configureOk\(this\.element\("closePin"\)\)/);
  assert.match(geometry,/this\.core\.configureOk\(ok\)/);
  assert.match(geometry,/this\.core\.makeNotes\(/);
+ assert.match(geometry,/this\.core\.bindNoteLaunch\(/);
+ assert.match(read("app.js"),/Pin2MapObjectDialogCore\.bindNoteLaunch\(/);
+ assert.match(core,/static bindNoteLaunch\(/);
  assert.match(geometry,/Pin2MapPinNoteEditor/);
  assert.ok(html.includes('src="./ui/object-dialog-core.js"'));
  for(const module of ["object-dialog-core","object-url-popup","object-delete-dialog"]){

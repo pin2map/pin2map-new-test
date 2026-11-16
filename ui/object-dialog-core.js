@@ -71,6 +71,23 @@
    legend.textContent=labels[type]||"Notizen";
    if(value!==undefined)input.value=String(value??"");
   }
+  static bindNoteLaunch({textarea,expand,editor,getName,getNote,closeTransient=()=>{},matchMedia}){
+   if(!textarea||!expand||!editor||!getName||!getNote)
+    throw new TypeError("Shared note-editor launch ports required");
+   const open=desktop=>{
+    if(editor.open)return;
+    closeTransient();
+    editor.show({name:getName(),note:getNote(),desktop});
+   };
+   expand.addEventListener("click",()=>open(true));
+   textarea.addEventListener("focus",()=>{
+    if(editor.open)return;
+    if(matchMedia?.("(max-width: 700px), (pointer: coarse)")?.matches){
+     textarea.blur();
+     open(false);
+    }
+   });
+  }
   static createFooter(doc,actions){
    const footer=doc.createElement("div");footer.className="object-editor-actions";
    this.arrangeFooter(footer,actions);

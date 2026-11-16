@@ -77,6 +77,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const storedUrl=item.url;
       editor.expandButton.click();
       const openedNote=editor.noteEditor.open;
+      const viaFocusSupported=typeof editor.notesInput.focus==="function";
       const noteArea=editor.notesInput.getBoundingClientRect();
       const noteBg=getComputedStyle(editor.notesInput).backgroundColor;
       const notePanel=editor.noteNodes.pinMobileNoteEditor.getBoundingClientRect();
@@ -111,7 +112,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
        menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom},
        selected,url:{left:url.left,right:url.right,top:url.top,bottom:url.bottom},
        headerBottom:header.bottom,actionsTop:actions.top,legend,legendAlign,canOpen,
-       storedUrl,openedNote,storedNote,deleteOpen,deleteClosed,question,
+       storedUrl,openedNote,viaFocusSupported,storedNote,deleteOpen,deleteClosed,question,
        overlay:{top:overlay.top,bottom:overlay.bottom},buttons,updates:updates.length,
        deletions:deletions.length};
      },{type,viewport});
