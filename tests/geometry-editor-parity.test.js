@@ -65,7 +65,7 @@ test("area layer popover uses colored dot, eye, name, and persists only selectio
   assert.equal(visible.children[0].style.backgroundColor,"#326cc2");
   assert.equal(visible.children[1].children[0].iconName,"eye");
   assert.equal(hidden.children[1].children[0].iconName,"eye-off");
-  assert.equal(hidden.className.includes("is-invisible-layer"),true);
+  assert.equal(hidden.classList.contains("is-invisible-layer"),true);
   assert.equal(patches.length,0);
   hidden.click();
   assert.equal(item.layerId,"hidden");
