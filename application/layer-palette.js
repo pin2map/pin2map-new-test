@@ -48,8 +48,11 @@
   return layers.length%12;
  }
  function recordLayer(project,layer,colorIndex){
-  const ordinal=nextLayerNumber(project);
-  project.layerSerial=ordinal;
+  // The ID may already encode the allocated serial (legacy layer-N).
+  // The newly pushed layer must not count itself as a *future* allocation.
+  const encoded=Number(String(layer.id||"").match(/^layer-(\d+)$/)?.[1]);
+  const ordinal=Number.isSafeInteger(encoded)&&encoded>0?encoded:nextLayerNumber(project);
+  project.layerSerial=Math.max(project.layerSerial||0,ordinal);
   layer.paletteIndex=colorIndex;
   layer.createdOrdinal=ordinal;
   project.layerAllocation={paletteIndex:colorIndex,ordinal};
