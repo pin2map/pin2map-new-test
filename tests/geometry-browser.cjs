@@ -708,7 +708,7 @@ const viewports=[
    assert.equal(await page.locator("#geometryEditor .geometry-actions button:not(.hidden)").count(),4);
    const riverActionOrder=await page.locator("#geometryEditor .geometry-actions button:not(.hidden)")
      .evaluateAll(buttons=>buttons.map(b=>b.getAttribute("aria-label")));
-   assert.deepEqual(riverActionOrder,["Ebene ändern","Link","Wikipedia","Dialog schließen"],
+   assert.deepEqual(riverActionOrder,["Ebene: Privat","Link","Wikipedia","Dialog schließen"],
      "River now shares the full object-editor footer instead of a special four-button editor");
    const river=(await waitForStored(project=>project?.rivers?.length>=1,"river")).rivers[0];
    assert.equal(river.layerId,"private");
