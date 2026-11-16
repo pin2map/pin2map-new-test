@@ -87,6 +87,19 @@ async function metrics(page){
     await page.mouse.click(at.x,at.y);
     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
+    // v206+ contract: a direct map click produces a TEMPORARY pink pin.
+    // Nothing is persisted until confirmation AND explicit layer selection.
+    await page.locator(".leaflet-marker-icon.p2m-temporary-pin").waitFor({
+      state:"visible",timeout:15000});
+    await page.locator(".leaflet-marker-icon.p2m-temporary-pin").tap({force:true});
+    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+    await page.locator("#plateAreaConfirm .plate-area-yes").click();
+    await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+    // Quick save deliberately closes editors; open the newly persisted pin.
+    const saved=page.locator(".leaflet-marker-icon.pin-icon:not(.p2m-temporary-pin)").last();
+    await saved.waitFor({state:"visible",timeout:15000});
+    await saved.tap({force:true});
     try{
       await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
     }catch(error){
