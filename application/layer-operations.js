@@ -53,8 +53,25 @@
     project.layers=project.layers.filter(l=>l.id!==id);
     return true;
   }
+  function merge(project,selectedIds,targetId){
+    if(!Array.isArray(selectedIds)||selectedIds.length<2||
+      new Set(selectedIds).size!==selectedIds.length||
+      selectedIds.includes("private")||!selectedIds.includes(targetId)||
+      selectedIds.some(id=>!find(project,id)))return false;
+    const sources=new Set(selectedIds.filter(id=>id!==targetId));
+    const moved={pins:0,areas:0,rivers:0};
+    for(const key of ["pins","areas","rivers"])
+      for(const item of project[key]||[])
+        if(sources.has(item.layerId)){item.layerId=targetId;moved[key]++;}
+    project.layers=project.layers.filter(layer=>!sources.has(layer.id));
+    for(const favorite of project.favorites||[])
+      for(const key of ["layerIds","visibleLayerIds"])
+        if(Array.isArray(favorite[key]))
+          favorite[key]=[...new Set(favorite[key].map(id=>sources.has(id)?targetId:id))];
+    return {targetId,sourceIds:[...sources],moved};
+  }
   const api=Object.freeze({find,nextName,create,deletionInfo,deleteLayerOrPins,
-    renameAndColor,deleteContents,removeEntireLayer});
+    renameAndColor,deleteContents,removeEntireLayer,merge});
   root.Pin2MapLayerOperations=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

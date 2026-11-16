@@ -20,7 +20,7 @@
    this.onMergeRequest=onMergeRequest;this.getPalette=getPalette;
    this.getSuggestedName=getSuggestedName;this.getNextIndex=getNextIndex;
    this.onClose=onClose;this.onOpen=onOpen;
-   this.selectedIds=new Set();this.mergeMode=false;
+   this.selectedIds=new Set();this.mergeMode=false;this.mergeTargetId=null;
    this.counts={};this.geometryCounts={};this.selectedLayerId=null;
    if(this.el("layersSearch")&&this.el("layersSearchClear"))this.bindFilter();
    // Other map overlays can hide our panel. Mirror that close into the
@@ -42,13 +42,22 @@
    this.el("layersClose")?.focus?.({preventScroll:true});
   }
   close(){
-   this.open=false;this.mode=null;this.index=null;this.mergeMode=false;
+   this.open=false;this.mode=null;this.index=null;this.mergeMode=false;this.mergeTargetId=null;
    this.el("layersPanel").classList.add("hidden");
    this.selectedIds.clear();
    this.keepEditorVisible();
    this.onClose();
   }
   toggle(){this.open?this.close():this.show();}
+  beginMerge(){
+   if(this.selectedIds.size<2||this.selectedIds.has("private"))return;
+   this.mergeMode=true;this.mergeTargetId=null;this.mode=null;this.index=null;this.render();
+  }
+  cancelMerge(){this.mergeMode=false;this.mergeTargetId=null;this.render();}
+  chooseMergeTarget(id){
+   if(!this.mergeMode||!this.selectedIds.has(id))return;
+   this.mergeTargetId=id;this.render();
+  }
   paletteEditor({section,actions,input}){
    if(!input)return;
    const line=this.doc.createElement("div");line.className="layer-color-name";
@@ -127,7 +136,31 @@
    }
    select.value=selectedLayerId??previous;
    if(this.el("layersSearchClear"))this.configureFilter();
-   const matches=Core.search(layers,this.searchText,l=>l.name);
+   const matches=Core.search(this.mergeMode?
+      layers.filter(l=>this.selectedIds.has(l.id)):layers,
+      this.mergeMode?"":this.searchText,l=>l.name);
+    if(this.mergeMode){
+     const banner=this.doc.createElement("section");
+     banner.className="layer-merge-guidance list-dialog-confirm";
+     const title=this.doc.createElement("p");
+     title.textContent=this.mergeTargetId?
+       "Zusammenführung bestätigen: Alle Objekte wechseln in die Zielebene.":
+       "Zielebene wählen: Tippen Sie auf eine der markierten Ebenen.";
+     banner.append(title,this.labeledButton("Abbrechen",()=>this.cancelMerge()));
+     if(this.mergeTargetId){
+      const target=layers.find(l=>l.id===this.mergeTargetId);
+      const note=this.doc.createElement("p");
+      note.textContent="Ziel: "+target.name+" · "+(this.selectedIds.size-1)+
+        " andere Ebenen werden nach Übertragung entfernt.";
+      banner.append(note,this.labeledButton("Zusammenführen",()=>{
+       const ids=[...this.selectedIds],targetId=this.mergeTargetId;
+       if(this.onMergeRequest(ids,targetId)!==false){
+        this.mergeMode=false;this.mergeTargetId=null;this.selectedIds.clear();this.render();
+       }
+      },"danger"));
+     }
+     list.append(banner);
+    }
    let pendingFocus=null;
    if(!matches.length){
     const empty=this.doc.createElement("p");empty.className="favorites-empty";
@@ -136,28 +169,30 @@
    }
    for(const {item:layer,index} of matches){
     const id=layer.id,privateLayer=id==="private";
-    const eye=this.button(layer.visible?"eye":"eye-off",
+    const eye=this.mergeMode?null:this.button(layer.visible?"eye":"eye-off",
      layer.visible?"Ebene ausblenden":"Ebene einblenden",
      ()=>this.onVisibility(id,!layer.visible),"favorite-icon layer-eye"+(layer.visible?" is-visible":" is-invisible"));
     const check=this.doc.createElement("input");check.type="checkbox";
     check.className="layer-merge-check";check.checked=this.selectedIds.has(id);
+     check.disabled=privateLayer||this.mergeMode;
     check.setAttribute("aria-label",layer.name+" zum Verbinden auswählen");
     check.addEventListener("change",()=>{
       if(check.checked)this.selectedIds.add(id);else this.selectedIds.delete(id);
       this.render(); // The toolbar shows squares-unite once >= 2 layers.
     });
     const leading=this.doc.createElement("div");leading.className="layer-leading";
-    leading.append(eye,check);
+    if(eye)leading.append(eye);
+     if(!this.mergeMode)leading.append(check);
     const data=this.geometryCounts[id]||{};
     const detail=(this.counts[id]||0)+" Pins · "+(data.areas||0)+
      " Flächen · "+(data.waters||0)+" Gewässer";
-    const edit=privateLayer?null:this.button("square-pen","Ebene bearbeiten",
+    const edit=privateLayer||this.mergeMode?null:this.button("square-pen","Ebene bearbeiten",
      ()=>this.start("rename",index),"favorite-icon favorite-edit");
-    const remove=this.button("trash",privateLayer?
+    const remove=this.mergeMode?null:this.button("trash",privateLayer?
       "Alle Objekte in Privat löschen":"Ebene oder ihre Objekte löschen",
      ()=>this.start("delete",index),"favorite-icon favorite-remove");
     const row=this.row({name:layer.name,detail,iconLeft:leading,edit,remove,
-     onChoose:()=>this.onVisibility(id,!layer.visible),
+     onChoose:()=>this.mergeMode?this.chooseMergeTarget(id):this.onVisibility(id,!layer.visible),
      selectedMode:this.mode,selectedIndex:index,itemId:id});
     row.classList.toggle("layer-is-hidden",!layer.visible);
     list.append(row);
@@ -174,8 +209,8 @@
    const unite=this.el("layersUnite"),reset=this.el("layersSearchClear");
    if(unite&&reset){
     const shown=this.selectedIds.size>=2;
-    unite.classList.toggle("hidden",!shown);
-    reset.classList.toggle("hidden",shown);
+    unite.classList.toggle("hidden",!shown||this.mergeMode);
+    reset.classList.toggle("hidden",shown||this.mergeMode);
    }
    if(this.el("layersPanel"))this.finishRender(pendingFocus);
   }

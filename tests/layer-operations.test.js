@@ -28,3 +28,19 @@ test("deleting another layer removes only assigned pins",()=>{
  assert.equal(state.pins.length,1);assert.equal(state.pins[0].id,"b");
  assert.equal(layers.find(state,"layer-1"),null);
 });
+
+test("merge is validated and retains all objects and protected layers",()=>{
+ const state=model.defaultProject();
+ state.layers.push({id:"a",name:"A"},{id:"b",name:"B"});
+ state.pins=[{id:"p",layerId:"a"},{id:"q",layerId:"private"}];
+ state.areas=[{id:"lake",kind:"lake",layerId:"a"}];
+ state.rivers=[{id:"river",layerId:"a"}];
+ assert.equal(layers.merge(state,["private","a"],"a"),false);
+ assert.equal(layers.merge(state,["a","b"],"private"),false);
+ assert.equal(layers.merge(state,["a","a"],"a"),false);
+ assert.deepEqual(layers.merge(state,["a","b"],"b"),
+  {targetId:"b",sourceIds:["a"],moved:{pins:1,areas:1,rivers:1}});
+ assert.deepEqual(state.layers.map(x=>x.id),["private","layer-1","b"]);
+ assert.equal(state.pins[0].layerId,"b");assert.equal(state.pins[1].layerId,"private");
+ assert.equal(state.areas[0].layerId,"b");assert.equal(state.rivers[0].layerId,"b");
+});

@@ -133,7 +133,13 @@
     getPalette:()=>palette.colors(state).standard,
     getNextIndex:()=>palette.nextLayerColorIndex(state),
     getSuggestedName:()=>"Ebene "+palette.nextLayerNumber(state),
-    onMergeRequest:()=>showNotice("Zielebenen-Regel noch nicht festgelegt")
+    onMergeRequest:(selectedIds,targetId)=>{
+      const result=layerOps.merge(state,selectedIds,targetId);
+      if(!result){showNotice("Ungültige Zusammenführung");return false;}
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+      showNotice("Ebenen erfolgreich zusammengeführt");
+      return true;
+    }
   });
   const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
   const pinInfoService=new window.Pin2MapPinInfoService.PinInfoService({
@@ -884,7 +890,7 @@
     $("addLayer").addEventListener("click",()=>layerView.start("new"));
     $("layersClose").addEventListener("click",()=>layerView.close());
     $("layersCloseBottom").addEventListener("click",()=>layerView.close());
-    $("layersUnite").addEventListener("click",()=>showNotice("Die Regel zur Zielebenenauswahl ist noch offen"));
+    $("layersUnite").addEventListener("click",()=>layerView.beginMerge());
     const colorSettings=new window.Pin2MapColorSettingsView({
       document,getElement:$,palette,
       getProject:()=>state,onChange:()=>save()

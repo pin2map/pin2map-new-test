@@ -88,6 +88,19 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await page.locator("#layersSearchClear").click();
     assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),originalLayerCount+1,
       "Reset restores both existing project layers and the newly created layer");
+    const firstLayer=page.locator("#layersList .list-dialog-row").filter({hasText:"Ebene 1"});
+    await firstLayer.locator(".layer-merge-check").check();
+    await layer.locator(".layer-merge-check").check();
+    assert.equal(await page.locator("#layersUnite").isVisible(),true);
+    await page.locator("#layersUnite").click();
+    assert.equal(await page.locator("#layersList .list-dialog-row").count(),2);
+    assert.equal(await privateRow.count(),0);
+    await page.locator("#layersList .list-dialog-row").filter({hasText:"Contract Test Layer"})
+      .getByRole("button",{name:"Contract Test Layer"}).click();
+    assert.equal(await page.getByRole("button",{name:"Zusammenführen"}).count(),1);
+    await page.getByRole("button",{name:"Abbrechen"}).click();
+    await firstLayer.locator(".layer-merge-check").uncheck();
+    await layer.locator(".layer-merge-check").uncheck();
     await layer.getByRole("button",{name:"Ebene oder ihre Objekte löschen"}).click();
     const deleteDialog=page.locator("#layersList .favorite-confirm-danger");
     assert.equal(await deleteDialog.isVisible(),true);
