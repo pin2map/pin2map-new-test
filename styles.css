@@ -339,8 +339,8 @@ button.p2m-icon-control{
   background:var(--p2m-button-bg)!important;color:var(--p2m-button-ink)!important;
   box-shadow:var(--p2m-button-shadow);line-height:1
 }
-button.p2m-icon-control:not(#searchButton):hover{background:#f5f8fa!important}
-button.p2m-icon-control:not(#searchButton):active{background:#e9eff4!important}
+button.p2m-icon-control:not(#searchButton):not(.list-toggle-active):hover{background:#f5f8fa!important}
+button.p2m-icon-control:not(#searchButton):not(.list-toggle-active):active{background:#e9eff4!important}
 button.p2m-icon-control:focus-visible{outline:3px solid #8bb8ec;outline-offset:2px}
 button.p2m-icon-control:disabled{opacity:.45;cursor:not-allowed}
 button:not(.p2m-icon-control):not(.result):not(.inline-button){
