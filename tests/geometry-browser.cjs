@@ -664,7 +664,7 @@ const viewports=[
      !document.querySelector("#geometrySearchBusy").classList.contains("hidden"),
      null,{timeout:5000});
    await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:30000});
-   assert.equal(await page.locator("#geometryEditor.is-river").isHidden(),true);
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).rivers.length;}finally{db.close();}
@@ -682,13 +682,15 @@ const viewports=[
    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    await page.locator(".p2m-river-name-label").first().click();
-   await page.locator("#geometryEditor.is-river").waitFor({state:"visible",timeout:10000});
+   await page.locator("#geometryEditor").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometrySearchBusy").isHidden(),true);
-   assert.equal(await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)").count(),4);
-   const riverActionOrder=await page.locator("#geometryEditor.is-river .geometry-actions button:not(.hidden)")
+   assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
+   assert.equal(await page.locator("#geometryEditor .geometry-link").isVisible(),true);
+   assert.equal(await page.locator("#geometryEditor .geometry-actions button:not(.hidden)").count(),4);
+   const riverActionOrder=await page.locator("#geometryEditor .geometry-actions button:not(.hidden)")
      .evaluateAll(buttons=>buttons.map(b=>b.getAttribute("aria-label")));
-   assert.deepEqual(riverActionOrder,["Entfernen","Ebene ändern","Wikipedia","OK"],
-     "River editing row must contain four circular actions in requested order");
+   assert.deepEqual(riverActionOrder,["Ebene ändern","Link","Wikipedia","Dialog schließen"],
+     "River now shares the full object-editor footer instead of a special four-button editor");
    const river=(await waitForStored(project=>project?.rivers?.length>=1,"river")).rivers[0];
    assert.equal(river.layerId,"private");
    assert.equal(river.chains[0].length,3);
