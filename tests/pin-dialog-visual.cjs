@@ -87,7 +87,26 @@ async function metrics(page){
     await page.mouse.click(at.x,at.y);
     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
-    await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
+    try{
+      await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
+    }catch(error){
+      const diagnostic=await page.evaluate(()=>({
+        chooserVisible:!document.querySelector("#mapActionChooser")?.classList.contains("hidden"),
+        pinPanelHidden:document.querySelector("#pinPanel")?.classList.contains("hidden"),
+        temporaryPickerVisible:!document.querySelector("#temporaryLayerPicker")?.classList.contains("hidden"),
+        temporaryPinVisible:!!document.querySelector(".temporary-pin-marker"),
+        markerCount:document.querySelectorAll(".pin-marker").length,
+        notice:document.querySelector("#notice")?.textContent,
+        release:window.Pin2MapObjectDialogCore?.okLabel,
+        pinEditorAvailable:typeof window.Pin2MapPinEditorView,
+        notesEditorAvailable:typeof window.Pin2MapPinNoteEditor,
+        layerPickerAvailable:typeof window.Pin2MapObjectLayerPicker,
+        deleteControllerAvailable:typeof window.Pin2MapObjectDeleteDialog
+      }));
+      console.error("[visual] pin open diagnostic",JSON.stringify(diagnostic),
+        "page errors:",JSON.stringify(errors));
+      throw error;
+    }
     await page.waitForTimeout(200);
     const m=await metrics(page);
     if(viewport.width<=375){
