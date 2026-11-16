@@ -2145,3 +2145,28 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #geometryLayerMenu .pin-layer-filter-clear:disabled{color:#98a4af;opacity:.55}
 #geometryLayerMenu .pin-layer-filter-input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+
+/* One opaque delete overlay footprint beneath the header for all objects. */
+#deleteDialog .dialog-actions,.object-delete-dialog .dialog-actions{
+ display:flex;align-items:center;justify-content:center;gap:10px;
+ flex-wrap:wrap;
+}
+#deleteDialog h2,.object-delete-dialog h2{text-align:center}
+.object-delete-dialog{
+ position:fixed;z-index:1850;inset:auto;box-sizing:border-box;
+ max-width:none;max-height:none;margin:0;padding:20px 18px;
+ overflow:auto;background:var(--p2m-pin-dialog-surface,#f7f8fa);
+ border:1px solid #cbd4df;border-top:0;border-radius:0 0 15px 15px;
+ box-shadow:0 8px 22px #152c4525;color:#26394c;
+}
+.object-delete-dialog::backdrop{background:transparent}
+.object-delete-dialog form{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:22px;height:100%;
+}
+.object-delete-dialog h2{margin:0;overflow-wrap:anywhere;font-size:17px}
+.object-delete-dialog .dialog-actions button{
+ min-height:38px;padding:6px 16px;border-radius:999px;font-size:15px;
+}
+.object-delete-dialog .dialog-actions .danger{background:#bd2638;color:#fff}
+.object-delete-dialog .dialog-actions .secondary{background:#fff;color:#26394c}

@@ -1,99 +1,17 @@
 "use strict";
-/* Single pin deletion confirmation. UI only: the confirmed pin id is passed
- * to application code. Never mutate project state or persistent data here. */
+/* Pin-specific adapter over the shared object deletion controller. */
 (function(root){
-  class PinDeleteDialog{
-    constructor({getElement,getSelectedPinId,onConfirm}){
-      if([getElement,getSelectedPinId,onConfirm].some(fn=>typeof fn!=="function"))
-        throw new TypeError("Pin delete dialog dependencies required");
-      this.element=getElement;
-      this.getSelectedPinId=getSelectedPinId;
-      this.onConfirm=onConfirm;
-      this.dialog=this.element("deleteDialog");
-      this.pendingId=null;
-      this.listeners=[];
-    }
-    positionOverPanel(){
-      const panel=this.element("pinPanel");
-      const head=panel?.querySelector?.(".pin-editor-head");
-      if(!panel?.getBoundingClientRect||!head?.getBoundingClientRect)return;
-      const bounds=panel.getBoundingClientRect();
-      const top=head.getBoundingClientRect().bottom+7;
-      this.dialog.style.left=bounds.left+"px";
-      this.dialog.style.top=top+"px";
-      this.dialog.style.width=bounds.width+"px";
-      this.dialog.style.height=Math.max(110,bounds.bottom-top)+"px";
-    }
-    bind(){
-      if(this.listeners.length)return;
-      const button=this.element("deletePin");
-      // Explicit cross-device opened-state contract for an internal
-      // subdialog. Never infer it from hover, :active or iOS touch styling.
-      const setExpanded=open=>{
-        button.setAttribute("aria-expanded",String(open));
-        button.classList.toggle("is-active",open);
-      };
-      setExpanded(false);
-      const onClick=()=>{
-        const id=this.getSelectedPinId();
-        if(this.dialog.open){
-          // A second tap on the SAME blue trigger turns the subdialog off.
-          // Closing without "confirm" must never delete anything.
-          this.dialog.close("cancel");
-          return;
-        }
-        if(typeof id!=="string"||!id)return;
-        this.dialog.returnValue="cancel";
-        this.pendingId=id;
-        // Name is presentation-only and set via textContent, never HTML.
-        const name=this.element("pinName")?.value?.trim();
-        const nameLabel=this.element("deletePinName");
-        if(nameLabel)nameLabel.textContent=name||"Unbenannter Pin";
-        this.positionOverPanel();
-        try{
-          // showModal() makes the underlying trigger inert, preventing
-          // a genuine on/off button. show() keeps the header trigger usable;
-          // the snapshot id + explicit confirm still guard destructive action.
-          this.dialog.show();
-          setExpanded(true);
-        }catch(error){this.pendingId=null;setExpanded(false);throw error;}
-      };
-      const onEscape=event=>{
-        if(event.key!=="Escape"||!this.dialog.open)return;
-        event.preventDefault();
-        this.dialog.close("cancel");
-      };
-      const onClose=()=>{
-        setExpanded(false);
-        const id=this.pendingId;
-        this.pendingId=null;
-        if(id!==null&&this.dialog.returnValue==="confirm")this.onConfirm(id);
-      };
-      button.addEventListener("click",onClick);
-      this.dialog.addEventListener("close",onClose);
-      this.listeners=[{node:button,type:"click",handler:onClick},{node:this.dialog,type:"close",handler:onClose}];
-      // Nonmodal <dialog> does not receive the browser's implicit Escape
-      // cancellation: preserve the established behavior explicitly.
-      const doc=this.dialog.ownerDocument;
-      if(doc?.addEventListener){
-        doc.addEventListener("keydown",onEscape);
-        this.listeners.push({node:doc,type:"keydown",handler:onEscape});
-      }
-      const win=doc?.defaultView;
-      if(win?.addEventListener){
-        const reposition=()=>{if(this.dialog.open)this.positionOverPanel();};
-        win.addEventListener("resize",reposition);
-        this.listeners.push({node:win,type:"resize",handler:reposition});
-      }
-    }
-    dispose(){
-      for(const {node,type,handler} of this.listeners)node.removeEventListener(type,handler);
-      this.listeners=[];
-      this.element("deletePin").setAttribute("aria-expanded","false");
-      this.element("deletePin").classList.remove("is-active");
-      this.pendingId=null;
-    }
+ const Base=root.Pin2MapObjectDeleteDialog||
+  (typeof require==="function"?require("./object-delete-dialog.js"):null);
+ class PinDeleteDialog extends Base{
+  constructor({getElement,getSelectedPinId,onConfirm}){
+   super({getElement,getSelectedId:getSelectedPinId,onConfirm,
+    buttonId:"deletePin",dialogId:"deleteDialog",panelId:"pinPanel",
+    headerSelector:".pin-editor-head",nameId:"pinName",
+    nameLabelId:"deletePinName",objectType:()=>"Pin"});
+   this.getSelectedPinId=getSelectedPinId;
   }
-  root.Pin2MapPinDeleteDialog=PinDeleteDialog;
-  if(typeof module!=="undefined"&&module.exports)module.exports=PinDeleteDialog;
+ }
+ root.Pin2MapPinDeleteDialog=PinDeleteDialog;
+ if(typeof module!=="undefined"&&module.exports)module.exports=PinDeleteDialog;
 })(typeof window!=="undefined"?window:globalThis);

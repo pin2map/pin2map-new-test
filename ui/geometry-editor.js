@@ -12,6 +12,7 @@
       this.model=null;this.type=null;this.layers=[];
       this.popupMode=null;this.noteEditor=null;this.filterText="";
       this.panel=this.build();
+      this.buildDeleteOverlay();
       const Picker=root.Pin2MapObjectLayerPicker;
       if(!Picker)throw new TypeError("Shared object layer picker must load before geometry editor");
       this.layerPicker=new Picker({
@@ -55,7 +56,7 @@
       panel.id="geometryEditor";panel.className="geometry-editor object-editor hidden";
       panel.setAttribute("role","dialog");panel.setAttribute("aria-label","Objekt bearbeiten");
       const header=doc.createElement("div");header.className="geometry-head pin-editor-head object-editor-head";
-      const remove=this.makeButton("region-off","Fläche löschen",()=>this.toggleSub("delete"),"geometry-remove");
+      const remove=this.makeButton("region-off","Fläche löschen",()=>{},"geometry-remove");
       const field=doc.createElement("fieldset");field.className="pin-name-field";
       const legend=doc.createElement("legend");legend.id="geometryNameLegend";
       const name=doc.createElement("input");name.id="geometryName";
@@ -92,7 +93,7 @@
         if(this.popupMode==="url"&&!e.target.closest?.("#geometryUrlBlock,#geometryEditor .geometry-link"))this.dismissPopup();
       });
       this.doc.addEventListener("keydown",e=>{
-        if(e.key==="Escape"&&!panel.classList.contains("hidden")&&!this.noteEditor?.open){
+        if(e.key==="Escape"&&!panel.classList.contains("hidden")&&!this.noteEditor?.open&&!this.deleteController?.dialog.open){
           e.preventDefault();
           if(this.popupMode)this.dismissPopup();
           else if(!sub.classList.contains("hidden"))this.toggleSub(null);
@@ -161,6 +162,39 @@
         cancel.textContent="Abbrechen";cancel.addEventListener("click",()=>this.toggleSub(null));
         this.sub.append(heading,confirm,cancel);
       }
+    }
+
+    buildDeleteOverlay(){
+      const doc=this.doc,dialog=doc.createElement("dialog");
+      dialog.id="geometryDeleteDialog";
+      dialog.className="object-delete-dialog";
+      dialog.setAttribute("aria-labelledby","geometryDeleteQuestion");
+      const form=doc.createElement("form");form.method="dialog";
+      const title=doc.createElement("h2");title.id="geometryDeleteQuestion";
+      const actions=doc.createElement("div");actions.className="dialog-actions";
+      const confirm=doc.createElement("button");confirm.type="submit";
+      confirm.value="confirm";confirm.className="danger";confirm.textContent="Löschen";
+      const cancel=doc.createElement("button");cancel.type="submit";
+      cancel.value="cancel";cancel.className="secondary";cancel.textContent="Abbrechen";
+      actions.append(confirm,cancel);form.append(title,actions);dialog.append(form);
+      doc.body.append(dialog);
+      this.deleteDialog=dialog;
+      const Controller=root.Pin2MapObjectDeleteDialog;
+      if(!Controller)throw new Error("Shared object deletion controller missing");
+      this.deleteController=new Controller({
+        getElement:id=>({
+          geometryDeleteDialog:dialog,geometryDeleteTrigger:this.removeButton,
+          geometryEditor:this.panel,geometryName:this.nameInput,
+          geometryDeleteQuestion:title
+        })[id]||doc.getElementById(id),
+        getSelectedId:()=>this.model?.id||null,
+        onConfirm:id=>{const type=this.type;this.onDelete(type,id);this.close();},
+        buttonId:"geometryDeleteTrigger",dialogId:"geometryDeleteDialog",
+        panelId:"geometryEditor",headerSelector:".geometry-head",
+        nameId:"geometryName",nameLabelId:null,questionId:"geometryDeleteQuestion",
+        objectType:()=>this.core.objectType(this.model?.kind==="lake"?"lake":this.type)
+      });
+      this.deleteController.bind();
     }
 
     createAreaPopups(){
@@ -362,6 +396,7 @@
     close(notify=true){
       if(notify)this.onClose();
       this.dismissPopup();
+      this.deleteController?.close();
       if(this.noteEditor?.open)this.noteEditor.close();
       this.toggleSub(null);this.panel.classList.add("hidden");
       this.model=null;this.type=null;

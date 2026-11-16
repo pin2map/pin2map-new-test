@@ -92,6 +92,7 @@
 <script defer src="./ui/layer-view.js"></script>
 <script defer src="./ui/bulk-delete-dialog.js"></script>
 <script defer src="./ui/object-dialog-core.js"></script>
+<script defer src="./ui/object-delete-dialog.js"></script>
 <script defer src="./ui/pin-delete-dialog.js"></script>
 <script defer src="./ui/pin-layer-picker.js"></script>
 <script defer src="./adapters/storage/indexeddb-project-store.js"></script>
@@ -275,7 +276,7 @@
   <div id="moveBar" class="move-bar hidden" role="group" aria-label="Neue Pin-Position bestätigen"><span id="moveText">Neue Position</span><button id="confirmMove" data-pin-icon="check" type="button" disabled aria-label="Neue Position übernehmen" title="Neue Position übernehmen">✓</button><button id="cancelMove" data-pin-icon="x" type="button" aria-label="Verschieben abbrechen" title="Verschieben abbrechen">×</button></div>
   <dialog id="bulkDialog"><form method="dialog"><h2 id="bulkTitle"></h2><p id="bulkDescription"></p><div class="dialog-actions"><button value="cancel" class="secondary">Abbrechen</button><button value="confirm" class="danger">Löschen</button></div></form></dialog>
   <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
-  <dialog id="deleteDialog" aria-labelledby="deleteDialogTitle"><form method="dialog"><h2 id="deleteDialogTitle">Pin „<span id="deletePinName"></span>“ wirklich löschen?</h2><div class="dialog-actions"><button value="cancel" class="secondary">Abbrechen</button><button value="confirm" class="danger">Löschen</button></div></form></dialog>
+  <dialog id="deleteDialog" aria-labelledby="deleteDialogTitle"><form method="dialog"><h2 id="deleteDialogTitle">Pin „<span id="deletePinName"></span>“ wirklich löschen?</h2><div class="dialog-actions"><button value="confirm" class="danger">Löschen</button><button value="cancel" class="secondary">Abbrechen</button></div></form></dialog>
 </div>
 <footer class="sr-only">pin2map NEW Basisversion</footer>
 </body>
