@@ -2410,3 +2410,11 @@ body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control{
  display:flex;flex-direction:column;align-items:flex-start;gap:8px;
 }
 #app #layersPanel .layer-merge-guidance p{margin:0}
+
+/* v231: settings panel starts below both top-right circular launchers
+   (Layers and Favorites). Keeping launchers clickable may never cover the
+   panel's own close button. Preserve full menu dismissal without occlusion. */
+body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
+ top:calc(var(--p2m-top-corner-offset) + 2 * var(--p2m-map-circle-size) + 16px + env(safe-area-inset-top,0px))!important;
+ max-height:calc(100dvh - var(--p2m-top-corner-offset) - 2 * var(--p2m-map-circle-size) - 28px - env(safe-area-inset-top,0px));
+}
