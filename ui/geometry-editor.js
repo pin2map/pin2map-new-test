@@ -129,7 +129,7 @@
       }
       this.urlController.close();
       this.layerPicker.render({layers:this.layers,selectedLayerId:this.model.layerId});
-      this.layerDot=this.layerButton.querySelector(".pin-layer-dot");
+      this.layerDot=this.layerButton.children[1];
       this.layerPicker.setOpen(true);
     }
     toggleSub(type){
