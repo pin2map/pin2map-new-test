@@ -112,6 +112,9 @@
   }
   render({layers=this.values,counts=this.counts||{},
     geometryCounts=this.geometryCounts||{},selectedLayerId=this.selectedLayerId??null}={}){
+   // Private is always the first UI row, independent of any historical
+   // project order. Do not mutate/sort the persisted project array.
+   layers=[...layers].sort((a,b)=>a.id==="private"?-1:b.id==="private"?1:0);
    this.values=layers;this.counts=counts;this.geometryCounts=geometryCounts;
    this.selectedLayerId=selectedLayerId;
    const list=this.el("layersList"),select=this.el("pinLayer");
