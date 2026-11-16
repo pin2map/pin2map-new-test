@@ -2086,6 +2086,10 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .geometry-editor .geometry-layer-dot{position:absolute;right:0;bottom:0;width:10px;height:10px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #a7b4c1}
 #app .geometry-editor .geometry-link.has-url{color:#1764bf}
 #geometryLayerMenu.pin-layer-menu{position:fixed;z-index:1800;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;padding:6px;border:1px solid #c7d0db;border-radius:12px;background:#fff;box-shadow:0 10px 30px #152c4550}
+/* Both instances obey the SAME hidden-state contract; ID-specific flex
+   declarations must never override the menu's closed state. */
+#pinLayerMenu.pin-layer-menu.hidden,
+#geometryLayerMenu.pin-layer-menu.hidden{display:none}
 #geometryLayerMenu .pin-layer-option{display:flex;align-items:center;gap:10px;flex:0 0 auto;width:100%;min-height:39px;padding:7px 10px;border:1px solid transparent;border-radius:8px;background:#fff;color:#26394c;text-align:left;font-size:13px}
 #geometryLayerMenu .pin-layer-option[aria-selected="true"]{background:#e9f2fb;border-color:#c9dcf0}
 #geometryLayerMenu .pin-layer-option .pin-layer-dot{display:block;flex:0 0 11px;width:11px;height:11px;border-radius:50%}
