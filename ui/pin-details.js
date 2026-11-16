@@ -9,62 +9,22 @@
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
    this.onWikipedia=onWikipedia;this.onLayout=onLayout;
    this.pinId=null;this.mode="notes";this.urlSnapshot="";this.weatherMode=false;
-   this.keyboardAnchor=null;
-   // Popover must escape the map-clipped dialog just like the layer menu.
-   const popup=this.el("pinUrlBlock");
-   if(doc.body?.append)doc.body.append(popup);
-   this.onViewportChange=()=>{
-    if(this.mode!=="url")return;
-    if(this.keyboardAnchor){
-      // During iOS keyboard presentation the visual viewport shrinks and can
-      // scroll. Never recompute the popup against the keyboard's smaller size.
-      // Keep the same visual position by compensating only viewport scrolling.
-      const vv=doc.defaultView?.visualViewport;
-      const offset=vv?.offsetTop||0;
-      const popup=this.el("pinUrlBlock");
-      const desired=this.keyboardAnchor.top+offset-this.keyboardAnchor.visualOffsetTop;
-      popup.style.top=Math.max(offset+8,Math.min(desired,
-        offset+(vv?.height||doc.defaultView?.innerHeight||600)-popup.offsetHeight-8))+"px";
-      return;
-    }
-    this.positionPopup();
-   };
-   doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
-   doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
-   doc.defaultView?.visualViewport?.addEventListener?.("scroll",this.onViewportChange);
+   const Url=root.Pin2MapObjectUrlPopup;
+   if(!Url)throw new Error("Shared URL popup controller missing");
+   this.urlController=new Url({
+    document:doc,panel:this.el("pinPanel"),
+    header:this.el("pinPanel")?.querySelector?.(".pin-editor-head"),
+    footer:this.el("pinPanel")?.querySelector?.(".pin-actions"),
+    popup:this.el("pinUrlBlock"),trigger:this.el("pinUrlButton"),
+    input:this.el("pinUrl"),save:this.el("pinUrlSave"),open:this.el("pinUrlOpen"),
+    getValue:()=>this.urlSnapshot,
+    onSave:value=>{this.urlSnapshot=value;this.onUrl(value);},
+    onState:open=>{this.mode=open?"url":"notes";}
+   });
+
   }
-  positionPopup(){
-   const win=this.document.defaultView, popup=this.el("pinUrlBlock");
-   if(!win||!this.el("pinUrlButton").getBoundingClientRect)return;
-   const panel=this.el("pinPanel").getBoundingClientRect();
-   const trigger=this.el("pinUrlButton").getBoundingClientRect();
-   const vv=win.visualViewport;
-   const viewLeft=vv?.offsetLeft||0,viewTop=vv?.offsetTop||0;
-   const viewWidth=vv?.width||win.innerWidth,viewHeight=vv?.height||win.innerHeight;
-   const margin=12,panelInset=10,gap=8;
-   const width=Math.min(panel.width-panelInset*2,viewWidth-margin*2);
-   popup.style.width=Math.max(180,width)+"px";
-   // Symmetric inside the pin panel; no dependence on the URL button's x.
-   popup.style.left=Math.max(viewLeft+margin,panel.left+panelInset)+"px";
-   const navButton=this.el("pinPanel").querySelector?.(".pin-navigation-buttons button");
-   const nav=navButton?.getBoundingClientRect?.();
-   const preferredTop=nav?.height?nav.top+nav.height*.38:panel.top+70;
-   const upper=viewTop+margin;
-   const bottom=Math.min(trigger.top-gap,viewTop+viewHeight-margin);
-   // Keep long URLs legible even on small devices, without covering the footer.
-   const top=Math.max(upper,Math.min(preferredTop,bottom-170));
-   const height=Math.max(150,bottom-top);
-   popup.style.top=top+"px";
-   popup.style.height=Math.min(height,viewTop+viewHeight-margin-top)+"px";
-  }
-  show(mode){
-   this.mode=mode;
-   this.el("pinUrlBlock").classList.toggle("hidden",mode!=="url");
-   this.el("pinUrlButton").setAttribute("aria-expanded",String(mode==="url"));
-   this.el("pinUrlButton").classList.toggle("is-active",mode==="url");
-   if(mode==="url")this.positionPopup();
-   else this.keyboardAnchor=null;
-  }
+  positionPopup(){this.urlController.position();}
+  show(mode){this.urlController.show(mode==="url");}
   render(pin){
    if(!pin){this.pinId=null;this.show("notes");return;}
    if(this.pinId!==pin.id){
@@ -116,80 +76,18 @@
    }
    this.onLayout(false);
   }
-  normalizedUrl(raw){
-   if(root.Pin2MapObjectDialogCore)return root.Pin2MapObjectDialogCore.normalizedUrl(raw);
-   try{
-    if(!raw.trim())return null;
-    const url=new URL(raw.trim());
-    // Browser/deep-link schemes are data, not executable page code.
-    // Block script, data and local file URLs; permit mailto, obsidian,
-    // tel and other externally handled protocols.
-    const scheme=url.protocol.toLowerCase();
-    if(["javascript:","data:","vbscript:","file:","blob:","about:"].includes(scheme))return null;
-    return /^[a-z][a-z0-9+.-]*:$/.test(scheme)?url.href:null;
-   }catch(e){return null;}
-  }
-  refreshUrlOpen(){
-   const valid=this.normalizedUrl(this.el("pinUrl").value.trim());
-   const button=this.el("pinUrlOpen");
-   button.disabled=!valid;
-   button.classList.toggle("has-url",Boolean(valid));
-  }
-  closeTransient(){
-   if(this.mode!=="notes"){
-    this.el("pinUrl").value=this.urlSnapshot;
-    this.show("notes");
-   }
-  }
+  normalizedUrl(raw){return this.urlController.normalizedUrl(raw);}
+  refreshUrlOpen(){this.urlController.refresh();}
+  closeTransient(){this.urlController.close();}
   bind(){
    this.el("pinNotes").addEventListener("input",event=>this.onNote(event.target.value));
    this.el("pinNotes").addEventListener("focus",()=>this.onLayout(true));
-   this.el("pinUrl").addEventListener("focus",()=>{
-    if(this.mode!=="url")return;
-    const popup=this.el("pinUrlBlock");
-    this.keyboardAnchor={
-      top:Number.parseFloat(popup.style.top)||popup.getBoundingClientRect().top,
-      visualOffsetTop:this.document.defaultView?.visualViewport?.offsetTop||0
-    };
+   this.urlController.bind();
+   this.el("pinWikipedia").addEventListener("click",()=>{
+    this.closeTransient();this.onWikipedia();
    });
-   this.el("pinUrl").addEventListener("blur",()=>{
-    // Reposition on the next explicit open/resize, not while the keyboard
-    // animation is still active.
-    this.keyboardAnchor=null;
-   });
-   // Keep selected marker/dialog visible after iOS keyboard changes.
-   this.document.defaultView?.visualViewport?.addEventListener?.("resize",()=>{
-    if(this.document.activeElement===this.el("pinNotes"))this.onLayout(true);
-   });
-   this.el("pinUrl").addEventListener("input",()=>this.refreshUrlOpen());
-   this.el("pinUrlButton").addEventListener("click",()=>{
-    if(this.mode==="url"){this.closeTransient();return;}
-    this.el("pinUrl").value=this.urlSnapshot;
-    this.show("url");this.refreshUrlOpen();
-   });
-   this.el("pinUrlSave").addEventListener("click",()=>{
-    const value=this.el("pinUrl").value.trim();
-    if(value&&!this.normalizedUrl(value)){
-     this.el("pinUrl").setCustomValidity("Bitte eine gültige URL mit sicherem Protokoll eingeben");
-     this.el("pinUrl").reportValidity();this.el("pinUrl").setCustomValidity("");return;
-    }
-    this.urlSnapshot=value;this.onUrl(value);this.show("notes");
-    this.el("pinUrlButton").classList.toggle("has-url",Boolean(value));
-   });
-   this.el("pinUrlOpen").addEventListener("click",()=>{
-    const value=this.normalizedUrl(this.el("pinUrl").value);
-    if(value)root.open(value,"_blank","noopener,noreferrer");
-   });
-   this.el("pinWikipedia").addEventListener("click",()=>{this.closeTransient();this.onWikipedia();});
-   this.el("pinWeather").addEventListener("click",()=>{this.closeTransient();this.setWeather(!this.weatherMode);});
-   this.document.addEventListener?.("pointerdown",event=>{
-    if(this.mode==="url"&&!event.target.closest?.("#pinUrlBlock,#pinUrlButton"))
-     this.closeTransient();
-   });
-   this.document.addEventListener?.("keydown",event=>{
-    if(this.mode==="url"&&event.key==="Escape"){
-     event.preventDefault();this.closeTransient();this.el("pinUrlButton").focus?.();
-    }
+   this.el("pinWeather").addEventListener("click",()=>{
+    this.closeTransient();this.setWeather(!this.weatherMode);
    });
    // Routing/GPX transport controls intentionally have NO handlers.
   }

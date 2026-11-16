@@ -1,6 +1,8 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
+require("../ui/object-dialog-core.js");
+require("../ui/object-url-popup.js");
 const PinDetails=require("../ui/pin-details.js");
 const ops=require("../application/pin-operations.js");
 const domain=require("../domain/project-model.js");

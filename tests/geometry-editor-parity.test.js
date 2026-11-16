@@ -6,6 +6,7 @@ require("../ui/pin-layer-picker.js");
 require("../ui/search-type-menu.js");
 require("../ui/object-dialog-core.js");
 require("../ui/object-delete-dialog.js");
+require("../ui/object-url-popup.js");
 const GeometryEditor=require("../ui/geometry-editor.js");
 class Element{
   constructor(tag="div"){

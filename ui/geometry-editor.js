@@ -13,6 +13,17 @@
       this.popupMode=null;this.noteEditor=null;this.filterText="";
       this.panel=this.build();
       this.buildDeleteOverlay();
+      const Url=root.Pin2MapObjectUrlPopup;
+      if(!Url)throw new Error("Shared URL popup controller missing");
+      this.urlController=new Url({
+        document:this.doc,panel:this.panel,header:this.header,footer:this.actions,
+        popup:this.urlPopup,trigger:this.linkButton,input:this.urlInput,
+        save:this.urlSave,open:this.urlOpen,bindTrigger:false,
+        getValue:()=>this.model?.url||"",
+        onSave:value=>{this.update({url:value});this.linkButton.classList.toggle("has-url",Boolean(value));},
+        onState:open=>{this.popupMode=open?"url":null;}
+      });
+      this.urlController.bind();
       const Picker=root.Pin2MapObjectLayerPicker;
       if(!Picker)throw new TypeError("Shared object layer picker must load before geometry editor");
       this.layerPicker=new Picker({
@@ -221,29 +232,6 @@
       field.append(legend,input);actions.append(save,open);popup.append(field,actions);
       doc.body.append(popup);
       this.urlPopup=popup;this.urlLegend=legend;this.urlInput=input;this.urlSave=save;this.urlOpen=open;
-      const validate=()=>this.normalizedUrl(input.value);
-      input.addEventListener("input",()=>{
-        open.disabled=!validate();open.classList.toggle("has-url",!open.disabled);
-      });
-      input.addEventListener("focus",()=>{
-        if(this.popupMode!=="url")return;
-        const vv=this.doc.defaultView?.visualViewport;
-        this.urlKeyboardAnchor={top:parseFloat(popup.style.top)||popup.getBoundingClientRect().top,
-          visualOffsetTop:vv?.offsetTop||0};
-      });
-      input.addEventListener("blur",()=>{this.urlKeyboardAnchor=null;});
-      save.addEventListener("click",()=>{
-        const value=input.value.trim();
-        if(value&&!validate()){
-          input.setCustomValidity("Bitte eine gültige URL mit sicherem Protokoll eingeben");
-          input.reportValidity();input.setCustomValidity("");return;
-        }
-        this.update({url:value});this.linkButton.classList.toggle("has-url",Boolean(value));
-        this.dismissPopup();
-      });
-      open.addEventListener("click",()=>{
-        const url=validate();if(url)root.open(url,"_blank","noopener,noreferrer");
-      });
       const note=doc.createElement("section");note.id="geometryMobileNoteEditor";
       note.className="pin-note-editor hidden";note.setAttribute("role","dialog");
       note.setAttribute("aria-modal","true");note.setAttribute("aria-label","Flächen Kommentare");
@@ -269,9 +257,7 @@
         });
         this.noteEditor.bind();
       }
-      this.doc.defaultView?.visualViewport?.addEventListener?.("resize",()=>{
-        if(this.popupMode==="url")this.positionAreaPopup("url",true);
-      });
+
     }
     normalizedUrl(raw){
       return this.core.normalizedUrl(raw);
@@ -292,7 +278,8 @@
       this.popupMode=null;
       if(this.layerPicker)this.layerPicker.setOpen(false);
       else if(this.layerMenu)this.layerMenu.classList.add("hidden");
-      if(this.urlPopup)this.urlPopup.classList.add("hidden");
+      if(this.urlController)this.urlController.close();
+      else if(this.urlPopup)this.urlPopup.classList.add("hidden");
       this.urlKeyboardAnchor=null;
       this.layerButton?.setAttribute("aria-expanded","false");
       this.linkButton?.setAttribute("aria-expanded","false");
@@ -352,11 +339,7 @@
       const button=mode==="layer"?this.layerButton:this.linkButton;
       button.setAttribute("aria-expanded","true");
       if(mode==="url"){
-        this.urlInput.value=this.model.url||"";
-        this.urlOpen.disabled=!this.normalizedUrl(this.urlInput.value);
-        this.urlOpen.classList.toggle("has-url",!this.urlOpen.disabled);
-        this.urlPopup.classList.remove("hidden");
-        this.positionAreaPopup("url");
+        this.urlController.show(true);
         return;
       }
       this.layerPicker.render({layers:this.layers,selectedLayerId:this.model.layerId});
