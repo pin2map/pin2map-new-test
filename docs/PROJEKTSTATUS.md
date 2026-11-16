@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-16 (Entwicklung **v219**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur als Testversion veröffentlicht, **keine Gesamtfreigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-16 (Entwicklung **v220**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur als Testversion veröffentlicht, **keine Gesamtfreigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -1363,3 +1363,8 @@ Die ersten v217-Runs belegten: Architektur und Node bestanden; der gemeinsame De
 ### v219 – Merge-Commit im Browser und Dialog-Abbruchschutz (16.11.2026)
 
 Der vollständige Dialog-Chromium-Test prüft jetzt auf 390×844 und 1280×800 nicht nur Zielwahl und Abbrechen, sondern führt danach die Zusammenführung wirklich aus, kontrolliert das Verschwinden der Quelle, Erhalt von Ziel und Privat und liest die neue Ebenenliste erneut aus IndexedDB. Beim erneuten Öffnen eines durch Außenklick/Overlay-Wechsel versteckten Ebenendialogs werden nur flüchtige Merge-Auswahl-/Zielzustände verworfen, ohne Daten zu verändern. Service-Worker-Kennung v219. Die v218-Node-Regressionsverträge für explizites `source="gps"` sind nachgezogene Tests, keine neuen Persistenzregeln. Abschlussbelege der v219-Pipeline sind getrennt zu prüfen; keine Freigabe für `main` ohne grüne Gates.
+
+
+### v220 – IndexedDB-Merge-Nachweis ohne Schreib-Race (16.11.2026)
+
+Der v219-Chromium-Test erreichte nach tatsächlich bestätigter Zusammenführung erfolgreich die neuen DOM-Prüfungen (Quelle entfernt, Ziel und Privat erhalten). Die sofortige IndexedDB-Abfrage fand einmal noch den alten Stand, weil der bestehende asynchrone Speicherpfad noch nicht abgeschlossen war. Der Test wartet nun gezielt (maximal 10 Sekunden) auf exakt die richtige persistent gespeicherte Ebenenkonstellation, statt ein früheres Zwischenergebnis als Anwendungsfehler zu behandeln. Fachliche Anforderungen und App-Datenmodell unverändert; PWA-Releasemarkierung v220 für saubere Preview-Auslieferung. Die alten unabhängigen Geometrie-End-to-End-Fälle bleiben Pflicht und werden weiter getrennt untersucht. CI-/HTTPS-Abnahme erst nach echten grünen Runs.

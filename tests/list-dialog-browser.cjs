@@ -116,6 +116,13 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await firstLayer.count(),0,"Source layer must be removed");
     assert.equal(await layer.count(),1,"Chosen target layer remains");
     assert.equal(await privateRow.count(),1,"Private remains untouched");
+    await page.waitForFunction(async()=>{
+      const db=await window.Pin2MapIndexedDBProjectStore.open();
+      try{
+        const names=(await db.loadProject()).layers.map(l=>l.name);
+        return !names.includes("Ebene 1")&&names.includes("Contract Test Layer")&&names.includes("Privat");
+      }finally{db.close();}
+    },null,{timeout:10000});
     const persistedLayers=await page.evaluate(async()=>{
       const db=await window.Pin2MapIndexedDBProjectStore.open();
       try{return (await db.loadProject()).layers.map(l=>l.name);}finally{db.close();}
