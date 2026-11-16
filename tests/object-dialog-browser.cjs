@@ -108,6 +108,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
         const box=el.getBoundingClientRect();
         return {width:box.width,height:box.height};
       });
+      editor.panel.setAttribute("data-test-object-panel","true");
+      editor.layerMenu.setAttribute("data-test-object-layer-menu","true");
+      editor.noteNodes.pinMobileNoteEditor.setAttribute("data-test-object-note-editor","true");
       window.__p2mDialogFixture={editor,item,layers,type};
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
@@ -173,42 +176,42 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       editor.show(type==="river"?"river":"area",item,layers,
        {x:innerWidth*.5,y:innerHeight*.65});
      });
-     const layerButton=page.locator("#geometryEditor .geometry-layer");
+     const layerButton=page.locator("[data-test-object-panel] .geometry-layer");
      await layerButton.click();
-     assert.equal(await page.locator("#geometryLayerMenu").isVisible(),true);
-     await page.locator("#geometryLayerMenu .pin-layer-filter-input").fill("bahN");
-     const visible=await page.locator("#geometryLayerMenu .pin-layer-option:visible").allTextContents();
+     assert.equal(await page.locator("[data-test-object-layer-menu]").isVisible(),true);
+     await page.locator("[data-test-object-layer-menu] .pin-layer-filter-input").fill("bahN");
+     const visible=await page.locator("[data-test-object-layer-menu] .pin-layer-option:visible").allTextContents();
      assert.equal(visible.length,1,JSON.stringify({type,viewport,visible}));
      assert.match(visible[0],/Bahnhöfe/);
      await layerButton.click();
-     assert.equal(await page.locator("#geometryLayerMenu").isHidden(),true,
+     assert.equal(await page.locator("[data-test-object-layer-menu]").isHidden(),true,
        "Layer button must toggle OFF on actual pointer click");
      await layerButton.click();
-     assert.equal(await page.locator("#geometryLayerMenu").isVisible(),true,
+     assert.equal(await page.locator("[data-test-object-layer-menu]").isVisible(),true,
        "Layer button must toggle ON again");
-     await page.locator("#geometryLayerMenu .pin-layer-filter-input").fill("bah");
-     await page.locator("#geometryLayerMenu .pin-layer-filter-clear").click();
-     assert.equal(await page.locator("#geometryLayerMenu .pin-layer-option:visible").count(),3,
+     await page.locator("[data-test-object-layer-menu] .pin-layer-filter-input").fill("bah");
+     await page.locator("[data-test-object-layer-menu] .pin-layer-filter-clear").click();
+     assert.equal(await page.locator("[data-test-object-layer-menu] .pin-layer-option:visible").count(),3,
        "Reset must show all layers via computed CSS visibility");
      await layerButton.click();
-     const notes=page.locator("#geometryEditor .object-editor-notes-input");
+     const notes=page.locator("[data-test-object-panel] .object-editor-notes-input");
      await notes.click();
-     const mobileEditor=page.locator("#geometryMobileNoteEditor");
+     const mobileEditor=page.locator("[data-test-object-note-editor]");
      if(viewport.width<=820){
       assert.equal(await mobileEditor.isVisible(),true,
        "Mobile/touch notes must open editor on field focus");
       const rect=await mobileEditor.boundingBox();
       if(viewport.width<=390)assert.ok(Math.abs(rect.width-viewport.width)<=1.5,
         "Mobile note editor must occupy visual viewport width");
-      await page.locator("#geometryNoteEditorDone").click();
+      await page.locator("[data-test-object-note-editor] .pin-note-editor-actions button:last-child").click();
       assert.equal(await mobileEditor.isHidden(),true);
      }else{
       assert.equal(await mobileEditor.isHidden(),true,
        "Desktop note textarea must remain inline until expanded");
-      await page.locator("#geometryEditor .object-editor-expand").click();
+      await page.locator("[data-test-object-panel] .object-editor-expand").click();
       assert.equal(await mobileEditor.isVisible(),true,
        "Explicit expand button must open desktop note window");
-      await page.locator("#geometryNoteEditorDone").click();
+      await page.locator("[data-test-object-note-editor] .pin-note-editor-actions button:last-child").click();
      }
      await page.evaluate(()=>window.__p2mDialogFixture.editor.close());
      console.log("PASS shared REAL interaction",type,viewport.width+"x"+viewport.height);
