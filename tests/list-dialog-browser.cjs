@@ -101,6 +101,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.notEqual(await coloredCircle.evaluate(el=>el.style.backgroundColor),"");
     assert.equal(await coloredCircle.evaluate(el=>getComputedStyle(el).borderTopColor),
       "rgba(0, 0, 0, 0)","Colored checkbox circle must have no frame");
+    assert.equal(await coloredCircle.locator(".layer-merge-check").evaluate(el=>
+      getComputedStyle(el).borderTopWidth),"0px",
+      "The white checkbox square must also have no gray border");
     const visibleBefore=await page.locator("#layersList .layer-eye").evaluateAll(
       buttons=>buttons.map(b=>b.classList.contains("is-visible")));
     await page.locator("#layersVisibilityCycle").click();
