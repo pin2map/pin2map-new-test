@@ -45,7 +45,9 @@
       const tip=this.el("pinDialogTip");
       tip.classList.toggle("hidden",!open);
       if(!open)return false;
-      const cssWidth=Number.parseFloat(getComputedStyle(panel).getPropertyValue("--p2m-object-dialog-width"))||390;
+      const cssWidth=Number.parseFloat(
+        this.document.defaultView?.getComputedStyle?.(panel)?.getPropertyValue?.("--p2m-object-dialog-width")
+      )||390;
       const positions=anchorGeometry({
         maxWidth:cssWidth,
         point:this.map.project({lat:pin.lat,lng:pin.lng}),
