@@ -98,10 +98,46 @@
     duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry||r.__plateChoice)?[]:
       placeDomain.duplicateCoordinates(results)
   });
+  const palette=window.Pin2MapLayerPalette;
   const layerView = new window.Pin2MapLayerView({
     getElement:$,document,
-    onVisibility:(id,visible)=>{filterOps.setLayerVisible(state,id,visible);save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();},
-    onDelete:id=>deleteLayerOrPrivatePins(id)
+    onVisibility:(id,visible)=>{
+      filterOps.setLayerVisible(state,id,visible);
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+      fitAllPins();
+    },
+    onDelete:id=>deleteLayerOrPrivatePins(id),
+    onDeleteContents:id=>{
+      if(!layerOps.deleteContents(state,id))return;
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+      showNotice("Alle Objekte der Ebene gelöscht");
+    },
+    onDeleteLayer:id=>{
+      if(!layerOps.removeEntireLayer(state,id))return;
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+      showNotice("Ebene und enthaltene Objekte gelöscht");
+    },
+    onRename:(id,name,color,colorIndex)=>{
+      if(!layerOps.renameAndColor(state,id,name,color,cleanText,palette.hex)){
+        showNotice("Name oder Farbe ungültig oder bereits vergeben");return;
+      }
+      save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
+    },
+    onCreate:(name,color,index)=>{
+      const ordinal=palette.nextLayerNumber(state);
+      let layer;
+      try{
+        layer=layerOps.create(state,{id:"layer-"+ordinal,name,cleanText,
+          colors:[color]});
+      }catch(error){showNotice(error.message);return;}
+      palette.recordLayer(state,layer,index);
+      save();renderLayers();renderMarkers();renderGeometry();
+      layerView.start(null);showNotice("Ebene hinzugefügt");
+    },
+    getPalette:()=>palette.colors(state).standard,
+    getNextIndex:()=>palette.nextLayerColorIndex(state),
+    getSuggestedName:()=>"Ebene "+palette.nextLayerNumber(state),
+    onMergeRequest:()=>showNotice("Zielebenen-Regel noch nicht festgelegt")
   });
   const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
   const pinInfoService=new window.Pin2MapPinInfoService.PinInfoService({
@@ -492,7 +528,13 @@
     layerView.render({
       layers:state.layers,
       counts:pinFilter.countByLayer(state.pins,state.layers),
-      selectedLayerId:selectedPin()?.layerId??null
+      selectedLayerId:selectedPin()?.layerId??null,
+      geometryCounts:Object.fromEntries(state.layers.map(layer=>{
+        const areas=(state.areas||[]).filter(x=>x.layerId===layer.id);
+        const rivers=(state.rivers||[]).filter(x=>x.layerId===layer.id);
+        return [layer.id,{areas:areas.length,
+          waters:areas.filter(a=>a.kind==="lake").length+rivers.length}];
+      }))
     });
   }
   const updatePanelLayout = ()=>mapOverlayLayout.layout();
@@ -826,7 +868,10 @@
     searchTypeMenu.bind();
     pinInfoMenu.bind();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
-    $("layersButton").addEventListener("click", () => overlayCoordinator.togglePanel("layersPanel"));
+    $("layersButton").addEventListener("click",()=>{
+      if(layerView.open){layerView.close();return;}
+      overlayCoordinator.closeAll();layerView.show();
+    });
     $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));
     $("refreshButton").addEventListener("click",()=>window.Pin2MapPwaRefresh.refresh({
       button:$("refreshButton"),
@@ -840,7 +885,28 @@
     $("showPinHitboxes").addEventListener("change",event=>writeHitboxDisplay(event.target.checked));
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
-    $("addLayer").addEventListener("click",()=>layerCreation.create());
+    $("addLayer").addEventListener("click",()=>layerView.start("new"));
+    $("layersClose").addEventListener("click",()=>layerView.close());
+    $("layersCloseBottom").addEventListener("click",()=>layerView.close());
+    $("layersUnite").addEventListener("click",()=>showNotice("Die Regel zur Zielebenenauswahl ist noch offen"));
+    const colorSettings=new window.Pin2MapColorSettingsView({
+      document,getElement:$,palette,
+      getProject:()=>state,onChange:()=>save()
+    });
+    colorSettings.bind();
+    $("settingsGeneralTab").addEventListener("click",()=>{
+      $("settingsGeneralContent").classList.remove("hidden");
+      $("settingsColorsContent").classList.add("hidden");
+      $("settingsGeneralTab").setAttribute("aria-selected","true");
+      $("settingsColorsTab").setAttribute("aria-selected","false");
+    });
+    $("settingsColorsTab").addEventListener("click",()=>{
+      $("settingsGeneralContent").classList.add("hidden");
+      $("settingsColorsContent").classList.remove("hidden");
+      $("settingsGeneralTab").setAttribute("aria-selected","false");
+      $("settingsColorsTab").setAttribute("aria-selected","true");
+      colorSettings.render();
+    });
 
     pinEditorActions.bind();
     pinDetails.bind();

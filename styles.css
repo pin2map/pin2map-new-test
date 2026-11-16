@@ -2225,3 +2225,52 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app .list-dialog-row button.list-toggle-active svg,
 #app .favorite-row button.list-toggle-active svg{color:#fff;stroke:#fff}
+
+/* List-dialog family: both Favorites and Layers derive their structure from
+   ui/list-dialog-core.js. These are only the Layer semantic color differences. */
+#app #layersPanel.layers-panel{
+  --p2m-favorites-surface:#d6eaff;
+  --p2m-favorites-light:#f0f7ff;
+  --p2m-favorites-border:#8db9e8;
+  background:var(--p2m-favorites-surface);
+  border-color:var(--p2m-favorites-border);
+  width:min(390px,calc(100vw - 20px));
+  overflow:visible;max-height:min(680px,calc(100dvh - 100px));
+}
+#app #layersPanel .favorite-row{background:var(--p2m-favorites-light);border-color:#bcd8f2}
+#app #layersPanel .favorite-confirm{background:#ddecfc;border-color:#a0c9eb}
+#app #layersPanel .favorite-confirm-danger{background:#f7cdcb;border-color:#d88a86}
+#app #layersPanel .favorite-row .favorite-icon{background:#fff}
+#app .list-dialog-row button.list-toggle-active,
+#app .favorite-row button.list-toggle-active{
+  background:#1764bf;color:#fff;border-color:#1764bf;
+  --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;
+}
+#app .list-dialog-row button.list-toggle-active svg,
+#app .favorite-row button.list-toggle-active svg{color:#fff;stroke:#fff}
+#app #layersPanel .layer-leading{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+#app #layersPanel .layer-merge-check{width:15px;height:15px;accent-color:#1764bf}
+#app #layersPanel .layer-eye{border:0;background:transparent;min-width:26px;width:26px;padding:0}
+#app #layersPanel .layer-eye.is-visible{color:#178754}
+#app #layersPanel .layer-eye.is-invisible{color:#c32339}
+#app #layersPanel .layer-is-hidden .favorite-details{color:#bf2838}
+#app #layersPanel .layer-is-hidden .favorite-name{color:#bf2838;text-decoration:line-through}
+#app #layersPanel .favorite-icon{flex-shrink:0}
+#app #layersPanel .favorite-name{overflow-wrap:anywhere}
+#app .layer-name-with-color{display:flex!important;flex-direction:row!important;align-items:center;gap:7px}
+#app .layer-swatch{flex:0 0 42px;width:42px;height:42px;border:1px solid #aabdd1;border-radius:6px}
+#app .layer-palette-choice{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-top:10px}
+#app .layer-palette-choice.hidden{display:none}
+#app .layer-palette-dot{width:100%;aspect-ratio:1;border-radius:50%;border:1px solid #b2bed0;padding:0;min-width:0}
+#app #layersPanel .favorite-confirm-actions.hidden{display:none}
+#app .settings-tabs{display:flex;gap:6px;margin:10px 0}
+#app .settings-tabs button{flex:1;border-radius:8px;border:1px solid #a7bacf;padding:8px;background:#edf3fa;color:#263a51}
+#app .settings-tabs button[aria-selected="true"]{background:#1764bf;color:#fff}
+#app #settingsColorsContent.hidden{display:none}
+#app .color-settings-section{margin:12px 0;padding:8px 0}
+#app .color-settings-section h3{margin:0 0 8px}
+#app .settings-color-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#app .settings-signal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+#app .settings-color-item{display:flex;flex-direction:column;gap:5px;min-width:0}
+#app .settings-color-swatch{display:block;width:100%;aspect-ratio:1;border-radius:12px;border:1px solid #aab8c8;cursor:pointer}
+#app .settings-color-hex{min-width:0;width:100%;box-sizing:border-box;font-size:12px;text-align:center}

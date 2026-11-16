@@ -14,7 +14,7 @@
   function defaultProject(){
     return {
       layers:[
-        {id:PRIVATE_ID,name:"Privat",color:DEFAULT_COLORS[0],visible:true},
+        {id:PRIVATE_ID,name:"Privat",color:"#808080",visible:true},
         {id:"layer-1",name:"Ebene 1",color:DEFAULT_COLORS[1],visible:true}
       ],
       pins:[],areas:[],rivers:[],favorites:[],

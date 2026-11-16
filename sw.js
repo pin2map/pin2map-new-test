@@ -92,6 +92,8 @@ const CORE=[
   "./ui/pin-overlap-zoom.js",
   "./ui/feature-overlap-zoom.js",
   "./ui/list-dialog-core.js",
+  "./ui/color-settings-view.js",
+  "./application/layer-palette.js",
   "./ui/map-favorites-panel.js",
   "./ui/pin-move-preview.js",
   "./ui/pin-move-guide.js",
