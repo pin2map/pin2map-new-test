@@ -207,8 +207,9 @@ async function zoom(page){
         assert.equal(await favoriteTrigger.isVisible(),true,
           "Active favorite trigger remains visible below Layers");
         assert.equal(await favoriteTrigger.getAttribute("aria-expanded"),"true");
-        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(233, 216, 75)",
-          "Expanded favorite trigger uses the warm yellow active tone");
+        assert.equal(await favoriteTrigger.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)",
+          "Expanded favorite trigger uses the shared blue active toggle tone");
+        assert.equal(await favoriteTrigger.getAttribute("aria-pressed"),"true");
         const circle=await favoriteTrigger.boundingBox();
         assert.ok(circle&&Math.abs(circle.width-circle.height)<1,
           "Upper-right favorite trigger must be exactly circular");
