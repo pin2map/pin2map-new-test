@@ -924,7 +924,8 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point");
     assert.match(await page.locator(".elevation-label").first().textContent(),/19 °C/);
     await page.locator("#layersButton").click();
-    await page.locator('#layersList input[aria-label="Wettertest sichtbar"]').check();
+    await page.locator("#layersList .list-dialog-row").filter({hasText:"Wettertest"})
+      .getByRole("button",{name:"Ebene einblenden"}).click();
     await page.waitForFunction(()=>document.querySelector("#pinInfoButton")?.getAttribute("aria-busy")==="true",
       null,{timeout:6000});
     assert.equal(await page.locator(".elevation-label.p2m-temperature-label").count(),2,
