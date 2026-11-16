@@ -30,8 +30,11 @@
    });
    doc.addEventListener("pointerdown",event=>{
     if(!this.open)return;
-    const inside=event.target.closest?.(
-      "#"+menuId+", #"+(pickerId||triggerId)+", #"+triggerId);
+    // Identity checks, not selector IDs: Geometry buttons are dynamically
+    // created and do not share the Pin's static element IDs.
+    const inside=event.target===trigger||trigger.contains?.(event.target)||
+      event.target===menu||menu.contains?.(event.target)||
+      (pickerId&&this.el(pickerId)?.contains?.(event.target));
     if(!inside)this.setOpen(false);
    });
   }
