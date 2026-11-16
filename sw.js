@@ -22,6 +22,7 @@ const CORE=[
   "./application/pin-session.js",
   "./application/filter-operations.js",
   "./application/fit-visible-pins.js",
+  "./application/fit-visible-project.js",
   "./application/map-view-history.js",
   "./application/map-favorites.js",
   "./application/project-persistence.js",

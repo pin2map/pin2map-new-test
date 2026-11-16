@@ -9,6 +9,7 @@
   const pinOps = window.Pin2MapPinOperations;
   const pinFilter = window.Pin2MapPinFilter;
   const fitVisiblePins = window.Pin2MapFitVisiblePins;
+  const fitVisibleProject = window.Pin2MapFitVisibleProject;
   const filterOps = window.Pin2MapFilterOperations;
   const placeDomain = window.Pin2MapPlaceSearch;
   const geocoder=new window.Pin2MapNominatimGeocoder({
@@ -104,7 +105,8 @@
     onVisibility:(id,visible)=>{
       filterOps.setLayerVisible(state,id,visible);
       save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
-      fitAllPins();
+      fitVisibleProject.fit({project:state,pinFilter,currentFilter:currentPinFilter,
+        mapPort:mapAdapter,onFit:updatePanelLayout});
     },
     onDelete:id=>deleteLayerOrPrivatePins(id),
     onDeleteContents:id=>{
@@ -940,6 +942,9 @@
       defaults,privateLayerId:PRIVATE_ID,cleanupSearch:project=>placeSearch.cleanup(project)
     });
     if(!Array.isArray(state.favorites))state.favorites=[];
+    // The immutable private layer always uses the agreed medium gray,
+    // including restored projects created before the palette contract.
+    window.Pin2MapLayerPalette.repairPrivate(state);
     projectFeatures.ensure(state);
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
     geometryEditor=new window.Pin2MapGeometryEditor({
