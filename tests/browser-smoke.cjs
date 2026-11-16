@@ -546,10 +546,13 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator("#layersButton").click();
     await assertCircularControls(page,"layers panel");
-    step("layer creation via prompt persists new layer without affecting private pin");
-    page.once("dialog",dialog=>dialog.accept("Reisen"));
+    step("layer creation via shared inline editor persists new layer without affecting private pin");
     await page.locator("#addLayer").click();
-    await page.locator("#layersList .layer-row").filter({hasText:"Reisen"}).waitFor({state:"visible",timeout});
+    const inlineLayer=page.locator("#layersList .favorite-confirm");
+    await inlineLayer.waitFor({state:"visible",timeout});
+    await inlineLayer.locator(".favorite-name-input").fill("Reisen");
+    await inlineLayer.getByRole("button",{name:"Erstellen"}).click();
+    await page.locator("#layersList .list-dialog-row").filter({hasText:"Reisen"}).waitFor({state:"visible",timeout});
     await page.waitForTimeout(650);
     const layerNames=await page.evaluate(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
@@ -558,12 +561,12 @@ async function longPress(page,x,y,ms=725){
     });
     assert.ok(layerNames.includes("Reisen"),"New layer is saved in the existing project");
     console.log("[browser] PASS – create named layer, persisted in project");
-    await page.locator('#layersList .layer-delete[aria-label="Alle Pins in Privat löschen"]').click();
-    await page.locator("#bulkDialog").waitFor({state:"visible",timeout});
-    assert.equal(await page.locator("#bulkTitle").textContent(),"Alle Pins in Privat löschen?");
-    assert.match(await page.locator("#bulkDescription").textContent(),/1 Pins werden gelöscht\./);
-    await page.locator('#bulkDialog button[value="cancel"]').click();
-    await page.locator("#bulkDialog").waitFor({state:"hidden",timeout});
+    await page.locator('#layersList .favorite-remove[aria-label="Alle Objekte in Privat löschen"]').click();
+    const privateConfirm=page.locator("#layersList .favorite-confirm-danger");
+    await privateConfirm.waitFor({state:"visible",timeout});
+    assert.match(await privateConfirm.textContent(),/Alle Objekte in der Ebene/);
+    await privateConfirm.getByRole("button",{name:"Abbrechen"}).click();
+    await privateConfirm.waitFor({state:"hidden",timeout});
     assert.equal(await page.locator(".pin-marker").count(),1,"Cancel must preserve the existing private pin");
     await page.locator("#layersButton").click();
     await page.locator(".leaflet-marker-icon").first().click({force:true});
