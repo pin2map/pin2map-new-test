@@ -257,8 +257,15 @@ async function zoom(page){
         await page.locator("#layersButton").click();
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         assert.equal(await page.locator("#layersPanel").isVisible(),true);
-        await page.locator("#favoritesButton").click();
+        // Latest explicit rule: a dialog paints above even an overlapping
+        // launcher. Close the dialog by its own X rather than force-clicking
+        // the launcher through the dialog.
+        assert.equal(await page.locator("#layersPanel").evaluate(panel=>
+          Number(getComputedStyle(panel).zIndex)>
+          Number(getComputedStyle(document.querySelector("#favoritesButton")).zIndex)),true);
+        await page.locator("#layersClose").click();
         assert.equal(await page.locator("#layersPanel").isHidden(),true);
+        await page.locator("#favoritesButton").click();
         assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
         assert.equal(await page.locator("#layersButton").isVisible(),true);
         assert.equal(await page.locator("#map .leaflet-control-attribution").isVisible(),true);
