@@ -302,6 +302,11 @@ jobs:
           PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/geometry-popup-browser.cjs
 
+      - name: Verify published object dialog parity in Chromium
+        working-directory: preview-source
+        env:
+          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
+        run: node tests/object-dialog-browser.cjs
       - name: Verify published geometry searches and objects with Chromium
         working-directory: preview-source
         env:

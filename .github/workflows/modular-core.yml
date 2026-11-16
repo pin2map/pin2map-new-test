@@ -52,6 +52,8 @@ jobs:
           exit 1
       - name: Verify area URL popup placement in actual Chromium viewports
         run: node tests/geometry-popup-browser.cjs
+      - name: Test shared object dialog interactions and real button geometry
+        run: node tests/object-dialog-browser.cjs
       - name: Test real browser interactions and offline reload
         run: node tests/browser-smoke.cjs
       - name: Verify geometry search, polygons, lakes and rivers in Chromium
