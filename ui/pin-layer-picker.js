@@ -1,158 +1,171 @@
 "use strict";
-/*
- * Presentation-only colored layer picker for the pin editor. The native select
- * remains the single change event channel used by application logic. All DOM
- * content is created with textContent, never interpolated into HTML.
- */
+/* The SINGLE layer-selection component for pin, area, lake and river.
+ * Application state and persistence are injected through onSelect. */
 (function(root){
-  class PinLayerPicker{
-    constructor({getElement,document:doc,icons=root.Pin2MapIcons}){
-      if(typeof getElement!=="function"||!doc)throw new TypeError("Layer picker DOM dependencies required");
-      this.el=getElement;this.document=doc;this.icons=icons;
-      if(!icons||typeof icons.svg!=="function")throw new TypeError("Lucide icons required");
-      this.open=false;
-      this.filterText="";this.options=[];
-      // The menu is a viewport-level overlay. Keeping it inside the
-      // scroll-limited pin panel caused nested scrollbars on iPhone.
-      const menu=this.el("pinLayerMenu");
-      if(doc.body&&typeof doc.body.append==="function")doc.body.append(menu);
-      this.onViewportChange=()=>{if(this.open)this.positionMenu();};
-      doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
-      doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
-      this.el("pinLayerTrigger").addEventListener("click",()=>this.setOpen(!this.open));
-      this.el("pinLayerMenu").addEventListener("keydown",event=>{
-        if(event.key==="Escape"){event.preventDefault();this.setOpen(false);this.el("pinLayerTrigger").focus();}
-      });
-      doc.addEventListener("pointerdown",event=>{
-        if(!event.target.closest?.("#pinLayerPicker, #pinLayerMenu"))this.setOpen(false);
-      });
+ class ObjectLayerPicker{
+  constructor({getElement,document:doc,icons=root.Pin2MapIcons,
+    triggerId="pinLayerTrigger",menuId="pinLayerMenu",panelId="pinPanel",
+    pickerId="pinLayerPicker",selectId="pinLayer",onSelect=null,
+    contained=false,header=null,actions=null}){
+   if(typeof getElement!=="function"||!doc||!icons?.svg)
+     throw new TypeError("Object layer picker dependencies required");
+   this.el=getElement;this.doc=doc;this.icons=icons;this.document=doc;
+   this.triggerId=triggerId;this.menuId=menuId;this.panelId=panelId;
+   this.pickerId=pickerId;this.selectId=selectId;this.onSelect=onSelect;
+   this.contained=contained;this.header=header;this.actions=actions;
+   this.open=false;this.filterText="";this.options=[];
+   const menu=this.el(menuId),trigger=this.el(triggerId);
+   if(!menu||!trigger)throw new TypeError("Layer menu and trigger required");
+   if(doc.body?.append)doc.body.append(menu);
+   this.onViewportChange=()=>{if(this.open)this.positionMenu();};
+   doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
+   doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
+   trigger.addEventListener("click",()=>this.setOpen(!this.open));
+   menu.addEventListener("keydown",event=>{
+    if(event.key==="Escape"){
+     event.preventDefault();event.stopPropagation();
+     this.setOpen(false);trigger.focus?.();
     }
-    visibilityIcon(visible){
-      const icon=this.icons.svg(visible?"eye":"eye-off",this.document);
-      icon.classList.add("pin-layer-visibility-icon");
-      return icon;
-    }
-    visibilityLabel(visible){
-      return visible?"Sichtbar":"Ausgeblendet";
-    }
-    positionMenu(){
-      const trigger=this.el("pinLayerTrigger").getBoundingClientRect();
-      const menu=this.el("pinLayerMenu");
-      const view=this.document.defaultView;
-      if(!view)return;
-      const viewport=view.visualViewport;
-      const left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0;
-      const width=viewport?.width||view.innerWidth;
-      const height=viewport?.height||view.innerHeight;
-      const margin=12,gap=8;
-      // A fixed width gives long layer names room without expanding the dialog.
-      const menuWidth=Math.min(260,width-2*margin);
-      const availableAbove=trigger.top-(top+margin)-gap;
-      const availableBelow=(top+height-margin)-trigger.bottom-gap;
-      const placeAbove=availableAbove>=Math.min(238,availableBelow);
-      const space=Math.max(72,placeAbove?availableAbove:availableBelow);
-      const maxHeight=Math.min(260,space);
-      menu.style.width=menuWidth+"px";
-      menu.style.maxHeight=maxHeight+"px";
-      menu.style.left=Math.max(left+margin,Math.min(trigger.left,left+width-menuWidth-margin))+"px";
-      menu.style.top=(placeAbove
-        ?Math.max(top+margin,trigger.top-gap-Math.min(menu.scrollHeight,maxHeight))
-        :trigger.bottom+gap)+"px";
-    }
-    setOpen(open){
-      this.open=Boolean(open);
-      if(this.open){
-        this.filterText="";if(this.filterInput)this.filterInput.value="";
-      }
-      this.el("pinLayerMenu").classList.toggle("hidden",!this.open);
-      this.el("pinLayerTrigger").setAttribute("aria-expanded",String(this.open));
-      this.el("pinPanel").classList.toggle("pin-layer-open",this.open);
-      if(this.open){
-        this.applyFilter();
-        this.positionMenu();
-      }
-    }
-    applyFilter(){
-      const query=this.filterText.trim().toLocaleLowerCase("de-DE");
-      let count=0;
-      for(const {button,name} of this.options){
-        button.hidden=Boolean(query)&&!name.toLocaleLowerCase("de-DE").includes(query);
-        if(!button.hidden)count++;
-      }
-      if(this.emptyMessage)this.emptyMessage.hidden=count>0;
-      if(this.clearButton)this.clearButton.disabled=!this.filterText;
-    }
-    render({layers,selectedLayerId}){
-      const trigger=this.el("pinLayerTrigger"),menu=this.el("pinLayerMenu");
-      const selected=layers.find(l=>l.id===selectedLayerId)||layers[0];
-      trigger.replaceChildren();
-      if(selected){
-        trigger.setAttribute("aria-label","Ebene: "+selected.name+", "+this.visibilityLabel(selected.visible));
-        const dot=this.document.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=selected.color;
-        const icon=this.icons.svg("layers-arrow-down",this.document);
-        icon.classList.add("pin-layer-trigger-icon");
-        trigger.append(icon,dot);
-      }
-      menu.replaceChildren();
-      this.options=[];
-      const filter=this.document.createElement("div");
-      filter.className="pin-layer-filter";
-      const input=this.document.createElement("input");
-      input.type="search";input.className="pin-layer-filter-input";
-      input.setAttribute("placeholder","Ebenen filtern");
-      input.setAttribute("aria-label","Ebenen nach Namen filtern");
-      input.setAttribute("autocomplete","off");
-      input.value=this.filterText;
-      const clear=this.document.createElement("button");
-      clear.type="button";clear.className="pin-layer-filter-clear";
-      clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
-      clear.setAttribute("title","Ebenenfilter zurücksetzen");
-      clear.append(this.icons.svg("funnel-x",this.document));
-      input.addEventListener("input",()=>{
-        this.filterText=input.value;
-        this.applyFilter();
-      });
-      clear.addEventListener("click",()=>{
-        this.filterText="";input.value="";this.applyFilter();
-        input.focus();
-      });
-      filter.append(input,clear);
-      menu.append(filter);
-      this.clearButton=clear;this.filterInput=input;
-      for(const layer of layers){
-        const option=this.document.createElement("button");
-        option.type="button";option.className="pin-layer-option";
-        option.setAttribute("role","option");
-        option.setAttribute("aria-selected",String(layer.id===selectedLayerId));
-        const dot=this.document.createElement("span");dot.className="pin-layer-dot";dot.style.backgroundColor=layer.color;
-        const name=this.document.createElement("span");name.className="pin-layer-name";name.textContent=layer.name;
-        const status=this.document.createElement("span");
-        status.className="pin-layer-visibility"+(layer.visible?"":" is-hidden");
-        status.title=this.visibilityLabel(layer.visible);
-        status.setAttribute("aria-label",this.visibilityLabel(layer.visible));
-        status.append(this.visibilityIcon(layer.visible));
-        option.setAttribute("aria-label",layer.name+", "+this.visibilityLabel(layer.visible));
-        option.append(dot,status,name);
-        if(!layer.visible)option.classList.add("is-invisible-layer");
-        option.addEventListener("click",()=>{
-          const select=this.el("pinLayer");
-          if(select.value!==layer.id){
-            select.value=layer.id;
-            select.dispatchEvent(new this.document.defaultView.Event("change",{bubbles:true}));
-          }
-          this.setOpen(false);
-          trigger.focus();
-        });
-        menu.append(option);
-        this.options.push({button:option,name:layer.name||""});
-      }
-      const empty=this.document.createElement("p");
-      empty.className="pin-layer-filter-empty";
-      empty.textContent="Keine passende Ebene.";
-      menu.append(empty);this.emptyMessage=empty;
-      this.applyFilter();
-    }
+   });
+   doc.addEventListener("pointerdown",event=>{
+    if(!this.open)return;
+    const inside=event.target.closest?.(
+      "#"+menuId+", #"+(pickerId||triggerId)+", #"+triggerId);
+    if(!inside)this.setOpen(false);
+   });
   }
-  root.Pin2MapPinLayerPicker=PinLayerPicker;
-  if(typeof module!=="undefined"&&module.exports)module.exports=PinLayerPicker;
+  visibilityIcon(visible){
+   const icon=this.icons.svg(visible?"eye":"eye-off",this.doc);
+   icon.classList.add("pin-layer-visibility-icon");
+   return icon;
+  }
+  visibilityLabel(visible){return visible?"Sichtbar":"Ausgeblendet";}
+  positionMenu(){
+   const trigger=this.el(this.triggerId).getBoundingClientRect();
+   const menu=this.el(this.menuId),win=this.doc.defaultView;
+   if(!win)return;
+   const vv=win.visualViewport,left=vv?.offsetLeft||0,top=vv?.offsetTop||0;
+   const width=vv?.width||win.innerWidth,height=vv?.height||win.innerHeight;
+   const margin=12,gap=8;
+   if(this.contained){
+    const panel=this.el(this.panelId).getBoundingClientRect();
+    const head=this.header?.getBoundingClientRect?.();
+    const actions=this.actions?.getBoundingClientRect?.();
+    const menuWidth=Math.min(260,Math.max(100,panel.width-20),width-24);
+    const upper=Math.max(panel.top+gap,(head?.bottom??panel.top)+gap,top+gap);
+    const lower=Math.min(panel.bottom-gap,(actions?.top??panel.bottom)-gap,top+height-gap);
+    menu.style.width=menuWidth+"px";
+    menu.style.maxHeight=Math.max(45,Math.min(310,lower-upper))+"px";
+    menu.style.left=Math.max(left+gap,Math.min(
+     panel.left+(panel.width-menuWidth)/2,left+width-menuWidth-gap))+"px";
+    menu.style.top=upper+"px";
+    return;
+   }
+   // Retain the verified Pin trigger anchoring for the existing Pin dialog.
+   const menuWidth=Math.min(260,width-2*margin);
+   const above=trigger.top-(top+margin)-gap;
+   const below=(top+height-margin)-trigger.bottom-gap;
+   const placeAbove=above>=Math.min(238,below);
+   const maxHeight=Math.min(260,Math.max(72,placeAbove?above:below));
+   menu.style.width=menuWidth+"px";menu.style.maxHeight=maxHeight+"px";
+   menu.style.left=Math.max(left+margin,
+    Math.min(trigger.left,left+width-menuWidth-margin))+"px";
+   menu.style.top=(placeAbove?
+    Math.max(top+margin,trigger.top-gap-Math.min(menu.scrollHeight,maxHeight)):
+    trigger.bottom+gap)+"px";
+  }
+  setOpen(open){
+   this.open=Boolean(open);
+   if(this.open){
+    this.filterText="";
+    if(this.filterInput)this.filterInput.value="";
+   }
+   const menu=this.el(this.menuId),trigger=this.el(this.triggerId);
+   menu.classList.toggle("hidden",!this.open);
+   trigger.setAttribute("aria-expanded",String(this.open));
+   trigger.classList.toggle("is-active",this.open);
+   this.el(this.panelId)?.classList.toggle("pin-layer-open",this.open);
+   if(this.open){this.applyFilter();this.positionMenu();}
+  }
+  applyFilter(){
+   const q=this.filterText.trim().toLocaleLowerCase("de-DE");
+   let count=0;
+   for(const {button,name} of this.options){
+    button.hidden=Boolean(q)&&!name.toLocaleLowerCase("de-DE").includes(q);
+    if(!button.hidden)count++;
+   }
+   if(this.emptyMessage)this.emptyMessage.hidden=count>0;
+   if(this.clearButton)this.clearButton.disabled=!this.filterText;
+  }
+  render({layers,selectedLayerId}){
+   const trigger=this.el(this.triggerId),menu=this.el(this.menuId);
+   const selected=layers.find(l=>l.id===selectedLayerId)||layers[0];
+   // Both the trigger and the colored-dot indicator have ONE owner.
+   trigger.replaceChildren();
+   if(selected){
+    trigger.setAttribute("aria-label","Ebene: "+selected.name+", "+this.visibilityLabel(selected.visible));
+    const icon=this.icons.svg("layers-arrow-down",this.doc);
+    icon.classList.add("pin-layer-trigger-icon");
+    const dot=this.doc.createElement("span");
+    dot.className="pin-layer-dot";dot.style.backgroundColor=selected.color;
+    trigger.append(icon,dot);
+   }
+   menu.replaceChildren();this.options=[];
+   const filter=this.doc.createElement("div");filter.className="pin-layer-filter";
+   const input=this.doc.createElement("input");input.type="search";
+   input.className="pin-layer-filter-input";input.placeholder="Ebenen filtern";
+   input.setAttribute("aria-label","Ebenen nach Namen filtern");
+   input.setAttribute("autocomplete","off");input.value=this.filterText;
+   const clear=this.doc.createElement("button");clear.type="button";
+   clear.className="pin-layer-filter-clear";
+   clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
+   clear.setAttribute("title","Ebenenfilter zurücksetzen");
+   clear.append(this.icons.svg("funnel-x",this.doc));
+   input.addEventListener("input",()=>{this.filterText=input.value;this.applyFilter();});
+   clear.addEventListener("click",()=>{
+    this.filterText="";input.value="";this.applyFilter();input.focus();
+   });
+   filter.append(input,clear);menu.append(filter);
+   this.clearButton=clear;this.filterInput=input;
+   for(const layer of layers){
+    const option=this.doc.createElement("button");option.type="button";
+    option.className="pin-layer-option";
+    option.setAttribute("role","option");
+    option.setAttribute("aria-selected",String(layer.id===selectedLayerId));
+    const dot=this.doc.createElement("span");
+    dot.className="pin-layer-dot";dot.style.backgroundColor=layer.color;
+    const name=this.doc.createElement("span");
+    name.className="pin-layer-name";name.textContent=layer.name;
+    const status=this.doc.createElement("span");
+    status.className="pin-layer-visibility"+(layer.visible?"":" is-hidden");
+    status.title=this.visibilityLabel(layer.visible);
+    status.setAttribute("aria-label",this.visibilityLabel(layer.visible));
+    status.append(this.visibilityIcon(layer.visible));
+    option.setAttribute("aria-label",layer.name+", "+this.visibilityLabel(layer.visible));
+    option.append(dot,status,name);
+    if(!layer.visible)option.classList.add("is-invisible-layer");
+    option.addEventListener("click",()=>{
+     if(this.onSelect)this.onSelect(layer.id,layer);
+     else{
+      const select=this.el(this.selectId);
+      if(select.value!==layer.id){
+       select.value=layer.id;
+       select.dispatchEvent(new this.doc.defaultView.Event("change",{bubbles:true}));
+      }
+     }
+     this.setOpen(false);trigger.focus?.();
+    });
+    menu.append(option);
+    this.options.push({button:option,name:layer.name||""});
+   }
+   const empty=this.doc.createElement("p");
+   empty.className="pin-layer-filter-empty";empty.textContent="Keine passende Ebene.";
+   menu.append(empty);this.emptyMessage=empty;
+   this.applyFilter();
+   if(this.open)this.positionMenu();
+  }
+ }
+ root.Pin2MapObjectLayerPicker=ObjectLayerPicker;
+ root.Pin2MapPinLayerPicker=ObjectLayerPicker; // compatibility with the Pin view
+ if(typeof module!=="undefined"&&module.exports)module.exports=ObjectLayerPicker;
 })(typeof window!=="undefined"?window:globalThis);
