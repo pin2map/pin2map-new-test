@@ -498,6 +498,13 @@ const viewports=[
    assert.equal(savedArea.layerId,"private");
    assert.equal(savedArea.geometry.type,"Polygon");
    await page.locator("#geometryNotes").fill("Testkommentar");
+   // Touch devices open the shared full-screen note editor. Save/close it
+   // explicitly before using the geometry dialog's own OK button.
+   if(await page.locator("#geometryMobileNoteEditor").isVisible()){
+     await page.locator("#geometryNoteEditorText").fill("Testkommentar");
+     await page.locator("#geometryNoteEditorDone").click();
+     assert.equal(await page.locator("#geometryMobileNoteEditor").isHidden(),true);
+   }
    await page.locator("#geometryNotes").blur();
    await page.locator('.geometry-actions .geometry-ok').click();
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
