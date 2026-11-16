@@ -188,9 +188,10 @@
    const danger=mode==="delete"||mode==="deleteAll";
    const section=this.doc.createElement("section");
    section.className="favorite-confirm list-dialog-confirm"+(danger?" favorite-confirm-danger":"");
-   const caption=this.doc.createElement(mode==="new"||mode==="rename"?"strong":"p");
-    caption.textContent=title;
-    if(mode==="new"||mode==="rename")caption.className="layer-editor-title";
+   const layerEditor=Boolean(renderExtra)&&(mode==="new"||mode==="rename");
+   const caption=this.doc.createElement(layerEditor?"strong":"p");
+   caption.textContent=title;
+   if(layerEditor)caption.className="layer-editor-title";
    section.append(caption);
    if(warning){const p=this.doc.createElement("p");p.textContent=warning;section.append(p);}
    let input=null;
