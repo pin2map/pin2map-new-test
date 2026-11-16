@@ -66,3 +66,22 @@ test("single green OK label and four-part footer can be changed in one place",()
   assert.ok(html.includes('src="./ui/'+module+'.js"'));
  }
 });
+
+test("shared picker uses DOM identity and the same rendered hidden-state semantics",()=>{
+ const css=read("styles.css");
+ assert.match(layers,/trigger\.contains\?\.\(event\.target\)/);
+ assert.match(layers,/menu\.contains\?\.\(event\.target\)/);
+ assert.doesNotMatch(layers,/event\.target\.closest\?\.\(/);
+ assert.match(css,/#geometryLayerMenu \.pin-layer-option\[hidden\]/);
+ assert.match(css,/#geometryLayerMenu\.pin-layer-menu\.hidden\{display:none\}/);
+ assert.match(css,/#app \.object-editor \.object-editor-notes textarea\.object-editor-notes-input\{\s*background:#fff/);
+});
+test("Pin and geometry launch the same note editor on mobile focus and explicit expand",()=>{
+ assert.match(core,/static bindNoteLaunch\(/);
+ assert.match(read("app.js"),/Pin2MapObjectDialogCore\.bindNoteLaunch\(/);
+ assert.match(geometry,/this\.core\.bindNoteLaunch\(/);
+ assert.match(core,/textarea\.addEventListener\("focus"/);
+ const css=read("styles.css");
+ assert.match(css,/\.pin-note-editor > textarea\{/);
+ assert.match(css,/\.pin-note-editor-actions button:last-child\{/);
+});
