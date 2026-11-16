@@ -60,12 +60,14 @@ test("optional GPX row and weather view are isolated from persistence",()=>{
 
 test("every internal pin-dialog view has a shared, device-independent blue open state",()=>{
  const css=read("styles.css"),html=read("index.html"),deleteUI=read("ui/pin-delete-dialog.js");
+ const commonDelete=read("ui/object-delete-dialog.js");
  assert.match(css,/#pinPanel button:is\(\[aria-expanded="true"\],\[aria-pressed="true"\],\.is-active\):not\(#pinNotesExpand\)/);
  assert.match(css,/#pinPanel #deletePin\.p2m-icon-control\[aria-expanded="true"\]/);
  assert.match(css,/--p2m-button-bg:#1764bf;--p2m-button-ink:#fff;--p2m-button-border:#1764bf/);
  assert.match(html,/id="deletePin"[^>]*aria-haspopup="dialog"[^>]*aria-controls="deleteDialog"[^>]*aria-expanded="false"/);
- assert.match(deleteUI,/setExpanded\(true\)/);
- assert.match(deleteUI,/const onClose=\(\)=>\{\s*setExpanded\(false\)/);
+ assert.match(deleteUI,/extends Base/);
+ assert.match(commonDelete,/setOpened\(true\)/);
+ assert.match(commonDelete,/const onClose=\(\)=>\{\s*setOpened\(false\)/);
  assert.match(css,/#deleteDialog\{[^}]*background-color:var\(--p2m-pin-dialog-surface\)/);
  assert.match(css,/#pinPanel\{[^}]*background:var\(--p2m-pin-dialog-surface\)/);
  assert.match(css,/:root\{--p2m-pin-dialog-surface:#f7f8fa\}/);
