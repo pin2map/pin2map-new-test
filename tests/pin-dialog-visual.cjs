@@ -386,6 +386,15 @@ async function metrics(page){
    await page.mouse.click(640,570);
    await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
    await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
+   await page.locator(".leaflet-marker-icon.p2m-temporary-pin").waitFor({state:"visible",timeout:15000});
+   await page.locator(".leaflet-marker-icon.p2m-temporary-pin").click({force:true});
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   await page.locator("#plateAreaConfirm .plate-area-yes").click();
+   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
+   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+   const desktopPin=page.locator(".leaflet-marker-icon.pin-icon:not(.p2m-temporary-pin)").last();
+   await desktopPin.waitFor({state:"visible"});
+   await desktopPin.click({force:true});
    await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
    const positions=await page.evaluate(()=>{
     const rect=s=>document.querySelector(s).getBoundingClientRect();
