@@ -98,7 +98,7 @@ test("every new object creation is routed through temporary preview",()=>{
  assert.match(app,/showObjectPreview\(\{kind:"river",label:/);
  assert.match(app,/if\(kind==="area"\|\|kind==="lake"\)\{previewAreaObject/);
  assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,"","map"\)/);
- assert.match(app,/onAccept:\(point,name,"gps"\)=>addPin\(point.lat,point.lng,name\)/);
+ assert.match(app,/onAccept:\(point,name\)=>addPin\(point.lat,point.lng,name,"gps"\)/);
  assert.match(app,/autoNamed:source==="map"&&!name/);
  assert.match(app,/onAccept:\(entry,anchor\)=>temporaryLayerPicker\.show\(entry,state\.layers,anchor\)/);
  assert.match(app,/onMove:entry=>beginTemporaryMove\(entry\)/);

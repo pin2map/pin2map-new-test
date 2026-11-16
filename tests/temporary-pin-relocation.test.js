@@ -94,7 +94,7 @@ test("only a map-click marker sets autoNamed, never search or GPS",()=>{
  assert.match(app,/function addPin\(lat,lng,name,source="search"\)/);
  assert.match(app,/autoNamed:source==="map"&&!name/);
  assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,"","map"\)/);
- assert.match(app,/onAccept:\(point,name,"gps"\)=>addPin\(point.lat,point.lng,name\)/);
+ assert.match(app,/onAccept:\(point,name\)=>addPin\(point.lat,point.lng,name,"gps"\)/);
  assert.match(app,/addPin:\(lat,lng,name\)=>addPin\(lat,lng,name\)/);
  assert.match(app,/onMove:entry=>beginTemporaryMove\(entry\)/);
 });

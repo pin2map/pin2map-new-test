@@ -57,6 +57,6 @@ test("GPS discovery remains UI-only and is part of the offline app shell",()=>{
  const sw=read("sw.js"),app=read("app.js"),source=read("ui/gps-location.js");
  assert.ok(sw.includes("ui/gps-location.js"));
  assert.ok(app.includes("new window.Pin2MapGpsLocationController"));
- assert.match(app,/onAccept:\(point,name,"gps"\)=>addPin\(point\.lat,point\.lng,name\)/);
+ assert.match(app,/onAccept:\(point,name\)=>addPin\(point\.lat,point\.lng,name,"gps"\)/);
  assert.doesNotMatch(source,/\bL\.|\bindexedDB\b/);
 });
