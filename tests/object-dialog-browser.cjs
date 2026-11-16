@@ -1,0 +1,129 @@
+"use strict";
+/* No user project data: isolated synthetic dialog instances in real Chromium.
+ * Covers the four object types against the same source and published preview.
+ */
+const assert=require("node:assert/strict");
+const {chromium}=require("playwright");
+const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
+(async()=>{
+ const browser=await chromium.launch({headless:true,...(process.env.PIN2MAP_CHROMIUM_EXECUTABLE?
+  {executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE}:{})});
+ try{
+  const sizes=[{width:390,height:844},{width:820,height:1180},{width:1280,height:800}];
+  for(const viewport of sizes){
+   const context=await browser.newContext({viewport,serviceWorkers:"block"});
+   try{
+    const page=await context.newPage();
+    await page.goto(base,{waitUntil:"domcontentloaded",timeout:35000});
+    await page.waitForFunction(()=>window.Pin2MapGeometryEditor&&window.Pin2MapPinNoteEditor&&
+      window.Pin2MapObjectLayerPicker&&window.Pin2MapObjectUrlPopup&&
+      window.Pin2MapObjectDeleteDialog&&window.Pin2MapObjectDialogCore&&
+      window.Pin2MapSearchTypeMenu?.CHOICES,
+      null,{timeout:15000});
+    for(const type of ["area","lake","river"]){
+     const state=await page.evaluate(({type,viewport})=>{
+      const updates=[],deletions=[],wikis=[];
+      const item={id:"synthetic-"+type,name:type==="river"?"Testfluss":type==="lake"?"Testsee":"Testgebiet",
+       layerId:"private",kind:type==="lake"?"lake":"area",note:"",url:""};
+      const editor=new window.Pin2MapGeometryEditor({
+       document,icons:window.Pin2MapIcons,
+       onUpdate:(_type,_id,patch)=>{updates.push(patch);Object.assign(item,patch);return item;},
+       onDelete:(_type,id)=>deletions.push(id),onWikipedia:n=>wikis.push(n)
+      });
+      const layers=[{id:"private",name:"Privat",color:"#326cc2",visible:true},
+       {id:"hidden",name:"Ebene 1",color:"#e78525",visible:false},
+       {id:"stations",name:"Bahnhöfe",color:"#10816a",visible:true}];
+      editor.show(type==="river"?"river":"area",item,layers,{
+       x:viewport.width*.5,y:viewport.height*.65});
+      const desc=window.Pin2MapObjectDialogCore.descriptor(type);
+      const symbol=editor.removeButton.querySelector("img,svg");
+      const title=editor.legend.textContent;
+      const notesVisible=getComputedStyle(editor.notesRow).display!=="none";
+      const footer=[...editor.actions.children].map(x=>x.className);
+      const panel=editor.panel.getBoundingClientRect();
+      editor.layerButton.click();
+      const picker=editor.layerPicker;
+      const before=picker.options.map(x=>!x.button.hidden);
+      picker.filterInput.value="BAHN";
+      picker.filterInput.dispatchEvent(new Event("input",{bubbles:true}));
+      const after=picker.options.map(x=>!x.button.hidden);
+      const clear=picker.clearButton.getBoundingClientRect();
+      const clearCss=getComputedStyle(picker.clearButton);
+      picker.clearButton.click();
+      const reset=picker.options.map(x=>!x.button.hidden);
+      const menu=editor.layerMenu.getBoundingClientRect();
+      picker.options[2].button.click();
+      const selected=item.layerId;
+      editor.linkButton.click();
+      const url=editor.urlPopup.getBoundingClientRect();
+      const header=editor.header.getBoundingClientRect();
+      const actions=editor.actions.getBoundingClientRect();
+      const legend=editor.urlLegend.textContent;
+      const legendAlign=getComputedStyle(editor.urlLegend).textAlign;
+      editor.urlInput.value="https://example.org/test-"+type;
+      editor.urlInput.dispatchEvent(new Event("input",{bubbles:true}));
+      const canOpen=!editor.urlOpen.disabled;
+      editor.urlSave.click();
+      const storedUrl=item.url;
+      editor.expandButton.click();
+      const openedNote=editor.noteEditor.open;
+      editor.noteNodes.pinNoteEditorText.value="Mehrzeilige Notiz";
+      editor.noteNodes.pinNoteEditorText.dispatchEvent(new Event("input",{bubbles:true}));
+      editor.noteNodes.pinNoteEditorDone.click();
+      const storedNote=item.note;
+      editor.removeButton.click();
+      const deleteOpen=editor.deleteDialog.open;
+      const question=editor.deleteDialog.querySelector("h2").textContent;
+      const overlay=editor.deleteDialog.getBoundingClientRect();
+      editor.removeButton.click();
+      const deleteClosed=!editor.deleteDialog.open;
+      const buttons=[editor.removeButton,editor.layerButton,editor.linkButton,
+       editor.wikiButton,editor.okButton].filter(Boolean).map(el=>{
+        const box=el.getBoundingClientRect();
+        return {width:box.width,height:box.height};
+      });
+      editor.close();
+      return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
+       notesVisible,footer,panel:{left:panel.left,right:panel.right},
+       before,after,reset,clear:{width:clear.width,height:clear.height,radius:clearCss.borderRadius},
+       menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom},
+       selected,url:{left:url.left,right:url.right,top:url.top,bottom:url.bottom},
+       headerBottom:header.bottom,actionsTop:actions.top,legend,legendAlign,canOpen,
+       storedUrl,openedNote,storedNote,deleteOpen,deleteClosed,question,
+       overlay:{top:overlay.top,bottom:overlay.bottom},buttons,updates:updates.length,
+       deletions:deletions.length};
+     },{type,viewport});
+     assert.equal(state.title,windowName(type),JSON.stringify(state));
+     assert.equal(state.notesVisible,true,JSON.stringify(state));
+     if(state.desc.asset)assert.equal(state.symbol,"./assets/"+state.desc.asset);
+     assert.deepEqual(state.before,[true,true,true],JSON.stringify(state));
+     assert.deepEqual(state.after,[false,false,true],JSON.stringify(state));
+     assert.deepEqual(state.reset,[true,true,true],JSON.stringify(state));
+     assert.ok(Math.abs(state.clear.width-state.clear.height)<=1,JSON.stringify(state));
+     assert.equal(state.clear.radius,"50%",JSON.stringify(state));
+     assert.equal(state.selected,"stations");
+     assert.ok(state.menu.left>=state.panel.left-2&&state.menu.right<=state.panel.right+2,
+       JSON.stringify(state));
+     assert.ok(state.menu.bottom<=state.actionsTop+2,JSON.stringify(state));
+     assert.ok(state.url.left>=state.panel.left-2&&state.url.right<=state.panel.right+2,
+       JSON.stringify(state));
+     assert.ok(state.url.bottom<=state.actionsTop+2,JSON.stringify(state));
+     assert.ok(state.url.top>=state.headerBottom-2,JSON.stringify(state));
+     assert.equal(state.legendAlign,"left");
+     assert.equal(state.canOpen,true);
+     assert.equal(state.storedUrl,"https://example.org/test-"+type);
+     assert.equal(state.openedNote,true);
+     assert.equal(state.storedNote,"Mehrzeilige Notiz");
+     assert.equal(state.deleteOpen,true);
+     assert.equal(state.deleteClosed,true);
+     assert.match(state.question,/wirklich löschen\?/);
+     assert.equal(state.deletions,0);
+     for(const button of state.buttons)assert.ok(Math.abs(button.width-button.height)<1.5,
+       JSON.stringify({type,viewport,button}));
+     console.log("PASS shared object dialog",type,viewport.width+"x"+viewport.height);
+    }
+   }finally{await context.close();}
+  }
+ }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});
+function windowName(type){return type==="area"?"Fläche Name":type==="lake"?"See Name":"Fluss Name";}
