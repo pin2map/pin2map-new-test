@@ -1722,8 +1722,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   --p2m-button-bg:var(--p2m-favorites-light);
   --p2m-button-border:var(--p2m-favorites-border);
 }
-#app #favoritesPanel button.p2m-icon-control:hover,
-#app #favoritesPanel button.p2m-icon-control:active{
+#app #favoritesPanel button.p2m-icon-control:not(.list-toggle-active):hover,
+#app #favoritesPanel button.p2m-icon-control:not(.list-toggle-active):active{
   background:var(--p2m-favorites-light)!important;
 }
 #app #favoritesPanel button,
@@ -1797,8 +1797,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   --p2m-button-bg:#fff;
   --p2m-button-border:#c9cbd0;
 }
-#app #favoritesPanel button.p2m-icon-control:hover,
-#app #favoritesPanel button.p2m-icon-control:active{
+#app #favoritesPanel button.p2m-icon-control:not(.list-toggle-active):hover,
+#app #favoritesPanel button.p2m-icon-control:not(.list-toggle-active):active{
   background:#fff!important;
 }
 #app #favoritesPanel .favorite-row .favorite-icon,
@@ -2218,6 +2218,15 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   appearance:none;-webkit-appearance:none;
 }
 
+/* The list toggle state has both panel IDs' specificity; older Favorites
+   white-surface rules apply ONLY while the toggle is inactive. */
+#app :is(#favoritesPanel,#layersPanel) .favorite-row .favorite-icon.list-toggle-active{
+  background:#1764bf;color:#fff;border-color:#1764bf;
+  --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;
+}
+#app :is(#favoritesPanel,#layersPanel) .favorite-row .favorite-icon.list-toggle-active svg{
+  color:#fff;stroke:#fff;
+}
 /* Shared list-control active state, independent of list-specific accent. */
 #app .list-dialog-row button.list-toggle-active,
 #app .favorite-row button.list-toggle-active{
