@@ -455,7 +455,13 @@ async function longPress(page,x,y,ms=725){
     assert.deepEqual(errors,[],"No JavaScript error may occur while opening the pin editor");
     const coordsBefore=await page.locator("#pinCoords").textContent();
     assert.match(coordsBefore,/Koordinaten:/);
-    assert.equal(await page.locator(".pin-marker").count(),1);
+    const pinDom=await page.locator(".pin-marker").evaluateAll(nodes=>nodes.map(node=>({
+      html:node.outerHTML.slice(0,220),
+      iconClass:node.closest(".leaflet-marker-icon")?.className||"",
+      parentTag:node.parentElement?.tagName||""
+    })));
+    if(pinDom.length!==1)console.error("[browser] marker diagnostic",JSON.stringify(pinDom));
+    assert.equal(pinDom.length,1);
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
     step("pin editor: rename and blur without changing pin coordinates");
     await page.locator("#pinName").fill("  Reise-Testpin  ");
