@@ -44,13 +44,23 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       editor.layerButton.click();
       const picker=editor.layerPicker;
       const before=picker.options.map(x=>!x.button.hidden);
+      editor.layerButton.click();
+      const closedOnSecondTap=!picker.open&&
+        getComputedStyle(editor.layerMenu).display==="none"&&
+        editor.layerButton.getAttribute("aria-expanded")==="false";
+      editor.layerButton.click();
+      const reopenedOnThirdTap=picker.open&&
+        editor.layerButton.getAttribute("aria-expanded")==="true";
       picker.filterInput.value="BAHN";
       picker.filterInput.dispatchEvent(new Event("input",{bubbles:true}));
       const after=picker.options.map(x=>!x.button.hidden);
+      const afterRendered=picker.options.map(x=>getComputedStyle(x.button).display!=="none");
+      const filterStaysOpen=picker.open;
       const clear=picker.clearButton.getBoundingClientRect();
       const clearRadius=getComputedStyle(picker.clearButton).borderRadius;
       picker.clearButton.click();
       const reset=picker.options.map(x=>!x.button.hidden);
+      const resetRendered=picker.options.map(x=>getComputedStyle(x.button).display!=="none");
       const menu=editor.layerMenu.getBoundingClientRect();
       picker.options[2].button.click();
       const selected=item.layerId;
@@ -67,6 +77,13 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const storedUrl=item.url;
       editor.expandButton.click();
       const openedNote=editor.noteEditor.open;
+      const noteArea=editor.notesInput.getBoundingClientRect();
+      const noteBg=getComputedStyle(editor.notesInput).backgroundColor;
+      const notePanel=editor.noteNodes.pinMobileNoteEditor.getBoundingClientRect();
+      const noteText=editor.noteNodes.pinNoteEditorText.getBoundingClientRect();
+      const noteStyles=getComputedStyle(editor.noteNodes.pinNoteEditorText);
+      const noteDoneColor=getComputedStyle(editor.noteNodes.pinNoteEditorDone).backgroundColor;
+      const noteViewport={width:innerWidth,height:innerHeight};
       editor.noteNodes.pinNoteEditorText.value="Mehrzeilige Notiz";
       editor.noteNodes.pinNoteEditorText.dispatchEvent(new Event("input",{bubbles:true}));
       editor.noteNodes.pinNoteEditorDone.click();
@@ -85,7 +102,12 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
        notesVisible,footer,panel:{left:panel.left,right:panel.right},
-       before,after,reset,clear:{width:clear.width,height:clear.height,radius:clearRadius},
+       before,after,reset,closedOnSecondTap,reopenedOnThirdTap,
+       afterRendered,resetRendered,filterStaysOpen,noteBg,noteDoneColor,
+       notePanel:{width:notePanel.width,height:notePanel.height},
+       noteText:{width:noteText.width,height:noteText.height},
+       noteStyles:{fontSize:noteStyles.fontSize,backgroundColor:noteStyles.backgroundColor},
+       noteViewport,clear:{width:clear.width,height:clear.height,radius:clearRadius},
        menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom},
        selected,url:{left:url.left,right:url.right,top:url.top,bottom:url.bottom},
        headerBottom:header.bottom,actionsTop:actions.top,legend,legendAlign,canOpen,
@@ -97,8 +119,21 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      assert.equal(state.notesVisible,true,JSON.stringify(state));
      if(state.desc.asset)assert.equal(state.symbol,"./assets/"+state.desc.asset);
      assert.deepEqual(state.before,[true,true,true],JSON.stringify(state));
+     assert.equal(state.closedOnSecondTap,true,JSON.stringify(state));
+     assert.equal(state.reopenedOnThirdTap,true,JSON.stringify(state));
+     assert.equal(state.filterStaysOpen,true,JSON.stringify(state));
      assert.deepEqual(state.after,[false,false,true],JSON.stringify(state));
+     assert.deepEqual(state.afterRendered,[false,false,true],JSON.stringify(state));
      assert.deepEqual(state.reset,[true,true,true],JSON.stringify(state));
+     assert.deepEqual(state.resetRendered,[true,true,true],JSON.stringify(state));
+     assert.equal(state.noteBg,"rgb(255, 255, 255)",JSON.stringify(state));
+     assert.equal(state.noteStyles.fontSize,"16px",JSON.stringify(state));
+     assert.ok(state.noteText.width>state.noteViewport.width*.5&&
+       state.noteText.height>=70,JSON.stringify(state));
+     assert.equal(state.noteDoneColor,"rgb(201, 238, 203)",JSON.stringify(state));
+     if(state.noteViewport.width<=390)assert.ok(
+       Math.abs(state.notePanel.width-state.noteViewport.width)<=1,
+       JSON.stringify(state));
      assert.ok(Math.abs(state.clear.width-state.clear.height)<=1,JSON.stringify(state));
      assert.equal(state.clear.radius,"50%",JSON.stringify(state));
      assert.equal(state.selected,"stations");

@@ -683,7 +683,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 .pin-note-editor-header{display:flex;align-items:center;min-height:32px;font-size:17px}
 .pin-note-editor-header strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#pinNoteEditorText{
+ .pin-note-editor > textarea{
   box-sizing:border-box;flex:1;min-height:70px;width:100%;
   padding:12px;border:1px solid #c7cfd9;border-radius:11px;
   resize:none;overflow-y:auto;font:400 16px/1.4 system-ui,-apple-system,sans-serif;
@@ -693,7 +693,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
   padding:9px 12px;border-radius:9px;border:1px solid #bdcbd9;
   background:#edf1f5;color:#26394c;font-weight:700;font-size:14px;
 }
-.pin-note-editor-actions #pinNoteEditorDone{
+.pin-note-editor-actions button:last-child{
   background:#c9eecb;color:#245b30;border-color:#a6ceaa;
 }
 .pin-note-editor-spacer{flex:1}
@@ -779,6 +779,7 @@ body.pin-note-editor-open{overflow:hidden}
 #pinLayerMenu .pin-layer-filter-empty[hidden],
 #temporaryLayerPicker .pin-layer-filter-empty[hidden],
 #pinLayerMenu .pin-layer-option[hidden],
+#geometryLayerMenu .pin-layer-option[hidden],
 #temporaryLayerPicker .temporary-layer-option[hidden]{display:none}
 #pinLayerMenu .pin-layer-filter-input:focus-visible,
 #temporaryLayerPicker .pin-layer-filter-input:focus-visible{
@@ -2200,3 +2201,15 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
  filter:drop-shadow(0 2px 1px #172e4650);
 }
 #app .object-editor-tip.hidden{display:none}
+
+/* Unified object dialog notes: the same white textarea surface as the
+   reference Pin and the same mobile note editor for all object types. */
+#app .object-editor .object-editor-notes textarea.object-editor-notes-input{
+  background:#fff;color:#283a4c;
+  border:0;outline:none;resize:none;
+}
+#geometryLayerMenu .pin-layer-filter-empty[hidden]{display:none}
+#geometryLayerMenu .pin-layer-option[hidden]{display:none}
+#geometryLayerMenu .pin-layer-filter-input::-webkit-search-cancel-button{
+  appearance:none;-webkit-appearance:none;
+}

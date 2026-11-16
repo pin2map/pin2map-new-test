@@ -78,7 +78,7 @@
       notes.classList.add("geometry-notes");notes.id="geometryNotesRow";
       textarea.id="geometryNotes";expand.classList.add("geometry-expand");
       let actions;
-      const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleSub("layer"),"geometry-layer");
+      const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleLayerPicker(),"geometry-layer");
       const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
       const link=this.makeButton("link-2","Link",()=>this.toggleSub("link"),"geometry-link");
       const wiki=this.makeButton("wikipedia","Wikipedia",()=>this.onWikipedia(this.model?.name||""),"geometry-wiki");
@@ -96,11 +96,8 @@
       const tip=doc.createElement("div");
       tip.className="object-editor-tip hidden";tip.setAttribute("aria-hidden","true");
       this.doc.getElementById("app").append(panel,tip);this.tip=tip;
-      this.doc.addEventListener("pointerdown",e=>{
-        if(!this.model)return;
-        if(this.popupMode==="layer"&&!e.target.closest?.("#geometryLayerMenu,#geometryEditor .geometry-layer"))this.dismissPopup();
-        if(this.popupMode==="url"&&!e.target.closest?.("#geometryUrlBlock,#geometryEditor .geometry-link"))this.dismissPopup();
-      });
+      // Popup outside-click, Escape and focus are owned by the common
+      // ObjectLayerPicker / ObjectUrlPopup controllers; not this view.
       this.doc.addEventListener("keydown",e=>{
         if(e.key==="Escape"&&!panel.classList.contains("hidden")&&!this.noteEditor?.open&&!this.deleteController?.dialog.open){
           e.preventDefault();
@@ -124,8 +121,19 @@
       const changed=this.onUpdate(this.type,this.model.id,patch);
       if(changed)this.model=changed;
     }
+    toggleLayerPicker(){
+      if(!this.model)return;
+      if(this.layerPicker.open){
+        this.layerPicker.setOpen(false);
+        return;
+      }
+      this.urlController.close();
+      this.layerPicker.render({layers:this.layers,selectedLayerId:this.model.layerId});
+      this.layerDot=this.layerButton.querySelector(".pin-layer-dot");
+      this.layerPicker.setOpen(true);
+    }
     toggleSub(type){
-      if(type==="layer")return this.showAreaPopup("layer");
+      if(type==="layer")return this.toggleLayerPicker();
       if(type==="link")return this.showAreaPopup("url");
       this.dismissPopup();
     }
@@ -230,21 +238,15 @@
       this.urlKeyboardAnchor=null;
       this.layerButton?.setAttribute("aria-expanded","false");
       this.linkButton?.setAttribute("aria-expanded","false");
-      if(this.layerMenu)this.layerMenu.replaceChildren();
+      // The shared picker exclusively owns filter DOM, rows and state.
     }
     showAreaPopup(mode){
       if(!this.model)return;
-      if(this.popupMode===mode){this.dismissPopup();return;}
-      this.dismissPopup();this.popupMode=mode;
-      const button=mode==="layer"?this.layerButton:this.linkButton;
-      button.setAttribute("aria-expanded","true");
-      if(mode==="url"){
-        this.urlController.show(true);
-        return;
-      }
-      this.layerPicker.render({layers:this.layers,selectedLayerId:this.model.layerId});
-      this.layerDot=this.layerButton.children[1];
-      this.layerPicker.setOpen(true);
+      if(mode==="layer")return this.toggleLayerPicker();
+      if(mode!=="url")return this.dismissPopup();
+      if(this.urlController.isOpen)return this.urlController.close();
+      this.layerPicker.setOpen(false);
+      this.urlController.show(true);
     }
 
     show(type,item,layers,screen){
