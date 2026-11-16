@@ -865,7 +865,7 @@
     pinInfoMenu.bind();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click",()=>{
-      if(layerView.open){layerView.close();return;}
+      if(!$("layersPanel").classList.contains("hidden")){layerView.close();return;}
       overlayCoordinator.closeAll();layerView.show();
     });
     $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));

@@ -21,7 +21,18 @@
    this.getSuggestedName=getSuggestedName;this.getNextIndex=getNextIndex;
    this.onClose=onClose;this.onOpen=onOpen;
    this.selectedIds=new Set();this.mergeMode=false;
+   this.counts={};this.geometryCounts={};this.selectedLayerId=null;
    if(this.el("layersSearch")&&this.el("layersSearchClear"))this.bindFilter();
+   // Other map overlays can hide our panel. Mirror that close into the
+   // shared controller so the next opening cannot be mistaken for a toggle-off.
+   const Observer=document.defaultView?.MutationObserver;
+   if(Observer&&this.el("layersPanel")){
+    this.visibilityObserver=new Observer(()=>{
+     if(this.el("layersPanel").classList.contains("hidden"))this.open=false;
+    });
+    this.visibilityObserver.observe(this.el("layersPanel"),
+      {attributes:true,attributeFilter:["class"]});
+   }
   }
   show(){
    this.open=true;this.mode=null;this.index=null;
@@ -99,8 +110,10 @@
    }
    return null;
   }
-  render({layers=this.values,counts={},geometryCounts={},selectedLayerId=null}={}){
+  render({layers=this.values,counts=this.counts||{},
+    geometryCounts=this.geometryCounts||{},selectedLayerId=this.selectedLayerId??null}={}){
    this.values=layers;this.counts=counts;this.geometryCounts=geometryCounts;
+   this.selectedLayerId=selectedLayerId;
    const list=this.el("layersList"),select=this.el("pinLayer");
    if(!list||!select)return;
    const previous=select.value;
