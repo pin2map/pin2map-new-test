@@ -2445,7 +2445,17 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
  box-shadow:none;
 }
 #app #layersPanel .layer-color-checkbox .layer-merge-check{
- outline:none;
+ -webkit-appearance:none;appearance:none;
+ background:#fff;border:0;border-radius:3px;
+ box-shadow:none;outline:none;position:relative;
+}
+#app #layersPanel .layer-color-checkbox .layer-merge-check:checked::after{
+ content:"";position:absolute;left:4px;top:2px;
+ width:8px;height:11px;border:solid #1764bf;border-width:0 3px 3px 0;
+ transform:rotate(45deg);
+}
+#app #layersPanel .layer-color-checkbox .layer-merge-check:focus-visible{
+ outline:2px solid #244c7a;outline-offset:3px;
 }
 #app #layersPanel .layer-reorder-help{
  white-space:normal;line-height:1.35;font-size:11px;
