@@ -2494,6 +2494,13 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 #app #layersPanel .layer-inline-editor .layer-editor-bottom .favorite-confirm-actions.hidden{
  display:none!important;
 }
+#app #layersPanel .layer-inline-editor .favorite-confirm-actions .favorite-action:not(.favorite-action-primary){
+ background:#eaf3ff;border-color:#a9c5df;color:#19436c;
+}
+#app #layersPanel .layer-inline-editor .favorite-confirm-actions .favorite-action-primary{
+ background:#1764bf;border-color:#1764bf;color:#fff;
+}
+
 #app #layersPanel .layer-inline-editor .layer-editor-bottom .layer-palette-choice{
  display:grid;grid-template-columns:repeat(12,minmax(0,1fr));
  align-items:center;gap:3px;width:100%;margin:0;height:44px;
