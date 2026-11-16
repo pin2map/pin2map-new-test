@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-16 (Entwicklung **v224**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur als Testversion veröffentlicht, **keine Gesamtfreigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-16 (Entwicklung **v225**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur als Testversion veröffentlicht, **keine Gesamtfreigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -1397,3 +1397,8 @@ Nach Wiederherstellung der Verbindung zeigte v222 erstmals den vollständigen GP
 **Filter-Menü-Grenze:** Im derzeitigen aktiven `index.html` existiert noch kein eigener Filter-Launcher/-Listendialog (nur die getrennten Such-/Zurücksetzen-Felder). Der zentrale Sortierport und das Verbot, beim Filteröffnen andere Karten-Controls auszublenden, sind dokumentiert. Eine konkrete Filterdialog-Anbindung kann deshalb nicht als im laufenden UI nachgewiesen gemeldet werden.
 
 **Prüfstatus:** Neu vorbereitete Unit-/Browser-Regressionen prüfen Privat als Merge-Quelle, Buttonzustände und vierstufige Sichtbarkeit; noch keine Grün-/Pages-/HTTPS-Gates dieser Revision zum Zeitpunkt der Vorbereitung. Vorgängerstand v223 hatte selbst noch ausstehende CI-/Preview-Gates. Keine iOS-Realgeräteabnahme behaupten.
+
+
+### v225 – Browser-Diagnose Suchpin-Fokus, neutraler Longtap (16.11.2026)
+
+Der v224-Node-Test und das Architektur-Gate waren grün; ebenso erreichten die neuen echten Chromium- und HTTPS-Dialogtests das jeweilige PASS. Die vollständigen Geometrie-End-to-End-Läufe blieben rot bei der veralteten Erwartung in `geometry-browser.cjs:884`, die einem **Kennzeichen-Suchpin (HVL/Rathenow)** beim Wiederöffnen automatische vollständige Namensmarkierung abverlangte. Das widerspricht der verbindlichen GPS-Variante A (ausschließlich neuer GPS-Pin). Der Test verlangt für den Kennzeichen-Pin nun ausdrücklich keine automatische Vollmarkierung. Unabhängige Verbesserung am gemeinsamen Longtap-Controller: Das reine Gedrückthalten ohne echte Fingerbewegung ändert keine Datenreihenfolge; erst Longpress plus Ziehen aktiviert das Verschieben zur Ablagelinie. PWA-Worker-Kennung v225; erneuter vollständiger Node-/Chromium-/Pages-/HTTPS-Live-Nachweis erforderlich.

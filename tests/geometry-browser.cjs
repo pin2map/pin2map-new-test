@@ -881,11 +881,11 @@ const viewports=[
    await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
-   await page.waitForFunction(()=>{
-     const el=document.querySelector("#pinName");
-     return !!el&&el.value.length>0&&document.activeElement===el&&
-       el.selectionStart===0&&el.selectionEnd===el.value.length;
-   },null,{timeout:4000});
+   // A plate-search pin is NOT a newly created GPS pin: opening it may
+   // not automatically focus or select its entire name.
+   assert.equal(await page.locator("#pinName").evaluate(el=>
+     document.activeElement===el&&el.selectionStart===0&&
+     el.selectionEnd===el.value.length),false);
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.some(pin=>

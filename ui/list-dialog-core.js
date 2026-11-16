@@ -107,7 +107,7 @@
     grip.addEventListener("pointerdown",event=>{
      if(event.button!==0||this.mode||event.isPrimary===false)return;
      const sourceId=row.dataset.itemId,origin={x:event.clientX,y:event.clientY};
-     let active=false,targetId=null,timeout=null;
+     let active=false,moved=false,targetId=null,timeout=null;
      const line=doc.createElement("div");
      line.className="list-reorder-insert";
      line.setAttribute("aria-hidden","true");
@@ -139,6 +139,8 @@
        return;
       }
       if(ev.cancelable)ev.preventDefault();
+      if(Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)<8)return;
+      moved=true;
       const candidate=targetAt(ev.clientY);
       targetId=candidate?.dataset.itemId||null;
       if(candidate){
@@ -150,7 +152,7 @@
      };
      const up=ev=>{
       if(ev.pointerId!==event.pointerId)return;
-      const committed=active&&targetId&&targetId!==sourceId;
+      const committed=active&&moved&&targetId&&targetId!==sourceId;
       if(active){
        this.reorderSuppressClick=true;
        win.setTimeout(()=>{this.reorderSuppressClick=false;},350);
@@ -164,11 +166,8 @@
       row.classList.add("list-reorder-source");
       list.append(line);
       const candidate=targetAt(origin.y);
-      targetId=candidate?.dataset.itemId||null;
-      if(candidate){
-       const rect=candidate.getBoundingClientRect(),frame=list.getBoundingClientRect();
-       line.style.top=(rect.top-frame.top+list.scrollTop)+"px";
-      }
+      targetId=null;
+      line.style.display="none";
      },480);
      doc.addEventListener("pointermove",move,{passive:false});
      doc.addEventListener("pointerup",up);
