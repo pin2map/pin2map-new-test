@@ -2217,3 +2217,11 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #geometryLayerMenu .pin-layer-filter-input::-webkit-search-cancel-button{
   appearance:none;-webkit-appearance:none;
 }
+
+/* Shared list-control active state, independent of list-specific accent. */
+#app .list-dialog-row button.list-toggle-active,
+#app .favorite-row button.list-toggle-active{
+ background:#1764bf;color:#fff;border-color:#1764bf;
+}
+#app .list-dialog-row button.list-toggle-active svg,
+#app .favorite-row button.list-toggle-active svg{color:#fff;stroke:#fff}
