@@ -94,9 +94,9 @@
    });
    return row;
   }
-  // Shared pointer reordering. Long-press only on the text label; all list
-  // consumers supply their own persistence/application callback and ID policy.
-  wireReorder({onMove,allow=()=>true,activation="longpress",handle="name"}){
+  // Shared long-press reordering. Insertion lines sit geometrically midway
+  // between their two immediate neighbors; no reorder on a stationary hold.
+  wireReorder({onMove,allow=()=>true,activation="longpress",handle="name",holdMs=450}){
    const list=this.el(this.listId);
    if(!list||typeof onMove!=="function"||typeof list.querySelectorAll!=="function")return;
    const doc=this.doc,win=doc.defaultView;
@@ -111,8 +111,7 @@
      const sourceId=row.dataset.itemId,origin={x:event.clientX,y:event.clientY};
      let active=false,moved=false,targetId=null,timeout=null;
      const line=doc.createElement("div");
-     line.className="list-reorder-insert";
-     line.setAttribute("aria-hidden","true");
+     line.className="list-reorder-insert";line.setAttribute("aria-hidden","true");
      const rows=()=>[...list.querySelectorAll(".list-dialog-row[data-item-id]")];
      const cleanup=()=>{
       if(timeout!==null)win.clearTimeout(timeout);
@@ -123,38 +122,38 @@
       list.classList.remove("list-reorder-active");
       line.remove();
      };
-     const targetAt=y=>{
-      const peers=rows().filter(candidate=>
-       candidate!==row&&allow(candidate.dataset.itemId));
-      if(!peers.length)return null;
-      let best=peers[0],dist=Infinity;
-      for(const candidate of peers){
-       const r=candidate.getBoundingClientRect(),delta=Math.abs(y-(r.top+r.bottom)/2);
-       if(delta<dist){best=candidate;dist=delta;}
-      }
-      return best;
+     const updateSlot=y=>{
+      const all=rows(),peers=all.filter(candidate=>candidate!==row);
+      if(!peers.length)return;
+      // Every slot is a gap, not the nearest row center. Private remains
+      // anchored at the start; never offer an insertion above it.
+      let slot=peers.findIndex(peer=>y<(
+       peer.getBoundingClientRect().top+peer.getBoundingClientRect().bottom)/2);
+      if(slot<0)slot=peers.length;
+      if(peers[0]?.dataset.itemId==="private")slot=Math.max(1,slot);
+      const before=peers[slot-1],after=peers[slot];
+      const frame=list.getBoundingClientRect();
+      const prevBottom=before?.getBoundingClientRect().bottom;
+      const nextTop=after?.getBoundingClientRect().top;
+      const position=before&&after?(prevBottom+nextTop)/2:
+       before?prevBottom+9:nextTop-9;
+      line.style.top=(position-frame.top+list.scrollTop)+"px";
+      line.style.display="block";
+      // The application reorder port accepts the target at the FINAL index.
+      const destination=all[Math.min(slot,all.length-1)];
+      targetId=destination?.dataset.itemId||null;
      };
      const move=ev=>{
       if(ev.pointerId!==event.pointerId)return;
+      const distance=Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y);
       if(!active){
-       const distance=Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y);
-       if(activation==="drag"&&distance>=8){
-        if(timeout!==null)win.clearTimeout(timeout);
-        activate();
-       }else if(distance>11)cancel();
-       if(!active)return;
+       // Moving before a long press is a normal scroll/tap, never a drag.
+       if(distance>11)cancel();
+       return;
       }
       if(ev.cancelable)ev.preventDefault();
-      if(Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)<8)return;
-      moved=true;
-      const candidate=targetAt(ev.clientY);
-      targetId=candidate?.dataset.itemId||null;
-      if(candidate){
-       const rect=candidate.getBoundingClientRect(),frame=list.getBoundingClientRect();
-       const after=rows().indexOf(row)<rows().indexOf(candidate);
-       line.style.top=(rect.top-frame.top+list.scrollTop+(after?rect.height:0))+"px";
-       line.style.display="block";
-      }else line.style.display="none";
+      if(distance<8&&!moved)return;
+      moved=true;updateSlot(ev.clientY);
      };
      const up=ev=>{
       if(ev.pointerId!==event.pointerId)return;
@@ -169,18 +168,14 @@
      const cancel=()=>cleanup();
      const activate=()=>{
       active=true;list.classList.add("list-reorder-active");
-      row.classList.add("list-reorder-source");
-      list.append(line);
-      const candidate=targetAt(origin.y);
-      targetId=null;
-      line.style.display="none";
+      row.classList.add("list-reorder-source");list.append(line);
+      targetId=null;line.style.display="none";
      };
-     if(activation!=="drag")timeout=win.setTimeout(activate,480);
+     timeout=win.setTimeout(activate,holdMs);
      doc.addEventListener("pointermove",move,{passive:false});
      doc.addEventListener("pointerup",up);
      doc.addEventListener("pointercancel",cancel);
     });
-    // Suppress the synthetic click emitted after a long press was released.
     grip.addEventListener("click",event=>{
      if(this.reorderSuppressClick){
       event.preventDefault();event.stopImmediatePropagation();
@@ -193,7 +188,9 @@
    const danger=mode==="delete"||mode==="deleteAll";
    const section=this.doc.createElement("section");
    section.className="favorite-confirm list-dialog-confirm"+(danger?" favorite-confirm-danger":"");
-   const caption=this.doc.createElement("p");caption.textContent=title;
+   const caption=this.doc.createElement(mode==="new"||mode==="rename"?"strong":"p");
+    caption.textContent=title;
+    if(mode==="new"||mode==="rename")caption.className="layer-editor-title";
    section.append(caption);
    if(warning){const p=this.doc.createElement("p");p.textContent=warning;section.append(p);}
    let input=null;
