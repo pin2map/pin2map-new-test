@@ -2,6 +2,7 @@
 const test=require("node:test");
 const assert=require("node:assert/strict");
 require("../ui/pin-note-editor.js");
+require("../ui/pin-layer-picker.js");
 const GeometryEditor=require("../ui/geometry-editor.js");
 class Element{
   constructor(tag="div"){

@@ -23,7 +23,7 @@
    if(bindTrigger)trigger.addEventListener("click",()=>this.setOpen(!this.open));
    menu.addEventListener("keydown",event=>{
     if(event.key==="Escape"){
-     event.preventDefault();event.stopPropagation();
+     event.preventDefault();event.stopPropagation?.();
      this.setOpen(false);trigger.focus?.();
     }
    });

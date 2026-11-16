@@ -83,7 +83,7 @@
       this.header=header;this.actions=actions;
       this.removeButton=remove;this.layerButton=layer;this.linkButton=link;
       this.nameInput=name;this.notesInput=textarea;
-      this.notesRow=notes;this.legend=legend;this.sub=sub;this.expandButton=expand;
+      this.notesRow=notes;this.notesLegend=notesLegend;this.legend=legend;this.sub=sub;this.expandButton=expand;
       this.createAreaPopups();
       this.doc.getElementById("app").append(panel);
       this.doc.addEventListener("pointerdown",e=>{
@@ -186,7 +186,7 @@
       open.disabled=true;
       field.append(legend,input);actions.append(save,open);popup.append(field,actions);
       doc.body.append(popup);
-      this.urlPopup=popup;this.urlInput=input;this.urlSave=save;this.urlOpen=open;
+      this.urlPopup=popup;this.urlLegend=legend;this.urlInput=input;this.urlSave=save;this.urlOpen=open;
       const validate=()=>this.normalizedUrl(input.value);
       input.addEventListener("input",()=>{
         open.disabled=!validate();open.classList.toggle("has-url",!open.disabled);
@@ -340,8 +340,8 @@
       this.panel.setAttribute("aria-label",type==="river"?"Fluss bearbeiten":"Fläche bearbeiten");
       const kind=item.kind==="lake"?"See":type==="river"?"Fluss":"Fläche";
       this.legend.textContent=kind+"name";
-      this.notesRow.querySelector("legend").textContent=kind+" Notizen";
-      this.urlPopup.querySelector("legend").textContent=kind+"-URL";
+      this.notesLegend.textContent=kind+" Notizen";
+      this.urlLegend.textContent=kind+"-URL";
       this.notesRow.classList.remove("hidden");
       this.linkButton.classList.remove("hidden");
       this.expandButton.classList.remove("hidden");
