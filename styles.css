@@ -2359,3 +2359,19 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
  border-radius:2px;background:#1764bf;pointer-events:none;
  box-shadow:0 0 0 1px #fff;
 }
+
+/* v228: Open menus may sit over the map, but OTHER circular launchers must
+   remain actual pointer targets. Inactive Favorites needs higher stacking
+   than the Layers panel; expanded Favorites stays below its own inline
+   editor (old v171 safeguard). Layer/settings/etc buttons are peer targets. */
+#app #favoritesButton.favorites-map-button.p2m-icon-control:not([aria-expanded="true"]){
+ z-index:1400!important;
+}
+#app #layersButton.layers-bottom-button.p2m-icon-control,
+#app #settingsButton.settings-map-button.p2m-icon-control,
+#app #basemapButton.basemap-map-button.p2m-icon-control,
+#app #pinInfoButton.pin-info-button.p2m-icon-control,
+#app #labelsToggle.labels-toggle.p2m-icon-control,
+#app #refreshButton.refresh-map-button.p2m-icon-control{
+ z-index:1400!important;
+}
