@@ -1659,3 +1659,32 @@ Es gibt keinen Server, keine neue persistent gespeicherte Information und keine 
 
 
 **v251 – vollständiger CI-/HTTPS-Abschluss (17.11.2026):** Der maßgebliche Feature-/Release-Commit ist `7838e95e9b706a6065fc6983945f025eb6f055b3`. Vier Checks für **exakt diesen SHA** meldeten `completed/success`: [Node- und Chromium-Run 44122342530](https://github.com/pin2map/pin2map-new-test/actions/runs/44122342530), [Architektur-Run 44122342682](https://github.com/pin2map/pin2map-new-test/actions/runs/44122342682), [Pages-/HTTPS-/Live-Run 44122342725](https://github.com/pin2map/pin2map-new-test/actions/runs/44122342725). Im Pages-Workflow waren das veröffentlichte HTTPS-HTML-/CSS-/JS-/Service-Worker-Gate (`pin2map-preview-v251`), die echten Provider-/Nominatim-Polygonfälle für Rügen/Jasmund/Borgwallsee, Leaflet-Live-Start sowie alle veröffentlichten Chromium-Geometrie-, Favoriten-, Dialog- und visuellen Tests erfolgreich. Die neuen parallelen Anbieterfalltests einschließlich inkrementeller Ergebnisse, Anbieter-Teilfehler, OSM-Deduplizierung und Abort-Schutz liefen im gesamten Node-Testgate grün. Keine Behauptung einer garantierten weltweiten Overpass-Erreichbarkeit: Der unabhängige Australien-/Südamerika-Echtdatennachweis und der persönliche Safari-/Touch-Test der neuen parallelen Trefferliste bleiben offen. Die Version ist auf `https://pin2map.github.io/pin2map-new-test/preview/` technisch veröffentlicht. Dieser Nachtrag ist ausschließlich dokumentarisch, ändert keinen Service Worker und keine Appdatei. `main`, `reference/*` und Nutzerdaten unverändert.
+
+
+### 17.11.2026 – unabhängiger Anbieter-Echttest anhand 15 Nutzerkoordinaten (ohne App-Änderung)
+
+Der Nutzer lieferte **15 verbindliche Testpunkte** aus Australien (4), Afrika (3), Südamerika (5) und Asien (3). Die exakten Koordinaten, die erwarteten lokalen Namen und die thematische Kategorie `water`/`protected`/`special` sind als unveränderliche Fixture `tests/area-source-fixtures.cjs` hinterlegt. Das isolierte Skript `tests/area-provider-comparison.cjs` ruft **aus einem echten Chromium-Browser mit der veröffentlichten pin2map-HTTPS-Origin** unabhängige ArcGIS-REST-Polygon-Feature-Dienste ab. Es übermittelt nur einen einzelnen Punkt (Esri `esriGeometryPoint` mit EPSG:4326), protokolliert Quellstatus, Namen und Treffermengen; für erfolgreiche Treffer ruft es außerdem echtes Polygon-GeoJSON ab und prüft `containsPoint` im vorhandenen pin2map-Geometriemodul. Polygonkoordinaten aus lizenzbeschränkten Quellen werden weder gespeichert noch weitergegeben. Reiner **Anbietervergleich**, kein Produkt-/PWA-Feature-Commit.
+
+**Live-Läufe:** [erste unabhängige Quellenprobe 44130353654](https://github.com/pin2map/pin2map-new-test/actions/runs/44130353654), [alternative Seen-Quellenprobe 44130760913](https://github.com/pin2map/pin2map-new-test/actions/runs/44130760913), [GeoJSON- und Klickpunkt-Nachprüfung 44131139624](https://github.com/pin2map/pin2map-new-test/actions/runs/44131139624). Ergebnisübersicht:
+
+| Region | Nutzer-Testpunkt | Unabhängiger Punkt-Polygon-Befund |
+| --- | --- | --- |
+| Australien | Enoggera Reservoir | Gewässerdienste erreichbar teils 0 Treffer, andere Timeout/CORS; **kein Treffer nachgewiesen** |
+| Australien | Marradong Mining Area | Nicht von den geprüften Gewässer-/Schutzgebietsdiensten abgedeckt |
+| Australien | Mokamie Nature Reserve | UNEP-WCMC WDPCA: `Mokamie`; **Polygon, enthält Klickpunkt** |
+| Australien | Delamere Range Facility Training Area | Nicht von den geprüften Gewässer-/Schutzgebietsdiensten abgedeckt |
+| Afrika | Lake Kivu | ArcGIS Lakes: `Lake Kivu / Kivu`; **Polygon, enthält Klickpunkt** |
+| Afrika | Farihy Ihotry | Kein Treffer nachgewiesen |
+| Afrika | Namib Naukluft National Park | WDPCA: `Namib-Naukluft` und `Erg du Namib`; **2 Polygone, beide enthalten Klickpunkt** |
+| Südamerika | Embalse Rio Hondo | Kein Treffer nachgewiesen |
+| Südamerika | Lago Villarrica | ArcGIS Lakes: ein **Polygon am Klickpunkt**, jedoch vom Test keine explizite Namensangabe ausgelesen |
+| Südamerika | Reserva Biológica Huilo Huilo | WDPCA: `Bosques Templados lluviosos de los Andes`; **MultiPolygon am Klickpunkt**, Name weicht ab |
+| Südamerika | Zona Nucleo Rio Auquinco | WDPCA: `Lanín`, `Andino Norpatagónica`; **Polygon/MultiPolygon am Klickpunkt**, lokale Namensidentität nicht belegt |
+| Südamerika | Parque Nacional Torres del Paine | WDPCA: `Torres del Paine`, `Torres del Paine (RB)`; **2 MultiPolygone am Klickpunkt** |
+| Asien | Tonle Sab | ArcGIS Lakes: `Tonlé Sap`; **Polygon am Klickpunkt** |
+| Asien | Heaven Lake | Kein Treffer nachgewiesen |
+| Asien | Tasik Kenyir | Kein Treffer nachgewiesen |
+
+Die tatsächlichen Quellen: `https://services.arcgis.com/h4jNYexE41HKnu98/arcgis/rest/services/Lakes/FeatureServer/0` (Punkt-Polygon-Erfolge Lake Kivu, Lago Villarrica, Tonlé Sap) und `https://data-gis.unep-wcmc.org/server/rest/services/ProtectedSites/The_World_Database_of_Protected_Areas/FeatureServer/1` (alle fünf Schutzgebietspunkte). Andere getestete Seen-/Stauseen-Dienste lieferten CORS-/Timeout-Probleme oder 0 Treffer. **8 von 15 Punkten** wurden durch unabhängige Dienste mit Klickpunkt-enthaltender GeoJSON-Fläche nachgewiesen: 5 Schutzgebietspunkte und 3 Gewässerpunkte; **das sind keine 8 sicheren lokalen Namensübereinstimmungen**. Die restlichen fünf Gewässer und zwei Sonderflächen sind noch nicht abgedeckt. Insbesondere ist der WDPCA-Eintrag bei Rio Auquinco nicht als identisches lokales Schutzgebiet belegt.
+
+**Lizenzgrenze:** Die zugehörige offizielle WDPCA-ArcGIS-Datensatzseite untersagt ausdrücklich bestimmte Weitergaben der WDPCA-Geometrien, u. a. über downloadfähige interaktive Webmaps. pin2map ist eine PWA mit Speichern/Export der Objekte; deshalb **keine direkte WDPCA-Polygonübernahme in das Produkt ohne ausdrückliche Rechteklärung**. Ebenfalls muss der genaue Datenursprung und die Weiterverwendung der ArcGIS-Lakes-Feature-Daten vor Produktintegration geklärt werden, obwohl die technische Abfrage funktioniert. Öffentliche Feature-URLs sind **keine automatische Lizenzfreigabe**. Geprüftes Browser-CORS ist keine Garantie für dauerhafte öffentliche Verfügbarkeit. Recherche belegt die grundsätzliche Durchführbarkeit von unabhängigen parallelen Punkt-Polygon-Quellen **ohne eigenen Server**; Integration in v251 ausdrücklich noch **nicht** erfolgt. `main`, `reference/*`, IndexedDB und Nutzerdaten unverändert; kein neuer SW-Cache erforderlich.
