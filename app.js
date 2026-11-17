@@ -306,7 +306,7 @@
   });
   const layerCreation = new window.Pin2MapLayerCreation({
     getProject:()=>state,operations:layerOps,
-    askName:defaultName=>prompt("Name der neuen Ebene:",defaultName),
+    askName:()=>prompt("Name der neuen Ebene:",""),
     createId:uid,cleanText,colors:COLORS,
     onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
   });
