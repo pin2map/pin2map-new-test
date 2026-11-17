@@ -162,3 +162,43 @@ test("recognized unique villages and small places resolve despite simplified pol
     {lat:54.1,lng:13.2},{countryCode:"de"});
   assert.equal(found?.osm_id,501);
 });
+
+test("slow Overpass never delays the initial administrative Kartentip choices",async()=>{
+  let release,asked=false,partial=null;
+  const stalled=new Promise(resolve=>{release=resolve;});
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",country_code:"de"}
+    })};
+    asked=true;
+    await stalled;
+    return {ok:true,json:async()=>({elements:[{type:"relation",id:7,
+      tags:{name:"Nationalpark Jasmund",boundary:"national_park"}}]})};
+  }});
+  const operation=finder.hierarchyAt({lat:54.5,lng:13.6},{
+    onPartial:early=>{partial=early;}
+  });
+  for(let i=0;i<6&&!asked;i++)await Promise.resolve();
+  assert.equal(asked,true);
+  assert.deepEqual(partial.rows.map(row=>row.name),
+    ["Deutschland","Mecklenburg-Vorpommern"],
+    "The old administrative list must be usable while Overpass is pending");
+  release();
+  const result=await operation;
+  assert.ok(result.rows.some(row=>row.name==="Nationalpark Jasmund"));
+  assert.equal(result.extraUnavailable,false);
+});
+test("Overpass failure retains reverse-geocoded hierarchy and flags partial availability",async()=>{
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Deutschland",country_code:"de"}
+    })};
+    return {ok:false,status:503};
+  }});
+  let partial=null;
+  const result=await finder.hierarchyAt({lat:54.5,lng:13.6},
+    {onPartial:early=>{partial=early;}});
+  assert.equal(partial.rows[0].name,"Deutschland");
+  assert.equal(result.rows[0].name,"Deutschland");
+  assert.equal(result.extraUnavailable,true);
+});

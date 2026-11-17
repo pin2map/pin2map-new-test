@@ -96,7 +96,7 @@
       if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
       return response.json();
     }
-    async hierarchyAt(point,{signal}={}){
+    async hierarchyAt(point,{signal,onPartial=()=>{}}={}){
       const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",zoom:"18",
         lat:String(point.lat),lon:String(point.lng)});
       const result=await this.request("https://nominatim.openstreetmap.org/reverse?"+params,signal);
@@ -123,6 +123,10 @@
       if(reverseKind&&result.name&&["way","relation"].includes(result.osm_type))
         add({kind:reverseKind,name:result.name,detail:reverseKind,
           osmType:result.osm_type,osmId:Number(result.osm_id)});
+      // Render the established address hierarchy immediately. External
+      // spatial enrichment may be delayed by Overpass rate limits.
+      onPartial({rows:rows.slice(),countryCode:address.country_code||""});
+      if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
       try{
         // One bounded, point-based Overpass request discovers enclosing
         // named protected/restricted areas and islands worldwide. Its server

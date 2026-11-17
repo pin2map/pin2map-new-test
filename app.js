@@ -765,6 +765,7 @@
     const kind=result.__featureType;
     if(kind==="areaHierarchy"){
       if(!areaHierarchyPoint)return;
+      featureController?.abort(); // Stop delayed enrichment of the previous list.
       const run=++featureRun,controller=new AbortController();featureController=controller;
       try{
         const choice=await areaFinder.findContaining(result,areaHierarchyPoint,{
@@ -821,7 +822,17 @@
     }
     const run=featureRun,controller=new AbortController();featureController=controller;
     try{
-      const result=await areaFinder.hierarchyAt(point,{signal:controller.signal});
+      const showHierarchy=rows=>searchView.show(rows.map(row=>({
+        ...row,__featureType:"areaHierarchy"
+      })));
+      const result=await areaFinder.hierarchyAt(point,{
+        signal:controller.signal,
+        onPartial:partial=>{
+          if(run!==featureRun)return;
+          areaHierarchyPoint=point;areaHierarchyCountry=partial.countryCode;
+          if(partial.rows.length)showHierarchy(partial.rows);
+        }
+      });
       if(run!==featureRun)return;
       areaHierarchyPoint=point;areaHierarchyCountry=result.countryCode;
       if(result.extraUnavailable)showNotice("Zusätzliche Schutz- und Sondergebiete derzeit nicht erreichbar.");
@@ -829,9 +840,7 @@
         searchView.message("Keine Gebietshierarchie für diesen Kartenpunkt gefunden.");
         return;
       }
-      searchView.show(result.rows.map(row=>({
-        ...row,__featureType:"areaHierarchy"
-      })));
+      showHierarchy(result.rows);
     }catch(error){
       if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
     }finally{if(run===featureRun)featureController=null;}
