@@ -12,6 +12,7 @@ function element(tag){
    toggle:(v,on)=>{if(on===false)classes.delete(v);else classes.add(v);},
    contains:v=>classes.has(v)},
   setAttribute(name,value){this.attrs[name]=String(value);},
+  getAttribute(name){return this.attrs[name]??null;},
   addEventListener(name,cb){listeners.set(name,cb);},
   trigger(name){listeners.get(name)?.({target:this,preventDefault(){}});},
   replaceChildren(...children){this.children=[...children];},
