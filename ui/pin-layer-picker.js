@@ -17,7 +17,13 @@
    this.open=false;this.filterText="";this.options=[];
    const menu=this.el(menuId),trigger=this.el(triggerId);
    if(!menu||!trigger)throw new TypeError("Layer menu and trigger required");
-   if(doc.body?.append)doc.body.append(menu);
+   // The geometry editor lives inside the fixed #app stacking context
+   // on iOS. Portalling its menu to BODY paints it behind #app there,
+   // leaving only a thin filter strip visible (actual device regression).
+   // Keep the menu and editor in the SAME stacking context.
+   const portalHost=this.contained?
+     this.el(this.panelId)?.parentElement:doc.body;
+   (portalHost||doc.body)?.append(menu);
    this.onViewportChange=()=>{if(this.open)this.positionMenu();};
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
    doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
