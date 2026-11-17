@@ -86,6 +86,21 @@
    if(!this.mergeMode||id==="private"||!this.selectedIds.has(id))return;
    this.mergeTargetId=id;this.render();
   }
+  confirmMerge(){
+   if(!this.mergeMode||!this.mergeTargetId)return false;
+   const ids=[...this.selectedIds],targetId=this.mergeTargetId;
+   if(this.onMergeRequest(ids,targetId)===false)return false;
+   this.mergeMode=false;this.mergeTargetId=null;this.selectedIds.clear();this.render();
+   return true;
+  }
+  footerAction(){
+   if(this.mergeMode)return this.confirmMerge();
+   this.start("new");return true;
+  }
+  footerCancel(){
+   if(this.mergeMode){this.cancelMerge();return;}
+   this.close();
+  }
   paletteEditor({section,actions,input}){
    if(!input)return;
    // Both layer editors share their exact layout and the same height when
@@ -135,7 +150,10 @@
      nameLabel:"Farbe und Name der Ebene:",nameValue:name,
      confirmLabel:creating?"Erstellen":"Übernehmen",
      onConfirm:value=>{
-      if(creating)this.onCreate(value,this.draftColor,this.draftIndex);
+      if(creating){
+        this.el("layersList").scrollTop=0;
+        this.onCreate(value,this.draftColor,this.draftIndex);
+       }
       else this.onRename(layer.id,value,this.draftColor,this.draftIndex);
      },
      renderExtra:ports=>this.paletteEditor(ports)
@@ -193,18 +211,13 @@
      banner.className="layer-merge-guidance list-dialog-confirm";
      const title=this.doc.createElement("p");
      title.textContent="Alle Objekte aus den gewählten Ebenen sollen verschoben werden in die Ebene (bitte anklicken):";
-     banner.append(this.labeledButton("Abbrechen",()=>this.cancelMerge()),title);
+     banner.append(title);
      if(this.mergeTargetId){
       const target=layers.find(l=>l.id===this.mergeTargetId);
       const note=this.doc.createElement("p");
       note.textContent="Ziel: "+target.name+" · "+(this.selectedIds.size-1)+
-        " andere Ebenen werden nach Übertragung entfernt.";
-      banner.append(note,this.labeledButton("Zusammenführen",()=>{
-       const ids=[...this.selectedIds],targetId=this.mergeTargetId;
-       if(this.onMergeRequest(ids,targetId)!==false){
-        this.mergeMode=false;this.mergeTargetId=null;this.selectedIds.clear();this.render();
-       }
-      },"danger"));
+       " andere Ebenen werden nach Übertragung entfernt.";
+      banner.append(note);
      }
      list.append(banner);
     }
@@ -264,11 +277,23 @@
    if(!this.mergeMode&&!this.mode&&!this.searchText)
      this.wireReorder({activation:"longpress",holdMs:450,handle:"row",allow:id=>id!=="private",
        onMove:(from,to)=>this.onReorder(from,to)});
-   const unite=this.el("layersUnite"),reset=this.el("layersSearchClear");
-   if(unite&&reset){
-    const shown=this.selectedIds.size>=2&&[...this.selectedIds].some(id=>id!=="private");
+   const unite=this.el("layersUnite");
+   const shown=this.selectedIds.size>=2&&[...this.selectedIds].some(id=>id!=="private");
+   if(unite){
     unite.classList.toggle("hidden",!shown||this.mergeMode);
-    reset.classList.toggle("hidden",shown||this.mergeMode);
+    unite.setAttribute("aria-hidden",String(!shown||this.mergeMode));
+   }
+   // Filter reset retains its own location and meaning in every mode.
+   const add=this.el("addLayer"),cancel=this.el("layersCloseBottom");
+   if(add){
+    add.textContent=this.mergeMode?"Zusammenführen":"+ Ebene hinzufügen";
+    add.disabled=!!this.mergeMode&&!this.mergeTargetId;
+    add.setAttribute("aria-disabled",String(!!add.disabled));
+   }
+   if(cancel){
+    cancel.textContent="Abbrechen";
+    cancel.title=this.mergeMode?"Zusammenführen abbrechen":"Ebenendialog schließen";
+    cancel.setAttribute("aria-label",cancel.title);
    }
    if(this.el("layersPanel"))this.finishRender(pendingFocus);
   }
