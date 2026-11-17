@@ -141,7 +141,7 @@
   editor(mode,index){
    const layer=this.values[index];
    if(mode==="new"||mode==="rename"){
-    const creating=mode==="new",name=creating?"":layer.name;
+    const creating=mode==="new",name=creating?this.getSuggestedName():layer.name;
     this.draftIndex=creating?this.getNextIndex():
       (Number.isInteger(layer.paletteIndex)?layer.paletteIndex:0);
     this.draftColor=creating?this.getPalette()[this.draftIndex]:layer.color;

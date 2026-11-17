@@ -453,6 +453,17 @@ async function longPress(page,x,y,ms=725){
       const store=await window.Pin2MapIndexedDBProjectStore.open();
       try{return (await store.loadProject()).pins.length;}finally{store.close();}
     }),0,"No pin may persist before explicit layer selection");
+    // The second creation route uses a native prompt from the temporary
+    // object layer picker; cancel must keep the unsaved pin unchanged.
+    let promptDefault=null;
+    page.once("dialog",async dialog=>{
+      promptDefault=dialog.defaultValue();
+      await dialog.dismiss();
+    });
+    await page.locator("#temporaryLayerPicker .temporary-layer-create").click();
+    assert.match(promptDefault,/^\d{2}\.\d{2}\.\d{4}-\d{2}$/);
+    assert.equal(promptDefault,await page.evaluate(()=>window.Pin2MapLayerCreation.suggestedName()));
+    assert.equal(await page.locator("#temporaryLayerPicker").isVisible(),true);
     await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
     await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
     await page.locator(".pin-icon:not(.p2m-temporary-pin)").first().click();

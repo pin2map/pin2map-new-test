@@ -3,6 +3,13 @@
  * the existing layer operations remain the sole mutation authority. */
 (function(root){
   class LayerCreation{
+    // One local-time default for inline layer editing and transient-object creation.
+    // A fresh Date at each opening preserves the actual current hour.
+    static suggestedName(date=new Date()){
+      const two=value=>String(value).padStart(2,"0");
+      return two(date.getDate())+"."+two(date.getMonth()+1)+"."+
+        date.getFullYear()+"-"+two(date.getHours());
+    }
     constructor({getProject,operations,askName,createId,cleanText,colors,onNotice,onRender,onSave}){
       if([getProject,askName,createId,cleanText,onNotice,onRender,onSave].some(fn=>typeof fn!=="function")||
         !operations||typeof operations.nextName!=="function"||typeof operations.create!=="function"||
@@ -29,8 +36,7 @@
     }
     create(){
       const state=this.getProject();
-      // All creation entry points begin without a proposed name.
-      const name=this.askName("");
+      const name=this.askName(LayerCreation.suggestedName());
       if(name===null)return null;
       let created;
       try{created=this.operations.create(state,{

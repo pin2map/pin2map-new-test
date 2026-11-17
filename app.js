@@ -133,7 +133,7 @@
     },
     getPalette:()=>palette.colors(state).standard,
     getNextIndex:()=>palette.nextLayerColorIndex(state),
-    getSuggestedName:()=>"Ebene "+palette.nextLayerNumber(state),
+    getSuggestedName:()=>window.Pin2MapLayerCreation.suggestedName(),
     onVisibilityCycle:visibleById=>{
       for(const [id,visible] of Object.entries(visibleById))
         filterOps.setLayerVisible(state,id,visible);
@@ -306,7 +306,7 @@
   });
   const layerCreation = new window.Pin2MapLayerCreation({
     getProject:()=>state,operations:layerOps,
-    askName:()=>prompt("Name der neuen Ebene:",""),
+    askName:defaultName=>prompt("Name der neuen Ebene:",defaultName),
     createId:uid,cleanText,colors:COLORS,
     onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
   });

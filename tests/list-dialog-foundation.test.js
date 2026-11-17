@@ -121,9 +121,10 @@ test("new nine-color allocation cycles after the ninth slot",()=>{
   "An older 12-color allocation index normalizes to the nine-color cycle");
 });
 
-test("new layer editor starts blank; merge control stays visible but disabled until two are marked",()=>{
+test("new layer editor uses the shared date-hour suggestion; merge control stays visible but disabled until two are marked",()=>{
  const html=read("index.html"),layer=read("ui/layer-view.js");
- assert.match(layer,/const creating=mode==="new",name=creating\?"":layer\.name/);
+ assert.match(layer,/const creating=mode==="new",name=creating\?this\.getSuggestedName\(\):layer\.name/);
+ assert.match(read("app.js"),/getSuggestedName:\(\)=>window\.Pin2MapLayerCreation\.suggestedName\(\)/);
  assert.match(layer,/holdMs:1000/);
  assert.match(layer,/unite\.disabled=!shown\|\|this\.mergeMode/);
  assert.match(html,/id="layersUnite"[^>]*disabled/);

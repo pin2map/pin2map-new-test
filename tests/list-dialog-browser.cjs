@@ -133,9 +133,12 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await editor.locator(".layer-editor-title").textContent(),"Neue Ebene erstellen:");
     assert.equal(await editor.locator(".layer-name-caption").textContent(),"Farbe und Name der Ebene:");
     const defaultName=await editor.locator(".favorite-name-input").inputValue();
-    assert.equal(defaultName,"","No suggested name for new layers");
+    assert.match(defaultName,/^\d{2}\.\d{2}\.\d{4}-\d{2}$/,
+      "New layer must be prefilled with the current local date and hour");
+    const expectedName=await page.evaluate(()=>window.Pin2MapLayerCreation.suggestedName());
+    assert.equal(defaultName,expectedName,"Inline layer editor must use the shared clock");
     assert.equal(await editor.locator(".favorite-name-input").evaluate(el=>document.activeElement===el),true,
-      "Blank new-layer input must immediately receive keyboard focus");
+      "Prefilled new-layer input must immediately receive keyboard focus");
     assert.equal(await editor.getByRole("button",{name:"Abbrechen"}).evaluate(el=>
       getComputedStyle(el).backgroundColor),"rgb(234, 243, 255)",
       "New layer cancellation must be light blue");
@@ -144,7 +147,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       "New layer creation must be blue");
     const editorHeight=await editor.evaluate(el=>el.getBoundingClientRect().height);
     const bottomHeight=await editor.locator(".layer-editor-bottom").evaluate(el=>el.getBoundingClientRect().height);
-    assert.equal(defaultName,"");
+    assert.equal(await editor.locator(".favorite-name-input").inputValue(),defaultName);
     await editor.locator(".layer-swatch").click();
     assert.equal(await editor.locator(".layer-palette-choice .layer-palette-dot").count(),9);
     assert.ok(Math.abs((await editor.evaluate(el=>el.getBoundingClientRect().height))-editorHeight)<1,
