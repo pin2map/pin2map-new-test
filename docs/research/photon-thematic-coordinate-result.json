@@ -1,0 +1,845 @@
+{
+  "testedAt": "2026-11-17T18:29:31.286Z",
+  "summary": {
+    "tested": 2,
+    "targetsFound": 1,
+    "extraContainment": [
+      {
+        "name": "Lake Kivu",
+        "contains": [
+          "R9072"
+        ]
+      },
+      {
+        "name": "Parque Nacional Torres del Paine",
+        "contains": []
+      }
+    ]
+  },
+  "rows": [
+    {
+      "expected": "Lake Kivu",
+      "lat": -1.776754,
+      "lng": 29.09729,
+      "candidateCount": 162,
+      "filters": [
+        {
+          "filter": "natural",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Boutique Becca Services",
+              "id": "N13392653790",
+              "key": "natural",
+              "value": "land"
+            },
+            {
+              "name": "Hot spring",
+              "id": "N4807545921",
+              "key": "natural",
+              "value": "spring"
+            },
+            {
+              "name": "Hot spring",
+              "id": "N2150668138",
+              "key": "natural",
+              "value": "spring"
+            },
+            {
+              "name": "Colline Kachaka",
+              "id": "N2043077170",
+              "key": "natural",
+              "value": "volcano"
+            },
+            {
+              "name": "1660 m",
+              "id": "N317581988",
+              "key": "natural",
+              "value": "peak"
+            },
+            {
+              "name": "Rumoka",
+              "id": "N435881580",
+              "key": "natural",
+              "value": "volcano"
+            },
+            {
+              "name": "MUDJA",
+              "id": "N435864790",
+              "key": "natural",
+              "value": "peak"
+            },
+            {
+              "name": "Fonderie",
+              "id": "N6289672338",
+              "key": "natural",
+              "value": "spring"
+            },
+            {
+              "name": "Kaduki monument",
+              "id": "N6289653911",
+              "key": "natural",
+              "value": "spring"
+            },
+            {
+              "name": "Avenue bulenda",
+              "id": "N6289611590",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Kaliba",
+              "id": "N6289611268",
+              "key": "natural",
+              "value": "spring"
+            },
+            {
+              "name": "Shove",
+              "id": "N2035589610",
+              "key": "natural",
+              "value": "volcano"
+            }
+          ]
+        },
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 42,
+          "sample": [
+            {
+              "name": "Lac Vert",
+              "id": "W177308748",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Kivu",
+              "id": "R9072",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Karago",
+              "id": "R17267126",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Bihinga",
+              "id": "R17267163",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Cyunyu",
+              "id": "W125721874",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lac Ndalaga",
+              "id": "R2638672",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lac Balukila",
+              "id": "W48967764",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lac Bakiro",
+              "id": "W198903167",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lac Kirwa",
+              "id": "W198290771",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Ruhondo",
+              "id": "R16438055",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Burera",
+              "id": "R1736848",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Reservoir regideso de la voix du congo",
+              "id": "N12509279515",
+              "key": "water",
+              "value": "reservoir"
+            }
+          ]
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Kasunyu",
+              "id": "R21012795",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Buhumba",
+              "id": "R21012902",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Bwisha",
+              "id": "R21011627",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Ruhunde",
+              "id": "R21007788",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Kishinji",
+              "id": "R21012763",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Nyamasasa",
+              "id": "R21007763",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Bulenga",
+              "id": "R21013134",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Kishenyi",
+              "id": "R20978249",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Bobandana",
+              "id": "R21014416",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Minova",
+              "id": "R21013280",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Minova",
+              "id": "R5997715",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Kalungu",
+              "id": "R21007597",
+              "key": "boundary",
+              "value": "health"
+            }
+          ]
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Stade SOTRAKI",
+              "id": "W1345186156",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Espace Maman Olive Lembe",
+              "id": "W1415942609",
+              "key": "leisure",
+              "value": "park"
+            },
+            {
+              "name": "Mawe haï Goma",
+              "id": "N13012214281",
+              "key": "leisure",
+              "value": "park"
+            },
+            {
+              "name": "Stade de Mugunga",
+              "id": "W1278192021",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Stade Afia",
+              "id": "W224753390",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Cercle Sportif",
+              "id": "W224753387",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Stade de l'Unité",
+              "id": "W193592790",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Stade de l'Unité",
+              "id": "W701694370",
+              "key": "leisure",
+              "value": "stadium"
+            },
+            {
+              "name": "Champ d'experimentation",
+              "id": "W1303465936",
+              "key": "leisure",
+              "value": "park"
+            },
+            {
+              "name": "Stade Les Volcans",
+              "id": "W193161033",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Hot spring",
+              "id": "N2150668138",
+              "key": "leisure",
+              "value": "hot_spring"
+            },
+            {
+              "name": "Swing",
+              "id": "N5817595617",
+              "key": "leisure",
+              "value": "playground"
+            }
+          ]
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Kasunyu",
+              "id": "R21012795",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Buhumba",
+              "id": "R21012902",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Bwisha",
+              "id": "R21011627",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Ruhunde",
+              "id": "R21007788",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Mubimbi",
+              "id": "W1159998210",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Mubimbi",
+              "id": "W1159998211",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Mubimbi",
+              "id": "W1531169571",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Mubimbi",
+              "id": "W195143106",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Kishinji",
+              "id": "R21012763",
+              "key": "boundary",
+              "value": "health"
+            },
+            {
+              "name": "Mubimbi",
+              "id": "W1531191009",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Mubimbi",
+              "id": "W1531167212",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Nyamasasa",
+              "id": "R21007763",
+              "key": "boundary",
+              "value": "health"
+            }
+          ]
+        }
+      ],
+      "checked": 24,
+      "contains": [
+        {
+          "id": "R9072",
+          "name": "Lake Kivu",
+          "geometryType": "Polygon",
+          "containsPoint": true
+        }
+      ],
+      "failedBatches": [],
+      "targetFound": true
+    },
+    {
+      "expected": "Parque Nacional Torres del Paine",
+      "lat": -50.929007,
+      "lng": -72.778931,
+      "candidateCount": 143,
+      "filters": [
+        {
+          "filter": "natural",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Laguna Amarga",
+              "id": "W23609922",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Vega",
+              "id": "W320644765",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Sierra Masle",
+              "id": "N12697371041",
+              "key": "natural",
+              "value": "peak"
+            },
+            {
+              "name": "Laguna Los Blanquillos",
+              "id": "W32925425",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Goic",
+              "id": "W31344859",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Cerro Paine",
+              "id": "N3194812265",
+              "key": "natural",
+              "value": "peak"
+            },
+            {
+              "name": "Valle Ascensio",
+              "id": "W1370319343",
+              "key": "natural",
+              "value": "valley"
+            },
+            {
+              "name": "Laguna Inge",
+              "id": "W62289765",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Cuadrada",
+              "id": "W50617399",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Guanaco",
+              "id": "W50617396",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Escondida",
+              "id": "W50617395",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Larga",
+              "id": "W31344852",
+              "key": "natural",
+              "value": "water"
+            }
+          ]
+        },
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Laguna Azul",
+              "id": "R11205423",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Laguna Cebolla",
+              "id": "W31346150",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Laguna Los Flamencos",
+              "id": "W50612766",
+              "key": "water",
+              "value": "lagoon"
+            },
+            {
+              "name": "Laguna Stokes",
+              "id": "W31346149",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Laguna de los Cisnes",
+              "id": "W1370964823",
+              "key": "water",
+              "value": "pond"
+            },
+            {
+              "name": "Lago Sarmiento",
+              "id": "R4870349",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lago Paine",
+              "id": "R19522407",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lago Nordenskjöld",
+              "id": "R5127123",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lagunas Mellizas",
+              "id": "W324584006",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Laguna Calafate",
+              "id": "W366370310",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lago Quemado",
+              "id": "W31343483",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Lake Pehoé",
+              "id": "R5726",
+              "key": "water",
+              "value": "lake"
+            }
+          ]
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 20,
+          "sample": [
+            {
+              "name": "Torres del Paine National Park",
+              "id": "R2622290",
+              "key": "boundary",
+              "value": "national_park"
+            },
+            {
+              "name": "Torres del Paine",
+              "id": "R1980641",
+              "key": "boundary",
+              "value": "administrative"
+            },
+            {
+              "name": "Reserva de Biósfera Torres del Paine",
+              "id": "R10742331",
+              "key": "boundary",
+              "value": "protected_area"
+            },
+            {
+              "name": "Reserva Natural Estricta Valle del Río Camiseta",
+              "id": "R11250208",
+              "key": "boundary",
+              "value": "protected_area"
+            },
+            {
+              "name": "Reserva Provincial Península de Magallanes",
+              "id": "R4681415",
+              "key": "boundary",
+              "value": "protected_area"
+            },
+            {
+              "name": "Parque Provincial Península de Magallanes",
+              "id": "R4681392",
+              "key": "boundary",
+              "value": "protected_area"
+            },
+            {
+              "name": "Reserva Natural Estricta Cordón Federico Reichert",
+              "id": "R11247491",
+              "key": "boundary",
+              "value": "protected_area"
+            },
+            {
+              "name": "Solo Terra",
+              "id": "R5410413",
+              "key": "boundary",
+              "value": "administrative"
+            },
+            {
+              "name": "Alto Calafate",
+              "id": "R5408943",
+              "key": "boundary",
+              "value": "administrative"
+            },
+            {
+              "name": "Reserva Ecologica Municipal Laguna Nimez",
+              "id": "R10784852",
+              "key": "boundary",
+              "value": "protected_area"
+            },
+            {
+              "name": "Macrozona Lago Argentino",
+              "id": "R5385511",
+              "key": "boundary",
+              "value": "region"
+            },
+            {
+              "name": "Río Turbio",
+              "id": "R3439488",
+              "key": "boundary",
+              "value": "administrative"
+            }
+          ]
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Torres del Paine National Park",
+              "id": "R2622290",
+              "key": "leisure",
+              "value": "nature_reserve"
+            },
+            {
+              "name": "Gimnasio Cerro Guido",
+              "id": "N5994131091",
+              "key": "leisure",
+              "value": "sports_hall"
+            },
+            {
+              "name": "Cancha de Jineteadas",
+              "id": "W164987390",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Gimnasio Municipal Cerro Castillo",
+              "id": "N3307608920",
+              "key": "leisure",
+              "value": "sports_centre"
+            },
+            {
+              "name": "Plaza La Herradura",
+              "id": "W164986291",
+              "key": "leisure",
+              "value": "park"
+            },
+            {
+              "name": "Medialuna Cerro Castillo",
+              "id": "W164987395",
+              "key": "leisure",
+              "value": "pitch"
+            },
+            {
+              "name": "Bien Nacional Protegido Río Serrano Milodon",
+              "id": "R13932268",
+              "key": "leisure",
+              "value": "nature_reserve"
+            },
+            {
+              "name": "Monumento Natural Cueva del Milodón",
+              "id": "W70515988",
+              "key": "leisure",
+              "value": "nature_reserve"
+            },
+            {
+              "name": "Gimnasio Pincharratas",
+              "id": "N4957869635",
+              "key": "leisure",
+              "value": "fitness_centre"
+            },
+            {
+              "name": "Plaza Lago Argentino",
+              "id": "W683835045",
+              "key": "leisure",
+              "value": "park"
+            },
+            {
+              "name": "Plaza Islas Malvinas",
+              "id": "W660031329",
+              "key": "leisure",
+              "value": "park"
+            },
+            {
+              "name": "Plaza Centenario",
+              "id": "W308506753",
+              "key": "leisure",
+              "value": "park"
+            }
+          ]
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "sample": [
+            {
+              "name": "Cascada del Paine",
+              "id": "N3364815102",
+              "key": "waterway",
+              "value": "waterfall"
+            },
+            {
+              "name": "Laguna Azul",
+              "id": "R11205423",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Laguna Amarga",
+              "id": "W23609922",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Vega",
+              "id": "W320644765",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Sierra Masle",
+              "id": "N12697371041",
+              "key": "natural",
+              "value": "peak"
+            },
+            {
+              "name": "Laguna Los Blanquillos",
+              "id": "W32925425",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Laguna Goic",
+              "id": "W31344859",
+              "key": "natural",
+              "value": "water"
+            },
+            {
+              "name": "Cerro Paine",
+              "id": "N3194812265",
+              "key": "natural",
+              "value": "peak"
+            },
+            {
+              "name": "Laguna Cebolla",
+              "id": "W31346150",
+              "key": "water",
+              "value": "lake"
+            },
+            {
+              "name": "Río Ascencio",
+              "id": "W313460643",
+              "key": "waterway",
+              "value": "river"
+            },
+            {
+              "name": "Laguna Los Flamencos",
+              "id": "W50612766",
+              "key": "water",
+              "value": "lagoon"
+            },
+            {
+              "name": "The Traveller's Cascade",
+              "id": "N6467190885",
+              "key": "waterway",
+              "value": "waterfall"
+            }
+          ]
+        }
+      ],
+      "checked": 24,
+      "contains": [],
+      "failedBatches": [],
+      "targetFound": false
+    }
+  ],
+  "caveat": "Names and expected IDs only used for local evaluation, never in any request.",
+  "sourceCommit": "935138ebe7c9a837d81946af6a01b6f692faafdb",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44148243330"
+}
