@@ -1,0 +1,93 @@
+name: Spatial polygon index real-geometries benchmark (research only)
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths: ['.github/workflows/spatial-index-live-research.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+          persist-credentials: true
+      - name: Measure real polygon index with four bounded, slow API requests
+        run: |
+          node <<'NODE'
+          "use strict";
+          (async()=>{
+            const fs=require('node:fs');
+            const {build}=require('./research/spatial-index-prototype.cjs');
+            const {containsPoint}=require('./domain/area-geometry.js');
+            const samples=[
+              {name:'Enoggera Reservoir',id:'W8113068',lon:152.918615,lat:-27.445287},
+              {name:'Lake Kivu',id:'R9072',lon:29.097290,lat:-1.776754},
+              {name:'Torres del Paine National Park',id:'R2622290',lon:-72.778931,lat:-50.929007},
+              {name:'Huilo-Huilo Biological Reserve',id:'R6809830',lon:-71.851959,lat:-39.987117}
+            ],features=[],fetches=[];
+            const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+            for(const [i,p] of samples.entries()){
+              if(i)await sleep(2000);
+              const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),22000);
+              const url='https://nominatim.openstreetmap.org/lookup?osm_ids='+p.id+
+                '&format=json&polygon_geojson=1&polygon_threshold=0';
+              const start=performance.now();
+              try{
+                const res=await fetch(url,{signal:ctrl.signal,headers:{
+                  'User-Agent':'pin2map-spatial-index-probe/1.0 (https://github.com/pin2map/pin2map-new-test)'}});
+                if(!res.ok)throw Error('HTTP '+res.status);
+                const body=await res.text(),result=JSON.parse(body),geojson=result[0]?.geojson;
+                if(!['Polygon','MultiPolygon'].includes(geojson?.type))throw Error('no polygon');
+                features.push({id:p.id,geometry:geojson});
+                fetches.push({id:p.id,name:p.name,status:'ok',ms:+(performance.now()-start).toFixed(1),
+                  responseBytes:Buffer.byteLength(body),vertexCount:result[0]?.geojson?.coordinates?
+                    require('./domain/area-geometry.js').pointCount(geojson):0});
+              }catch(e){fetches.push({id:p.id,name:p.name,status:'failed',ms:+(performance.now()-start).toFixed(1),
+                  error:String(e).slice(0,150)});}
+              finally{clearTimeout(timer)}
+            }
+            const start=performance.now(),idx=build(features,{cellSize:.5}),buildMs=performance.now()-start;
+            const tests=[];
+            for(const p of samples){
+              if(!features.some(f=>f.id===p.id)){tests.push({id:p.id,status:'not_fetched'});continue}
+              const warm=idx.query(p.lon,p.lat);
+              tests.push({id:p.id,status:warm.matches.includes(p.id)?'ok':'failed',
+                matches:warm.matches,scanned:warm.scanned.length});
+            }
+            const benchPoint=samples[1],iterations=2000;
+            const indexStart=performance.now();
+            for(let i=0;i<iterations;i++)idx.query(benchPoint.lon,benchPoint.lat);
+            const indexedMs=performance.now()-indexStart;
+            const linearStart=performance.now();
+            for(let i=0;i<iterations;i++)for(const f of features)containsPoint(f.geometry,benchPoint.lon,benchPoint.lat);
+            const linearMs=performance.now()-linearStart;
+            const summary={requested:samples.length,fetched:features.length,verified:tests.filter(x=>x.status==='ok').length,
+              indexBuildMs:+buildMs.toFixed(2),indexCells:idx.cellCount,
+              indexed2000QueriesMs:+indexedMs.toFixed(2),
+              linear2000QueriesMs:+linearMs.toFixed(2),
+              note:'Four real polygon geometries, no full-world inventory; sample measurements not network latency targets.'};
+            console.log('SPATIAL_REAL_SUMMARY',JSON.stringify(summary));
+            fs.writeFileSync('spatial-live-result.json',JSON.stringify({testedAt:new Date().toISOString(),summary,fetches,tests,
+              caveat:'Geometry coordinates used in memory only and not saved or republished. Real polygon sample, not worldwide coverage.'},null,2)+'\n');
+            if(features.length!==samples.length||tests.some(x=>x.status!=='ok'))process.exitCode=1;
+          })().catch(e=>{console.error('SPATIAL_INDEX_FATAL',e);process.exitCode=1});
+          NODE
+      - name: Save metadata result
+        if: always()
+        run: |
+          if [ ! -s spatial-live-result.json ]; then echo '{"status":"test_failed_before_results"}' > spatial-live-result.json; fi
+          node <<'NODE'
+          const fs=require('node:fs'),j=JSON.parse(fs.readFileSync('spatial-live-result.json','utf8'));
+          j.workflowUrl=process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID;
+          j.sourceCommit=process.env.GITHUB_SHA;
+          fs.writeFileSync('docs/research/spatial-index-live-result.json',JSON.stringify(j,null,2)+'\n');
+          NODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/research/spatial-index-live-result.json
+          git commit -m 'test-results: spatial index on four real OSM geometries' || exit 0
+          git push origin HEAD:feature/leaflet-modular-core
