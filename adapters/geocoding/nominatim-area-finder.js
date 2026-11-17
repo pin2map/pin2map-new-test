@@ -80,6 +80,18 @@
     return {kind,name,detail:kind,osmId:Number(item.id),osmType:item.type,
       fromContainingArea:true};
   }
+  // Public global Overpass nodes can reject browser requests. Regional
+  // endpoints with documented coverage are preferred where available;
+  // never send a coordinate to a region-only server outside its coverage.
+  function areaProviders(point){
+    const lat=Number(point.lat),lng=Number(point.lng);
+    const europe=lat>=34&&lat<=72&&lng>=-25&&lng<=45;
+    const northAmerica=lat>=7&&lat<=84&&lng>=-169&&lng<=-50;
+    return [...(europe?["https://ovp.dresel.systems/api/interpreter"]:
+      northAmerica?["https://ovp.dresel.systems/api-na/interpreter"]:[]),
+      "https://overpass.private.coffee/api/interpreter",
+      "https://overpass-api.de/api/interpreter"];
+  }
   class NominatimAreaFinder{
     constructor({fetchImpl,now=()=>Date.now(),sleep=ms=>new Promise(r=>setTimeout(r,ms)),minimumIntervalMs=1100}={}){
       if(typeof fetchImpl!=="function")throw new TypeError("Fetch transport required");
@@ -133,10 +145,27 @@
         // computes polygon containment: no arbitrary proximity search.
         const query="[out:json][timeout:20];is_in("+Number(point.lat)+","+
           Number(point.lng)+")->.containing;(way(pivot.containing);rel(pivot.containing););out tags;";
-        const url="https://overpass.private.coffee/api/interpreter?"+
-          new URLSearchParams({data:query});
-        const response=await this.request(url,signal);
-        for(const item of Array.isArray(response.elements)?response.elements:[]){
+        let response=null;
+        for(const endpoint of areaProviders(point)){
+          if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+          const timeout=new AbortController();
+          const cancel=()=>timeout.abort();
+          signal?.addEventListener("abort",cancel,{once:true});
+          const timer=setTimeout(cancel,endpoint.includes("dresel.systems")?12000:8000);
+          try{
+            response=await this.request(endpoint+"?"+new URLSearchParams({data:query}),
+              timeout.signal);
+            if(!Array.isArray(response?.elements))throw Error("Ungültige Gebietsantwort");
+            break;
+          }catch(error){
+            if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+            response=null; // Try the next independent provider after failure.
+          }finally{
+            clearTimeout(timer);signal?.removeEventListener("abort",cancel);
+          }
+        }
+        if(!response)throw Error("Kein Flächendienst erreichbar");
+        for(const item of response.elements){
           const row=overpassRow(item);
           if(!row)continue;
           // Admin rows are already present in the reverse hierarchy. Attach
@@ -272,7 +301,7 @@
     }
   }
   const api=Object.freeze({NominatimAreaFinder,normalize,variants,matches,lakeCandidate,
-    thematicKind,overpassRow});
+    thematicKind,overpassRow,areaProviders});
   root.Pin2MapNominatimAreaFinder=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

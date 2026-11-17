@@ -1,7 +1,7 @@
 "use strict";
 const test=require("node:test");
 const assert=require("node:assert/strict");
-const {NominatimAreaFinder,matches,variants}=require("../adapters/geocoding/nominatim-area-finder.js");
+const {NominatimAreaFinder,matches,variants,areaProviders}=require("../adapters/geocoding/nominatim-area-finder.js");
 const poly={type:"Polygon",coordinates:[[[10,50],[11,50],[11,51],[10,50]]]};
 test("area name variants retain predecessor mountain aliases",()=>{
   assert.ok(variants("Alpen").includes("Alps"));
@@ -124,7 +124,7 @@ test("Kartentip discovers island, protected and restricted areas absent from add
   assert.equal(names.includes("Dorfstraße"),false);
   assert.equal(result.rows.find(x=>x.name==="Nationalpark Jasmund").osmId,101);
   assert.equal(result.rows.find(x=>x.name==="Schießgebiet Arkona").kind,"restricted_area");
-  assert.match(requests[1],/overpass\.private\.coffee/);
+  assert.match(requests[1],/ovp\.dresel\.systems/);
   assert.match(decodeURIComponent(requests[1]),/is_in\(54\.55,13\.63\)/);
 });
 test("Kartentip resolves a thematic candidate by exact OSM identity, not an unrelated namesake",async()=>{
@@ -201,4 +201,30 @@ test("Overpass failure retains reverse-geocoded hierarchy and flags partial avai
   assert.equal(partial.rows[0].name,"Deutschland");
   assert.equal(result.rows[0].name,"Deutschland");
   assert.equal(result.extraUnavailable,true);
+});
+
+test("actual regional Overpass hosts have correct bounded coverage and global fallback",()=>{
+  assert.match(areaProviders({lat:54.55,lng:13.63})[0],/dresel\.systems\/api\/interpreter/);
+  assert.match(areaProviders({lat:40.71,lng:-74.0})[0],/dresel\.systems\/api-na\/interpreter/);
+  assert.match(areaProviders({lat:-33.9,lng:151.2})[0],/overpass\.private\.coffee/);
+  assert.ok(!areaProviders({lat:-33.9,lng:151.2}).some(s=>s.includes("dresel")));
+});
+test("provider HTTP failures retry an independent server without losing administrative choices",async()=>{
+  let calls=[],shown=null;
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    calls.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({address:{
+      country:"Deutschland",state:"Mecklenburg-Vorpommern",country_code:"de"}})};
+    if(url.includes("dresel.systems"))return {ok:false,status:503};
+    return {ok:true,json:async()=>({elements:[{type:"relation",id:23,
+      tags:{name:"Nationalpark Jasmund",boundary:"national_park"}}]})};
+  }});
+  const found=await finder.hierarchyAt({lat:54.55,lng:13.63},
+    {onPartial:x=>shown=x.rows.map(r=>r.name)});
+  assert.deepEqual(shown,["Deutschland","Mecklenburg-Vorpommern"]);
+  assert.equal(found.rows.at(-1).name,"Nationalpark Jasmund");
+  assert.equal(found.extraUnavailable,false);
+  assert.equal(calls.length,3);
+  assert.match(calls[1],/dresel\.systems/);
+  assert.match(calls[2],/private\.coffee/);
 });
