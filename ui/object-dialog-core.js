@@ -127,7 +127,7 @@
    const left=viewport.left||0,top=viewport.top||0;
    const right=left+viewport.width,bottom=top+viewport.height;
    const panelLeft=Math.max(left+margin,panel.left);
-   const panelRight=Math.min(right-margin,panel.right);
+   const panelRight=Math.min(right-margin,panel.right??panel.left+panel.width);
    const panelTop=Math.max(top+margin,panel.top+gap);
    const panelBottom=Math.min(bottom-margin,panel.bottom-gap);
    const ownerWidth=Math.max(0,panelRight-panelLeft);
