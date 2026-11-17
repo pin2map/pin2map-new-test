@@ -56,6 +56,30 @@
     return cls==="natural"&&/^(mountain_range|ridge|mountain|peak|massif)$/.test(type)||
       cls==="place"&&/^(region|locality)$/.test(type)&&/mountain|range|gebirge/i.test(String(x.display_name||""));
   }
+  // Overpass is_in returns named enclosing OSM areas, not merely postal
+  // address components. Only genuine area-bearing thematic features are
+  // eligible; buildings, roads and point POIs must never be offered.
+  function thematicKind(tags){
+    const boundary=String(tags.boundary||"").toLowerCase();
+    const place=String(tags.place||"").toLowerCase();
+    if(["island","islet","archipelago"].includes(place))return "island";
+    if(["national_park","protected_area","nature_reserve"].includes(boundary)||
+       tags.leisure==="nature_reserve"||tags.protect_class)return "protected_area";
+    if(tags.landuse==="military"||tags.military||
+       ["military","restricted_area"].includes(boundary))return "restricted_area";
+    if(["administrative","political"].includes(boundary))return "administrative";
+    if(["water","wetland"].includes(tags.natural)||tags.water)return "natural_area";
+    if(tags.landuse==="forest"||tags.natural==="wood")return "natural_area";
+    if(["region","locality"].includes(place))return "region";
+    return null;
+  }
+  function overpassRow(item){
+    const tags=item.tags||{},kind=thematicKind(tags),name=tags["name:de"]||tags.name;
+    if(!kind||!name||!["relation","way"].includes(item.type)||
+       !Number.isSafeInteger(Number(item.id))||Number(item.id)<=0)return null;
+    return {kind,name,detail:kind,osmId:Number(item.id),osmType:item.type,
+      fromContainingArea:true};
+  }
   class NominatimAreaFinder{
     constructor({fetchImpl,now=()=>Date.now(),sleep=ms=>new Promise(r=>setTimeout(r,ms)),minimumIntervalMs=1100}={}){
       if(typeof fetchImpl!=="function")throw new TypeError("Fetch transport required");
@@ -77,24 +101,84 @@
         lat:String(point.lat),lon:String(point.lng)});
       const result=await this.request("https://nominatim.openstreetmap.org/reverse?"+params,signal);
       const address=result.address||{},seen=new Set(),rows=[];
-      function add(kind,name,detail){
-        if(!name||seen.has(kind+"|"+name))return;
-        seen.add(kind+"|"+name);rows.push({kind,name,detail});
+      let extraUnavailable=false;
+      function add(row){
+        if(!row?.name)return;
+        const key=row.osmId?row.osmType+":"+row.osmId:row.kind+"|"+normalize(row.name);
+        if(seen.has(key))return;
+        seen.add(key);rows.push(row);
       }
-      // Reverse's top-level match may be a road, building or POI, not a
-      // selectable boundary. Use only the administrative hierarchy supplied
-      // in address, ordered from the largest to the smallest territory.
-      // Geometry is verified separately when the user selects a row.
+      // A reverse address is only a partial administrative description,
+      // not a spatial inventory of the polygons covering the point.
       for(const key of ["country","state","region","state_district","county",
-        "municipality","city","town","village"])
-        if(address[key])add(key,address[key],key);
-      return {rows,countryCode:address.country_code||""};
+        "municipality","city","town","village","hamlet","locality","island"])
+        if(address[key])add({kind:key,name:address[key],detail:key});
+      // A reverse result can itself identify a named area (e.g. an island).
+      const reverseTags={boundary:result.class==="boundary"?result.type:"",
+        place:result.class==="place"?result.type:"",
+        natural:result.class==="natural"?result.type:"",
+        leisure:result.class==="leisure"?result.type:"",
+        landuse:result.class==="landuse"?result.type:""};
+      const reverseKind=thematicKind(reverseTags);
+      if(reverseKind&&result.name&&["way","relation"].includes(result.osm_type))
+        add({kind:reverseKind,name:result.name,detail:reverseKind,
+          osmType:result.osm_type,osmId:Number(result.osm_id)});
+      try{
+        // One bounded, point-based Overpass request discovers enclosing
+        // named protected/restricted areas and islands worldwide. Its server
+        // computes polygon containment: no arbitrary proximity search.
+        const query="[out:json][timeout:20];is_in("+Number(point.lat)+","+
+          Number(point.lng)+")->.containing;(way(pivot.containing);rel(pivot.containing););out tags;";
+        const url="https://overpass.private.coffee/api/interpreter?"+
+          new URLSearchParams({data:query});
+        const response=await this.request(url,signal);
+        for(const item of Array.isArray(response.elements)?response.elements:[]){
+          const row=overpassRow(item);
+          if(!row)continue;
+          // Admin rows are already present in the reverse hierarchy. Attach
+          // the exact geometry identity to that choice rather than duplicate
+          // its visible name with another category.
+          if(row.kind==="administrative"||row.kind==="island"){
+            const existing=rows.find(x=>normalize(x.name)===normalize(row.name));
+            if(existing){existing.osmId=row.osmId;existing.osmType=row.osmType;
+              if(row.kind==="island")existing.fromContainingArea=true;
+              continue;}
+          }
+          add(row);
+        }
+      }catch(error){
+        if(signal?.aborted||error?.name==="AbortError")throw error;
+        // Nominatim's hierarchy remains usable if Overpass is offline.
+        // A transient external provider failure must never erase those rows.
+        extraUnavailable=true;
+      }
+      return {rows,countryCode:address.country_code||"",extraUnavailable};
     }
     async findContaining(entry,point,{countryCode="",signal}={}){
       // Do not restrict a state/country polygon to a six-degree bounding box:
       // for New South Wales, for example, the polygon extends well beyond
       // such a box, especially when a user clicks near its eastern boundary.
       // That bounded search silently removed the correct candidate.
+      // A spatial Overpass candidate already has an exact OSM identity.
+      // Nominatim lookup avoids text-search ranking, duplicate place names
+      // and result-limit omissions, while keeping polygon output identical
+      // to the ordinary search box.
+      if(entry.osmId&&["way","relation"].includes(entry.osmType)){
+        const params=new URLSearchParams({format:"jsonv2",polygon_geojson:"1",
+          addressdetails:"1",namedetails:"1",osm_ids:
+            (entry.osmType==="relation"?"R":"W")+entry.osmId});
+        try{
+          const lookedUp=await this.request(
+            "https://nominatim.openstreetmap.org/lookup?"+params,signal);
+          const exact=(Array.isArray(lookedUp)?lookedUp:[]).find(x=>
+            x.osm_type===entry.osmType&&String(x.osm_id)===String(entry.osmId)&&
+            ["Polygon","MultiPolygon"].includes(x.geojson?.type));
+          if(exact)return exact;
+        }catch(error){
+          if(signal?.aborted||error?.name==="AbortError")throw error;
+          // Fall through to the ordinary polygon text search.
+        }
+      }
       const params=new URLSearchParams({
         format:"jsonv2",polygon_geojson:"1",addressdetails:"1",
         namedetails:"1",limit:"50",dedupe:"0",q:entry.name
@@ -115,6 +199,9 @@
         if(entry.kind==="country")return addressType==="country"||adminLevel==="2";
         if(entry.kind==="county")return addressType==="county"||adminLevel==="6";
         if(entry.kind==="city")return ["city","municipality"].includes(addressType);
+        if(["town","village","hamlet","locality","island"].includes(entry.kind))
+          return addressType===entry.kind||
+            normalize(x.address?.[entry.kind])===normalize(entry.name);
         return addressType===entry.kind;
       };
       const scored=candidates.map(candidate=>({
@@ -134,7 +221,7 @@
       // polygon returned by Nominatim is simplified at a coastline/border.
       // Never use this fallback for unnamed or ambiguous local features.
       const adminKinds=new Set(["state","country","county","state_district",
-        "region","municipality","city"]);
+        "region","municipality","city","town","village","hamlet","locality","island"]);
       const adminMatches=scored.filter(x=>x.kindMatch);
       if(adminKinds.has(entry.kind)&&countryCode&&adminMatches.length===1){
         return adminMatches[0].candidate;
@@ -180,7 +267,8 @@
       return found;
     }
   }
-  const api=Object.freeze({NominatimAreaFinder,normalize,variants,matches,lakeCandidate});
+  const api=Object.freeze({NominatimAreaFinder,normalize,variants,matches,lakeCandidate,
+    thematicKind,overpassRow});
   root.Pin2MapNominatimAreaFinder=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

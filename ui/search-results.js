@@ -167,7 +167,10 @@
           const types={country:"Land",state:"Bundesland/Region",
             region:"Region",state_district:"Regierungsbezirk",
             county:"Landkreis/Kreis",municipality:"Gemeinde",
-            city:"Stadt",town:"Stadt",village:"Ort"};
+            city:"Stadt",town:"Stadt",village:"Ort",hamlet:"Weiler",
+            locality:"Ort",island:"Insel",protected_area:"Schutzgebiet",
+            restricted_area:"Sperrgebiet",administrative:"Verwaltungsgebiet",
+            natural_area:"Naturgebiet"};
           const type=this.document.createElement("span");
           type.className="result-area-type";
           type.textContent=types[result.kind]||"Gebiet";

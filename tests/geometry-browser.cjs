@@ -838,6 +838,58 @@ const viewports=[
    assert.equal(nsw.layerId,"private");
    assert.equal(nsw.geometry.type,"Polygon");
    assert.equal(await page.locator("#searchResults .message").count(),0);
+   // Rügen regression: a map click must list polygons that are NOT
+   // administrative address components; selecting the exact OSM object must
+   // show a temporary polygon without any fitBounds/setView call.
+   await page.route(/nominatim\.openstreetmap\.org\/reverse/,async route=>
+     route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify({class:"highway",type:"residential",name:"Dorfstraße",
+         address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",
+           island:"Rügen",country_code:"de"}})}));
+   await page.route(/overpass\.private\.coffee\/api\/interpreter/,async route=>
+     route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify({elements:[
+         {type:"relation",id:80401,tags:{name:"Rügen",place:"island"}},
+         {type:"relation",id:80402,tags:{name:"Nationalpark Jasmund",
+           boundary:"national_park"}},
+         {type:"relation",id:80403,tags:{name:"Schießgebiet Arkona",
+           military:"danger_area"}}
+       ]})}));
+   await page.route(/nominatim\.openstreetmap\.org\/lookup/,async route=>{
+     assert.equal(new URL(route.request().url()).searchParams.get("osm_ids"),"R80402");
+     await route.fulfill({status:200,contentType:"application/json",
+       body:JSON.stringify([{osm_type:"relation",osm_id:80402,
+         name:"Nationalpark Jasmund",type:"national_park",
+         geojson:{type:"Polygon",coordinates:[[
+           [13.3,54.2],[13.8,54.2],[13.8,54.9],[13.3,54.9],[13.3,54.2]
+         ]]}}])});
+   });
+   if(view.mobile)await page.touchscreen.tap(px,py);
+   else await page.mouse.click(px,py);
+   await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:5000});
+   await page.locator('#mapActionChooser button[aria-label="Gebiet suchen"]').click();
+   await page.locator("#searchResults .result").filter({hasText:"Nationalpark Jasmund"})
+     .waitFor({state:"visible",timeout:15000});
+   assert.equal(await page.locator("#searchResults .result")
+     .filter({hasText:"Rügen"}).count(),1,"Island must not be listed twice");
+   assert.equal(await page.locator("#searchResults .result")
+     .filter({hasText:"Schießgebiet Arkona"}).count(),1,
+     "Military restriction must be offered at the map tap");
+   await page.evaluate(()=>{window.__mapTapCameraTrace=[];});
+   await page.locator("#searchResults .result").filter({hasText:"Nationalpark Jasmund"}).click();
+   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
+   assert.deepEqual(await page.evaluate(()=>window.__mapTapCameraTrace),[],
+     "National park picked from Kartentip must not move map");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.some(a=>a.name==="Nationalpark Jasmund");}
+     finally{db.close();}
+   }),false,"The selected national park is only a temporary preview");
+   await page.locator(".p2m-plate-label").click();
+   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
+   await page.locator(".plate-area-no").click();
+   await page.unroute(/overpass\.private\.coffee\/api\/interpreter/);
+   await page.unroute(/nominatim\.openstreetmap\.org\/lookup/);
    // True browser regression for a mixed pin + area LABEL at the same map
    // position. The first click must zoom the group, NOT open either editor.
    await page.evaluate(async()=>{

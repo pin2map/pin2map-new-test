@@ -90,3 +90,75 @@ test("reverse area hierarchy removes roads, subdistricts and POIs and displays c
   assert.equal(result.rows.some(x=>x.name==="Kolonnenweg"||x.name==="Helmershausen"),false);
   assert.equal(result.countryCode,"de");
 });
+
+test("Kartentip discovers island, protected and restricted areas absent from address hierarchy",async()=>{
+  globalThis.Pin2MapAreaGeometry=require("../domain/area-geometry.js");
+  const requests=[];
+  const overpass=[
+    {type:"relation",id:101,tags:{name:"Nationalpark Jasmund",boundary:"national_park"}},
+    {type:"relation",id:102,tags:{name:"Schießgebiet Arkona",military:"danger_area"}},
+    {type:"relation",id:103,tags:{name:"Rügen",place:"island"}},
+    {type:"way",id:104,tags:{name:"Sperrgebiet",landuse:"military"}},
+    {type:"way",id:105,tags:{name:"Privathaus",building:"yes"}},
+    {type:"node",id:106,tags:{name:"Aussichtspunkt",tourism:"viewpoint"}}
+  ];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    requests.push(url);
+    const body=url.includes("/reverse")?{
+      class:"highway",type:"residential",name:"Dorfstraße",
+      address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",
+        county:"Vorpommern-Rügen",town:"Sassnitz",island:"Rügen",country_code:"de"}
+    }:{elements:overpass};
+    return {ok:true,json:async()=>body};
+  }});
+  const result=await finder.hierarchyAt({lat:54.55,lng:13.63});
+  const names=result.rows.map(x=>x.name);
+  for(const name of ["Deutschland","Mecklenburg-Vorpommern","Rügen",
+    "Nationalpark Jasmund","Schießgebiet Arkona","Sperrgebiet"])
+    assert.ok(names.includes(name),name+" must be selectable");
+  assert.equal(names.filter(x=>x==="Rügen").length,1,
+    "An island in reverse and Overpass must appear only once");
+  assert.equal(result.rows.find(x=>x.name==="Rügen").osmId,103);
+  assert.equal(names.includes("Privathaus"),false);
+  assert.equal(names.includes("Aussichtspunkt"),false);
+  assert.equal(names.includes("Dorfstraße"),false);
+  assert.equal(result.rows.find(x=>x.name==="Nationalpark Jasmund").osmId,101);
+  assert.equal(result.rows.find(x=>x.name==="Schießgebiet Arkona").kind,"restricted_area");
+  assert.match(requests[1],/overpass\.private\.coffee/);
+  assert.match(decodeURIComponent(requests[1]),/is_in\(54\.55,13\.63\)/);
+});
+test("Kartentip resolves a thematic candidate by exact OSM identity, not an unrelated namesake",async()=>{
+  const geometry={type:"Polygon",coordinates:[[
+    [13.3,54.3],[13.9,54.3],[13.9,54.8],[13.3,54.8],[13.3,54.3]
+  ]]};
+  const urls=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    urls.push(url);
+    if(url.includes("/lookup"))return {ok:true,json:async()=>[
+      {osm_type:"relation",osm_id:101,name:"Nationalpark Jasmund",geojson:geometry},
+      {osm_type:"relation",osm_id:999,name:"Nationalpark Jasmund",geojson:geometry}
+    ]};
+    throw Error("unexpected name search");
+  }});
+  const result=await finder.findContaining({name:"Nationalpark Jasmund",
+    kind:"protected_area",osmType:"relation",osmId:101,fromContainingArea:true},
+    {lat:54.5,lng:13.6},{countryCode:"de"});
+  assert.equal(result.osm_id,101);
+  assert.match(urls[0],/osm_ids=R101/);
+  assert.match(urls[0],/polygon_geojson=1/);
+  assert.equal(urls.length,1);
+});
+test("recognized unique villages and small places resolve despite simplified polygon mismatch",async()=>{
+  globalThis.Pin2MapAreaGeometry=require("../domain/area-geometry.js");
+  const mismatch={type:"Polygon",coordinates:[[
+    [14,55],[14.1,55],[14.1,55.1],[14,55.1],[14,55]
+  ]]};
+  const candidate={osm_type:"relation",osm_id:501,name:"Abtshagen",
+    addresstype:"village",geojson:mismatch};
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async()=>({
+    ok:true,json:async()=>[candidate]
+  })});
+  const found=await finder.findContaining({kind:"village",name:"Abtshagen"},
+    {lat:54.1,lng:13.2},{countryCode:"de"});
+  assert.equal(found?.osm_id,501);
+});

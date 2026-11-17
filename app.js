@@ -824,6 +824,7 @@
       const result=await areaFinder.hierarchyAt(point,{signal:controller.signal});
       if(run!==featureRun)return;
       areaHierarchyPoint=point;areaHierarchyCountry=result.countryCode;
+      if(result.extraUnavailable)showNotice("Zusätzliche Schutz- und Sondergebiete derzeit nicht erreichbar.");
       if(!result.rows.length){
         searchView.message("Keine Gebietshierarchie für diesen Kartenpunkt gefunden.");
         return;
