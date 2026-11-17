@@ -24,25 +24,25 @@ test("success uses default name, existing domain mutation, render then save",()=
   assert.equal(x.project.layers[0].id,"private");
   assert.equal(x.project.layers[1].id,"new-layer",
     "LayerCreation must expose new layer immediately below Private");
-  assert.deepEqual(x.events,[["prompt","Ebene 2"],"render","save"]);
+  assert.deepEqual(x.events,[["prompt",""],"render","save"]);
 });
 test("cancel does not mutate project, render, or save",()=>{
   const x=fixture(null);
   assert.equal(x.flow.create(),null);
   assert.equal(x.project.layers.length,2);
-  assert.deepEqual(x.events,[["prompt","Ebene 2"]]);
+  assert.deepEqual(x.events,[["prompt",""]]);
 });
 for(const [answer,msg] of [["   ","Bitte einen Ebenennamen eingeben"],["PRIVAT","Der Ebenenname ist bereits vergeben"]]){
   test("invalid layer name is reported without save: "+msg,()=>{
     const x=fixture(answer);assert.equal(x.flow.create(),null);
     assert.equal(x.project.layers.length,2);
-    assert.deepEqual(x.events,[["prompt","Ebene 2"],["notice",msg]]);
+    assert.deepEqual(x.events,[["prompt",""],["notice",msg]]);
   });
 }
 test("unexpected create errors retain generic notice without writes",()=>{
   const x=fixture("Reisen");x.flow.operations={nextName:()=> "Ebene 2",create:()=>{throw new Error("unexpected");}};
   assert.equal(x.flow.create(),null);
-  assert.deepEqual(x.events,[["prompt","Ebene 2"],["notice","Ebene konnte nicht erstellt werden"]]);
+  assert.deepEqual(x.events,[["prompt",""],["notice","Ebene konnte nicht erstellt werden"]]);
 });
 test("wiring and packaging separate layer create use case from app and IndexedDB",()=>{
   const source=file=>fs.readFileSync(path.resolve(__dirname,"..",file),"utf8");
