@@ -237,6 +237,7 @@ jobs:
               "vendor/leaflet/leaflet.css": ("text/css", ".leaflet-container"),
               "styles.css": ("text/css", ".pin-panel"),
               "app.js": ("javascript", "Pin2MapPwaRefresh.refresh"),
+              "domain/license-plate-catalog.js": ("javascript", "Pin2MapLicensePlateCatalog"),
               "ui/pin-layer-picker.js": ("javascript", "class ObjectLayerPicker"),
               "ui/search-results.js": ("javascript", "results-footer"),
               "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
