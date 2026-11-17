@@ -21,7 +21,12 @@
    // on iOS. Portalling its menu to BODY paints it behind #app there,
    // leaving only a thin filter strip visible (actual device regression).
    // Keep the menu and editor in the SAME stacking context.
-   const portalHost=this.el(this.panelId)?.parentElement||doc.getElementById?.("app")||doc.body;
+   // Keep each menu outside its scrolling panel. The Pin's established
+   // top-level BODY portal and geometry's #app stacking portal differ only
+   // in host, never in layout sizing, filtering or selection behavior.
+   const portalHost=this.contained?
+     (this.el(this.panelId)?.parentElement||doc.getElementById?.("app")||doc.body):
+     doc.body;
    portalHost.append(menu);
    this.onViewportChange=()=>{if(this.open)this.positionMenu();};
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
