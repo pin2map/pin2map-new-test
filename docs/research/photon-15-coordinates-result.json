@@ -1,0 +1,1148 @@
+{
+  "testedAt": "2026-11-17T17:54:41.577Z",
+  "note": "Research only; Photon results are proximity candidates, not proof of polygon containment. No application integration.",
+  "summary": {
+    "tested": 15,
+    "success": 15,
+    "namedMatches": 7,
+    "polygons": 0,
+    "failures": 0
+  },
+  "results": [
+    {
+      "region": "Australia",
+      "expected": "Enoggera Reservoir",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 1023,
+      "count": 14,
+      "exactOrContainsNameMatches": 2,
+      "matchItems": [
+        {
+          "name": "Enoggera Reservoir",
+          "osm_id": 8113068,
+          "osm_type": "W",
+          "osm_key": "water",
+          "osm_value": "reservoir",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Enoggera Reservoir",
+          "osm_id": 7012226,
+          "osm_type": "R",
+          "osm_key": "leisure",
+          "osm_value": "nature_reserve",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Enoggera Reservoir",
+          "osm_id": 8113068,
+          "osm_type": "W",
+          "osm_key": "water",
+          "osm_value": "reservoir",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Enoggera Reservoir",
+          "osm_id": 7012226,
+          "osm_type": "R",
+          "osm_key": "leisure",
+          "osm_value": "nature_reserve",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Araucaria Track",
+          "osm_id": 1459692347,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "steps",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Araucaria Track",
+          "osm_id": 24221860,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "path",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Araucaria Track",
+          "osm_id": 166188399,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "footway",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Link track",
+          "osm_id": 24221864,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "footway",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Hillside track",
+          "osm_id": 495478064,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "footway",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Araucaria Walk",
+          "osm_id": 24221858,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "path",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Australia",
+      "expected": "Marradong Mining Area",
+      "kind": "special",
+      "status": "ok",
+      "http": 200,
+      "ms": 887,
+      "count": 10,
+      "exactOrContainsNameMatches": 1,
+      "matchItems": [
+        {
+          "name": "Marradong Mining Area",
+          "osm_id": 14893603,
+          "osm_type": "R",
+          "osm_key": "landuse",
+          "osm_value": "industrial",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Marradong Mining Area",
+          "osm_id": 14893603,
+          "osm_type": "R",
+          "osm_key": "landuse",
+          "osm_value": "industrial",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Robins Road",
+          "osm_id": 696192702,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Morts Road",
+          "osm_id": 1113540360,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "track",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Aschcroft Road",
+          "osm_id": 563135054,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "track",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Boddington Cemetery",
+          "osm_id": 396491027,
+          "osm_type": "W",
+          "osm_key": "landuse",
+          "osm_value": "cemetery",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pinjarra - Williams Road",
+          "osm_id": 571391038,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "secondary",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Stagbouer Trail",
+          "osm_id": 709900621,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Marradong",
+          "osm_id": 11689092,
+          "osm_type": "R",
+          "osm_key": "place",
+          "osm_value": "hamlet",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Australia",
+      "expected": "Mokamie Nature Reserve",
+      "kind": "protected",
+      "status": "ok",
+      "http": 200,
+      "ms": 1042,
+      "count": 8,
+      "exactOrContainsNameMatches": 1,
+      "matchItems": [
+        {
+          "name": "Mokamie Nature Reserve",
+          "osm_id": 12949787,
+          "osm_type": "R",
+          "osm_key": "leisure",
+          "osm_value": "nature_reserve",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Mokamie Nature Reserve",
+          "osm_id": 12949787,
+          "osm_type": "R",
+          "osm_key": "leisure",
+          "osm_value": "nature_reserve",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Erikin South Road",
+          "osm_id": 1307028355,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Yarding South Road",
+          "osm_id": 185305859,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Strachan Road",
+          "osm_id": 185402666,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "York Merredin",
+          "osm_id": 29702065,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "primary",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Erikin North Road",
+          "osm_id": 566834863,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Yarding",
+          "osm_id": 6092848729,
+          "osm_type": "N",
+          "osm_key": "place",
+          "osm_value": "locality",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Yarding-Ardath Road",
+          "osm_id": 185301248,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "tertiary",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Australia",
+      "expected": "Delamere Range Facility Training Area",
+      "kind": "special",
+      "status": "ok",
+      "http": 200,
+      "ms": 1277,
+      "count": 0,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [],
+      "geometryTypes": []
+    },
+    {
+      "region": "Africa",
+      "expected": "Lake Kivu",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 913,
+      "count": 12,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [
+        {
+          "name": "Kasunyu",
+          "osm_id": 21012795,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "health",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Buhumba",
+          "osm_id": 21012902,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "health",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Bwisha",
+          "osm_id": 21011627,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "health",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Gasunyu",
+          "osm_id": 1159316914,
+          "osm_type": "N",
+          "osm_key": "place",
+          "osm_value": "village",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Field",
+          "osm_id": 1153121772,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "locality",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Ruhunde",
+          "osm_id": 21007788,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "health",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Mubimbi",
+          "osm_id": 1159998210,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Mubimbi",
+          "osm_id": 1159998211,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Africa",
+      "expected": "Farihy Ihotry",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 1012,
+      "count": 2,
+      "exactOrContainsNameMatches": 1,
+      "matchItems": [
+        {
+          "name": "Farihy Ihotry",
+          "osm_id": 75250501,
+          "osm_type": "W",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Farihy Ihotry",
+          "osm_id": 75250501,
+          "osm_type": "W",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Morombe",
+          "osm_id": 19552444,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "administrative",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Africa",
+      "expected": "Namib Naukluft National Park",
+      "kind": "protected",
+      "status": "ok",
+      "http": 200,
+      "ms": 1157,
+      "count": 0,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [],
+      "geometryTypes": []
+    },
+    {
+      "region": "South America",
+      "expected": "Embalse Rio Hondo",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 1237,
+      "count": 15,
+      "exactOrContainsNameMatches": 1,
+      "matchItems": [
+        {
+          "name": "Embalse Río Hondo",
+          "osm_id": 7138909,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "reservoir",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Río Salí",
+          "osm_id": 1394520124,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "flowline",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Embalse Río Hondo",
+          "osm_id": 7138909,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "reservoir",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Río Gastona",
+          "osm_id": 1030542655,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Río Medina",
+          "osm_id": 258263994,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Arroyo Matazambi",
+          "osm_id": 258263946,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Río Gastona",
+          "osm_id": 1394520123,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Control Tower",
+          "osm_id": 3510598654,
+          "osm_type": "N",
+          "osm_key": "man_made",
+          "osm_value": "tower",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Terminal de pasajeros",
+          "osm_id": 344494955,
+          "osm_type": "W",
+          "osm_key": "aeroway",
+          "osm_value": "terminal",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "South America",
+      "expected": "Lago Villarrica",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 857,
+      "count": 14,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [
+        {
+          "name": "Los Raulíes",
+          "osm_id": 3998987965,
+          "osm_type": "N",
+          "osm_key": "place",
+          "osm_value": "hamlet",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Villarrica Lake",
+          "osm_id": 1922935,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Escuela Particular Manhue",
+          "osm_id": 10959660958,
+          "osm_type": "N",
+          "osm_key": "amenity",
+          "osm_value": "school",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Trailelfú",
+          "osm_id": 8946180798,
+          "osm_type": "N",
+          "osm_key": "place",
+          "osm_value": "hamlet",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Ranas",
+          "osm_id": 417041825,
+          "osm_type": "W",
+          "osm_key": "natural",
+          "osm_value": "water",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Casa Don Friedrich",
+          "osm_id": 692062123,
+          "osm_type": "W",
+          "osm_key": "building",
+          "osm_value": "yes",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Carlos Strasse",
+          "osm_id": 692062125,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "track",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Claritas Weg",
+          "osm_id": 1015840203,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "path",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "South America",
+      "expected": "Reserva Biológica Huilo Huilo",
+      "kind": "protected",
+      "status": "ok",
+      "http": 200,
+      "ms": 898,
+      "count": 11,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [
+        {
+          "name": "Estero Rincón del Diablo",
+          "osm_id": 934880937,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "stream",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Río Pillanleufú",
+          "osm_id": 1571277525,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Río Pillanleufú",
+          "osm_id": 1571277524,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Huilo-Huilo Biological Reserve",
+          "osm_id": 6809830,
+          "osm_type": "R",
+          "osm_key": "leisure",
+          "osm_value": "nature_reserve",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Cerro Coironales",
+          "osm_id": 5811519788,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "peak",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Centro de Rescate de Fauna Silvestre",
+          "osm_id": 934880917,
+          "osm_type": "W",
+          "osm_key": "amenity",
+          "osm_value": "veterinary",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Centro de Conservación del Huemul del Sur",
+          "osm_id": 1160865250,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "track",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pampa Pilmaiquén",
+          "osm_id": 6707983899,
+          "osm_type": "N",
+          "osm_key": "place",
+          "osm_value": "locality",
+          "geometry_type": "Point",
+          "extent_present": false
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "South America",
+      "expected": "Zona Nucleo Rio Auquinco",
+      "kind": "protected",
+      "status": "ok",
+      "http": 200,
+      "ms": 841,
+      "count": 15,
+      "exactOrContainsNameMatches": 1,
+      "matchItems": [
+        {
+          "name": "Zona Núcleo Río Auquinco",
+          "osm_id": 11283391,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "protected_area",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Río Auquinco",
+          "osm_id": 433383462,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Refugio Rincón de los pinos",
+          "osm_id": 1305612206,
+          "osm_type": "W",
+          "osm_key": "amenity",
+          "osm_value": "shelter",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Rincon de Los Pinos",
+          "osm_id": 6245285885,
+          "osm_type": "N",
+          "osm_key": "tourism",
+          "osm_value": "camp_site",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Arroyo del León",
+          "osm_id": 756782586,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Zona Núcleo Río Auquinco",
+          "osm_id": 11283391,
+          "osm_type": "R",
+          "osm_key": "boundary",
+          "osm_value": "protected_area",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Cerro La Península",
+          "osm_id": 4322206847,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "peak",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Arroyo del León",
+          "osm_id": 435825611,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Arroyo del León",
+          "osm_id": 435825613,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "South America",
+      "expected": "Parque Nacional Torres del Paine",
+      "kind": "protected",
+      "status": "ok",
+      "http": 200,
+      "ms": 1107,
+      "count": 13,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [
+        {
+          "name": "Ruta Y-166",
+          "osm_id": 25768295,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "unclassified",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Camino Laguna La Cebolla",
+          "osm_id": 320649266,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "track",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Mirador Cascada Paine",
+          "osm_id": 3364815103,
+          "osm_type": "N",
+          "osm_key": "amenity",
+          "osm_value": "parking",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Cascada del Paine",
+          "osm_id": 3364723028,
+          "osm_type": "N",
+          "osm_key": "tourism",
+          "osm_value": "viewpoint",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Cascada del Paine",
+          "osm_id": 3364815102,
+          "osm_type": "N",
+          "osm_key": "waterway",
+          "osm_value": "waterfall",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Sendero Cañadón Macho-Loma Guanaco",
+          "osm_id": 545465450,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "path",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Laguna Azul",
+          "osm_id": 11205423,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Portería Laguna Amarga",
+          "osm_id": 7159483685,
+          "osm_type": "N",
+          "osm_key": "office",
+          "osm_value": "government",
+          "geometry_type": "Point",
+          "extent_present": false
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Asia",
+      "expected": "Tonle Sab",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 949,
+      "count": 1,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [
+        {
+          "name": "Tonle Sap Lake",
+          "osm_id": 5638825,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Asia",
+      "expected": "Heaven Lake",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 1096,
+      "count": 12,
+      "exactOrContainsNameMatches": 1,
+      "matchItems": [
+        {
+          "name": "Heaven Lake",
+          "osm_id": 11650508,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "topResults": [
+        {
+          "name": "Paektu Mountain",
+          "osm_id": 310552327,
+          "osm_type": "N",
+          "osm_key": "tourism",
+          "osm_value": "viewpoint",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Paektu Mountain",
+          "osm_id": 310552327,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "volcano",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Heaven Lake",
+          "osm_id": 11650508,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "lake",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Tianwen Peak Trail",
+          "osm_id": 543958144,
+          "osm_type": "W",
+          "osm_key": "highway",
+          "osm_value": "footway",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Tianwen Peak",
+          "osm_id": 13298812338,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "peak",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Tianhuo Peak",
+          "osm_id": 4711503714,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "peak",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "Longmen Peak",
+          "osm_id": 4121406450,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "peak",
+          "geometry_type": "Point",
+          "extent_present": false
+        },
+        {
+          "name": "白岩",
+          "osm_id": 13298812341,
+          "osm_type": "N",
+          "osm_key": "natural",
+          "osm_value": "peak",
+          "geometry_type": "Point",
+          "extent_present": false
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    },
+    {
+      "region": "Asia",
+      "expected": "Tasik Kenyir",
+      "kind": "water",
+      "status": "ok",
+      "http": 200,
+      "ms": 1097,
+      "count": 15,
+      "exactOrContainsNameMatches": 0,
+      "matchItems": [],
+      "topResults": [
+        {
+          "name": "Kenyir Reservoir",
+          "osm_id": 1166498,
+          "osm_type": "R",
+          "osm_key": "water",
+          "osm_value": "reservoir",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Sungai Kerbat",
+          "osm_id": 1324354302,
+          "osm_type": "W",
+          "osm_key": "waterway",
+          "osm_value": "river",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pulau Limau",
+          "osm_id": 724678034,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "islet",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pulau Limau",
+          "osm_id": 724678034,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "islet",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pulau Pakuh",
+          "osm_id": 679191178,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "islet",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pulau Pakuh",
+          "osm_id": 679191178,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "islet",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pulau Kuala Pakuh",
+          "osm_id": 724697447,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "islet",
+          "geometry_type": "Point",
+          "extent_present": true
+        },
+        {
+          "name": "Pulau Kuala Pakuh",
+          "osm_id": 724697447,
+          "osm_type": "W",
+          "osm_key": "place",
+          "osm_value": "islet",
+          "geometry_type": "Point",
+          "extent_present": true
+        }
+      ],
+      "geometryTypes": [
+        "Point"
+      ]
+    }
+  ],
+  "workflowRun": "44141987357",
+  "sourceCommit": "a7c2b3a1fd27dbb996138db99d05cd8bb7b314f2",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44141987357"
+}
