@@ -15,6 +15,8 @@ permissions:
 jobs:
   safari-geometry:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +28,7 @@ jobs:
       - name: Install Playwright WebKit dependencies
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.56.1
-          npx playwright install --with-deps webkit chromium
+          npx playwright install webkit chromium
       - name: Mandatory published-dialog WebKit and Chromium regression
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
