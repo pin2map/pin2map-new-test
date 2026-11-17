@@ -1,0 +1,140 @@
+name: Coordinate-only Photon polygon discovery research
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths: ['.github/workflows/photon-coordinate-only-research.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+          persist-credentials: true
+      - name: Chromium and remote point-only polygon research
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          node <<'NODE'
+          'use strict';
+          (async()=>{
+          const fs=require('node:fs'), {chromium}=require('playwright');
+          const fixtures=require('./tests/area-source-fixtures.cjs');
+          const chosen=['Lake Kivu','Namib Naukluft National Park',
+            'Parque Nacional Torres del Paine','Delamere Range Facility Training Area'];
+          // Names above select immutable reference coordinates; NEVER send names to providers.
+          const points=fixtures.filter(p=>chosen.includes(p.name));
+          const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
+          let results;
+          try{
+            const page=await browser.newPage();
+            await page.goto('https://pin2map.github.io/pin2map-new-test/preview/',{waitUntil:'domcontentloaded',timeout:30000});
+            await page.waitForFunction(()=>!!window.Pin2MapAreaGeometry?.containsPoint);
+            results=await page.evaluate(async points=>{
+              const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+              const out=[];
+              const request=async u=>{
+                const c=new AbortController(),t=setTimeout(()=>c.abort(),22000),start=Date.now();
+                try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);
+                  return {status:'ok',ms:Date.now()-start,data:await r.json()};}
+                catch(e){return {status:'failed',ms:Date.now()-start,error:String(e).slice(0,150)}}
+                finally{clearTimeout(t)}
+              };
+              for(const p of points){
+                const candidates=new Map(),photon=[],nominatim=[];
+                for(const radius of [15,150]){
+                  await sleep(1200);
+                  const u=new URL('https://photon.komoot.io/reverse');
+                  u.searchParams.set('lat',String(p.lat));u.searchParams.set('lon',String(p.lng));
+                  u.searchParams.set('limit','50');u.searchParams.set('radius',String(radius));u.searchParams.set('lang','en');
+                  const r=await request(u);
+                  const f=(r.data?.features||[]).map(x=>({id:x.properties?.osm_type&&x.properties?.osm_id?
+                    String(x.properties.osm_type).toUpperCase()+x.properties.osm_id:null,
+                    name:x.properties?.name||null,key:x.properties?.osm_key||null,
+                    value:x.properties?.osm_value||null}));
+                  for(const item of f)if(item.id&&/^[WR]\d+$/.test(item.id))candidates.set(item.id,item);
+                  photon.push({radius,status:r.status,error:r.error,count:f.length,ms:r.ms,
+                    names:f.map(x=>x.name).filter(Boolean).slice(0,30)});
+                }
+                for(const zoom of [18,10]){
+                  await sleep(1400);
+                  const u=new URL('https://nominatim.openstreetmap.org/reverse');
+                  u.searchParams.set('lat',String(p.lat));u.searchParams.set('lon',String(p.lng));
+                  u.searchParams.set('zoom',String(zoom));u.searchParams.set('format','jsonv2');
+                  u.searchParams.set('addressdetails','1');u.searchParams.set('extratags','1');
+                  const r=await request(u);
+                  const d=r.data||{};
+                  const id=d.osm_type&&d.osm_id?d.osm_type[0].toUpperCase()+d.osm_id:null;
+                  if(id&&/^[WR]\d+$/.test(id))candidates.set(id,{id,name:d.name||d.display_name?.split(',')[0],key:d.category,value:d.type});
+                  nominatim.push({zoom,status:r.status,error:r.error,name:d.name||null,
+                    displayName:d.display_name?.slice(0,150)||null,id,ms:r.ms,
+                    address:d.address||null});
+                }
+                const candidateList=[...candidates.values()];
+                // Compare IDs in polite small batches, no target-name query or filtering.
+                const checked=[];
+                for(let i=0;i<Math.min(candidateList.length,45);i+=8){
+                  await sleep(1500);
+                  const ids=candidateList.slice(i,i+8).map(x=>x.id);
+                  const u=new URL('https://nominatim.openstreetmap.org/lookup');
+                  u.searchParams.set('osm_ids',ids.join(','));u.searchParams.set('format','json');
+                  u.searchParams.set('polygon_geojson','1');u.searchParams.set('polygon_threshold','0');
+                  const r=await request(u);
+                  if(r.status!=='ok'){checked.push({batch:ids,status:r.status,error:r.error});continue}
+                  for(const x of r.data||[]){
+                    const id=x.osm_type?.[0]?.toUpperCase()+x.osm_id,geom=x.geojson,
+                      type=geom?.type||null;
+                    const contains=['Polygon','MultiPolygon'].includes(type)?
+                      window.Pin2MapAreaGeometry.containsPoint(geom,p.lng,p.lat):false;
+                    checked.push({id,name:x.name||x.display_name?.split(',')[0]||null,
+                      type,contains,vertices:geom?window.Pin2MapAreaGeometry.pointCount(geom):0});
+                  }
+                }
+                const row={expected:p.name,region:p.region,lat:p.lat,lng:p.lng,
+                  candidateCount:candidateList.length,photon,nominatim,
+                  containing:checked.filter(x=>x.contains),checkedCount:checked.length,
+                  failures:checked.filter(x=>x.status==='failed')};
+                out.push(row);
+                console.log('COORDINATE_ONLY_POINT',JSON.stringify(row));
+              }
+              return out;
+            },points);
+          }finally{await browser.close()}
+          const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+          const expectedIds={'Lake Kivu':'R9072','Namib Naukluft National Park':'R4150085',
+            'Parque Nacional Torres del Paine':'R2622290','Delamere Range Facility Training Area':'W368317349'};
+          for(const row of results){
+            row.targetMatched=row.containing.some(x=>x.id===expectedIds[row.expected]);
+            row.otherContained=row.containing.filter(x=>x.id!==expectedIds[row.expected]).map(x=>({id:x.id,name:x.name}));
+          }
+          const summary={tested:results.length,targetMatched:results.filter(x=>x.targetMatched).length,
+            withSomeContaining:results.filter(x=>x.containing.length>0).length,
+            allTargetIdsDetected:results.every(x=>x.targetMatched)};
+          console.log('COORD_ONLY_SUMMARY',JSON.stringify(summary));
+          fs.writeFileSync('coord-only-result.json',JSON.stringify({testedAt:new Date().toISOString(),
+            summary,results,caveat:'No expected names or IDs sent to external provider; they were used ONLY locally for scoring. No polygon coordinate data stored.'},null,2)+'\n');
+          })().catch(e=>{console.error('COORD_ONLY_FATAL',e);process.exitCode=1});
+          NODE
+      - name: Save metadata to research branch
+        if: always()
+        run: |
+          if [ ! -s coord-only-result.json ]; then echo '{"status":"test_failed_before_results"}' > coord-only-result.json; fi
+          node <<'NODE'
+          const fs=require('node:fs'),j=JSON.parse(fs.readFileSync('coord-only-result.json'));
+          j.workflowUrl=process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID;
+          j.sourceCommit=process.env.GITHUB_SHA;
+          fs.writeFileSync('docs/research/photon-coordinate-only-result.json',JSON.stringify(j,null,2)+'\n');
+          NODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/research/photon-coordinate-only-result.json
+          git commit -m 'test-results: record coordinate-only Photon polygon research' || exit 0
+          git push origin HEAD:feature/leaflet-modular-core
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coordinate-only-research-metadata
+          path: coord-only-result.json
