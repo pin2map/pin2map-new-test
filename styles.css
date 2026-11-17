@@ -2308,6 +2308,26 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
  background:#d6eaff;color:#244c7a;cursor:pointer;
 }
 #app #layersPanel .layer-helpers #layersVisibilityCycle svg{width:19px;height:19px}
+/* The merge icon is a peer of the visibility icon, never a search substitute. */
+#app #layersPanel .layer-helpers #layersUnite{
+ box-sizing:border-box;flex:0 0 36px;width:36px;height:36px;
+ min-width:36px;min-height:36px;max-width:36px;max-height:36px;
+ padding:0;border-radius:50%;border:1px solid #a9c5df;
+ display:inline-flex;align-items:center;justify-content:center;
+ background:#d6eaff;color:#244c7a;
+ --p2m-button-bg:#d6eaff;--p2m-button-border:#a9c5df;
+ --p2m-button-ink:#244c7a;cursor:pointer;
+}
+#app #layersPanel .layer-helpers #layersUnite.hidden{display:none}
+#app #layersPanel .layer-helpers #layersUnite svg{width:19px;height:19px}
+#app #layersPanel .layer-merge-guidance p{
+ font-size:13px;line-height:1.35;font-weight:400;
+}
+#app #layersPanel .layer-merge-guidance p + p{margin-top:6px}
+#app #layersPanel .favorites-footer #addLayer:disabled{
+ opacity:.65;cursor:not-allowed;
+}
+
 #app #layersPanel .layer-merge-guidance{background:transparent;border:0;padding:0;margin:0 0 8px}
 #app #layersPanel .layer-merge-guidance p{color:#243b54}
 #app #layersPanel .layer-merge-guidance .favorite-action{
