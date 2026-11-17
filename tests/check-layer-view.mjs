@@ -46,6 +46,9 @@ view.render({layers,counts:{private:0,a:2},selectedLayerId:"a"});
 assert.equal(els.layersList.children.length,2);
 assert.equal(els.pinLayer.children.length,2);
 assert.equal(els.pinLayer.value,"a");
+assert.equal(els.layersUnite.classList.contains("hidden"),false,
+ "Merge button remains rendered before any selection");
+assert.equal(els.layersUnite.disabled,true,"Merge button starts disabled");
 const privateRow=els.layersList.children[0];
 const workRow=els.layersList.children[1];
 assert.equal(privateRow.children.length,3,"Private has no edit, but has eye, selection and deletion");
@@ -65,8 +68,9 @@ assert.deepEqual(changed,[["a",true]],
 workRow.children[0].children[1].children[0].checked=true;
 workRow.children[0].children[1].children[0].trigger("change");
 assert.equal(view.selectedIds.has("a"),true);
-assert.equal(els.layersUnite.classList.contains("hidden"),true,
- "Merge control replaces filter only when two or more layers selected");
+assert.equal(els.layersUnite.classList.contains("hidden"),false,
+ "Merge icon stays visible after the first selection");
+assert.equal(els.layersUnite.disabled,true,"One selected layer cannot be merged");
 workRow.children[3].trigger("click");
 assert.equal(view.mode,"delete");
 const confirmation=els.layersList.children.find(c=>c.className?.includes("favorite-confirm"));
@@ -83,6 +87,8 @@ assert.equal(els.layersList.children[0].dataset.itemId,"private",
  "Private must be first in the UI even when stored layers are out of order");
 assert.equal(reordered[0].id,"a","UI sorting must never rewrite stored layer order");
 view.selectedIds.add("private");
+view.render();
+assert.equal(els.layersUnite.disabled,false,"Two selections activate Merge");
 view.beginMerge();
 assert.equal(view.mergeMode,true);
 assert.equal(els.addLayer.textContent,"Zusammenführen");
