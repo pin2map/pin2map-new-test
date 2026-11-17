@@ -99,6 +99,55 @@ const sizes=[
      console.log('SAFARI_REGRESSION_PASS',engine,setting.label,'last layer selectable');
     }finally{await context.close()}
    }
+  if(engine==='chromium'){
+   // Separate end-to-end check with Service Worker ACTIVE (earlier cross-
+   // engine tests bypass it to isolate the renderer). A fresh installed
+   // shell must serve the correct popup after reload and offline restart.
+   const context=await browser.newContext({
+    viewport:{width:390,height:844},deviceScaleFactor:2,
+    isMobile:true,hasTouch:true,serviceWorkers:'allow'});
+   try{
+    const page=await context.newPage();
+    await page.goto(origin,{waitUntil:'domcontentloaded',timeout:45000});
+    const version=await page.evaluate(async()=>{
+     const reg=await Promise.race([navigator.serviceWorker.ready,
+      new Promise((_,reject)=>setTimeout(()=>reject(Error('Service worker install timeout')),100000))]);
+     const channel=new MessageChannel();
+     return await new Promise((resolve,reject)=>{
+      const t=setTimeout(()=>reject(Error('Service worker version timeout')),6000);
+      channel.port1.onmessage=e=>{clearTimeout(t);resolve(e.data?.version)};
+      reg.active.postMessage({type:'GET_VERSION'},[channel.port2]);
+     });
+    });
+    const expectedVersion=require('node:fs').readFileSync('sw.js','utf8').match(/pin2map-new-v\\d+/)?.[0];
+    assert.equal(version,expectedVersion,'installed service worker is not latest version');
+    await page.reload({waitUntil:'domcontentloaded',timeout:45000});
+    await page.waitForFunction(()=>Boolean(window.Pin2MapGeometryEditor&&window.Pin2MapObjectLayerPicker));
+    await page.evaluate(()=>{
+     const item={id:'installed-1',name:'Dachsteingebirge',kind:'area',layerId:'a0',note:'',url:''},
+      layers=Array.from({length:18},(_,n)=>({id:'a'+n,name:'Testebene '+n,
+       color:'#4477bb',visible:true}));
+     const editor=new window.Pin2MapGeometryEditor({document,
+      icons:window.Pin2MapIcons,onUpdate:(_t,_id,p)=>{Object.assign(item,p);return item},
+      onDelete:()=>{},onWikipedia:()=>{}});
+     editor.show('area',item,layers,{x:innerWidth/2,y:innerHeight*.65});
+     editor.layerButton.click();
+     window.__pwaReg={editor,item};
+    });
+    let dims=await page.evaluate(()=>{
+     const p=window.__pwaReg.editor,box=p.layerMenu.getBoundingClientRect(),
+      panel=p.panel.getBoundingClientRect();
+     return {width:box.width,height:box.height,panelWidth:panel.width,
+      count:p.layerPicker.options.length};
+    });
+    assert.ok(dims.width>=dims.panelWidth-25&&dims.height>=210&&dims.count===18,
+      'installed PWA clipped its layer list: '+JSON.stringify(dims));
+    await page.screenshot({path:'geometry-layer-regression-artifacts/installed-pwa-active-sw.png'});
+    await page.locator('#geometryLayerMenu .pin-layer-option').last().click();
+    assert.equal(await page.evaluate(()=>window.__pwaReg.item.layerId),'a17');
+    console.log('SAFARI_REGRESSION_INSTALLED_PWA_PASS',version,JSON.stringify(dims));
+   }finally{await context.close()}
+  }
   }finally{await browser.close()}
  }
 })().catch(e=>{console.error('SAFARI_REGRESSION_FAILED',e);process.exitCode=1});
