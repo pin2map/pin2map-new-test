@@ -29,9 +29,21 @@ jobs:
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.56.1
           npx playwright install webkit chromium
-      - name: Mandatory published-dialog WebKit and Chromium regression
+      # This independent push gate must test the committed candidate, not
+      # the previously published Pages version (which may still be v254
+      # when this workflow starts for a v255 commit).
+      - name: Serve the exact candidate checkout
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/p2m-webkit-local.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p2m-webkit-local.log
+          exit 1
+      - name: Mandatory candidate-dialog WebKit and Chromium regression
         env:
-          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
+          PIN2MAP_TEST_URL: http://127.0.0.1:8765/
         run: node tests/geometry-layer-webkit-regression.cjs
       - name: Preserve actual screenshots (including failed regression)
         if: always()
