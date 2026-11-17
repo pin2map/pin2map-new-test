@@ -15,7 +15,11 @@
       throw new RangeError("Duplicate layer name");
     if(!Array.isArray(colors)||colors.length===0)throw new TypeError("Missing layer colors");
     const layer={id,name:cleaned,color:colors[project.layers.length%colors.length],visible:true};
-    project.layers.push(layer);return layer;
+    // New regular layers always appear immediately after the protected
+    // Private layer; do not reorder existing regular layers.
+    const privateIndex=project.layers.findIndex(item=>item.id==="private");
+    project.layers.splice(privateIndex<0?0:privateIndex+1,0,layer);
+    return layer;
   }
   function deletionInfo(project,id,privateId){
     const layer=find(project,id);if(!layer)return null;
