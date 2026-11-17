@@ -62,6 +62,8 @@
     viewport:{left:vv?.offsetLeft||0,top:vv?.offsetTop||0,
      width:vv?.width||win.innerWidth,height:vv?.height||win.innerHeight},
     contained:this.contained,
+    header:this.header?.getBoundingClientRect?.()||null,
+    footer:this.actions?.getBoundingClientRect?.()||null,
     visibleRows:this.options.filter(x=>!x.button.hidden).length
    });
    // Never retain stale height from a prior object, search, or keyboard state.

@@ -122,7 +122,7 @@
    * size of the chooser. Only the owner panel, viewport and row count do.
    * The geometry editor's menu is contained in its panel; the Pin menu
    * uses the same sizing policy but is anchored beside the panel. */
-  static layerMenuLayout({panel,trigger,viewport,contained=false,visibleRows=0}){
+  static layerMenuLayout({panel,trigger,viewport,contained=false,visibleRows=0,header=null,footer=null}){
    const margin=12,inset=10,gap=8;
    const left=viewport.left||0,top=viewport.top||0;
    const right=left+viewport.width,bottom=top+viewport.height;
@@ -133,15 +133,23 @@
    const ownerWidth=Math.max(0,panelRight-panelLeft);
    const width=Math.max(0,Math.min(390,viewport.width-2*margin,
      contained?Math.max(0,panel.width-20):390,contained?ownerWidth:390));
-   // Filter + options; no dependency on note-row height or footer position.
-   const desired=contained?Math.max(210,Math.min(460,70+43*Math.max(0,visibleRows))):460;
+   // The internal header/footer are only placement constraints for short
+   // lists. Tall lists overlay the notes area inside the SAME dialog surface;
+   // map feature geometry and notes textarea size cannot shrink them.
+   const rows=Math.max(0,visibleRows);
+   const desired=contained?Math.min(460,70+43*rows):460;
    const available=contained?Math.max(0,panelBottom-panelTop):
     Math.max(0,Math.max(trigger.top-top-margin-gap,bottom-trigger.bottom-gap));
-   const height=Math.min(desired,available);
+   const safeUpper=Math.max(panelTop,(header?.bottom??panelTop)+gap);
+   const safeLower=Math.min(panelBottom,(footer?.top??panelBottom)-gap);
+   const notesRoom=Math.max(0,safeLower-safeUpper);
+   const shortList=contained&&notesRoom>=Math.min(desired,rows>=5?240:140);
+   const height=Math.min(available,shortList?Math.min(desired,notesRoom):
+    contained?Math.max(210,desired):desired);
    let x,y;
    if(contained){
     x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));
-    y=panelTop+Math.max(0,(available-height)/2);
+    y=shortList?safeUpper:panelTop+Math.max(0,(available-height)/2);
    }else{
     const above=Math.max(0,trigger.top-top-margin-gap);
     const below=Math.max(0,bottom-trigger.bottom-gap);
