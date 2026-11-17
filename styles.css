@@ -2250,13 +2250,20 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #layersPanel .layer-eye{border:0;background:transparent;min-width:26px;width:26px;padding:0}
 #app #layersPanel .layer-eye.is-visible{color:#178754}
 #app #layersPanel .layer-eye.is-invisible{color:#c32339}
+/* Invisibility must tint the icon glyph, not only its label. */
+#app #layersPanel .favorite-row .layer-eye.is-invisible,
+#app #layersPanel .favorite-row .layer-eye.is-invisible .p2m-lucide,
+#app #layersPanel .favorite-row .layer-eye.is-invisible svg{
+ color:#c32339;stroke:#c32339;
+ --p2m-button-ink:#c32339;
+}
 #app #layersPanel .layer-is-hidden .favorite-details{color:#bf2838}
 #app #layersPanel .layer-is-hidden .favorite-name{color:#bf2838;text-decoration:line-through}
 #app #layersPanel .favorite-icon{flex-shrink:0}
 #app #layersPanel .favorite-name{overflow-wrap:anywhere}
 #app .layer-name-with-color{display:flex!important;flex-direction:row!important;align-items:center;gap:7px}
 #app .layer-swatch{flex:0 0 42px;width:42px;height:42px;border:1px solid #aabdd1;border-radius:6px}
-#app .layer-palette-choice{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-top:10px}
+#app .layer-palette-choice{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px;margin-top:10px}
 #app .layer-palette-choice.hidden{display:none}
 #app .layer-palette-dot{width:100%;aspect-ratio:1;border-radius:50%;border:1px solid #b2bed0;padding:0;min-width:0}
 #app #layersPanel .favorite-confirm-actions.hidden{display:none}
@@ -2266,7 +2273,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #settingsColorsContent.hidden{display:none}
 #app .color-settings-section{margin:12px 0;padding:8px 0}
 #app .color-settings-section h3{margin:0 0 8px}
-#app .settings-color-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#app .settings-color-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 #app .settings-signal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 #app .settings-color-item{display:flex;flex-direction:column;gap:5px;min-width:0}
 #app .settings-color-swatch{display:block;width:100%;aspect-ratio:1;border-radius:12px;border:1px solid #aab8c8;cursor:pointer}
@@ -2320,6 +2327,12 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app #layersPanel .layer-helpers #layersUnite.hidden{display:none}
 #app #layersPanel .layer-helpers #layersUnite svg{width:19px;height:19px}
+#app #layersPanel .layer-helpers #layersUnite:disabled{
+ opacity:.42;cursor:not-allowed;
+ --p2m-button-ink:#7e94a9;
+ color:#7e94a9;
+}
+
 #app #layersPanel .layer-merge-guidance p{
  font-size:13px;line-height:1.35;font-weight:400;
 }
@@ -2522,7 +2535,7 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 }
 
 #app #layersPanel .layer-inline-editor .layer-editor-bottom .layer-palette-choice{
- display:grid;grid-template-columns:repeat(12,minmax(0,1fr));
+ display:grid;grid-template-columns:repeat(9,minmax(0,1fr));
  align-items:center;gap:3px;width:100%;margin:0;height:44px;
 }
 #app #layersPanel .layer-inline-editor .layer-editor-bottom .layer-palette-choice.hidden{
