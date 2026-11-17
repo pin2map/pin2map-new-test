@@ -176,3 +176,22 @@ test("pin layer list is genuinely full-width on tablet, not capped at 260px",()=
  assert.ok(Number.parseFloat(elements.pinLayerMenu.style.maxHeight)>260);
  assert.ok(Number.parseFloat(elements.pinLayerMenu.style.left)>=12);
 });
+
+test("geometry layer picker never collapses to filter-only strip on mobile",()=>{
+ const {picker,elements,layers}=fixture();
+ // Simulate the screenshot: a seemingly tiny or invalid area between
+ // the geometry editor header and actions on an iPhone viewport.
+ const panel={left:8,top:110,right:367,bottom:670,width:359,height:560};
+ const head={bottom:280};
+ const actions={top:310};
+ elements.pinPanel.getBoundingClientRect=()=>panel;
+ const header={getBoundingClientRect:()=>head};
+ const footer={getBoundingClientRect:()=>actions};
+ picker.contained=true;picker.header=header;picker.actions=footer;
+ picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
+ const height=Number.parseFloat(elements.pinLayerMenu.style.maxHeight);
+ const top=Number.parseFloat(elements.pinLayerMenu.style.top);
+ assert.ok(height>=190,"Layer popup must allow real options, not only filter");
+ assert.ok(top>=12&&top+height<=667-12,"Popup stays in viewport");
+ assert.equal(elements.pinLayerMenu.style.width,"339px");
+});

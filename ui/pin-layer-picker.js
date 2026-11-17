@@ -55,14 +55,30 @@
     const panel=this.el(this.panelId).getBoundingClientRect();
     const head=this.header?.getBoundingClientRect?.();
     const actions=this.actions?.getBoundingClientRect?.();
-    const menuWidth=Math.min(260,Math.max(100,panel.width-20),width-24);
-    const upper=Math.max(panel.top+gap,(head?.bottom??panel.top)+gap,top+gap);
-    const lower=Math.min(panel.bottom-gap,(actions?.top??panel.bottom)-gap,top+height-gap);
+    // The area/lake/river editor uses the same *readable* layer list as
+    // the pin editor. Its notes region is preferred, but may collapse to
+    // 45px on a shifted mobile visual viewport (only filter is visible).
+    // Never accept a computed slot too short to show selectable rows.
+    const menuWidth=Math.min(390,Math.max(0,panel.width-20),Math.max(0,width-2*margin));
+    const viewportTop=top+margin,viewportBottom=top+height-margin;
+    const upper=Math.max(panel.top+gap,(head?.bottom??panel.top)+gap,viewportTop);
+    const lower=Math.min(panel.bottom-gap,(actions?.top??panel.bottom)-gap,viewportBottom);
+    const minUsableHeight=Math.min(190,Math.max(90,height-2*margin));
+    let menuTop=upper;
+    let menuHeight=Math.min(460,Math.max(0,lower-upper));
+    if(menuHeight<minUsableHeight){
+     // A full-height, scrollable overlay is safer than a 45px unusable
+     // strip. Keep it inside the visible viewport, even when the editor
+     // footer and header yield inconsistent or cramped geometry.
+     menuHeight=Math.min(460,Math.max(72,height-2*margin));
+     menuTop=Math.max(viewportTop,Math.min(
+      panel.top+(panel.height-menuHeight)/2,viewportBottom-menuHeight));
+    }
     menu.style.width=menuWidth+"px";
-    menu.style.maxHeight=Math.max(45,Math.min(310,lower-upper))+"px";
-    menu.style.left=Math.max(left+gap,Math.min(
-     panel.left+(panel.width-menuWidth)/2,left+width-menuWidth-gap))+"px";
-    menu.style.top=upper+"px";
+    menu.style.maxHeight=menuHeight+"px";
+    menu.style.left=Math.max(left+margin,Math.min(
+     panel.left+(panel.width-menuWidth)/2,left+width-menuWidth-margin))+"px";
+    menu.style.top=menuTop+"px";
     return;
    }
    // Restore the approved usable layer list: full object-dialog scale,

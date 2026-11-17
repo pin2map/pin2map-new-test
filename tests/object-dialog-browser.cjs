@@ -70,6 +70,14 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const reset=picker.options.map(x=>!x.button.hidden);
       const resetRendered=picker.options.map(x=>getComputedStyle(x.button).display!=="none");
       const menu=editor.layerMenu.getBoundingClientRect();
+      const menuHeight=menu.height;
+      const firstRow=picker.options[0].button.getBoundingClientRect();
+      const optionsVisibleInViewport=picker.options.filter(x=>{
+        const r=x.button.getBoundingClientRect();
+        return r.height>=30&&r.top>=menu.top+1&&r.bottom<=menu.bottom+1;
+      }).length;
+      const pickerScrollHeight=editor.layerMenu.scrollHeight;
+      const pickerClientHeight=editor.layerMenu.clientHeight;
       picker.options[2].button.click();
       const selected=item.layerId;
       editor.linkButton.click();
@@ -121,7 +129,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
        noteText:{width:noteText.width,height:noteText.height},
        noteStyles:{fontSize:noteStyles.fontSize,backgroundColor:noteStyles.backgroundColor},
        noteViewport,clear:{width:clear.width,height:clear.height,radius:clearRadius},
-       menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom},
+       menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom,
+        height:menuHeight,firstRowHeight:firstRow.height,
+        optionsVisibleInViewport,pickerScrollHeight,pickerClientHeight},
        selected,url:{left:url.left,right:url.right,top:url.top,bottom:url.bottom},
        headerBottom:header.bottom,actionsTop:actions.top,legend,legendAlign,canOpen,
        storedUrl,openedNote,viaFocusSupported,storedNote,deleteOpen,deleteClosed,question,
@@ -150,6 +160,12 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      assert.ok(Math.abs(state.clear.width-state.clear.height)<=1,JSON.stringify(state));
      assert.equal(state.clear.radius,"50%",JSON.stringify(state));
      assert.equal(state.selected,"stations");
+     assert.ok(state.menu.height>=190,"Geometry layer menu may not collapse to the filter only: "+JSON.stringify(state));
+     assert.ok(state.menu.optionsVisibleInViewport>=1,
+       "At least one actual selectable layer must be fully visible: "+JSON.stringify(state));
+     assert.ok(state.menu.pickerScrollHeight<=state.menu.pickerClientHeight+2||
+       state.menu.pickerClientHeight>=180,
+       "Overflowing geometry menu must reserve a useful scrolling viewport: "+JSON.stringify(state));
      assert.ok(state.menu.left>=state.panel.left-2&&state.menu.right<=state.panel.right+2,
        JSON.stringify(state));
      assert.ok(state.menu.bottom<=state.actionsTop+2,JSON.stringify(state));
