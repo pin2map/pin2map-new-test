@@ -1,0 +1,140 @@
+name: Photon OSM ID to polygon independent research
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths: ['.github/workflows/photon-id-geometry-research.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+          persist-credentials: true
+      - name: Prepare real Chromium
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || true)
+          test -n "$CHROME"
+          echo "PIN2MAP_CHROMIUM_EXECUTABLE=$CHROME" >> "$GITHUB_ENV"
+      - name: Real HTTPS browser Nominatim polygons and independent OSM API comparison
+        run: |
+          node <<'NODE'
+          "use strict";
+          (async()=>{
+            const fs=require('node:fs'),{chromium}=require('playwright');
+            const fixtures=require('./tests/area-source-fixtures.cjs');
+            const photon=JSON.parse(fs.readFileSync('docs/research/photon-15-coordinates-result.json','utf8'));
+            const aliases={'Lago Villarrica':'Villarrica Lake','Reserva Biológica Huilo Huilo':'Huilo-Huilo Biological Reserve',
+              'Tonle Sab':'Tonle Sap Lake','Tasik Kenyir':'Kenyir Reservoir'};
+            const candidates=photon.results.map(row=>{
+              const target=aliases[row.expected];
+              const candidate=row.matchItems?.find(x=>x.osm_type==='R'||x.osm_type==='W')||
+                row.topResults?.find(x=>x.name===target&&(x.osm_type==='R'||x.osm_type==='W'));
+              return candidate?{name:row.expected,region:row.region,
+                lat:fixtures.find(p=>p.name===row.expected).lat,lng:fixtures.find(p=>p.name===row.expected).lng,
+                candidateName:candidate.name,osmId:candidate.osm_type+candidate.osm_id,
+                osmType:candidate.osm_type,osmNumericId:candidate.osm_id}:null;
+            }).filter(Boolean);
+            console.log('CANDIDATES',candidates.length);
+            const browser=await chromium.launch({headless:true,
+              executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE,args:['--no-sandbox']});
+            let rows;
+            try{
+              const page=await browser.newPage();
+              await page.goto('https://pin2map.github.io/pin2map-new-test/preview/',{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForFunction(()=>!!window.Pin2MapAreaGeometry?.containsPoint,{timeout:12000});
+              rows=await page.evaluate(async candidates=>{
+                const out=[];
+                const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+                for(const c of candidates){
+                  if(out.length)await sleep(1350);
+                  const u=new URL('https://nominatim.openstreetmap.org/lookup');
+                  u.searchParams.set('osm_ids',c.osmId);
+                  u.searchParams.set('format','json');
+                  u.searchParams.set('polygon_geojson','1');
+                  u.searchParams.set('polygon_threshold','0');
+                  u.searchParams.set('extratags','1');
+                  const started=Date.now(),controller=new AbortController();
+                  const timer=setTimeout(()=>controller.abort(),30000);
+                  try{
+                    const res=await fetch(u,{signal:controller.signal,headers:{'Accept':'application/json'}});
+                    if(!res.ok)throw Error('HTTP '+res.status);
+                    const json=await res.json(),hit=Array.isArray(json)?json.find(x=>String(x.osm_id)===String(c.osmNumericId)):null;
+                    const geom=hit?.geojson||null;
+                    const supported=geom?.type==='Polygon'||geom?.type==='MultiPolygon';
+                    const inside=supported?window.Pin2MapAreaGeometry.containsPoint(geom,c.lng,c.lat):false;
+                    out.push({...c,status:'ok',http:res.status,ms:Date.now()-started,
+                      resolvedName:hit?.name||hit?.display_name||null,
+                      returnedOsmId:hit?hit.osm_type[0].toUpperCase()+hit.osm_id:null,
+                      geometryType:geom?.type||null,vertexCount:geom?window.Pin2MapAreaGeometry.pointCount(geom):0,
+                      containsPoint:inside,geometryBytes:JSON.stringify(geom||null).length});
+                  }catch(e){out.push({...c,status:'failed',ms:Date.now()-started,error:String(e).slice(0,170)});}
+                  finally{clearTimeout(timer)}
+                  console.log('NOMINATIM_ID_POLYGON',JSON.stringify(out[out.length-1]));
+                }
+                return out;
+              },candidates);
+            }finally{await browser.close();}
+            // The OSM editing API returns geometry primitives in XML, not ready-made GeoJSON.
+            // Probe a small, representative sample; never persist raw XML/polygon coordinates.
+            const osmSamples=candidates.filter(x=>['Enoggera Reservoir','Marradong Mining Area',
+              'Farihy Ihotry','Embalse Rio Hondo','Heaven Lake'].includes(x.name));
+            const osmApi=[];
+            for(const c of osmSamples){
+              const kind=c.osmType==='W'?'way':'relation';
+              const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+              const started=Date.now();
+              try{
+                const res=await fetch('https://api.openstreetmap.org/api/0.6/'+kind+'/'+c.osmNumericId+'/full',{
+                  signal:controller.signal,headers:{'User-Agent':'pin2map-geometry-research/1.0 (https://github.com/pin2map/pin2map-new-test)'}});
+                if(!res.ok)throw Error('HTTP '+res.status);
+                const xml=await res.text();
+                osmApi.push({name:c.name,osmId:c.osmId,status:'ok',http:res.status,
+                  ms:Date.now()-started,bytes:xml.length,nodes:(xml.match(/<node\b/g)||[]).length,
+                  ways:(xml.match(/<way\b/g)||[]).length,relations:(xml.match(/<relation\b/g)||[]).length});
+              }catch(e){osmApi.push({name:c.name,osmId:c.osmId,status:'failed',error:String(e).slice(0,150)});}
+              finally{clearTimeout(timer)}
+              console.log('OSM_API_FULL',JSON.stringify(osmApi[osmApi.length-1]));
+            }
+            const summary={fixtures:fixtures.length,photonCandidates:candidates.length,
+              nominatimSuccess:rows.filter(x=>x.status==='ok').length,
+              polygonGeometry:rows.filter(x=>/^(Multi)?Polygon$/.test(x.geometryType||'')).length,
+              containsClickPoint:rows.filter(x=>x.containsPoint).length,
+              osmApiSuccess:osmApi.filter(x=>x.status==='ok').length,
+              osmApiTested:osmApi.length};
+            console.log('GEOMETRY_RESEARCH_SUMMARY',JSON.stringify(summary));
+            fs.writeFileSync('geometry-id-result.json',JSON.stringify({testedAt:new Date().toISOString(),
+              source:'Photon research results from repository; HTTPS Chromium from preview origin; OSM API from runner',
+              caveat:'Research only. Real geometry validation, but no polygon coordinates stored or integrated in PWA.',
+              summary,rows,osmApi},null,2)+'\n');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,'## OSM ID to geometry\n\n'+
+              Object.entries(summary).map(([k,v])=>'- '+k+': **'+v+'**').join('\n')+'\n');
+          })().catch(e=>{console.error('GEOMETRY_RESEARCH_FATAL',e);process.exitCode=1});
+          NODE
+      - name: Store research metadata with traceable run id
+        if: always()
+        run: |
+          if [ ! -s geometry-id-result.json ]; then echo '{"status":"test_failed_before_results"}' > geometry-id-result.json; fi
+          mkdir -p docs/research
+          node <<'NODE'
+          const fs=require('node:fs'),p='geometry-id-result.json',j=JSON.parse(fs.readFileSync(p,'utf8'));
+          j.workflowUrl=process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID;
+          j.sourceCommit=process.env.GITHUB_SHA;
+          fs.writeFileSync('docs/research/photon-osm-id-geometry-result.json',JSON.stringify(j,null,2)+'\n');
+          NODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/research/photon-osm-id-geometry-result.json
+          git commit -m 'test-results: record independent Photon OSM-ID polygon resolution' || exit 0
+          git push origin HEAD:feature/leaflet-modular-core
+      - name: Upload result artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: photon-osm-id-geometry-metadata
+          path: geometry-id-result.json
