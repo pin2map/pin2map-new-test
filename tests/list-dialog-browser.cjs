@@ -285,7 +285,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const a=await source.boundingBox(),b=await target.boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
       await page.mouse.down();
-      await page.waitForTimeout(1100);
+      await page.waitForTimeout(350);
+      assert.equal(await page.locator("#layersList").evaluate(el=>
+        el.classList.contains("list-reorder-active")),false,
+        "A short hold must not start reordering");
+      await page.waitForTimeout(750);
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),true);
       await page.mouse.move(b.x+b.width/2,b.y+4,{steps:5});
@@ -309,6 +313,14 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await page.locator("#settingsButton").click();
     await page.locator("#settingsColorsTab").click();
     assert.equal(await page.locator("#standardColorGrid .settings-color-item").count(),9);
+    assert.deepEqual(await page.locator("#standardColorGrid .settings-color-hex").evaluateAll(
+      inputs=>inputs.map(el=>el.value.toUpperCase())),
+      ["#FF0000","#1E90FF","#32CD32","#FFD700","#FF8C00",
+       "#8A2BE2","#FF1493","#008B8B","#8B4513"],
+      "Every standard color must exactly match the predecessor, in order");
+    assert.equal(await page.locator("#standardColorGrid").evaluate(el=>
+      getComputedStyle(el).gridTemplateColumns.split(" ").length),3,
+      "Nine standard colors must form three columns");
     assert.equal(await page.locator("#signalColorGrid .settings-color-item").count(),3);
     const first=page.locator("#standardColorGrid .settings-color-hex").first();
     assert.equal(await first.inputValue(),"#FF0000");
