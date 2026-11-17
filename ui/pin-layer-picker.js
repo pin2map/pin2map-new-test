@@ -25,9 +25,12 @@
    // Keep each menu outside its scrolling panel. The Pin's established
    // top-level BODY portal and geometry's #app stacking portal differ only
    // in host, never in layout sizing, filtering or selection behavior.
+   // Geometry picker is a non-flow, absolutely-positioned CHILD of
+   // its owner panel. On real iOS Safari an #app sibling can paint behind
+   // the dialog despite apparently correct rectangles and synthetic tests.
+   // The Pin retains its non-flow BODY portal because it can scroll.
    const portalHost=this.contained?
-     (this.el(this.panelId)?.parentElement||doc.getElementById?.("app")||doc.body):
-     doc.body;
+     this.el(this.panelId):doc.body;
    portalHost.append(menu);
    this.onViewportChange=()=>{if(this.open)this.positionMenu();};
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
@@ -75,7 +78,12 @@
     visibleRows:this.options.filter(x=>!x.button.hidden).length
    });
    // Never retain stale height from a prior object, search, or keyboard state.
-   Object.assign(menu.style,{left:bounds.left+"px",top:bounds.top+"px",
+   // Absolute geometry menu coordinates are local to the panel, whereas
+   // the Pin BODY portal uses viewport coordinates.
+   const panelBox=panel.getBoundingClientRect();
+   const menuLeft=this.contained?bounds.left-panelBox.left:bounds.left;
+   const menuTop=this.contained?bounds.top-panelBox.top:bounds.top;
+   Object.assign(menu.style,{left:menuLeft+"px",top:menuTop+"px",
     width:bounds.width+"px",height:bounds.height+"px",
     maxHeight:bounds.height+"px"});
   }

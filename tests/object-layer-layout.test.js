@@ -32,6 +32,6 @@ for(const viewportWidth of [320,375,390,820]){
 assert.ok(code.includes("Core.layerMenuLayout"),"single owner controls layout");
 assert.ok(code.includes("this.withinPanel"),"Pin must use bounded overlay while keeping external portal");
 assert.ok(!code.includes("const notesRoom")&&!code.includes("const menuWidth"),"no note/header-driven geometry");
-assert.ok(code.includes("this.contained?")&&code.includes('doc.getElementById?.("app")'),
- "geometry uses the editor stacking root; Pin keeps its verified BODY portal");
+assert.ok(code.includes("this.contained?")&&code.includes("this.el(this.panelId):doc.body"),
+ "geometry popup must be a non-flow child of its owner; Pin retains BODY portal");
 console.log("Shared layer popup layout contract passed.");

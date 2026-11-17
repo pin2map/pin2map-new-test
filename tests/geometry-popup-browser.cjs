@@ -53,7 +53,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.ok(state.popup.top>=state.headerBottom-2,JSON.stringify({viewport,state}));
     assert.ok(state.popup.bottom<=state.actionsTop+2,JSON.stringify({viewport,state}));
     assert.ok(state.popup.bottom<=viewport.height,JSON.stringify({viewport,state}));
-    assert.equal(state.menu.position,"fixed",JSON.stringify({viewport,state}));
+    assert.equal(state.menu.position,"absolute",JSON.stringify({viewport,state}));
     assert.notEqual(state.menu.display,"none",JSON.stringify({viewport,state}));
     assert.ok(state.menu.left>=state.panel.left-2,JSON.stringify({viewport,state}));
     assert.ok(state.menu.right<=state.panel.right+2,JSON.stringify({viewport,state}));

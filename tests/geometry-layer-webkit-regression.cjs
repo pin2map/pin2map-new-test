@@ -91,8 +91,8 @@ const sizes=[
         'at least two complete selectable rows must be visible: '+JSON.stringify(record));
       assert.ok(record.hitIsOption,
         'REGRESSION: second layer row is OCCLUDED by editor despite correct rect: '+JSON.stringify(record));
-      assert.equal(record.menuParent,'app',
-        'REGRESSION: geometry list must be portalled into fixed app stacking context, never BODY: '+JSON.stringify(record));
+      assert.equal(record.menuParent,'geometryEditor',
+        'REGRESSION: geometry list must be a non-flow overlay inside its own dialog: '+JSON.stringify(record));
       assert.ok(record.menuTop>=record.panelTop-2&&record.menuBottom<=record.panelBottom+2,
         'chooser is outside editor panel: '+JSON.stringify(record));
       assert.ok(record.menuLeft>=record.panelLeft-2&&record.menuRight<=record.panelRight+2,
@@ -169,8 +169,8 @@ const sizes=[
     assert.ok(dims.width>=dims.panelWidth-25&&dims.height>=210&&dims.count===18,
       'installed PWA clipped its layer list: '+JSON.stringify(dims));
     assert.ok(dims.hitIsOption,'installed PWA layer rows are hidden BEHIND the object dialog: '+JSON.stringify(dims));
-    assert.equal(dims.menuParent,'app',
-      'installed PWA must keep geometry layer list in map app stacking context: '+JSON.stringify(dims));
+    assert.equal(dims.menuParent,'geometryEditor',
+      'installed PWA must keep geometry list inside its own dialog stacking context: '+JSON.stringify(dims));
     await page.screenshot({path:'geometry-layer-regression-artifacts/installed-pwa-active-sw.png'});
     await page.locator('#geometryLayerMenu .pin-layer-option').last().click();
     assert.equal(await page.evaluate(()=>window.__pwaReg.item.layerId),'a17');
