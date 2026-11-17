@@ -91,7 +91,7 @@ test("all object dialogs share overlay layout and map anchoring owner",()=>{
  assert.match(core,/if\(kind==="layer"\)\{[\s\S]*?this\.layerMenuLayout\(/);
  assert.doesNotMatch(core,/kind==="layer"\?260/);
  assert.doesNotMatch(core,/Math\.max\(45,bottom-upper\)/);
- assert.match(geometry,/Pin2MapPinPanelPositioner\.clampedObjectAnchor\(/);
+ assert.match(geometry,/Positioner\.clampedObjectAnchor\(/);
  assert.doesNotMatch(geometry,/Math\.max\(8,Math\.min\(idealLeft/);
  assert.match(layers,/Core\.layerMenuLayout\(/);
 });

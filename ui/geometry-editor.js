@@ -272,7 +272,11 @@
       this.panel.classList.remove("hidden");
       const app=this.doc.getElementById("app");
       const rect=app.getBoundingClientRect();
-      const geometry=root.Pin2MapPinPanelPositioner.clampedObjectAnchor({
+      const Positioner=root.Pin2MapPinPanelPositioner||
+        (typeof require==="function"?require("./pin-panel-positioner.js"):null);
+      if(!Positioner?.clampedObjectAnchor)
+        throw new TypeError("Shared object dialog anchor must be loaded");
+      const geometry=Positioner.clampedObjectAnchor({
         point:{x:screen.x,y:screen.y},mapRect:rect,appRect:rect,
         panelWidth:this.panel.offsetWidth,panelHeight:this.panel.offsetHeight,
         viewportWidth:this.doc.defaultView.innerWidth,
