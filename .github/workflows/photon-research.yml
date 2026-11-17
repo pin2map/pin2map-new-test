@@ -1,0 +1,83 @@
+name: Photon international point-to-name research (no app deployment)
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - '.github/workflows/photon-research.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  photon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out immutable coordinate fixtures
+        uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+          persist-credentials: false
+      - name: Test Photon public reverse endpoint, with bounded polite request rate
+        shell: bash
+        run: |
+          node <<'NODE'
+          'use strict';
+          const fs=require('node:fs');
+          const fixtures=require('./tests/area-source-fixtures.cjs');
+          const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          const output=[];
+          const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+          for(const [i,p] of fixtures.entries()){
+            if(i)await sleep(1800); // 15 carefully spaced requests; no bulk harvesting
+            const url=new URL('https://photon.komoot.io/reverse');
+            url.searchParams.set('lat',p.lat);
+            url.searchParams.set('lon',p.lng);
+            url.searchParams.set('limit','15');
+            url.searchParams.set('lang','en');
+            url.searchParams.set('radius','10');
+            const started=Date.now(), controller=new AbortController();
+            const timer=setTimeout(()=>controller.abort(),15000);
+            let result;
+            try{
+              const response=await fetch(url,{signal:controller.signal,headers:{'User-Agent':'pin2map-research/1.0 (https://github.com/pin2map/pin2map-new-test)','Accept':'application/geo+json,application/json'}});
+              const body=await response.text();
+              if(!response.ok)throw Error('HTTP '+response.status+' '+body.slice(0,120));
+              const json=JSON.parse(body);
+              const features=Array.isArray(json.features)?json.features:[];
+              const items=features.map(f=>({
+                name:f.properties?.name||null, osm_id:f.properties?.osm_id||null,
+                osm_type:f.properties?.osm_type||null,
+                osm_key:f.properties?.osm_key||null,
+                osm_value:f.properties?.osm_value||null,
+                geometry_type:f.geometry?.type||null,
+                extent_present:Array.isArray(f.properties?.extent)
+              }));
+              const target=normalize(p.name), matches=items.filter(f=>normalize(f.name)===target||normalize(f.name).includes(target));
+              result={region:p.region,expected:p.name,kind:p.kind,status:'ok',http:response.status,ms:Date.now()-started,count:items.length,
+                exactOrContainsNameMatches:matches.length,matchItems:matches,topResults:items.slice(0,8),
+                geometryTypes:[...new Set(items.map(f=>f.geometry_type))]};
+            }catch(e){
+              result={region:p.region,expected:p.name,kind:p.kind,status:'failed',ms:Date.now()-started,error:String(e).slice(0,220)};
+            }finally{clearTimeout(timer)}
+            output.push(result);
+            console.log('PHOTON_POINT',JSON.stringify(result));
+          }
+          const summary={tested:output.length,success:output.filter(x=>x.status==='ok').length,
+            namedMatches:output.filter(x=>x.exactOrContainsNameMatches>0).length,
+            polygons:output.filter(x=>x.geometryTypes?.some(t=>t==='Polygon'||t==='MultiPolygon')).length,
+            failures:output.filter(x=>x.status==='failed').length};
+          console.log('PHOTON_SUMMARY',JSON.stringify(summary));
+          fs.writeFileSync('photon-research-result.json',JSON.stringify({testedAt:new Date().toISOString(),
+            note:'Research only; Photon results are proximity candidates, not proof of polygon containment. No application integration.',
+            summary,results:output},null,2)+'\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## Photon independent reverse research\n\n'+
+            '| Metric | Count |\n|---|---:|\n'+Object.entries(summary).map(([k,v])=>'| '+k+' | '+v+' |').join('\n')+
+            '\n\nNames and OSM IDs do **not** validate polygon containment. See logs and artifact.\n');
+          NODE
+      - name: Upload research results (metadata only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: photon-research-results
+          path: photon-research-result.json
+          if-no-files-found: warn
