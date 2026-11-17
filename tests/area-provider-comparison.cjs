@@ -68,6 +68,50 @@ const providers=[
    await Promise.all(Array.from({length:4},worker));
    return rows;
   },{points,providers});
+  // A name/count result alone is NOT sufficient. Test that the same service
+  // provides actual polygon GeoJSON in a second request for every hit.
+  const geometryChecks=await page.evaluate(async({rows,points,providers})=>{
+    const selections=rows.filter(r=>r.status==="ok"&&r.count>0);
+    const results=[];
+    let index=0;
+    const workers=Array.from({length:3},async()=>{
+      while(index<selections.length){
+        const item=selections[index++];
+        const point=points.find(x=>x.name===item.expected);
+        const provider=providers.find(x=>x.id===item.provider);
+        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+        try{
+          const params=new URLSearchParams({
+            f:"geojson",where:"1=1",geometry:JSON.stringify({
+              x:point.lng,y:point.lat,spatialReference:{wkid:4326}
+            }),geometryType:"esriGeometryPoint",inSR:"4326",outSR:"4326",
+            spatialRel:"esriSpatialRelIntersects",outFields:"*",
+            returnGeometry:"true",resultRecordCount:"3",
+            maxAllowableOffset:"0.0005"
+          });
+          const response=await fetch(provider.url+"/query?"+params,{signal:controller.signal});
+          const payload=await response.json();
+          if(!response.ok||payload.error)throw Error("HTTP "+response.status+
+            " "+String(payload.error?.message||"").slice(0,90));
+          const features=Array.isArray(payload.features)?payload.features:[];
+          const polygons=features.filter(x=>["Polygon","MultiPolygon"].includes(x.geometry?.type));
+          const contains=polygons.filter(x=>{
+            try{return window.Pin2MapAreaGeometry.containsPoint(x.geometry,
+              point.lng,point.lat)}catch{return false}
+          }).length;
+          results.push({expected:item.expected,provider:item.provider,
+            status:"ok",geometryCount:polygons.length,containsPoint:contains,
+            types:features.map(f=>f.geometry?.type||null)});
+        }catch(e){results.push({expected:item.expected,provider:item.provider,
+          status:"failed",error:String(e).slice(0,180)});}
+        finally{clearTimeout(timer);}
+      }
+    });
+    await Promise.all(workers);
+    return results;
+  },{rows,points,providers});
+  for(const check of geometryChecks)
+    console.log("INDEPENDENT_GEOMETRY_TEST",JSON.stringify(check));
   const order=new Map(points.map((x,i)=>[x.name,i]));
   rows.sort((a,b)=>order.get(a.expected)-order.get(b.expected)||
     a.provider.localeCompare(b.provider));
@@ -84,7 +128,7 @@ const providers=[
   fs.writeFileSync("area-provider-comparison.json",JSON.stringify({
     testedAt:new Date().toISOString(),pageOrigin:"https://pin2map.github.io",
     note:"Exploratory metadata-only CORS test; not an integration or a licence grant. No provider polygon geometries stored.",
-    points,providers:providers.map(({id,type})=>({id,type})),results:rows},null,2)+"\n");
+    points,providers:providers.map(({id,type})=>({id,type})),results:rows,geometryChecks},null,2)+"\n");
   console.log("INDEPENDENT_AREA_SUMMARY",JSON.stringify({
    points:points.length,requests:rows.length,
    withNamedResult:rows.filter(x=>x.status==="ok"&&x.names.some(n=>n!=="no explicit name field")).length,
