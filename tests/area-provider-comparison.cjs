@@ -7,8 +7,9 @@ const fs=require("node:fs");
 const {chromium}=require("playwright");
 const points=require("./area-source-fixtures.cjs");
 const providers=[
-  {id:"hydrolakes-wwf",type:"water",url:"https://wwf-sight-maps.org/arcgis/rest/services/Global/Hydrology/MapServer/0"},
-  {id:"water-bodies-esri",type:"water",url:"https://services2.arcgis.com/IsDCghZ73NgoYoz5/ArcGIS/rest/services/World_Water_Bodies_World/FeatureServer/0"},
+  {id:"lakes-arcgis-service7",type:"water",url:"https://services7.arcgis.com/poOcx60xJtGtoR7g/ArcGIS/rest/services/Lakes/FeatureServer/0"},
+  {id:"lakes-arcgis-official",type:"water",url:"https://services.arcgis.com/h4jNYexE41HKnu98/arcgis/rest/services/Lakes/FeatureServer/0"},
+  {id:"global-dam-watch",type:"water",url:"https://services8.arcgis.com/oTalEaSXAuyNT7xf/ArcGIS/rest/services/GDW_v1_epsilon_gdb/FeatureServer/0"},
   {id:"wdpca-unep",type:"protected",url:"https://data-gis.unep-wcmc.org/server/rest/services/ProtectedSites/The_World_Database_of_Protected_Areas/FeatureServer/1"}
 ];
 (async()=>{
