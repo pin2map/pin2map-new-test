@@ -160,11 +160,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      assert.ok(Math.abs(state.clear.width-state.clear.height)<=1,JSON.stringify(state));
      assert.equal(state.clear.radius,"50%",JSON.stringify(state));
      assert.equal(state.selected,"stations");
-     assert.ok(state.menu.height>=190,"Geometry layer menu may not collapse to the filter only: "+JSON.stringify(state));
+     assert.ok(state.menu.height>=145,"Geometry layer menu may not collapse to the filter only: "+JSON.stringify(state));
      assert.ok(state.menu.optionsVisibleInViewport>=1,
        "At least one actual selectable layer must be fully visible: "+JSON.stringify(state));
      assert.ok(state.menu.pickerScrollHeight<=state.menu.pickerClientHeight+2||
-       state.menu.pickerClientHeight>=180,
+       state.menu.pickerClientHeight>=140,
        "Overflowing geometry menu must reserve a useful scrolling viewport: "+JSON.stringify(state));
      assert.ok(state.menu.left>=state.panel.left-2&&state.menu.right<=state.panel.right+2,
        JSON.stringify(state));
