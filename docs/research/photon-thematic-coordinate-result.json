@@ -1,8 +1,8 @@
 {
-  "testedAt": "2026-11-17T18:29:31.286Z",
+  "testedAt": "2026-11-17T18:31:28.590Z",
   "summary": {
     "tested": 2,
-    "targetsFound": 1,
+    "targetsFound": 2,
     "extraContainment": [
       {
         "name": "Lake Kivu",
@@ -12,7 +12,10 @@
       },
       {
         "name": "Parque Nacional Torres del Paine",
-        "contains": []
+        "contains": [
+          "R2622290",
+          "R10742331"
+        ]
       }
     ]
   },
@@ -22,6 +25,24 @@
       "lat": -1.776754,
       "lng": 29.09729,
       "candidateCount": 162,
+      "selectedIds": [
+        "W177308748",
+        "R9072",
+        "R17267126",
+        "R17267163",
+        "W125721874",
+        "W1010160209",
+        "W260588304",
+        "R10557007",
+        "W198343325",
+        "W260590342",
+        "R2847404",
+        "R2830044",
+        "W1330341761",
+        "W1330344104",
+        "W1330339903",
+        "W1161136744"
+      ],
       "filters": [
         {
           "filter": "natural",
@@ -419,7 +440,7 @@
           ]
         }
       ],
-      "checked": 24,
+      "checked": 16,
       "contains": [
         {
           "id": "R9072",
@@ -436,6 +457,30 @@
       "lat": -50.929007,
       "lng": -72.778931,
       "candidateCount": 143,
+      "selectedIds": [
+        "R2622290",
+        "R10742331",
+        "R11250208",
+        "R4681415",
+        "R4681392",
+        "R11205423",
+        "W31346150",
+        "W31346149",
+        "R4870349",
+        "R19522407",
+        "R13932268",
+        "W70515988",
+        "W1175822153",
+        "W23609922",
+        "W320644765",
+        "W32925425",
+        "W31344859",
+        "W62289765",
+        "W1370319343",
+        "W50617399",
+        "W50617396",
+        "W50617395"
+      ],
       "filters": [
         {
           "filter": "natural",
@@ -833,13 +878,26 @@
           ]
         }
       ],
-      "checked": 24,
-      "contains": [],
+      "checked": 22,
+      "contains": [
+        {
+          "id": "R2622290",
+          "name": "Torres del Paine National Park",
+          "geometryType": "Polygon",
+          "containsPoint": true
+        },
+        {
+          "id": "R10742331",
+          "name": "Reserva de Biósfera Torres del Paine",
+          "geometryType": "Polygon",
+          "containsPoint": true
+        }
+      ],
       "failedBatches": [],
-      "targetFound": false
+      "targetFound": true
     }
   ],
   "caveat": "Names and expected IDs only used for local evaluation, never in any request.",
-  "sourceCommit": "935138ebe7c9a837d81946af6a01b6f692faafdb",
-  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44148243330"
+  "sourceCommit": "4f2b39b6c1fd45df06902be08028875580980f3c",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44148566945"
 }
