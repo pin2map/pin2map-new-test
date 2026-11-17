@@ -121,7 +121,8 @@ const sizes=[
     });
     const expectedNumber=require('node:fs').readFileSync('sw.js','utf8').match(/pin2map-new-v(\d+)/)?.[1];
     assert.ok(expectedNumber,'source service-worker version must be present');
-    assert.equal(version,'pin2map-preview-v'+expectedNumber,'installed preview service worker must match source release number');
+    const expectedPrefix=new URL(origin).pathname.includes('/preview/')?'pin2map-preview-v':'pin2map-new-v';
+    assert.equal(version,expectedPrefix+expectedNumber,'installed service worker must match release number');
     await page.reload({waitUntil:'domcontentloaded',timeout:45000});
     await page.waitForFunction(()=>Boolean(window.Pin2MapGeometryEditor&&window.Pin2MapObjectLayerPicker));
     await page.evaluate(()=>{

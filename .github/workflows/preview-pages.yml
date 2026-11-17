@@ -22,7 +22,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Hard publication barrier: an invalid geometry selector is never deployed,
+  # irrespective of whether a separate Chromium smoke suite is green.
+  webkit-geometry-preflight:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install engine-matched Playwright
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install webkit chromium
+      - name: Serve current candidate version locally
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/p2m-webkit.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/p2m-webkit.log
+          exit 1
+      - name: REQUIRED WebKit + Chromium + installed PWA layer-chooser regression
+        env:
+          PIN2MAP_TEST_URL: http://127.0.0.1:8765/
+        run: node tests/geometry-layer-webkit-regression.cjs
+      - name: Preserve pre-publication screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkit-geometry-preflight-18layers
+          path: geometry-layer-regression-artifacts/*.png
+          if-no-files-found: warn
+
   preview:
+    needs: webkit-geometry-preflight
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
@@ -352,3 +392,33 @@ jobs:
           name: live-preview-pin-dialog-v167
           path: preview-source/pin-dialog-visual-artifacts/*.png
           if-no-files-found: ignore
+
+  # Post-publish verification checks the release actually served by Pages.
+  webkit-geometry-postpublish:
+    needs: preview
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install engine-matched Playwright
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install webkit chromium
+      - name: REQUIRED published WebKit + Chromium + PWA version regression
+        env:
+          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
+        run: node tests/geometry-layer-webkit-regression.cjs
+      - name: Preserve post-publication screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webkit-geometry-published-18layers
+          path: geometry-layer-regression-artifacts/*.png
+          if-no-files-found: warn
