@@ -1,0 +1,40 @@
+name: Compare independent area services at 15 reference points
+
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - '.github/workflows/area-provider-research.yml'
+      - 'tests/area-source-fixtures.cjs'
+      - 'tests/area-provider-comparison.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Chromium API test dependency
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          command -v google-chrome || command -v google-chrome-stable
+      - name: Run cross-origin polygon-service point comparisons
+        env:
+          PIN2MAP_CHROMIUM_EXECUTABLE: /usr/bin/google-chrome
+        run: node tests/area-provider-comparison.cjs
+      - name: Store comparison report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: independent-area-source-comparison
+          path: area-provider-comparison.json
+          if-no-files-found: warn
