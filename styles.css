@@ -83,12 +83,21 @@ body.pin-hitboxes-hidden #map .leaflet-marker-icon.pin-icon{
 #map .leaflet-marker-icon.pin-icon.p2m-temporary-pin .pin-marker-shape{
   animation:p2m-temporary-pin-blink 1.3s ease-in-out infinite;
 }
+/* Temporary polygons (areas/lakes) and river centerlines pulse just like
+   temporary pins. Only the visible Leaflet SVG path gets the animation.
+   The transparent 24px river tap corridor and the label stay unchanged. */
+#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible{
+  animation:p2m-temporary-pin-blink 1.3s ease-in-out infinite;
+}
 @keyframes p2m-temporary-pin-blink{
   0%,100%{opacity:1}
   50%{opacity:.24}
 }
 @media (prefers-reduced-motion:reduce){
   #map .leaflet-marker-icon.pin-icon.p2m-temporary-pin .pin-marker-shape{
+    animation:none;
+  }
+  #map .leaflet-overlay-pane path.p2m-temporary-geometry-visible{
     animation:none;
   }
 }
