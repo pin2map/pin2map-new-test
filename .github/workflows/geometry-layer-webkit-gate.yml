@@ -33,3 +33,10 @@ jobs:
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/geometry-layer-webkit-regression.cjs
+      - name: Preserve actual screenshots (including failed regression)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safari-webkit-real-18-layer-dialog-evidence
+          path: geometry-layer-regression-artifacts/*.png
+          if-no-files-found: warn

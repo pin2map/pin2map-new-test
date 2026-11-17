@@ -4,6 +4,8 @@
  * real iOS Safari or of a user's existing service-worker installation.
  */
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+fs.mkdirSync('geometry-layer-regression-artifacts',{recursive:true});
 const {chromium,webkit}=require('playwright');
 const origin=process.env.PIN2MAP_TEST_URL||'https://pin2map.github.io/pin2map-new-test/preview/';
 const sizes=[
@@ -89,6 +91,7 @@ const sizes=[
       window.__safariRegression={editor,item};
      });
      await page.locator('#geometryEditor .geometry-layer').last().click();
+     await page.screenshot({path:'geometry-layer-regression-artifacts/'+engine+'-'+setting.label+'-18layers.png'});
      const last=page.locator('#geometryLayerMenu .pin-layer-option').last();
      await last.click({timeout:12000});
      const picked=await page.evaluate(()=>window.__safariRegression.item.layerId);
