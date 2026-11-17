@@ -21,9 +21,19 @@ const {chromium}=require("playwright");
       const park=hierarchy.rows.find(x=>x.name==="Nationalpark Jasmund");
       const polygon=park?await finder.findContaining(park,point,{
         countryCode:hierarchy.countryCode}):null;
+      const lakePoint={lat:54.272442,lng:13.005109};
+      const lakeHierarchy=await finder.hierarchyAt(lakePoint);
+      const lake=lakeHierarchy.rows.find(x=>/borgwallsee/i.test(x.name));
+      const lakePolygon=lake?await finder.findContaining(lake,lakePoint,{
+        countryCode:lakeHierarchy.countryCode}):null;
       return {names:hierarchy.rows.map(x=>x.name),countryCode:hierarchy.countryCode,
         extraUnavailable:hierarchy.extraUnavailable,island,park,
-        polygon:polygon?{id:polygon.osm_id,type:polygon.geojson?.type}:null};
+        polygon:polygon?{id:polygon.osm_id,type:polygon.geojson?.type}:null,
+        lakeNames:lakeHierarchy.rows.map(x=>x.name),
+        lakeExtraUnavailable:lakeHierarchy.extraUnavailable,
+        lake:lake?{name:lake.name,kind:lake.kind,osmId:lake.osmId}:null,
+        lakePolygon:lakePolygon?{id:lakePolygon.osm_id,
+          type:lakePolygon.geojson?.type}:null};
     });
     console.log("LIVE_THEMATIC_AREA_RESULT",JSON.stringify(result));
     assert.equal(result.extraUnavailable,false,
@@ -32,6 +42,12 @@ const {chromium}=require("playwright");
     assert.ok(result.park?.osmId,"Nationalpark Jasmund must have a real OSM polygon identity");
     assert.ok(["Polygon","MultiPolygon"].includes(result.polygon?.type),
       "Selected real national park must resolve to a drawable Nominatim polygon");
+    assert.equal(result.lakeExtraUnavailable,false,
+      "Overpass must work at the exact Borgwallsee coordinate");
+    assert.ok(result.lake?.osmId,"Borgwallsee must have a real OSM ID");
+    assert.equal(result.lake.kind,"lake");
+    assert.ok(["Polygon","MultiPolygon"].includes(result.lakePolygon?.type),
+      "The genuine Borgwallsee must resolve to a drawable Nominatim polygon");
     console.log("PASS actual browser Overpass island, park, and selected polygon lookup");
   }finally{await browser.close()}
 })().catch(error=>{console.error("LIVE_THEMATIC_AREA_FAILURE",error);process.exitCode=1});

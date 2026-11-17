@@ -170,7 +170,7 @@
             city:"Stadt",town:"Stadt",village:"Ort",hamlet:"Weiler",
             locality:"Ort",island:"Insel",protected_area:"Schutzgebiet",
             restricted_area:"Sperrgebiet",administrative:"Verwaltungsgebiet",
-            natural_area:"Naturgebiet"};
+            natural_area:"Naturgebiet",lake:"See/Gewässer"};
           const type=this.document.createElement("span");
           type.className="result-area-type";
           type.textContent=types[result.kind]||"Gebiet";

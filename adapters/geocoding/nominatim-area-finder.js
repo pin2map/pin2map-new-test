@@ -68,7 +68,9 @@
     if(tags.landuse==="military"||tags.military||
        ["military","restricted_area"].includes(boundary))return "restricted_area";
     if(["administrative","political"].includes(boundary))return "administrative";
-    if(["water","wetland"].includes(tags.natural)||tags.water)return "natural_area";
+    if(tags.natural==="water"||["lake","reservoir","pond"].includes(tags.water)||
+       tags.landuse==="reservoir")return "lake";
+    if(tags.natural==="wetland")return "natural_area";
     if(tags.landuse==="forest"||tags.natural==="wood")return "natural_area";
     if(["region","locality"].includes(place))return "region";
     return null;
@@ -143,8 +145,21 @@
         // One bounded, point-based Overpass request discovers enclosing
         // named protected/restricted areas and islands worldwide. Its server
         // computes polygon containment: no arbitrary proximity search.
-        const query="[out:json][timeout:20];is_in("+Number(point.lat)+","+
-          Number(point.lng)+")->.containing;(way(pivot.containing);rel(pivot.containing););out tags;";
+        // Select enclosing thematic OSM areas first (Overpass Turbo area.inside)
+        // and pivot only those matches back to their original OSM objects.
+        const query=[
+          "[out:json][timeout:45];is_in(",Number(point.lat),",",Number(point.lng),")->.inside;(",
+          "area.inside[\"boundary\"~\"^(national_park|protected_area|nature_reserve|military|restricted_area)$\"];",
+          "area.inside[\"place\"~\"^(island|islet|archipelago|region|locality)$\"];",
+          "area.inside[\"natural\"~\"^(water|wetland|wood)$\"];",
+          "area.inside[\"water\"~\"^(lake|reservoir|pond)$\"];",
+          "area.inside[\"landuse\"~\"^(military|reservoir|forest)$\"];",
+          "area.inside[\"military\"~\"^(training_area|range|danger_area)$\"];",
+          "area.inside[\"leisure\"=\"nature_reserve\"];",
+          "area.inside[\"protect_class\"];",
+          "area.inside[\"boundary\"=\"administrative\"];",
+          ")->.found;(way(pivot.found);rel(pivot.found););out tags;"
+        ].join("");;
         let response=null;
         for(const endpoint of areaProviders(point)){
           if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});

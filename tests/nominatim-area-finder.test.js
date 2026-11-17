@@ -228,3 +228,26 @@ test("provider HTTP failures retry an independent server without losing administ
   assert.match(calls[1],/dresel\.systems/);
   assert.match(calls[2],/private\.coffee/);
 });
+
+test("Borgwallsee query uses filtered containing areas and original OSM pivots",async()=>{
+  const calls=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    calls.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",
+        country_code:"de"}})};
+    return {ok:true,json:async()=>({elements:[
+      {type:"way",id:92345,tags:{name:"Borgwallsee",natural:"water",water:"lake"}}
+    ]})};
+  }});
+  const result=await finder.hierarchyAt({lat:54.272442,lng:13.005109});
+  const query=new URL(calls[1]).searchParams.get("data");
+  assert.match(query,/is_in\(54\.272442,13\.005109\)->\.inside/);
+  assert.match(query,/area\.inside\["natural"="water"\]/);
+  assert.match(query,/area\.inside\["water"~"\^\(lake\|reservoir\|pond\)\$"\]/);
+  assert.match(query,/way\(pivot\.found\)/);
+  assert.match(query,/rel\(pivot\.found\)/);
+  assert.equal(query.includes("pivot.containing"),false);
+  assert.equal(result.rows.find(x=>x.name==="Borgwallsee")?.kind,"lake");
+  assert.equal(result.rows.find(x=>x.name==="Borgwallsee")?.osmId,92345);
+});

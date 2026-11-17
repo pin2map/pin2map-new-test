@@ -846,7 +846,7 @@ const viewports=[
        body:JSON.stringify({class:"highway",type:"residential",name:"Dorfstraße",
          address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",
            island:"Rügen",country_code:"de"}})}));
-   await page.route(/overpass\.private\.coffee\/api\/interpreter/,async route=>
+   await page.route(/ovp\.dresel\.systems\/api\/interpreter/,async route=>
      route.fulfill({status:200,contentType:"application/json",
        body:JSON.stringify({elements:[
          {type:"relation",id:80401,tags:{name:"Rügen",place:"island"}},
@@ -888,7 +888,7 @@ const viewports=[
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    await page.locator(".plate-area-no").click();
-   await page.unroute(/overpass\.private\.coffee\/api\/interpreter/);
+   await page.unroute(/ovp\.dresel\.systems\/api\/interpreter/);
    await page.unroute(/nominatim\.openstreetmap\.org\/lookup/);
    // True browser regression for a mixed pin + area LABEL at the same map
    // position. The first click must zoom the group, NOT open either editor.
