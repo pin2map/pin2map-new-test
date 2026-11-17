@@ -11,24 +11,24 @@ const {chromium}=require("playwright");
     {label:"Australia - Canberra lake",lat:-35.2925,lng:149.1310}
    ];
    const servers=[
-    "https://overpass.private.coffee/api/interpreter",
-    "https://overpass-api.de/api/interpreter",
+    "https://lz4.overpass-api.de/api/interpreter",
+    "https://z.overpass-api.de/api/interpreter",
+    "https://overpass.osm.jp/api/interpreter",
     "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
    ];
    const rows=[];
 
    for(const point of tests){
-    const data="[out:json][timeout:20];is_in("+point.lat+","+point.lng+")->.inside;("+
+    const data="[out:json][timeout:15];is_in("+point.lat+","+point.lng+")->.inside;("+
       'area.inside["natural"="water"];'+
       'area.inside["water"~"^(lake|reservoir)$"];'+
       'area.inside["boundary"~"^(national_park|protected_area)$"];'+
       'area.inside["place"~"^(island|islet)$"];'+
       'area.inside["landuse"="military"];'+
-      'area.inside["boundary"="administrative"];'+
-      ")->.found;(way(pivot.found);rel(pivot.found););out tags;";
-    for(const server of servers)for(const method of ["GET","POST"]){
+      ")->.found;.found out ids tags;";
+    for(const server of servers)for(const method of ["GET"]){
       await (async()=>{
-       const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),12500),start=Date.now();
+       const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),16000),start=Date.now();
        try{
         const opts={method,signal:ctl.signal,headers:{"Accept":"application/json"}};
         let url=server;
