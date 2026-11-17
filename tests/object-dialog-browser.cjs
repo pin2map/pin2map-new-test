@@ -230,6 +230,37 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       await page.locator("[data-test-object-note-editor] .pin-note-editor-actions button:last-child").click();
      }
      await page.evaluate(()=>window.__p2mDialogFixture.editor.close());
+     // Regression from real iPhone screenshot: more than ten layers
+     // must NOT reduce geometry popup to just the sticky filter field.
+     await page.evaluate(({type,viewport})=>{
+      const fixture=window.__p2mDialogFixture,editor=fixture.editor;
+      const many=Array.from({length:12},(_,i)=>({
+       id:"many-"+i,name:"Lange Gebietsebene "+i,color:"#326cc2",visible:true
+      }));
+      editor.show(type==="river"?"river":"area",fixture.item,many,
+       {x:viewport.width*.5,y:viewport.height*.65});
+     },{type,viewport});
+     await layerButton.click();
+     const expanded=await page.locator("[data-test-object-layer-menu]").evaluate(menu=>{
+      const r=menu.getBoundingClientRect(),p=document.getElementById("geometryEditor").getBoundingClientRect();
+      const option=menu.querySelector(".pin-layer-option");
+      return {width:r.width,height:r.height,panelWidth:p.width,top:r.top,bottom:r.bottom,
+       panelTop:p.top,panelBottom:p.bottom,visibleOptions:[...menu.querySelectorAll(".pin-layer-option")].length,
+       optionHeight:option?.getBoundingClientRect().height||0,
+       scrollHeight:menu.scrollHeight,clientHeight:menu.clientHeight};
+     });
+     assert.ok(expanded.width>=expanded.panelWidth-25,
+      "Restore chooser width to dialog width: "+JSON.stringify({type,viewport,expanded}));
+     assert.ok(expanded.height>=220,
+      "With twelve layers popup must show real selectable rows: "+JSON.stringify({type,viewport,expanded}));
+     assert.ok(expanded.top>=Math.max(0,expanded.panelTop)-2&&
+       expanded.bottom<=Math.min(viewport.height,expanded.panelBottom)+2,
+      "Expanded chooser stays inside dialog and viewport: "+JSON.stringify({type,viewport,expanded}));
+     assert.equal(expanded.visibleOptions,12);
+     assert.ok(expanded.optionHeight>=38);
+     await page.locator("[data-test-object-layer-menu] .pin-layer-option").last().click();
+     assert.equal(await page.locator("[data-test-object-layer-menu]").isHidden(),true);
+     await page.evaluate(()=>window.__p2mDialogFixture.editor.close());
      console.log("PASS shared REAL interaction",type,viewport.width+"x"+viewport.height);
      console.log("PASS shared object dialog",type,viewport.width+"x"+viewport.height);
     }

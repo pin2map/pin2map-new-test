@@ -195,3 +195,19 @@ test("geometry layer picker never collapses to filter-only strip on mobile",()=>
  assert.ok(top>=12&&top+height<=667-12,"Popup stays in viewport");
  assert.equal(elements.pinLayerMenu.style.width,"339px");
 });
+
+test("many geometry layers expand to original editor width and usable list height",()=>{
+ const {picker,elements}=fixture();
+ picker.contained=true;
+ elements.pinPanel.getBoundingClientRect=()=>({left:8,top:95,bottom:560,width:359,height:465});
+ picker.header={getBoundingClientRect:()=>({bottom:250})};
+ picker.actions={getBoundingClientRect:()=>({top:290})};
+ const layers=Array.from({length:12},(_,i)=>({id:"layer"+i,name:"Gebietsebene "+i,color:"#326cc2",visible:true}));
+ picker.render({layers,selectedLayerId:"layer0"});picker.setOpen(true);
+ const menu=elements.pinLayerMenu;
+ assert.equal(menu.style.width,"339px","restore full editor-width dropdown");
+ assert.ok(parseFloat(menu.style.height)>=300,"many layers must not become a filter-only strip");
+ assert.ok(parseFloat(menu.style.top)>=95);
+ assert.ok(parseFloat(menu.style.top)+parseFloat(menu.style.height)<=560);
+ assert.equal(picker.options.length,12);
+});

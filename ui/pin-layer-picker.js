@@ -55,26 +55,30 @@
     const panel=this.el(this.panelId).getBoundingClientRect();
     const head=this.header?.getBoundingClientRect?.();
     const actions=this.actions?.getBoundingClientRect?.();
-    // The area/lake/river editor uses the same *readable* layer list as
-    // the pin editor. Its notes region is preferred, but may collapse to
-    // 45px on a shifted mobile visual viewport (only filter is visible).
-    // Never accept a computed slot too short to show selectable rows.
-    const menuWidth=Math.min(390,Math.max(0,panel.width-20),Math.max(0,width-2*margin));
+    // Contract: the layer chooser uses the original dialog width, not
+    // the obsolete 260px dropdown width. Tall lists may cover other
+    // editor rows, but never leave the visible main dialog or viewport.
+    const menuWidth=Math.min(Math.max(0,panel.width-20),Math.max(0,width-2*margin));
     const viewportTop=top+margin,viewportBottom=top+height-margin;
-    const upper=Math.max(panel.top+gap,(head?.bottom??panel.top)+gap,viewportTop);
-    const lower=Math.min(panel.bottom-gap,(actions?.top??panel.bottom)-gap,viewportBottom);
-    const minUsableHeight=Math.min(140,Math.max(90,height-2*margin));
-    let menuTop=upper;
-    let menuHeight=Math.min(460,Math.max(0,lower-upper));
-    if(menuHeight<minUsableHeight){
-     // A full-height, scrollable overlay is safer than a 45px unusable
-     // strip. Keep it inside the visible viewport, even when the editor
-     // footer and header yield inconsistent or cramped geometry.
-     menuHeight=Math.min(460,Math.max(72,height-2*margin));
-     menuTop=Math.max(viewportTop,Math.min(
-      panel.top+(panel.height-menuHeight)/2,viewportBottom-menuHeight));
-    }
+    const panelTop=Math.max(panel.top+gap,viewportTop);
+    const panelBottom=Math.min(panel.bottom-gap,viewportBottom);
+    const upper=Math.max(panelTop,(head?.bottom??panel.top)+gap);
+    const lower=Math.min(panelBottom,(actions?.top??panel.bottom)-gap);
+    const notesRoom=Math.max(0,lower-upper);
+    // Count the *rendered* options. Three rows fit the short notes slot;
+    // a real project with many layers requires a taller chooser.
+    const visibleRows=this.options.filter(x=>!x.button.hidden).length;
+    const desiredHeight=Math.min(460,70+43*visibleRows);
+    const neededHeight=Math.min(desiredHeight,visibleRows>=5?240:140);
+    const panelRoom=Math.max(0,panelBottom-panelTop);
+    const expand=notesRoom<neededHeight;
+    const menuHeight=expand?
+     Math.min(460,Math.max(0,panelRoom)):
+     Math.min(460,notesRoom,desiredHeight);
+    const menuTop=expand?
+     panelTop+(panelRoom-menuHeight)/2:upper;
     menu.style.width=menuWidth+"px";
+    menu.style.height=menuHeight+"px";
     menu.style.maxHeight=menuHeight+"px";
     menu.style.left=Math.max(left+margin,Math.min(
      panel.left+(panel.width-menuWidth)/2,left+width-menuWidth-margin))+"px";
