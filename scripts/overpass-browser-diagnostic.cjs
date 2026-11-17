@@ -13,9 +13,9 @@ const query="[out:json][timeout:16];is_in("+point.lat+","+point.lng+
     await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
     const out=await page.evaluate(async query=>{
       const servers=[
-        "https://overpass.private.coffee/api/interpreter",
-        "https://overpass-api.de/api/interpreter",
-        "https://overpass.openstreetmap.fr/api/interpreter"
+        "https://ovp.dresel.systems/api/interpreter",
+        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "https://overpass.private.coffee/api/interpreter"
       ];
       const results=[];
       for(const base of servers){
