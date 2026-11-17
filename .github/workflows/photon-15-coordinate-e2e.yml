@@ -1,0 +1,189 @@
+name: Research 15 coordinate-only global polygons uniformly
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths: ['.github/workflows/photon-15-coordinate-e2e.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+          persist-credentials: true
+      - name: Install headless Chrome harness
+        run: npm install --no-save --no-audit --no-fund playwright@1.56.1
+      - name: Coordinate-only discovery and actual point-in-polygon tests
+        run: |
+          node <<'NODE'
+          'use strict';
+          (async()=>{
+            const fs=require('node:fs'),{chromium}=require('playwright');
+            const fixtures=require('./tests/area-source-fixtures.cjs');
+            // IDs are a LOCAL assessment oracle: they are NEVER sent as hints to Photon.
+            const targets={
+              'Enoggera Reservoir':'W8113068','Marradong Mining Area':'R14893603',
+              'Mokamie Nature Reserve':'R12949787',
+              'Delamere Range Facility Training Area':'W368317349',
+              'Lake Kivu':'R9072','Farihy Ihotry':'W75250501',
+              'Namib Naukluft National Park':'R4150085',
+              'Embalse Rio Hondo':'R7138909','Lago Villarrica':'R1922935',
+              'Reserva Biológica Huilo Huilo':'R6809830',
+              'Zona Nucleo Rio Auquinco':'R11283391',
+              'Parque Nacional Torres del Paine':'R2622290',
+              'Tonle Sab':'R5638825','Heaven Lake':'R11650508','Tasik Kenyir':'R1166498'
+            };
+            const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',
+              headless:true,args:['--no-sandbox']});
+            let rows;
+            try{
+              const page=await browser.newPage();
+              await page.goto('https://pin2map.github.io/pin2map-new-test/preview/',{
+                waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForFunction(()=>!!window.Pin2MapAreaGeometry?.containsPoint);
+              rows=await page.evaluate(async points=>{
+                const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+                let lastNominatim=0;
+                const request=async(url,timeoutMs=24000)=>{
+                  const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeoutMs);
+                  const started=Date.now();
+                  try{
+                    const response=await fetch(url,{signal:ctrl.signal});
+                    if(!response.ok)throw Error('HTTP '+response.status);
+                    return {status:'ok',ms:Date.now()-started,data:await response.json()};
+                  }catch(e){return {status:'failed',ms:Date.now()-started,error:String(e).slice(0,165)}}
+                  finally{clearTimeout(timer)}
+                };
+                const out=[];
+                const filters=[
+                  {id:'water',tag:'water'}, {id:'boundary',tag:'boundary'},
+                  {id:'leisure',tag:'leisure'}, {id:'landuse',tag:'landuse'},
+                  {id:'other',layer:'other'}
+                ];
+                for(const point of points){
+                  const began=Date.now(),byId=new Map(),filterStats=[];
+                  for(const filter of filters){
+                    await sleep(1300);
+                    const u=new URL('https://photon.komoot.io/reverse');
+                    u.searchParams.set('lat',String(point.lat));
+                    u.searchParams.set('lon',String(point.lng));
+                    u.searchParams.set('radius','150');
+                    u.searchParams.set('limit','50');
+                    u.searchParams.set('lang','en');
+                    if(filter.tag)u.searchParams.append('osm_tag',filter.tag);
+                    if(filter.layer)u.searchParams.append('layer',filter.layer);
+                    const r=await request(u,21000);
+                    const features=r.data?.features||[];
+                    for(const f of features){
+                      const properties=f.properties||{},id=properties.osm_type&&properties.osm_id?
+                        String(properties.osm_type).toUpperCase()+properties.osm_id:null;
+                      if(id&&/^[WR]\d+$/.test(id)&&!byId.has(id))byId.set(id,{
+                        id,name:properties.name||null,key:properties.osm_key||null,
+                        value:properties.osm_value||null});
+                    }
+                    filterStats.push({filter:filter.id,status:r.status,count:features.length,
+                      ms:r.ms,error:r.error||null});
+                  }
+                  const all=[...byId.values()],buckets=[
+                    all.filter(x=>x.key==='boundary'&&['national_park','protected_area'].includes(x.value)),
+                    all.filter(x=>x.key==='water'&&['lake','reservoir'].includes(x.value)),
+                    all.filter(x=>x.key==='leisure'&&x.value==='nature_reserve'),
+                    all.filter(x=>x.key==='landuse'&&['military','industrial','reservoir'].includes(x.value)),
+                    all.filter(x=>x.key==='natural'&&x.value==='water'),
+                    all.filter(x=>['boundary','water','leisure','natural','landuse'].includes(x.key))
+                  ];
+                  const selected=[],seen=new Set();
+                  for(let b=0;b<buckets.length;b++){
+                    let count=0;
+                    for(const c of buckets[b]){
+                      if(seen.has(c.id))continue;
+                      seen.add(c.id);selected.push(c);count++;
+                      if(count>=(b===5?5:5))break;
+                    }
+                  }
+                  const checked=[],failures=[];
+                  for(let i=0;i<Math.min(selected.length,30);i+=6){
+                    // Explicit minimum delay between public Nominatim requests.
+                    await sleep(Math.max(1450,1500-(Date.now()-lastNominatim)));
+                    lastNominatim=Date.now();
+                    const ids=selected.slice(i,i+6).map(x=>x.id),
+                      u=new URL('https://nominatim.openstreetmap.org/lookup');
+                    u.searchParams.set('osm_ids',ids.join(','));
+                    u.searchParams.set('format','json');
+                    u.searchParams.set('polygon_geojson','1');
+                    u.searchParams.set('polygon_threshold','0');
+                    const r=await request(u,28000);
+                    if(r.status!=='ok'){
+                      failures.push({ids,error:r.error,ms:r.ms});
+                      continue;
+                    }
+                    for(const f of r.data||[]){
+                      const id=f.osm_type?.[0]?.toUpperCase()+f.osm_id,g=f.geojson;
+                      const polygon=g?.type==='Polygon'||g?.type==='MultiPolygon';
+                      const contained=polygon?window.Pin2MapAreaGeometry.containsPoint(g,point.lng,point.lat):false;
+                      checked.push({id,name:f.name||f.display_name?.split(',')[0]||null,
+                        type:g?.type||null,contained,vertices:polygon?
+                          window.Pin2MapAreaGeometry.pointCount(g):0});
+                    }
+                  }
+                  const row={name:point.name,region:point.region,kind:point.kind,
+                    latitude:point.lat,longitude:point.lng,
+                    ms:Date.now()-began,filters:filterStats,availableCandidates:byId.size,
+                    selectedIds:selected.map(x=>x.id),checkedCount:checked.length,
+                    containing:checked.filter(x=>x.contained),failures};
+                  out.push(row);
+                  console.log('UNIFORM_COORDINATE_POINT',JSON.stringify({
+                    name:row.name,ms:row.ms,found:row.containing.map(x=>x.id),
+                    candidates:row.availableCandidates,checked:row.checkedCount,
+                    failures:row.failures,filterStats:row.filters}));
+                }
+                return out;
+              },fixtures);
+            }finally{await browser.close()}
+            for(const row of rows){
+              row.expectedId=targets[row.name];
+              row.correct=!!row.containing.find(c=>c.id===row.expectedId);
+              row.expectedCandidateFound=row.selectedIds.includes(row.expectedId);
+            }
+            const summary={tested:rows.length,correct:rows.filter(x=>x.correct).length,
+              expectedCandidateFound:rows.filter(x=>x.expectedCandidateFound).length,
+              withAnyContaining:rows.filter(x=>x.containing.length>0).length,
+              misses:rows.filter(x=>!x.correct).map(x=>({
+                name:x.name,id:x.expectedId,selected:x.expectedCandidateFound,
+                containing:x.containing.map(y=>({id:y.id,name:y.name})),
+                failedBatches:x.failures.length
+              })),
+              requestFailures:rows.reduce((sum,x)=>sum+x.failures.length+
+                x.filters.filter(y=>y.status==='failed').length,0),
+              totalMilliseconds:rows.reduce((sum,x)=>sum+x.ms,0)};
+            console.log('UNIFORM_COORDINATE_SUMMARY',JSON.stringify(summary));
+            fs.writeFileSync('uniform-coordinate-15.json',JSON.stringify({
+              testedAt:new Date().toISOString(),summary,rows,
+              note:'Research only: all provider requests use coordinates and generic tags; expected names/IDs only local scoring. No provider polygons stored or app changes.'
+            },null,2)+'\n');
+          })().catch(e=>{console.error('UNIFORM_COORDINATE_FATAL',e);process.exitCode=1});
+          NODE
+      - name: Commit metadata-only research evidence and run URL
+        if: always()
+        run: |
+          if [ ! -s uniform-coordinate-15.json ]; then echo '{"status":"test_failed_before_results"}' > uniform-coordinate-15.json; fi
+          node <<'NODE'
+          const fs=require('node:fs'),v=JSON.parse(fs.readFileSync('uniform-coordinate-15.json'));
+          v.workflowUrl=process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID;
+          v.sourceCommit=process.env.GITHUB_SHA;
+          fs.writeFileSync('docs/research/photon-uniform-coordinate-15-result.json',JSON.stringify(v,null,2)+'\n');
+          NODE
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/research/photon-uniform-coordinate-15-result.json
+          git commit -m 'test-results: record 15-point uniform coordinate-only research' || exit 0
+          git push origin HEAD:feature/leaflet-modular-core
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: uniform-coordinate-15-metadata
+          path: uniform-coordinate-15.json
