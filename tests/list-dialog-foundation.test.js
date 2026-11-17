@@ -90,7 +90,7 @@ test("Layers merge owns the helper slot and only the footer confirms or cancels"
  assert.ok(helper.indexOf('id="layersUnite"')<helper.indexOf('class="layer-reorder-help"'));
  assert.doesNotMatch(header,/id="layersUnite"/);
  assert.match(header,/id="layersSearchClear"/);
- assert.match(helper,/Halten und verschieben für neue Position/);
+ assert.match(helper,/1 Sek\. halten und an neue Pos\. verschieben\./);
  assert.match(helper,/Markieren zum Zusammenführen/);
  assert.match(app,/layerView\.footerAction\(\)/);
  assert.match(app,/layerView\.footerCancel\(\)/);
