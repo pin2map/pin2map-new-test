@@ -207,7 +207,10 @@ test("many geometry layers expand to original editor width and usable list heigh
  const menu=elements.pinLayerMenu;
  assert.equal(menu.style.width,"339px","restore full editor-width dropdown");
  assert.ok(parseFloat(menu.style.height)>=300,"many layers must not become a filter-only strip");
- assert.ok(parseFloat(menu.style.top)>=95);
- assert.ok(parseFloat(menu.style.top)+parseFloat(menu.style.height)<=560);
+ // Geometry menu is absolute INSIDE the owner panel; the measured
+ // viewport position equals dialog top plus the local menu offset.
+ const ownerTop=95;
+ assert.ok(ownerTop+parseFloat(menu.style.top)>=95);
+ assert.ok(ownerTop+parseFloat(menu.style.top)+parseFloat(menu.style.height)<=560);
  assert.equal(picker.options.length,12);
 });
