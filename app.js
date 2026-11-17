@@ -926,9 +926,9 @@
     $("showPinHitboxes").addEventListener("change",event=>writeHitboxDisplay(event.target.checked));
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
-    $("addLayer").addEventListener("click",()=>layerView.start("new"));
+    $("addLayer").addEventListener("click",()=>layerView.footerAction());
     $("layersClose").addEventListener("click",()=>layerView.close());
-    $("layersCloseBottom").addEventListener("click",()=>layerView.close());
+    $("layersCloseBottom").addEventListener("click",()=>layerView.footerCancel());
     $("layersUnite").addEventListener("click",()=>layerView.beginMerge());
     const colorSettings=new window.Pin2MapColorSettingsView({
       document,getElement:$,palette,
