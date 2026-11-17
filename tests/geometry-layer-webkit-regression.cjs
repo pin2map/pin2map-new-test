@@ -47,7 +47,17 @@ const sizes=[
         return r.height>=25&&r.top>=box.top&&r.bottom<=box.bottom;
        }).length;
        const rowRect=opts[0]?.getBoundingClientRect();
-       const sample={engine:'',label,kind,menuWidth:box.width,menuHeight:box.height,
+       // Detect *visual occlusion*: bounding boxes may look correct even
+       // when the entire chooser is painted behind the main editor.
+       const row=opts[1],r=row?.getBoundingClientRect();
+       const px=r?Math.min(r.right-8,Math.max(r.left+8,r.left+r.width*.5)):0;
+       const py=r?Math.min(r.bottom-6,Math.max(r.top+6,r.top+r.height*.5)):0;
+       const hit=r?document.elementFromPoint(px,py):null;
+       const hitIsOption=!!(hit&&(hit===row||row.contains(hit)));
+       const sample={engine:'',label,kind,hitIsOption,
+        hitElement:hit?.tagName||null,hitClass:String(hit?.className||'').slice(0,80),
+        rowPoint:{x:px,y:py},menuParent:menu.parentElement?.id||menu.parentElement?.tagName,
+        menuWidth:box.width,menuHeight:box.height,
         panelWidth:pb.width,panelHeight:pb.height,menuLeft:box.left,menuRight:box.right,
         panelLeft:pb.left,panelRight:pb.right,menuTop:box.top,menuBottom:box.bottom,
         panelTop:pb.top,panelBottom:pb.bottom,rowHeight:rowRect?.height,
@@ -73,6 +83,8 @@ const sizes=[
         'filter-only collapsed menu: '+JSON.stringify(record));
       assert.ok(record.displayed>=2,
         'at least two complete selectable rows must be visible: '+JSON.stringify(record));
+      assert.ok(record.hitIsOption,
+        'REGRESSION: second layer row is OCCLUDED by editor despite correct rect: '+JSON.stringify(record));
       assert.ok(record.menuTop>=record.panelTop-2&&record.menuBottom<=record.panelBottom+2,
         'chooser is outside editor panel: '+JSON.stringify(record));
       assert.ok(record.menuLeft>=record.panelLeft-2&&record.menuRight<=record.panelRight+2,
@@ -139,11 +151,16 @@ const sizes=[
     let dims=await page.evaluate(()=>{
      const p=window.__pwaReg.editor,box=p.layerMenu.getBoundingClientRect(),
       panel=p.panel.getBoundingClientRect();
+     const option=p.layerPicker.options[1].button,or=option.getBoundingClientRect();
+     const hit=document.elementFromPoint(or.left+or.width/2,or.top+or.height/2);
      return {width:box.width,height:box.height,panelWidth:panel.width,
-      count:p.layerPicker.options.length};
+      count:p.layerPicker.options.length,
+      hitIsOption:hit===option||option.contains(hit),
+      menuParent:p.layerMenu.parentElement?.id};
     });
     assert.ok(dims.width>=dims.panelWidth-25&&dims.height>=210&&dims.count===18,
       'installed PWA clipped its layer list: '+JSON.stringify(dims));
+    assert.ok(dims.hitIsOption,'installed PWA layer rows are hidden BEHIND the object dialog: '+JSON.stringify(dims));
     await page.screenshot({path:'geometry-layer-regression-artifacts/installed-pwa-active-sw.png'});
     await page.locator('#geometryLayerMenu .pin-layer-option').last().click();
     assert.equal(await page.evaluate(()=>window.__pwaReg.item.layerId),'a17');
