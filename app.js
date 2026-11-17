@@ -151,7 +151,7 @@
       return true;
     }
   });
-  const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document});
+  const pinLayerPicker = new window.Pin2MapPinLayerPicker({getElement:$,document,withinPanel:true});
   const pinInfoService=new window.Pin2MapPinInfoService.PinInfoService({
     provider:new window.Pin2MapPinInfoProvider({
       forecast:new window.Pin2MapOpenMeteoPinInfo({fetchImpl:(...args)=>fetch(...args)}),

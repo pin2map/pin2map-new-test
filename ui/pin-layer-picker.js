@@ -6,13 +6,14 @@
   constructor({getElement,document:doc,icons=root.Pin2MapIcons,
     triggerId="pinLayerTrigger",menuId="pinLayerMenu",panelId="pinPanel",
     pickerId="pinLayerPicker",selectId="pinLayer",onSelect=null,
-    contained=false,header=null,actions=null,bindTrigger=true,onOpenChange=()=>{}}){
+    contained=false,withinPanel=false,header=null,actions=null,bindTrigger=true,onOpenChange=()=>{}}){
    if(typeof getElement!=="function"||!doc||!icons?.svg)
      throw new TypeError("Object layer picker dependencies required");
    this.el=getElement;this.doc=doc;this.icons=icons;this.document=doc;
    this.triggerId=triggerId;this.menuId=menuId;this.panelId=panelId;
    this.pickerId=pickerId;this.selectId=selectId;this.onSelect=onSelect;
-   this.contained=contained;this.header=header;this.actions=actions;
+   this.contained=contained;this.withinPanel=withinPanel;
+   this.header=header;this.actions=actions;
    this.onOpenChange=onOpenChange;
    this.open=false;this.filterText="";this.options=[];
    const menu=this.el(menuId),trigger=this.el(triggerId);
@@ -66,9 +67,11 @@
     trigger:trigger.getBoundingClientRect(),
     viewport:{left:vv?.offsetLeft||0,top:vv?.offsetTop||0,
      width:vv?.width||win.innerWidth,height:vv?.height||win.innerHeight},
-    contained:this.contained,
-    header:this.header?.getBoundingClientRect?.()||null,
-    footer:this.actions?.getBoundingClientRect?.()||null,
+    // Visual popup is always constrained to the unchanged main editor
+    // when used by the real Pin app. Portalling remains outside flow.
+    contained:this.contained||this.withinPanel,
+    header:(this.header||panel.querySelector?.(".pin-editor-head"))?.getBoundingClientRect?.()||null,
+    footer:(this.actions||panel.querySelector?.(".pin-actions"))?.getBoundingClientRect?.()||null,
     visibleRows:this.options.filter(x=>!x.button.hidden).length
    });
    // Never retain stale height from a prior object, search, or keyboard state.

@@ -38,7 +38,12 @@ const sizes=[
         onDelete:()=>{},onWikipedia:()=>{}});
        editor.show(kind==='river'?'river':'area',item,layers,
         {x:innerWidth*.5,y:innerHeight*.65});
+       const before=editor.panel.getBoundingClientRect();
        editor.layerButton.click();
+       const after=editor.panel.getBoundingClientRect();
+       const sameFrame=Math.abs(after.width-before.width)<1&&
+        Math.abs(after.height-before.height)<1&&
+        Math.abs(after.top-before.top)<1&&Math.abs(after.left-before.left)<1;
        const menu=editor.layerMenu, panel=editor.panel;
        const box=menu.getBoundingClientRect(), pb=panel.getBoundingClientRect();
        const opts=[...menu.querySelectorAll('.pin-layer-option')];
@@ -54,7 +59,7 @@ const sizes=[
        const py=r?Math.min(r.bottom-6,Math.max(r.top+6,r.top+r.height*.5)):0;
        const hit=r?document.elementFromPoint(px,py):null;
        const hitIsOption=!!(hit&&(hit===row||row.contains(hit)));
-       const sample={engine:'',label,kind,hitIsOption,
+       const sample={engine:'',label,kind,hitIsOption,sameFrame,
         hitElement:hit?.tagName||null,hitClass:String(hit?.className||'').slice(0,80),
         rowPoint:{x:px,y:py},menuParent:menu.parentElement?.id||menu.parentElement?.tagName,
         menuWidth:box.width,menuHeight:box.height,
@@ -77,6 +82,7 @@ const sizes=[
       record.engine=engine;
       console.log('SAFARI_REGRESSION_METRICS',JSON.stringify(record));
       assert.ok(record.options===18,record.kind+' options not rendered');
+      assert.ok(record.sameFrame,'MAIN DIALOG RESIZED/MOVED BY LAYER POPUP: '+JSON.stringify(record));
       assert.ok(record.menuWidth>=record.panelWidth-25,
         'chooser not restored to original editor width: '+JSON.stringify(record));
       assert.ok(record.menuHeight>=210,

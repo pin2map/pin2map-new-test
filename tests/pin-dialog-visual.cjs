@@ -295,6 +295,7 @@ async function metrics(page){
     assert.equal(await page.locator("#pinPanel .pin-navigation-row").isVisible(),true);
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-notes.png"});
+    const originalPinFrame=await page.locator("#pinPanel").boundingBox();
     await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu").waitFor({state:"visible",timeout:5000});
     assert.equal(await page.locator("#pinLayerTrigger").evaluate(el=>getComputedStyle(el).backgroundColor),
@@ -305,14 +306,25 @@ async function metrics(page){
       scrollWidth:menu.scrollWidth,clientWidth:menu.clientWidth,
       scrollHeight:menu.scrollHeight,clientHeight:menu.clientHeight,
       items:menu.querySelectorAll(".pin-layer-option").length,
-      bodyScrollWidth:document.body.scrollWidth};
+      bodyScrollWidth:document.body.scrollWidth,
+      panel:(()=>{const p=document.getElementById("pinPanel").getBoundingClientRect();
+       return {x:p.left,y:p.top,right:p.right,bottom:p.bottom,width:p.width,height:p.height};})()};
     });
     assert.equal(pop.parent,"BODY","Layer list must escape scrolling pin panel");
     assert.ok(pop.x>=4&&pop.right<=viewport.width-4,JSON.stringify(pop));
     assert.ok(pop.y>=4&&pop.bottom<=viewport.height-4,JSON.stringify(pop));
+    const activePinFrame=await page.locator("#pinPanel").boundingBox();
+    for(const key of ["x","y","width","height"]){
+      assert.ok(Math.abs(activePinFrame[key]-originalPinFrame[key])<=1,
+       "Opening layer list must NOT change Pin dialog "+key+": "+JSON.stringify({originalPinFrame,activePinFrame,pop}));
+    }
+    assert.ok(pop.y>=pop.panel.y-1&&pop.bottom<=pop.panel.bottom+1,
+      "Pin layer popup must remain INSIDE the unchanged dialog: "+JSON.stringify(pop));
+    assert.ok(pop.x>=pop.panel.x-1&&pop.right<=pop.panel.right+1,
+      "Pin layer popup must keep original dialog width: "+JSON.stringify(pop));
     assert.ok(pop.scrollWidth<=pop.clientWidth+2,"Horizontal layer menu scrolling: "+JSON.stringify(pop));
     assert.equal(pop.items,8,"A long eight-layer list must remain accessible");
-    assert.ok(pop.right-pop.x>=Math.min(390,viewport.width-24)-2,
+    assert.ok(pop.right-pop.x>=pop.panel.width-23,
       "PIN layer list must use full readable dialog width: "+JSON.stringify(pop));
     assert.ok(pop.bottom-pop.y>=150,
       "PIN layer list must not shrink to a one-row popup: "+JSON.stringify(pop));
