@@ -1,0 +1,92 @@
+{
+  "testedAt": "2026-11-17T18:04:44.729Z",
+  "note": "Research only. OSM API is editing API and not appropriate as mass production read service; no geometry stored.",
+  "rows": [
+    {
+      "name": "Enoggera Reservoir",
+      "type": "way",
+      "id": 8113068,
+      "status": "ok",
+      "ms": 554,
+      "features": 1,
+      "polygonType": "Polygon",
+      "vertexCount": 428,
+      "containsClickPoint": true
+    },
+    {
+      "name": "Marradong Mining Area",
+      "type": "relation",
+      "id": 14893603,
+      "status": "ok",
+      "ms": 162,
+      "features": 1,
+      "polygonType": "Polygon",
+      "vertexCount": 202,
+      "containsClickPoint": true
+    },
+    {
+      "name": "Farihy Ihotry",
+      "type": "way",
+      "id": 75250501,
+      "status": "ok",
+      "ms": 159,
+      "features": 1,
+      "polygonType": "Polygon",
+      "vertexCount": 187,
+      "containsClickPoint": true
+    },
+    {
+      "name": "Embalse Rio Hondo",
+      "type": "relation",
+      "id": 7138909,
+      "status": "ok",
+      "ms": 196,
+      "features": 1,
+      "polygonType": "Polygon",
+      "vertexCount": 639,
+      "containsClickPoint": true
+    },
+    {
+      "name": "Heaven Lake",
+      "type": "relation",
+      "id": 11650508,
+      "status": "ok",
+      "ms": 305,
+      "features": 1,
+      "polygonType": "Polygon",
+      "vertexCount": 2033,
+      "containsClickPoint": true
+    }
+  ],
+  "checks": {
+    "directOsm": {
+      "status": "ok",
+      "http": 200,
+      "bytes": 40176,
+      "polygonType": null,
+      "containsClickPoint": false
+    },
+    "nominatim": {
+      "status": "ok",
+      "http": 200,
+      "bytes": 5903,
+      "polygonType": "Polygon",
+      "containsClickPoint": true
+    }
+  },
+  "summary": {
+    "converted": 5,
+    "polygon": 5,
+    "containsClickPoint": 5,
+    "osmApiBrowserCors": "ok",
+    "marradongNominatimRetry": {
+      "status": "ok",
+      "http": 200,
+      "bytes": 5903,
+      "polygonType": "Polygon",
+      "containsClickPoint": true
+    }
+  },
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44143896056",
+  "sourceCommit": "39a3c9c04edced0e115a8c4a31b7335e57c40246"
+}
