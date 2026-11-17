@@ -159,73 +159,92 @@
       // spatial enrichment may be delayed by Overpass rate limits.
       onPartial({rows:rows.slice(),countryCode:address.country_code||""});
       if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
-      try{
-        // One bounded, point-based Overpass request discovers enclosing
-        // named protected/restricted areas and islands worldwide. Its server
-        // computes polygon containment: no arbitrary proximity search.
-        // Select enclosing thematic OSM areas first (Overpass Turbo area.inside)
-        // and pivot only those matches back to their original OSM objects.
-        const query=[
-          "[out:json][timeout:45];is_in(",Number(point.lat),",",Number(point.lng),")->.inside;(",
-          "area.inside[\"boundary\"~\"^(national_park|protected_area|nature_reserve|military|restricted_area)$\"];",
-          "area.inside[\"place\"~\"^(island|islet|archipelago|region|locality)$\"];",
-          "area.inside[\"natural\"=\"water\"];",
-          "area.inside[\"natural\"~\"^(wetland|wood)$\"];",
-          "area.inside[\"water\"~\"^(lake|reservoir|pond)$\"];",
-          "area.inside[\"landuse\"~\"^(military|reservoir|forest)$\"];",
-          "area.inside[\"military\"~\"^(training_area|range|danger_area)$\"];",
-          "area.inside[\"leisure\"=\"nature_reserve\"];",
-          "area.inside[\"protect_class\"];",
-          "area.inside[\"boundary\"=\"administrative\"];",
-          // For global servers, omitting expensive pivot expansion greatly
-          // reduces computation. Relation areas can be mapped to original OSM
-          // IDs locally; the polygon itself still comes from Nominatim.
-          (areaProviders(point)[0].includes("maps.mail.ru")
-            ?")->.found;.found out tags;"
-            :")->.found;(way(pivot.found);rel(pivot.found););out tags;")
-        ].join("");
-        let response=null;
-        for(const endpoint of areaProviders(point)){
-          if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
-          const timeout=new AbortController();
-          const cancel=()=>timeout.abort();
-          signal?.addEventListener("abort",cancel,{once:true});
-          const timeoutMs=endpoint.includes("dresel.systems")?12000:
-            endpoint.includes("maps.mail.ru")?32000:24000;
-          const timer=setTimeout(cancel,timeoutMs);
-          try{
-            response=await this.request(endpoint+"?"+new URLSearchParams({data:query}),
-              timeout.signal);
-            if(!Array.isArray(response?.elements))throw Error("Ungültige Gebietsantwort");
-            break;
-          }catch(error){
-            if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
-            response=null; // Try the next independent provider after failure.
-          }finally{
-            clearTimeout(timer);signal?.removeEventListener("abort",cancel);
-          }
-        }
-        if(!response)throw Error("Kein Flächendienst erreichbar");
-        for(const item of response.elements){
+      // Keep Nominatim reverse requests governed by request()'s limiter.
+      // Optional Overpass providers run in parallel, independently of that
+      // Nominatim limiter, with at most two concurrent provider requests.
+      const queryPrefix=[
+        "[out:json][timeout:45];is_in(",Number(point.lat),",",Number(point.lng),")->.inside;(",
+        'area.inside["boundary"~"^(national_park|protected_area|nature_reserve|military|restricted_area)$"];',
+        'area.inside["place"~"^(island|islet|archipelago|region|locality)$"];',
+        'area.inside["natural"="water"];',
+        'area.inside["natural"~"^(wetland|wood)$"];',
+        'area.inside["water"~"^(lake|reservoir|pond)$"];',
+        'area.inside["landuse"~"^(military|reservoir|forest)$"];',
+        'area.inside["military"~"^(training_area|range|danger_area)$"];',
+        'area.inside["leisure"="nature_reserve"];',
+        'area.inside["protect_class"];',
+        'area.inside["boundary"="administrative"];'
+      ].join("");
+      const countryCode=address.country_code||"";
+      const providers=areaProviders(point);
+      let succeeded=0,foundExtra=false;
+      const applyItems=elements=>{
+        let changed=false;
+        for(const item of elements){
           const row=overpassRow(item);
           if(!row)continue;
-          // Admin rows are already present in the reverse hierarchy. Attach
-          // the exact geometry identity to that choice rather than duplicate
-          // its visible name with another category.
-          if(row.kind==="administrative"||row.kind==="island"){
-            const existing=rows.find(x=>normalize(x.name)===normalize(row.name));
-            if(existing){existing.osmId=row.osmId;existing.osmType=row.osmType;
+          // If the same administrative or island name was reverse-geocoded,
+          // enrich its existing row with the exact polygon identity.
+          const existing=rows.find(x=>x.osmId&&x.osmType===row.osmType&&
+            x.osmId===row.osmId)||
+            rows.find(x=>x.kind===row.kind&&normalize(x.name)===normalize(row.name))||
+            (["administrative","island"].includes(row.kind)
+              ?rows.find(x=>normalize(x.name)===normalize(row.name)):null);
+          if(existing){
+            if(!existing.osmId){
+              existing.osmType=row.osmType;existing.osmId=row.osmId;
               if(row.kind==="island")existing.fromContainingArea=true;
-              continue;}
+              changed=true;
+            }
+            continue;
           }
+          const count=rows.length;
           add(row);
+          if(rows.length>count){changed=true;foundExtra=true;}
         }
+        if(changed&&!signal?.aborted)
+          onPartial({rows:rows.slice(),countryCode});
+      };
+      const fetchProvider=async endpoint=>{
+        if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+        const regional=endpoint.includes("dresel.systems");
+        const query=queryPrefix+(regional
+          ?")->.found;(way(pivot.found);rel(pivot.found););out tags;"
+          :")->.found;.found out tags;");
+        const controller=new AbortController();
+        const cancel=()=>controller.abort();
+        signal?.addEventListener("abort",cancel,{once:true});
+        const timeoutMs=regional?12000:endpoint.includes("maps.mail.ru")?32000:24000;
+        const timer=setTimeout(cancel,timeoutMs);
+        try{
+          const response=await this.fetch(endpoint+"?"+new URLSearchParams({data:query}),
+            {headers:{"Accept-Language":"de"},signal:controller.signal});
+          if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
+          const body=await response.json();
+          if(!Array.isArray(body?.elements)||body.remark)
+            throw Error("Ungültige oder unvollständige Gebietsantwort");
+          if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+          succeeded++;
+          applyItems(body.elements);
+          return true;
+        }catch(error){
+          if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+          return false;
+        }finally{
+          clearTimeout(timer);signal?.removeEventListener("abort",cancel);
+        }
+      };
+      // Start two independent public providers together. Only if they
+      // produce no new candidate do we consult a third provider, protecting
+      // fair-use capacity against unnecessary requests.
+      try{
+        await Promise.all(providers.slice(0,2).map(fetchProvider));
+        if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
+        if(!foundExtra&&providers[2])await fetchProvider(providers[2]);
       }catch(error){
         if(signal?.aborted||error?.name==="AbortError")throw error;
-        // Nominatim's hierarchy remains usable if Overpass is offline.
-        // A transient external provider failure must never erase those rows.
-        extraUnavailable=true;
       }
+      extraUnavailable=succeeded===0;
       return {rows,countryCode:address.country_code||"",extraUnavailable};
     }
     async findContaining(entry,point,{countryCode="",signal}={}){

@@ -176,7 +176,7 @@ test("slow Overpass never delays the initial administrative Kartentip choices",a
       tags:{name:"Nationalpark Jasmund",boundary:"national_park"}}]})};
   }});
   const operation=finder.hierarchyAt({lat:54.5,lng:13.6},{
-    onPartial:early=>{partial=early;}
+    onPartial:early=>{if(!partial)partial=early;}
   });
   for(let i=0;i<6&&!asked;i++)await Promise.resolve();
   assert.equal(asked,true);
@@ -221,7 +221,7 @@ test("provider HTTP failures retry an independent server without losing administ
       tags:{name:"Nationalpark Jasmund",boundary:"national_park"}}]})};
   }});
   const found=await finder.hierarchyAt({lat:54.55,lng:13.63},
-    {onPartial:x=>shown=x.rows.map(r=>r.name)});
+    {onPartial:x=>{if(!shown)shown=x.rows.map(r=>r.name);}});
   assert.deepEqual(shown,["Deutschland","Mecklenburg-Vorpommern"]);
   assert.equal(found.rows.at(-1).name,"Nationalpark Jasmund");
   assert.equal(found.extraUnavailable,false);
@@ -292,10 +292,105 @@ test("global provider falls back after failure without hiding reverse-address re
   }});
   let initial=null;
   const result=await finder.hierarchyAt({lat:-22.9737,lng:-43.2125},
-    {onPartial:partial=>{initial=partial.rows.map(x=>x.name);}});
+    {onPartial:partial=>{if(!initial)initial=partial.rows.map(x=>x.name);}});
   assert.deepEqual(initial,["Brasil"]);
   assert.equal(result.rows.find(x=>x.name==="Parque Nacional").osmId,42);
   assert.equal(result.extraUnavailable,false);
   assert.match(queries[1],/maps\.mail\.ru/);
   assert.match(queries[2],/private\.coffee/);
+});
+
+test("two area sources start concurrently; late provider enriches without replacing earlier choices",async()=>{
+  let firstResolve,secondResolve;
+  const first=new Promise(resolve=>{firstResolve=resolve;});
+  const second=new Promise(resolve=>{secondResolve=resolve;});
+  const requested=[],updates=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    requested.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",country_code:"de"}
+    })};
+    if(url.includes("dresel.systems"))return first;
+    if(url.includes("private.coffee"))return second;
+    throw Error("unexpected third request");
+  }});
+  const operation=finder.hierarchyAt({lat:54.55,lng:13.63},{
+    onPartial:x=>updates.push(x.rows.map(r=>r.name))
+  });
+  for(let i=0;i<12&&requested.length<3;i++)await Promise.resolve();
+  assert.equal(requested.length,3,"Both area sources must start before either completes");
+  assert.deepEqual(updates[0],["Deutschland","Mecklenburg-Vorpommern"]);
+  secondResolve({ok:true,json:async()=>({elements:[
+    {type:"relation",id:100,tags:{name:"Nationalpark Jasmund",boundary:"national_park"}}
+  ]})});
+  for(let i=0;i<12&&updates.length<2;i++)await Promise.resolve();
+  assert.ok(updates[1].includes("Nationalpark Jasmund"),
+    "The second provider must update the view before first provider replies");
+  firstResolve({ok:true,json:async()=>({elements:[
+    {type:"relation",id:100,tags:{name:"Nationalpark Jasmund",boundary:"national_park"}},
+    {type:"relation",id:101,tags:{name:"Rügen",place:"island"}}
+  ]})});
+  const result=await operation;
+  assert.equal(result.extraUnavailable,false);
+  assert.equal(result.rows.filter(r=>r.name==="Nationalpark Jasmund").length,1);
+  assert.ok(result.rows.some(r=>r.name==="Rügen"));
+  assert.equal(requested.length,3,"Do not request a third provider after a thematic match");
+  assert.ok(updates.at(-1).includes("Rügen"));
+});
+test("provider errors do not erase parallel results and no third request follows success",async()=>{
+  const requested=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    requested.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Brasil",country_code:"br"}
+    })};
+    if(url.includes("maps.mail.ru"))return {ok:false,status:504};
+    if(url.includes("private.coffee"))return {ok:true,json:async()=>({elements:[
+      {type:"area",id:3600000300,tags:{name:"Reserva",boundary:"protected_area"}}
+    ]})};
+    throw Error("third provider should not be requested");
+  }});
+  const result=await finder.hierarchyAt({lat:-22.97,lng:-43.21});
+  assert.equal(result.extraUnavailable,false);
+  assert.equal(result.rows.find(x=>x.name==="Reserva")?.osmId,300);
+  assert.equal(requested.length,3);
+});
+test("a third provider is used only when both parallel sources produce no thematic matches",async()=>{
+  const requested=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    requested.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Australien",country_code:"au"}
+    })};
+    if(url.includes("overpass-api.de"))return {ok:true,json:async()=>({elements:[
+      {type:"area",id:3600000025,tags:{name:"Nationalpark",boundary:"national_park"}}
+    ]})};
+    return {ok:false,status:503};
+  }});
+  const result=await finder.hierarchyAt({lat:-35.3,lng:149.1});
+  assert.equal(requested.length,4);
+  assert.equal(result.rows.find(x=>x.name==="Nationalpark")?.osmId,25);
+  assert.equal(result.extraUnavailable,false);
+});
+test("aborting an in-flight parallel search prevents any late additional choices",async()=>{
+  const controller=new AbortController(),deferred=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async(url,options)=>{
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Deutschland",country_code:"de"}
+    })};
+    return new Promise((resolve,reject)=>{
+      deferred.push(resolve);
+      options.signal?.addEventListener("abort",()=>reject(Object.assign(
+        new Error("Aborted"),{name:"AbortError"})),{once:true});
+    });
+  }});
+  const snapshots=[];
+  const operation=finder.hierarchyAt({lat:54.5,lng:13.5},{
+    signal:controller.signal,onPartial:x=>snapshots.push(x.rows.map(r=>r.name))
+  });
+  for(let i=0;i<12&&deferred.length<2;i++)await Promise.resolve();
+  assert.equal(deferred.length,2);
+  controller.abort();
+  await assert.rejects(operation,/Aborted/);
+  assert.deepEqual(snapshots,[["Deutschland"]]);
 });
