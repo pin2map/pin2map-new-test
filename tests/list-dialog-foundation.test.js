@@ -157,3 +157,17 @@ test("temporary pink preview pins blink without animating Leaflet's hitbox",()=>
  assert.doesNotMatch(css,/#map \.leaflet-marker-icon\.pin-icon\.p2m-temporary-pin\s*\{[^}]*animation:/,
   "The interactive 52x56 Leaflet marker must not animate");
 });
+
+test("temporary area and lake polygons as well as river strokes blink, not river touch corridors",()=>{
+ const adapter=read("map-adapter-leaflet.js"),css=read("styles.css");
+ assert.match(adapter,/interactive:false,className:"p2m-temporary-geometry-visible"/,
+  "GeoJSON polygon layer must get its CSS class during path construction");
+ assert.match(adapter,/color:"#e64294",weight:5,opacity:0\.96,interactive:false,\s*className:"p2m-temporary-geometry-visible"/,
+  "River centerline must have a transient-only CSS class");
+ assert.match(adapter,/color:"#e64294",weight:24,opacity:0\.015,\s*interactive:true,bubblingMouseEvents:false,\s*className:"p2m-temporary-river-hit"/,
+  "River touch corridor must be a separate, unanimated path");
+ assert.match(css,/#map \.leaflet-overlay-pane path\.p2m-temporary-geometry-visible\s*\{\s*animation:p2m-temporary-pin-blink 1\.3s ease-in-out infinite;/);
+ assert.match(css,/@media \(prefers-reduced-motion:reduce\)[\s\S]*?#map \.leaflet-overlay-pane path\.p2m-temporary-geometry-visible\s*\{\s*animation:none;/);
+ assert.doesNotMatch(css,/\.p2m-temporary-river-hit\s*\{[^}]*animation:/,
+  "Touch corridor must never blink");
+});
