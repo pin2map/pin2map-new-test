@@ -23,15 +23,18 @@ function element(tag){
 const els={
  layersPanel:element("aside"),layersList:element("div"),pinLayer:element("select"),
  layersSearch:element("input"),layersSearchClear:element("button"),
- layersUnite:element("button")
+ layersUnite:element("button"),layersHelpers:element("div"),
+ layersVisibilityCycle:element("button"),addLayer:element("button"),
+ layersCloseBottom:element("button")
 };
-const changed=[],deleted=[],removed=[];
+const changed=[],deleted=[],removed=[],merged=[];
 const view=new LayerView({
  getElement:id=>els[id],
  document:{createElement:element,defaultView:{matchMedia:()=>({matches:true})}},
  onVisibility:(id,value)=>changed.push([id,value]),
  onDelete:id=>deleted.push(id),
- onDeleteContents:id=>removed.push(id)
+ onDeleteContents:id=>removed.push(id),
+ onMergeRequest:(ids,target)=>{merged.push({ids,target});return true;}
 });
 assert.ok(view instanceof Shared);
 const layers=[
@@ -78,4 +81,25 @@ view.render({layers:reordered,counts:{private:0,a:2},selectedLayerId:"a"});
 assert.equal(els.layersList.children[0].dataset.itemId,"private",
  "Private must be first in the UI even when stored layers are out of order");
 assert.equal(reordered[0].id,"a","UI sorting must never rewrite stored layer order");
+view.selectedIds.add("private");
+view.beginMerge();
+assert.equal(view.mergeMode,true);
+assert.equal(els.addLayer.textContent,"Zusammenführen");
+assert.equal(els.addLayer.disabled,true,"No merge without a chosen target");
+assert.equal(els.layersCloseBottom.textContent,"Abbrechen");
+assert.equal(els.layersHelpers.classList.contains("hidden"),true);
+assert.equal(els.layersList.children[0].children.length,1,
+ "Merge guidance has only its text; no redundant upper action buttons");
+view.footerCancel();
+assert.equal(view.mergeMode,false);
+assert.equal(els.addLayer.textContent,"+ Ebene hinzufügen");
+assert.equal(els.layersPanel.classList.contains("hidden"),false,
+ "Cancel from footer must preserve the open Layers dialog");
+assert.deepEqual(merged,[],"Cancel is never a data mutation");
+view.beginMerge();
+view.chooseMergeTarget("a");
+assert.equal(els.addLayer.disabled,false);
+assert.equal(view.footerAction(),true);
+assert.deepEqual(merged,[{ids:["a","private"],target:"a"}]);
+assert.equal(view.mergeMode,false);
 console.log("Layer view: shared list layout, visibility, merge selection and safe inline deletion pass.");
