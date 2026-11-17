@@ -69,17 +69,29 @@ jobs:
                       sample:entries.slice(0,12)});
                   }
                   const lookupRows=[],candidates=[...potential.values()];
-                  // Prioritize relevant generic area categories, never name or known ID.
-                  const priority=x=>{
-                    const k=x.key||'',v=x.value||'';
-                    if(['water','natural','boundary','leisure','landuse','military','protected_area'].includes(k))return 0;
-                    if(['lake','national_park','nature_reserve','reservoir'].includes(v))return 0;
-                    return 1
-                  };
-                  candidates.sort((a,b)=>priority(a)-priority(b));
-                  for(let i=0;i<Math.min(candidates.length,24);i+=8){
+                  // Fairly sample categories. A generic nearby lake must not
+                  // crowd out a national park, or vice versa. No name/ID hints.
+                  const buckets=[
+                    candidates.filter(x=>x.key==='boundary'&&['national_park','protected_area'].includes(x.value)),
+                    candidates.filter(x=>x.key==='water'&&['lake','reservoir'].includes(x.value)),
+                    candidates.filter(x=>x.key==='leisure'&&x.value==='nature_reserve'),
+                    candidates.filter(x=>x.key==='natural'&&x.value==='water'),
+                    candidates.filter(x=>['boundary','water','leisure','natural','landuse'].includes(x.key))
+                  ];
+                  const ranked=[],seen=new Set();
+                  // First 4 buckets get 5 candidates each, then 4 generic
+                  // fallbacks; no dependence on query result insertion order.
+                  for(let b=0;b<buckets.length;b++){
+                    let taken=0;
+                    for(const candidate of buckets[b]){
+                      if(seen.has(candidate.id))continue;
+                      seen.add(candidate.id);ranked.push(candidate);taken++;
+                      if(taken>=(b===4?4:5))break;
+                    }
+                  }
+                  for(let i=0;i<ranked.length;i+=8){
                     await sleep(1500);
-                    const ids=candidates.slice(i,i+8).map(x=>x.id),u=new URL('https://nominatim.openstreetmap.org/lookup');
+                    const ids=ranked.slice(i,i+8).map(x=>x.id),u=new URL('https://nominatim.openstreetmap.org/lookup');
                     u.searchParams.set('osm_ids',ids.join(','));u.searchParams.set('format','json');
                     u.searchParams.set('polygon_geojson','1');u.searchParams.set('polygon_threshold','0');
                     const r=await req(u);
@@ -93,7 +105,7 @@ jobs:
                     }
                   }
                   const row={expected:point.name,lat:point.lat,lng:point.lng,
-                    candidateCount:potential.size,filters:filterStats,
+                    candidateCount:potential.size,selectedIds:ranked.map(x=>x.id),filters:filterStats,
                     checked:lookupRows.length,contains:lookupRows.filter(x=>x.containsPoint),
                     failedBatches:lookupRows.filter(x=>x.status==='failed')};
                   console.log('THEMATIC_COORD',JSON.stringify(row));
