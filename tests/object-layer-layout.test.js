@@ -22,5 +22,5 @@ assert.ok(shifted.height>=210,"visual viewport offset does not consume popup");
 const code=require("node:fs").readFileSync(require("node:path").join(__dirname,"../ui/pin-layer-picker.js"),"utf8");
 assert.ok(code.includes("Core.layerMenuLayout"),"single owner controls layout");
 assert.ok(!code.includes("const notesRoom")&&!code.includes("const menuWidth"),"no note/header-driven geometry");
-assert.ok(code.includes('doc.getElementById("app")'),"all menus in common app overlay context");
+assert.ok(code.includes('doc.getElementById?.("app")'),"all menus in common app overlay context");
 console.log("Shared layer popup layout contract passed.");
