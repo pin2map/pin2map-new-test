@@ -1856,3 +1856,20 @@ Die Kandidatenauswahl wurde deshalb in Commit `4f2b39b6c1fd45df06902be0802887558
 
 **Weiterhin offen:** Echte Safari/iPhone-Abnahme mit bestehendem Benutzerprojekt und installierter PWA-/Cachehistorie. Die vollständige Bereinigung der historisch gewachsenen, objekttypabhängigen CSS-Owner und die Prüfung weiterer nicht zum Objekt-Dialogvertrag gehörender UI-Dialoge bleiben eigene Architektur-Gates. Es wird **nicht** behauptet, dass damit die vollständige Vereinheitlichung *sämtlicher* App-Dialoge abgeschlossen sei oder der auf dem realen Gerät berichtete Fehler nachgewiesenermaßen verschwunden ist. Andere Feature-Themen bleiben zurückgestellt.
 
+
+### v259 – Nutzer-Screenshots: Geometrie-Ebenenpopup nur als Schlitz und Pin-Popup außerhalb festgelegter Dialoggröße (17.11.2026)
+
+**Gemeldeter Gerätebefund:** Auf einem echten iPhone-Screenshot ist der Ebenen-Trigger im Flächendialog aktiv (blau), während die Auswahlliste nur als schmaler Streifen oberhalb des Inhalts sichtbar wird. Beim Pin überdeckt eine weit über den ursprünglichen Hauptdialog hinausragende Ebenenliste die Karte; dies verletzt die unveränderliche Hauptdialog-Größe. Nach Nutzerangabe auch im Flussdialog. Das ist kein bestandener Geräte-Test und darf durch ältere grüne CI nicht wegargumentiert werden.
+
+**Ursachenkorrektur in zwei Stufen:** V258 band auch die Pin-Auswahlliste an die bestehenden Panelgrenzen, bei beibehaltenem BODY-Portal außerhalb des normalen DOM-Flusses. V259 verschiebt die Fläche-/See-/Fluss-Auswahlliste ausdrücklich *in ihren eigenen* fix positionierten Objekteditor und setzt sie dort `position:absolute`, mit zum Panel umgerechneten lokalen Koordinaten. Damit liegt das Menü im gleichen eigenen Stacking-Kontext über Header/Notizen, ohne durch den Flex-Layoutfluss die Hauptdialoggröße zu verändern. Die bisherige Geschwister-Portalstrategie `#app` war auf dem realen Nutzergerät offenkundig nicht zuverlässig; reine Bounding-Rect-Tests mit synthetischen Instanzen erfassten das nicht. Keine Änderung der Kartenobjekt-Geometrie oder Nutzerdaten.
+
+**Regressionsabsicherung:** Die tatsächlichen Chromium-Pin-Visualtests prüfen jetzt vor/nach Öffnung unveränderte `x/y/width/height` des ganzen Pinpanels und Menübegrenzung **innerhalb desselben Dialogrechtecks**. Die WebKit-/Chromium-Geometrietests verlangen für Fläche, See und Fluss einen unveränderten Hauptdialog-Rechteckwert, vollständig abgedeckte Zeilen, Hit-Testing `elementFromPoint`, anklickbare Endzeilen, korrektes Elternpanel `geometryEditor` und installierte PWA mit aktivem Service-Worker. Architektur-/Unit-Tests prüfen die lokale Koordinatenumrechnung. Die zuvor fehlgeschlagene Node-Testannahme globaler Fixed-Koordinaten wurde unter Beibehaltung identischer Sichtbarkeits-Grenzen auf panel-relative Koordinaten umgestellt.
+
+**Finaler getesteter Funktionscommit:** `2758e284df149a8cd52f90659f73503b326b85ea`. Releasekennung `pin2map-new-v259` / auf Preview `pin2map-preview-v259`.
+- [Node und vollständiger Chromium-Lauf 44194387207](https://github.com/pin2map/pin2map-new-test/actions/runs/44194387207): **completed/success**
+- [Leaflet-Architektur-Gate 44194387253](https://github.com/pin2map/pin2map-new-test/actions/runs/44194387253): **completed/success**
+- [Deployment und Preflight-/Live-/Postpublish-WebKit 44194387169](https://github.com/pin2map/pin2map-new-test/actions/runs/44194387169): **completed/success**, alle drei Jobs erfolgreich.
+- Preview: https://pin2map.github.io/pin2map-new-test/preview/
+
+**Offen:** Eine tatsächliche iPhone-Safari-PWA-Installation mit altem Projektbestand und Cache-/Updatehistorie ist nicht automatisiert reproduziert; der Nutzer muss die Darstellung und Höhe auf seinem konkreten Gerät abnehmen. Nicht behaupten, der Screenshot-Fehler sei am realen Gerät bereits nachweislich verschwunden. Ein vollständiges Audit der übrigen Dialogfamilien und CSS-Altlasten gehört weiterhin zur hohen Architekturpriorität. `main`, `reference/*` und IndexedDB-Daten blieben unverändert.
+

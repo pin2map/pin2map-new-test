@@ -49,3 +49,12 @@ Die vier Objekteditoren dürfen ihre Position nicht anhand der Form, Topologie, 
 
 Auch ältere Aufrufe von `ObjectDialogCore.positionPopup` mit `kind="layer"` müssen die kanonische `layerMenuLayout`-Funktion verwenden. Insbesondere sind der frühere 260px-Breitenzweig und die auf 45px reduzierbare Menüfläche verboten. Filter, Zeilen, Sichtbarkeit, Popup-Layout und Portale müssen weiterhin die bestehenden gemeinsamen Controller-/CSS-Verträge erfüllen. Die echten iPhone-PWA-/Service-Worker-Gerätedaten sind ein separates Abnahme-Gate.
 
+
+## Nachtrag v259 – unveränderliche Objekt-Dialogmaße beim Layer-Overlay (17.11.2026)
+
+**Verbindlich für alle vier Objektarten:** Öffnen, Filtern, Scrollen, Auswählen und Schließen der Ebenenliste verändern weder `x`, `y`, Breite noch Höhe des Hauptdialogs. Ein Popup darf die Karte optisch nicht über die bestehende Panelaußenkante hinaus vergrößern. Lange Ebenenlisten scrollen innerhalb des bereits definierten Hauptdialog-Footprints; die Fußzeile bleibt funktional erhalten.
+
+**Unterschiedliche Portalhosts sind ausschließlich technische Stacking-Strategie:** Das Pin-Menü bleibt fest im BODY als unabhängig positionierter Overlay ohne Einfluss auf seinen scrollbaren Elternbereich; seine berechnete Fläche ist dennoch strikt auf den unveränderten Pin-Dialog begrenzt. Das gemeinsame Geometrie-Menü wird als `position:absolute`-Kind des jeweiligen `position:fixed`-Geometrieeditors eingebunden, lokale Position = globaler Layout-Rect minus Panel-Rect. Ein Portal als `#app`-Geschwister ist für den Geometrie-Picker nicht mehr zulässig: Es konnte auf iOS trotz scheinbar richtiger Rechtecke nur einen schmalen Streifen sichtbar lassen. Ein Menü bleibt unabhängig scrollbar und darf als absolut positionierter DOM-Knoten niemals eine Flex-Zeile des Dialogs bilden.
+
+**Freigabevertrag:** Für Pin, Fläche, See und Fluss muss der *sichtbare reale Dialog* mit unveränderten Bounding-Rects, sichtbaren anklickbaren Ebenenzeilen, korrekter Stapelreihenfolge, mindestens iPhone 320/390 und iPad WebKit/Chromium und aktivem PWA-Service-Worker getestet werden. Die konkrete Benutzerinstallation in Safari bleibt eine gesonderte reale Geräteabnahme.
+
