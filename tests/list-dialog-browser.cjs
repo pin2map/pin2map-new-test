@@ -72,8 +72,12 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await page.locator("#layersVisibilityCycle").isVisible(),true);
     const helper=page.locator("#layersHelpers");
     assert.equal(await helper.isVisible(),true);
-    assert.match(await helper.textContent(),/Ebene verschieben: kurz festhalten, dann verschieben\./);
-    assert.match(await helper.textContent(),/Ebenen zusammenführen: in das Farbfeld klicken\./);
+    assert.match(await helper.textContent(),/Halten und verschieben für neue Position/);
+    assert.match(await helper.textContent(),/Markieren zum Zusammenführen/);
+    assert.equal(await page.locator("#layersHelpers > #layersUnite").count(),1);
+    assert.equal(await page.locator("#layersPanel .favorites-head #layersUnite").count(),0);
+    assert.equal(await page.locator("#layersSearchClear").isVisible(),true,
+      "Filter-clear action is never replaced by Merge");
     assert.equal(await helper.evaluate(el=>getComputedStyle(el).minHeight),"38px");
     // The original CSS-only test missed the button's final computed radius.
     for(const selector of ["#addLayer","#layersCloseBottom"]){
@@ -147,6 +151,13 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await editor.getByRole("button",{name:"Erstellen"}).click();
     const layer=page.locator("#layersList .list-dialog-row").filter({hasText:"Contract Test Layer"});
     await layer.waitFor({state:"visible"});
+    assert.deepEqual(await page.locator("#layersList .list-dialog-row").evaluateAll(
+      rows=>rows.slice(0,3).map(row=>row.dataset.itemId)),
+      [await privateRow.getAttribute("data-item-id"),await layer.getAttribute("data-item-id"),
+       await page.locator("#layersList .list-dialog-row").nth(2).getAttribute("data-item-id")],
+      "New layer appears directly under Private");
+    assert.equal(await page.locator("#layersList .list-dialog-row").nth(1).getAttribute("data-item-id"),
+      await layer.getAttribute("data-item-id"),"Created layer inserted at index 1");
     await layer.getByRole("button",{name:"Ebene bearbeiten"}).click();
     const renameEditor=page.locator("#layersList .layer-inline-editor");
     assert.equal(await renameEditor.locator(".layer-editor-title").textContent(),"Ebene umbenennen?");
@@ -160,19 +171,37 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await layer.getByRole("button",{name:"Ebene bearbeiten"}).getAttribute("aria-pressed"),"true");
     await layer.getByRole("button",{name:"Ebene bearbeiten"}).click();
     assert.equal(await page.locator("#layersList .favorite-confirm").count(),0);
-    // Private can be marked as source, but never appears among target choices.
+    // Private may be a source but not a target. The top search-reset
+    // stays intact; Merge only exists beside the visibility eye.
     await privateRow.locator(".layer-merge-check").check();
     await layer.locator(".layer-merge-check").check();
+    assert.equal(await page.locator("#layersHelpers > #layersUnite").isVisible(),true);
+    assert.equal(await page.locator("#layersSearchClear").isVisible(),true);
+    const helperBounds=await page.locator("#layersVisibilityCycle").boundingBox();
+    const uniteBounds=await page.locator("#layersUnite").boundingBox();
+    assert.ok(uniteBounds.x>=helperBounds.x+helperBounds.width-1,
+      "Merge control appears right of the visibility cycle");
     await page.locator("#layersUnite").click();
     assert.equal(await page.locator("#layersHelpers").isHidden(),true);
     const mergeGuide=page.locator("#layersList .layer-merge-guidance");
-    assert.equal(await mergeGuide.locator(":scope > :first-child").textContent(),"Abbrechen");
+    assert.equal(await mergeGuide.locator("button").count(),0,
+      "No redundant inline Merge/Cancel buttons");
     assert.equal(await mergeGuide.locator("p").first().textContent(),
       "Alle Objekte aus den gewählten Ebenen sollen verschoben werden in die Ebene (bitte anklicken):");
+    assert.ok((await mergeGuide.locator("p").first().evaluate(el=>
+      parseFloat(getComputedStyle(el).fontSize)))<=13.1,"Merge guidance text must be compact");
+    assert.equal(await page.locator("#addLayer").textContent(),"Zusammenführen");
+    assert.equal(await page.locator("#addLayer").isDisabled(),true,
+      "Cannot merge until a destination was explicitly chosen");
+    assert.equal(await page.locator("#layersCloseBottom").textContent(),"Abbrechen");
     assert.equal(await page.locator("#layersList .list-dialog-row").count(),1);
     assert.equal(await privateRow.count(),0);
-    await page.locator("#layersList .layer-merge-guidance")
-      .getByRole("button",{name:"Abbrechen"}).click();
+    // Footer cancel leaves the parent Layers dialog open and preserves
+    // all source rows without merging anything.
+    await page.locator("#layersCloseBottom").click();
+    assert.equal(await panel.isVisible(),true);
+    assert.equal(await page.locator("#addLayer").textContent(),"+ Ebene hinzufügen");
+    assert.equal(await privateRow.count(),1);
     await privateRow.locator(".layer-merge-check").uncheck();
     await layer.locator(".layer-merge-check").uncheck();
     await page.locator("#layersSearch").fill("CONTRACT");
@@ -189,8 +218,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await privateRow.count(),0);
     await page.locator("#layersList .list-dialog-row").filter({hasText:"Contract Test Layer"})
       .getByRole("button",{name:"Contract Test Layer"}).click();
-    assert.equal(await page.getByRole("button",{name:"Zusammenführen"}).count(),1);
-    await page.locator("#layersList .layer-merge-guidance").getByRole("button",{name:"Abbrechen"}).click();
+    assert.equal(await page.locator("#addLayer").textContent(),"Zusammenführen");
+    assert.equal(await page.locator("#addLayer").isEnabled(),true);
+    assert.equal(await page.locator("#layersList .layer-merge-guidance button").count(),0);
+    await page.locator("#layersCloseBottom").click();
+    assert.equal(await panel.isVisible(),true);
     await firstLayer.locator(".layer-merge-check").uncheck();
     await layer.locator(".layer-merge-check").uncheck();
     await layer.getByRole("button",{name:"Ebene oder ihre Objekte löschen"}).click();
@@ -206,8 +238,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await layer.locator(".layer-merge-check").check();
     await page.locator("#layersUnite").click();
     await layer.getByRole("button",{name:"Contract Test Layer"}).click();
-    await page.locator("#layersList .layer-merge-guidance")
-      .getByRole("button",{name:"Zusammenführen"}).click();
+    assert.equal(await page.locator("#addLayer").textContent(),"Zusammenführen");
+    assert.equal(await page.locator("#addLayer").isEnabled(),true);
+    await page.locator("#addLayer").click();
+    assert.equal(await page.locator("#addLayer").textContent(),"+ Ebene hinzufügen");
+    assert.equal(await panel.isVisible(),true);
     assert.equal(await firstLayer.count(),0,"Source layer must be removed");
     assert.equal(await layer.count(),1,"Chosen target layer remains");
     assert.equal(await privateRow.count(),1,"Private remains untouched");
