@@ -1,0 +1,1294 @@
+{
+  "testedAt": "2026-11-17T19:13:37.372Z",
+  "summary": {
+    "tested": 15,
+    "correct": 15,
+    "expectedCandidateFound": 15,
+    "withAnyContaining": 15,
+    "misses": [],
+    "requestFailures": 0,
+    "totalMilliseconds": 292448
+  },
+  "rows": [
+    {
+      "name": "Enoggera Reservoir",
+      "region": "Australia",
+      "kind": "water",
+      "latitude": -27.445287,
+      "longitude": 152.918615,
+      "ms": 14842,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 751,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 516,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 602,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 413,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 651,
+          "error": null
+        }
+      ],
+      "availableCandidates": 205,
+      "selectedIds": [
+        "W8113068",
+        "W726008498",
+        "W721775733",
+        "W726008499",
+        "W726010817",
+        "R7012226",
+        "R7012227",
+        "W723981460",
+        "R6322408",
+        "R6322406",
+        "W23922428",
+        "W283389652",
+        "W20088186",
+        "W345825867",
+        "W420941857"
+      ],
+      "checkedCount": 15,
+      "containing": [
+        {
+          "id": "W8113068",
+          "name": "Enoggera Reservoir",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 428
+        },
+        {
+          "id": "R7012226",
+          "name": "Enoggera Reservoir",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 64
+        }
+      ],
+      "failures": [],
+      "expectedId": "W8113068",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Marradong Mining Area",
+      "region": "Australia",
+      "kind": "special",
+      "latitude": -32.838924,
+      "longitude": 116.434307,
+      "ms": 21976,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 435,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 547,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 779,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 621,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 801,
+          "error": null
+        }
+      ],
+      "availableCandidates": 210,
+      "selectedIds": [
+        "W584661696",
+        "W91274013",
+        "W77348358",
+        "W31780756",
+        "W31780480",
+        "R12950551",
+        "W1449951830",
+        "R12950453",
+        "R12950557",
+        "R12936746",
+        "R14893603",
+        "W237508742",
+        "R9671806",
+        "W187148024",
+        "W192299403",
+        "W243738506",
+        "W72937736",
+        "W447706080",
+        "W37449269"
+      ],
+      "checkedCount": 19,
+      "containing": [
+        {
+          "id": "R14893603",
+          "name": "Marradong Mining Area",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 202
+        }
+      ],
+      "failures": [],
+      "expectedId": "R14893603",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Mokamie Nature Reserve",
+      "region": "Australia",
+      "kind": "protected",
+      "latitude": -31.950196,
+      "longitude": 117.935572,
+      "ms": 29476,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 22,
+          "ms": 191,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 213,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 195,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 216,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 222,
+          "error": null
+        }
+      ],
+      "availableCandidates": 177,
+      "selectedIds": [
+        "W170130726",
+        "W181390084",
+        "R8345139",
+        "W695753040",
+        "W185075878",
+        "R12949787",
+        "R12949803",
+        "R12949850",
+        "R12949819",
+        "R12949832",
+        "W1126613077",
+        "W1126698325",
+        "W759936037",
+        "W1464626545",
+        "W713535486",
+        "W1204351339",
+        "W253106363",
+        "W105516262",
+        "W596805036"
+      ],
+      "checkedCount": 19,
+      "containing": [
+        {
+          "id": "R12949787",
+          "name": "Mokamie Nature Reserve",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 13
+        }
+      ],
+      "failures": [],
+      "expectedId": "R12949787",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Delamere Range Facility Training Area",
+      "region": "Australia",
+      "kind": "special",
+      "latitude": -15.513236,
+      "longitude": 131.889496,
+      "ms": 21995,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 10,
+          "ms": 283,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 18,
+          "ms": 392,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 22,
+          "ms": 302,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 27,
+          "ms": 370,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 268,
+          "error": null
+        }
+      ],
+      "availableCandidates": 122,
+      "selectedIds": [
+        "W328316675",
+        "W368490571",
+        "W368490570",
+        "W461973411",
+        "R8341013",
+        "R8341097",
+        "R13006914",
+        "R13006767",
+        "W368317349",
+        "W368318654",
+        "W369911691",
+        "W317348505",
+        "W807998748",
+        "W1556670558",
+        "R21363632",
+        "R21365406",
+        "W1556802618",
+        "W1556808784"
+      ],
+      "checkedCount": 18,
+      "containing": [
+        {
+          "id": "W368317349",
+          "name": "Delamere Range Facility Training Area",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 109
+        }
+      ],
+      "failures": [],
+      "expectedId": "W368317349",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Lake Kivu",
+      "region": "Africa",
+      "kind": "water",
+      "latitude": -1.776754,
+      "longitude": 29.09729,
+      "ms": 14941,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 42,
+          "ms": 658,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 592,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 599,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 448,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 310,
+          "error": null
+        }
+      ],
+      "availableCandidates": 199,
+      "selectedIds": [
+        "W177308748",
+        "R9072",
+        "R17267126",
+        "R17267163",
+        "W125721874",
+        "W1010160209",
+        "W260588304",
+        "R10557007",
+        "R9089400",
+        "W667185101",
+        "W560694612",
+        "W670408547",
+        "W1453183806",
+        "R2638672",
+        "W48967764",
+        "W198903167",
+        "W198290771",
+        "R16438055"
+      ],
+      "checkedCount": 18,
+      "containing": [
+        {
+          "id": "R9072",
+          "name": "Lake Kivu",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 105436
+        }
+      ],
+      "failures": [],
+      "expectedId": "R9072",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Farihy Ihotry",
+      "region": "Africa",
+      "kind": "water",
+      "latitude": -21.913108,
+      "longitude": 43.68679,
+      "ms": 26696,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 9,
+          "ms": 350,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 11,
+          "ms": 205,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 7,
+          "ms": 275,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 26,
+          "ms": 174,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 181,
+          "error": null
+        }
+      ],
+      "availableCandidates": 77,
+      "selectedIds": [
+        "W32702055",
+        "W32701652",
+        "W44070502",
+        "W32770503",
+        "W32789732",
+        "W75250501",
+        "W700922091",
+        "W237304572",
+        "W700922092",
+        "W1038187410",
+        "W543396996",
+        "W237304566",
+        "R1154654",
+        "W1037909031",
+        "W1038187409",
+        "W1038187405",
+        "W697506278",
+        "R19552444"
+      ],
+      "checkedCount": 18,
+      "containing": [
+        {
+          "id": "W75250501",
+          "name": "Farihy Ihotry",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 187
+        },
+        {
+          "id": "R19552444",
+          "name": "Morombe",
+          "type": "MultiPolygon",
+          "contained": true,
+          "vertices": 6660
+        }
+      ],
+      "failures": [],
+      "expectedId": "W75250501",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Namib Naukluft National Park",
+      "region": "Africa",
+      "kind": "protected",
+      "latitude": -24.352101,
+      "longitude": 15.117188,
+      "ms": 12397,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 10,
+          "ms": 575,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 1,
+          "ms": 426,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 11,
+          "ms": 340,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 516,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 586,
+          "error": null
+        }
+      ],
+      "availableCandidates": 87,
+      "selectedIds": [
+        "R4150085",
+        "W57815961",
+        "W1341056838",
+        "W1341056839",
+        "W1315944523",
+        "W125367497",
+        "W106127199",
+        "W923321317",
+        "W1415844576",
+        "W922181825",
+        "W1416486348"
+      ],
+      "checkedCount": 11,
+      "containing": [
+        {
+          "id": "R4150085",
+          "name": "Namib-Naukluft National Park",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 6072
+        }
+      ],
+      "failures": [],
+      "expectedId": "R4150085",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Embalse Rio Hondo",
+      "region": "South America",
+      "kind": "water",
+      "latitude": -27.518015,
+      "longitude": -64.986191,
+      "ms": 16070,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 36,
+          "ms": 801,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 991,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 946,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 835,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 796,
+          "error": null
+        }
+      ],
+      "availableCandidates": 218,
+      "selectedIds": [
+        "R11953707",
+        "R11531575",
+        "R11555807",
+        "R7138909",
+        "W257577040",
+        "R7153671",
+        "R7153672",
+        "W749464877",
+        "R9376711",
+        "W832824584",
+        "W1192515002",
+        "W89373622",
+        "W832824585",
+        "W1134826427",
+        "W1136051303",
+        "W1134826426",
+        "W1134828870",
+        "W854568380"
+      ],
+      "checkedCount": 18,
+      "containing": [
+        {
+          "id": "R7138909",
+          "name": "Embalse Río Hondo",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 639
+        }
+      ],
+      "failures": [],
+      "expectedId": "R7138909",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Lago Villarrica",
+      "region": "South America",
+      "kind": "water",
+      "latitude": -39.230658,
+      "longitude": -72.071686,
+      "ms": 16960,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 273,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 329,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 424,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 480,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 634,
+          "error": null
+        }
+      ],
+      "availableCandidates": 218,
+      "selectedIds": [
+        "W456814776",
+        "R11271394",
+        "R11274748",
+        "R10731424",
+        "R11278021",
+        "R1922935",
+        "R10731564",
+        "R11839155",
+        "W261158622",
+        "W180167690",
+        "R14393523",
+        "W1025990649",
+        "W978470794",
+        "W982931763",
+        "W417041825",
+        "W180140850",
+        "R11189134",
+        "R18458964",
+        "W50837095",
+        "W304298963",
+        "W50837096"
+      ],
+      "checkedCount": 21,
+      "containing": [
+        {
+          "id": "R10731424",
+          "name": "Reserva de la Biósfera Araucarias",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 15945
+        },
+        {
+          "id": "R1922935",
+          "name": "Villarrica Lake",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 2043
+        }
+      ],
+      "failures": [],
+      "expectedId": "R1922935",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Reserva Biológica Huilo Huilo",
+      "region": "South America",
+      "kind": "protected",
+      "latitude": -39.987117,
+      "longitude": -71.851959,
+      "ms": 20412,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 668,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 1079,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 755,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 787,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 740,
+          "error": null
+        }
+      ],
+      "availableCandidates": 206,
+      "selectedIds": [
+        "R11283749",
+        "R11283391",
+        "R10315366",
+        "R11273278",
+        "R11278022",
+        "R5866111",
+        "W1550465558",
+        "W842051162",
+        "R6430979",
+        "W143201344",
+        "R6809830",
+        "R6809831",
+        "W1040696840",
+        "W458632823",
+        "R10997438",
+        "W836815429",
+        "W1353058400",
+        "R18669886",
+        "W1353852200",
+        "W1360492047",
+        "R11195207",
+        "R6612343",
+        "W359894877",
+        "R6446683",
+        "W509513389"
+      ],
+      "checkedCount": 25,
+      "containing": [
+        {
+          "id": "R6809830",
+          "name": "Huilo-Huilo Biological Reserve",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 5515
+        }
+      ],
+      "failures": [],
+      "expectedId": "R6809830",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Zona Nucleo Rio Auquinco",
+      "region": "South America",
+      "kind": "protected",
+      "latitude": -39.968701,
+      "longitude": -71.50177,
+      "ms": 17478,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 407,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 498,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 574,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 744,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 649,
+          "error": null
+        }
+      ],
+      "availableCandidates": 220,
+      "selectedIds": [
+        "R11283391",
+        "R11273278",
+        "R11278022",
+        "R10890731",
+        "R11283736",
+        "R3406307",
+        "R5866111",
+        "R3343659",
+        "R6430979",
+        "R5461883",
+        "R18672450",
+        "W563951699",
+        "R18793766",
+        "W1360492047",
+        "W836815429",
+        "R18669886",
+        "W1353058400",
+        "W1353852200",
+        "R11154891",
+        "R6444422",
+        "R11154892",
+        "R11195207",
+        "W359894877",
+        "R6446683",
+        "W312424828",
+        "W537593521"
+      ],
+      "checkedCount": 26,
+      "containing": [
+        {
+          "id": "R11283391",
+          "name": "Zona Núcleo Río Auquinco",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 1165
+        },
+        {
+          "id": "R11273278",
+          "name": "Lanín National Park and Reserve",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 9490
+        }
+      ],
+      "failures": [],
+      "expectedId": "R11283391",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Parque Nacional Torres del Paine",
+      "region": "South America",
+      "kind": "protected",
+      "latitude": -50.929007,
+      "longitude": -72.778931,
+      "ms": 22860,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 1027,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 20,
+          "ms": 843,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 758,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 20,
+          "ms": 837,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 635,
+          "error": null
+        }
+      ],
+      "availableCandidates": 155,
+      "selectedIds": [
+        "R2622290",
+        "R10742331",
+        "R11250208",
+        "R4681415",
+        "R4681392",
+        "R11205423",
+        "W31346150",
+        "W31346149",
+        "R4870349",
+        "R19522407",
+        "R13932268",
+        "W70515988",
+        "W1175822153",
+        "W439250371",
+        "W773102786",
+        "W587692231",
+        "W172351287",
+        "W446882784",
+        "W23609922",
+        "W320644765",
+        "W32925425",
+        "W31344859",
+        "W62289765",
+        "W50612766",
+        "W1370964823",
+        "R5127123",
+        "W324584006",
+        "W366370310"
+      ],
+      "checkedCount": 28,
+      "containing": [
+        {
+          "id": "R2622290",
+          "name": "Torres del Paine National Park",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 2867
+        },
+        {
+          "id": "R10742331",
+          "name": "Reserva de Biósfera Torres del Paine",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 25011
+        }
+      ],
+      "failures": [],
+      "expectedId": "R2622290",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Tonle Sab",
+      "region": "Asia",
+      "kind": "water",
+      "latitude": 12.897489,
+      "longitude": 103.94165,
+      "ms": 15944,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 50,
+          "ms": 638,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 496,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 641,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 439,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 266,
+          "error": null
+        }
+      ],
+      "availableCandidates": 181,
+      "selectedIds": [
+        "W165270969",
+        "W583843766",
+        "R6230214",
+        "W165270838",
+        "R5638825",
+        "W469883186",
+        "W130171472",
+        "W130171481",
+        "W1463535319",
+        "R5638557",
+        "W504836821",
+        "W1450158189",
+        "W1114844260",
+        "W1450811288",
+        "W235776998",
+        "W219638069",
+        "W1443197165",
+        "W1462428963",
+        "W1464349504",
+        "W1464557450",
+        "W1463196236"
+      ],
+      "checkedCount": 21,
+      "containing": [
+        {
+          "id": "R5638825",
+          "name": "Tonle Sap Lake",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 2658
+        },
+        {
+          "id": "R5638557",
+          "name": "Boeung Tonle Sap Protected Area",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 211
+        }
+      ],
+      "failures": [],
+      "expectedId": "R5638825",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Heaven Lake",
+      "region": "Asia",
+      "kind": "water",
+      "latitude": 42.01391,
+      "longitude": 128.055696,
+      "ms": 21258,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 39,
+          "ms": 405,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 50,
+          "ms": 268,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 259,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 340,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 777,
+          "error": null
+        }
+      ],
+      "availableCandidates": 194,
+      "selectedIds": [
+        "R18632740",
+        "R6661171",
+        "R11650508",
+        "W543958159",
+        "W543958160",
+        "W669567786",
+        "R6129064",
+        "W1355514441",
+        "W935466357",
+        "W1355514440",
+        "W959678453",
+        "W752004710",
+        "W1022754137",
+        "W1423062440",
+        "W368436082",
+        "R9312051",
+        "R11211487",
+        "R18248978",
+        "W813203021",
+        "R2717715"
+      ],
+      "checkedCount": 20,
+      "containing": [
+        {
+          "id": "R18632740",
+          "name": "吉林长白山国家级自然保护区",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 1104
+        },
+        {
+          "id": "R11650508",
+          "name": "Heaven Lake",
+          "type": "Polygon",
+          "contained": true,
+          "vertices": 2033
+        }
+      ],
+      "failures": [],
+      "expectedId": "R11650508",
+      "correct": true,
+      "expectedCandidateFound": true
+    },
+    {
+      "name": "Tasik Kenyir",
+      "region": "Asia",
+      "kind": "water",
+      "latitude": 4.99587,
+      "longitude": 102.641144,
+      "ms": 19143,
+      "filters": [
+        {
+          "filter": "water",
+          "status": "ok",
+          "count": 35,
+          "ms": 928,
+          "error": null
+        },
+        {
+          "filter": "boundary",
+          "status": "ok",
+          "count": 26,
+          "ms": 594,
+          "error": null
+        },
+        {
+          "filter": "leisure",
+          "status": "ok",
+          "count": 50,
+          "ms": 534,
+          "error": null
+        },
+        {
+          "filter": "landuse",
+          "status": "ok",
+          "count": 50,
+          "ms": 479,
+          "error": null
+        },
+        {
+          "filter": "other",
+          "status": "ok",
+          "count": 50,
+          "ms": 364,
+          "error": null
+        }
+      ],
+      "availableCandidates": 182,
+      "selectedIds": [
+        "R18174318",
+        "R18174317",
+        "R2790347",
+        "R17921244",
+        "R18174316",
+        "R1166498",
+        "W1470379317",
+        "W928762168",
+        "W1303723582",
+        "R4460463",
+        "W1473924278",
+        "W426699515",
+        "W643818927",
+        "W1159676422",
+        "W463268069",
+        "W363073528",
+        "W892407453",
+        "W892407454",
+        "W1304875356",
+        "W1210965465",
+        "W1293799623"
+      ],
+      "checkedCount": 21,
+      "containing": [
+        {
+          "id": "R1166498",
+          "name": "Kenyir Reservoir",
+          "type": "MultiPolygon",
+          "contained": true,
+          "vertices": 182480
+        }
+      ],
+      "failures": [],
+      "expectedId": "R1166498",
+      "correct": true,
+      "expectedCandidateFound": true
+    }
+  ],
+  "note": "Research only: all provider requests use coordinates and generic tags; expected names/IDs only local scoring. No provider polygons stored or app changes.",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44155277909",
+  "sourceCommit": "d55da8f377fa551f8206e6a758ad09d0ee47a6db"
+}
