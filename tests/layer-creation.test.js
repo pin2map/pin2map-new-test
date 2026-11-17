@@ -17,7 +17,7 @@ function fixture(answer){
   });
   return {project,events,flow};
 }
-test("success uses default name, existing domain mutation, render then save",()=>{
+test("success begins with a blank name prompt, creates under Private, renders then saves",()=>{
   const x=fixture("  Reisen  "),p=x.flow.create();
   assert.equal(p.name,"Reisen");assert.equal(p.visible,true);
   assert.equal(x.project.layers.length,3);
