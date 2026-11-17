@@ -63,7 +63,7 @@
     const viewportTop=top+margin,viewportBottom=top+height-margin;
     const upper=Math.max(panel.top+gap,(head?.bottom??panel.top)+gap,viewportTop);
     const lower=Math.min(panel.bottom-gap,(actions?.top??panel.bottom)-gap,viewportBottom);
-    const minUsableHeight=Math.min(190,Math.max(90,height-2*margin));
+    const minUsableHeight=Math.min(140,Math.max(90,height-2*margin));
     let menuTop=upper;
     let menuHeight=Math.min(460,Math.max(0,lower-upper));
     if(menuHeight<minUsableHeight){
