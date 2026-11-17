@@ -1,0 +1,84 @@
+{
+  "testedAt": "2026-11-17T20:33:15.579Z",
+  "summary": {
+    "requested": 4,
+    "fetched": 4,
+    "verified": 4,
+    "indexBuildMs": 9.39,
+    "indexCells": 17,
+    "indexed2000QueriesMs": 747.95,
+    "linear2000QueriesMs": 810.96,
+    "note": "Four real polygon geometries, no full-world inventory; sample measurements not network latency targets."
+  },
+  "fetches": [
+    {
+      "id": "W8113068",
+      "name": "Enoggera Reservoir",
+      "status": "ok",
+      "ms": 13392.4,
+      "responseBytes": 11742,
+      "vertexCount": 428
+    },
+    {
+      "id": "R9072",
+      "name": "Lake Kivu",
+      "status": "ok",
+      "ms": 1652.1,
+      "responseBytes": 2507955,
+      "vertexCount": 105436
+    },
+    {
+      "id": "R2622290",
+      "name": "Torres del Paine National Park",
+      "status": "ok",
+      "ms": 771.3,
+      "responseBytes": 74639,
+      "vertexCount": 2867
+    },
+    {
+      "id": "R6809830",
+      "name": "Huilo-Huilo Biological Reserve",
+      "status": "ok",
+      "ms": 882.6,
+      "responseBytes": 143039,
+      "vertexCount": 5515
+    }
+  ],
+  "tests": [
+    {
+      "id": "W8113068",
+      "status": "ok",
+      "matches": [
+        "W8113068"
+      ],
+      "scanned": 1
+    },
+    {
+      "id": "R9072",
+      "status": "ok",
+      "matches": [
+        "R9072"
+      ],
+      "scanned": 1
+    },
+    {
+      "id": "R2622290",
+      "status": "ok",
+      "matches": [
+        "R2622290"
+      ],
+      "scanned": 1
+    },
+    {
+      "id": "R6809830",
+      "status": "ok",
+      "matches": [
+        "R6809830"
+      ],
+      "scanned": 1
+    }
+  ],
+  "caveat": "Geometry coordinates used in memory only and not saved or republished. Real polygon sample, not worldwide coverage.",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44170420422",
+  "sourceCommit": "04c1d6ca02ed794593a03d8288e8a521dfed5141"
+}
