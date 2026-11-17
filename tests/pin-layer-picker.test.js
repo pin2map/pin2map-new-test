@@ -92,7 +92,7 @@ test("layer menu is portalled outside pin panel and positioned in the visual vie
  picker.setOpen(true);
  const menu=elements.pinLayerMenu;
  assert.equal(menu.style.position,undefined,"Layout position comes from one CSS owner");
- assert.equal(menu.style.width,"260px");
+ assert.equal(menu.style.width,"351px");
  assert.ok(Number.parseFloat(menu.style.left)>=12);
  assert.ok(Number.parseFloat(menu.style.top)>=12);
  assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),true);
@@ -165,4 +165,14 @@ test("hidden layer places eye between colored dot and red struck-through name",(
  assert.equal(hidden.children[1].children[0].iconName,"eye-off");
  assert.equal(hidden.children[2].textContent,"Arbeit");
  assert.equal(hidden.classList.contains("is-invisible-layer"),true);
+});
+
+test("pin layer list is genuinely full-width on tablet, not capped at 260px",()=>{
+ const {picker,elements,layers}=fixture();
+ picker.doc.defaultView.innerWidth=768;picker.doc.defaultView.innerHeight=1024;
+ elements.pinLayerMenu.scrollHeight=720;
+ picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
+ assert.equal(elements.pinLayerMenu.style.width,"390px");
+ assert.ok(Number.parseFloat(elements.pinLayerMenu.style.maxHeight)>260);
+ assert.ok(Number.parseFloat(elements.pinLayerMenu.style.left)>=12);
 });

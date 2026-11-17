@@ -65,18 +65,23 @@
     menu.style.top=upper+"px";
     return;
    }
-   // Retain the verified Pin trigger anchoring for the existing Pin dialog.
-   const menuWidth=Math.min(260,width-2*margin);
-   const above=trigger.top-(top+margin)-gap;
-   const below=(top+height-margin)-trigger.bottom-gap;
-   const placeAbove=above>=Math.min(238,below);
-   const maxHeight=Math.min(260,Math.max(72,placeAbove?above:below));
+   // Restore the approved usable layer list: full object-dialog scale,
+   // independent of the narrow circular layer trigger. The list stays
+   // portalled outside the panel and scrolls inside the visual viewport.
+   const menuWidth=Math.min(390,Math.max(0,width-2*margin));
+   const above=Math.max(0,trigger.top-top-margin-gap);
+   const below=Math.max(0,top+height-margin-trigger.bottom-gap);
+   const placeAbove=above>below;
+   const available=Math.max(72,placeAbove?above:below);
+   const maxHeight=Math.min(460,available);
    menu.style.width=menuWidth+"px";menu.style.maxHeight=maxHeight+"px";
+   const centered=trigger.left+trigger.width/2-menuWidth/2;
    menu.style.left=Math.max(left+margin,
-    Math.min(trigger.left,left+width-menuWidth-margin))+"px";
+    Math.min(centered,left+width-menuWidth-margin))+"px";
+   const rendered=Math.min(menu.scrollHeight||maxHeight,maxHeight);
    menu.style.top=(placeAbove?
-    Math.max(top+margin,trigger.top-gap-Math.min(menu.scrollHeight,maxHeight)):
-    trigger.bottom+gap)+"px";
+    Math.max(top+margin,trigger.top-gap-rendered):
+    Math.max(top+margin,Math.min(trigger.bottom+gap,top+height-margin-rendered)))+"px";
   }
   setOpen(open){
    this.open=Boolean(open);

@@ -312,6 +312,10 @@ async function metrics(page){
     assert.ok(pop.y>=4&&pop.bottom<=viewport.height-4,JSON.stringify(pop));
     assert.ok(pop.scrollWidth<=pop.clientWidth+2,"Horizontal layer menu scrolling: "+JSON.stringify(pop));
     assert.equal(pop.items,8,"A long eight-layer list must remain accessible");
+    assert.ok(pop.right-pop.x>=Math.min(390,viewport.width-24)-2,
+      "PIN layer list must use full readable dialog width: "+JSON.stringify(pop));
+    assert.ok(pop.bottom-pop.y>=150,
+      "PIN layer list must not shrink to a one-row popup: "+JSON.stringify(pop));
     assert.ok(pop.scrollHeight>pop.clientHeight,"Long layer list should scroll independently");
     assert.ok(pop.bodyScrollWidth<=viewport.width+2,"Menu causes horizontal page scrolling");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-layers.png"});
