@@ -205,7 +205,7 @@
       cycleButton.title=cycleButton.getAttribute("aria-label");
     }
     const helpers=this.el("layersHelpers");
-    if(helpers)helpers.classList.toggle("hidden",this.mergeMode||!matches.length);
+    if(helpers)helpers.classList.toggle("hidden",this.mergeMode);
     if(this.mergeMode){
      const banner=this.doc.createElement("section");
      banner.className="layer-merge-guidance list-dialog-confirm";
