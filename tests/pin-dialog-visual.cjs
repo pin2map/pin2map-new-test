@@ -383,6 +383,9 @@ async function metrics(page){
    page.on("pageerror",e=>errors.push(e.message));
    await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
    await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"),null,{timeout:20000});
+   // A Leaflet DOM node precedes the asynchronous project load and click binding.
+   // Click only after the complete application initialization contract is visible.
+   await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:20000});
    await page.mouse.click(640,570);
    await page.locator("#mapActionChooser").waitFor({state:"visible",timeout:15000});
    await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();

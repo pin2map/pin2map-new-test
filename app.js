@@ -1241,6 +1241,8 @@
     pinInfoService.setMode(state.pinInfoMode,selectedPeriod);
     pinInfoMenu.render(state.pinInfoMode,{daily:state.pinInfoDailyPeriod,precipitation:state.pinInfoPrecipitationPeriod,sun:state.pinInfoSunPeriod});
     setTileLayer();bind();renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateModeUI();updateLabelButton();
+    // Observe only completed initialization: handlers, project and map views are ready.
+    document.documentElement.dataset.pin2mapReady="true";
     if("serviceWorker" in navigator && (location.protocol==="https:" || ["localhost","127.0.0.1"].includes(location.hostname)))navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
   document.addEventListener("DOMContentLoaded",init);
