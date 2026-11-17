@@ -448,6 +448,14 @@ const viewports=[
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas.length;}finally{db.close();}
    }),0,"Area selection must stage pink preview without persisting");
+   const temporaryArea=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible");
+   assert.ok(await temporaryArea.count()>0,"A temporary area must have animated SVG path(s)");
+   assert.equal(await temporaryArea.first().evaluate(el=>
+     getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
+   await page.emulateMedia({reducedMotion:"reduce"});
+   assert.equal(await temporaryArea.first().evaluate(el=>
+     getComputedStyle(el).animationName),"none","Reduced motion disables area blinking");
+   await page.emulateMedia({reducedMotion:"no-preference"});
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
@@ -531,6 +539,10 @@ const viewports=[
      try{return (await db.loadProject()).areas.some(a=>a.kind==="lake");}
      finally{db.close();}
    }),false,"A pink lake preview must not be stored");
+   const temporaryLake=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible");
+   assert.ok(await temporaryLake.count()>0,"Temporary lakes must use the animated polygon renderer");
+   assert.equal(await temporaryLake.first().evaluate(el=>
+     getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
@@ -695,6 +707,15 @@ const viewports=[
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).rivers.length;}finally{db.close();}
    }),0,"River line must be temporary before confirmation");
+   const temporaryRiver=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible");
+   const riverHit=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-river-hit");
+   assert.ok(await temporaryRiver.count()>0,"Temporary river needs animated centerline");
+   assert.ok(await riverHit.count()>0,"Temporary river retains separate 24px touch corridor");
+   assert.equal(await temporaryRiver.first().evaluate(el=>
+     getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
+   assert.equal(await riverHit.first().evaluate(el=>
+     getComputedStyle(el).animationName),"none",
+     "The transparent river touch corridor must not blink");
    await page.locator(".p2m-plate-label").click();
    await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
    assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
