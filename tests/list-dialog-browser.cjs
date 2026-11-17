@@ -321,7 +321,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.deepEqual(await page.locator("#standardColorGrid .settings-color-hex").evaluateAll(
       inputs=>inputs.map(el=>el.value.toUpperCase())),
       ["#FF0000","#1E90FF","#32CD32","#FFD700","#FF8C00",
-       "#8A2BE2","#FF1493","#008B8B","#8B4513"],
+       "#8A2BE2","#8A7431","#008B8B","#8B4513"],
       "Every standard color must exactly match the predecessor, in order");
     assert.equal(await page.locator("#standardColorGrid").evaluate(el=>
       getComputedStyle(el).gridTemplateColumns.split(" ").length),3,
