@@ -222,3 +222,10 @@ Neu angelegte Ebenen haben **ein fokussiertes leeres Namensfeld ohne Vorschlag**
 Die Vorgängerpalette wurde **direkt aus `pin2map/pin2map:index.html` (Variable `defaults`)** übernommen: `#FF0000`, `#1E90FF`, `#32CD32`, `#FFD700`, `#FF8C00`, `#8A2BE2`, `#FF1493`, `#008B8B`, `#8B4513`. Privates Grau `#808080` und die eigenständigen drei Signalfarben bleiben davon unabhängig. Frühere bereits gespeicherte Ebenen behalten ihre individuellen Farbwerte; beim Lesen gespeicherter unmodifizierter v232-Standardpaletten werden nur Default-Slots auf die entsprechende neue Palette abgebildet, Benutzeranpassungen bleiben bestehen.
 
 Zur Abnahme müssen berechnete DOM-/CSS-Werte, echte Fokuszustände, disabled-Status des Merge-Buttons, exakt neun Farbwähler, die originale Reihenfolge und Bestandsdatenschutz im Chromium- und Domain-Test geprüft werden.
+
+
+## Farbwechsel und sanftes Blinken ungespeicherter Pins (17.11.2026 – v237)
+
+Der siebte Eintrag der neunteiligen Ebenen-Standardpalette lautet künftig **`#8A7431`** statt `#FF1493` – exakt vom bereitgestellten einfarbigen Screenshot abgelesen. Das betrifft die zentrale Farbverwaltung, die Auswahl beim Anlegen und Bearbeiten sowie die neun Standardfarben im Einstellungsregister; der vorhandene Benutzerfarbwert einer bereits gespeicherten Ebene wird nicht automatisch geändert. „Privat“ und Signalfarben sind nicht betroffen.
+
+Temporäre **Pin**-Vorschauen behalten Pink und erhalten eine sanfte 1,3-s-Blinkanimation über die innere SVG-Pinform (minimal 24 % Sichtbarkeit). Diese Wirkung verändert **nicht** die Leaflet-Markerbox, Klick- oder Touchflächen, Label-/Popup-Anker, Kartenausschnitt und gespeicherte Marker; `prefers-reduced-motion:reduce` deaktiviert sie. Sie wird beim Entfernen der temporären Vorschau mit deren DOM automatisch entfernt.
