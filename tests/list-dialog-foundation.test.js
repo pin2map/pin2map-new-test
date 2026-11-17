@@ -79,3 +79,22 @@ test("central list reordering is reusable by Layers, Favorites and future Filter
  assert.match(favorite,/this\.wireReorder\(/);
  assert.match(read("styles.css"),/list-reorder-active/);
 });
+
+test("Layers merge owns the helper slot and only the footer confirms or cancels",()=>{
+ const html=read("index.html"),layer=read("ui/layer-view.js"),app=read("app.js");
+ const p=html.slice(html.indexOf('id="layersPanel"'),html.indexOf('id="settingsPanel"'));
+ const helper=p.slice(p.indexOf('id="layersHelpers"'),p.indexOf('id="layersList"'));
+ const header=p.slice(p.indexOf('class="favorites-head"'),p.indexOf('id="layersHelpers"'));
+ assert.equal((p.match(/id="layersUnite"/g)||[]).length,1);
+ assert.ok(helper.indexOf('id="layersVisibilityCycle"')<helper.indexOf('id="layersUnite"'));
+ assert.ok(helper.indexOf('id="layersUnite"')<helper.indexOf('class="layer-reorder-help"'));
+ assert.doesNotMatch(header,/id="layersUnite"/);
+ assert.match(header,/id="layersSearchClear"/);
+ assert.match(helper,/Halten und verschieben für neue Position/);
+ assert.match(helper,/Markieren zum Zusammenführen/);
+ assert.match(app,/layerView\.footerAction\(\)/);
+ assert.match(app,/layerView\.footerCancel\(\)/);
+ assert.match(layer,/confirmMerge\(\)/);
+ assert.match(layer,/this\.mergeMode\?"Zusammenführen":"\+ Ebene hinzufügen"/);
+ assert.doesNotMatch(layer,/banner\.append\(this\.labeledButton/);
+});
