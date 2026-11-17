@@ -1,0 +1,800 @@
+{
+  "testedAt": "2026-11-17T18:13:59.634Z",
+  "summary": {
+    "tested": 4,
+    "photonResults": 4,
+    "pointContaining": 4,
+    "missing": []
+  },
+  "evaluated": [
+    {
+      "name": "Lake Kivu",
+      "region": "Africa",
+      "photon": [
+        {
+          "q": "Lake Kivu",
+          "status": "ok",
+          "ms": 1335,
+          "results": [
+            {
+              "id": "R9072",
+              "name": "Lake Kivu",
+              "key": "water",
+              "value": "lake",
+              "point": [
+                29.2276815,
+                -2.0419009
+              ]
+            },
+            {
+              "id": "W557162087",
+              "name": "Lake Kivu Street",
+              "key": "highway",
+              "value": "residential",
+              "point": [
+                -0.3093933,
+                5.7425884
+              ]
+            },
+            {
+              "id": "R940893",
+              "name": "Lake Edward",
+              "key": "water",
+              "value": "lake",
+              "point": [
+                29.5939421,
+                -0.388979
+              ]
+            },
+            {
+              "id": "R16162028",
+              "name": "Lake Kivumba",
+              "key": "water",
+              "value": "lake",
+              "point": [
+                30.7576813,
+                -1.7121556
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Lac Kivu",
+          "status": "ok",
+          "ms": 1107,
+          "results": [
+            {
+              "id": "W266625238",
+              "name": "Lac Kivu Lodge Restaurant",
+              "key": "amenity",
+              "value": "restaurant",
+              "point": [
+                29.2052065,
+                -1.675441
+              ]
+            },
+            {
+              "id": "W266625241",
+              "name": "Lac Kivu Lodge Reception",
+              "key": "building",
+              "value": "house",
+              "point": [
+                29.2049775,
+                -1.6752207
+              ]
+            },
+            {
+              "id": "R9072",
+              "name": "Lake Kivu",
+              "key": "water",
+              "value": "lake",
+              "point": [
+                29.2276815,
+                -2.0419009
+              ]
+            },
+            {
+              "id": "W1055973761",
+              "name": "Centre Chretien du Lac-Kivu (CCLK)",
+              "key": "building",
+              "value": "yes",
+              "point": [
+                29.1675155,
+                -1.6330118
+              ]
+            },
+            {
+              "id": "W1041137262",
+              "name": "Lac Vert",
+              "key": "boundary",
+              "value": "administrative",
+              "point": [
+                29.1397562,
+                -1.6249081
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Kivu Lake",
+          "status": "ok",
+          "ms": 974,
+          "results": [
+            {
+              "id": "R9072",
+              "name": "Lake Kivu",
+              "key": "water",
+              "value": "lake",
+              "point": [
+                29.2276815,
+                -2.0419009
+              ]
+            },
+            {
+              "id": "R940893",
+              "name": "Lake Edward",
+              "key": "water",
+              "value": "lake",
+              "point": [
+                29.5939421,
+                -0.388979
+              ]
+            },
+            {
+              "id": "W557162087",
+              "name": "Lake Kivu Street",
+              "key": "highway",
+              "value": "residential",
+              "point": [
+                -0.3093933,
+                5.7425884
+              ]
+            }
+          ]
+        }
+      ],
+      "nominatimSearch": {
+        "status": "ok",
+        "items": [
+          {
+            "id": "R9072",
+            "name": "Lake Kivu",
+            "type": "lake"
+          }
+        ]
+      },
+      "candidateIds": [
+        "R9072",
+        "W557162087",
+        "R940893",
+        "R16162028",
+        "W266625238"
+      ],
+      "lookups": [
+        {
+          "id": "R9072",
+          "name": "Lake Kivu",
+          "source": "photon",
+          "resolvedName": "Lake Kivu",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": true,
+          "vertices": 105436,
+          "ms": 1488
+        },
+        {
+          "id": "W557162087",
+          "name": "Lake Kivu Street",
+          "source": "photon",
+          "resolvedName": "Lake Kivu Street",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 3,
+          "ms": 2068
+        },
+        {
+          "id": "R940893",
+          "name": "Lake Edward",
+          "source": "photon",
+          "resolvedName": "Lake Edward",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": false,
+          "vertices": 25080,
+          "ms": 849
+        },
+        {
+          "id": "R16162028",
+          "name": "Lake Kivumba",
+          "source": "photon",
+          "resolvedName": "Lake Kivumba",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": false,
+          "vertices": 441,
+          "ms": 183
+        },
+        {
+          "id": "W266625238",
+          "name": "Lac Kivu Lodge Restaurant",
+          "source": "photon",
+          "resolvedName": "Lac Kivu Lodge Restaurant",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": false,
+          "vertices": 11,
+          "ms": 346
+        }
+      ],
+      "confirmed": [
+        {
+          "id": "R9072",
+          "name": "Lake Kivu"
+        }
+      ]
+    },
+    {
+      "name": "Namib Naukluft National Park",
+      "region": "Africa",
+      "photon": [
+        {
+          "q": "Namib-Naukluft National Park",
+          "status": "ok",
+          "ms": 913,
+          "results": [
+            {
+              "id": "R4150085",
+              "name": "Namib-Naukluft National Park",
+              "key": "boundary",
+              "value": "national_park",
+              "point": [
+                15.1689265,
+                -24.607231
+              ]
+            },
+            {
+              "id": "R4150085",
+              "name": "Namib-Naukluft National Park",
+              "key": "leisure",
+              "value": "nature_reserve",
+              "point": [
+                15.1689265,
+                -24.607231
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Namib-Naukluft Park",
+          "status": "ok",
+          "ms": 850,
+          "results": [
+            {
+              "id": "R4150085",
+              "name": "Namib-Naukluft National Park",
+              "key": "boundary",
+              "value": "national_park",
+              "point": [
+                15.1689265,
+                -24.607231
+              ]
+            },
+            {
+              "id": "R4150085",
+              "name": "Namib-Naukluft National Park",
+              "key": "leisure",
+              "value": "nature_reserve",
+              "point": [
+                15.1689265,
+                -24.607231
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Namib Naukluft",
+          "status": "ok",
+          "ms": 921,
+          "results": [
+            {
+              "id": "R4150085",
+              "name": "Namib-Naukluft National Park",
+              "key": "boundary",
+              "value": "national_park",
+              "point": [
+                15.1689265,
+                -24.607231
+              ]
+            },
+            {
+              "id": "R4150085",
+              "name": "Namib-Naukluft National Park",
+              "key": "leisure",
+              "value": "nature_reserve",
+              "point": [
+                15.1689265,
+                -24.607231
+              ]
+            },
+            {
+              "id": "W172393292",
+              "name": "Namib Naukluft Lodge",
+              "key": "tourism",
+              "value": "hotel",
+              "point": [
+                15.9465026,
+                -24.0166649
+              ]
+            },
+            {
+              "id": "W162729152",
+              "name": "Naukluft Hiking Trail - Day 5 of 8",
+              "key": "highway",
+              "value": "path",
+              "point": [
+                16.0813005,
+                -24.1882896
+              ]
+            },
+            {
+              "id": "W46881263",
+              "name": "Naukluft Hiking Trail - Day 2 and 3 of 8",
+              "key": "highway",
+              "value": "footway",
+              "point": [
+                16.101007,
+                -24.3590929
+              ]
+            }
+          ]
+        }
+      ],
+      "nominatimSearch": {
+        "status": "ok",
+        "items": [
+          {
+            "id": "R4150085",
+            "name": "Namib-Naukluft National Park",
+            "type": "national_park"
+          }
+        ]
+      },
+      "candidateIds": [
+        "R4150085",
+        "W172393292",
+        "W162729152",
+        "W46881263",
+        "W938821447"
+      ],
+      "lookups": [
+        {
+          "id": "R4150085",
+          "name": "Namib-Naukluft National Park",
+          "source": "photon",
+          "resolvedName": "Namib-Naukluft National Park",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": true,
+          "vertices": 6072,
+          "ms": 6268
+        },
+        {
+          "id": "W172393292",
+          "name": "Namib Naukluft Lodge",
+          "source": "photon",
+          "resolvedName": "Namib Naukluft Lodge",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": false,
+          "vertices": 23,
+          "ms": 70
+        },
+        {
+          "id": "W162729152",
+          "name": "Naukluft Hiking Trail - Day 5 of 8",
+          "source": "photon",
+          "resolvedName": "Naukluft Hiking Trail - Day 5 of 8",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 175,
+          "ms": 204
+        },
+        {
+          "id": "W46881263",
+          "name": "Naukluft Hiking Trail - Day 2 and 3 of 8",
+          "source": "photon",
+          "resolvedName": "Naukluft Hiking Trail - Day 2 and 3 of 8",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 119,
+          "ms": 140
+        },
+        {
+          "id": "W938821447",
+          "name": "Naukluft Hiking Trail - Day 5 of 8",
+          "source": "photon",
+          "resolvedName": "Naukluft Hiking Trail - Day 5 of 8",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 6,
+          "ms": 78
+        }
+      ],
+      "confirmed": [
+        {
+          "id": "R4150085",
+          "name": "Namib-Naukluft National Park"
+        }
+      ]
+    },
+    {
+      "name": "Parque Nacional Torres del Paine",
+      "region": "South America",
+      "photon": [
+        {
+          "q": "Torres del Paine National Park",
+          "status": "ok",
+          "ms": 1126,
+          "results": [
+            {
+              "id": "R2622290",
+              "name": "Torres del Paine National Park",
+              "key": "boundary",
+              "value": "national_park",
+              "point": [
+                -72.9845251,
+                -51.0405776
+              ]
+            },
+            {
+              "id": "R2622290",
+              "name": "Torres del Paine National Park",
+              "key": "leisure",
+              "value": "nature_reserve",
+              "point": [
+                -72.9845251,
+                -51.0405776
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Parque Nacional Torres del Paine",
+          "status": "ok",
+          "ms": 930,
+          "results": [
+            {
+              "id": "R2622290",
+              "name": "Torres del Paine National Park",
+              "key": "boundary",
+              "value": "national_park",
+              "point": [
+                -72.9845251,
+                -51.0405776
+              ]
+            },
+            {
+              "id": "R2622290",
+              "name": "Torres del Paine National Park",
+              "key": "leisure",
+              "value": "nature_reserve",
+              "point": [
+                -72.9845251,
+                -51.0405776
+              ]
+            },
+            {
+              "id": "W130034227",
+              "name": "Sendero Paine Grande - Administración Parque Nacional",
+              "key": "highway",
+              "value": "path",
+              "point": [
+                -73.0927978,
+                -51.0768511
+              ]
+            },
+            {
+              "id": "W646340683",
+              "name": "Sendero Paine Grande - Administración Parque Nacional",
+              "key": "highway",
+              "value": "steps",
+              "point": [
+                -73.0937348,
+                -51.0799026
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Torres del Paine",
+          "status": "ok",
+          "ms": 696,
+          "results": [
+            {
+              "id": "R1980641",
+              "name": "Torres del Paine",
+              "key": "boundary",
+              "value": "administrative",
+              "point": [
+                -72.9254451,
+                -51.0827249
+              ]
+            },
+            {
+              "id": "R2622290",
+              "name": "Torres del Paine National Park",
+              "key": "boundary",
+              "value": "national_park",
+              "point": [
+                -72.9845251,
+                -51.0405776
+              ]
+            },
+            {
+              "id": "R2622290",
+              "name": "Torres del Paine National Park",
+              "key": "leisure",
+              "value": "nature_reserve",
+              "point": [
+                -72.9845251,
+                -51.0405776
+              ]
+            }
+          ]
+        }
+      ],
+      "nominatimSearch": {
+        "status": "ok",
+        "items": [
+          {
+            "id": "R2622290",
+            "name": "Torres del Paine National Park",
+            "type": "national_park"
+          },
+          {
+            "id": "W476362854",
+            "name": "Parque Nacional Torres del Paine",
+            "type": "living_street"
+          },
+          {
+            "id": "W137030710",
+            "name": "Parque Nacional Torres del Paine",
+            "type": "living_street"
+          },
+          {
+            "id": "W1054987750",
+            "name": "Parque Nacional Torres del Paine",
+            "type": "residential"
+          },
+          {
+            "id": "W1291982988",
+            "name": "Parque Nacional Torres del Paine",
+            "type": "residential"
+          },
+          {
+            "id": "W1082144569",
+            "name": "Parque Nacional Torres del Paine",
+            "type": "residential"
+          }
+        ]
+      },
+      "candidateIds": [
+        "R2622290",
+        "W130034227",
+        "W646340683",
+        "R1980641",
+        "W476362854"
+      ],
+      "lookups": [
+        {
+          "id": "R2622290",
+          "name": "Torres del Paine National Park",
+          "source": "photon",
+          "resolvedName": "Torres del Paine National Park",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": true,
+          "vertices": 2867,
+          "ms": 566
+        },
+        {
+          "id": "W130034227",
+          "name": "Sendero Paine Grande - Administración Parque Nacional",
+          "source": "photon",
+          "resolvedName": "Sendero Paine Grande - Administración Parque Nacional",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 79,
+          "ms": 320
+        },
+        {
+          "id": "W646340683",
+          "name": "Sendero Paine Grande - Administración Parque Nacional",
+          "source": "photon",
+          "resolvedName": "Sendero Paine Grande - Administración Parque Nacional",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 2,
+          "ms": 317
+        },
+        {
+          "id": "R1980641",
+          "name": "Torres del Paine",
+          "source": "photon",
+          "resolvedName": "Torres del Paine",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": true,
+          "vertices": 15866,
+          "ms": 360
+        },
+        {
+          "id": "W476362854",
+          "name": "Parque Nacional Torres del Paine",
+          "source": "nominatim_search",
+          "resolvedName": "Parque Nacional Torres del Paine",
+          "status": "ok",
+          "geometryType": "LineString",
+          "containsPoint": false,
+          "vertices": 3,
+          "ms": 322
+        }
+      ],
+      "confirmed": [
+        {
+          "id": "R2622290",
+          "name": "Torres del Paine National Park"
+        },
+        {
+          "id": "R1980641",
+          "name": "Torres del Paine"
+        }
+      ]
+    },
+    {
+      "name": "Delamere Range Facility Training Area",
+      "region": "Australia",
+      "photon": [
+        {
+          "q": "Delamere Range Facility",
+          "status": "ok",
+          "ms": 959,
+          "results": [
+            {
+              "id": "W368317349",
+              "name": "Delamere Range Facility Training Area",
+              "key": "landuse",
+              "value": "military",
+              "point": [
+                131.8728045,
+                -15.701975
+              ]
+            },
+            {
+              "id": "W368318654",
+              "name": "Delamere Range Facility Training Area",
+              "key": "landuse",
+              "value": "military",
+              "point": [
+                132.0798765,
+                -15.72419
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Delamere Range",
+          "status": "ok",
+          "ms": 651,
+          "results": [
+            {
+              "id": "W368317349",
+              "name": "Delamere Range Facility Training Area",
+              "key": "landuse",
+              "value": "military",
+              "point": [
+                131.8728045,
+                -15.701975
+              ]
+            },
+            {
+              "id": "W368318654",
+              "name": "Delamere Range Facility Training Area",
+              "key": "landuse",
+              "value": "military",
+              "point": [
+                132.0798765,
+                -15.72419
+              ]
+            }
+          ]
+        },
+        {
+          "q": "Delamere Training Area",
+          "status": "ok",
+          "ms": 670,
+          "results": [
+            {
+              "id": "W368317349",
+              "name": "Delamere Range Facility Training Area",
+              "key": "landuse",
+              "value": "military",
+              "point": [
+                131.8728045,
+                -15.701975
+              ]
+            },
+            {
+              "id": "W368318654",
+              "name": "Delamere Range Facility Training Area",
+              "key": "landuse",
+              "value": "military",
+              "point": [
+                132.0798765,
+                -15.72419
+              ]
+            }
+          ]
+        }
+      ],
+      "nominatimSearch": {
+        "status": "ok",
+        "items": [
+          {
+            "id": "W368317349",
+            "name": "Delamere Range Facility Training Area",
+            "type": "military"
+          },
+          {
+            "id": "W368318654",
+            "name": "Delamere Range Facility Training Area",
+            "type": "military"
+          }
+        ]
+      },
+      "candidateIds": [
+        "W368317349",
+        "W368318654"
+      ],
+      "lookups": [
+        {
+          "id": "W368317349",
+          "name": "Delamere Range Facility Training Area",
+          "source": "photon",
+          "resolvedName": "Delamere Range Facility Training Area",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": true,
+          "vertices": 109,
+          "ms": 370
+        },
+        {
+          "id": "W368318654",
+          "name": "Delamere Range Facility Training Area",
+          "source": "photon",
+          "resolvedName": "Delamere Range Facility Training Area",
+          "status": "ok",
+          "geometryType": "Polygon",
+          "containsPoint": false,
+          "vertices": 54,
+          "ms": 339
+        }
+      ],
+      "confirmed": [
+        {
+          "id": "W368317349",
+          "name": "Delamere Range Facility Training Area"
+        }
+      ]
+    }
+  ],
+  "note": "Research metadata only; no polygon data retained. Name candidates do not imply same region unless original point contained.",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44145341468",
+  "sourceCommit": "6d36038b19a374d15cf33c5dfe37985bf64c2968"
+}
