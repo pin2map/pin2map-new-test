@@ -151,7 +151,8 @@
       const group=window.L.layerGroup().addTo(this.map);
       const shape=window.L.geoJSON(prepared.geometry,{
         interactive:false,style:{color:"#e64294",weight:3,
-          fillColor:"#f35ba9",fillOpacity:0.32,interactive:false}
+          fillColor:"#f35ba9",fillOpacity:0.32,interactive:false,
+          className:"p2m-temporary-geometry-visible"}
       }).addTo(group);
       const bounds=shape.getBounds();
       if(!bounds.isValid()){this.map.removeLayer(group);throw new Error("Ungültige Gebietsgrenze");}
@@ -269,13 +270,15 @@
         .map(chain=>chain.map(point=>[point[0],point[1]]));
       if(!lines.length){this.map.removeLayer(group);throw new TypeError("Empty river geometry");}
       const shape=window.L.polyline(lines,{
-        color:"#e64294",weight:5,opacity:0.96,interactive:false
+        color:"#e64294",weight:5,opacity:0.96,interactive:false,
+        className:"p2m-temporary-geometry-visible"
       }).addTo(group);
       // The thin visible river line needs an iPhone-sized invisible tap
       // corridor, just like permanently saved river objects.
       const hit=window.L.polyline(lines,{
         color:"#e64294",weight:24,opacity:0.015,
-        interactive:true,bubblingMouseEvents:false
+        interactive:true,bubblingMouseEvents:false,
+        className:"p2m-temporary-river-hit"
       }).addTo(group);
       const bounds=shape.getBounds();
       const label=document.createElement("span");
