@@ -76,6 +76,22 @@ body.pin-hitboxes-hidden #map .leaflet-marker-icon.pin-icon{
   background:transparent;
   border-color:transparent;
 }
+/* Unsaved point previews (search, GPS and temporary pins) blink gently.
+   Animate the inner SVG only: the Leaflet marker remains stationary and
+   retains its full 52x56 hitbox, drag/tap listeners and label placement.
+   Never apply this to persisted pins or other map overlays. */
+#map .leaflet-marker-icon.pin-icon.p2m-temporary-pin .pin-marker-shape{
+  animation:p2m-temporary-pin-blink 1.3s ease-in-out infinite;
+}
+@keyframes p2m-temporary-pin-blink{
+  0%,100%{opacity:1}
+  50%{opacity:.24}
+}
+@media (prefers-reduced-motion:reduce){
+  #map .leaflet-marker-icon.pin-icon.p2m-temporary-pin .pin-marker-shape{
+    animation:none;
+  }
+}
 .pin-marker{position:relative;left:10px;top:-1px;width:30px;height:40px;filter:drop-shadow(0 2px 2px #142b4560)}
 .pin-marker .pin-marker-shape{display:block;width:30px;height:40px;overflow:visible}
 .pin-marker.selected .pin-marker-shape{filter:drop-shadow(0 0 1px #102d52)}
