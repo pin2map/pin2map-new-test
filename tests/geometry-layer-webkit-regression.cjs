@@ -104,9 +104,9 @@ const sizes=[
       editor.show('area',item,layers,{x:innerWidth*.5,y:innerHeight*.65});
       window.__safariRegression={editor,item};
      });
-     await page.locator('#geometryEditor .geometry-layer').last().click();
+     await page.locator('.geometry-editor:not(.hidden) .geometry-layer').last().click();
      await page.screenshot({path:'geometry-layer-regression-artifacts/'+engine+'-'+setting.label+'-18layers.png'});
-     const last=page.locator('#geometryLayerMenu .pin-layer-option').last();
+     const last=page.locator('#geometryLayerMenu:not(.hidden) .pin-layer-option').last();
      await last.click({timeout:12000});
      const picked=await page.evaluate(()=>window.__safariRegression.item.layerId);
      assert.equal(picked,'a17','last row not clickable after scroll');
