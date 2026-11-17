@@ -72,9 +72,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await page.locator("#layersVisibilityCycle").isVisible(),true);
     const helper=page.locator("#layersHelpers");
     assert.equal(await helper.isVisible(),true);
-    assert.match(await helper.textContent(),/Halten und verschieben für neue Position/);
-    assert.match(await helper.textContent(),/Markieren zum Zusammenführen/);
+    assert.match(await helper.textContent(),/1 Sek\. halten und an neue Pos\. verschieben\./);
+    assert.match(await helper.textContent(),/Markieren zum Zusammenführen\./);
     assert.equal(await page.locator("#layersHelpers > #layersUnite").count(),1);
+    assert.equal(await page.locator("#layersUnite").isVisible(),true);
+    assert.equal(await page.locator("#layersUnite").isDisabled(),true);
     assert.equal(await page.locator("#layersPanel .favorites-head #layersUnite").count(),0);
     assert.equal(await page.locator("#layersSearchClear").isVisible(),true,
       "Filter-clear action is never replaced by Merge");
@@ -97,6 +99,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     await firstVisibleLayer.locator(".layer-eye").click();
     assert.notEqual(await firstVisibleLayer.locator(".layer-eye").getAttribute("class"),eyeBefore,
       "Only an explicit eye tap toggles visibility");
+    assert.equal(await firstVisibleLayer.locator(".layer-eye svg").first().evaluate(el=>
+      getComputedStyle(el).stroke),"rgb(195, 35, 57)",
+      "Hidden layer eye glyph must be red as well as its label");
     await firstVisibleLayer.locator(".layer-eye").click();
     assert.equal(await firstVisibleLayer.locator(".layer-eye").getAttribute("class"),eyeBefore);
     const coloredCircle=firstVisibleLayer.locator(".layer-color-checkbox");
@@ -128,6 +133,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await editor.locator(".layer-editor-title").textContent(),"Neue Ebene erstellen:");
     assert.equal(await editor.locator(".layer-name-caption").textContent(),"Farbe und Name der Ebene:");
     const defaultName=await editor.locator(".favorite-name-input").inputValue();
+    assert.equal(defaultName,"","No suggested name for new layers");
+    assert.equal(await editor.locator(".favorite-name-input").evaluate(el=>document.activeElement===el),true,
+      "Blank new-layer input must immediately receive keyboard focus");
     assert.equal(await editor.getByRole("button",{name:"Abbrechen"}).evaluate(el=>
       getComputedStyle(el).backgroundColor),"rgb(234, 243, 255)",
       "New layer cancellation must be light blue");
@@ -136,9 +144,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       "New layer creation must be blue");
     const editorHeight=await editor.evaluate(el=>el.getBoundingClientRect().height);
     const bottomHeight=await editor.locator(".layer-editor-bottom").evaluate(el=>el.getBoundingClientRect().height);
-    assert.match(defaultName,/^Ebene \d+$/);
+    assert.equal(defaultName,"");
     await editor.locator(".layer-swatch").click();
-    assert.equal(await editor.locator(".layer-palette-choice .layer-palette-dot").count(),12);
+    assert.equal(await editor.locator(".layer-palette-choice .layer-palette-dot").count(),9);
     assert.ok(Math.abs((await editor.evaluate(el=>el.getBoundingClientRect().height))-editorHeight)<1,
       "Changing to palette must not change new-layer editor height");
     assert.equal(await editor.locator(".layer-editor-bottom").evaluate(el=>el.getBoundingClientRect().height),bottomHeight);
@@ -262,7 +270,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(persistedLayers.includes("Ebene 1"),false,JSON.stringify(persistedLayers));
     assert.equal(persistedLayers.includes("Contract Test Layer"),true);
     assert.equal(persistedLayers.includes("Privat"),true);
-    // Holding a layer for 450ms activates small rows and a centered gap marker.
+    // Holding a layer for 1000ms activates small rows and a centered gap marker.
     if(viewport.width>500){
       await page.locator("#addLayer").click();
       const addAgain=page.locator("#layersList .favorite-confirm");
@@ -277,7 +285,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const a=await source.boundingBox(),b=await target.boundingBox();
       await page.mouse.move(a.x+a.width/2,a.y+a.height/2);
       await page.mouse.down();
-      await page.waitForTimeout(510);
+      await page.waitForTimeout(1100);
       assert.equal(await page.locator("#layersList").evaluate(el=>
         el.classList.contains("list-reorder-active")),true);
       await page.mouse.move(b.x+b.width/2,b.y+4,{steps:5});
@@ -300,10 +308,10 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await page.locator("#layersButton").getAttribute("aria-pressed"),"false");
     await page.locator("#settingsButton").click();
     await page.locator("#settingsColorsTab").click();
-    assert.equal(await page.locator("#standardColorGrid .settings-color-item").count(),12);
+    assert.equal(await page.locator("#standardColorGrid .settings-color-item").count(),9);
     assert.equal(await page.locator("#signalColorGrid .settings-color-item").count(),3);
     const first=page.locator("#standardColorGrid .settings-color-hex").first();
-    assert.equal(await first.inputValue(),"#2563EB");
+    assert.equal(await first.inputValue(),"#FF0000");
     await first.fill("#112233");await first.press("Tab");
     assert.equal(await first.inputValue(),"#112233");
     assert.deepEqual(errors,[],"Uncaught errors "+errors.join("; "));
