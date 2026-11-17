@@ -104,7 +104,7 @@
   paletteEditor({section,actions,input}){
    if(!input)return;
    // Both layer editors share their exact layout and the same height when
-   // changing from action buttons to twelve palette choices.
+   // changing from action buttons to the nine predecessor palette choices.
    section.classList.add("layer-inline-editor");
    const label=input.parentElement;
    input.id="layerNameDraft";
@@ -141,7 +141,7 @@
   editor(mode,index){
    const layer=this.values[index];
    if(mode==="new"||mode==="rename"){
-    const creating=mode==="new",name=creating?this.getSuggestedName():layer.name;
+    const creating=mode==="new",name=creating?"":layer.name;
     this.draftIndex=creating?this.getNextIndex():
       (Number.isInteger(layer.paletteIndex)?layer.paletteIndex:0);
     this.draftColor=creating?this.getPalette()[this.draftIndex]:layer.color;
@@ -275,13 +275,14 @@
    }
    list.scrollTop=scroll;
    if(!this.mergeMode&&!this.mode&&!this.searchText)
-     this.wireReorder({activation:"longpress",holdMs:450,handle:"row",allow:id=>id!=="private",
+     this.wireReorder({activation:"longpress",holdMs:1000,handle:"row",allow:id=>id!=="private",
        onMove:(from,to)=>this.onReorder(from,to)});
    const unite=this.el("layersUnite");
    const shown=this.selectedIds.size>=2&&[...this.selectedIds].some(id=>id!=="private");
    if(unite){
-    unite.classList.toggle("hidden",!shown||this.mergeMode);
-    unite.setAttribute("aria-hidden",String(!shown||this.mergeMode));
+    unite.classList.remove("hidden");
+    unite.disabled=!shown||this.mergeMode;
+    unite.setAttribute("aria-disabled",String(!!unite.disabled));
    }
    // Filter reset retains its own location and meaning in every mode.
    const add=this.el("addLayer"),cancel=this.el("layersCloseBottom");
