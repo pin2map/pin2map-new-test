@@ -52,6 +52,10 @@ jobs:
           node --test tests/*.test.js
           for test_file in tests/check-*.mjs; do node "$test_file"; done
 
+      - name: Diagnose real Overpass providers for Rügen without modifying app state
+        working-directory: preview-source
+        run: node scripts/area-provider-diagnostic.cjs
+
       - name: Package only active modules referenced by the offline shell
         run: |
           python3 preview-source/scripts/preview-bundle.py preview-source site-root/preview
