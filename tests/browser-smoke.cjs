@@ -273,6 +273,10 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#settingsPanel").isVisible(),true);
     assert.equal(await page.locator("#settingsButton").getAttribute("aria-expanded"),"true");
     assert.equal(await page.locator("#settingsButton").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
+    const settingsBottom=await page.locator("#settingsPanel").evaluate(el=>el.getBoundingClientRect().bottom);
+    const basemapTop=await picker.evaluate(el=>el.getBoundingClientRect().top);
+    assert.ok(settingsBottom<=basemapTop-3,
+      "Open settings must leave the lower basemap launcher reachable");
     await picker.click();
     assert.equal(await page.locator("#settingsButton").getAttribute("aria-expanded"),"false");
     assert.equal(await page.locator("#settingsPanel").isHidden(),true,

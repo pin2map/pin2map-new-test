@@ -94,7 +94,8 @@ test("every new object creation is routed through temporary preview",()=>{
  const app=read("app.js"),map=read("map-adapter-leaflet.js");
  assert.match(app,/function showObjectPreview\(entry\)/);
  assert.match(app,/function addPin\(lat,lng,name,source="search"\)[\s\S]*?showObjectPreview\(entry\);[\s\S]*?return entry/);
- assert.match(app,/function previewAreaObject\(source,kind,nameOverride=null\)/);
+ assert.match(app,/function previewAreaObject\(source,kind,nameOverride=null,preserveViewport=false\)/);
+ assert.match(app,/label:name,geojson:source.geojson,preserveViewport/);
  assert.match(app,/showObjectPreview\(\{kind:"river",label:/);
  assert.match(app,/if\(kind==="area"\|\|kind==="lake"\)\{previewAreaObject/);
  assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,"","map"\)/);

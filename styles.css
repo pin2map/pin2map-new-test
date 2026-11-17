@@ -2474,7 +2474,8 @@ body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control{
    panel's own close button. Preserve full menu dismissal without occlusion. */
 body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
  top:calc(var(--p2m-top-corner-offset) + 2 * var(--p2m-map-circle-size) + 16px + env(safe-area-inset-top,0px))!important;
- max-height:calc(100dvh - var(--p2m-top-corner-offset) - 2 * var(--p2m-map-circle-size) - 28px - env(safe-area-inset-top,0px));
+ /* Reserve the lower map control row while preserving scrollable settings. */
+ max-height:min(70vh,calc(100dvh - var(--p2m-top-corner-offset) - 3 * var(--p2m-map-circle-size) - var(--p2m-bottom-control-baseline) - 36px - env(safe-area-inset-top,0px)));
 }
 
 /* v232 – NON-NEGOTIABLE: dialogs always paint ABOVE every map launcher.
