@@ -171,8 +171,14 @@
       });
       const reposition=()=>{
         const size=this.getSize();
-        const point=window.Pin2MapAreaLabelAnchor.visibleAnchor(prepared.geometry,
+        const visible=window.Pin2MapAreaLabelAnchor.visibleAnchor(prepared.geometry,
           p=>this.project(p),size.x,size.y,{padding:85});
+        // If the provider's geometry misses the clicked point, leave the map
+        // untouched and keep the preview label at the original map tap.
+        const fallback=entry.preserveViewport&&entry.anchorPoint?
+          this.project(entry.anchorPoint):null;
+        const point=visible||(fallback&&fallback.x>=0&&fallback.x<=size.x&&
+          fallback.y>=0&&fallback.y<=size.y?fallback:null);
         if(point){
           marker.setLatLng(this.map.containerPointToLatLng([point.x,point.y]));
           marker.setOpacity(1);

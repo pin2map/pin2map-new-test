@@ -800,7 +800,8 @@
   function previewAreaObject(source,kind,nameOverride=null,preserveViewport=false){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
     return showObjectPreview({kind:"area",featureKind:kind,
-      label:name,geojson:source.geojson,preserveViewport});
+      label:name,geojson:source.geojson,preserveViewport,
+      anchorPoint:preserveViewport?areaHierarchyPoint:null});
   }
   function createAreaObject(source,kind,nameOverride=null,layerId=PRIVATE_ID){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";

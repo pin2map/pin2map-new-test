@@ -596,7 +596,7 @@ const viewports=[
    await contextMenu.waitFor({state:"visible",timeout:5000});
    const labels=await contextMenu.locator("button").evaluateAll(buttons=>
      buttons.map(button=>button.getAttribute("aria-label")));
-   assert.deepEqual(labels,["Pin setzen","Gebiet suchen"]);
+   assert.deepEqual(labels,["Gebiet suchen","Pin setzen"]);
    assert.equal(await contextMenu.locator("button span").count(),0);
    const chooserRect=await contextMenu.boundingBox();
    assert.ok(chooserRect&&chooserRect.width<=120&&chooserRect.height<=60,
@@ -805,10 +805,22 @@ const viewports=[
    });
    assert.match(await page.locator("#searchResults .result").first().textContent(),
      /Neusüdwales/);
+   await page.evaluate(()=>{
+     window.__mapTapCameraTrace=[];
+     for(const method of ["setView","fitBounds"]){
+       const original=window.L.Map.prototype[method];
+       window.L.Map.prototype[method]=function(...args){
+         window.__mapTapCameraTrace.push(method);
+         return original.apply(this,args);
+       };
+     }
+   });
    await page.locator("#searchResults .result").first().click();
    // Search selects a temporary preview, not a stored geometry. Confirm
    // the object and explicitly choose its destination layer.
    await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
+   assert.deepEqual(await page.evaluate(()=>window.__mapTapCameraTrace),[],
+     "Area chosen from Kartentip must not recenter or zoom");
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas.some(x=>x.name==="Neusüdwales");}
