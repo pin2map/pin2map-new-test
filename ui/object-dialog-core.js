@@ -116,6 +116,43 @@
     return /^[a-z][a-z0-9+.-]*:$/.test(scheme)?url.href:null;
    }catch{return null;}
   }
+
+  /* One viewport-clamped surface layout for every object layer chooser.
+   * External map geometry, note heights and map layers never determine the
+   * size of the chooser. Only the owner panel, viewport and row count do.
+   * The geometry editor's menu is contained in its panel; the Pin menu
+   * uses the same sizing policy but is anchored beside the panel. */
+  static layerMenuLayout({panel,trigger,viewport,contained=false,visibleRows=0}){
+   const margin=12,inset=10,gap=8;
+   const left=viewport.left||0,top=viewport.top||0;
+   const right=left+viewport.width,bottom=top+viewport.height;
+   const panelLeft=Math.max(left+margin,panel.left);
+   const panelRight=Math.min(right-margin,panel.right);
+   const panelTop=Math.max(top+margin,panel.top+gap);
+   const panelBottom=Math.min(bottom-margin,panel.bottom-gap);
+   const ownerWidth=Math.max(0,panelRight-panelLeft);
+   const width=Math.max(0,Math.min(390,viewport.width-2*margin,
+     contained?ownerWidth-4:Math.max(panel.width-20,0)));
+   // Filter + options; no dependency on note-row height or footer position.
+   const desired=Math.min(460,70+43*Math.max(0,visibleRows));
+   const available=contained?Math.max(0,panelBottom-panelTop):
+    Math.max(0,Math.max(trigger.top-top-margin-gap,bottom-trigger.bottom-gap));
+   const height=Math.min(desired,available);
+   let x,y;
+   if(contained){
+    x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));
+    y=panelTop+Math.max(0,(available-height)/2);
+   }else{
+    const above=Math.max(0,trigger.top-top-margin-gap);
+    const below=Math.max(0,bottom-trigger.bottom-gap);
+    const center=trigger.left+trigger.width/2-width/2;
+    x=Math.max(left+margin,Math.min(center,right-margin-width));
+    y=above>below?trigger.top-gap-height:
+      Math.min(trigger.bottom+gap,bottom-margin-height);
+    y=Math.max(top+margin,y);
+   }
+   return {left:x,top:y,width,height};
+  }
   static positionPopup({panel,header,footer,popup,doc,kind="url",keyboardAnchor=null}){
    const win=doc.defaultView,vv=win?.visualViewport;
    if(!win)return;

@@ -175,7 +175,7 @@
       const menu=doc.createElement("div");menu.id="geometryLayerMenu";
       menu.className="pin-layer-menu hidden";menu.setAttribute("role","listbox");
       menu.setAttribute("aria-label","Flächenebene auswählen");
-      doc.body.append(menu);this.layerMenu=menu;
+      this.layerMenu=menu; // shared picker mounts it into the owner's app overlay root
       const popup=doc.createElement("div");popup.id="geometryUrlBlock";
       popup.className="pin-url-popup hidden";
       popup.setAttribute("role","dialog");

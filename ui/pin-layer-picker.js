@@ -21,9 +21,8 @@
    // on iOS. Portalling its menu to BODY paints it behind #app there,
    // leaving only a thin filter strip visible (actual device regression).
    // Keep the menu and editor in the SAME stacking context.
-   const portalHost=this.contained?
-     this.el(this.panelId)?.parentElement:doc.body;
-   (portalHost||doc.body)?.append(menu);
+   const portalHost=this.el(this.panelId)?.parentElement||doc.getElementById("app")||doc.body;
+   portalHost.append(menu);
    this.onViewportChange=()=>{if(this.open)this.positionMenu();};
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
    doc.defaultView?.visualViewport?.addEventListener?.("resize",this.onViewportChange);
@@ -51,63 +50,22 @@
   }
   visibilityLabel(visible){return visible?"Sichtbar":"Ausgeblendet";}
   positionMenu(){
-   const trigger=this.el(this.triggerId).getBoundingClientRect();
-   const menu=this.el(this.menuId),win=this.doc.defaultView;
-   if(!win)return;
-   const vv=win.visualViewport,left=vv?.offsetLeft||0,top=vv?.offsetTop||0;
-   const width=vv?.width||win.innerWidth,height=vv?.height||win.innerHeight;
-   const margin=12,gap=8;
-   if(this.contained){
-    const panel=this.el(this.panelId).getBoundingClientRect();
-    const head=this.header?.getBoundingClientRect?.();
-    const actions=this.actions?.getBoundingClientRect?.();
-    // Contract: the layer chooser uses the original dialog width, not
-    // the obsolete 260px dropdown width. Tall lists may cover other
-    // editor rows, but never leave the visible main dialog or viewport.
-    const menuWidth=Math.min(Math.max(0,panel.width-20),Math.max(0,width-2*margin));
-    const viewportTop=top+margin,viewportBottom=top+height-margin;
-    const panelTop=Math.max(panel.top+gap,viewportTop);
-    const panelBottom=Math.min(panel.bottom-gap,viewportBottom);
-    const upper=Math.max(panelTop,(head?.bottom??panel.top)+gap);
-    const lower=Math.min(panelBottom,(actions?.top??panel.bottom)-gap);
-    const notesRoom=Math.max(0,lower-upper);
-    // Count the *rendered* options. Three rows fit the short notes slot;
-    // a real project with many layers requires a taller chooser.
-    const visibleRows=this.options.filter(x=>!x.button.hidden).length;
-    const desiredHeight=Math.min(460,70+43*visibleRows);
-    const neededHeight=Math.min(desiredHeight,visibleRows>=5?240:140);
-    const panelRoom=Math.max(0,panelBottom-panelTop);
-    const expand=notesRoom<neededHeight;
-    const menuHeight=expand?
-     Math.min(460,Math.max(0,panelRoom)):
-     Math.min(460,notesRoom,desiredHeight);
-    const menuTop=expand?
-     panelTop+(panelRoom-menuHeight)/2:upper;
-    menu.style.width=menuWidth+"px";
-    menu.style.height=menuHeight+"px";
-    menu.style.maxHeight=menuHeight+"px";
-    menu.style.left=Math.max(left+margin,Math.min(
-     panel.left+(panel.width-menuWidth)/2,left+width-menuWidth-margin))+"px";
-    menu.style.top=menuTop+"px";
-    return;
-   }
-   // Restore the approved usable layer list: full object-dialog scale,
-   // independent of the narrow circular layer trigger. The list stays
-   // portalled outside the panel and scrolls inside the visual viewport.
-   const menuWidth=Math.min(390,Math.max(0,width-2*margin));
-   const above=Math.max(0,trigger.top-top-margin-gap);
-   const below=Math.max(0,top+height-margin-trigger.bottom-gap);
-   const placeAbove=above>below;
-   const available=Math.max(72,placeAbove?above:below);
-   const maxHeight=Math.min(460,available);
-   menu.style.width=menuWidth+"px";menu.style.maxHeight=maxHeight+"px";
-   const centered=trigger.left+trigger.width/2-menuWidth/2;
-   menu.style.left=Math.max(left+margin,
-    Math.min(centered,left+width-menuWidth-margin))+"px";
-   const rendered=Math.min(menu.scrollHeight||maxHeight,maxHeight);
-   menu.style.top=(placeAbove?
-    Math.max(top+margin,trigger.top-gap-rendered):
-    Math.max(top+margin,Math.min(trigger.bottom+gap,top+height-margin-rendered)))+"px";
+   const menu=this.el(this.menuId),panel=this.el(this.panelId);
+   const trigger=this.el(this.triggerId),win=this.doc.defaultView;
+   if(!win||!panel||!trigger)return;
+   const vv=win.visualViewport;
+   const bounds=root.Pin2MapObjectDialogCore.layerMenuLayout({
+    panel:panel.getBoundingClientRect(),
+    trigger:trigger.getBoundingClientRect(),
+    viewport:{left:vv?.offsetLeft||0,top:vv?.offsetTop||0,
+     width:vv?.width||win.innerWidth,height:vv?.height||win.innerHeight},
+    contained:this.contained,
+    visibleRows:this.options.filter(x=>!x.button.hidden).length
+   });
+   // Never retain stale height from a prior object, search, or keyboard state.
+   Object.assign(menu.style,{left:bounds.left+"px",top:bounds.top+"px",
+    width:bounds.width+"px",height:bounds.height+"px",
+    maxHeight:bounds.height+"px"});
   }
   setOpen(open){
    this.open=Boolean(open);
@@ -157,9 +115,9 @@
    clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
    clear.setAttribute("title","Ebenenfilter zurücksetzen");
    clear.append(this.icons.svg("funnel-x",this.doc));
-   input.addEventListener("input",()=>{this.filterText=input.value;this.applyFilter();});
+   input.addEventListener("input",()=>{this.filterText=input.value;this.applyFilter();if(this.open)this.positionMenu();});
    clear.addEventListener("click",()=>{
-    this.filterText="";input.value="";this.applyFilter();input.focus();
+    this.filterText="";input.value="";this.applyFilter();if(this.open)this.positionMenu();input.focus();
    });
    filter.append(input,clear);menu.append(filter);
    this.clearButton=clear;this.filterInput=input;
