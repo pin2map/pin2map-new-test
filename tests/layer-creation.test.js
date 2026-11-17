@@ -21,6 +21,9 @@ test("success uses default name, existing domain mutation, render then save",()=
   const x=fixture("  Reisen  "),p=x.flow.create();
   assert.equal(p.name,"Reisen");assert.equal(p.visible,true);
   assert.equal(x.project.layers.length,3);
+  assert.equal(x.project.layers[0].id,"private");
+  assert.equal(x.project.layers[1].id,"new-layer",
+    "LayerCreation must expose new layer immediately below Private");
   assert.deepEqual(x.events,[["prompt","Ebene 2"],"render","save"]);
 });
 test("cancel does not mutate project, render, or save",()=>{
