@@ -36,7 +36,7 @@
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,temporaryMoveEntry=null,featureController=null,featureRun=0;
   let areaHierarchyPoint=null,areaHierarchyCountry="";
-  let pendingNewGpsPinId=null;
+  let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
   // overlay switch in syncable project data or alter the 52x56 tap geometry.
@@ -510,12 +510,20 @@
   function renderMarkers(){
     if(!markerView)return;
     const visible=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
-    pinInfoService.setVisiblePins(visible);
+    pinInfoService.setVisiblePins(temporaryInfoPin?[...visible,temporaryInfoPin.point]:visible);
     markerView.render({
       pins:visible,
       layers:state.layers,selectedPinId:uiState.selectedPinId,
       labelsVisible:state.labelsVisible
     });
+    renderTemporaryPinInfo();
+  }
+  function renderTemporaryPinInfo(){
+    if(!temporaryInfoPin)return;
+    const info=pinInfoService.label(temporaryInfoPin.point);
+    mapAdapter?.setTemporaryPinInfo?.(info?window.Pin2MapPinInfoLabel.labelMarkup(info,{
+      getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
+    }):"");
   }
   function deleteLayerOrPrivatePins(id) {
     const info=layerOps.deletionInfo(state,id,PRIVATE_ID);
@@ -652,10 +660,12 @@
   // previews are map-only and never enter state, IndexedDB or project layers.
   function showObjectPreview(entry){
     manualPinLocality.setCurrent(entry);
+    temporaryInfoPin=entry.kind==="point"&&entry.source==="map"?entry:null;
     const onTap=position=>{if(!temporaryMoveEntry)platePanel.show(entry,position);};
     if(entry.kind==="point")mapAdapter.showTemporaryPin(entry,onTap);
     else if(entry.kind==="river")mapAdapter.showTemporaryRiver(entry,onTap);
     else mapAdapter.showTemporaryPlateArea(entry,onTap);
+    renderMarkers();
     return entry;
   }
   function addPin(lat,lng,name,source="search"){
@@ -667,7 +677,8 @@
     const mapZoom=mapAdapter.getViewport().zoom;
     const entry={kind:"point",point:{lat,lng},mapZoom,
       autoNamed:source==="map"&&!name,
-      label:name||"Neuer Pin",name:name||"",source};
+      label:name||"Neuer Pin",name:name||"",source,
+       preserveViewport:source==="map"};
     showObjectPreview(entry);
     if(entry.autoNamed)void manualPinLocality.resolve(entry);
     return entry;
@@ -693,6 +704,7 @@
     platePanel?.close();
     gpsLocation?.close();
     mapAdapter?.clearTemporaryPlateArea?.();
+    if(temporaryInfoPin){temporaryInfoPin=null;renderMarkers();}
   }
   function cancelGeometrySearch(){
     ++featureRun;
@@ -760,7 +772,7 @@
         });
         if(run!==featureRun)return;
         if(!choice){searchView.message("Keine eindeutige Gebietsgrenze am Klickpunkt gefunden.");return;}
-        previewAreaObject(choice,"area",result.name);
+        previewAreaObject(choice,"area",result.name,true);
       }catch(error){
         if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
       }finally{if(run===featureRun)featureController=null;}
@@ -785,10 +797,10 @@
       }finally{if(run===featureRun){featureController=null;setGeometryBusy("");}}
     }
   }
-  function previewAreaObject(source,kind,nameOverride=null){
+  function previewAreaObject(source,kind,nameOverride=null,preserveViewport=false){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
     return showObjectPreview({kind:"area",featureKind:kind,
-      label:name,geojson:source.geojson});
+      label:name,geojson:source.geojson,preserveViewport});
   }
   function createAreaObject(source,kind,nameOverride=null,layerId=PRIVATE_ID){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";

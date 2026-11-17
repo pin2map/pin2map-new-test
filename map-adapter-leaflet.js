@@ -138,6 +138,7 @@
       if(!this.temporaryPlateArea)return;
       const old=this.temporaryPlateArea;
       this.map.off("moveend zoomend resize",old.reposition);
+      if(old.pinMarker)this.setMarkerInfo(old.pinMarker,"");
       this.map.removeLayer(old.group);
       this.temporaryPlateArea=null;
     }
@@ -179,7 +180,7 @@
       };
       this.temporaryPlateArea={group,reposition};
       this.map.on("moveend zoomend resize",reposition);
-      this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
+      if(!entry.preserveViewport)this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
       reposition();
     }
     // Shared transient object renderer: no project records or persistence.
@@ -245,8 +246,15 @@
           this.temporaryPinGesture(tag,tap,pin);
         }
       };
-      this.temporaryPlateArea={group,entry,updateLabel,reposition:()=>{}};
-      this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
+      this.temporaryPlateArea={group,entry,pinMarker:pin,updateLabel,reposition:()=>{}};
+      if(!entry.preserveViewport)
+        this.map.setView([p.lat,p.lng],Math.max(this.map.getZoom(),12),{animate:false});
+    }
+    setTemporaryPinInfo(html){
+      const preview=this.temporaryPlateArea;
+      if(!preview?.pinMarker)return false;
+      this.setMarkerInfo(preview.pinMarker,html);
+      return true;
     }
     setTemporaryPinGestureHandler(handler,isSuppressed=()=>false){
       this.temporaryPinGesture=handler;
@@ -305,7 +313,7 @@
       };
       this.temporaryPlateArea={group,reposition};
       this.map.on("moveend zoomend resize",reposition);
-      this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
+      if(!entry.preserveViewport)this.map.fitBounds(bounds,{padding:[40,40],maxZoom:11,animate:false});
       reposition();
     }
     // Compatibility port: a GPS location is now ALWAYS a full pink

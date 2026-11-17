@@ -15,8 +15,8 @@
       const b=this.box;
       b.replaceChildren();
       const rows=[
-        ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)],
-        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)]
+        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)],
+        ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)]
       ];
       for(const [icon,label,action] of rows){
         const button=this.doc.createElement("button");

@@ -234,3 +234,8 @@ Temporäre **Pin**-Vorschauen behalten Pink und erhalten eine sanfte 1,3-s-Blink
 ## v238 – Animationsvertrag auf Flächen, Seen und Flüsse ausgedehnt (17.11.2026)
 
 **Korrektur des Geltungsbereichs:** Die zuvor nur für temporäre Pins definierte Blinkanimation gilt jetzt auch für alle temporären Flächen/Seen und Linien/Flüsse. Pink bleibt bestehen, das sichtbare SVG-Objekt pulsiert sanft (1,3 s / bis 24 % Opazität). Ein animierter Fluss erhält die CSS-Klasse ausschließlich auf der sichtbaren Mittellinie; seine separate 24px Berührungsfläche blinkt nicht. Polygon-Geometrien werden beim Erstellen im Leaflet-Adapter mit der Klasse markiert. Die Labels, Klickflächen, dauerhaften Karteneinträge, Lage und die Bedienbarkeit bleiben stabil. `prefers-reduced-motion:reduce` deaktiviert das Blinken für **alle** Objekttypen. Browser-Abnahme umfasst temporäre Pins, Gebiete, Seen, Flüsse sowie reduzierte Animation und nicht animierte Touchkorridore.
+
+
+## Kartentip – Steuerung der Kartenklick-Vorschau (17.11.2026, v239)
+
+Als „Kartentip“ gilt die kleine zweiknöpfige Auswahl nach einem Hintergrund-Tipp auf die Karte. **Links Flächensuche**, **rechts Pin setzen**. Beim Erstellen einer temporären Vorschau aus diesem Kartentip bleiben **Zoom und Kartenzentrum unverändert**, einschließlich der Gebietshierarchie-Auswahl für Flächen; automatische Ausschnittanpassung bleibt ausschließlich bei der üblichen Suche bestehen. Ist ein oberer Pin-Informationsmodus (z. B. Höhe oder Temperatur) aktiv, wird die Information bereits für den **temporären Kartentip-Pin** geladen und über dessen SVG-Pin angezeigt; Aufhebung der Vorschau entfernt das Label und den Datenabruf aus der aktiven Menge. Keine Änderung an gespeicherten Objekten oder deren Datenmodell.
