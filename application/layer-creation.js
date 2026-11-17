@@ -29,7 +29,8 @@
     }
     create(){
       const state=this.getProject();
-      const name=this.askName(this.operations.nextName(state));
+      // All creation entry points begin without a proposed name.
+      const name=this.askName("");
       if(name===null)return null;
       let created;
       try{created=this.operations.create(state,{
