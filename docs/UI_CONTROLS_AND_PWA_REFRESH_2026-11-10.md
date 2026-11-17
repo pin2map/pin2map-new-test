@@ -194,3 +194,22 @@ Im Merge-Modus wird die globale Sichtbarkeits-Hilfsleiste komplett versteckt, un
 7. Diese Verträge gelten als Abnahmebedingungen in **realen Chromium-Viewports 390×844 und 1280×800** sowie in noch separat erforderlichen Safari-Gerätetests. Tests müssen berechnetes CSS, DOM-Reihenfolge, Bounding-Rects, Pointer-Ziel und Drag-Einfügelinie prüfen. Nicht nur Existenz von CSS-Deklarationen oder statische HTML-Strings akzeptieren.
 
 Die langwierige Wiederholung derselben UI-Fehler (zuvor runder Add-Button, überlagernde Launcher) zeigt, dass die früheren selektor-/sichtbarkeitsorientierten Checks unzureichend waren. Diese Regeln dürfen durch spätere generische Style- oder Z-Index-Regeln nicht erneut ausgehebelt werden. Bei Widersprüchen gilt der obige Vertrag.
+
+
+## Ebenen-Zusammenführen und Neuanlage – verbindliche Präzisierung vom 17.11.2026 (v233)
+
+**Der Button für das Zusammenführen darf den Filter-zurücksetzen-Button nicht ersetzen oder dessen Position benutzen.** Er liegt ausschließlich in `#layersHelpers`, rechts neben dem blauen Sichtbarkeits-/Auge-Button und oberhalb der farbigen Ebenenfelder. Er erscheint bei mindestens zwei markierten Quell-Ebenen (darunter mindestens einer regulären Zielebene), verschwindet im Zusammenführungsmodus. Die Filter-Zurücksetzen-Funktion bleibt an ihrem ursprünglichen Platz in der Kopfzeile und behält ihre Aufgabe. Die Hilfszeile lautet genau:
+
+„Halten und verschieben für neue Position“
+„Markieren zum Zusammenführen“
+
+**Zusammenführungsmodus – nur die zwei unteren Footer-Buttons steuern den Vorgang:**
+- Die bisherige obere `Abbrechen`-Schaltfläche im Hinweis und die bisherige obere `Zusammenführen`-Schaltfläche werden ersatzlos gestrichen.
+- Die erste untere Schaltfläche wechselt von „+ Ebene hinzufügen“ zu „Zusammenführen“. Sie ist bis zur expliziten Wahl einer regulären markierten Zielebene deaktiviert und führt danach die bereits beschlossene Zusammenführung aus.
+- Die zweite untere Schaltfläche „Abbrechen“ beendet **nur** den Zusammenführungsmodus, ohne den Ebenendialog zu schließen und ohne Projektobjekte zu ändern. Außerhalb des Zusammenführungsmodus schließt sie weiterhin den Ebenendialog.
+- Die erklärende Zeile „Alle Objekte aus den gewählten Ebenen ...“ erscheint im Zusammenführungsmodus mit kleinerer Schrift, weiterhin vor der Liste der möglichen Ziele. Nach der Zielwahl steht dort auch die Ziel-/Quelleninformation; **niemals** zusätzliche obere Aktionsbuttons.
+- Das obere X bleibt der Weg zum Schließen des gesamten Ebenendialogs. Bestehende Regeln: Privat darf Quelle sein, nie Zielebene, wird nicht gelöscht; Bestätigung erfolgt erst nach ausdrücklichem Klick auf den unteren „Zusammenführen“-Button.
+
+**Neu angelegte Ebenen** werden im gespeicherten Ebenenarray **sofort hinter der unverrückbaren Systemebene „Privat“** eingefügt, nicht am Ende. Frühere reguläre Ebenen behalten untereinander ihre Reihenfolge. Das gilt für alle Wege über die gemeinsame `application/layer-operations.js`-`create`-Operation einschließlich `LayerCreation.createConfigured` und `create`. Nach dem Speichern wird der neue Eintrag im Listendialog sichtbar gehalten; bestehende Daten werden nicht rückwirkend sortiert.
+
+**Pflichtregressionen:** Standort und Sichtbarkeit des Merge-Buttons, unveränderte Filter-Schaltfläche, exakt zwei Hilfszeilen, verkleinerte Hinweisschrift, keine Aktionsbuttons im Hinweis, Beschriftung/Deaktivierung/Funktion beider Footer-Buttons, wirklicher Abbruch ohne Datenänderung, echte Fusion samt IndexedDB-Nachweis und sichtbare und persistente Neuanlage direkt unter „Privat“. Weiterhin kleine eckige Radien sämtlicher lesbar beschrifteter Footer-Buttons. 
