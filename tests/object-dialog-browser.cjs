@@ -242,7 +242,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      },{type,viewport});
      await layerButton.click();
      const expanded=await page.locator("[data-test-object-layer-menu]").evaluate(menu=>{
-      const r=menu.getBoundingClientRect(),p=document.getElementById("geometryEditor").getBoundingClientRect();
+      const r=menu.getBoundingClientRect(),p=window.__p2mDialogFixture.editor.panel.getBoundingClientRect();
       const option=menu.querySelector(".pin-layer-option");
       return {width:r.width,height:r.height,panelWidth:p.width,top:r.top,bottom:r.bottom,
        panelTop:p.top,panelBottom:p.bottom,visibleOptions:[...menu.querySelectorAll(".pin-layer-option")].length,
