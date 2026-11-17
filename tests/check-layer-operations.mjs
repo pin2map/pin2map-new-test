@@ -12,6 +12,13 @@ assert.throws(()=>ops.create(project,{id:"a",name:"Neu",cleanText:s=>s.trim(),co
 assert.throws(()=>ops.create(project,{id:"b",name:" Ebene 1 ",cleanText:s=>s.trim(),colors:["#333"]}),/Duplicate layer name/);
 const b=ops.create(project,{id:"b",name:" Ebene 2 ",cleanText:s=>s.trim(),colors:["#333"]});
 assert.equal(b.name,"Ebene 2");
+assert.deepEqual(project.layers.map(layer=>layer.id),["private","b","a"],
+ "New regular layer is inserted directly under Private without reordering existing layers");
+const cLayer=ops.create(project,{id:"c",name:"Ebene 3",cleanText:s=>s.trim(),colors:["#555"]});
+assert.equal(cLayer.name,"Ebene 3");
+assert.deepEqual(project.layers.map(layer=>layer.id),["private","c","b","a"],
+ "Each further creation becomes the first regular layer");
+
 assert.equal(ops.deletionInfo(project,"private","private").allowed,true);
 assert.equal(ops.deleteLayerOrPins(project,"private","private").removedPinIds[0],"p");
 assert.equal(ops.find(project,"private").id,"private","Private layer must remain");
