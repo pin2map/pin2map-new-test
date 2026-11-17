@@ -4,20 +4,20 @@ const palette=require("../application/layer-palette.js");
 const operations=require("../application/layer-operations.js");
 const Core=require("../ui/list-dialog-core.js");
 const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
-test("palette has exactly twelve immutable-position defaults and three independent signal colors",()=>{
+test("palette has exactly nine predecessor defaults and three independent signal colors",()=>{
  assert.deepEqual(palette.DEFAULT_STANDARD,[
- "#2563EB","#FFCBA4","#2AA198","#FF6F61","#8FD3FF","#D9A441",
- "#4F8A66","#7ED957","#C8A2FF","#FFE234","#9B5DE5","#FF8C32"]);
+ "#FF0000","#1E90FF","#32CD32","#FFD700","#FF8C00",
+ "#8A2BE2","#FF1493","#008B8B","#8B4513"]);
  assert.deepEqual(palette.DEFAULT_SIGNALS,{red:"#F5222D",yellow:"#FFC400",green:"#19BD39"});
  const p={layers:[{id:"private",name:"Privat",color:"#808080",visible:true}]};
- assert.equal(palette.colors(p).standard.length,12);
+ assert.equal(palette.colors(p).standard.length,9);
  palette.setColor(p,"standard",0,"#abcdef");
  palette.setColor(p,"signals","red","#ff0001");
  assert.equal(palette.colors(p).standard[0],"#ABCDEF");
  assert.equal(palette.colors(p).signals.red,"#FF0001");
- assert.equal(palette.colors({layers:p.layers}).standard[0],"#2563EB",
+ assert.equal(palette.colors({layers:p.layers}).standard[0],"#FF0000",
   "Personal palette must not modify defaults");
- assert.throws(()=>palette.setColor(p,"standard",12,"#123456"));
+ assert.throws(()=>palette.setColor(p,"standard",9,"#123456"));
  assert.throws(()=>palette.setColor(p,"signals","yellow","not-a-color"));
 });
 test("new layer color follows saved allocation index even after deletion or manual recolor",()=>{
@@ -97,4 +97,26 @@ test("Layers merge owns the helper slot and only the footer confirms or cancels"
  assert.match(layer,/confirmMerge\(\)/);
  assert.match(layer,/this\.mergeMode\?"Zusammenführen":"\+ Ebene hinzufügen"/);
  assert.doesNotMatch(layer,/banner\.append\(this\.labeledButton/);
+});
+
+test("v232 saved twelve-color defaults migrate to nine predecessor colors without recoloring layers",()=>{
+ const old=["#2563EB","#FFCBA4","#2AA198","#FF6F61","#8FD3FF",
+  "#D9A441","#4F8A66","#7ED957","#C8A2FF","#FFE234","#9B5DE5","#FF8C32"];
+ const legacy={layers:[{id:"private",color:"#808080"},{id:"a",color:old[5]}],
+  colorSettings:{standard:[...old],signals:{red:"#F5222D",yellow:"#FFC400",green:"#19BD39"}}};
+ assert.deepEqual(palette.colors(legacy).standard,palette.DEFAULT_STANDARD);
+ assert.equal(legacy.layers[1].color,old[5],"Existing layer color is never changed by palette migration");
+ legacy.colorSettings.standard[3]="#123456";
+ assert.equal(palette.colors(legacy).standard[3],"#123456",
+  "User customizations stay intact when legacy defaults are migrated");
+ palette.setColor(legacy,"standard",0,"#abcdef");
+ assert.equal(legacy.colorSettings.standard.length,9);
+ assert.equal(legacy.layers[0].color,"#808080");
+});
+test("new nine-color allocation cycles after the ninth slot",()=>{
+ const state={layers:[{id:"private",color:"#808080"}],layerAllocation:{paletteIndex:8}};
+ assert.equal(palette.nextLayerColorIndex(state),0);
+ state.layerAllocation.paletteIndex=11;
+ assert.equal(palette.nextLayerColorIndex(state),3,
+  "An older 12-color allocation index normalizes to the nine-color cycle");
 });
