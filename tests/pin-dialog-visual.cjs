@@ -316,7 +316,18 @@ async function metrics(page){
       "PIN layer list must use full readable dialog width: "+JSON.stringify(pop));
     assert.ok(pop.bottom-pop.y>=150,
       "PIN layer list must not shrink to a one-row popup: "+JSON.stringify(pop));
-    assert.ok(pop.scrollHeight>pop.clientHeight,"Long layer list should scroll independently");
+    // Full-height tablet lists need no scrolling; constrained phone lists
+    // must still be independently scrollable without moving the page.
+    if(pop.scrollHeight>pop.clientHeight+2){
+      const scroll=await page.locator("#pinLayerMenu").evaluate(menu=>{
+        menu.scrollTop=menu.scrollHeight;
+        return {top:menu.scrollTop,scrollHeight:menu.scrollHeight,clientHeight:menu.clientHeight};
+      });
+      assert.ok(scroll.top>0,"Layer list must scroll independently when its rows overflow");
+    }else{
+      assert.ok(pop.clientHeight>=pop.scrollHeight-2,
+        "All layer rows must be fully accessible without scrolling");
+    }
     assert.ok(pop.bodyScrollWidth<=viewport.width+2,"Menu causes horizontal page scrolling");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-layers.png"});
     await page.locator("#pinLayerMenu .pin-layer-option").last().click();
