@@ -6,7 +6,7 @@ on:
       - '.github/workflows/photon-research.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   photon:
     runs-on: ubuntu-latest
@@ -74,6 +74,28 @@ jobs:
             '| Metric | Count |\n|---|---:|\n'+Object.entries(summary).map(([k,v])=>'| '+k+' | '+v+' |').join('\n')+
             '\n\nNames and OSM IDs do **not** validate polygon containment. See logs and artifact.\n');
           NODE
+      - name: Record verifiable result in protected research path (no application change)
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -s photon-research-result.json ]; then
+            echo '{"status":"test_did_not_create_results","run_id":"'${{ github.run_id }}'","commit":"'${{ github.sha }}'"}' > photon-research-result.json
+          fi
+          mkdir -p docs/research
+          cp photon-research-result.json docs/research/photon-15-coordinates-result.json
+          node <<'NODE'
+          const fs=require('node:fs'),p='docs/research/photon-15-coordinates-result.json';
+          const data=JSON.parse(fs.readFileSync(p,'utf8'));
+          data.workflowRun=process.env.GITHUB_RUN_ID;
+          data.sourceCommit=process.env.GITHUB_SHA;
+          data.workflowUrl=process.env.GITHUB_SERVER_URL+'/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID;
+          fs.writeFileSync(p,JSON.stringify(data,null,2)+'\n');
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/research/photon-15-coordinates-result.json
+          git commit -m "test-results: record Photon 15-coordinate research run" || exit 0
+          git push origin HEAD:feature/leaflet-modular-core
       - name: Upload research results (metadata only)
         if: always()
         uses: actions/upload-artifact@v4
