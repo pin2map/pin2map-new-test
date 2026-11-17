@@ -150,9 +150,9 @@
       });
       const group=window.L.layerGroup().addTo(this.map);
       const shape=window.L.geoJSON(prepared.geometry,{
-        interactive:false,style:{color:"#e64294",weight:3,
-          fillColor:"#f35ba9",fillOpacity:0.32,interactive:false,
-          className:"p2m-temporary-geometry-visible"}
+        interactive:false,className:"p2m-temporary-geometry-visible",
+        style:{color:"#e64294",weight:3,
+          fillColor:"#f35ba9",fillOpacity:0.32,interactive:false}
       }).addTo(group);
       const bounds=shape.getBounds();
       if(!bounds.isValid()){this.map.removeLayer(group);throw new Error("Ungültige Gebietsgrenze");}
