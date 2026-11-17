@@ -7,7 +7,7 @@ const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 test("palette has exactly nine predecessor defaults and three independent signal colors",()=>{
  assert.deepEqual(palette.DEFAULT_STANDARD,[
  "#FF0000","#1E90FF","#32CD32","#FFD700","#FF8C00",
- "#8A2BE2","#FF1493","#008B8B","#8B4513"]);
+ "#8A2BE2","#8A7431","#008B8B","#8B4513"]);
  assert.deepEqual(palette.DEFAULT_SIGNALS,{red:"#F5222D",yellow:"#FFC400",green:"#19BD39"});
  const p={layers:[{id:"private",name:"Privat",color:"#808080",visible:true}]};
  assert.equal(palette.colors(p).standard.length,9);
@@ -133,4 +133,27 @@ test("new layer editor starts blank; merge control stays visible but disabled un
  const css=read("styles.css");
  assert.match(css,/\.layer-eye\.is-invisible svg/);
  assert.equal((css.match(/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/g)||[]).length>=2,true);
+});
+
+test("saved v236 nine-color defaults migrate pink slot to screenshot ochre, leaving existing pins alone",()=>{
+ const prior=["#FF0000","#1E90FF","#32CD32","#FFD700","#FF8C00",
+  "#8A2BE2","#FF1493","#008B8B","#8B4513"];
+ const saved={layers:[{id:"private",color:"#808080"},{id:"existing",color:"#FF1493"}],
+  colorSettings:{standard:prior.slice()}};
+ assert.equal(palette.colors(saved).standard[6],"#8A7431");
+ assert.equal(saved.layers[1].color,"#FF1493",
+  "Previously created layers must not be recolored automatically");
+ saved.colorSettings.standard[6]="#C34567";
+ assert.equal(palette.colors(saved).standard[6],"#C34567",
+  "A customized seventh slot is not overwritten");
+});
+test("temporary pink preview pins blink without animating Leaflet's hitbox",()=>{
+ const css=read("styles.css"),adapter=read("map-adapter-leaflet.js");
+ assert.match(adapter,/className:"pin-icon p2m-temporary-pin"/);
+ assert.match(adapter,/style="color:#e64294"/);
+ assert.match(css,/#map \.leaflet-marker-icon\.pin-icon\.p2m-temporary-pin \.pin-marker-shape\s*\{/);
+ assert.match(css,/animation:p2m-temporary-pin-blink 1\.3s ease-in-out infinite/);
+ assert.match(css,/@media \(prefers-reduced-motion:reduce\)\s*\{[\s\S]*?#map \.leaflet-marker-icon\.pin-icon\.p2m-temporary-pin \.pin-marker-shape\s*\{\s*animation:none/);
+ assert.doesNotMatch(css,/#map \.leaflet-marker-icon\.pin-icon\.p2m-temporary-pin\s*\{[^}]*animation:/,
+  "The interactive 52x56 Leaflet marker must not animate");
 });
