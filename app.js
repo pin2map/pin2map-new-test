@@ -822,15 +822,15 @@
     }
     const run=featureRun,controller=new AbortController();featureController=controller;
     try{
-      const showHierarchy=rows=>searchView.show(rows.map(row=>({
+      const showHierarchy=(rows,loading=false)=>searchView.show(rows.map(row=>({
         ...row,__featureType:"areaHierarchy"
-      })));
+      })),{loading});
       const result=await areaFinder.hierarchyAt(point,{
         signal:controller.signal,
         onPartial:partial=>{
           if(run!==featureRun)return;
           areaHierarchyPoint=point;areaHierarchyCountry=partial.countryCode;
-          if(partial.rows.length)showHierarchy(partial.rows);
+          if(partial.rows.length)showHierarchy(partial.rows,true);
         }
       });
       if(run!==featureRun)return;

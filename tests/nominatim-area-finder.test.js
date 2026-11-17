@@ -206,7 +206,8 @@ test("Overpass failure retains reverse-geocoded hierarchy and flags partial avai
 test("actual regional Overpass hosts have correct bounded coverage and global fallback",()=>{
   assert.match(areaProviders({lat:54.55,lng:13.63})[0],/dresel\.systems\/api\/interpreter/);
   assert.match(areaProviders({lat:40.71,lng:-74.0})[0],/dresel\.systems\/api-na\/interpreter/);
-  assert.match(areaProviders({lat:-33.9,lng:151.2})[0],/overpass\.private\.coffee/);
+  assert.match(areaProviders({lat:-33.9,lng:151.2})[0],/maps\.mail\.ru/);
+  assert.match(areaProviders({lat:-22.9737,lng:-43.2125})[0],/maps\.mail\.ru/);
   assert.ok(!areaProviders({lat:-33.9,lng:151.2}).some(s=>s.includes("dresel")));
 });
 test("provider HTTP failures retry an independent server without losing administrative choices",async()=>{
@@ -250,4 +251,51 @@ test("Borgwallsee query uses filtered containing areas and original OSM pivots",
   assert.equal(query.includes("pivot.containing"),false);
   assert.equal(result.rows.find(x=>x.name==="Borgwallsee")?.kind,"lake");
   assert.equal(result.rows.find(x=>x.name==="Borgwallsee")?.osmId,92345);
+});
+
+test("global Kartentip asks only for matching area IDs, resolving relation areas and closed ways",async()=>{
+  const queries=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    queries.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Australien",country_code:"au"}})};
+    return {ok:true,json:async()=>({elements:[
+      {type:"area",id:3600000719,tags:{name:"Australisches Schutzgebiet",boundary:"protected_area"}},
+      {type:"way",id:9001,tags:{name:"Testsee",natural:"water"}},
+      {type:"area",id:2400009123,tags:{name:"Reservoir",water:"reservoir"}},
+      {type:"node",id:99,tags:{name:"Nicht als Fläche",natural:"water"}}
+    ]})};
+  }});
+  const result=await finder.hierarchyAt({lat:-35.2925,lng:149.131});
+  const query=new URL(queries[1]).searchParams.get("data");
+  assert.match(queries[1],/maps\.mail\.ru/);
+  assert.match(query,/\.found out tags/);
+  assert.equal(query.includes("pivot.found"),false);
+  assert.deepEqual(result.rows.slice(1).map(x=>[x.name,x.osmType,x.osmId]),[
+    ["Australisches Schutzgebiet","relation",719],
+    ["Testsee","way",9001],
+    ["Reservoir","way",9123]
+  ]);
+  assert.equal(result.rows.some(x=>x.name==="Nicht als Fläche"),false);
+  assert.equal(result.extraUnavailable,false);
+});
+test("global provider falls back after failure without hiding reverse-address results",async()=>{
+  const queries=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
+    queries.push(url);
+    if(url.includes("/reverse"))return {ok:true,json:async()=>({
+      address:{country:"Brasil",country_code:"br"}})};
+    if(url.includes("maps.mail.ru"))return {ok:false,status:504};
+    return {ok:true,json:async()=>({elements:[
+      {type:"area",id:3600000042,tags:{name:"Parque Nacional",boundary:"national_park"}}
+    ]})};
+  }});
+  let initial=null;
+  const result=await finder.hierarchyAt({lat:-22.9737,lng:-43.2125},
+    {onPartial:partial=>{initial=partial.rows.map(x=>x.name);}});
+  assert.deepEqual(initial,["Brasil"]);
+  assert.equal(result.rows.find(x=>x.name==="Parque Nacional").osmId,42);
+  assert.equal(result.extraUnavailable,false);
+  assert.match(queries[1],/maps\.mail\.ru/);
+  assert.match(queries[2],/private\.coffee/);
 });

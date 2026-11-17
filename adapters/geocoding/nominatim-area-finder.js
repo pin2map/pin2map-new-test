@@ -77,10 +77,19 @@
   }
   function overpassRow(item){
     const tags=item.tags||{},kind=thematicKind(tags),name=tags["name:de"]||tags.name;
-    if(!kind||!name||!["relation","way"].includes(item.type)||
-       !Number.isSafeInteger(Number(item.id))||Number(item.id)<=0)return null;
-    return {kind,name,detail:kind,osmId:Number(item.id),osmType:item.type,
-      fromContainingArea:true};
+    // Overpass 0.7.57+ returns closed ways unchanged but relation areas use
+    // virtual IDs offset by 3,600,000,000. Older area-way offsets are also
+    // recognized. Resolve to a real OSM identity before Nominatim lookup.
+    const id=Number(item.id);
+    if(!kind||!name||!Number.isSafeInteger(id)||id<=0)return null;
+    let osmType=item.type,osmId=id;
+    if(item.type==="area"){
+      if(id>=3600000000){osmType="relation";osmId=id-3600000000;}
+      else if(id>=2400000000){osmType="way";osmId=id-2400000000;}
+      else return null;
+    }
+    if(!["relation","way"].includes(osmType)||osmId<=0)return null;
+    return {kind,name,detail:kind,osmId,osmType,fromContainingArea:true};
   }
   // Public global Overpass nodes can reject browser requests. Regional
   // endpoints with documented coverage are preferred where available;
@@ -89,8 +98,17 @@
     const lat=Number(point.lat),lng=Number(point.lng);
     const europe=lat>=34&&lat<=72&&lng>=-25&&lng<=45;
     const northAmerica=lat>=7&&lat<=84&&lng>=-169&&lng<=-50;
-    return [...(europe?["https://ovp.dresel.systems/api/interpreter"]:
-      northAmerica?["https://ovp.dresel.systems/api-na/interpreter"]:[]),
+    if(europe)return ["https://ovp.dresel.systems/api/interpreter",
+      "https://overpass.private.coffee/api/interpreter",
+      "https://overpass-api.de/api/interpreter"];
+    if(northAmerica)return ["https://ovp.dresel.systems/api-na/interpreter",
+      "https://overpass.private.coffee/api/interpreter",
+      "https://overpass-api.de/api/interpreter"];
+    // Global coverage: direct browser GET to maps.mail.ru returned named
+    // polygons for Rio in the real HTTPS diagnostic; other public instances
+    // refused or timed out. A worldwide source must never be replaced with a
+    // regional extract that silently returns an empty set.
+    return ["https://maps.mail.ru/osm/tools/overpass/api/interpreter",
       "https://overpass.private.coffee/api/interpreter",
       "https://overpass-api.de/api/interpreter"];
   }
@@ -159,15 +177,22 @@
           "area.inside[\"leisure\"=\"nature_reserve\"];",
           "area.inside[\"protect_class\"];",
           "area.inside[\"boundary\"=\"administrative\"];",
-          ")->.found;(way(pivot.found);rel(pivot.found););out tags;"
-        ].join("");;
+          // For global servers, omitting expensive pivot expansion greatly
+          // reduces computation. Relation areas can be mapped to original OSM
+          // IDs locally; the polygon itself still comes from Nominatim.
+          (areaProviders(point)[0].includes("maps.mail.ru")
+            ?")->.found;.found out tags;"
+            :")->.found;(way(pivot.found);rel(pivot.found););out tags;")
+        ].join("");
         let response=null;
         for(const endpoint of areaProviders(point)){
           if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
           const timeout=new AbortController();
           const cancel=()=>timeout.abort();
           signal?.addEventListener("abort",cancel,{once:true});
-          const timer=setTimeout(cancel,endpoint.includes("dresel.systems")?12000:8000);
+          const timeoutMs=endpoint.includes("dresel.systems")?12000:
+            endpoint.includes("maps.mail.ru")?32000:24000;
+          const timer=setTimeout(cancel,timeoutMs);
           try{
             response=await this.request(endpoint+"?"+new URLSearchParams({data:query}),
               timeout.signal);

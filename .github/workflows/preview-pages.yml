@@ -291,12 +291,6 @@ jobs:
           if [ -z "$CHROME" ]; then echo "No system Chrome found" >&2; exit 1; fi
           echo "PIN2MAP_CHROMIUM_EXECUTABLE=$CHROME" >> "$GITHUB_ENV"
 
-      - name: Diagnose global Overpass GET and POST from published browser
-        working-directory: preview-source
-        env:
-          PIN2MAP_CHROMIUM_EXECUTABLE: /usr/bin/google-chrome
-        run: node scripts/global-overpass-diagnostic.cjs
-
       - name: Verify real Rügen and Nationalpark Jasmund polygons over HTTPS
         working-directory: preview-source
         env:

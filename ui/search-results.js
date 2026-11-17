@@ -131,7 +131,7 @@
       this.container.classList.remove("hidden");
       this.syncWidth();
     }
-    show(results){
+    show(results,{loading=false}={}){
       if(!Array.isArray(results))throw new TypeError("Search results must be an array");
       this.container.replaceChildren();
       const items=this.document.createElement("div");
@@ -197,6 +197,13 @@
         item.addEventListener("click",()=>this.onChoose(result));
         items.append(item);
       });
+      if(loading){
+        const notice=this.document.createElement("p");
+        notice.className="message results-loading";
+        notice.setAttribute("role","status");
+        notice.textContent="Weitere Flächen werden gesucht …";
+        items.append(notice);
+      }
       this.container.append(items,this.cancelFooter());
       this.container.classList.remove("hidden");
       this.syncWidth();
