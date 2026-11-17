@@ -212,6 +212,11 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(await privateRow.count(),1);
     await privateRow.locator(".layer-merge-check").uncheck();
     await layer.locator(".layer-merge-check").uncheck();
+    await page.locator("#layersSearch").fill("absichtlich-keine-treffer");
+    assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),0);
+    assert.equal(await page.locator("#layersUnite").isVisible(),true,
+      "Merge button remains visible even for a search with no results");
+    assert.equal(await page.locator("#layersUnite").isDisabled(),true);
     await page.locator("#layersSearch").fill("CONTRACT");
     assert.equal(await page.locator("#layersList .list-dialog-row:visible").count(),1);
     await page.locator("#layersSearchClear").click();
