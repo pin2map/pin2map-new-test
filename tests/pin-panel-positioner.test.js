@@ -117,3 +117,19 @@ test("hidden dialog or active relocation does not pan or anchor",()=>{
   assert.deepEqual(moving.pans,[]);
   assert.equal(moving.tip.classList.contains("hidden"),true);
 });
+
+test("all geometry editors use shared anchored viewport bounds independent of feature geometry",()=>{
+ const {clampedObjectAnchor}=require("../ui/pin-panel-positioner.js");
+ const input={point:{x:160,y:350},mapRect:{left:0,top:0},
+  appRect:{left:0,top:0,width:390,height:844},
+  panelWidth:374,panelHeight:330,viewportWidth:390,viewportHeight:844};
+ const base=clampedObjectAnchor(input);
+ for(const feature of [{type:"Point",coordinates:[4,5]},
+  {type:"Polygon",coordinates:Array.from({length:20000},(_,i)=>[i,i])},
+  {type:"LineString",coordinates:Array.from({length:10000},(_,i)=>[i,0])}]){
+  assert.deepEqual(clampedObjectAnchor({...input,feature}),base);
+ }
+ assert.ok(base.panel.left>=8&&base.panel.top>=8);
+ assert.ok(base.panel.left+base.panel.width<=382);
+ assert.ok(base.panel.top+input.panelHeight<=836);
+});

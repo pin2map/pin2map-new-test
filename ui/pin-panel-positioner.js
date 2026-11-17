@@ -15,6 +15,18 @@
       tip:{left:x,top:y-offset}
     };
   }
+  // Shared viewport correction for the geometry object editor. The only
+  // input from the map is the already projected point. A feature's polygon,
+  // GeoJSON, vertex count and geographic bounds never enter dialog layout.
+  function clampedObjectAnchor({point,mapRect,appRect,panelWidth,panelHeight,
+    viewportWidth,viewportHeight,offset=94,margin=8}){
+    const anchor=anchorGeometry({point,mapRect,appRect,panelHeight,
+      maxWidth:panelWidth,padding:16,offset});
+    const width=Math.min(panelWidth,appRect.width-16);
+    const x=Math.max(margin,Math.min(anchor.panel.left,viewportWidth-width-margin));
+    const y=Math.max(margin,Math.min(anchor.panel.top,viewportHeight-panelHeight-margin));
+    return {panel:{left:x,top:y,width},tip:anchor.tip};
+  }
   function openingCorrection({appRect,panelRect,tipRect,margin=12}){
     // On narrow phones the panel is appWidth-16px wide: a fixed 12px
     // margin on BOTH sides is impossible (only 8px per side remain).
@@ -96,7 +108,7 @@
       return true;
     }
   }
-  const api=Object.freeze({anchorGeometry,openingCorrection,PinPanelPositioner});
+  const api=Object.freeze({anchorGeometry,clampedObjectAnchor,openingCorrection,PinPanelPositioner});
   root.Pin2MapPinPanelPositioner=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

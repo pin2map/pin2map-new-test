@@ -169,19 +169,25 @@
    const viewLeft=vv?.offsetLeft||0,viewTop=vv?.offsetTop||0;
    const width=vv?.width||win.innerWidth,height=vv?.height||win.innerHeight;
    const gap=8,margin=12,inset=10;
-   const popupWidth=Math.min(kind==="layer"?260:Math.max(180,p.width-inset*2),
+   if(kind==="layer"){
+    // Compatibility path: the same canonical layer layout, never the old
+    // 260px / 45px filter-only geometry.
+    const bounds=this.layerMenuLayout({
+     panel:p,trigger:f,viewport:{left:viewLeft,top:viewTop,width,height},
+     contained:true,visibleRows:popup.querySelectorAll?.(".pin-layer-option:not([hidden])")?.length||0,
+     header:h,footer:f
+    });
+    Object.assign(popup.style,{width:bounds.width+"px",left:bounds.left+"px",
+     top:bounds.top+"px",height:bounds.height+"px",maxHeight:bounds.height+"px"});
+    return;
+   }
+   const popupWidth=Math.min(Math.max(180,p.width-inset*2),
      Math.max(100,p.width-inset*2),width-margin*2);
    popup.style.width=popupWidth+"px";
    popup.style.left=Math.max(viewLeft+margin,
-     Math.min(kind==="layer"?p.left+(p.width-popupWidth)/2:p.left+inset,
-       viewLeft+width-popupWidth-margin))+"px";
+     Math.min(p.left+inset,viewLeft+width-popupWidth-margin))+"px";
    const upper=Math.max(p.top+gap,h.bottom+gap,viewTop+gap);
    const bottom=Math.min(p.bottom-gap,f.top-gap,viewTop+height-margin);
-   if(kind==="layer"){
-    popup.style.maxHeight=Math.min(310,Math.max(45,bottom-upper))+"px";
-    popup.style.top=upper+"px";
-    return;
-   }
    const desired=keyboardAnchor?
      keyboardAnchor.top+viewTop-keyboardAnchor.visualOffsetTop:upper;
    const popupTop=Math.max(viewTop+gap,Math.min(desired,bottom-100));

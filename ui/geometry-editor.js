@@ -272,18 +272,16 @@
       this.panel.classList.remove("hidden");
       const app=this.doc.getElementById("app");
       const rect=app.getBoundingClientRect();
-      const geometry=root.Pin2MapPinPanelPositioner?.anchorGeometry({
+      const geometry=root.Pin2MapPinPanelPositioner.clampedObjectAnchor({
         point:{x:screen.x,y:screen.y},mapRect:rect,appRect:rect,
-        panelHeight:this.panel.offsetHeight,maxWidth:390,padding:16,offset:94
+        panelWidth:this.panel.offsetWidth,panelHeight:this.panel.offsetHeight,
+        viewportWidth:this.doc.defaultView.innerWidth,
+        viewportHeight:this.doc.defaultView.innerHeight
       });
-      const win=this.doc.defaultView;
-      const w=this.panel.offsetWidth,h=this.panel.offsetHeight;
-      const idealLeft=geometry?.panel.left??screen.x-w/2;
-      const idealTop=geometry?.panel.top??screen.y-h-94;
-      this.panel.style.left=Math.max(8,Math.min(idealLeft,win.innerWidth-w-8))+"px";
-      this.panel.style.top=Math.max(8,Math.min(idealTop,win.innerHeight-h-8))+"px";
-      this.tip.style.left=(geometry?.tip.left??screen.x)+"px";
-      this.tip.style.top=(geometry?.tip.top??screen.y-94)+"px";
+      this.panel.style.left=geometry.panel.left+"px";
+      this.panel.style.top=geometry.panel.top+"px";
+      this.tip.style.left=geometry.tip.left+"px";
+      this.tip.style.top=geometry.tip.top+"px";
       this.tip.classList.remove("hidden");
       this.removeButton.classList.remove("river-remove");
     }
