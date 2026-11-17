@@ -1838,3 +1838,21 @@ Die Kandidatenauswahl wurde deshalb in Commit `4f2b39b6c1fd45df06902be0802887558
 
 **Offen:** Echte iPhone-Safari-Abnahme mit dem vorhandenen Projekt und seiner PWA-Update-/Cachehistorie – weiterhin kein Nachweis, dass der zuvor gemeldete reale Schlitz auf dem Nutzergerät verschwunden ist. Auch der historische unbenutzte `positionPopup(kind="layer")`-Zweig des allgemeinen Dialog-Cores sowie alte, teils typbezogene CSS-Regeln gehören zum verbleibenden Architektur-Audit; keine weitere neue Feature-Arbeit vor einem dafür angemessenen Gate. `main`, `reference/*` und Nutzerdaten unverändert.
 
+
+### v257 – gemeinsame Dialog-Ankerlogik und Beseitigung des historischen 45px-Layer-Sonderwegs (17.11.2026)
+
+**Fortsetzungsauftrag des Nutzers:** Restabweichungen der Objekt-Dialogarchitektur weiter beseitigen, bevor weitere Features bearbeitet werden. Die vier Objektbearbeitungsdialoge Pin, Fläche, See, Fluss nutzen bereits den gemeinsamen Ebenenpicker (v256); nun wurden weitere konkurrierende Layout-Eigentümer entfernt.
+
+**Umsetzung:** `ui/object-dialog-core.js` delegiert auch den historischen `positionPopup(kind="layer")`-Kompatibilitätspfad an `layerMenuLayout` und beseitigt dort die unabhängige Breitenbegrenzung **260px** und den Filterstreifen-Mindestwert **45px**. Die URL-Popup-Berechnung bleibt funktional unverändert. `ui/pin-panel-positioner.js` stellt `clampedObjectAnchor` als gemeinsam genutzte, browser-viewport-begrenzte Ankerberechnung bereit. `ui/geometry-editor.js` ruft diese auf und enthält keine zweite lokale Links-/Oben-Clamping-Formel. Nur der projizierte Kartenpunkt darf den Hauptdialog verankern; weder Polygon-/Flusskoordinaten, GeoJSON, Anzahl Stützpunkte noch externe Metadaten steuern den Dialog. `tests/pin-panel-positioner.test.js` prüft explizit Invarianz über 20.000-Punkte-Polygone und 10.000-Punkte-Linien; `tests/object-dialog-architecture.test.js` verhindert die Rückkehr des historischen Zweigs. Isolierte CommonJS-Tests verwenden denselben Positionierer, nicht einen nachgebauten Algorithmus. Arbeitsversion **v257**, geschützte Daten, `main` und `reference/*` unverändert.
+
+**Finaler Funktionscommit:** `18df3931adde3f20428e5de436b9da088727e95f`. Ein früheres Inkrement `6c96842` war in fünf isolierten DOM-Geometrie-Tests rot, weil der gemeinsame Positionierer als Browser-Global fehlte; nach Reparatur der Importschnittstelle an der Modulgrenze sind die gesamten bestehenden Tests wieder grün. Kein Test wurde abgeschwächt.
+
+**Gates für exakt diesen Funktionscommit:**
+- [Node und kompletter Chromium-Lauf 44190657081](https://github.com/pin2map/pin2map-new-test/actions/runs/44190657081): **completed/success**
+- [Leaflet-Architektur-Gate 44190656985](https://github.com/pin2map/pin2map-new-test/actions/runs/44190656985): **completed/success**
+- [Separater Safari/WebKit-Regressionslauf 44190657084](https://github.com/pin2map/pin2map-new-test/actions/runs/44190657084): **completed/success**
+- [Pages-Preview inklusive `webkit-geometry-preflight`, `preview` und `webkit-geometry-postpublish` 44190656970](https://github.com/pin2map/pin2map-new-test/actions/runs/44190656970): **alle drei Jobs completed/success**; Live-Browserprüfung der ausgelieferten Preview und SW-Versionsgate durchgeführt.
+- Veröffentlichte Preview: https://pin2map.github.io/pin2map-new-test/preview/ mit PWA-Cachekennung `pin2map-preview-v257`.
+
+**Weiterhin offen:** Echte Safari/iPhone-Abnahme mit bestehendem Benutzerprojekt und installierter PWA-/Cachehistorie. Die vollständige Bereinigung der historisch gewachsenen, objekttypabhängigen CSS-Owner und die Prüfung weiterer nicht zum Objekt-Dialogvertrag gehörender UI-Dialoge bleiben eigene Architektur-Gates. Es wird **nicht** behauptet, dass damit die vollständige Vereinheitlichung *sämtlicher* App-Dialoge abgeschlossen sei oder der auf dem realen Gerät berichtete Fehler nachgewiesenermaßen verschwunden ist. Andere Feature-Themen bleiben zurückgestellt.
+

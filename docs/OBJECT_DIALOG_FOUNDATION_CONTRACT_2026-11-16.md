@@ -42,3 +42,10 @@ Tests: Node-Dom- und Vertragstests für alle vier Typen und gemeinsame Module, r
 - Dialog-/Popup-Verträge umfassen reale CSS-Bounding-Rects, Hit-Testing (`elementFromPoint`), auswählbare Zeilen, WebKit und Chromium, iPhone-/iPad-Breiten und die veröffentlichte PWA mit aktiviertem Service Worker. Eine grüne lokale Einheitstest-Suite allein ist keine Freigabe.
 - Der Hauptdialog bleibt durch seine Positionierungslogik am jeweiligen Kartenobjekt verankert. **Die Objektgeometrie darf nur den Ankerpunkt**, nicht die intern verfügbare Höhe oder die Anzahl anzeigbarer Ebenen bestimmen. Änderungen an Karten-Geometrie-Providern müssen diese Entkopplung respektieren.
 
+
+## Architekturpräzisierung v257 – Objektanker und historischer Layer-Restweg (17.11.2026)
+
+Die vier Objekteditoren dürfen ihre Position nicht anhand der Form, Topologie, GeoJSON-Größe, Kartendienst-Antwort oder Stützpunktzahl einer Geometrie berechnen. Nur der bereits durch den Map-Adapter projizierte **Bildschirmpunkt** ist eine zulässige Eingabe. Gemeinsamer Ankereigentümer ist `ui/pin-panel-positioner.js` mit `anchorGeometry` und der für Geometrieobjekte erforderlichen `clampedObjectAnchor`-Variante. Die Geometrie-Ansicht führt keine lokalen doppelten Positionsformeln.
+
+Auch ältere Aufrufe von `ObjectDialogCore.positionPopup` mit `kind="layer"` müssen die kanonische `layerMenuLayout`-Funktion verwenden. Insbesondere sind der frühere 260px-Breitenzweig und die auf 45px reduzierbare Menüfläche verboten. Filter, Zeilen, Sichtbarkeit, Popup-Layout und Portale müssen weiterhin die bestehenden gemeinsamen Controller-/CSS-Verträge erfüllen. Die echten iPhone-PWA-/Service-Worker-Gerätedaten sind ein separates Abnahme-Gate.
+
