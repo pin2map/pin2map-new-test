@@ -16,12 +16,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: feature/leaflet-modular-core
-          persist-credentials: false
+          persist-credentials: true
       - name: Test Photon public reverse endpoint, with bounded polite request rate
         shell: bash
         run: |
           node <<'NODE'
           'use strict';
+          (async()=>{
           const fs=require('node:fs');
           const fixtures=require('./tests/area-source-fixtures.cjs');
           const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -73,6 +74,7 @@ jobs:
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '## Photon independent reverse research\n\n'+
             '| Metric | Count |\n|---|---:|\n'+Object.entries(summary).map(([k,v])=>'| '+k+' | '+v+' |').join('\n')+
             '\n\nNames and OSM IDs do **not** validate polygon containment. See logs and artifact.\n');
+          })().catch(e=>{console.error('PHOTON_FATAL',e);process.exitCode=1});
           NODE
       - name: Record verifiable result in protected research path (no application change)
         if: always()
