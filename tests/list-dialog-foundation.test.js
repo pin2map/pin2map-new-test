@@ -120,3 +120,17 @@ test("new nine-color allocation cycles after the ninth slot",()=>{
  assert.equal(palette.nextLayerColorIndex(state),3,
   "An older 12-color allocation index normalizes to the nine-color cycle");
 });
+
+test("new layer editor starts blank; merge control stays visible but disabled until two are marked",()=>{
+ const html=read("index.html"),layer=read("ui/layer-view.js");
+ assert.match(layer,/const creating=mode==="new",name=creating\?"":layer\.name/);
+ assert.match(layer,/holdMs:1000/);
+ assert.match(layer,/unite\.disabled=!shown\|\|this\.mergeMode/);
+ assert.match(html,/id="layersUnite"[^>]*disabled/);
+ assert.match(html,/1 Sek\. halten und an neue Pos\. verschieben\./);
+ assert.match(html,/Markieren zum Zusammenführen\./);
+ assert.doesNotMatch(html,/id="layersUnite"[^>]*class="hidden"/);
+ const css=read("styles.css");
+ assert.match(css,/\.layer-eye\.is-invisible svg/);
+ assert.equal((css.match(/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/g)||[]).length>=2,true);
+});
