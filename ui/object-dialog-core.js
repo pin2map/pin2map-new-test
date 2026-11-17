@@ -132,9 +132,9 @@
    const panelBottom=Math.min(bottom-margin,panel.bottom-gap);
    const ownerWidth=Math.max(0,panelRight-panelLeft);
    const width=Math.max(0,Math.min(390,viewport.width-2*margin,
-     contained?ownerWidth-4:Math.max(panel.width-20,0)));
+     contained?Math.max(0,panel.width-20):390,contained?ownerWidth:390));
    // Filter + options; no dependency on note-row height or footer position.
-   const desired=Math.min(460,70+43*Math.max(0,visibleRows));
+   const desired=contained?Math.max(210,Math.min(460,70+43*Math.max(0,visibleRows))):460;
    const available=contained?Math.max(0,panelBottom-panelTop):
     Math.max(0,Math.max(trigger.top-top-margin-gap,bottom-trigger.bottom-gap));
    const height=Math.min(desired,available);

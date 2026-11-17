@@ -21,7 +21,7 @@
    // on iOS. Portalling its menu to BODY paints it behind #app there,
    // leaving only a thin filter strip visible (actual device regression).
    // Keep the menu and editor in the SAME stacking context.
-   const portalHost=this.el(this.panelId)?.parentElement||doc.getElementById("app")||doc.body;
+   const portalHost=this.el(this.panelId)?.parentElement||doc.getElementById?.("app")||doc.body;
    portalHost.append(menu);
    this.onViewportChange=()=>{if(this.open)this.positionMenu();};
    doc.defaultView?.addEventListener?.("resize",this.onViewportChange);
@@ -54,7 +54,9 @@
    const trigger=this.el(this.triggerId),win=this.doc.defaultView;
    if(!win||!panel||!trigger)return;
    const vv=win.visualViewport;
-   const bounds=root.Pin2MapObjectDialogCore.layerMenuLayout({
+   const Core=root.Pin2MapObjectDialogCore||
+    (typeof require==="function"?require("./object-dialog-core.js"):null);
+   const bounds=Core.layerMenuLayout({
     panel:panel.getBoundingClientRect(),
     trigger:trigger.getBoundingClientRect(),
     viewport:{left:vv?.offsetLeft||0,top:vv?.offsetTop||0,
