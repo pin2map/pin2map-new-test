@@ -1,0 +1,551 @@
+{
+  "testedAt": "2026-11-17T18:27:31.997Z",
+  "summary": {
+    "tested": 4,
+    "targetMatched": 2,
+    "withSomeContaining": 4,
+    "allTargetIdsDetected": false
+  },
+  "results": [
+    {
+      "expected": "Delamere Range Facility Training Area",
+      "region": "Australia",
+      "lat": -15.513236,
+      "lng": 131.889496,
+      "candidateCount": 48,
+      "photon": [
+        {
+          "radius": 15,
+          "status": "ok",
+          "count": 0,
+          "ms": 1014,
+          "names": []
+        },
+        {
+          "radius": 150,
+          "status": "ok",
+          "count": 50,
+          "ms": 728,
+          "names": [
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Delamere Range Facility Training Area",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Dry River",
+            "Delamere Range Facility Airport",
+            "Dry River"
+          ]
+        }
+      ],
+      "nominatim": [
+        {
+          "zoom": 18,
+          "status": "ok",
+          "name": "Delamere",
+          "displayName": "Delamere, Northern Territory, Australia",
+          "id": "R11716410",
+          "ms": 7979,
+          "address": {
+            "city_district": "Delamere",
+            "territory": "Northern Territory",
+            "ISO3166-2-lvl4": "AU-NT",
+            "country": "Australia",
+            "country_code": "au"
+          }
+        },
+        {
+          "zoom": 10,
+          "status": "ok",
+          "name": "Northern Territory",
+          "displayName": "Northern Territory, Australia",
+          "id": "R2316594",
+          "ms": 365,
+          "address": {
+            "territory": "Northern Territory",
+            "ISO3166-2-lvl4": "AU-NT",
+            "country": "Australia",
+            "country_code": "au"
+          }
+        }
+      ],
+      "containing": [
+        {
+          "id": "W368317349",
+          "name": "Delamere Range Facility Training Area",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 109
+        },
+        {
+          "id": "R11716410",
+          "name": "Delamere",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 65
+        },
+        {
+          "id": "R2316594",
+          "name": "Northern Territory",
+          "type": "MultiPolygon",
+          "contains": true,
+          "vertices": 5012
+        }
+      ],
+      "checkedCount": 48,
+      "failures": [],
+      "targetMatched": true,
+      "otherContained": [
+        {
+          "id": "R11716410",
+          "name": "Delamere"
+        },
+        {
+          "id": "R2316594",
+          "name": "Northern Territory"
+        }
+      ]
+    },
+    {
+      "expected": "Lake Kivu",
+      "region": "Africa",
+      "lat": -1.776754,
+      "lng": 29.09729,
+      "candidateCount": 31,
+      "photon": [
+        {
+          "radius": 15,
+          "status": "ok",
+          "count": 50,
+          "ms": 914,
+          "names": [
+            "Kasunyu",
+            "Buhumba",
+            "Bwisha",
+            "Gasunyu",
+            "Field",
+            "Ruhunde",
+            "Mubimbi",
+            "Mubimbi",
+            "Mubimbi",
+            "Mubimbi",
+            "Kishinji",
+            "Mubimbi",
+            "Mubimbi",
+            "Nyamasasa",
+            "Bubale I",
+            "Ecole primaire Nyamasasa",
+            "Mubimbi",
+            "Mubimbi",
+            "Mubimbi",
+            "École primaire Bubale",
+            "Kalungu",
+            "Institut Minova",
+            "Ecole secondaire Inst Minova",
+            "Buganga",
+            "Mubimbi",
+            "Mubimbi",
+            "Minova",
+            "Camp Mubimbi",
+            "Mubimbi bridge",
+            "Bulenga"
+          ]
+        },
+        {
+          "radius": 150,
+          "status": "ok",
+          "count": 50,
+          "ms": 690,
+          "names": [
+            "Kasunyu",
+            "Buhumba",
+            "Bwisha",
+            "Gasunyu",
+            "Field",
+            "Ruhunde",
+            "Mubimbi",
+            "Mubimbi",
+            "Mubimbi",
+            "Mubimbi",
+            "Kishinji",
+            "Mubimbi",
+            "Mubimbi",
+            "Nyamasasa",
+            "Bubale I",
+            "Ecole primaire Nyamasasa",
+            "Mubimbi",
+            "Mubimbi",
+            "Mubimbi",
+            "École primaire Bubale",
+            "Kalungu",
+            "Institut Minova",
+            "Ecole secondaire Inst Minova",
+            "Buganga",
+            "Mubimbi",
+            "Mubimbi",
+            "Minova",
+            "Camp Mubimbi",
+            "Mubimbi bridge",
+            "Bulenga"
+          ]
+        }
+      ],
+      "nominatim": [
+        {
+          "zoom": 18,
+          "status": "ok",
+          "name": "Idjwi",
+          "displayName": "Idjwi, South Kivu, Democratic Republic of the Congo",
+          "id": "R12766434",
+          "ms": 423,
+          "address": {
+            "county": "Idjwi",
+            "state": "South Kivu",
+            "ISO3166-2-lvl4": "CD-SK",
+            "country": "Democratic Republic of the Congo",
+            "country_code": "cd"
+          }
+        },
+        {
+          "zoom": 10,
+          "status": "ok",
+          "name": "Idjwi",
+          "displayName": "Idjwi, South Kivu, Democratic Republic of the Congo",
+          "id": "R12766434",
+          "ms": 11684,
+          "address": {
+            "county": "Idjwi",
+            "state": "South Kivu",
+            "ISO3166-2-lvl4": "CD-SK",
+            "country": "Democratic Republic of the Congo",
+            "country_code": "cd"
+          }
+        }
+      ],
+      "containing": [
+        {
+          "id": "R21012795",
+          "name": "Kasunyu",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 1694
+        },
+        {
+          "id": "R5997715",
+          "name": "Minova",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 16476
+        },
+        {
+          "id": "R12766434",
+          "name": "Idjwi",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 25469
+        }
+      ],
+      "checkedCount": 31,
+      "failures": [],
+      "targetMatched": false,
+      "otherContained": [
+        {
+          "id": "R21012795",
+          "name": "Kasunyu"
+        },
+        {
+          "id": "R5997715",
+          "name": "Minova"
+        },
+        {
+          "id": "R12766434",
+          "name": "Idjwi"
+        }
+      ]
+    },
+    {
+      "expected": "Namib Naukluft National Park",
+      "region": "Africa",
+      "lat": -24.352101,
+      "lng": 15.117188,
+      "candidateCount": 19,
+      "photon": [
+        {
+          "radius": 15,
+          "status": "ok",
+          "count": 0,
+          "ms": 776,
+          "names": []
+        },
+        {
+          "radius": 150,
+          "status": "ok",
+          "count": 44,
+          "ms": 723,
+          "names": [
+            "Namib Sand Sea",
+            "Namib-Naukluft National Park",
+            "Namib-Naukluft National Park",
+            "Big Mama Dune",
+            "Naravlei",
+            "4x4 Sand Track to Sossusvlei",
+            "Sossusvlei",
+            "Sossusvlei 2x4 Parking",
+            "Sossusvlei",
+            "Daddy Dune",
+            "Fairy circles",
+            "Vlei View",
+            "Big Daddy Hiking Trail",
+            "Dead Vlei",
+            "Norakop",
+            "Hidden Vlei",
+            "Big Daddy Dune",
+            "Leeukop Camp",
+            "Grillenberger",
+            "Meob Bay Landing Site",
+            "Fischersbrunn",
+            "Oranjemund Angelclub",
+            "Fischersbrunn",
+            "Swartkop",
+            "Charlottenfelder",
+            "Tsondab Vlei",
+            "Meob Bay",
+            "Meob Bay",
+            "Dune 45 Parking",
+            "Dune 45"
+          ]
+        }
+      ],
+      "nominatim": [
+        {
+          "zoom": 18,
+          "status": "ok",
+          "name": "Hardap",
+          "displayName": "Hardap, Namibia",
+          "id": "R2279556",
+          "ms": 386,
+          "address": {
+            "state": "Hardap",
+            "ISO3166-2-lvl4": "NA-HA",
+            "country": "Namibia",
+            "country_code": "na"
+          }
+        },
+        {
+          "zoom": 10,
+          "status": "ok",
+          "name": "Hardap",
+          "displayName": "Hardap, Namibia",
+          "id": "R2279556",
+          "ms": 136,
+          "address": {
+            "state": "Hardap",
+            "ISO3166-2-lvl4": "NA-HA",
+            "country": "Namibia",
+            "country_code": "na"
+          }
+        }
+      ],
+      "containing": [
+        {
+          "id": "R4150085",
+          "name": "Namib-Naukluft National Park",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 6072
+        },
+        {
+          "id": "R9630535",
+          "name": "Namib",
+          "type": "MultiPolygon",
+          "contains": true,
+          "vertices": 8079
+        },
+        {
+          "id": "R2279556",
+          "name": "Hardap",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 2857
+        }
+      ],
+      "checkedCount": 19,
+      "failures": [],
+      "targetMatched": true,
+      "otherContained": [
+        {
+          "id": "R9630535",
+          "name": "Namib"
+        },
+        {
+          "id": "R2279556",
+          "name": "Hardap"
+        }
+      ]
+    },
+    {
+      "expected": "Parque Nacional Torres del Paine",
+      "region": "South America",
+      "lat": -50.929007,
+      "lng": -72.778931,
+      "candidateCount": 15,
+      "photon": [
+        {
+          "radius": 15,
+          "status": "ok",
+          "count": 42,
+          "ms": 279,
+          "names": [
+            "Ruta Y-166",
+            "Camino Laguna La Cebolla",
+            "Mirador Cascada Paine",
+            "Cascada del Paine",
+            "Cascada del Paine",
+            "Sendero Cañadón Macho-Loma Guanaco",
+            "Laguna Azul",
+            "Portería Laguna Amarga",
+            "puma corridor",
+            "Refugio Lag. Amarga",
+            "Gohen House",
+            "Circuito O",
+            "Puente Laguna Amarga",
+            "Camino Laguna Azul",
+            "Laguna amarga",
+            "Laguna Amarga",
+            "Ruta Y-156",
+            "Laguna Amarga",
+            "Laguna Amarga",
+            "Guardería Laguna Amarga",
+            "Guardería Laguna Amarga",
+            "Estación de Buses Torres del Paine",
+            "Portería Laguna Amarga",
+            "Mirador Laguna Amarga",
+            "Guardería Laguna Azul",
+            "Guardería Laguna Azul",
+            "Puma Viewpoint",
+            "Camping Laguna Azul",
+            "Laguna Azul View Point",
+            "De Quincho"
+          ]
+        },
+        {
+          "radius": 150,
+          "status": "ok",
+          "count": 42,
+          "ms": 355,
+          "names": [
+            "Ruta Y-166",
+            "Camino Laguna La Cebolla",
+            "Mirador Cascada Paine",
+            "Cascada del Paine",
+            "Cascada del Paine",
+            "Sendero Cañadón Macho-Loma Guanaco",
+            "Laguna Azul",
+            "Portería Laguna Amarga",
+            "puma corridor",
+            "Refugio Lag. Amarga",
+            "Gohen House",
+            "Circuito O",
+            "Puente Laguna Amarga",
+            "Camino Laguna Azul",
+            "Laguna amarga",
+            "Laguna Amarga",
+            "Ruta Y-156",
+            "Laguna Amarga",
+            "Laguna Amarga",
+            "Guardería Laguna Amarga",
+            "Guardería Laguna Amarga",
+            "Estación de Buses Torres del Paine",
+            "Portería Laguna Amarga",
+            "Mirador Laguna Amarga",
+            "Guardería Laguna Azul",
+            "Guardería Laguna Azul",
+            "Puma Viewpoint",
+            "Camping Laguna Azul",
+            "Laguna Azul View Point",
+            "De Quincho"
+          ]
+        }
+      ],
+      "nominatim": [
+        {
+          "zoom": 18,
+          "status": "ok",
+          "name": "Ruta Y-166",
+          "displayName": "Ruta Y-166, Torres del Paine, Provincia de Última Esperanza, Magallanes and Chilean Antarctica Region, Chile",
+          "id": "W25768295",
+          "ms": 205,
+          "address": {
+            "road": "Ruta Y-166",
+            "city": "Torres del Paine",
+            "county": "Provincia de Última Esperanza",
+            "state": "Magallanes and Chilean Antarctica Region",
+            "ISO3166-2-lvl4": "CL-MA",
+            "country": "Chile",
+            "country_code": "cl"
+          }
+        },
+        {
+          "zoom": 10,
+          "status": "ok",
+          "name": "Torres del Paine",
+          "displayName": "Torres del Paine, Provincia de Última Esperanza, Magallanes and Chilean Antarctica Region, 6170000, Chile",
+          "id": "R1980641",
+          "ms": 211,
+          "address": {
+            "city": "Torres del Paine",
+            "county": "Provincia de Última Esperanza",
+            "state": "Magallanes and Chilean Antarctica Region",
+            "ISO3166-2-lvl4": "CL-MA",
+            "postcode": "6170000",
+            "country": "Chile",
+            "country_code": "cl"
+          }
+        }
+      ],
+      "containing": [
+        {
+          "id": "R1980641",
+          "name": "Torres del Paine",
+          "type": "Polygon",
+          "contains": true,
+          "vertices": 15866
+        }
+      ],
+      "checkedCount": 15,
+      "failures": [],
+      "targetMatched": false,
+      "otherContained": [
+        {
+          "id": "R1980641",
+          "name": "Torres del Paine"
+        }
+      ]
+    }
+  ],
+  "caveat": "No expected names or IDs sent to external provider; they were used ONLY locally for scoring. No polygon coordinate data stored.",
+  "workflowUrl": "https://github.com/pin2map/pin2map-new-test/actions/runs/44147728198",
+  "sourceCommit": "e013b71570de71a2c5451f6a548a87c57bad6758"
+}
