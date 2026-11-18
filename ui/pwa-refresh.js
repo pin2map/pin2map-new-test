@@ -79,6 +79,9 @@
       const target=new URL(env.location.href);
       target.searchParams.set("v",expected);
       target.searchParams.set("loaded",String(Date.now()));
+      // Desktop navigation can be deferred or cancelled by the browser.
+      // A successful worker activation must not permanently disable the control.
+      button.disabled=false;button.removeAttribute("aria-busy");
       env.location.replace(target.href);
       return true;
     }catch(error){

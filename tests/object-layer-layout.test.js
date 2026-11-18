@@ -64,3 +64,16 @@ for(const width of [320,375,390,820,1280]){
   assert.ok(r.height>=50,"Must show actual layer choices");
  }
 }
+
+for(const viewportWidth of [320,390,820,1280]){
+ const pw=Math.min(390,viewportWidth-16);
+ const owner=rect(8,180,pw,450),header=rect(8,190,pw,76),footer=rect(8,556,pw,58);
+ for(const count of [1,2,5,18]){
+  const r=Core.layerMenuLayout({panel:owner,header,footer,trigger:footer,
+   viewport:{left:0,top:0,width:viewportWidth,height:1000},
+   contained:true,visibleRows:count});
+  assert.ok(Math.abs(r.top+r.height-(footer.top-8))<0.01,
+   "All object choosers must grow UP from the footer, even with few layers");
+  assert.ok(r.top>=header.bottom+8);
+ }
+}

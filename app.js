@@ -492,7 +492,7 @@
   }
   function openGeometryEditor(type,item,position){
     if(!geometryEditor)return;
-    uiState.clearSelection();renderMarkers();renderPinPanel();
+    closeAllMapMenus();
     const xy=mapAdapter.project(position);
     const rect=mapAdapter.getContainer().getBoundingClientRect();
     geometryEditor.show(type,item,state.layers,{x:rect.left+xy.x,y:rect.top+xy.y});
@@ -579,6 +579,7 @@
     else pinLayerPicker.setOpen(false);
   }
   function selectPin(id){
+    closeAllMapMenus();
     pinOverlapZoom?.close();
     pinSession.select(id);
     if(id===pendingNewGpsPinId){
@@ -937,6 +938,10 @@
       overlayCoordinator.closeAll();layerView.show();
     });
     $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));
+    window.addEventListener("pageshow",()=>{
+      $("refreshButton").disabled=false;
+      $("refreshButton").removeAttribute("aria-busy");
+    });
     $("refreshButton").addEventListener("click",()=>window.Pin2MapPwaRefresh.refresh({
       button:$("refreshButton"),
       save:dbWrite,
@@ -958,19 +963,44 @@
       getProject:()=>state,onChange:()=>save()
     });
     colorSettings.bind();
-    $("settingsGeneralTab").addEventListener("click",()=>{
-      $("settingsGeneralContent").classList.remove("hidden");
-      $("settingsColorsContent").classList.add("hidden");
-      $("settingsGeneralTab").setAttribute("aria-selected","true");
-      $("settingsColorsTab").setAttribute("aria-selected","false");
+    const settingsTabs=["General","Interface","Services","Colors"];
+    async function updateSettingsStorage(){
+      const version=$("settingsProductVersion"),usage=$("settingsStorageUsage");
+      version.textContent="Version wird ermittelt …";
+      try{
+        const worker=await window.Pin2MapPwaRefresh.versionOf(
+          navigator.serviceWorker?.controller,window.MessageChannel,1200);
+        const response=worker?null:await fetch("./sw.js?version="+Date.now(),{cache:"no-store"});
+        const code=worker||(response?.ok?
+          window.Pin2MapPwaRefresh.parseVersion(await response.text()):"nicht verfügbar");
+        version.textContent=code.replace(/^pin2map-(?:preview|new)-v/,"v");
+      }catch{version.textContent="nicht verfügbar";}
+      try{
+        const estimate=await navigator.storage?.estimate?.();
+        const caches=estimate?.usageDetails?.caches;
+        const bytes=caches??estimate?.usage;
+        if(!Number.isFinite(bytes)){usage.textContent="nicht verfügbar";return;}
+        const unit=bytes>=1048576?" MB":" KB",divisor=bytes>=1048576?1048576:1024;
+        usage.textContent="ca. "+(bytes/divisor).toLocaleString("de-DE",{maximumFractionDigits:1})+
+          unit+(caches===undefined?" (gesamter lokaler Speicher)":"");
+      }catch{usage.textContent="nicht verfügbar";}
+    }
+    const selectSettingsTab=key=>{
+      for(const tab of settingsTabs){
+        const selected=key===tab;
+        $("settings"+tab+"Content").classList.toggle("hidden",!selected);
+        $("settings"+tab+"Tab").setAttribute("aria-selected",String(selected));
+        $("settings"+tab+"Tab").tabIndex=selected?0:-1;
+      }
+      if(key==="Colors")colorSettings.render();
+      if(key==="General")void updateSettingsStorage();
+    };
+    for(const tab of settingsTabs)
+      $("settings"+tab+"Tab").addEventListener("click",()=>selectSettingsTab(tab));
+    $("settingsButton").addEventListener("click",()=>{
+      if(!$("settingsPanel").classList.contains("hidden"))selectSettingsTab("General");
     });
-    $("settingsColorsTab").addEventListener("click",()=>{
-      $("settingsGeneralContent").classList.add("hidden");
-      $("settingsColorsContent").classList.remove("hidden");
-      $("settingsGeneralTab").setAttribute("aria-selected","false");
-      $("settingsColorsTab").setAttribute("aria-selected","true");
-      colorSettings.render();
-    });
+    selectSettingsTab("General");
 
     pinEditorActions.bind();
     pinDetails.bind();

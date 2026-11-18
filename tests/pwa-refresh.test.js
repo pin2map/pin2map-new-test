@@ -82,6 +82,8 @@ test("refresh saves first and reloads only after matching active and controlled 
   const result=await refresh({...v,timeoutMs:1500});
   assert.equal(result,true);
   assert.deepEqual(v.calls,["save","fetch","register","update","replace"]);
+  assert.equal(v.button.disabled,false,"Desktop refresh stays usable if navigation stalls");
+  assert.equal(v.button.attrs["aria-busy"],undefined);
   assert.match(v.env.location.replaced,/v=pin2map-preview-v46/);
   assert.ok(v.env.location.replaced.includes("loaded="));
 });

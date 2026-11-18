@@ -53,6 +53,28 @@ async function longPress(page,x,y,ms=725){
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
     await assertReady(page);
     await assertCircularControls(page,"initial map");
+    step("properties dialog left-anchored and four tabs with estimated storage/version");
+    await page.locator("#settingsButton").click();
+    const settings=await page.evaluate(()=>{
+      const button=document.querySelector("#settingsButton").getBoundingClientRect(),
+       panel=document.querySelector("#settingsPanel").getBoundingClientRect();
+      return {buttonLeft:button.left,panelLeft:panel.left,buttonBottom:button.bottom,
+       panelTop:panel.top};
+    });
+    assert.ok(Math.abs(settings.buttonLeft-settings.panelLeft)<4,JSON.stringify(settings));
+    assert.ok(settings.panelTop>=settings.buttonBottom-1,JSON.stringify(settings));
+    assert.equal(await page.locator("#settingsGeneralContent #settingsStorageUsage").count(),1);
+    assert.equal(await page.locator("#settingsGeneralContent #settingsProductVersion").count(),1);
+    await page.locator("#settingsInterfaceTab").click();
+    assert.equal(await page.locator("#settingsInterfaceContent #showPinHitboxes").isVisible(),true);
+    await page.locator("#settingsServicesTab").click();
+    assert.equal(await page.locator("#settingsServicesContent #allowGeocode").isVisible(),true);
+    assert.equal(await page.locator("#settingsServicesContent #settingsPinInfoSources").isVisible(),true);
+    await page.locator("#settingsColorsTab").click();
+    assert.equal(await page.locator("#settingsColorsContent #standardColorGrid").isVisible(),true);
+    await page.locator("#settingsButton").click();
+    assert.equal(await page.locator("#settingsPanel").isHidden(),true);
+
     step("predecessor scale: single metric Leaflet control centered below header, updates on zoom");
     const scale=page.locator("#map .leaflet-control-scale");
     assert.equal(await scale.count(),1,"One Leaflet scale must be present");

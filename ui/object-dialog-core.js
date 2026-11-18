@@ -137,7 +137,8 @@
    const height=Math.min(Math.max(0,popupBottom-popupTop),
     Math.min(460,14+43*Math.max(1,visibleRows)));
    const x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));
-   return {left:x,top:popupTop,width,height};
+   // Bottom-anchored: grow upward from the action row.
+   return {left:x,top:popupBottom-height,width,height};
   }
   static positionPopup({panel,header,footer,popup,doc,kind="url",keyboardAnchor=null}){
    const win=doc.defaultView,vv=win?.visualViewport;
