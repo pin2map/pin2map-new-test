@@ -249,7 +249,17 @@ async function zoom(page){
         assert.equal(await page.locator("#settingsPanel").isHidden(),true);
         await page.locator("#favoritesButton").click();
         assert.equal(await page.locator("#favoritesPanel").isVisible(),true);
-        await page.locator("#basemapButton").click();
+        // v265: the map button now shares Refresh's 35dvh centerline.
+        // If Favorites overlaps its hit area, the dialog MUST win pointer
+        // priority under the function-button contract. Keyboard activation
+        // still closes competing menus and opens the basemap choices.
+        assert.equal(await page.locator("#basemapButton").evaluate(button=>{
+          const box=button.getBoundingClientRect();
+          const top=document.elementFromPoint(box.left+box.width/2,box.top+box.height/2);
+          return !!top?.closest("#favoritesPanel");
+        }),true,"Open Favorites must paint above an overlapping map launcher");
+        await page.locator("#basemapButton").focus();
+        await page.keyboard.press("Enter");
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         assert.equal(await page.locator("#basemapMenu").isVisible(),true);
         assert.equal(await page.locator("#favoritesButton").isVisible(),true);
