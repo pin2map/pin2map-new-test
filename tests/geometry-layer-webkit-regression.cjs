@@ -50,7 +50,7 @@ const sizes=[
        const headerBottom=editor.header.getBoundingClientRect().bottom;
        const tip=editor.tip.getBoundingClientRect();
        const tipAttached=editor.tip.parentElement===panel&&
-        Math.abs(tip.top-pb.bottom)<2&&tip.left>=pb.left-1&&tip.right<=pb.right+1;
+        Math.abs(tip.top-pb.bottom)<=3&&tip.left>=pb.left-1&&tip.right<=pb.right+1;
        const t=editor.layerButton.getBoundingClientRect();
        const hitToggle=document.elementFromPoint(t.left+t.width/2,t.top+t.height/2);
        const footerToggleReachable=hitToggle===editor.layerButton||editor.layerButton.contains(hitToggle);
@@ -192,7 +192,7 @@ const sizes=[
      const footer=p.actions.getBoundingClientRect(),trigger=p.layerButton.getBoundingClientRect();
      const headerBottom=p.header.getBoundingClientRect().bottom;
      const tip=p.tip.getBoundingClientRect();
-     const tipAttached=p.tip.parentElement===p.panel&&Math.abs(tip.top-panel.bottom)<2;
+     const tipAttached=p.tip.parentElement===p.panel&&Math.abs(tip.top-panel.bottom)<=3;
      const buttonHit=document.elementFromPoint(trigger.left+trigger.width/2,trigger.top+trigger.height/2);
      return {width:box.width,height:box.height,footerTop:footer.top,menuBottom:box.bottom,
       footerToggleReachable:buttonHit===p.layerButton||p.layerButton.contains(buttonHit),
