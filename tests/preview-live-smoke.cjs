@@ -343,7 +343,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           return {
             settings:rect("settingsButton"),layers:rect("layersButton"),
             search:rect("searchForm"),info:rect("labelsToggle"),
-            basemap:rect("basemapButton"),
+            basemap:rect("basemapButton"),refresh:rect("refreshButton"),
             attribution:a?{x:a.x,y:a.y,right:a.right,bottom:a.bottom,
               width:a.width,height:a.height,visible:getComputedStyle(attribution).display!=="none"}:null,
             window:{width:innerWidth,height:innerHeight}
@@ -357,8 +357,11 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           "Search must not overlap Layers: "+JSON.stringify(geometry));
         assert.ok(Math.abs(geometry.info.x-geometry.basemap.x)<=2,
           "Info and Map must be stacked at the same right position");
-        assert.ok(geometry.info.bottom<=geometry.basemap.y-4,
-          "Info must sit above Map, without overlap");
+        assert.ok(geometry.basemap.bottom<=geometry.info.y-4,
+          "Map selector must sit above Info without overlap");
+        assert.ok(Math.abs((geometry.basemap.y+geometry.basemap.bottom)/2-
+          (geometry.refresh.y+geometry.refresh.bottom)/2)<=1.5,
+          "Map selector and Refresh must share a horizontal centerline");
         assert.ok(geometry.attribution?.visible&&geometry.attribution.height>0,
           "Leaflet/OSM attribution must remain visible: "+JSON.stringify(geometry));
         assert.ok(geometry.attribution.bottom<=geometry.window.height+3,
