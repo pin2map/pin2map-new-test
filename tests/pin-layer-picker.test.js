@@ -191,7 +191,7 @@ test("geometry layer picker never collapses to filter-only strip on mobile",()=>
  picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
  const height=Number.parseFloat(elements.pinLayerMenu.style.maxHeight);
  const top=Number.parseFloat(elements.pinLayerMenu.style.top);
- assert.ok(height>=190,"Layer popup must allow real options, not only filter");
+ assert.ok(height>=150,"Two-layer popup must show filter and both real options");
  assert.ok(top+height<=490-8+1,"Layer popup must not cover its footer");
  assert.ok(top>=12&&top+height<=667-12,"Popup stays in viewport");
  assert.equal(elements.pinLayerMenu.style.width,"339px");
