@@ -33,3 +33,34 @@ Quellen: https://download.geofabrik.de/technical.html ; https://download.geofabr
 Beim Research-Commit `c9803c04715e3e2062df9bf445c6f11fa3abcefb` bestand die echte Quellen-/Geometrie-Audit-Pipeline [44332367245](https://github.com/pin2map/pin2map-new-test/actions/runs/44332367245), ebenso Node/Chromium [44332366933](https://github.com/pin2map/pin2map-new-test/actions/runs/44332366933) und Architektur [44332367051](https://github.com/pin2map/pin2map-new-test/actions/runs/44332367051). Das Pages-Gate [44332367016](https://github.com/pin2map/pin2map-new-test/actions/runs/44332367016) scheiterte **nach** bestandener HTTPS-/Assetprüfung im echten Live-Rügen/Jasmund-Provider-Test, dessen lang dauernde `page.evaluate`-Ausführung von einer Navigation unterbrochen wurde: `Execution context was destroyed, most likely because of a navigation`. Das ist **kein nachgewiesener Provider- oder Polygonfehler**; der Live-Provider-Nachweis des Commits ist offen.
 
 Korrektur in `tests/area-live-provider.cjs`: Die isolierte echte Live-Providerprobe verwendet einen frischen Chromium-Browserkontext mit `serviceWorkers:"block"`, damit eine während der langsamen Anfrage eintreffende PWA-SW-Aktualisierung nicht unbemerkt eine neue Navigation erzeugt. **Sämtliche echten Nominatim-/Overpass-/OSM-Punkte, ID-/Polygon-Assertions und Fehlerbedingungen bleiben unverändert**. Die unabhängigen PWA-/ServiceWorker-/WebKit-Tests laufen weiter mit ihren regulären Workerkontexten. Ob die Navigation tatsächlich durch einen SW verursacht wurde, ist **nicht bewiesen**; der Schritt soll den Provider-Test gegen einen sachfremden Navigator-Lifecycle isolieren und wird erst nach vollständiger neuer Live-CI-Abnahme als erfolgreich geführt.
+
+
+## Gemessener echter Quellenkatalog und verbindlicher CI-Abschluss (18.11.2026)
+
+**Implementierung/Forschung:** `c9803c04715e3e2062df9bf445c6f11fa3abcefb`; **Provider-Browser-Gate-Isolierung:** `fc53f95a4585768d55cea1edff09a22f629da880`.
+
+**Echte Daten und Provenienz:** [Forschungsworkflow 44332367245](https://github.com/pin2map/pin2map-new-test/actions/runs/44332367245) `completed/success` mit realen, per read-only sparse Checkout geladenen Natural-Earth- und RESOLVE-GeoJSONs sowie allen Source-Snapshot-Regressionen. Quellgit-SHAs: Natural Earth `ca96624a56bd078437bca8184e78163e5039ad19`, Catalogue of Life/RESOLVE `d96828acebaa8576fd5f9c1b06bc44dd2955adbe`.
+
+| Ausgewertete Metrik | Ergebnis |
+|---|---:|
+| Metadatensätze | 266 |
+| Länder / Seen / Schutzflächen / Ökoregionen | 177 / 24 / 61 / 4 |
+| Lizenz: Natural Earth Public Domain | 262 |
+| Lizenz: RESOLVE CC BY 4.0 | 4 |
+| Quellkennungen mit instabiler Ersatz-ID | 0 |
+| Versioniertes Manifest mit Quellattribution, Geometrie-SHA, Lizenz und BBox | 127.269 Bytes |
+| Native/identifizierbare OSM-Objekt-IDs in diesen Quellen | 0 |
+| Ursprüngliche 15 Referenzkoordinaten mit irgendeiner einschließenden Fläche des kleinen Katalogs | 15/15 (jeweils nur die großräumige Länderfläche) |
+| **Ursprüngliche 15 Referenzkoordinaten mit einschließender Fläche des gesuchten Gebietstyps** | **0/15** |
+| Referenzname + gesuchte Fachkategorie als exakt normalisierter Katalogeintrag | 0/15 |
+
+**Interpretation:** Der Katalog ist technisch sauber versionierbar und repräsentiert echte Flächen, **kann jedoch die 15 spezialisierten Flächensuchen überhaupt nicht ersetzen**. Ein Punkt in einem Land ist kein Beleg für einen gesuchten See, Nationalpark oder eine militärische Sonderfläche. OSM-IDs konnten nicht zur Identitätsprüfung verwendet werden, weil dieser kleine Katalog keine solchen Originalkennungen enthält. Das bedeutet **nicht**, dass die gesuchten Flächen weltweit fehlen – die früheren Photon-/OSM-Referenztests fanden sie bereits. Die 127 KB sind eine Metadatenrepräsentation, keine gemessenen Netzdaten; der Source-Diff ist mit kontrolliert geänderten Testständen erprobt, nicht mit zwei realen zeitlich separaten Planet-Importen.
+
+**Sicherheits- und Deploymentnachweis für den finalen Test-/Forschungscode `fc53f95a`:**
+- [Modular core Node/Chromium 44333200905](https://github.com/pin2map/pin2map-new-test/actions/runs/44333200905) `completed/success`.
+- [Leaflet-Architekturgate 44333200867](https://github.com/pin2map/pin2map-new-test/actions/runs/44333200867) `completed/success`.
+- [Pages-Preview/HTTPS, echte Live-Provider-/Geometrieprüfungen, WebKit vor und nach Veröffentlichung 44333201301](https://github.com/pin2map/pin2map-new-test/actions/runs/44333201301) `completed/success` mit allen Jobs.
+
+Der vorangehende [Preview-Run 44332367016](https://github.com/pin2map/pin2map-new-test/actions/runs/44332367016) ist **failure**, nicht als Freigabe zu werten; er scheiterte durch Navigation während einer echten, lang dauernden Playwright-Provider-Query. Der spätere Test nutzt eine isolierte Chromium-Umgebung ohne SW-Eingriff; **alle echten Provider-/Objekt-/Polygon-Assertions blieben verpflichtend**, die PWA-Lifecycle-Gates liefen unverändert separat. Die Ursache der Navigation ist nicht zweifelsfrei bewiesen.
+
+**Geltungsgrenze:** Dokumentations-/Forschungsänderungen und isolierter Test-Fix; `sw.js` unverändert `pin2map-new-v264`, Live-Preview `pin2map-preview-v264`. Keine Nutzer-IndexedDB-/Geometriespeicheränderung und kein `main`-Merge. Nächter begrenzter Forschungsschritt: **selektiver OSM-Extrakt-Importer im eigenen, lizenzierten Forschungslauf**, mit Geofabrik-Regionsextrakt, fachlichem Tagfilter, korrekter Way-/Relation-/MultiPolygon-Auflösung und denselben 15 OSM-Referenzobjekten. Dafür sind Quellumfang, Kosten, Server-/CI-Umgebung, Aktualisierungsstrategie und rechtliche Pflichten konkret zu prüfen. Kein freier ungedrosselter Public-API-Zugriff.
