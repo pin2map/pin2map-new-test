@@ -295,10 +295,20 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#settingsPanel").isVisible(),true);
     assert.equal(await page.locator("#settingsButton").getAttribute("aria-expanded"),"true");
     assert.equal(await page.locator("#settingsButton").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
-    const settingsBottom=await page.locator("#settingsPanel").evaluate(el=>el.getBoundingClientRect().bottom);
-    const basemapTop=await picker.evaluate(el=>el.getBoundingClientRect().top);
-    assert.ok(settingsBottom<=basemapTop-3,
-      "Open settings must leave the lower basemap launcher reachable");
+    const settingsBox=await page.locator("#settingsPanel").evaluate(el=>{
+      const b=el.getBoundingClientRect();return {right:b.right,bottom:b.bottom};
+    });
+    const basemapBox=await picker.evaluate(el=>{
+      const b=el.getBoundingClientRect();
+      return {left:b.left,centerY:(b.top+b.bottom)/2};
+    });
+    const refreshCenterY=await page.locator("#refreshButton").evaluate(el=>{
+      const b=el.getBoundingClientRect();return (b.top+b.bottom)/2;
+    });
+    assert.ok(Math.abs(basemapBox.centerY-refreshCenterY)<=1.5,
+      "Map selector must share the Refresh horizontal centerline");
+    assert.ok(settingsBox.right<=basemapBox.left-3,
+      "Open left-side settings must leave the right-side basemap launcher reachable");
     await picker.click();
     assert.equal(await page.locator("#settingsButton").getAttribute("aria-expanded"),"false");
     assert.equal(await page.locator("#settingsPanel").isHidden(),true,
