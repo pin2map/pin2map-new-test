@@ -20,6 +20,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Read-only sparse checkout of four public RESOLVE features
+        uses: actions/checkout@v4
+        with:
+          repository: CatalogueOfLife/col-gazetteers
+          ref: main
+          path: research-resolve
+          persist-credentials: false
+          sparse-checkout: |
+            teow/features/689.geojson
+            teow/features/676.geojson
+            teow/features/751.geojson
+            teow/features/513.geojson
+          sparse-checkout-cone-mode: false
       - name: Check research scripts and run metadata-first unit tests
         run: |
           node --check research/area-metadata-index.cjs
@@ -27,4 +40,6 @@ jobs:
           node --check research/area-metadata-live-benchmark.cjs
           node --test tests/area-metadata-index.test.js
       - name: Controlled four-feature RESOLVE real-geometry benchmark
+        env:
+          PIN2MAP_RESEARCH_DATA_ROOT: research-resolve
         run: node research/area-metadata-live-benchmark.cjs
