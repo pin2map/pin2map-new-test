@@ -286,7 +286,9 @@
       this.panel.style.left=geometry.panel.left+"px";
       this.panel.style.top=geometry.panel.top+"px";
       this.tip.style.left=geometry.tip.left+"px";
-      this.tip.style.top=geometry.tip.top+"px";
+      // CSS bottom:-14px attaches the 15px triangle to the LIVE panel edge.
+      // Never use a stale offsetHeight from before the final browser layout.
+      this.tip.style.top="";
       this.tip.classList.remove("hidden");
       this.removeButton.classList.remove("river-remove");
     }

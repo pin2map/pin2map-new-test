@@ -2211,7 +2211,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #pinUrlBlock .pin-url-field legend{margin:0 auto 0 2px;text-align:left}
 
 #app .object-editor-tip{
- position:absolute;z-index:1599;pointer-events:none;
+ position:absolute;top:auto;bottom:-14px;z-index:1599;pointer-events:none;
  width:0;height:0;transform:translateX(-50%);
  border-left:11px solid transparent;border-right:11px solid transparent;
  border-top:15px solid var(--p2m-pin-dialog-surface,#f7f8fa);

@@ -589,15 +589,12 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinLayerTrigger").click();
     const regularLayersBeforeFilter=await page.locator("#pinLayerMenu [role='option']:visible").count();
     assert.ok(regularLayersBeforeFilter>=2,"Pin layer chooser must list all available layers");
-    const regularFilter=page.locator("#pinLayerMenu .pin-layer-filter-input");
-    await regularFilter.fill("REIS");
-    assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),1);
-    assert.match(await page.locator("#pinLayerMenu [role='option']:visible").innerText(),/Reisen/);
-    assert.equal(await page.locator("#pinLayer").inputValue(),"private",
-      "Filtering regular layer choices cannot silently reassign a pin");
-    await page.locator("#pinLayerMenu .pin-layer-filter-clear").click();
+    assert.equal(await page.locator("#pinLayerMenu .pin-layer-filter").count(),0,
+      "All object layer selectors now omit the filter/reset row");
     assert.equal(await page.locator("#pinLayerMenu [role='option']:visible").count(),
-      regularLayersBeforeFilter,"Pin filter reset must restore every originally visible layer");
+      regularLayersBeforeFilter,"Direct selector must expose all layers");
+    assert.equal(await page.locator("#pinLayer").inputValue(),"private",
+      "Opening the layer chooser never reassigns a pin");
     await page.keyboard.press("Escape");
     assert.equal(await page.locator("#pinLayer").inputValue(),"private");
     console.log("[browser] PASS – layer filters do not change assignments");
