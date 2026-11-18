@@ -20,7 +20,7 @@ test("all current function launchers share a dialog-safe low stacking level",()=
 test("menu toggles and name-labels have consistent permanent blue-white ON visuals",()=>{
  const rule=contract();
  assert.match(rule,/button#labelsToggle\[aria-pressed="true"\]/);
- for(const v of ["--p2m-map-control-bg:#1764bf!important","--p2m-map-control-ink:#fff!important","--p2m-map-control-border:#1764bf!important"])
+ for(const v of ["--p2m-map-control-bg:#1764bf","--p2m-map-control-ink:#fff","--p2m-map-control-border:#1764bf"])
   assert.ok(rule.includes(v),v);
  assert.ok(read("ui/shell.js").includes('button.setAttribute("aria-pressed",String(enabled))'));
  assert.ok(read("ui/map-favorites-panel.js").includes('setAttribute("aria-expanded","true")'));

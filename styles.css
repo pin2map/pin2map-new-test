@@ -2423,7 +2423,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
    than the Layers panel; expanded Favorites stays below its own inline
    editor (old v171 safeguard). Layer/settings/etc buttons are peer targets. */
 #app #favoritesButton.favorites-map-button.p2m-icon-control:not([aria-expanded="true"]){
- z-index:1400!important;
+ z-index:1400;
 }
 #app #layersButton.layers-bottom-button.p2m-icon-control,
 #app #settingsButton.settings-map-button.p2m-icon-control,
@@ -2431,7 +2431,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #pinInfoButton.pin-info-button.p2m-icon-control,
 #app #labelsToggle.labels-toggle.p2m-icon-control,
 #app #refreshButton.refresh-map-button.p2m-icon-control{
- z-index:1400!important;
+ z-index:1400;
  /* Refresh remains solid and pointer-accessible whenever not busy. */
  opacity:1;
  cursor:pointer;
@@ -2441,7 +2441,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
    own close button. A different round launcher can still be reached when
    it sits outside that panel; do not layer the Layers button over its X. */
 body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control{
- z-index:1190!important;
+ z-index:1190;
 }
 
 /* v230 - compact text help, merge-specific visibility and real layer color. */
@@ -2607,10 +2607,10 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 }
 #app#app > button:is(#layersButton,#favoritesButton,#settingsButton,#pinInfoButton,#basemapButton)[aria-expanded="true"],
 #app#app > button#labelsToggle[aria-pressed="true"]{
-  --p2m-map-control-bg:#1764bf!important;
-  --p2m-map-control-pressed:#1764bf!important;
-  --p2m-map-control-ink:#fff!important;
-  --p2m-map-control-border:#1764bf!important;
+  --p2m-map-control-bg:#1764bf;
+  --p2m-map-control-pressed:#1764bf;
+  --p2m-map-control-ink:#fff;
+  --p2m-map-control-border:#1764bf;
 }
 /* No display/hiding rules: a functional launcher closes competing menus,
    not fellow launchers. Dialogs stay above; openers remain visible by layout. */
