@@ -1967,3 +1967,13 @@ Nach v264 und positiver Geräte-Rückmeldung zum Funktionsbutton-Vertrag wird di
 **Offline-Analyse:** Vorab-Chargen von maximal sechs bzw. zwölf IDs würden 12/15 bzw. 15/15 bekannte Referenzpolygone nachweisen, bei zwölf IDs 21 statt 22 dokumentierten einschließenden Polygonen und 30 statt 56 Lookup-Chargen (26 / 46,43 % weniger). Bei Farihy Ihotry bleibt die zusätzliche einschließende Fläche Morombe zunächst offen. Keine behauptete Laufzeitverkürzung, keine vollen Transferbyte-Messungen, keine allgemeine Vollständigkeit; die Referenz-ID dient ausschließlich zur **retrospektiven Bewertung**, nie zur Auswahl oder zum Stopp. Die 75 Photon-Requests blieben in dieser Simulation unverändert. Nächster Schritt: providerkonformer, getrennt freizugebender Kalt-/Warmbenchmark mit neuen Koordinaten und Metadaten-zuerst-Anzeige, dann Architekturentscheidung für Indexdienst/Cache.
 
 **Status bei Vorbereitung:** research-only Commit noch in CI zu verifizieren. Kein Eingriff in `app.js`, `sw.js`, `index.html`, `main`, `reference/*` oder bestehende Nutzerdaten; unveränderte Preview/App v264.
+
+
+### Progressive-Area-Replay – CI-/Preview-Nachweis (18.11.2026)
+
+Für den unveränderten Forschungscommit `9f48570fc6bb0f89a95f32a425bc8411968d8004` sind die vollständigen GitHub-Gates `completed/success`:
+- [Modular core – Node und Chromium #44305621009](https://github.com/pin2map/pin2map-new-test/actions/runs/44305621009) (einschließlich der sechs neuen Offline-Replay-Vertragsprüfungen und vorhandener Regressionen).
+- [Leaflet-Architektur #44305620858](https://github.com/pin2map/pin2map-new-test/actions/runs/44305620858).
+- [Preview/WebKit vor und nach Deployment, veröffentlichte HTTPS-Assets, Browser-Regressionen #44305621200](https://github.com/pin2map/pin2map-new-test/actions/runs/44305621200), alle drei Jobs erfolgreich. Die ausgelieferte aktive Anwendung bleibt `pin2map-preview-v264`; der Forschungs-Code gehört nicht zum PWA-Bundle.
+
+Die Offline-Forschung ist damit **technisch abgeschlossen**; weder 46,43 % kürzere Laufzeit noch Produktionsreife wird behauptet. Benutzer-/Geräteabnahme für einen neuen Suchalgorithmus ist **noch nicht möglich**, weil er bewusst nicht in die App integriert wurde. Weitere Entwicklung: Messung an neuen Koordinaten und providerkonformer eigener/licenzierter Datenquelle; Schutz von `main`, `reference/*` und lokalen Projektbeständen weiterhin verbindlich. Dokumentationsnachtrag löst keinen SW-Bump aus.
