@@ -7,7 +7,13 @@ const {chromium}=require("playwright");
     executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE||undefined,
     args:["--no-sandbox"]});
   try{
-    const page=await browser.newPage();
+    // This gate tests REAL external providers, not ServiceWorker lifecycle.
+    // A background PWA worker update can navigate the page while the slow
+    // network hierarchyAt() call is evaluated, destroying Playwright's JS
+    // context without indicating a provider or polygon failure. Installed
+    // worker/offline behaviour is verified in separate browser gates.
+    const context=await browser.newContext({serviceWorkers:"block"});
+    const page=await context.newPage();
     await page.goto(process.env.PIN2MAP_TEST_URL||
       "https://pin2map.github.io/pin2map-new-test/preview/",
       {waitUntil:"domcontentloaded",timeout:30000});
