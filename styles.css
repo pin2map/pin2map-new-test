@@ -2473,9 +2473,11 @@ body.favorites-open #app #layersButton.layers-bottom-button.p2m-icon-control{
    (Layers and Favorites). Keeping launchers clickable may never cover the
    panel's own close button. Preserve full menu dismissal without occlusion. */
 body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
- top:calc(var(--p2m-top-corner-offset) + 2 * var(--p2m-map-circle-size) + 16px + env(safe-area-inset-top,0px))!important;
- /* Reserve the lower map control row while preserving scrollable settings. */
- max-height:min(70vh,calc(100dvh - var(--p2m-top-corner-offset) - 3 * var(--p2m-map-circle-size) - var(--p2m-bottom-control-baseline) - 36px - env(safe-area-inset-top,0px)));
+ /* Settings panel is directly under the top-left Settings launcher. */
+ left:var(--p2m-top-corner-inset,12px);
+ right:auto;
+ top:calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px))!important;
+ max-height:min(70vh,calc(100dvh - var(--p2m-top-corner-offset) - var(--p2m-map-circle-size) - 30px));
 }
 
 /* v232 – NON-NEGOTIABLE: dialogs always paint ABOVE every map launcher.
@@ -2584,16 +2586,9 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
  height:3px;transform:translateY(-50%);
 }
 
-/* v263: settings belongs to the TOP-LEFT launcher; no inherited right anchor. */
-body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
- left:var(--p2m-top-corner-inset,12px)!important;
- right:auto!important;
- top:calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px))!important;
- max-height:min(70vh,calc(100dvh - var(--p2m-top-corner-offset) - var(--p2m-map-circle-size) - 30px))!important;
-}
 #app .settings-tabs{flex-wrap:wrap}
 #app .settings-tabs button{flex:1 1 calc(50% - 8px);min-width:0}
-#app :is(#settingsGeneralContent,#settingsInterfaceContent,#settingsServicesContent,#settingsColorsContent).hidden{display:none!important}
+#app :is(#settingsGeneralContent,#settingsInterfaceContent,#settingsServicesContent,#settingsColorsContent).hidden{display:none}
 #app .settings-product-name{font-size:16px;margin:14px 0}
 #app .settings-product-name span{font-size:13px;color:#52667c;margin-left:8px}
 #app .settings-storage{margin:12px 0;padding:12px;border:1px solid #cbd4df;border-radius:10px}
