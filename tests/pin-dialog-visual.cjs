@@ -367,6 +367,8 @@ async function metrics(page){
       "Entire URL popup must fit horizontally inside pin panel");
 
     assert.ok(urlPopup.left>=4&&urlPopup.right<=viewport.width-4&&urlPopup.top>=4&&urlPopup.bottom<=viewport.height-4,JSON.stringify(urlPopup));
+    const pinUrlFooterTop=await page.locator("#pinPanel .pin-actions").evaluate(el=>el.getBoundingClientRect().top);
+    assert.ok(urlPopup.bottom<=pinUrlFooterTop+1,"Pin URL popup covers its own footer: "+JSON.stringify({urlPopup,pinUrlFooterTop}));
     assert.ok(Math.abs(urlPopup.left-(pinBox.x+10))<=2&&Math.abs(urlPopup.right-(pinBox.x+pinBox.width-10))<=2,
       "URL popup maintains symmetric 10px horizontal insets");
     assert.equal(urlPopup.actions.length,2,"Only OK and URL öffnen are shown");

@@ -10,6 +10,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
   {executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE}:{})});
  try{
   const sizes=[{width:390,height:844},{width:820,height:1180},{width:1280,height:800}];
+  const signatures=new Map();
   for(const viewport of sizes){
    const context=await browser.newContext({
     viewport,serviceWorkers:"block",
@@ -49,6 +50,19 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const notesVisible=getComputedStyle(editor.notesRow).display!=="none";
       const footer=[...editor.actions.children].map(x=>x.className);
       const panel=editor.panel.getBoundingClientRect();
+      const panelStyle=getComputedStyle(editor.panel);
+      const actionStyle=getComputedStyle(editor.layerButton);
+      const noteStyle=getComputedStyle(editor.notesInput);
+      const visualSignature={
+       panelBackground:panelStyle.backgroundColor,
+       panelBorderRadius:panelStyle.borderRadius,
+       panelBoxShadow:panelStyle.boxShadow,
+       actionRadius:actionStyle.borderRadius,
+       actionWidth:editor.layerButton.getBoundingClientRect().width,
+       actionHeight:editor.layerButton.getBoundingClientRect().height,
+       noteBackground:noteStyle.backgroundColor,
+       noteBorderRadius:noteStyle.borderRadius
+      };
       editor.layerButton.click();
       const picker=editor.layerPicker;
       const before=picker.options.map(x=>!x.button.hidden);
@@ -122,7 +136,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       window.__p2mDialogFixture={editor,item,layers,type};
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
-       notesVisible,footer,panel:{left:panel.left,right:panel.right},
+       notesVisible,footer,visualSignature,panel:{left:panel.left,right:panel.right},
        before,after,reset,closedOnSecondTap,reopenedOnThirdTap,
        afterRendered,resetRendered,filterStaysOpen,noteBg,noteDoneColor,
        notePanel:{width:notePanel.width,height:notePanel.height},
@@ -140,6 +154,14 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      },{type,viewport});
      assert.equal(state.title,windowName(type),JSON.stringify(state));
      assert.equal(state.notesVisible,true,JSON.stringify(state));
+     // Identical visual owner across Area, Lake and River. Compare real CSS,
+     // rather than assuming a shared class name proves visual parity.
+     const key=viewport.width+"x"+viewport.height;
+     if(!signatures.has(key))signatures.set(key,state.visualSignature);
+     else assert.deepEqual(state.visualSignature,signatures.get(key),
+       "Geometry object Look-and-Feel must not drift by object type: "+JSON.stringify({type,viewport,state}));
+     assert.ok(Math.abs(state.visualSignature.actionWidth-state.visualSignature.actionHeight)<=1.5,
+       "All shared round action controls must really be round");
      if(state.desc.asset)assert.equal(state.symbol,"./assets/"+state.desc.asset);
      assert.deepEqual(state.before,[true,true,true],JSON.stringify(state));
      assert.equal(state.closedOnSecondTap,true,JSON.stringify(state));
