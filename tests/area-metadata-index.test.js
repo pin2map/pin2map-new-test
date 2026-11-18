@@ -14,6 +14,19 @@ test("new real-source coordinates do not overlap the historical 15 reference poi
     Math.abs(p.lng-f.point.lon)<.000001),f.name);
  }
 });
+test("provider source IDs survive metadata normalisation and reach the lazy loader",async()=>{
+ const f=fixtures[0],index=build(fixtures);
+ assert.equal(index.candidates(f.point.lon,f.point.lat).find(x=>x.id===f.id).sourceId,689);
+ await assert.rejects(index.verify(f.id,f.point.lon,f.point.lat,async(id,m)=>{
+  assert.equal(id,f.id);
+  assert.equal(m.sourceId,689,"Provider lookup must never request undefined.geojson");
+  throw Error("Injected test loader stopped before external I/O");
+ }),/Injected test loader/);
+ assert.equal(index.stats().cachedGeometries,0);
+ assert.throws(()=>build([sample("bad",bbox(0,0,1,1)),{
+  ...sample("invalid",bbox(0,0,1,1)),sourceId:0
+ }]),/sourceId/);
+});
 test("metadata-first queries don't load geometry or claim polygon containment",()=>{
  const index=build(fixtures);
  assert.equal(index.stats().areas,4);

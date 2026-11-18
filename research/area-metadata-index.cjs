@@ -13,12 +13,15 @@ function normalized(record){
    !["water","protected","ecoregion","special","region"].includes(record.kind))
    throw new TypeError("Named typed area metadata required");
  const b=record.bbox;
+ if(record.sourceId!==undefined&&(!Number.isSafeInteger(record.sourceId)||record.sourceId<=0))
+   throw new TypeError("Valid sourceId must be preserved for lazy provider loading");
  if(!b||!validCoordinate(b.west,-180,180)||!validCoordinate(b.east,-180,180)||
    !validCoordinate(b.south,-90,90)||!validCoordinate(b.north,-90,90)||
    b.west>b.east||b.south>b.north)
    throw new RangeError("Invalid/antimeridian-spanning bbox");
  return Object.freeze({id:record.id,name:record.name,kind:record.kind,
-   bbox:Object.freeze({...b}),source:record.source||null});
+   bbox:Object.freeze({...b}),source:record.source||null,
+   sourceId:record.sourceId??null});
 }
 function inBBox(b,lon,lat){
  return lon>=b.west&&lon<=b.east&&lat>=b.south&&lat<=b.north;
