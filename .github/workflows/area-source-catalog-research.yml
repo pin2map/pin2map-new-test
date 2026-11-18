@@ -1,0 +1,55 @@
+name: Research polygon source catalog and versioned provenance
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - 'research/area-source-*.cjs'
+      - 'tests/area-source-catalog.test.js'
+      - '.github/workflows/area-source-catalog-research.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read-only Natural Earth source checkout
+        uses: actions/checkout@v4
+        with:
+          repository: nvkelso/natural-earth-vector
+          ref: master
+          path: catalog-natural-earth
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            geojson/ne_110m_admin_0_countries.geojson
+            geojson/ne_110m_lakes.geojson
+            geojson/ne_10m_parks_and_protected_lands_area.geojson
+      - name: Read-only RESOLVE source checkout
+        uses: actions/checkout@v4
+        with:
+          repository: CatalogueOfLife/col-gazetteers
+          ref: main
+          path: catalog-resolve
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            teow/features/689.geojson
+            teow/features/676.geojson
+            teow/features/751.geojson
+            teow/features/513.geojson
+      - name: Independent source provenance and update tests
+        run: |
+          node --check research/area-source-catalog.cjs
+          node --check research/area-source-catalog-live.cjs
+          node --test tests/area-source-catalog.test.js
+      - name: Audit real polygon corpus against original 15 named reference coordinates
+        env:
+          PIN2MAP_NATURAL_EARTH_ROOT: catalog-natural-earth
+          PIN2MAP_RESOLVE_ROOT: catalog-resolve
+        run: node research/area-source-catalog-live.cjs
