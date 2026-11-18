@@ -1,0 +1,55 @@
+name: Research serverless static polygon catalog and HTTP playback
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - 'research/static-area-*.cjs'
+      - 'tests/static-area-catalog.test.js'
+      - '.github/workflows/static-area-research.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  serverless-static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sparse checkout of three public-domain Natural Earth sources
+        uses: actions/checkout@v4
+        with:
+          repository: nvkelso/natural-earth-vector
+          ref: master
+          path: static-natural-earth
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            geojson/ne_110m_admin_0_countries.geojson
+            geojson/ne_110m_lakes.geojson
+            geojson/ne_10m_parks_and_protected_lands_area.geojson
+      - name: Sparse checkout of four RESOLVE source features CC BY 4.0
+        uses: actions/checkout@v4
+        with:
+          repository: CatalogueOfLife/col-gazetteers
+          ref: main
+          path: static-resolve
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            teow/features/689.geojson
+            teow/features/676.geojson
+            teow/features/751.geojson
+            teow/features/513.geojson
+      - name: Static catalog interface + integrity regressions
+        run: |
+          node --check research/static-area-catalog.cjs
+          node --check research/static-area-http-benchmark.cjs
+          node --test tests/static-area-catalog.test.js
+      - name: Real polygon source + local static HTTP server + 196-position exhaustive crosscheck
+        env:
+          PIN2MAP_NATURAL_EARTH_ROOT: static-natural-earth
+          PIN2MAP_RESOLVE_ROOT: static-resolve
+        run: node research/static-area-http-benchmark.cjs
