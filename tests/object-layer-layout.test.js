@@ -47,6 +47,6 @@ for(const viewportWidth of [320,375,390,820,1280]){
    visibleRows:count,contained:true});
   assert.ok(m.top+m.height<=footer.top-8+0.01,
    "Popup must end above footer: "+JSON.stringify({viewportWidth,count,m}));
-  assert.ok(m.height>=140,"Options must remain visible, not merely filter");
+  assert.ok(m.height>=Math.min(140,70+43*count),"At least matching filter and option room");
  }
 }

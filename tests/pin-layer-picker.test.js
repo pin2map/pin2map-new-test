@@ -192,6 +192,7 @@ test("geometry layer picker never collapses to filter-only strip on mobile",()=>
  const height=Number.parseFloat(elements.pinLayerMenu.style.maxHeight);
  const top=Number.parseFloat(elements.pinLayerMenu.style.top);
  assert.ok(height>=190,"Layer popup must allow real options, not only filter");
+ assert.ok(top+height<=490-8+1,"Layer popup must not cover its footer");
  assert.ok(top>=12&&top+height<=667-12,"Popup stays in viewport");
  assert.equal(elements.pinLayerMenu.style.width,"339px");
 });
@@ -207,6 +208,7 @@ test("many geometry layers expand to original editor width and usable list heigh
  const menu=elements.pinLayerMenu;
  assert.equal(menu.style.width,"339px","restore full editor-width dropdown");
  assert.ok(parseFloat(menu.style.height)>=300,"many layers must not become a filter-only strip");
+ assert.ok(parseFloat(menu.style.top)+parseFloat(menu.style.height)<=525-95-8+1,"Many layers must end above footer");
  // Geometry menu is absolute INSIDE the owner panel; the measured
  // viewport position equals dialog top plus the local menu offset.
  const ownerTop=95;
