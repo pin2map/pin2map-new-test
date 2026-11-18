@@ -36,3 +36,33 @@ Referenzen:
 
 ## Nächste Entscheidung
 Erst nach einem echten statischen HTTP-Prototyp mit korrekter Lazy-Geomtry, gemessenen Requestzahlen und bestehenden CI-Gates: prüfen, ob ein **kleiner, regionaler OSM-Extrakt** in einem einmaligen Actions-Job extrahiert werden kann, OSM-Ways/Relations korrekt zu Polygone zusammensetzt, und ohne laufenden Server regionalen Index/GeoJSON auf ein **isoliertes, lizenzkonformes statisches Testverzeichnis** ausliefert. Realen HERE-/Geoapify-Vergleich getrennt nach Besitz/Einrichtung von Schlüsseln; keine Schlüssel im Client oder öffentlichen Workflow veröffentlichen.
+
+
+## Live-Ergebnis und verifizierte Freigaben
+
+**Forschungs-/Funktionscommit:** `87e44430540372cf1b58f062759c13fe51d3d7e2`.
+
+Der [isolierte Forschungsworkflow 44339464362](https://github.com/pin2map/pin2map-new-test/actions/runs/44339464362) lief **completed/success** mit echten Natural-Earth- und RESOLVE-Quellpolygonen, 6 neuen Testfällen (Hash-/Pfad-/Lizenzprüfung, instabile IDs, Parallel-Cache und tatsächliche Geometrieintegrität) und `fetch`-Abrufen vom temporären lokalen HTTP-Server. Für jede der 196 Koordinaten wurden die vollständig sortierten echten Trefferlisten gegen den originalen exhaustive-polygon-Geometriecheck verglichen; **196/196 korrekt, 103 bestätigte Polygon-Treffer**, 13 überlappende Punkte, 247 kandidatenweise exakte Prüfungen. Ein BBox-Kandidat bleibt bis zur Prüfung unbestätigt.
+
+| Laufmetrik aus GitHub Actions | Wert |
+|---|---:|
+| Quellen-/Polygonobjekte | 266 |
+| Namens-/BBox-/Lizenz-Metadaten `index.json` | 119.176 Bytes |
+| 266 vollständige gehashte GeoJSON-Dateien | 572.603 Bytes |
+| Kaltabruf – HTTP-Requests für Index + 66 Einzelpolygone | 67 |
+| Kaltabruf – ausgelieferte Daten für diesen 196-Punkt-Durchlauf | 380.306 Bytes |
+| Unterschiedliche zwischengespeicherte GeoJSON-Geometrien | 66 |
+| Weitere HTTP-Requests für warmen zweiten 196-Punkt-Durchlauf | **0** |
+| Kaltzeit alle Punkte inklusive 67 lokalen HTTP-Zugriffen und JS-Polygonprüfung | 169,54 ms |
+| Warmlaufzeit alle Punkte lokal und vollständig im RAM | 1,77 ms |
+| Lokale Treffer-Gleichheit mit dem Quell-Oracle | 196/196 |
+
+**Wichtig:** Diese Zeiten stammen von einem temporären **localhost**-HTTP-Server in GitHub Actions und sind keinesfalls Nutzer-Internet-/iPhone-/iPad-Ladezeiten. Die 380 KB sind **tatsächlich ausgelieferte unkomprimierte HTTP-Body-Bytes** im Test, nicht die weltweit erforderliche Datenmenge oder CDN-Transfermessung. GeoJSON-Assets wurden nur temporär im Runner erstellt und nicht auf Pages veröffentlicht. Ein browserseitiger ESM-Adapter, echter Browser-/Mobil-Download, Manifest-Sharding, CORS auf CDN und OSM-Spezialflächenimport sind noch offen. Die 266 allgemeinen Polygone decken unverändert 0/15 Originalreferenzen der verlangten Gebietskategorien ab.
+
+**Alle bestehenden App-Sicherheitsgates für den Forschungscommit vollständig `completed/success`:**
+- [Node/Chromium #44339464206](https://github.com/pin2map/pin2map-new-test/actions/runs/44339464206)
+- [Leaflet-Architektur #44339464174](https://github.com/pin2map/pin2map-new-test/actions/runs/44339464174)
+- [Pages/HTTPS-Live-Provider/Chromium/WebKit pre/post #44339464180](https://github.com/pin2map/pin2map-new-test/actions/runs/44339464180)
+- [Forschungs-CI #44339464362](https://github.com/pin2map/pin2map-new-test/actions/runs/44339464362)
+
+**Serverentscheidung:** Das Dateiauslieferungsprinzip benötigt keinen laufenden eigenen Datenbank-/GIS-Server. Ein geplanter/importierter Build-Prozess ist weiterhin notwendig. Ein 119 KB großer weltweiter Index ist **nicht** gezeigt; die skalierbare Regionierung und ODbL-Compliance sind noch Forschungsthemen. **HERE/Geoapify sind mangels API-Zugang noch nicht an echten 15 Punkten getestet**; nur Schnittstellen dokumentarisch geprüft. Keine App-/SW-Änderung, v264 bleibt live.
