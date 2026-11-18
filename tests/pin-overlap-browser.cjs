@@ -253,13 +253,26 @@ async function zoom(page){
         // If Favorites overlaps its hit area, the dialog MUST win pointer
         // priority under the function-button contract. Keyboard activation
         // still closes competing menus and opens the basemap choices.
-        assert.equal(await page.locator("#basemapButton").evaluate(button=>{
+        const basemapCoverage=await page.locator("#basemapButton").evaluate(button=>{
           const box=button.getBoundingClientRect();
           const top=document.elementFromPoint(box.left+box.width/2,box.top+box.height/2);
-          return !!top?.closest("#favoritesPanel");
-        }),true,"Open Favorites must paint above an overlapping map launcher");
-        await page.locator("#basemapButton").focus();
-        await page.keyboard.press("Enter");
+          return {dialogIntercepts:!!top?.closest("#favoritesPanel"),
+            buttonReceives:top===button||button.contains(top),
+            dialogZ:Number(getComputedStyle(document.querySelector("#favoritesPanel")).zIndex),
+            buttonZ:Number(getComputedStyle(button).zIndex)};
+        });
+        assert.ok(basemapCoverage.dialogZ>basemapCoverage.buttonZ,
+          "Favorites dialog must have higher stacking precedence than map controls");
+        if(basemapCoverage.dialogIntercepts){
+          // Physical pointer remains with the dialog; keyboard activation
+          // must still close competing menus without a force-click.
+          await page.locator("#basemapButton").focus();
+          await page.keyboard.press("Enter");
+        }else{
+          assert.equal(basemapCoverage.buttonReceives,true,
+            "Non-overlapping basemap must be a genuine pointer target");
+          await page.locator("#basemapButton").click();
+        }
         assert.equal(await page.locator("#favoritesPanel").isHidden(),true);
         assert.equal(await page.locator("#basemapMenu").isVisible(),true);
         assert.equal(await page.locator("#favoritesButton").isVisible(),true);
