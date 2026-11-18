@@ -182,8 +182,8 @@ test("geometry layer picker never collapses to filter-only strip on mobile",()=>
  // Simulate the screenshot: a seemingly tiny or invalid area between
  // the geometry editor header and actions on an iPhone viewport.
  const panel={left:8,top:110,right:367,bottom:670,width:359,height:560};
- const head={bottom:280};
- const actions={top:310};
+ const head={bottom:180};
+ const actions={top:490};
  elements.pinPanel.getBoundingClientRect=()=>panel;
  const header={getBoundingClientRect:()=>head};
  const footer={getBoundingClientRect:()=>actions};
@@ -201,8 +201,8 @@ test("many geometry layers expand to original editor width and usable list heigh
  const {picker,elements}=fixture();
  picker.contained=true;
  elements.pinPanel.getBoundingClientRect=()=>({left:8,top:95,bottom:560,width:359,height:465});
- picker.header={getBoundingClientRect:()=>({bottom:250})};
- picker.actions={getBoundingClientRect:()=>({top:290})};
+ picker.header={getBoundingClientRect:()=>({bottom:190})};
+ picker.actions={getBoundingClientRect:()=>({top:525})};
  const layers=Array.from({length:12},(_,i)=>({id:"layer"+i,name:"Gebietsebene "+i,color:"#326cc2",visible:true}));
  picker.render({layers,selectedLayerId:"layer0"});picker.setOpen(true);
  const menu=elements.pinLayerMenu;
