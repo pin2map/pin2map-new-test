@@ -10,7 +10,9 @@ const {build}=require("./area-metadata-index.cjs");
 const fixtures=require("./area-metadata-fixtures.cjs");
 const index=build(fixtures);
 async function fetchGeometry(id,entry){
- const url="https://raw.githubusercontent.com/CatalogueOfLife/col-gazetteers/main/teow/features/"+entry.sourceId+".geojson";
+ // GitHub Contents API is more consistently reachable on Actions runners
+ // than raw.githubusercontent.com for this public dataset. Four GETs only.
+ const url="https://api.github.com/repos/CatalogueOfLife/col-gazetteers/contents/teow/features/"+entry.sourceId+".geojson?ref=main";
  let last;
  for(let attempt=0;attempt<3;attempt++){
   const controller=new AbortController();
@@ -18,7 +20,11 @@ async function fetchGeometry(id,entry){
   try{
    const response=await fetch(url,{signal:controller.signal,headers:{"User-Agent":"pin2map-new-limited-area-research"}});
    if(!response.ok)throw Error("HTTP "+response.status+" for "+id);
-   const body=await response.text(),geojson=JSON.parse(body);
+   const envelope=await response.json();
+   if(envelope.encoding!=="base64"||typeof envelope.content!=="string")
+    throw Error("GitHub contents missing base64 feature: "+id);
+   const body=Buffer.from(envelope.content.replace(/\\s/g,""),"base64").toString("utf8");
+   const geojson=JSON.parse(body);
    assert.equal(geojson.type,"Feature");
    assert.equal(geojson.properties.ECO_ID,entry.sourceId);
    assert.equal(geojson.properties.LICENSE,"CC-BY 4.0");

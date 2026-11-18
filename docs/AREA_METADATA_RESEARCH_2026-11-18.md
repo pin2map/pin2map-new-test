@@ -40,3 +40,7 @@ Der gesonderte Research-Workflow `.github/workflows/area-metadata-research.yml` 
 - Kein Eingriff in `main`, `reference/*`, Nutzerdaten oder IndexedDB. Der bestehende v264-Worker bleibt unverändert.
 
 Nach erfolgreichen Gates: Metadatenindex für eine größere, fachlich ausgewogene Menge realer Schutzgebiete, Gewässer und administrative Flächen mit **unbekannten Vorab-Klickpunkten** beschaffen und die Vollständigkeit gegen unabhängige Referenzen bewerten. Nur mit rechtlich und technisch geklärtem Provider darf eine produktive Integration erwogen werden.
+
+### GitHub Raw-Datenpfad – reale erste CI-Diagnose und Anpassung
+
+Der erste Forschungsrun [44313086788](https://github.com/pin2map/pin2map-new-test/actions/runs/44313086788) scheiterte nach **6/6 erfolgreichen Modulregressionen** beim realen Dateiabruf `raw.githubusercontent.com/.../689.geojson` mit **HTTP 404 im GitHub-Runner**. Der GitHub-Repository-Contents-Endpunkt für dieselbe öffentlich vorhandene Datei ist über die Projektintegration nachweislich lesbar. Darum wird ausschließlich der Transport auf `api.github.com/repos/CatalogueOfLife/col-gazetteers/contents/...?...ref=main` mit standardmäßigem `base64`-Inhalt umgestellt. Die fachliche `containsPoint`-Prüfung, originalen Metadaten und strikte Datensparsamkeit bleiben identisch; die neue URL ist ein externes Testartefakt, keine App-Provider-Integration. **Der erste Run ist fehlgeschlagen und kein Freigabenachweis.**
