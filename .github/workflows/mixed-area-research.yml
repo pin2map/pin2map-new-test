@@ -1,0 +1,57 @@
+name: Research mixed real polygon index and blind coordinates
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - 'research/mixed-area-*.cjs'
+      - 'tests/mixed-area-index.test.js'
+      - '.github/workflows/mixed-area-research.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mixed-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Checkout public-domain Natural Earth polygons (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: nvkelso/natural-earth-vector
+          ref: master
+          path: research-natural-earth
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            geojson/ne_110m_admin_0_countries.geojson
+            geojson/ne_110m_lakes.geojson
+            geojson/ne_10m_parks_and_protected_lands_area.geojson
+      - name: Checkout four RESOLVE polygons CC BY 4.0 (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: CatalogueOfLife/col-gazetteers
+          ref: main
+          path: research-resolve
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            teow/features/689.geojson
+            teow/features/676.geojson
+            teow/features/751.geojson
+            teow/features/513.geojson
+      - name: Run independent mixed-index regression
+        run: |
+          node --check research/mixed-area-blind-points.cjs
+          node --check research/mixed-area-live-benchmark.cjs
+          node --test tests/mixed-area-index.test.js
+      - name: Validate ALL candidate results against exhaustive REAL polygons
+        env:
+          PIN2MAP_NATURAL_EARTH_ROOT: research-natural-earth
+          PIN2MAP_RESOLVE_ROOT: research-resolve
+        run: node research/mixed-area-live-benchmark.cjs
