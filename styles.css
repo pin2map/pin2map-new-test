@@ -2597,3 +2597,20 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 #app .settings-storage{margin:12px 0;padding:12px;border:1px solid #cbd4df;border-radius:10px}
 #app .settings-storage h3{font-size:15px;margin:0 0 10px}
 #app .settings-storage p{margin:7px 0}
+
+
+/* v264 – functional-button contract: dialog precedence and blue ON states.
+   The deliberately repeated #app ID raises specificity above historical
+   favorite/layer !important stacking exceptions without changing layout. */
+#app#app > button:is(#layersButton,#favoritesButton,#settingsButton,#labelsToggle,#pinInfoButton,#basemapButton,#refreshButton){
+  z-index:1090!important;
+}
+#app#app > button:is(#layersButton,#favoritesButton,#settingsButton,#pinInfoButton,#basemapButton)[aria-expanded="true"],
+#app#app > button#labelsToggle[aria-pressed="true"]{
+  --p2m-map-control-bg:#1764bf!important;
+  --p2m-map-control-pressed:#1764bf!important;
+  --p2m-map-control-ink:#fff!important;
+  --p2m-map-control-border:#1764bf!important;
+}
+/* No display/hiding rules: a functional launcher closes competing menus,
+   not fellow launchers. Dialogs stay above; openers remain visible by layout. */
