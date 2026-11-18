@@ -173,6 +173,7 @@ async function zoom(page){
         }));
         assert.equal(visiblePaint.background,"rgba(255, 224, 0, 0.55)");
         await page.locator("#settingsButton").click();
+        await page.locator("#settingsInterfaceTab").click();
         assert.equal(await page.locator("#showPinHitboxes").isChecked(),true);
         await page.locator("#showPinHitboxes").uncheck();
         const hiddenPaint=await hitbox.evaluate(el=>({
@@ -192,6 +193,7 @@ async function zoom(page){
         await page.reload({waitUntil:"domcontentloaded"});
         await page.waitForFunction(()=>document.querySelector("#map .pin-icon"),null,{timeout:10000});
         await page.locator("#settingsButton").click();
+        await page.locator("#settingsInterfaceTab").click();
         assert.equal(await page.locator("#showPinHitboxes").isChecked(),false,
           "The debug visibility switch survives reload independently of the project");
         await page.locator("#showPinHitboxes").check();
