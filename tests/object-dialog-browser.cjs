@@ -267,6 +267,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
        const h=window.__p2mDialogFixture.editor.header.getBoundingClientRect(),
         f=window.__p2mDialogFixture.editor.actions.getBoundingClientRect();
       return {width:r.width,height:r.height,panelWidth:p.width,top:r.top,bottom:r.bottom,
+       headerBottom:h.bottom,footerTop:f.top,
        panelTop:p.top,panelBottom:p.bottom,visibleOptions:[...menu.querySelectorAll(".pin-layer-option")].length,
        optionHeight:option?.getBoundingClientRect().height||0,
        scrollHeight:menu.scrollHeight,clientHeight:menu.clientHeight};

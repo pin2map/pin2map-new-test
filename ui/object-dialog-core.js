@@ -129,7 +129,8 @@
    const panelLeft=Math.max(left+margin,panel.left);
    const panelRight=Math.min(right-margin,panel.right??panel.left+panel.width);
    const width=Math.max(0,Math.min(390,viewport.width-2*margin,
-    Math.max(0,panel.width-20),Math.max(0,panelRight-panelLeft)));
+    contained?Math.max(0,panel.width-20):390,
+    contained?Math.max(0,panelRight-panelLeft):390));
    // The title and footer are HARD boundaries, even for long layer lists.
    const popupTop=Math.max(top+margin,panel.top+gap,(header?.bottom??panel.top)+gap);
    const popupBottom=Math.min(bottom-margin,panel.bottom-gap,(footer?.top??panel.bottom)-gap);

@@ -31,7 +31,7 @@ test("layer filter has a single behavior owner, not a second geometry implementa
  assert.match(layers,/applyFilter\(\)/);
  assert.doesNotMatch(layers,/Ebenenfilter zurücksetzen/);
  assert.doesNotMatch(layers,/createElement\("input"\)/);
- assert.match(layers,/funnel-x/);
+ assert.doesNotMatch(layers,/funnel-x/);
  assert.match(geometry,/this\.layerPicker=new Picker\(/);
  assert.match(geometry,/this\.layerPicker\.render\(/);
  assert.doesNotMatch(geometry,/geometry-layer-choice/);
