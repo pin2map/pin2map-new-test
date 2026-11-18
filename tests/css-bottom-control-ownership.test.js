@@ -13,7 +13,15 @@ test("bottom zoom buttons use the shared safe-area/attribution baseline",()=>{
   assert.match(css,/#map \.leaflet-bottom\.leaflet-left \.pin-zoom-buttons\{\s*margin-bottom:var\(--p2m-bottom-control-baseline\)!important;/);
   assert.doesNotMatch(css,/margin-bottom:calc\(9px \+ env\(safe-area-inset-bottom,0px\)\)!important/);
 });
-test("map selector vertical baseline is owned by bottom control token",()=>{
-  assert.match(css,/#app #basemapButton\.basemap-map-button\.p2m-icon-control\{\s*bottom:var\(--p2m-bottom-control-baseline\)!important;/);
-  assert.match(css,/#app #basemapMenu\.basemap-menu\{\s*bottom:calc\(var\(--p2m-bottom-control-baseline\) \+ 50px\)!important;/);
+test("v265 map selector uses Refresh centerline instead of the bottom-control baseline",()=>{
+  const map=css.match(/#app #basemapButton\.basemap-map-button\.p2m-icon-control\{[\s\S]*?\}/)?.[0];
+  const refresh=css.match(/#refreshButton\.refresh-map-button\.p2m-icon-control\{[\s\S]*?\}/)?.[0];
+  assert.ok(map&&refresh);
+  for(const rule of [map,refresh]){
+    assert.match(rule,/top:35dvh!important/);
+    assert.match(rule,/bottom:auto!important/);
+    assert.match(rule,/transform:translateY\(-50%\)!important/);
+  }
+  assert.match(css,/#app #basemapMenu\.basemap-menu\{\s*bottom:auto!important;/);
+  assert.doesNotMatch(css,/bottom:calc\(var\(--p2m-bottom-control-baseline\) \+ 50px\)!important/);
 });
