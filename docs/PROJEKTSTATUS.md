@@ -1891,3 +1891,21 @@ Auf ausdrücklichen Nutzerauftrag wurden die acht genehmigten Unterschiede im pr
 
 **Korrektur:** Untere Funktionsleiste wird zur **harten Begrenzung** der nutzbaren Popuphöhe. Bei langen Listen wird nur das Auswahlmenü gescrollt; Hauptdialog-Position und -Größe bleiben unverändert. Browser-/WebKit-Gates prüfen neu Menüunterkante gegen Footer-Oberkante, `elementFromPoint` der auslösenden Toggle-Schaltfläche, Schließen durch erneuten Klick, unabhängig davon 18 Ebenen/verschiedene Gerätetypen/PWA. QS-CI und Live-Gates sind für den konkreten Funktionscommit separat nachzuweisen; echte iPhone-Safari-Abnahme bleibt eine eigene, nicht durch synthetische WebKit-Prüfung ersetzbare Bedingung.
 
+
+
+### v261 – QS der vier Objekt-Dialoge: Ausnahmekatalog, Footer-Schutz und Look-and-Feel-Parität (18.11.2026)
+
+**Auftrag:** Acht explizite Ausnahmen A01–A08 als Positivliste im verbindlichen `docs/OBJECT_DIALOG_FOUNDATION_CONTRACT_2026-11-16.md` festhalten und alle vier Objektbearbeitungsdialoge (Pin, Fläche, See, Fluss) auf den gemeinsamen visuellen und funktionalen Vertrag prüfen. **Ausführlicher QS-Bericht:** [OBJECT_DIALOG_QA_2026-11-18.md](OBJECT_DIALOG_QA_2026-11-18.md).
+
+**Befunde und Korrekturen:** Die Ebenenliste konnte trotz Einhaltung der Hauptdialoggrenzen die untere Button-Leiste überdecken; gemeinsamer `ObjectDialogCore.layerMenuLayout` begrenzt die effektive Menüunterkante nun vor `footer.top`. Die Geometriedialoge verwendeten zudem vom Pin abweichende Rahmenfarbe, Schatten und Padding; durch Abgleich mit dem **berechneten** Pin-CSS auf dieselben sichtbaren Werte gebracht. Ein alter `.pin-panel`-`!important`-Wert machte die wirksame Pin-Rundung 13px statt 15px; diese tatsächliche 13px-Referenz wurde beibehalten, die verbleibende historische CSS-Eigentümerduplikation bleibt als gezielter Bereinigungspunkt offen. Keine Änderungen an Fachdaten oder Kartenfeatures.
+
+**QA-Nachweise:** Node-, Architektur- und vollständige Chromium-Gates, ein zusätzliches WebKit-Geometrie-Gate sowie vor und nach Veröffentlichung erfolgreich absolvierte WebKit-Gates. Die wirklichen Browserrects/Hittestings messen unveränderte Panelmaße, `menu.bottom <= footer.top`, alle Footer-Buttons erreichbar, Menü per erneutem Auslösertipp schließbar, URL-Popup oberhalb des Footers und identische Computed-Style-Eigenschaften der Geometriedialoge zum Pin-Referenzdialog. **WebKit bei 18 Ebenen** (je Fläche/See/Fluss): 320px Menü 284×246, 390px Menü 354×246, 820px Menü 370×246; in allen Fällen 7px oberhalb des Footers und 18. Eintrag auswählbar. Pin-Browser mit acht Ebenen bei 320px/375px/iPad 768px und eigenem Desktoplauf bestanden.
+
+**Finaler Funktionscommit:** `a370970117d84b4d67d32903d5156c177b277c9e`. Version `pin2map-new-v261` / Preview `pin2map-preview-v261`.
+- [Node und Chromium #44274852636](https://github.com/pin2map/pin2map-new-test/actions/runs/44274852636): **completed/success**.
+- [Leaflet-Architektur #44274852731](https://github.com/pin2map/pin2map-new-test/actions/runs/44274852731): **completed/success**.
+- [Separates WebKit #44274852658](https://github.com/pin2map/pin2map-new-test/actions/runs/44274852658): **completed/success**.
+- [Preview, WebKit-Preflight und WebKit-Postpublish #44274852672](https://github.com/pin2map/pin2map-new-test/actions/runs/44274852672): **alle completed/success**. Preview https://pin2map.github.io/pin2map-new-test/preview/ .
+- Alle technischen Zwischenstände mit fehlgeschlagenen Tests wurden repariert und **nicht** als freigegeben bewertet. Reine Dokumentation erhöht keine App-Version und löst keinen unnötigen neuen Pages-Deploy aus.
+
+**Weiterhin offen:** persönliche reale iPhone-Safari-PWA-Abnahme mit dem vorhandenen Nutzerprojekt, iPad-Safari/-PWA-Abnahme, alte konkurrierende CSS-Regeln als Architektur-Altlast. Die vom Nutzer zuvor gemeldete Filterstreifen-Regression ist in den automatisierten Engines abgesichert; ihr realer Gerätebefund wird nicht automatisch als gelöst behauptet. `main`, `reference/*`, IndexedDB-Projekt und Cache erhalten.
