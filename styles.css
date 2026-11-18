@@ -2614,3 +2614,30 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 }
 /* No display/hiding rules: a functional launcher closes competing menus,
    not fellow launchers. Dialogs stay above; openers remain visible by layout. */
+
+/* v265 – Basemap selection moves from bottom-right to the same vertical
+   centerline as the independent Refresh control (35dvh). Use the exact
+   viewport-positioning contract on desktop, tablet and phone. Keep the
+   dialog layer above launchers and the blue open-menu state from v264. */
+#app#app > #basemapButton.basemap-map-button.p2m-icon-control{
+  position:fixed!important;
+  right:var(--p2m-top-corner-inset,12px)!important;
+  left:auto!important;
+  top:35%!important;
+  top:35dvh!important;
+  bottom:auto!important;
+  transform:translateY(-50%)!important;
+}
+#app#app > #basemapButton.basemap-map-button.p2m-icon-control:not([aria-expanded="true"]){
+  --p2m-map-control-bg:#8052b8;
+  --p2m-map-control-pressed:#8052b8;
+  --p2m-map-control-border:#6a409d;
+  --p2m-map-control-ink:#fff;
+}
+#app#app > #basemapMenu.basemap-menu{
+  top:calc(35dvh + var(--p2m-map-circle-size) / 2 + 8px)!important;
+  bottom:auto!important;
+  right:var(--p2m-top-corner-inset,12px)!important;
+  max-height:calc(65dvh - var(--p2m-map-circle-size) / 2 - 18px - env(safe-area-inset-bottom,0px))!important;
+  overflow-y:auto;
+}

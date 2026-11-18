@@ -344,6 +344,12 @@ jobs:
           PIN2MAP_LIVE_PREVIEW: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/preview-live-smoke.cjs
 
+      - name: Verify published purple map selector and refresh alignment on desktop tablet and phones
+        working-directory: preview-source
+        env:
+          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
+        run: node tests/map-selector-alignment-browser.cjs
+
       - name: Verify published area URL popup rectangles in Chromium
         working-directory: preview-source
         env:
