@@ -74,7 +74,11 @@ const sizes=[
        const hit=r?document.elementFromPoint(px,py):null;
        const hitIsOption=!!(hit&&(hit===row||row.contains(hit)));
        const sample={engine:'',label,kind,hitIsOption,sameFrame,
-        footerTop,headerBottom,tipAttached,noFilter,footerToggleReachable,allFooterReachable,
+        footerTop,headerBottom,tipAttached,noFilter,
+        tipParent:editor.tip.parentElement?.id,tipPosition:getComputedStyle(editor.tip).position,
+        tipTop:tip.top,tipBottom:tip.bottom,tipLeft:tip.left,tipRight:tip.right,
+        tipStyleTop:editor.tip.style.top,
+        footerToggleReachable,allFooterReachable,
         hitElement:hit?.tagName||null,hitClass:String(hit?.className||'').slice(0,80),
         rowPoint:{x:px,y:py},menuParent:menu.parentElement?.id||menu.parentElement?.tagName,
         menuWidth:box.width,menuHeight:box.height,

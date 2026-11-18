@@ -147,6 +147,7 @@ test("hidden layer places eye between colored dot and red struck-through name",(
 test("pin layer list is genuinely full-width on tablet, not capped at 260px",()=>{
  const {picker,elements,layers}=fixture();
  picker.doc.defaultView.innerWidth=768;picker.doc.defaultView.innerHeight=1024;
+ elements.pinPanel.getBoundingClientRect=()=>({left:189,top:242,right:579,bottom:622,width:390,height:380});
  elements.pinLayerMenu.scrollHeight=720;
  picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
  assert.equal(elements.pinLayerMenu.style.width,"390px");
