@@ -13,11 +13,24 @@ const {chromium}=require("playwright");
     // context without indicating a provider or polygon failure. Installed
     // worker/offline behaviour is verified in separate browser gates.
     const context=await browser.newContext({serviceWorkers:"block"});
-    const page=await context.newPage();
-    await page.goto(process.env.PIN2MAP_TEST_URL||
-      "https://pin2map.github.io/pin2map-new-test/preview/",
-      {waitUntil:"domcontentloaded",timeout:30000});
-    const result=await page.evaluate(async()=>{
+    const url=process.env.PIN2MAP_TEST_URL||
+      "https://pin2map.github.io/pin2map-new-test/preview/";
+    let result;
+    // A startup-guard navigation can occur after DOMContentLoaded while
+    // deferred assets are initializing. Require a fully mounted Leaflet map
+    // before making real provider requests. One bounded fresh-page retry
+    // handles a transient navigation/network transport failure, never a
+    // missing area, wrong polygon, or failed result assertion.
+    for(let attempt=1;attempt<=2;attempt++){
+      const page=await context.newPage();
+      try{
+        await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
+        await page.waitForFunction(()=>!!window.L&&
+          !!document.querySelector("#map.leaflet-container")&&
+          !!document.querySelector(".pin-zoom-buttons")&&
+          !!window.Pin2MapNominatimAreaFinder?.NominatimAreaFinder,
+          null,{timeout:25000});
+        result=await page.evaluate(async()=>{
       const finder=new window.Pin2MapNominatimAreaFinder.NominatimAreaFinder({
         fetchImpl:(...args)=>fetch(...args)
       });
@@ -40,7 +53,16 @@ const {chromium}=require("playwright");
         lake:lake?{name:lake.name,kind:lake.kind,osmId:lake.osmId}:null,
         lakePolygon:lakePolygon?{id:lakePolygon.osm_id,
           type:lakePolygon.geojson?.type}:null};
-    });
+        });
+        break;
+      }catch(error){
+        const transport=/Execution context was destroyed|Failed to fetch|net::ERR_NETWORK_CHANGED/.test(String(error));
+        if(!transport||attempt===2)throw error;
+        console.warn("LIVE_THEMATIC_AREA_TRANSIENT_RETRY",attempt,String(error));
+      }finally{
+        await page.close();
+      }
+    }
     console.log("LIVE_THEMATIC_AREA_RESULT",JSON.stringify(result));
     assert.equal(result.extraUnavailable,false,
       "A real spatial provider must return candidates, not admin-only fallback");
