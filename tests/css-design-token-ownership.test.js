@@ -29,8 +29,7 @@ test("shared control contracts remain token-driven",()=>{
     "width:var(--p2m-map-circle-size)!important;",
     "height:var(--p2m-map-circle-size)!important;",
     "margin-bottom:var(--p2m-bottom-control-baseline)!important;",
-    "bottom:var(--p2m-bottom-control-baseline)!important;",
-    "bottom:calc(var(--p2m-bottom-control-baseline) + 50px)!important;",
+    "top:calc(35dvh + var(--p2m-map-circle-size) / 2 + 8px)!important;",
     "left:var(--p2m-top-search-clearance)!important;",
     "right:var(--p2m-top-search-clearance)!important;",
     "width:var(--p2m-pin-dialog-action-size)!important;"

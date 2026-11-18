@@ -307,9 +307,9 @@ test("predecessor-safe baseline keeps all lower controls clear of the footer",()
     "#app #basemapButton.basemap-map-button.p2m-icon-control",
     "#map .leaflet-bottom.leaflet-left .pin-zoom-buttons"
   ])assert.ok(rule.includes(selector),"Shared baseline: "+selector);
-  assert.ok(rule.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
+  assert.ok(css.includes("top:calc(35dvh + var(--p2m-map-circle-size) / 2 + 8px)!important"));
   assert.ok(rule.includes("margin-bottom:var(--p2m-bottom-control-baseline)!important"));
-  assert.ok(rule.includes("bottom:calc(var(--p2m-bottom-control-baseline) + 50px)!important"));
+  assert.ok(rule.includes("#app #basemapMenu.basemap-menu{\n  bottom:auto!important;"));
   assert.ok(rule.includes("line-height:var(--p2m-bottom-attribution-height)!important"));
   assert.ok(rule.includes("bottom:0!important"));
 });

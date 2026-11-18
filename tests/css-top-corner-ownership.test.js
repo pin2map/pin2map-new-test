@@ -11,8 +11,10 @@ test("top corner settings uses one positioning contract",()=>{
   assert.doesNotMatch(css,/left:12px!important;right:auto!important;\s*top:calc\(12px \+ env\(safe-area-inset-top,0px\)\)!important/);
   assert.doesNotMatch(css,/left:10px!important;top:calc\(10px \+ env\(safe-area-inset-top,0px\)\)!important/);
 });
-test("map selection popup uses bottom baseline token",()=>{
-  assert.match(css,/#app #basemapMenu\.basemap-menu\{\s*bottom:calc\(var\(--p2m-bottom-control-baseline\) \+ 50px\)!important;/);
+test("map selection popup opens under the moved Refresh-aligned trigger",()=>{
+  assert.match(css,/#app #basemapMenu\.basemap-menu\{[\s\S]*?top:calc\(35dvh \+ var\(--p2m-map-circle-size\) \/ 2 \+ 8px\)!important;/);
+  assert.match(css,/#app #basemapMenu\.basemap-menu\{\s*bottom:auto!important;/);
+  assert.doesNotMatch(css,/bottom:calc\(var\(--p2m-bottom-control-baseline\) \+ 50px\)!important/);
   assert.doesNotMatch(css,/bottom:calc\(60px \+ env\(safe-area-inset-bottom,0px\)\)/);
   assert.doesNotMatch(css,/bottom:calc\(59px \+ env\(safe-area-inset-bottom,0px\)\)/);
 });
