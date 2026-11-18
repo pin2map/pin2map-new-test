@@ -19,13 +19,16 @@
   // input from the map is the already projected point. A feature's polygon,
   // GeoJSON, vertex count and geographic bounds never enter dialog layout.
   function clampedObjectAnchor({point,mapRect,appRect,panelWidth,panelHeight,
-    viewportWidth,viewportHeight,offset=94,margin=8}){
+    viewportWidth,viewportHeight,offset=30,margin=8}){
     const anchor=anchorGeometry({point,mapRect,appRect,panelHeight,
       maxWidth:panelWidth,padding:16,offset});
     const width=Math.min(panelWidth,appRect.width-16);
     const x=Math.max(margin,Math.min(anchor.panel.left,viewportWidth-width-margin));
     const y=Math.max(margin,Math.min(anchor.panel.top,viewportHeight-panelHeight-margin));
-    return {panel:{left:x,top:y,width},tip:anchor.tip};
+    // Local tip coordinates: the geometry tip is a child of its own panel.
+    const sourceX=mapRect.left+point.x-appRect.left;
+    return {panel:{left:x,top:y,width},
+      tip:{left:Math.max(12,Math.min(sourceX-x,width-12)),top:panelHeight-1}};
   }
   function openingCorrection({appRect,panelRect,tipRect,margin=12}){
     // On narrow phones the panel is appWidth-16px wide: a fixed 12px

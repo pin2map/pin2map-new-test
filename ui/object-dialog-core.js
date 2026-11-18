@@ -123,46 +123,20 @@
    * The geometry editor's menu is contained in its panel; the Pin menu
    * uses the same sizing policy but is anchored beside the panel. */
   static layerMenuLayout({panel,trigger,viewport,contained=false,visibleRows=0,header=null,footer=null}){
-   const margin=12,inset=10,gap=8;
+   const margin=12,gap=8;
    const left=viewport.left||0,top=viewport.top||0;
    const right=left+viewport.width,bottom=top+viewport.height;
    const panelLeft=Math.max(left+margin,panel.left);
    const panelRight=Math.min(right-margin,panel.right??panel.left+panel.width);
-   const panelTop=Math.max(top+margin,panel.top+gap);
-   const panelBottom=Math.min(bottom-margin,panel.bottom-gap);
-   // The footer is a hard visibility and pointer boundary for ALL object popups.
-   const popupBottom=contained&&Number.isFinite(footer?.top)?
-    Math.min(panelBottom,footer.top-gap):panelBottom;
-   const ownerWidth=Math.max(0,panelRight-panelLeft);
    const width=Math.max(0,Math.min(390,viewport.width-2*margin,
-     contained?Math.max(0,panel.width-20):390,contained?ownerWidth:390));
-   // The internal header/footer are only placement constraints for short
-   // lists. Tall lists overlay the notes area inside the SAME dialog surface;
-   // map feature geometry and notes textarea size cannot shrink them.
-   const rows=Math.max(0,visibleRows);
-   const desired=contained?Math.min(460,70+43*rows):460;
-   const available=contained?Math.max(0,popupBottom-panelTop):
-    Math.max(0,Math.max(trigger.top-top-margin-gap,bottom-trigger.bottom-gap));
-   const safeUpper=Math.max(panelTop,(header?.bottom??panelTop)+gap);
-   const safeLower=popupBottom;
-   const notesRoom=Math.max(0,safeLower-safeUpper);
-   const shortList=contained&&notesRoom>=Math.min(desired,rows>=5?240:140);
-   const height=Math.max(0,Math.min(available,shortList?Math.min(desired,notesRoom):
-    contained?Math.max(210,desired):desired));
-   let x,y;
-   if(contained){
-    x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));
-    y=shortList?safeUpper:panelTop+Math.max(0,(available-height)/2);
-   }else{
-    const above=Math.max(0,trigger.top-top-margin-gap);
-    const below=Math.max(0,bottom-trigger.bottom-gap);
-    const center=trigger.left+trigger.width/2-width/2;
-    x=Math.max(left+margin,Math.min(center,right-margin-width));
-    y=above>below?trigger.top-gap-height:
-      Math.min(trigger.bottom+gap,bottom-margin-height);
-    y=Math.max(top+margin,y);
-   }
-   return {left:x,top:y,width,height};
+    Math.max(0,panel.width-20),Math.max(0,panelRight-panelLeft)));
+   // The title and footer are HARD boundaries, even for long layer lists.
+   const popupTop=Math.max(top+margin,panel.top+gap,(header?.bottom??panel.top)+gap);
+   const popupBottom=Math.min(bottom-margin,panel.bottom-gap,(footer?.top??panel.bottom)-gap);
+   const height=Math.min(Math.max(0,popupBottom-popupTop),
+    Math.min(460,14+43*Math.max(1,visibleRows)));
+   const x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));
+   return {left:x,top:popupTop,width,height};
   }
   static positionPopup({panel,header,footer,popup,doc,kind="url",keyboardAnchor=null}){
    const win=doc.defaultView,vv=win?.visualViewport;
@@ -193,9 +167,11 @@
    const bottom=Math.min(p.bottom-gap,f.top-gap,viewTop+height-margin);
    const desired=keyboardAnchor?
      keyboardAnchor.top+viewTop-keyboardAnchor.visualOffsetTop:upper;
-   const popupTop=Math.max(viewTop+gap,Math.min(desired,bottom-100));
+   const room=Math.max(0,bottom-upper);
+   const popupHeight=Math.min(320,room);
+   const popupTop=Math.max(upper,Math.min(desired,bottom-popupHeight));
    popup.style.top=popupTop+"px";
-   popup.style.height=Math.max(100,Math.min(320,bottom-popupTop))+"px";
+   popup.style.height=popupHeight+"px";
   }
  }
  root.Pin2MapObjectDialogCore=ObjectDialogCore;

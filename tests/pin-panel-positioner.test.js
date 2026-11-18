@@ -133,3 +133,26 @@ test("all geometry editors use shared anchored viewport bounds independent of fe
  assert.ok(base.panel.left+base.panel.width<=382);
  assert.ok(base.panel.top+input.panelHeight<=836);
 });
+
+test("geometry dialogs use short label clearance, tip always mounted to their clamped panel",()=>{
+ const {clampedObjectAnchor}=require("../ui/pin-panel-positioner.js");
+ for(const [width,height] of [[320,700],[390,844],[820,1180],[1280,800]]){
+  const w=Math.min(390,width-16),h=315;
+  const p=clampedObjectAnchor({point:{x:width/2,y:height*.75},
+   mapRect:{left:0,top:0},appRect:{left:0,top:0,width,height},
+   panelWidth:w,panelHeight:h,viewportWidth:width,viewportHeight:height});
+  // Tip is a local child: its base touches the panel's lower edge.
+  assert.equal(p.tip.top,h-1);
+  assert.ok(p.tip.left>=12&&p.tip.left<=w-12);
+  const tipPoint=p.panel.top+p.tip.top+15;
+  assert.ok(Math.abs(tipPoint-(height*.75-15))<=1,
+   "Label-to-tip distance must be short instead of inherited Pin 94px gap");
+ }
+ for(const point of [{x:0,y:10},{x:10000,y:10000}]){
+  const p=clampedObjectAnchor({point,mapRect:{left:0,top:0},
+   appRect:{left:0,top:0,width:390,height:844},
+   panelWidth:374,panelHeight:315,viewportWidth:390,viewportHeight:844});
+  assert.equal(p.tip.top,314,"clamping must not detach tip vertically");
+  assert.ok(p.tip.left>=12&&p.tip.left<=362,"tip must remain on panel edge");
+ }
+});

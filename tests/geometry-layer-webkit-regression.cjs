@@ -47,6 +47,10 @@ const sizes=[
        const menu=editor.layerMenu, panel=editor.panel;
        const box=menu.getBoundingClientRect(), pb=panel.getBoundingClientRect();
        const footerTop=editor.actions.getBoundingClientRect().top;
+       const headerBottom=editor.header.getBoundingClientRect().bottom;
+       const tip=editor.tip.getBoundingClientRect();
+       const tipAttached=editor.tip.parentElement===panel&&
+        Math.abs(tip.top-pb.bottom)<2&&tip.left>=pb.left-1&&tip.right<=pb.right+1;
        const t=editor.layerButton.getBoundingClientRect();
        const hitToggle=document.elementFromPoint(t.left+t.width/2,t.top+t.height/2);
        const footerToggleReachable=hitToggle===editor.layerButton||editor.layerButton.contains(hitToggle);
@@ -55,6 +59,7 @@ const sizes=[
         const hit=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);
         return hit===button||button.contains(hit);
        });
+       const noFilter=!menu.querySelector('.pin-layer-filter');
        const opts=[...menu.querySelectorAll('.pin-layer-option')];
        const displayed=opts.filter(x=>{
         const r=x.getBoundingClientRect();
@@ -69,7 +74,7 @@ const sizes=[
        const hit=r?document.elementFromPoint(px,py):null;
        const hitIsOption=!!(hit&&(hit===row||row.contains(hit)));
        const sample={engine:'',label,kind,hitIsOption,sameFrame,
-        footerTop,footerToggleReachable,allFooterReachable,
+        footerTop,headerBottom,tipAttached,noFilter,footerToggleReachable,allFooterReachable,
         hitElement:hit?.tagName||null,hitClass:String(hit?.className||'').slice(0,80),
         rowPoint:{x:px,y:py},menuParent:menu.parentElement?.id||menu.parentElement?.tagName,
         menuWidth:box.width,menuHeight:box.height,
@@ -93,15 +98,18 @@ const sizes=[
      for(const record of body){
       record.engine=engine;
       console.log('SAFARI_REGRESSION_METRICS',JSON.stringify(record));
-      assert.ok(record.options===18,record.kind+' options not rendered');
+      assert.ok(record.options===18&&record.noFilter,record.kind+' options/filter state invalid');
       assert.ok(record.sameFrame,'MAIN DIALOG RESIZED/MOVED BY LAYER POPUP: '+JSON.stringify(record));
+      assert.ok(record.tipAttached,'TIP DETACHED FROM GEOMETRY PANEL: '+JSON.stringify(record));
+      assert.ok(record.menuTop>=record.headerBottom+7-1,
+       'Layer overlay hides object identity: '+JSON.stringify(record));
       assert.ok(record.menuBottom<=record.footerTop+1,
        'Layer menu covers bottom action row: '+JSON.stringify(record));
       assert.ok(record.allFooterReachable&&record.footerToggleReachable&&record.footerToggleCloses,
        'Footer buttons blocked or layer toggle fails to close: '+JSON.stringify(record));
       assert.ok(record.menuWidth>=record.panelWidth-25,
         'chooser not restored to original editor width: '+JSON.stringify(record));
-      assert.ok(record.menuHeight>=210,
+      assert.ok(record.menuHeight>=95,
         'filter-only collapsed menu: '+JSON.stringify(record));
       assert.ok(record.displayed>=2,
         'at least two complete selectable rows must be visible: '+JSON.stringify(record));
@@ -178,16 +186,22 @@ const sizes=[
      const option=p.layerPicker.options[1].button,or=option.getBoundingClientRect();
      const hit=document.elementFromPoint(or.left+or.width/2,or.top+or.height/2);
      const footer=p.actions.getBoundingClientRect(),trigger=p.layerButton.getBoundingClientRect();
+     const headerBottom=p.header.getBoundingClientRect().bottom;
+     const tip=p.tip.getBoundingClientRect();
+     const tipAttached=p.tip.parentElement===p.panel&&Math.abs(tip.top-panel.bottom)<2;
      const buttonHit=document.elementFromPoint(trigger.left+trigger.width/2,trigger.top+trigger.height/2);
      return {width:box.width,height:box.height,footerTop:footer.top,menuBottom:box.bottom,
-      footerToggleReachable:buttonHit===p.layerButton||p.layerButton.contains(buttonHit),panelWidth:panel.width,
+      footerToggleReachable:buttonHit===p.layerButton||p.layerButton.contains(buttonHit),
+      headerBottom,menuTop:box.top,tipAttached,panelWidth:panel.width,
       count:p.layerPicker.options.length,
       hitIsOption:hit===option||option.contains(hit),
       menuParent:p.layerMenu.parentElement?.id};
     });
-    assert.ok(dims.width>=dims.panelWidth-25&&dims.height>=210&&dims.count===18,
+    assert.ok(dims.width>=dims.panelWidth-25&&dims.height>=95&&dims.count===18,
       'installed PWA clipped its layer list: '+JSON.stringify(dims));
     assert.ok(dims.hitIsOption,'installed PWA layer rows are hidden BEHIND the object dialog: '+JSON.stringify(dims));
+    assert.ok(dims.tipAttached&&dims.menuTop>=dims.headerBottom+7-1,
+     'installed PWA hides header or detaches tip: '+JSON.stringify(dims));
     assert.ok(dims.menuBottom<=dims.footerTop+1&&dims.footerToggleReachable,
      'installed PWA layer menu covers its own toggle: '+JSON.stringify(dims));
     assert.equal(dims.menuParent,'geometryEditor',

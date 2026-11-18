@@ -7,10 +7,10 @@ const panel=rect(8,240,374,340),trigger=rect(50,540,40,40);
 for(const count of [1,3,8,18,40]){
  const contained=Core.layerMenuLayout({panel,trigger,viewport,contained:true,visibleRows:count});
  assert.ok(contained.width>=350,"dialog width preserved");
- assert.ok(contained.height>=Math.min(210,70+43*count),"visible options do not collapse into filter");
+ assert.ok(contained.height>=Math.min(210,14+43*count),"visible options do not collapse into filter");
  assert.ok(contained.top>=panel.top&&contained.top+contained.height<=panel.bottom,"contained in dialog");
  const pin=Core.layerMenuLayout({panel,trigger,viewport,contained:false,visibleRows:count});
- assert.ok(pin.height>=72&&pin.width>=350,"pin uses same full-width sizing");
+ assert.ok(pin.height>=57&&pin.width>=350,"pin uses same full-width sizing");
 }
 const compact=Core.layerMenuLayout({panel:rect(8,10,304,310),
  trigger:rect(24,280,40,40),viewport:{left:0,top:0,width:320,height:700},
@@ -47,6 +47,20 @@ for(const viewportWidth of [320,375,390,820,1280]){
    visibleRows:count,contained:true});
   assert.ok(m.top+m.height<=footer.top-8+0.01,
    "Popup must end above footer: "+JSON.stringify({viewportWidth,count,m}));
-  assert.ok(m.height>=Math.min(140,70+43*count),"At least matching filter and option room");
+  assert.ok(m.height>=Math.min(140,14+43*count),"At least matching filter and option room");
+ }
+}
+
+for(const width of [320,375,390,820,1280]){
+ const w=Math.min(390,width-16);
+ const p=rect(8,80,w,340),h=rect(8,90,w,70),f=rect(8,356,w,60);
+ for(const count of [1,4,18,40]){
+  const r=Core.layerMenuLayout({panel:p,header:h,footer:f,
+   trigger:rect(24,368,42,42),
+   viewport:{left:0,top:0,width,height:900},
+   visibleRows:count,contained:true});
+  assert.ok(r.top>=h.bottom+8-0.01,"Must preserve title row");
+  assert.ok(r.top+r.height<=f.top-8+0.01,"Must preserve footer");
+  assert.ok(r.height>=50,"Must show actual layer choices");
  }
 }

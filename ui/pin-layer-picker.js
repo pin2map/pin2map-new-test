@@ -15,7 +15,7 @@
    this.contained=contained;this.withinPanel=withinPanel;
    this.header=header;this.actions=actions;
    this.onOpenChange=onOpenChange;
-   this.open=false;this.filterText="";this.options=[];
+   this.open=false;this.options=[];
    const menu=this.el(menuId),trigger=this.el(triggerId);
    if(!menu||!trigger)throw new TypeError("Layer menu and trigger required");
    // The geometry editor lives inside the fixed #app stacking context
@@ -89,10 +89,6 @@
   }
   setOpen(open){
    this.open=Boolean(open);
-   if(this.open){
-    this.filterText="";
-    if(this.filterInput)this.filterInput.value="";
-   }
    const menu=this.el(this.menuId),trigger=this.el(this.triggerId);
    menu.classList.toggle("hidden",!this.open);
    trigger.setAttribute("aria-expanded",String(this.open));
@@ -102,14 +98,8 @@
    this.onOpenChange(this.open);
   }
   applyFilter(){
-   const q=this.filterText.trim().toLocaleLowerCase("de-DE");
-   let count=0;
-   for(const {button,name} of this.options){
-    button.hidden=Boolean(q)&&!name.toLocaleLowerCase("de-DE").includes(q);
-    if(!button.hidden)count++;
-   }
-   if(this.emptyMessage)this.emptyMessage.hidden=count>0;
-   if(this.clearButton)this.clearButton.disabled=!this.filterText;
+   for(const {button} of this.options)button.hidden=false;
+   if(this.emptyMessage)this.emptyMessage.hidden=this.options.length>0;
   }
   render({layers,selectedLayerId}){
    const trigger=this.el(this.triggerId),menu=this.el(this.menuId);
@@ -125,22 +115,8 @@
     trigger.append(icon,dot);
    }
    menu.replaceChildren();this.options=[];
-   const filter=this.doc.createElement("div");filter.className="pin-layer-filter";
-   const input=this.doc.createElement("input");input.type="search";
-   input.className="pin-layer-filter-input";input.placeholder="Ebenen filtern";
-   input.setAttribute("aria-label","Ebenen nach Namen filtern");
-   input.setAttribute("autocomplete","off");input.value=this.filterText;
-   const clear=this.doc.createElement("button");clear.type="button";
-   clear.className="pin-layer-filter-clear";
-   clear.setAttribute("aria-label","Ebenenfilter zurücksetzen");
-   clear.setAttribute("title","Ebenenfilter zurücksetzen");
-   clear.append(this.icons.svg("funnel-x",this.doc));
-   input.addEventListener("input",()=>{this.filterText=input.value;this.applyFilter();if(this.open)this.positionMenu();});
-   clear.addEventListener("click",()=>{
-    this.filterText="";input.value="";this.applyFilter();if(this.open)this.positionMenu();input.focus();
-   });
-   filter.append(input,clear);menu.append(filter);
-   this.clearButton=clear;this.filterInput=input;
+   // All four object pickers are direct scrollable lists without filtering.
+   this.filterInput=null;this.clearButton=null;
    for(const layer of layers){
     const option=this.doc.createElement("button");option.type="button";
     option.className="pin-layer-option";
@@ -173,7 +149,7 @@
     this.options.push({button:option,name:layer.name||""});
    }
    const empty=this.doc.createElement("p");
-   empty.className="pin-layer-filter-empty";empty.textContent="Keine passende Ebene.";
+   empty.className="pin-layer-filter-empty";empty.textContent="Keine Ebene vorhanden.";
    menu.append(empty);this.emptyMessage=empty;
    this.applyFilter();
    if(this.open)this.positionMenu();

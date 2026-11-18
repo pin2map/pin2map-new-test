@@ -65,7 +65,7 @@ test("area layer popover uses colored dot, eye, name, and persists only selectio
   editor.layerButton.click();
   const menu=editor.layerMenu;
   assert.equal(menu.classList.contains("hidden"),false);
-  const visible=menu.children[1],hidden=menu.children[2];
+  const visible=menu.children[0],hidden=menu.children[1];
   assert.equal(visible.children[0].style.backgroundColor,"#326cc2");
   assert.equal(visible.children[1].children[0].iconName,"eye");
   assert.equal(hidden.children[1].children[0].iconName,"eye-off");

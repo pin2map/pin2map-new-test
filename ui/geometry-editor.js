@@ -94,7 +94,8 @@
       this.createAreaPopups();
       const tip=doc.createElement("div");
       tip.className="object-editor-tip hidden";tip.setAttribute("aria-hidden","true");
-      this.doc.getElementById("app").append(panel,tip);this.tip=tip;
+      panel.append(tip);
+      this.doc.getElementById("app").append(panel);this.tip=tip;
       // Popup outside-click, Escape and focus are owned by the common
       // ObjectLayerPicker / ObjectUrlPopup controllers; not this view.
       this.doc.addEventListener("keydown",e=>{

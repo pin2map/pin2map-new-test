@@ -49,9 +49,9 @@ test("selected layer trigger uses Lucide icon and colored dot; menu keeps full l
   picker.render({layers,selectedLayerId:"work"});
   assert.equal(trigger.children[1].style.backgroundColor,"#235baa");
   assert.match(trigger.attrs["aria-label"],/Arbeit, Ausgeblendet/);
-  assert.equal(elements.pinLayerMenu.children.length,4);
-  assert.equal(elements.pinLayerMenu.children[2].children[1].children[0].iconName,"eye-off");
-  assert.equal(elements.pinLayerMenu.children[2].attrs["aria-selected"],"true");
+  assert.equal(elements.pinLayerMenu.children.length,3);
+  assert.equal(elements.pinLayerMenu.children[1].children[1].children[0].iconName,"eye-off");
+  assert.equal(elements.pinLayerMenu.children[1].attrs["aria-selected"],"true");
 });
 test("selecting a layer dispatches the existing native change event exactly once",()=>{
   const {picker,elements,layers}=fixture();
@@ -61,14 +61,14 @@ test("selecting a layer dispatches the existing native change event exactly once
   elements.pinLayerTrigger.click();
   assert.equal(elements.pinLayerTrigger.attrs["aria-expanded"],"true");
   assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),true);
-  elements.pinLayerMenu.children[2].click();
+  elements.pinLayerMenu.children[1].click();
   assert.equal(elements.pinLayer.value,"work");
   assert.equal(changes,1);
   assert.equal(elements.pinLayerTrigger.attrs["aria-expanded"],"false");
   assert.equal(elements.pinPanel.classList.contains("pin-layer-open"),false);
   assert.equal(elements.pinLayerTrigger.focused,true);
   // Re-selecting identical value must not create redundant save events.
-  elements.pinLayerMenu.children[2].click();
+  elements.pinLayerMenu.children[1].click();
   assert.equal(changes,1);
 });
 test("outside press and Escape close selector without changing assignment",()=>{
@@ -112,55 +112,32 @@ test("layer picker uses fixed popup outside the scrolling panel and a circular t
  for(const id of ids){const next=footer.indexOf('id="'+id+'"');assert.ok(next>last,"Footer action order: "+id);last=next;}
 });
 
-test("regular pin layer filter matches names ignoring case, preserves selected layer",()=>{
+test("all four object layer pickers omit the filter and expose direct choices",()=>{
  const {picker,elements,layers}=fixture();
- picker.render({layers,selectedLayerId:"private"});
- picker.setOpen(true);
- const input=picker.filterInput;
- input.value="ARb";input.listeners.input();
- assert.equal(picker.options[0].button.hidden,true);
- assert.equal(picker.options[1].button.hidden,false);
- assert.equal(elements.pinLayer.value,"private");
- assert.equal(picker.options[0].button.attrs["aria-selected"],"true");
- assert.equal(picker.clearButton.disabled,false);
- picker.clearButton.click();
- assert.equal(input.value,"");
- assert.equal(picker.options[0].button.hidden,false);
- assert.equal(picker.options[1].button.hidden,false);
- assert.equal(elements.pinLayer.value,"private");
-});
-test("filtering zero results never assigns a layer and reopening resets the filter",()=>{
- const {picker,elements,layers}=fixture();
- picker.render({layers,selectedLayerId:"private"});
- picker.setOpen(true);
- picker.filterInput.value="gibt es nicht";
- picker.filterInput.listeners.input();
- assert.equal(picker.emptyMessage.hidden,false);
- assert.equal(picker.options.every(x=>x.button.hidden),true);
- assert.equal(elements.pinLayer.value,"private");
- picker.setOpen(false);picker.setOpen(true);
- assert.equal(picker.filterInput.value,"");
- assert.equal(picker.emptyMessage.hidden,true);
+ picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
+ assert.equal(picker.filterInput,null);
+ assert.equal(picker.clearButton,null);
+ assert.equal(elements.pinLayerMenu.children.length,3);
  assert.equal(picker.options.every(x=>!x.button.hidden),true);
-});
-test("regular pin can select a filtered hidden layer through unchanged native change",()=>{
- const {picker,elements,layers}=fixture();
+ assert.equal(elements.pinLayer.value,"private");
  let changes=0;
  elements.pinLayer.addEventListener("change",()=>changes++);
- picker.render({layers,selectedLayerId:"private"});
- picker.setOpen(true);
- picker.filterInput.value="arbeit";
- picker.filterInput.listeners.input();
  picker.options[1].button.click();
  assert.equal(elements.pinLayer.value,"work");
  assert.equal(changes,1);
  assert.equal(picker.open,false);
 });
-
+test("empty layer list shows message without an automatic assignment",()=>{
+ const {picker,elements}=fixture();
+ picker.render({layers:[],selectedLayerId:null});picker.setOpen(true);
+ assert.equal(picker.emptyMessage.hidden,false);
+ assert.equal(picker.options.length,0);
+ assert.equal(elements.pinLayer.value,"private");
+});
 test("hidden layer places eye between colored dot and red struck-through name",()=>{
  const {picker,elements,layers}=fixture();
  picker.render({layers,selectedLayerId:"private"});
- const hidden=elements.pinLayerMenu.children[2];
+ const hidden=elements.pinLayerMenu.children[1];
  assert.equal(hidden.children[0].className,"pin-layer-dot");
  assert.equal(hidden.children[1].children[0].iconName,"eye-off");
  assert.equal(hidden.children[2].textContent,"Arbeit");
@@ -173,7 +150,7 @@ test("pin layer list is genuinely full-width on tablet, not capped at 260px",()=
  elements.pinLayerMenu.scrollHeight=720;
  picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
  assert.equal(elements.pinLayerMenu.style.width,"390px");
- assert.ok(Number.parseFloat(elements.pinLayerMenu.style.maxHeight)>260);
+ assert.ok(Number.parseFloat(elements.pinLayerMenu.style.maxHeight)>=90);
  assert.ok(Number.parseFloat(elements.pinLayerMenu.style.left)>=12);
 });
 
@@ -191,7 +168,7 @@ test("geometry layer picker never collapses to filter-only strip on mobile",()=>
  picker.render({layers,selectedLayerId:"private"});picker.setOpen(true);
  const height=Number.parseFloat(elements.pinLayerMenu.style.maxHeight);
  const top=Number.parseFloat(elements.pinLayerMenu.style.top);
- assert.ok(height>=150,"Two-layer popup must show filter and both real options");
+ assert.ok(height>=96,"Two-layer popup must show two complete selectable rows");
  assert.ok(top+height<=490-8+1,"Layer popup must not cover its footer");
  assert.ok(top>=12&&top+height<=667-12,"Popup stays in viewport");
  assert.equal(elements.pinLayerMenu.style.width,"339px");
@@ -207,7 +184,7 @@ test("many geometry layers expand to original editor width and usable list heigh
  picker.render({layers,selectedLayerId:"layer0"});picker.setOpen(true);
  const menu=elements.pinLayerMenu;
  assert.equal(menu.style.width,"339px","restore full editor-width dropdown");
- assert.ok(parseFloat(menu.style.height)>=300,"many layers must not become a filter-only strip");
+ assert.ok(parseFloat(menu.style.height)>=250,"many layers must remain scrollable beneath the title");
  assert.ok(parseFloat(menu.style.top)+parseFloat(menu.style.height)<=525-95-8+1,"Many layers must end above footer");
  // Geometry menu is absolute INSIDE the owner panel; the measured
  // viewport position equals dialog top plus the local menu offset.

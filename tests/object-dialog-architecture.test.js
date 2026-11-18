@@ -29,7 +29,8 @@ test("all four object dialogs have one shared foundation and one canonical searc
 test("layer filter has a single behavior owner, not a second geometry implementation",()=>{
  assert.match(layers,/class ObjectLayerPicker/);
  assert.match(layers,/applyFilter\(\)/);
- assert.match(layers,/Ebenenfilter zurücksetzen/);
+ assert.doesNotMatch(layers,/Ebenenfilter zurücksetzen/);
+ assert.doesNotMatch(layers,/createElement\("input"\)/);
  assert.match(layers,/funnel-x/);
  assert.match(geometry,/this\.layerPicker=new Picker\(/);
  assert.match(geometry,/this\.layerPicker\.render\(/);

@@ -81,16 +81,10 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       editor.layerButton.click();
       const reopenedOnThirdTap=picker.open&&
         editor.layerButton.getAttribute("aria-expanded")==="true";
-      picker.filterInput.value="BAHN";
-      picker.filterInput.dispatchEvent(new Event("input",{bubbles:true}));
+      const filterRemoved=picker.filterInput===null&&picker.clearButton===null&&
+       !editor.layerMenu.querySelector(".pin-layer-filter");
       const after=picker.options.map(x=>!x.button.hidden);
       const afterRendered=picker.options.map(x=>getComputedStyle(x.button).display!=="none");
-      const filterStaysOpen=picker.open;
-      const clear=picker.clearButton.getBoundingClientRect();
-      const clearRadius=getComputedStyle(picker.clearButton).borderRadius;
-      picker.clearButton.click();
-      const reset=picker.options.map(x=>!x.button.hidden);
-      const resetRendered=picker.options.map(x=>getComputedStyle(x.button).display!=="none");
       const menu=editor.layerMenu.getBoundingClientRect();
       const menuHeight=menu.height;
       const firstRow=picker.options[0].button.getBoundingClientRect();
@@ -145,12 +139,12 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
        notesVisible,footer,visualSignature,surfaceParity,surfaceDifferences,panel:{left:panel.left,right:panel.right},
-       before,after,reset,closedOnSecondTap,reopenedOnThirdTap,
-       afterRendered,resetRendered,filterStaysOpen,noteBg,noteDoneColor,
+       before,after,filterRemoved,closedOnSecondTap,reopenedOnThirdTap,
+       afterRendered,noteBg,noteDoneColor,
        notePanel:{width:notePanel.width,height:notePanel.height},
        noteText:{width:noteText.width,height:noteText.height},
        noteStyles:{fontSize:noteStyles.fontSize,backgroundColor:noteStyles.backgroundColor},
-       noteViewport,clear:{width:clear.width,height:clear.height,radius:clearRadius},
+       noteViewport,
        menu:{left:menu.left,right:menu.right,top:menu.top,bottom:menu.bottom,
         height:menuHeight,firstRowHeight:firstRow.height,
         optionsVisibleInViewport,pickerScrollHeight,pickerClientHeight},
@@ -176,11 +170,9 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      assert.deepEqual(state.before,[true,true,true],JSON.stringify(state));
      assert.equal(state.closedOnSecondTap,true,JSON.stringify(state));
      assert.equal(state.reopenedOnThirdTap,true,JSON.stringify(state));
-     assert.equal(state.filterStaysOpen,true,JSON.stringify(state));
-     assert.deepEqual(state.after,[false,false,true],JSON.stringify(state));
-     assert.deepEqual(state.afterRendered,[false,false,true],JSON.stringify(state));
-     assert.deepEqual(state.reset,[true,true,true],JSON.stringify(state));
-     assert.deepEqual(state.resetRendered,[true,true,true],JSON.stringify(state));
+     assert.equal(state.filterRemoved,true,JSON.stringify(state));
+     assert.deepEqual(state.after,[true,true,true],JSON.stringify(state));
+     assert.deepEqual(state.afterRendered,[true,true,true],JSON.stringify(state));
      assert.equal(state.noteBg,"rgb(255, 255, 255)",JSON.stringify(state));
      assert.equal(state.noteStyles.fontSize,"16px",JSON.stringify(state));
      assert.ok(state.noteText.width>state.noteViewport.width*.5&&
@@ -189,18 +181,17 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      if(state.noteViewport.width<=390)assert.ok(
        Math.abs(state.notePanel.width-state.noteViewport.width)<=1,
        JSON.stringify(state));
-     assert.ok(Math.abs(state.clear.width-state.clear.height)<=1,JSON.stringify(state));
-     assert.equal(state.clear.radius,"50%",JSON.stringify(state));
      assert.equal(state.selected,"stations");
-     assert.ok(state.menu.height>=145,"Geometry layer menu may not collapse to the filter only: "+JSON.stringify(state));
+     assert.ok(state.menu.height>=90,"Geometry layer menu may not collapse to the filter only: "+JSON.stringify(state));
      assert.ok(state.menu.optionsVisibleInViewport>=1,
        "At least one actual selectable layer must be fully visible: "+JSON.stringify(state));
      assert.ok(state.menu.pickerScrollHeight<=state.menu.pickerClientHeight+2||
-       state.menu.pickerClientHeight>=140,
+       state.menu.pickerClientHeight>=90,
        "Overflowing geometry menu must reserve a useful scrolling viewport: "+JSON.stringify(state));
      assert.ok(state.menu.left>=state.panel.left-2&&state.menu.right<=state.panel.right+2,
        JSON.stringify(state));
-     assert.ok(state.menu.bottom<=state.actionsTop+2,JSON.stringify(state));
+     assert.ok(state.menu.bottom<=state.actionsTop-7+1,JSON.stringify(state));
+     assert.ok(state.menu.top>=state.headerBottom+7-1,"Title obscured: "+JSON.stringify(state));
      assert.ok(state.url.left>=state.panel.left-2&&state.url.right<=state.panel.right+2,
        JSON.stringify(state));
      assert.ok(state.url.bottom<=state.actionsTop+2,JSON.stringify(state));
@@ -227,20 +218,17 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      const layerButton=page.locator("[data-test-object-panel] .geometry-layer");
      await layerButton.click();
      assert.equal(await page.locator("[data-test-object-layer-menu]").isVisible(),true);
-     await page.locator("[data-test-object-layer-menu] .pin-layer-filter-input").fill("bahN");
+     assert.equal(await page.locator("[data-test-object-layer-menu] .pin-layer-filter").count(),0);
      const visible=await page.locator("[data-test-object-layer-menu] .pin-layer-option:visible").allTextContents();
-     assert.equal(visible.length,1,JSON.stringify({type,viewport,visible}));
-     assert.match(visible[0],/Bahnhöfe/);
+     assert.equal(visible.length,3,JSON.stringify({type,viewport,visible}));
      await layerButton.click();
      assert.equal(await page.locator("[data-test-object-layer-menu]").isHidden(),true,
        "Layer button must toggle OFF on actual pointer click");
      await layerButton.click();
      assert.equal(await page.locator("[data-test-object-layer-menu]").isVisible(),true,
        "Layer button must toggle ON again");
-     await page.locator("[data-test-object-layer-menu] .pin-layer-filter-input").fill("bah");
-     await page.locator("[data-test-object-layer-menu] .pin-layer-filter-clear").click();
      assert.equal(await page.locator("[data-test-object-layer-menu] .pin-layer-option:visible").count(),3,
-       "Reset must show all layers via computed CSS visibility");
+       "Direct selector always shows all layers");
      await layerButton.click();
      const notes=page.locator("[data-test-object-panel] .object-editor-notes-input");
      await notes.click();
@@ -276,6 +264,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      const expanded=await page.locator("[data-test-object-layer-menu]").evaluate(menu=>{
       const r=menu.getBoundingClientRect(),p=window.__p2mDialogFixture.editor.panel.getBoundingClientRect();
       const option=menu.querySelector(".pin-layer-option");
+       const h=window.__p2mDialogFixture.editor.header.getBoundingClientRect(),
+        f=window.__p2mDialogFixture.editor.actions.getBoundingClientRect();
       return {width:r.width,height:r.height,panelWidth:p.width,top:r.top,bottom:r.bottom,
        panelTop:p.top,panelBottom:p.bottom,visibleOptions:[...menu.querySelectorAll(".pin-layer-option")].length,
        optionHeight:option?.getBoundingClientRect().height||0,
@@ -283,9 +273,10 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      });
      assert.ok(expanded.width>=expanded.panelWidth-25,
       "Restore chooser width to dialog width: "+JSON.stringify({type,viewport,expanded}));
-     assert.ok(expanded.height>=220,
+     assert.ok(expanded.height>=90,
       "With twelve layers popup must show real selectable rows: "+JSON.stringify({type,viewport,expanded}));
-     assert.ok(expanded.top>=Math.max(0,expanded.panelTop)-2&&
+     assert.ok(expanded.top>=expanded.headerBottom+7-1&&
+       expanded.bottom<=expanded.footerTop-7+1&&
        expanded.bottom<=Math.min(viewport.height,expanded.panelBottom)+2,
       "Expanded chooser stays inside dialog and viewport: "+JSON.stringify({type,viewport,expanded}));
      assert.equal(expanded.visibleOptions,12);
