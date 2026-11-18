@@ -2432,6 +2432,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #labelsToggle.labels-toggle.p2m-icon-control,
 #app #refreshButton.refresh-map-button.p2m-icon-control{
  z-index:1400!important;
+ /* Refresh remains solid and pointer-accessible whenever not busy. */
+ opacity:1;
+ cursor:pointer;
 }
 
 /* v229: the currently open Favorites panel must retain control of its
