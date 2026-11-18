@@ -1938,9 +1938,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .geometry-editor{
   position:fixed;z-index:1600;display:flex;flex-direction:column;gap:10px;
   box-sizing:border-box;width:min(365px,calc(100vw - 16px));padding:12px;
-  border:1px solid #c2cbd6;border-radius:14px;
+  border:1px solid #cbd4df;border-radius:15px;
   background:var(--p2m-pin-dialog-surface,#f7f8fa);
-  box-shadow:0 8px 28px #142a4460;color:#243b54;
+  box-shadow:0 8px 28px #182c4340;color:#243b54;
 }
 #app .geometry-editor.hidden{display:none}
 #app .geometry-editor .geometry-head{display:flex;align-items:center;gap:9px}
@@ -2088,7 +2088,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 
 /* Area editor: share the pin dialog surface, floating layer / URL and note editor contracts. */
-#app .geometry-editor{width:min(var(--p2m-object-dialog-width,390px),calc(100vw - 16px));gap:11px;padding:13px;border-radius:15px}
+#app .geometry-editor{width:min(var(--p2m-object-dialog-width,390px),calc(100vw - 16px));gap:11px;padding:10px 12px;border-radius:15px}
 #app .geometry-editor:not(.is-river) .geometry-head{gap:10px}
 #app .geometry-editor:not(.is-river) .geometry-head fieldset{border-radius:12px}
 #app .geometry-editor:not(.is-river) .geometry-notes{position:relative;border-radius:12px}

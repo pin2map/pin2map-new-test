@@ -53,6 +53,14 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       const panelStyle=getComputedStyle(editor.panel);
       const actionStyle=getComputedStyle(editor.layerButton);
       const noteStyle=getComputedStyle(editor.notesInput);
+      const pinSurface=getComputedStyle(document.getElementById("pinPanel"));
+      const surfaceParity=["backgroundColor","borderTopColor","borderTopWidth",
+       "borderRadius","boxShadow","paddingTop","paddingRight","paddingBottom","paddingLeft"].every(
+        property=>panelStyle[property]===pinSurface[property]);
+      const surfaceDifferences=["backgroundColor","borderTopColor","borderTopWidth",
+       "borderRadius","boxShadow","paddingTop","paddingRight","paddingBottom","paddingLeft"].filter(
+        property=>panelStyle[property]!==pinSurface[property]).map(property=>({
+        property,geometry:panelStyle[property],pin:pinSurface[property]}));
       const visualSignature={
        panelBackground:panelStyle.backgroundColor,
        panelBorderRadius:panelStyle.borderRadius,
@@ -136,7 +144,7 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
       window.__p2mDialogFixture={editor,item,layers,type};
       editor.close();
       return {type,title,desc,symbol:desc.asset?symbol?.getAttribute("src"):symbol?.tagName,
-       notesVisible,footer,visualSignature,panel:{left:panel.left,right:panel.right},
+       notesVisible,footer,visualSignature,surfaceParity,surfaceDifferences,panel:{left:panel.left,right:panel.right},
        before,after,reset,closedOnSecondTap,reopenedOnThirdTap,
        afterRendered,resetRendered,filterStaysOpen,noteBg,noteDoneColor,
        notePanel:{width:notePanel.width,height:notePanel.height},
@@ -154,6 +162,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
      },{type,viewport});
      assert.equal(state.title,windowName(type),JSON.stringify(state));
      assert.equal(state.notesVisible,true,JSON.stringify(state));
+     assert.ok(state.surfaceParity,"Object surface differs from Pin reference: "+
+      JSON.stringify({type,viewport,delta:state.surfaceDifferences}));
      // Identical visual owner across Area, Lake and River. Compare real CSS,
      // rather than assuming a shared class name proves visual parity.
      const key=viewport.width+"x"+viewport.height;
