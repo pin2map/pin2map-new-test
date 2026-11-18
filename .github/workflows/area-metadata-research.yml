@@ -1,0 +1,30 @@
+name: Research metadata-first area index (four real shapes)
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - 'research/area-metadata-*.cjs'
+      - 'tests/area-metadata-index.test.js'
+      - '.github/workflows/area-metadata-research.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  metadata-index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check research scripts and run metadata-first unit tests
+        run: |
+          node --check research/area-metadata-index.cjs
+          node --check research/area-metadata-fixtures.cjs
+          node --check research/area-metadata-live-benchmark.cjs
+          node --test tests/area-metadata-index.test.js
+      - name: Controlled four-feature RESOLVE real-geometry benchmark
+        run: node research/area-metadata-live-benchmark.cjs
