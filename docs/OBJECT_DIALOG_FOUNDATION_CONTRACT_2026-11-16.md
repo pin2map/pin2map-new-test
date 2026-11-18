@@ -67,3 +67,23 @@ Auch ältere Aufrufe von `ObjectDialogCore.positionPopup` mit `kind="layer"` mü
 **2. Einheitliches Look-and-Feel auf allen Geräten.** Pin-, Flächen-, See- und Fluss-Objekt-Dialoge müssen auf **iPhone, iPad und Desktop** unabhängig von Displaygröße grundsätzlich dasselbe gemeinsame Gestaltungs- und Bedienkonzept verwenden: identische Struktur und Reihenfolge gemeinsamer Zeilen/Controls, typografische Hierarchie, Farben, Rahmen, Radius, Schatten, Symbolsprache, Button-Formen und -Zustände sowie funktionale Abläufe. Anpassungen an verfügbare Breite, Höhe, Safe Areas, Eingabetastatur und Pointer-/Touch-Bedienung dienen **nur der responsiven Einpassung** und dürfen keine unbeschlossene separate mobile/tablet/desktop Dialogvariante schaffen. Abweichungen müssen **ausdrücklich und nachvollziehbar beschlossen** sein; der **separate Vollbild-Notizeditor** ist eine bereits ausdrücklich definierte Ausnahme, nicht Vorbild für einen generellen Umbau des Objekt-Dialogs. Objektspezifische zusätzliche Zeilen/Funktionen bleiben nach dem ursprünglichen Objekt-Dialog-Vertrag erlaubt, dürfen die gemeinsamen Controls aber nicht anders aussehen oder bedienen lassen.
 
 **Verbindliches neues QA-Gate:** Für jeden der vier Dialogtypen und für iPhone (320/375/390), iPad und Desktop im echten Chromium-/WebKit-Browser (zusätzlich zur realen Safari-Abnahme) die Dialogrechtecke vor/nach jedem offenen Untermenü vergleichen, die sichtbare Menüunterkante mit der **tatsächlich gemessenen Oberkante der unteren Funktionsleiste** vergleichen, Hit-Testing der auslösenden Schaltfläche und aller übrigen Footer-Aktionen durchführen, erneuten Klick/Tap zum Schließen testen sowie geräteübergreifende Style-/Bounding-Rect-/Interaktionsparität der gemeinsamen Elemente prüfen. Testdaten mit wenigen und vielen Ebenen und Tastatur-/VisualViewport-Zuständen einschließen. Dies ist ein **neuer Nutzervertrag**, kein bereits durch ältere grüne v259-Gates nachgewiesener Zustand; bis Implementierung und Prüfung offen.
+
+
+## Verbindlicher Ausnahmekatalog A01–A08 – Objekt-Dialog-QS (18.11.2026)
+
+Die folgenden acht bereits fachlich beschlossenen Unterschiede sind die **explizite Positivliste** für das Objekt-Dialog-QA-Audit. Sie genehmigen **keine** unterschiedlichen Standardlayouts oder parallelen Implementierungen gemeinsamer Funktionen. Die Pin-Bearbeitung ist die gemeinsame visuelle Referenz.
+
+| ID | Ausdrücklich definierter Unterschied | Geltungsgrenze |
+| --- | --- | --- |
+| A01 | „Navi extern“ und „pin2map Routing“ | Nur Pin; keine Platzhalterzeile oder Höhe bei Fläche/See/Fluss. |
+| A02 | „Pin verschieben“ vor der Ebenenwahl | Nur Pin; separater bewusst bestätigter Verschiebemodus. |
+| A03 | Meteo-Button und Wetter-Mittelzeilen-Overlay | Bisher Pin-spezifischer Platzhalter; gemeinsamer Overlay-Port ist für explizit beauftragte Erweiterungen wiederverwendbar. |
+| A04 | GPX-Zusatzfunktionen/-zeile | Pin-spezifisch und nur bei entsprechend vorhandener Verknüpfung; vorhandene deaktivierte Funktionen bleiben deaktiviert. |
+| A05 | Kanonische Objekttyp-Symbole | Pin, Fläche, See und Fluss dürfen unterschiedliche, vom zentralen Suchsymbol-Eigentümer gelieferte Symbole verwenden. |
+| A06 | Objektspezifische Texte | Namens-, Notiz-, URL-Legenden sowie Löschfrage benennen den tatsächlichen Objekttyp. Keine Sonderbreiten oder andere CSS-Gestaltung. |
+| A07 | Separater vergrößerter Notizeditor | Touch: Tastatur-/Bildschirm-Editor; Desktop mit feinem Pointer: großes zentriertes Fenster nach bestehendem Vertrag. Gemeinsame Implementierung für alle vier. |
+| A08 | Interner Overlay-Portalhost | Pin-Picker als unabhängiger BODY-Overlay, Geometrie-Picker als absolut positioniertes Kind des Objekt-Dialogs. **Reines Implementierungsdetail**, kein anderer Look und keine andere Funktion. |
+
+**Verbotene stillschweigende Ausnahmen:** Unterschiedliche gemeinsame Buttongrößen, Farben, Rundungen, Zeilenreihenfolge, Ebenenfilter, URL-Verhalten, unkontrollierte Hauptdialoghöhe, verdeckte Footer-Buttons, eigenständige iPhone-/iPad-/Desktop-Dialogvarianten und objektspezifische Kopien des Popup-Layouts. Responsive Viewport-/Safe-Area-/Tastatur-Anpassungen dürfen ausschließlich die gemeinsame Dialogfamilie innerhalb verfügbarer Fläche bedienen.
+
+**QA-Freigabebedingung:** Für alle vier Typen und iPhone 320/375/390 px, iPad sowie Desktop gilt `popup.bottom <= footer.top`, tatsächlich erreichbare Footer-Buttons (Hit-Testing), erneuter Klick/Tap schließt Unterdialog, unveränderte `x/y/width/height` des Hauptdialogs sowie Parität der gemeinsamen Style- und Bedien-Eigenschaften. Die gerade beschlossene Footer-Grenze ist strenger als v259 `popup innerhalb des Hauptdialogs`. Alte grüne Tests, die nur `panel.bottom` prüften, sind dafür kein Beweis.

@@ -130,6 +130,9 @@
    const panelRight=Math.min(right-margin,panel.right??panel.left+panel.width);
    const panelTop=Math.max(top+margin,panel.top+gap);
    const panelBottom=Math.min(bottom-margin,panel.bottom-gap);
+   // The footer is a hard visibility and pointer boundary for ALL object popups.
+   const popupBottom=contained&&Number.isFinite(footer?.top)?
+    Math.min(panelBottom,footer.top-gap):panelBottom;
    const ownerWidth=Math.max(0,panelRight-panelLeft);
    const width=Math.max(0,Math.min(390,viewport.width-2*margin,
      contained?Math.max(0,panel.width-20):390,contained?ownerWidth:390));
@@ -138,14 +141,14 @@
    // map feature geometry and notes textarea size cannot shrink them.
    const rows=Math.max(0,visibleRows);
    const desired=contained?Math.min(460,70+43*rows):460;
-   const available=contained?Math.max(0,panelBottom-panelTop):
+   const available=contained?Math.max(0,popupBottom-panelTop):
     Math.max(0,Math.max(trigger.top-top-margin-gap,bottom-trigger.bottom-gap));
    const safeUpper=Math.max(panelTop,(header?.bottom??panelTop)+gap);
-   const safeLower=Math.min(panelBottom,(footer?.top??panelBottom)-gap);
+   const safeLower=popupBottom;
    const notesRoom=Math.max(0,safeLower-safeUpper);
    const shortList=contained&&notesRoom>=Math.min(desired,rows>=5?240:140);
-   const height=Math.min(available,shortList?Math.min(desired,notesRoom):
-    contained?Math.max(210,desired):desired);
+   const height=Math.max(0,Math.min(available,shortList?Math.min(desired,notesRoom):
+    contained?Math.max(210,desired):desired));
    let x,y;
    if(contained){
     x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));

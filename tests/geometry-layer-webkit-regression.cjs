@@ -161,7 +161,10 @@ const sizes=[
       panel=p.panel.getBoundingClientRect();
      const option=p.layerPicker.options[1].button,or=option.getBoundingClientRect();
      const hit=document.elementFromPoint(or.left+or.width/2,or.top+or.height/2);
-     return {width:box.width,height:box.height,panelWidth:panel.width,
+     const footer=p.actions.getBoundingClientRect(),trigger=p.layerButton.getBoundingClientRect();
+     const buttonHit=document.elementFromPoint(trigger.left+trigger.width/2,trigger.top+trigger.height/2);
+     return {width:box.width,height:box.height,footerTop:footer.top,menuBottom:box.bottom,
+      footerToggleReachable:buttonHit===p.layerButton||p.layerButton.contains(buttonHit),panelWidth:panel.width,
       count:p.layerPicker.options.length,
       hitIsOption:hit===option||option.contains(hit),
       menuParent:p.layerMenu.parentElement?.id};
@@ -169,6 +172,8 @@ const sizes=[
     assert.ok(dims.width>=dims.panelWidth-25&&dims.height>=210&&dims.count===18,
       'installed PWA clipped its layer list: '+JSON.stringify(dims));
     assert.ok(dims.hitIsOption,'installed PWA layer rows are hidden BEHIND the object dialog: '+JSON.stringify(dims));
+    assert.ok(dims.menuBottom<=dims.footerTop+1&&dims.footerToggleReachable,
+     'installed PWA layer menu covers its own toggle: '+JSON.stringify(dims));
     assert.equal(dims.menuParent,'geometryEditor',
       'installed PWA must keep geometry list inside its own dialog stacking context: '+JSON.stringify(dims));
     await page.screenshot({path:'geometry-layer-regression-artifacts/installed-pwa-active-sw.png'});

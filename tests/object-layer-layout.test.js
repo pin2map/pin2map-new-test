@@ -35,3 +35,18 @@ assert.ok(!code.includes("const notesRoom")&&!code.includes("const menuWidth"),"
 assert.ok(code.includes("this.contained?")&&code.includes("this.el(this.panelId):doc.body"),
  "geometry popup must be a non-flow child of its owner; Pin retains BODY portal");
 console.log("Shared layer popup layout contract passed.");
+
+for(const viewportWidth of [320,375,390,820,1280]){
+ const panel=rect(8,140,Math.min(390,viewportWidth-16),490);
+ const header=rect(8,150,panel.width,82);
+ const footer=rect(8,555,panel.width,65);
+ const trigger=rect(24,568,42,42);
+ for(const count of [1,3,8,18,40]){
+  const m=Core.layerMenuLayout({panel,header,footer,trigger,
+   viewport:{left:0,top:0,width:viewportWidth,height:850},
+   visibleRows:count,contained:true});
+  assert.ok(m.top+m.height<=footer.top-8+0.01,
+   "Popup must end above footer: "+JSON.stringify({viewportWidth,count,m}));
+  assert.ok(m.height>=140,"Options must remain visible, not merely filter");
+ }
+}

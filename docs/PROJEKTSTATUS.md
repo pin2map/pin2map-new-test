@@ -1881,3 +1881,13 @@ Die Kandidatenauswahl wurde deshalb in Commit `4f2b39b6c1fd45df06902be0802887558
 
 **Nächster QA-Implementierungsschritt, Priorität vor anderen Features:** Gemeinsamen Dialog-/Popup-Layoutowner und bestehende CSS-/DOM-Regeln auf diese beiden Anforderungen prüfen; Browsertests um tatsächliche `popup.bottom <= footer.top`-Rechteck-/Hit-Test-Invarianten und wiederholbares Schließen durch Footer-Toggle für Pin/Fläche/See/Fluss erweitern; Parität in iPhone 320/375/390, iPad und Desktop unter Chromium/WebKit und schließlich realem iPhone-Safari testen. **Status: vertraglich beschlossen, Umsetzung und reale Geräteabnahme offen.** Reiner Dokumentationsschritt ohne Änderung von App-Version, Worker, Nutzerdaten, `main`, Referenzbranches oder veröffentlichter Preview.
 
+
+
+### v260 – Ausnahmekatalog A01–A08 und objektübergreifende QS (18.11.2026)
+
+Auf ausdrücklichen Nutzerauftrag wurden die acht genehmigten Unterschiede im primären Objekt-Dialog-Vertrag als **abschließende Positivliste** erfasst: Pin-Navi/Routing, Pin-Verschieben, Meteo, GPX, kanonische Typicons, typgerechte Texte, separater Notizeditor, technischer Picker-Portalhost. Der geräteübergreifende Look-and-Feel- und Footer-Sichtbarkeitsvertrag gilt ohne unausgesprochene Sonderfälle.
+
+**QS-Befund vor der Änderung:** Der gemeinsame `ObjectDialogCore.layerMenuLayout` konnte lange Ebenenlisten bis `panel.bottom` erweitern, damit die untere Funktionszeile überdecken. Vorhandene Tests prüften oft nur `menu.bottom <= panel.bottom`, nicht die neu bindende Grenze `menu.bottom <= footer.top`.
+
+**Korrektur:** Untere Funktionsleiste wird zur **harten Begrenzung** der nutzbaren Popuphöhe. Bei langen Listen wird nur das Auswahlmenü gescrollt; Hauptdialog-Position und -Größe bleiben unverändert. Browser-/WebKit-Gates prüfen neu Menüunterkante gegen Footer-Oberkante, `elementFromPoint` der auslösenden Toggle-Schaltfläche, Schließen durch erneuten Klick, unabhängig davon 18 Ebenen/verschiedene Gerätetypen/PWA. QS-CI und Live-Gates sind für den konkreten Funktionscommit separat nachzuweisen; echte iPhone-Safari-Abnahme bleibt eine eigene, nicht durch synthetische WebKit-Prüfung ersetzbare Bedingung.
+

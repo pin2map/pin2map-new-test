@@ -318,6 +318,8 @@ async function metrics(page){
       assert.ok(Math.abs(activePinFrame[key]-originalPinFrame[key])<=1,
        "Opening layer list must NOT change Pin dialog "+key+": "+JSON.stringify({originalPinFrame,activePinFrame,pop}));
     }
+    const footerTop=await page.locator("#pinPanel .pin-actions").evaluate(el=>el.getBoundingClientRect().top);
+    assert.ok(pop.bottom<=footerTop+1,"Pin popup covers footer: "+JSON.stringify({pop,footerTop}));
     assert.ok(pop.y>=pop.panel.y-1&&pop.bottom<=pop.panel.bottom+1,
       "Pin layer popup must remain INSIDE the unchanged dialog: "+JSON.stringify(pop));
     assert.ok(pop.x>=pop.panel.x-1&&pop.right<=pop.panel.right+1,
@@ -342,6 +344,11 @@ async function metrics(page){
     }
     assert.ok(pop.bodyScrollWidth<=viewport.width+2,"Menu causes horizontal page scrolling");
     await page.screenshot({path:"pin-dialog-visual-artifacts/"+viewport.name+"-layers.png"});
+    const toggleHit=await page.locator("#pinLayerTrigger").evaluate(el=>{const b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.left+b.width/2,b.top+b.height/2);return hit===el||el.contains(hit)});
+    assert.ok(toggleHit,"Layer footer button must remain reachable");
+    await page.locator("#pinLayerTrigger").click();
+    assert.equal(await page.locator("#pinLayerMenu").isHidden(),true,"Layer footer toggle must close its popup");
+    await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu .pin-layer-option").last().click();
     assert.equal(await page.locator("#pinLayerMenu").isHidden(),true);
     await page.locator("#pinUrlButton").click();
