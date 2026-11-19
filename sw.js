@@ -4,7 +4,7 @@ const CACHE='pin2map-new-v20';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
-const CORE=['./','./index.html','./app.js','./styles.css','./vector-detection.js','./manifest.webmanifest'];
+const CORE=['./','./index.html','./app.js','./styles.css','./manifest.webmanifest'];
 const LEAFLET=[
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
