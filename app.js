@@ -11,7 +11,7 @@
       { id: "layer-1", name: "Ebene 1", color: "#e07c2b", visible: true }],
     pins: [],
     viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
-    basemap: "street", labelsVisible: true, allowGeocode: false, allowVectorDetection: false, geoCache: {}
+    basemap: "street", labelsVisible: true, allowGeocode: false, allowVectorDetection: false, vectorLanguage:"de", geoCache: {}
   });
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
@@ -20,6 +20,72 @@
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
   let vectorDetector=null,vectorSerial=0,vectorShape=null,vectorLookupPending=false;
+  let vectorModeSerial=0, vectorFrame=0, vectorStyleLink=null, vectorAttribution=false;
+  function vectorEnabledView(){return state.basemap==="vector";}
+  function leafletPosition(){
+    const p=map.getCenter();return {lat:p.lat,lng:p.lng};
+  }
+  function syncVisibleVector(){
+    if(!vectorEnabledView()||!vectorDetector?.map)return;
+    if(vectorFrame)return;
+    vectorFrame=requestAnimationFrame(()=>{
+      vectorFrame=0;
+      if(vectorEnabledView()&&vectorDetector?.map)
+        vectorDetector.sync(leafletPosition(),map.getZoom());
+    });
+  }
+  async function loadVectorCss(){
+    if(vectorStyleLink)return;
+    const link=document.createElement("link");
+    link.rel="stylesheet";link.href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css";
+    vectorStyleLink=link;
+    await new Promise((resolve,reject)=>{
+      link.onload=resolve;link.onerror=()=>reject(Error("MapLibre-CSS nicht geladen"));
+      document.head.append(link);
+    });
+  }
+  async function selectBasemap(name){
+    const serial=++vectorModeSerial;
+    if(name!=="vector"){
+      state.basemap=name;document.body.classList.remove("vector-visible");
+      if(vectorFrame){cancelAnimationFrame(vectorFrame);vectorFrame=0;}
+      vectorDetector?.hide();
+      if(vectorAttribution){map.attributionControl?.removeAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=false;}
+      setTileLayer();save();vectorMetric();return;
+    }
+    if(state.basemap==="vector"&&vectorDetector?.root?.classList.contains("is-visible"))return;
+    const prior=state.basemap==="vector"?"street":state.basemap;
+    $("basemapSelect").disabled=true;
+    showNotice("Vektorkarte wird geladen …");
+    try{
+      // Neither the library nor vector tiles are downloaded before this explicit selection.
+      await loadVectorCss();
+      if(serial!==vectorModeSerial)return;
+      if(!vectorDetector){
+        const mod=await import("./vector-detection.js");
+        if(serial!==vectorModeSerial)return;
+        vectorDetector=new mod.VectorDetection();
+      }
+      await vectorDetector.display($("map"),leafletPosition(),map.getZoom());
+      if(serial!==vectorModeSerial)return;
+      vectorDetector.setLanguage(state.vectorLanguage||"de");
+      state.basemap="vector";
+      if(tileLayer){map.removeLayer(tileLayer);tileLayer=null;}
+      document.body.classList.add("vector-visible");
+      if(!vectorAttribution){map.attributionControl?.addAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=true;}
+      $("basemapSelect").value="vector";
+      save();vectorMetric();showNotice("Vektorkarte aktiviert");
+    }catch(error){
+      console.warn("Vector map:",error);
+      state.basemap=prior;
+      document.body.classList.remove("vector-visible");
+      vectorDetector?.hide();
+      setTileLayer();
+      showNotice("Vektorkarte konnte nicht geladen werden");
+    }finally{
+      if(serial===vectorModeSerial)$("basemapSelect").disabled=false;
+    }
+  }
   const vectorStats={queries:0,totalMs:0,geoBytes:0};
   const vectorCache=new Map();
   function vectorTransfer(){
@@ -46,6 +112,11 @@
   }
   function stopVector() {
     ++vectorSerial;
+    if(vectorEnabledView()) {
+      // Visible vector map remains explicitly selected; only background detection is disabled.
+      vectorPanel("Die Hintergrund-Erkennung wurde deaktiviert. Die sichtbare Vektorkarte bleibt aktiv.");
+      return;
+    }
     vectorDetector?.close();vectorDetector=null;
     $("vectorResults").classList.add("hidden");
     if(vectorShape){map.removeLayer(vectorShape);vectorShape=null;}
@@ -160,6 +231,7 @@
   }
   function setTileLayer() {
     if (tileLayer) map.removeLayer(tileLayer);
+    if(state.basemap==="vector"){$("basemapSelect").value="vector";return;}
     const isTopo = state.basemap === "topo";
     tileLayer = L.tileLayer(isTopo
       ? "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
@@ -757,7 +829,12 @@
       }
     });
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
-    $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
+    $("basemapSelect").addEventListener("change", e => selectBasemap(e.target.value));
+    $("vectorLanguage").value=state.vectorLanguage||"de";
+    $("vectorLanguage").addEventListener("change",e=>{
+      state.vectorLanguage=e.target.value;save();
+      if(vectorEnabledView())vectorDetector?.setLanguage(state.vectorLanguage);
+    });
     $("allowVectorDetection").checked=!!state.allowVectorDetection;
     $("allowVectorDetection").onchange=e=>{
       state.allowVectorDetection=e.target.checked;save();
@@ -816,9 +893,13 @@
     attachLongPress();
     // Leaflet fires move continuously while dragging/pinching, unlike moveend.
     map.on("move",scheduleMapOverlayUpdate);
+    map.on("move",syncVisibleVector);
     map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
     map.on("zoomend", () => {if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
-    window.addEventListener("resize", () => { map.invalidateSize();renderMarkers();scheduleMapOverlayUpdate(); });
+    window.addEventListener("resize", () => {
+      map.invalidateSize();renderMarkers();scheduleMapOverlayUpdate();
+      if(vectorEnabledView()){vectorDetector?.map?.resize();syncVisibleVector();}
+    });
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden") dbWrite().catch(()=>{}); });
   }
   async function init() {
@@ -851,6 +932,11 @@
     vectorMetric(state.allowVectorDetection?
       "Aktiv: Vektorkacheln erst beim nächsten Kartenklick.":
       "Vektorerkennung aus: keine Zusatzdaten.");
+    if(state.basemap==="vector"){
+      // A previously explicit map choice is restored after Leaflet has initialized.
+      state.basemap="street";setTileLayer();
+      selectBasemap("vector");
+    }
     if("serviceWorker" in navigator && location.protocol==="https:")navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
   document.addEventListener("DOMContentLoaded",init);
