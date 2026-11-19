@@ -21,7 +21,7 @@ test("optional map and on-demand detector use one renderer",()=>{
   assert.match(vector,/async display\(/);
   assert.match(vector,/container\.prepend\(this\.root\)/);
   assert.match(vector,/hide\(\)/);
-  assert.match(vector,/this\.map\.remove\(\)/);
+  assert.match(vector,/this\.map\?\.remove\(\)/);
   assert.equal((vector.match(/new gl\.Map\(/g)||[]).length,1);
 });
 test("feature is explicitly optional and can return to raster",()=>{
