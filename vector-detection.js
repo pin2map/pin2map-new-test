@@ -77,6 +77,12 @@ export class VectorDetection {
         }
       }catch(_){/* some styles may not expose this source layer */}
     }
+    // A probe in the visible renderer must restore Leaflet's camera immediately.
+    // Otherwise a click recentres the displayed vector map while the pins stay fixed.
+    if(this.root?.classList.contains("is-visible")&&this.getVisibleViewport){
+      const viewport=this.getVisibleViewport();
+      if(viewport)this.sync(viewport.position,viewport.zoom);
+    }
     const elapsedMs=Math.round(performance.now()-start);
     this.count++;this.totalMs+=elapsedMs;
     return {candidates:[...entries.values()],elapsedMs};
