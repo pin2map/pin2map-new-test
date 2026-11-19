@@ -20,6 +20,7 @@
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
   let vectorDetector=null,vectorSerial=0,vectorShape=null,vectorLookupPending=false;
+  const appStartedAt=performance.now();
   let vectorModeSerial=0, vectorFrame=0, vectorStyleLink=null, vectorAttribution=false;
   const perfEvents=[];
   function resourceSnapshot(){
@@ -116,7 +117,7 @@
       document.body.classList.remove("vector-visible");
       vectorDetector?.hide();
       setTileLayer();
-      showNotice("Vektorkarte konnte nicht geladen werden");
+      save();showNotice("Vektorkarte konnte nicht geladen werden");
       perfRecord("vector-map-error",startedAt,{error:String(error?.message||error)});
     }finally{
       if(serial===vectorModeSerial)$("basemapSelect").disabled=false;
@@ -201,6 +202,7 @@
     if(!vectorCache.has(key)&&elapsed<1100){
       vectorPanel("Nominatim-Anfrageabstand: Bitte kurz warten und erneut versuchen.");return;
     }
+    const wasCached=vectorCache.has(key);
     vectorLookupPending=true;const startedAt=performance.now();
     vectorPanel("Lade Polygon über Nominatim …");
     try{
@@ -229,7 +231,7 @@
       }).addTo(map);
       vectorPanel(place.display_name||vectorName(candidate));vectorMetric();
       perfRecord("nominatim-polygon-ready",startedAt,{osmType:candidate.osm.type,
-        cacheHit:!lastRequestAt,geometryType:geometry.type});
+        cacheHit:wasCached,geometryType:geometry.type});
     }catch(error){if(serial===vectorSerial)vectorPanel("Geometrie nicht geladen: "+error.message);
       perfRecord("nominatim-polygon-error",startedAt,{error:String(error?.message||error)});}
     finally{vectorLookupPending=false;}
@@ -975,10 +977,9 @@
       return holder;
     };
     zoomButtons.addTo(map);
-    const rasterReadyAt=performance.now();
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
-    perfRecord("leaflet-initialized",rasterReadyAt);
-    if(tileLayer)tileLayer.once("load",()=>perfRecord("first-raster-tile-batch",rasterReadyAt));
+    perfRecord("leaflet-initialized",appStartedAt);
+    if(tileLayer)tileLayer.once("load",()=>perfRecord("first-raster-tile-batch",appStartedAt));
     vectorMetric(state.allowVectorDetection?
       "Aktiv: Vektorkacheln erst beim nächsten Kartenklick.":
       "Vektorerkennung aus: keine Zusatzdaten.");
