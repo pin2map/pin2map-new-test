@@ -31,7 +31,7 @@ test("feature is explicitly optional and can return to raster",()=>{
   assert.match(app,/state\.allowVectorDetection=e\.target\.checked;save\(\)/);
   assert.match(app,/if\(!state\.allowVectorDetection\)stopVector\(\)/);
   assert.match(app,/vectorDetector\?\.hide\(\)/);
-  assert.match(app,/setTileLayer\(\);save\(\);vectorMetric\(\)/);
+  assert.match(app,/setTileLayer\(\);renderActivePolygon\(\);save\(\);vectorMetric\(\)/);
   assert.match(css,/vector-detection-surface\.is-visible/);
 });
 test("raster pin editing remains Leaflet-controlled",()=>{
