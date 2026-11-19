@@ -6,6 +6,9 @@ async function getGL(){
   return glPromise;
 }
 const layers=new Set(["water","park","landuse","landcover"]);
+// Leaflet uses a 256px world at zoom 0; MapLibre GL uses 512px.
+// For identical on-screen scale, MapLibre's camera must be one zoom lower.
+export const leafletToMapLibreZoom=zoom=>Math.max(-2,Math.min(21,Number(zoom)-1));
 function decode(id){
   if(!Number.isSafeInteger(id)||id<12)return null;
   const kind={2:"way",3:"relation"}[id%10];
@@ -30,9 +33,14 @@ export class VectorDetection {
       const gl=await getGL();
       if(generation!==this.generation)throw Error("Vektorerkennung wurde deaktiviert");
       const root=document.createElement("div");root.className="vector-detection-surface";
-      root.setAttribute("aria-hidden","true");document.body.append(root);this.root=root;
+      root.setAttribute("aria-hidden","true");
+      // Keep the renderer at real on-screen dimensions even while transparent.
+      // Off-viewport WebGL canvases may not render queried pixels reliably.
+      const host=document.getElementById("map");
+      if(!host)throw Error("Leaflet-Kartencontainer nicht gefunden");
+      host.prepend(root);this.root=root;
       const map=new gl.Map({container:root,style:"https://tiles.openfreemap.org/styles/liberty",
-        center:[position.lng,position.lat],zoom:Math.min(zoom,14),interactive:false,
+        center:[position.lng,position.lat],zoom:leafletToMapLibreZoom(zoom),interactive:false,
         attributionControl:false,fadeDuration:0,pitch:0,bearing:0});
       this.map=map;await this.waitIdle(20000);
     })();
@@ -58,10 +66,15 @@ export class VectorDetection {
     const start=performance.now();
     await this.open(position,zoom);
     const m=this.map;
-    m.jumpTo({center:[position.lng,position.lat],zoom:Math.min(zoom,14)});
+    m.jumpTo({center:[position.lng,position.lat],zoom:leafletToMapLibreZoom(zoom)});
     await this.waitIdle();
     const point=m.project([position.lng,position.lat]);
-    const hits=m.queryRenderedFeatures([point.x,point.y]).filter(f=>layers.has(f.sourceLayer));
+    // Query style features only after CSS + map resize + idle. Track unfiltered
+    // counts so a missing source layer is distinguishable from an empty tile.
+    const raw=m.queryRenderedFeatures([point.x,point.y]);
+    const hits=raw.filter(f=>layers.has(f.sourceLayer));
+    const diagnostic={rawFeatures:raw.length,matchingLayers:hits.length,
+      mapLibreZoom:m.getZoom(),canvasSize:[m.getCanvas().width,m.getCanvas().height]};
     const entries=new Map();
     for(const f of hits){
       const osm=decode(f.id);
@@ -85,7 +98,7 @@ export class VectorDetection {
     }
     const elapsedMs=Math.round(performance.now()-start);
     this.count++;this.totalMs+=elapsedMs;
-    return {candidates:[...entries.values()],elapsedMs};
+    return {candidates:[...entries.values()],elapsedMs,diagnostic};
   }
   async display(container,position,zoom){
     await this.open(position,zoom);
@@ -102,12 +115,11 @@ export class VectorDetection {
     if(!this.root||!this.map)return;
     this.root.classList.remove("is-visible");
     this.root.setAttribute("aria-hidden","true");
-    document.body.append(this.root);
     this.map.resize();
   }
   sync(position,zoom){
     if(!this.map)return;
-    this.map.jumpTo({center:[position.lng,position.lat],zoom:Math.min(zoom,19),bearing:0,pitch:0});
+    this.map.jumpTo({center:[position.lng,position.lat],zoom:leafletToMapLibreZoom(zoom),bearing:0,pitch:0});
   }
   setLanguage(language){
     if(!this.map)return 0;
