@@ -894,6 +894,14 @@
       else vectorMetric("Aktiv: Vektorkacheln erst beim nächsten Kartenklick.");
     };
     $("vectorClose").onclick=()=>$("vectorResults").classList.add("hidden");
+    $("vectorReferenceTest").onclick=()=>{
+      if(!state.allowVectorDetection){
+        showNotice("Bitte zuerst die Vektorerkennung aktivieren.");return;
+      }
+      const point=L.latLng(-1.776754,29.09729);
+      map.setView(point,12,{animate:false});
+      inspectVector(point);
+    };
     $("vectorPerformanceExport").onclick=exportVectorPerformance;
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
