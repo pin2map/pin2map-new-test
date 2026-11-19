@@ -250,6 +250,9 @@
     const serial=++vectorSerial,startedAt=performance.now(),before=resourceSnapshot();
     const list=vectorPanel("Lade Vektordaten …");
     try {
+      // CSS must also be loaded for the invisible MapLibre canvas.
+      await loadVectorCss();
+      if(serial!==vectorSerial||!state.allowVectorDetection)return;
       if(!vectorDetector){
         const mod=await import("./vector-detection.js");
         if(serial!==vectorSerial||!state.allowVectorDetection)return;
