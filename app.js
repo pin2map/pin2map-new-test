@@ -92,7 +92,7 @@
   const vectorCache=new Map();
   function vectorTransfer(){
     const entries=performance.getEntriesByType("resource").filter(e=>
-      /(?:tiles\\.openfreemap\\.org|maplibre-gl@6\\.16\\.0)/.test(e.name));
+      /(?:tiles\.openfreemap\.org|maplibre-gl@6\.16\.0)/.test(e.name));
     const measurable=entries.filter(e=>e.transferSize>0);
     const knownBytes=measurable.reduce((sum,e)=>sum+e.transferSize,0);
     return {requests:entries.length,measurable:measurable.length,knownBytes};
