@@ -20,6 +20,31 @@
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
   let vectorDetector=null,vectorSerial=0,vectorShape=null,vectorLookupPending=false;
+  let activePolygonGeometry=null;
+  function removePolygonFromLeaflet(){
+    if(vectorShape){map.removeLayer(vectorShape);vectorShape=null;}
+  }
+  function renderActivePolygon(){
+    // Crucial: visible vector map and purple mask share a single WebGL
+    // renderer and camera. The Leaflet SVG polygon is only used on raster.
+    removePolygonFromLeaflet();
+    if(vectorEnabledView()&&vectorDetector?.map){
+      vectorDetector.setPolygonOverlay(activePolygonGeometry);
+      return;
+    }
+    vectorDetector?.clearPolygonOverlay();
+    if(activePolygonGeometry){
+      vectorShape=L.geoJSON({type:"Feature",properties:{},geometry:activePolygonGeometry},{
+        style:{color:"#7642b5",weight:3,fillColor:"#7642b5",fillOpacity:.20}
+      }).addTo(map);
+    }
+  }
+  function showPolygonGeometry(geometry){
+    if(!["Polygon","MultiPolygon"].includes(geometry?.type))
+      throw Error("Kein Polygon verfügbar");
+    activePolygonGeometry=geometry;
+    renderActivePolygon();
+  }
   const appStartedAt=performance.now();
   let vectorModeSerial=0, vectorFrame=0, vectorStyleLink=null, vectorAttribution=false;
   const perfEvents=[];
@@ -83,7 +108,7 @@
       vectorDetector?.hide();
       if(!state.allowVectorDetection){vectorDetector?.close();vectorDetector=null;}
       if(vectorAttribution){map.attributionControl?.removeAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=false;}
-      setTileLayer();save();vectorMetric();perfRecord("raster-map-selected",startedAt);return;
+      setTileLayer();renderActivePolygon();save();vectorMetric();perfRecord("raster-map-selected",startedAt);return;
     }
     if(state.basemap==="vector"&&vectorDetector?.root?.classList.contains("is-visible"))return;
     const prior=state.basemap==="vector"?"street":state.basemap;
@@ -105,6 +130,7 @@
       state.basemap="vector";
       if(tileLayer){map.removeLayer(tileLayer);tileLayer=null;}
       document.body.classList.add("vector-visible");
+      renderActivePolygon();
       if(!vectorAttribution){map.attributionControl?.addAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=true;}
       $("basemapSelect").value="vector";
       save();vectorMetric();showNotice("Vektorkarte aktiviert");
@@ -116,7 +142,7 @@
       state.basemap=prior;
       document.body.classList.remove("vector-visible");
       vectorDetector?.hide();
-      setTileLayer();
+      setTileLayer();renderActivePolygon();
       save();showNotice("Vektorkarte konnte nicht geladen werden");
       perfRecord("vector-map-error",startedAt,{error:String(error?.message||error)});
     }finally{
@@ -156,7 +182,7 @@
     }
     vectorDetector?.close();vectorDetector=null;
     $("vectorResults").classList.add("hidden");
-    if(vectorShape){map.removeLayer(vectorShape);vectorShape=null;}
+    activePolygonGeometry=null;renderActivePolygon();
     vectorMetric("Vektorerkennung aus: keine weiteren Zusatzdaten.");
   }
   const vectorName=c=>c.names.de||c.names.international||c.names.en||c.names.local||
@@ -214,15 +240,13 @@
       }
       if(serial!==vectorSerial||!state.allowVectorDetection)return;
       const geometry=place.geojson;
-      if(vectorShape){map.removeLayer(vectorShape);vectorShape=null;}
+      activePolygonGeometry=null;renderActivePolygon();
       list.replaceChildren();
       const title=document.createElement("strong");
       title.textContent=place.display_name||"Erkanntes Gebiet";
       list.append(title);
       if(geometry && ["Polygon","MultiPolygon"].includes(geometry.type)){
-        vectorShape=L.geoJSON({type:"Feature",geometry,properties:{}},{
-          style:{color:"#7642b5",weight:3,fillColor:"#7642b5",fillOpacity:.20}
-        }).addTo(map);
+        showPolygonGeometry(geometry);
         const detail=document.createElement("p");
         detail.textContent="Gebietsfläche aus Nominatim; OSM "+String(place.osm_type||"")+"/"+String(place.osm_id||"");
         list.append(detail);
@@ -318,10 +342,7 @@
       if(serial!==vectorSerial||!state.allowVectorDetection)return;
       const geometry=place.geojson;
       if(!geometry||!["Polygon","MultiPolygon"].includes(geometry.type))throw Error("Kein Flächen-GeoJSON");
-      if(vectorShape)map.removeLayer(vectorShape);
-      vectorShape=L.geoJSON({type:"Feature",properties:{},geometry},{
-        style:{color:"#7642b5",weight:3,fillColor:"#7642b5",fillOpacity:.2}
-      }).addTo(map);
+      showPolygonGeometry(geometry);
       vectorPanel(place.display_name||vectorName(candidate));vectorMetric();
       perfRecord("nominatim-polygon-ready",startedAt,{osmType:candidate.osm.type,
         cacheHit:wasCached,geometryType:geometry.type});
