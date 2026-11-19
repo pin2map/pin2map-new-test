@@ -67,3 +67,24 @@ test("DOM IDs unique",()=>{
   const ids=[...index.matchAll(/\bid=["']([^"']+)["']/g)].map(m=>m[1]);
   assert.equal(ids.length,new Set(ids).size);
 });
+
+test("Leaflet 256px and MapLibre 512px world scales align",async()=>{
+  const module=await import("data:text/javascript;charset=utf-8,"+encodeURIComponent(vector));
+  for(const zoom of [3,7,10,12,14,18]){
+    const converted=module.leafletToMapLibreZoom(zoom);
+    assert.equal(converted,zoom-1);
+    assert.equal(256*2**zoom,512*2**converted);
+  }
+});
+test("background hit testing loads required map CSS",()=>{
+  assert.match(app,/await loadVectorCss\(\);[\s\S]{0,200}if\(serial!==vectorSerial/);
+  assert.match(vector,/host\.prepend\(root\)/);
+  assert.match(css,/#map>\.vector-detection-surface\{/);
+  assert.match(css,/opacity:0!important/);
+  assert.match(vector,/diagnostic=\{rawFeatures:/);
+  assert.match(app,/diagnostic:result\.diagnostic/);
+});
+test("vector diagnostic counts use real ResourceTiming hostname matching",()=>{
+  assert.match(app,/tiles\\.openfreemap\\.org/);
+  assert.doesNotMatch(app,/tiles\\\\.openfreemap\\\\.org/);
+});
