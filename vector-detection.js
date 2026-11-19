@@ -21,20 +21,23 @@ function merged(a,b){
   return a;
 }
 export class VectorDetection {
-  constructor(){this.map=null;this.root=null;this.count=0;this.totalMs=0;}
+  constructor(){this.map=null;this.root=null;this.count=0;this.totalMs=0;this.pending=null;this.generation=0;}
   async open(position,zoom){
     if(this.map)return;
-    const gl=await getGL();
-    const root=document.createElement("div");root.className="vector-detection-surface";
-    root.setAttribute("aria-hidden","true");
-    document.body.append(root);this.root=root;
-    try{
+    if(this.pending)return this.pending;
+    const generation=this.generation;
+    this.pending=(async()=>{
+      const gl=await getGL();
+      if(generation!==this.generation)throw Error("Vektorerkennung wurde deaktiviert");
+      const root=document.createElement("div");root.className="vector-detection-surface";
+      root.setAttribute("aria-hidden","true");document.body.append(root);this.root=root;
       const map=new gl.Map({container:root,style:"https://tiles.openfreemap.org/styles/liberty",
         center:[position.lng,position.lat],zoom:Math.min(zoom,14),interactive:false,
         attributionControl:false,fadeDuration:0,pitch:0,bearing:0});
-      this.map=map;
-      await this.waitIdle(20000);
-    }catch(error){this.close();throw error;}
+      this.map=map;await this.waitIdle(20000);
+    })();
+    try{await this.pending}catch(error){if(generation===this.generation)this.close();throw error}
+    finally{this.pending=null}
   }
   waitIdle(timeout=20000){
     const map=this.map;
@@ -79,6 +82,7 @@ export class VectorDetection {
     return {candidates:[...entries.values()],elapsedMs};
   }
   close(){
+    this.generation++;
     try{this.map?.remove()}catch(_){}
     this.map=null;this.root?.remove();this.root=null;
   }
