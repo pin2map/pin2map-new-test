@@ -88,3 +88,17 @@ test("vector diagnostic counts use real ResourceTiming hostname matching",()=>{
   assert.match(app,/tiles\\.openfreemap\\.org/);
   assert.doesNotMatch(app,/tiles\\\\.openfreemap\\\\.org/);
 });
+
+test("visible vector map is not gated by background recognition setting",()=>{
+  const fn=app.slice(app.indexOf("async function selectBasemap("),app.indexOf("const vectorStats="));
+  assert.doesNotMatch(fn,/if\(serial!==vectorSerial\|\|!state\.allowVectorDetection\)return/);
+  assert.match(fn,/await vectorDetector\.display\(/);
+});
+test("administrative geometry is an explicit Nominatim reverse request",()=>{
+  assert.match(app,/async function reverseAdministrative\(/);
+  assert.match(app,/zoom",String\(zoom\)/);
+  assert.match(app,/polygon_geojson","1"/);
+  assert.match(app,/b\.onclick=\(\)=>reverseAdministrative\(/);
+  assert.match(app,/administrativeCache\.get\(key\)/);
+  assert.match(app,/if\(!state\.allowGeocode\)/);
+});
