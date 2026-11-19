@@ -265,3 +265,9 @@ body.pin-open #pinPanel{visibility:visible}
   filter:drop-shadow(0 2px 1px #293a4d45);
 }
 body.pin-open .pin-dialog-tip:not(.hidden){display:block}
+
+/* Opt-in MapLibre probe: real dimensions, outside the viewport, no pointer capture. */
+.vector-detection-surface{position:fixed!important;left:-12000px!important;top:-12000px!important;width:384px!important;height:384px!important;pointer-events:none!important;z-index:-1!important}
+.vector-results{z-index:1252!important}.vector-item{padding:9px 0;border-bottom:1px solid #dce4ed}
+.vector-item button{display:block;background:#e9f0f7;color:#172b49;margin-top:5px;padding:7px 9px}
+body.pin-open #vectorResults{display:none!important}
