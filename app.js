@@ -25,7 +25,7 @@
   const perfEvents=[];
   function resourceSnapshot(){
     const events=performance.getEntriesByType("resource");
-    const vector=events.filter(e=>/(?:tiles\\.openfreemap\\.org|maplibre-gl@6\\.16\\.0)/.test(e.name));
+    const vector=events.filter(e=>/(?:tiles\.openfreemap\.org|maplibre-gl@6\.16\.0)/.test(e.name));
     const visible=vector.filter(e=>e.transferSize>0);
     return {totalRequests:events.length,vectorRequests:vector.length,
       vectorRequestsWithTransferSizes:visible.length,
@@ -93,6 +93,9 @@
       // Neither the library nor vector tiles are downloaded before this explicit selection.
       await loadVectorCss();
       if(serial!==vectorModeSerial)return;
+      // MapLibre CSS is required even for the invisible pixel-query renderer.
+      await loadVectorCss();
+      if(serial!==vectorSerial||!state.allowVectorDetection)return;
       if(!vectorDetector){
         const mod=await import("./vector-detection.js");
         if(serial!==vectorModeSerial)return;
@@ -177,6 +180,7 @@
       vectorStats.queries++;vectorStats.totalMs+=result.elapsedMs;vectorMetric();
       const after=resourceSnapshot();
       perfRecord("vector-hit-test",startedAt,{candidates:result.candidates.length,
+        diagnostic:result.diagnostic,
         vectorRequestsAdded:after.vectorRequests-before.vectorRequests,
         measuredVectorBytesAdded:after.vectorMeasuredBytes-before.vectorMeasuredBytes});
       list.replaceChildren();
@@ -942,6 +946,8 @@
     attachLongPress();
     // Leaflet fires move continuously while dragging/pinching, unlike moveend.
     map.on("move",scheduleMapOverlayUpdate);
+    // Shared camera geometry is in Leaflet coordinates (256px reference tiles).
+    // No second independent gesture controller: MapLibre follows only Leaflet.
     map.on("move",syncVisibleVector);
     map.on("moveend", () => {persistViewport();if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
     map.on("zoomend", () => {if(!markerPressStart)renderMarkers();scheduleMapOverlayUpdate();});
