@@ -121,6 +121,29 @@ export class VectorDetection {
     if(!this.map)return;
     this.map.jumpTo({center:[position.lng,position.lat],zoom:leafletToMapLibreZoom(zoom),bearing:0,pitch:0});
   }
+  setPolygonOverlay(geometry){
+    if(!this.map)return false;
+    const ids={source:"pin2map-polygon-source",fill:"pin2map-polygon-fill",line:"pin2map-polygon-outline"};
+    if(!geometry){this.clearPolygonOverlay();return true;}
+    if(!["Polygon","MultiPolygon"].includes(geometry.type))
+      throw new Error("Flächengeometrie erforderlich");
+    const data={type:"Feature",properties:{},geometry};
+    const source=this.map.getSource(ids.source);
+    if(source){source.setData(data);return true;}
+    this.map.addSource(ids.source,{type:"geojson",data});
+    this.map.addLayer({id:ids.fill,type:"fill",source:ids.source,
+      paint:{"fill-color":"#7642b5","fill-opacity":0.20}});
+    this.map.addLayer({id:ids.line,type:"line",source:ids.source,
+      paint:{"line-color":"#7642b5","line-width":3}});
+    return true;
+  }
+  clearPolygonOverlay(){
+    if(!this.map)return;
+    for(const id of ["pin2map-polygon-outline","pin2map-polygon-fill"])
+      if(this.map.getLayer(id))this.map.removeLayer(id);
+    if(this.map.getSource("pin2map-polygon-source"))
+      this.map.removeSource("pin2map-polygon-source");
+  }
   setLanguage(language){
     if(!this.map)return 0;
     const order={
