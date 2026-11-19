@@ -102,3 +102,22 @@ test("administrative geometry is an explicit Nominatim reverse request",()=>{
   assert.match(app,/administrativeCache\.get\(key\)/);
   assert.match(app,/if\(!state\.allowGeocode\)/);
 });
+
+test("visible vector polygon is drawn in MapLibre, raster polygon in Leaflet",()=>{
+  assert.match(app,/function renderActivePolygon\(\)/);
+  assert.match(app,/if\(vectorEnabledView\(\)\&\&vectorDetector\?\.map\)/);
+  assert.match(app,/vectorDetector\.setPolygonOverlay\(activePolygonGeometry\)/);
+  assert.match(app,/vectorDetector\?\.clearPolygonOverlay\(\)/);
+  assert.match(app,/function showPolygonGeometry\(geometry\)/);
+  assert.match(app,/showPolygonGeometry\(geometry\)/);
+  assert.match(vector,/setPolygonOverlay\(geometry\)/);
+  assert.match(vector,/type:"geojson",data/);
+  assert.match(vector,/id:ids\.fill,type:"fill"/);
+  assert.match(vector,/id:ids\.line,type:"line"/);
+  // Raster mask must not coexist with visible vector mask.
+  assert.match(app,/removePolygonFromLeaflet\(\);\s*if\(vectorEnabledView/);
+});
+test("vector rendering of a mask adds no new network-dependent geometry request",()=>{
+  const fn=vector.slice(vector.indexOf("setPolygonOverlay(geometry)"),vector.indexOf("clearPolygonOverlay()"));
+  assert.doesNotMatch(fn,/fetch\(|XMLHttpRequest|new Worker/);
+});
