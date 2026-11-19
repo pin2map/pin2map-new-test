@@ -294,3 +294,7 @@ body.vector-visible #map>.leaflet-pane{z-index:1}
 #map>.vector-detection-surface.is-visible{
   opacity:1!important;pointer-events:none!important;
 }
+
+/* Administrative lookup is explicitly requested; no background reverse requests. */
+.vector-administrative{border-top:1px solid #d8e1eb;margin-top:12px;padding-top:12px}
+.vector-administrative button{display:block;width:100%;margin:7px 0;background:#e9f0f7;color:#172b49;text-align:left}
