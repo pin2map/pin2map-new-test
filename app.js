@@ -50,6 +50,7 @@
       state.basemap=name;document.body.classList.remove("vector-visible");
       if(vectorFrame){cancelAnimationFrame(vectorFrame);vectorFrame=0;}
       vectorDetector?.hide();
+      if(!state.allowVectorDetection){vectorDetector?.close();vectorDetector=null;}
       if(vectorAttribution){map.attributionControl?.removeAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=false;}
       setTileLayer();save();vectorMetric();return;
     }
@@ -65,6 +66,7 @@
         const mod=await import("./vector-detection.js");
         if(serial!==vectorModeSerial)return;
         vectorDetector=new mod.VectorDetection();
+        vectorDetector.getVisibleViewport=()=>({position:leafletPosition(),zoom:map.getZoom()});
       }
       await vectorDetector.display($("map"),leafletPosition(),map.getZoom());
       if(serial!==vectorModeSerial)return;
@@ -133,6 +135,7 @@
         const mod=await import("./vector-detection.js");
         if(serial!==vectorSerial||!state.allowVectorDetection)return;
         vectorDetector=new mod.VectorDetection();
+        vectorDetector.getVisibleViewport=()=>({position:leafletPosition(),zoom:map.getZoom()});
       }
       const result=await vectorDetector.identify({lat:latlng.lat,lng:latlng.lng},map.getZoom());
       if(serial!==vectorSerial||!state.allowVectorDetection)return;
