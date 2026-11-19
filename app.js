@@ -93,9 +93,6 @@
       // Neither the library nor vector tiles are downloaded before this explicit selection.
       await loadVectorCss();
       if(serial!==vectorModeSerial)return;
-      // MapLibre CSS is required even for the invisible pixel-query renderer.
-      await loadVectorCss();
-      if(serial!==vectorSerial||!state.allowVectorDetection)return;
       if(!vectorDetector){
         const mod=await import("./vector-detection.js");
         if(serial!==vectorModeSerial)return;
@@ -164,6 +161,90 @@
   }
   const vectorName=c=>c.names.de||c.names.international||c.names.en||c.names.local||
     (c.classification||c.layer)+" (ohne Namen)";
+  // Administrative polygons are not guaranteed in OpenFreeMap's place labels:
+  // reverse lookup is explicit, per-click, cached, and uses shared Nominatim throttling.
+  const administrativeCache=new Map();
+  function appendAdministrativeOptions(list,position,serial){
+    if(serial!==vectorSerial)return;
+    const section=document.createElement("div");section.className="vector-administrative";
+    const heading=document.createElement("strong");heading.textContent="Verwaltungsgebiet über Nominatim";
+    const note=document.createElement("p");note.className="muted small";
+    note.textContent="Zusätzliche Anfrage nur auf Auswahl; Nominatim liefert das nächstpassende erfasste Objekt, nicht garantiert die gewünschte Gebietsgrenze.";
+    section.append(heading,note);
+    for(const [label,zoom] of [["Land",3],["Bundesland / Region",5],["Stadt / Gemeinde",10]]){
+      const b=document.createElement("button");b.type="button";b.className="secondary";
+      b.textContent=label+" ermitteln";b.onclick=()=>reverseAdministrative(position,zoom,serial);
+      section.append(b);
+    }
+    list.append(section);
+  }
+  async function reverseAdministrative(position,zoom,serial){
+    if(!state.allowGeocode){showNotice("Bitte zuerst Nominatim in den Einstellungen aktivieren.");return;}
+    if(vectorLookupPending)return;
+    const key=zoom+":"+position.lat.toFixed(4)+":"+position.lng.toFixed(4);
+    const cached=administrativeCache.get(key);
+    if(!cached && Date.now()-lastRequestAt<1100){
+      showNotice("Bitte Nominatim-Anfrageabstand abwarten und erneut versuchen.");return;
+    }
+    vectorLookupPending=true;
+    const start=performance.now(),list=vectorPanel("Ermittle Verwaltungsgebiet über Nominatim …");
+    try{
+      let place=cached;
+      if(!place){
+        const url=new URL("https://nominatim.openstreetmap.org/reverse");
+        url.searchParams.set("lat",String(position.lat));
+        url.searchParams.set("lon",String(position.lng));
+        url.searchParams.set("zoom",String(zoom));
+        url.searchParams.set("format","jsonv2");
+        url.searchParams.set("polygon_geojson","1");
+        url.searchParams.set("polygon_threshold","0.001");
+        url.searchParams.set("addressdetails","0");
+        url.searchParams.set("accept-language","de,en");
+        lastRequestAt=Date.now();
+        const resp=await fetch(url.toString(),{headers:{Accept:"application/json"}});
+        if(!resp.ok)throw Error("Nominatim HTTP "+resp.status);
+        const raw=await resp.text();
+        const size=new Blob([raw]).size;
+        vectorStats.geoBytes+=size;
+        if(size>8e6)throw Error("Nominatim-Geometrie über 8 MB");
+        place=JSON.parse(raw);
+        if(!place||place.error)throw Error(place?.error||"Kein geografisches Objekt");
+        administrativeCache.set(key,place);
+        if(administrativeCache.size>24)administrativeCache.delete(administrativeCache.keys().next().value);
+      }
+      if(serial!==vectorSerial||!state.allowVectorDetection)return;
+      const geometry=place.geojson;
+      if(vectorShape){map.removeLayer(vectorShape);vectorShape=null;}
+      list.replaceChildren();
+      const title=document.createElement("strong");
+      title.textContent=place.display_name||"Erkanntes Gebiet";
+      list.append(title);
+      if(geometry && ["Polygon","MultiPolygon"].includes(geometry.type)){
+        vectorShape=L.geoJSON({type:"Feature",geometry,properties:{}},{
+          style:{color:"#7642b5",weight:3,fillColor:"#7642b5",fillOpacity:.20}
+        }).addTo(map);
+        const detail=document.createElement("p");
+        detail.textContent="Gebietsfläche aus Nominatim; OSM "+String(place.osm_type||"")+"/"+String(place.osm_id||"");
+        list.append(detail);
+      }else{
+        const detail=document.createElement("p");
+        detail.textContent="Nominatim hat nur einen Ortspunkt, keine Gebietsfläche geliefert. Keine Fläche dargestellt.";
+        list.append(detail);
+      }
+      const again=document.createElement("button");again.type="button";
+      again.textContent="Gebietsauswahl erneut anzeigen";
+      again.onclick=()=>{const next=vectorPanel();appendAdministrativeOptions(next,position,serial);};
+      list.append(again);
+      perfRecord("nominatim-admin-reverse",start,{zoom,cacheHit:!!cached,
+        geometryType:geometry?.type||null,osmType:place.osm_type||null});
+      vectorMetric();
+    }catch(error){
+      if(serial===vectorSerial){
+        vectorPanel("Verwaltungsgebiet nicht auflösbar: "+String(error?.message||error));
+        perfRecord("nominatim-admin-error",start,{zoom,error:String(error?.message||error)});
+      }
+    }finally{vectorLookupPending=false;}
+  }
   async function inspectVector(latlng){
     if(!state.allowVectorDetection||moveMode||selectedPin())return;
     const serial=++vectorSerial,startedAt=performance.now(),before=resourceSnapshot();
@@ -184,7 +265,11 @@
         vectorRequestsAdded:after.vectorRequests-before.vectorRequests,
         measuredVectorBytesAdded:after.vectorMeasuredBytes-before.vectorMeasuredBytes});
       list.replaceChildren();
-      if(!result.candidates.length){vectorPanel("Hier wurde keine Fläche erkannt.");return;}
+      if(!result.candidates.length){
+        const message=document.createElement("p");
+        message.textContent="Keine vektorbasierte Fläche an dieser Stelle erkannt.";
+        list.append(message);
+      }
       for(const candidate of result.candidates){
         const div=document.createElement("div");div.className="vector-item";
         const title=document.createElement("strong");title.textContent=vectorName(candidate);
@@ -195,6 +280,7 @@
         btn.onclick=()=>lookupVectorPolygon(candidate,serial);
         div.append(title,small,btn);list.append(div);
       }
+      appendAdministrativeOptions(list,latlng,serial);
     }catch(error){if(serial===vectorSerial)vectorPanel("Erkennung fehlgeschlagen: "+error.message);
       perfRecord("vector-hit-error",startedAt,{error:String(error?.message||error)});}
   }
