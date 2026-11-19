@@ -21,6 +21,33 @@
   let mapOverlayFrame = 0;
   let vectorDetector=null,vectorSerial=0,vectorShape=null,vectorLookupPending=false;
   let vectorModeSerial=0, vectorFrame=0, vectorStyleLink=null, vectorAttribution=false;
+  const perfEvents=[];
+  function resourceSnapshot(){
+    const events=performance.getEntriesByType("resource");
+    const vector=events.filter(e=>/(?:tiles\\.openfreemap\\.org|maplibre-gl@6\\.16\\.0)/.test(e.name));
+    const visible=vector.filter(e=>e.transferSize>0);
+    return {totalRequests:events.length,vectorRequests:vector.length,
+      vectorRequestsWithTransferSizes:visible.length,
+      vectorMeasuredBytes:visible.reduce((sum,e)=>sum+e.transferSize,0)};
+  }
+  function perfRecord(operation,startedAt,extra={}){
+    perfEvents.push({operation,elapsedMs:Math.round(performance.now()-startedAt),
+      resources:resourceSnapshot(),...extra});
+  }
+  function exportVectorPerformance(){
+    const payload={test:"pin2map vector performance preview",schema:1,
+      recordedAt:new Date().toISOString(),
+      screen:{width:window.innerWidth,height:window.innerHeight,dpr:window.devicePixelRatio||1},
+      memoryUsedBytes:performance.memory?.usedJSHeapSize??null,
+      currentBasemap:state.basemap,
+      detectionEnabled:!!state.allowVectorDetection,
+      notes:"ResourceTiming across origins can return 0; measured bytes are NOT total transfer. No pin contents are exported.",
+      events:perfEvents};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="pin2map-vector-performance.json";a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
   function vectorEnabledView(){return state.basemap==="vector";}
   function leafletPosition(){
     const p=map.getCenter();return {lat:p.lat,lng:p.lng};
@@ -39,12 +66,15 @@
     const link=document.createElement("link");
     link.rel="stylesheet";link.href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css";
     vectorStyleLink=link;
-    await new Promise((resolve,reject)=>{
-      link.onload=resolve;link.onerror=()=>reject(Error("MapLibre-CSS nicht geladen"));
-      document.head.append(link);
-    });
+    try{
+      await new Promise((resolve,reject)=>{
+        link.onload=resolve;link.onerror=()=>reject(Error("MapLibre-CSS nicht geladen"));
+        document.head.append(link);
+      });
+    }catch(error){vectorStyleLink=null;link.remove();throw error;}
   }
   async function selectBasemap(name){
+    const startedAt=performance.now(),before=resourceSnapshot();
     const serial=++vectorModeSerial;
     if(name!=="vector"){
       state.basemap=name;document.body.classList.remove("vector-visible");
@@ -52,7 +82,7 @@
       vectorDetector?.hide();
       if(!state.allowVectorDetection){vectorDetector?.close();vectorDetector=null;}
       if(vectorAttribution){map.attributionControl?.removeAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=false;}
-      setTileLayer();save();vectorMetric();return;
+      setTileLayer();save();vectorMetric();perfRecord("raster-map-selected",startedAt);return;
     }
     if(state.basemap==="vector"&&vectorDetector?.root?.classList.contains("is-visible"))return;
     const prior=state.basemap==="vector"?"street":state.basemap;
@@ -69,7 +99,7 @@
         vectorDetector.getVisibleViewport=()=>({position:leafletPosition(),zoom:map.getZoom()});
       }
       await vectorDetector.display($("map"),leafletPosition(),map.getZoom());
-      if(serial!==vectorModeSerial)return;
+      if(serial!==vectorModeSerial){vectorDetector.hide();return;}
       vectorDetector.setLanguage(state.vectorLanguage||"de");
       state.basemap="vector";
       if(tileLayer){map.removeLayer(tileLayer);tileLayer=null;}
@@ -77,6 +107,9 @@
       if(!vectorAttribution){map.attributionControl?.addAttribution("© OpenStreetMap contributors · OpenFreeMap");vectorAttribution=true;}
       $("basemapSelect").value="vector";
       save();vectorMetric();showNotice("Vektorkarte aktiviert");
+      const after=resourceSnapshot();
+      perfRecord("vector-map-visible",startedAt,{vectorRequestsAdded:after.vectorRequests-before.vectorRequests,
+        measuredVectorBytesAdded:after.vectorMeasuredBytes-before.vectorMeasuredBytes});
     }catch(error){
       console.warn("Vector map:",error);
       state.basemap=prior;
@@ -84,6 +117,7 @@
       vectorDetector?.hide();
       setTileLayer();
       showNotice("Vektorkarte konnte nicht geladen werden");
+      perfRecord("vector-map-error",startedAt,{error:String(error?.message||error)});
     }finally{
       if(serial===vectorModeSerial)$("basemapSelect").disabled=false;
     }
@@ -128,7 +162,7 @@
     (c.classification||c.layer)+" (ohne Namen)";
   async function inspectVector(latlng){
     if(!state.allowVectorDetection||moveMode||selectedPin())return;
-    const serial=++vectorSerial;
+    const serial=++vectorSerial,startedAt=performance.now(),before=resourceSnapshot();
     const list=vectorPanel("Lade Vektordaten …");
     try {
       if(!vectorDetector){
@@ -140,6 +174,10 @@
       const result=await vectorDetector.identify({lat:latlng.lat,lng:latlng.lng},map.getZoom());
       if(serial!==vectorSerial||!state.allowVectorDetection)return;
       vectorStats.queries++;vectorStats.totalMs+=result.elapsedMs;vectorMetric();
+      const after=resourceSnapshot();
+      perfRecord("vector-hit-test",startedAt,{candidates:result.candidates.length,
+        vectorRequestsAdded:after.vectorRequests-before.vectorRequests,
+        measuredVectorBytesAdded:after.vectorMeasuredBytes-before.vectorMeasuredBytes});
       list.replaceChildren();
       if(!result.candidates.length){vectorPanel("Hier wurde keine Fläche erkannt.");return;}
       for(const candidate of result.candidates){
@@ -152,7 +190,8 @@
         btn.onclick=()=>lookupVectorPolygon(candidate,serial);
         div.append(title,small,btn);list.append(div);
       }
-    }catch(error){if(serial===vectorSerial)vectorPanel("Erkennung fehlgeschlagen: "+error.message);}
+    }catch(error){if(serial===vectorSerial)vectorPanel("Erkennung fehlgeschlagen: "+error.message);
+      perfRecord("vector-hit-error",startedAt,{error:String(error?.message||error)});}
   }
   async function lookupVectorPolygon(candidate,serial){
     if(vectorLookupPending)return;
@@ -162,7 +201,8 @@
     if(!vectorCache.has(key)&&elapsed<1100){
       vectorPanel("Nominatim-Anfrageabstand: Bitte kurz warten und erneut versuchen.");return;
     }
-    vectorLookupPending=true;vectorPanel("Lade Polygon über Nominatim …");
+    vectorLookupPending=true;const startedAt=performance.now();
+    vectorPanel("Lade Polygon über Nominatim …");
     try{
       let place=vectorCache.get(key);
       if(!place){
@@ -188,7 +228,10 @@
         style:{color:"#7642b5",weight:3,fillColor:"#7642b5",fillOpacity:.2}
       }).addTo(map);
       vectorPanel(place.display_name||vectorName(candidate));vectorMetric();
-    }catch(error){if(serial===vectorSerial)vectorPanel("Geometrie nicht geladen: "+error.message);}
+      perfRecord("nominatim-polygon-ready",startedAt,{osmType:candidate.osm.type,
+        cacheHit:!lastRequestAt,geometryType:geometry.type});
+    }catch(error){if(serial===vectorSerial)vectorPanel("Geometrie nicht geladen: "+error.message);
+      perfRecord("nominatim-polygon-error",startedAt,{error:String(error?.message||error)});}
     finally{vectorLookupPending=false;}
   }
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -845,6 +888,7 @@
       else vectorMetric("Aktiv: Vektorkacheln erst beim nächsten Kartenklick.");
     };
     $("vectorClose").onclick=()=>$("vectorResults").classList.add("hidden");
+    $("vectorPerformanceExport").onclick=exportVectorPerformance;
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
     $("addLayer").addEventListener("click", () => {
@@ -931,7 +975,10 @@
       return holder;
     };
     zoomButtons.addTo(map);
+    const rasterReadyAt=performance.now();
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
+    perfRecord("leaflet-initialized",rasterReadyAt);
+    if(tileLayer)tileLayer.once("load",()=>perfRecord("first-raster-tile-batch",rasterReadyAt));
     vectorMetric(state.allowVectorDetection?
       "Aktiv: Vektorkacheln erst beim nächsten Kartenklick.":
       "Vektorerkennung aus: keine Zusatzdaten.");
