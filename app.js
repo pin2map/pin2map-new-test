@@ -11,7 +11,7 @@
       { id: "layer-1", name: "Ebene 1", color: "#e07c2b", visible: true }],
     pins: [],
     viewport: { lat: 48.7758, lng: 9.1829, zoom: 6 },
-    basemap: "street", labelsVisible: true, allowGeocode: false, geoCache: {}
+    basemap: "street", labelsVisible: true, allowGeocode: false, allowVectorDetection: false, geoCache: {}
   });
   let db, state = defaults(), map, tileLayer, markers = new Map();
   let selected = null, moveMode = false, saveTimer, searchAbort, searchSerial = 0, lastRequestAt = 0, noticeTimer;
@@ -19,6 +19,94 @@
   let lastTouchStartAt = 0, markerPressTimer = null, markerPressStart = null;
   let movePreview = null, moveMarker = null, moveLine = null;
   let mapOverlayFrame = 0;
+  let vectorDetector=null,vectorSerial=0,vectorShape=null,vectorLookupPending=false;
+  const vectorStats={queries:0,totalMs:0,geoBytes:0};
+  const vectorCache=new Map();
+  function vectorMetric(message) {
+    const el=$("vectorMetrics");if(!el)return;
+    el.textContent=message||("Erkennungen: "+vectorStats.queries+
+      " · Erkennungszeit gesamt: "+vectorStats.totalMs+" ms · Nominatim-Nutzlast: "+
+      Math.round(vectorStats.geoBytes/1024)+" KiB (Vektorkacheln nicht messbar)");
+  }
+  function vectorPanel(text="") {
+    const panel=$("vectorResults"),list=$("vectorList");
+    panel.classList.remove("hidden");list.replaceChildren();
+    if(text){const p=document.createElement("p");p.textContent=text;list.append(p);}
+    return list;
+  }
+  function stopVector() {
+    ++vectorSerial;
+    vectorDetector?.close();vectorDetector=null;
+    $("vectorResults").classList.add("hidden");
+    if(vectorShape){map.removeLayer(vectorShape);vectorShape=null;}
+    vectorMetric("Vektorerkennung aus: keine weiteren Zusatzdaten.");
+  }
+  const vectorName=c=>c.names.de||c.names.international||c.names.en||c.names.local||
+    (c.classification||c.layer)+" (ohne Namen)";
+  async function inspectVector(latlng){
+    if(!state.allowVectorDetection||moveMode||selectedPin())return;
+    const serial=++vectorSerial;
+    const list=vectorPanel("Lade Vektordaten …");
+    try {
+      if(!vectorDetector){
+        const mod=await import("./vector-detection.js");
+        if(serial!==vectorSerial||!state.allowVectorDetection)return;
+        vectorDetector=new mod.VectorDetection();
+      }
+      const result=await vectorDetector.identify({lat:latlng.lat,lng:latlng.lng},map.getZoom());
+      if(serial!==vectorSerial||!state.allowVectorDetection)return;
+      vectorStats.queries++;vectorStats.totalMs+=result.elapsedMs;vectorMetric();
+      list.replaceChildren();
+      if(!result.candidates.length){vectorPanel("Hier wurde keine Fläche erkannt.");return;}
+      for(const candidate of result.candidates){
+        const div=document.createElement("div");div.className="vector-item";
+        const title=document.createElement("strong");title.textContent=vectorName(candidate);
+        const small=document.createElement("small");
+        small.textContent=" · "+candidate.layer+" · "+candidate.osm.type+"/"+candidate.osm.id;
+        const btn=document.createElement("button");btn.type="button";
+        btn.textContent="Polygon mit Nominatim laden";
+        btn.onclick=()=>lookupVectorPolygon(candidate,serial);
+        div.append(title,small,btn);list.append(div);
+      }
+    }catch(error){if(serial===vectorSerial)vectorPanel("Erkennung fehlgeschlagen: "+error.message);}
+  }
+  async function lookupVectorPolygon(candidate,serial){
+    if(vectorLookupPending)return;
+    if(!state.allowGeocode){vectorPanel("Bitte Nominatim in den Einstellungen aktivieren.");return;}
+    const key=(candidate.osm.type==="way"?"W":"R")+candidate.osm.id;
+    const elapsed=Date.now()-lastRequestAt;
+    if(!vectorCache.has(key)&&elapsed<1100){
+      vectorPanel("Nominatim-Anfrageabstand: Bitte kurz warten und erneut versuchen.");return;
+    }
+    vectorLookupPending=true;vectorPanel("Lade Polygon über Nominatim …");
+    try{
+      let place=vectorCache.get(key);
+      if(!place){
+        const url=new URL("https://nominatim.openstreetmap.org/lookup");
+        url.searchParams.set("osm_ids",key);url.searchParams.set("format","json");
+        url.searchParams.set("polygon_geojson","1");url.searchParams.set("polygon_threshold","0.001");
+        url.searchParams.set("addressdetails","0");url.searchParams.set("accept-language","de,en");
+        lastRequestAt=Date.now();
+        const response=await fetch(url.toString(),{headers:{Accept:"application/json"}});
+        if(!response.ok)throw Error("HTTP "+response.status);
+        const raw=await response.text();vectorStats.geoBytes+=new Blob([raw]).size;
+        if(raw.length>8e6)throw Error("Antwort über 8 MB");
+        place=JSON.parse(raw).find(x=>String(x.osm_id)===String(candidate.osm.id)
+          &&x.osm_type===candidate.osm.type);
+        if(!place)throw Error("Objekt nicht bei Nominatim gefunden");
+        vectorCache.set(key,place);if(vectorCache.size>24)vectorCache.delete(vectorCache.keys().next().value);
+      }
+      if(serial!==vectorSerial||!state.allowVectorDetection)return;
+      const geometry=place.geojson;
+      if(!geometry||!["Polygon","MultiPolygon"].includes(geometry.type))throw Error("Kein Flächen-GeoJSON");
+      if(vectorShape)map.removeLayer(vectorShape);
+      vectorShape=L.geoJSON({type:"Feature",properties:{},geometry},{
+        style:{color:"#7642b5",weight:3,fillColor:"#7642b5",fillOpacity:.2}
+      }).addTo(map);
+      vectorPanel(place.display_name||vectorName(candidate));vectorMetric();
+    }catch(error){if(serial===vectorSerial)vectorPanel("Geometrie nicht geladen: "+error.message);}
+    finally{vectorLookupPending=false;}
+  }
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => state.layers.find(x => x.id === id);
   const selectedPin = () => state.pins.find(p => p.id === selected);
@@ -660,6 +748,13 @@
     });
     document.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => {if(b.dataset.close==="pinPanel"){closeMapOverlays();return;}$(b.dataset.close).classList.add("hidden");if(b.dataset.close==="layersPanel")$("layersButton").setAttribute("aria-expanded","false");}));
     $("basemapSelect").addEventListener("change", e => { state.basemap = e.target.value; setTileLayer(); save(); });
+    $("allowVectorDetection").checked=!!state.allowVectorDetection;
+    $("allowVectorDetection").onchange=e=>{
+      state.allowVectorDetection=e.target.checked;save();
+      if(!state.allowVectorDetection)stopVector();
+      else vectorMetric("Aktiv: Vektorkacheln erst beim nächsten Kartenklick.");
+    };
+    $("vectorClose").onclick=()=>$("vectorResults").classList.add("hidden");
     $("allowGeocode").checked = state.allowGeocode;
     $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
     $("addLayer").addEventListener("click", () => {
@@ -705,6 +800,7 @@
       if (Date.now() < suppressMapClickUntil) return;
       if (moveMode && selectedPin()) {previewMove(e.latlng);return;}
       closeMapOverlays();
+      if(state.allowVectorDetection)inspectVector(e.latlng);
     });
 
     attachLongPress();
@@ -742,6 +838,9 @@
     };
     zoomButtons.addTo(map);
     setTileLayer();bind();renderLayers();renderMarkers();renderPinPanel();updateModeUI();updateLabelButton();
+    vectorMetric(state.allowVectorDetection?
+      "Aktiv: Vektorkacheln erst beim nächsten Kartenklick.":
+      "Vektorerkennung aus: keine Zusatzdaten.");
     if("serviceWorker" in navigator && location.protocol==="https:")navigator.serviceWorker.register("./sw.js",{updateViaCache:"none"}).catch(()=>{});
   }
   document.addEventListener("DOMContentLoaded",init);
