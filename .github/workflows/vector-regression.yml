@@ -1,0 +1,27 @@
+name: Vector integration regression checks
+on:
+  push:
+    branches:
+      - feature/vector-on-demand-performance-2026-11-19
+  pull_request:
+    paths:
+      - 'app.js'
+      - 'vector-detection.js'
+      - 'styles.css'
+      - 'index.html'
+      - 'sw.js'
+      - 'tests/vector-integration.test.cjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-regression:
+    name: Raster-first and lazy MapLibre integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run tests
+        run: node --test tests/vector-integration.test.cjs
