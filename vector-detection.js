@@ -81,6 +81,49 @@ export class VectorDetection {
     this.count++;this.totalMs+=elapsedMs;
     return {candidates:[...entries.values()],elapsedMs};
   }
+  async display(container,position,zoom){
+    await this.open(position,zoom);
+    // Reuse the *same* WebGL context for visual map and hit-testing.
+    if(!this.map||!this.root)throw Error("MapLibre nicht verfügbar");
+    container.prepend(this.root);
+    this.root.classList.add("is-visible");
+    this.root.removeAttribute("aria-hidden");
+    this.map.resize();
+    this.sync(position,zoom);
+    await this.waitIdle(22000);
+  }
+  hide(){
+    if(!this.root||!this.map)return;
+    this.root.classList.remove("is-visible");
+    this.root.setAttribute("aria-hidden","true");
+    document.body.append(this.root);
+    this.map.resize();
+  }
+  sync(position,zoom){
+    if(!this.map)return;
+    this.map.jumpTo({center:[position.lng,position.lat],zoom:Math.min(zoom,19),bearing:0,pitch:0});
+  }
+  setLanguage(language){
+    if(!this.map)return 0;
+    const order={
+      de:["name_de","name_int","name_en","name"],
+      en:["name_en","name_int","name","name_de"],
+      international:["name_int","name_en","name","name_de"],
+      local:["name","name_int","name_en","name_de"]
+    }[language]||["name","name_int","name_en","name_de"];
+    const field=["coalesce",...order.map(key=>["get",key])];
+    let count=0;
+    const style=this.map.getStyle();
+    for(const layer of style?.layers||[]){
+      if(layer.type!=="symbol")continue;
+      const original=layer.layout?.["text-field"];
+      // Preserve road refs, house numbers and non-name-driven labels.
+      if(original===undefined||!JSON.stringify(original).includes("name"))continue;
+      try{this.map.setLayoutProperty(layer.id,"text-field",field);count++}
+      catch(_){/* style may have special expressions not covered by generic name labels */}
+    }
+    return count;
+  }
   close(){
     this.generation++;
     try{this.map?.remove()}catch(_){}
