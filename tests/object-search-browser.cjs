@@ -85,34 +85,43 @@ const base=process.env.PIN2MAP_TEST_URL||
       assert.ok(full.client>=full.scroll-2,"all seven choices visible when there is room");
       assert.ok(full.lastBottom<=full.menu.bottom+1,"last choice must be fully visible");
     }
-    // A reduced viewport simulates the keyboard's available screen height.
-    // The last action must remain reachable by scrolling the popover itself.
+    // Exercise the REAL positioning code with an iOS-style visualViewport.
+    // Simply adding keyboard-constrained CSS is not a geometry regression test.
     if(width<=768){
-      const original=page.viewportSize();
-      await page.setViewportSize({width,height:Math.min(height,390)});
-      // Let real viewport resize handlers settle before simulating the keyboard.
-      // Otherwise the pending resize handler removes the injected CSS class.
-      await page.waitForTimeout(180);
-      const keyboardState=await page.locator("#searchTypeMenu").evaluate(el=>{
-        el.classList.add("keyboard-constrained");
-        return {position:getComputedStyle(el).position};
-      });
-      assert.equal(keyboardState.position,"fixed",
-        "keyboard menu must escape #app overflow clipping");
+      const simulatedHeight=Math.min(height-150,450);
+      const geometry=await page.evaluate(visibleHeight=>{
+        Object.defineProperty(window,"visualViewport",{configurable:true,value:{
+          offsetTop:0,offsetLeft:0,width:innerWidth,height:visibleHeight
+        }});
+        window.dispatchEvent(new Event("resize"));
+        const menu=document.querySelector("#searchTypeMenu");
+        const field=document.querySelector("#searchForm");
+        const m=menu.getBoundingClientRect(),f=field.getBoundingClientRect();
+        return {position:getComputedStyle(menu).position,
+          keyboard:menu.classList.contains("keyboard-constrained"),
+          top:m.top,bottom:m.bottom,height:m.height,
+          fieldBottom:f.bottom,scrollHeight:menu.scrollHeight,
+          clientHeight:menu.clientHeight};
+      },simulatedHeight);
+      assert.equal(geometry.position,"fixed","keyboard menu must escape app clipping");
+      assert.equal(geometry.keyboard,true,"real resize must activate keyboard layout");
       await assertSingleColumn("keyboard viewport "+width);
-      const reduced=await page.locator("#searchTypeMenu").evaluate(menu=>{
-        const r=menu.getBoundingClientRect();
-        return {height:r.height,top:r.top,bottom:r.bottom};
-      });
-      assert.ok(reduced.height>=150,
-        "keyboard layout must not collapse to an arbitrary short strip: "+JSON.stringify(reduced));
+      assert.ok(geometry.top>=geometry.fieldBottom+7,
+        "search chooser must remain below search field: "+JSON.stringify(geometry));
+      assert.ok(geometry.bottom<=simulatedHeight+1,
+        "keyboard menu must fit the actual visible viewport: "+JSON.stringify(geometry));
+      assert.ok(geometry.height>=150,
+        "do not collapse menu when the visible viewport has room: "+JSON.stringify(geometry));
       await page.locator('.search-type-choice[data-search-type="objects"]').scrollIntoViewIfNeeded();
       const bounds=await page.locator("#searchTypeMenu").boundingBox();
       const item=await page.locator('.search-type-choice[data-search-type="objects"]').boundingBox();
-      assert.ok(bounds&&item&&bounds.y+bounds.height<=Math.min(height,390)+1,"menu must stay above simulated keyboard");
-      assert.ok(item.y>=bounds.y-1&&item.y+item.height<=bounds.y+bounds.height+1,
-        "last action accessible by internal popover scrolling");
-      await page.setViewportSize(original);
+      assert.ok(bounds&&item&&item.y>=bounds.y-1&&item.y+item.height<=bounds.y+bounds.height+1,
+        "last menu item must be accessible by internal scrolling");
+      await page.evaluate(()=>{
+        delete window.visualViewport;
+        window.dispatchEvent(new Event("resize"));
+      });
+      await assertSingleColumn("restored viewport "+width);
     }
     assert.equal(await page.locator(".object-search-options:visible").count(),0,"specialized options are not yet visible");
     const launcherPriority=await page.evaluate(()=>{

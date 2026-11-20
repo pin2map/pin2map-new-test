@@ -254,15 +254,12 @@
    const margin=8,gap=9;
    const x=Math.max(leftEdge+margin,Math.min(
     form.left+form.width/2-menuWidth/2,rightEdge-margin-menuWidth));
-   const desiredTop=form.bottom+gap;
-   const below=Math.max(0,lower-margin-desiredTop);
-   const above=Math.max(0,form.top-gap-(upper+margin));
-   // Preserve placement beneath search whenever useful space exists.
-   // Only when genuinely cramped use the larger free area above it.
-   const placeAbove=below<120&&above>below;
-   const maxHeight=Math.max(0,Math.min(contentHeight,placeAbove?above:below));
-   const top=placeAbove?form.top-gap-maxHeight:desiredTop;
-   return {keyboard,left:x-origin.x,top:top-origin.y,maxHeight,placeAbove};
+   const top=Math.max(upper+margin,form.bottom+gap);
+   const maxHeight=Math.max(0,Math.min(contentHeight,lower-margin-top));
+   // This contract never moves the chooser above or over the search field.
+   // If the visual viewport truly leaves no room below it, report the
+   // available space faithfully rather than fabricating a 44px minimum.
+   return {keyboard,left:x-origin.x,top:top-origin.y,maxHeight};
   }
   position(){
    const form=this.form.getBoundingClientRect(),app=this.app.getBoundingClientRect();

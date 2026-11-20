@@ -99,9 +99,9 @@ test("approved search dialog uses actual viewport height, including iPhone keybo
  const shifted=layout(420,40);
  assert.equal(shifted.maxHeight,331,"account for visualViewport.offsetTop");
  const cramped=layout(420,0,{left:40,top:310,bottom:354,width:310,height:44});
- assert.equal(cramped.placeAbove,true,"relocate only if almost no room remains below");
- assert.ok(cramped.maxHeight>=290,"use the available alternate space");
- assert.ok(cramped.top>=8&&cramped.top+cramped.maxHeight<=412);
+ assert.equal(cramped.top,363,"never move chooser above the search field");
+ assert.equal(cramped.maxHeight,49,"honestly report actual remaining space");
+ assert.ok(cramped.top+cramped.maxHeight<=412);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
