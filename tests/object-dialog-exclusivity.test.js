@@ -8,7 +8,8 @@ const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
 test("opening either object editor always closes competing object dialogs first",()=>{
  const app=read("app.js");
  assert.match(app,/function openGeometryEditor\(type,item,position\)\{[\s\S]*?closeAllMapMenus\(\);[\s\S]*?geometryEditor\.show\(/);
- assert.match(app,/function selectPin\(id\)\{\s*closeAllMapMenus\(\);[\s\S]*?pinSession\.select\(id\)/);
+ assert.match(app,/function selectPin\(id\)\{\s*endObjectSearchIfNeeded\(\);\s*closeAllMapMenus\(\);[\s\S]*?pinSession\.select\(id\)/);
+ assert.match(app,/function openGeometryEditor\(type,item,position\)\{[\s\S]*?endObjectSearchIfNeeded\(\);\s*closeAllMapMenus\(\);[\s\S]*?geometryEditor\.show\(/);
  assert.match(app,/function closeAllMapMenus\(\)\{[\s\S]*?geometryEditor\?\.close\(false\)/);
  assert.match(app,/function closeAllMapMenus\(\)\{[\s\S]*?uiState\.clearSelection\(\);renderMarkers\(\);renderPinPanel\(\)/);
 });

@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
-const contract=()=>read("styles.css").split("/* v264 – functional-button contract:")[1];
+const contract=()=>read("styles.css").split("/* v264 – functional-button contract:")[1]?.split("/* v265 normal map-selection surface")[0];
 test("all current function launchers share a dialog-safe low stacking level",()=>{
  const css=read("styles.css"),html=read("index.html"),rule=contract();
  assert.ok(rule,"binding rule exists");
