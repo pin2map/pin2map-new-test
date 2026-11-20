@@ -38,6 +38,16 @@ test("all 8 note URL GPX combinations map to independent sector colors",()=>{
   assert.ok(!html.includes("pin-status-badge"));
  }
 });
+test("a newly imported attached GPX route activates only the lower gray pin sector",()=>{
+ const pin={id:"p",name:"PV_Tour_4",note:"",url:"",
+  gpxAttachment:{filename:"PV_Tour_4.gpx",chains:[[[48,9],[48.1,9.1]]]}};
+ const flags=marker.statusFlags(pin);
+ assert.deepEqual(flags,{note:false,url:false,gpx:true});
+ const html=marker.appearance({pin,color:"#326cc2"}).html;
+ assert.match(html,/class="pin-sector-gpx"[^>]*fill="#8f989f"/);
+ assert.match(html,/class="pin-sector-note"[^>]*fill="#e8edf2"/);
+ assert.match(html,/class="pin-sector-url"[^>]*fill="#e8edf2"/);
+});
 test("insertion at captured caret and replacement of a selection never appends blindly",()=>{
  assert.deepEqual(NoteEditor.insertAtSelection("Zeile eins\nZeile zwei",{start:6,end:10},"12.11.2026"),
   {text:"Zeile 12.11.2026\nZeile zwei",caret:16});
