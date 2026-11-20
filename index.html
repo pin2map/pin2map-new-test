@@ -163,11 +163,16 @@
     <div class="panel-head"><h2>Daten importieren / exportieren</h2><button type="button" id="transferClose" class="close" data-pin-icon="x" aria-label="Schließen">×</button></div>
     <div id="transferMain">
       <p class="muted small">Das vollständige Projekt einschließlich Pins, Ebenen, Flächen, Flüssen und Favoriten als Datei sichern oder Daten aus einer Datei übernehmen.</p>
-      <button type="button" id="transferImport" class="secondary full">Datei importieren (.pin2map / GPX)</button>
+      <button type="button" id="transferImport" class="secondary full">Projekt oder GPX-Datei importieren</button>
+      <button type="button" id="transferImportHike" class="secondary full">GPX-Route als Start-Pin mit Track importieren</button>
       <label for="transferExportName">Dateiname <input id="transferExportName" type="text" maxlength="100" autocomplete="off" placeholder="pin2map"></label>
-      <button type="button" id="transferExport" class="secondary full">Projekt exportieren (.pin2map)</button>
+      <fieldset class="transfer-scope"><legend>Exportumfang</legend>
+        <label><input type="radio" name="transferScope" value="all" checked> Alle Elemente</label>
+        <label><input type="radio" name="transferScope" value="visible"> Nur gerade sichtbare Elemente</label>
+      </fieldset>
+      <button type="button" id="transferExport" class="secondary full">Projekt herunterladen (.pin2map)</button>
       <button type="button" id="transferExportGpx" class="secondary full">Pins und Tracks als GPX exportieren</button>
-      <p class="muted small">GPX enthält nur Wegpunkte und Tracks. Für eine vollständige Sicherung die pin2map-Datei verwenden.</p>
+      <p class="muted small">Beim Export „Nur sichtbare Elemente“ werden ausgeblendete Ebenen und Objekte sowie Favoriten und ungeklärte Altdaten nicht mit exportiert. Für eine vollständige Sicherung „Alle Elemente“ wählen.</p>
     </div>
     <div id="transferConfirm" class="hidden">
       <strong id="transferFileInfo"></strong><p id="transferFileSummary" class="muted small"></p>
