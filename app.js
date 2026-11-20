@@ -346,7 +346,7 @@
     try{
       const content=projectTransfer.encodeGpx({...state,pins:[pin],rivers:[]});
       const safe=String(pin.gpxAttachment.filename||pin.name||"GPX-Route")
-        .replace(/[^a-zA-Z0-9_äöüÄÖÜß. -]/g,"-").replace(/\\.gpx$/i,"").slice(0,90);
+        .replace(/[^a-zA-Z0-9_äöüÄÖÜß. -]/g,"-").replace(/\.gpx$/i,"").slice(0,90);
       downloadTransfer(content,"gpx","application/gpx+xml;charset=utf-8",(safe||"GPX-Route")+".gpx");
     }catch(error){showNotice("GPX-Export fehlgeschlagen: "+error.message);}
   }
@@ -406,7 +406,7 @@
     (async()=>{
       if(file.size>50*1024*1024)throw Error("Maximale Dateigröße: 50 MB.");
       const contents=await file.text();
-      const result=/\\.gpx$/i.test(file.name)?projectTransfer.gpxRead(contents,undefined,
+      const result=/\.gpx$/i.test(file.name)?projectTransfer.gpxRead(contents,undefined,
         {attachTracks:transferGpxMode==="start",filename:file.name}):
         projectTransfer.parseProject(contents,file.name);
       transferPending=result;
