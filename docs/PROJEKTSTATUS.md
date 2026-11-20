@@ -2211,3 +2211,8 @@ Das Einchecken dieser Dokumentation ist ausschließlich eine Statusaktualisierun
 **Module:** `domain/object-search.js` und die Pin-Präsentation (ID-Deduplikation), `ui/search-type-menu.js` (Menü/Keyboard/Fokus), `app.js` (temporäres Filter-Reset), `styles.css` (nur Trennlinie, CSS-`!important`-Budget unverändert), Service Worker **v279**. Keine Änderung an IndexedDB-Schema, Persistenz, `main` oder `reference/*`.
 
 **Tests:** Unitvertrag für sieben Optionen, eindeutige Shortcuts und Dubletten; existierende Geometrie-Regression auf sieben Optionen aktualisiert; echte veröffentlichte Chromium-Browserprüfungen bei 320/375/390/1280 px umfassen ersten Tipp-/Tastaturfokus, `Meta+F`, neue Suchaktion, Wechsel zurück zur normalen Auswahl beim Schreiben, ID-Dubletten und Sichtbarkeit sowie die bisherigen Filter-/Dialog-Tests. Vollständige Node-, Architektur-, Chromium-, Preview-/HTTPS- und WebKit-Gates sind Voraussetzung; bei Erstellung noch **offen**. Eine reale iPhone-/Safari-Nutzerabnahme bleibt davon getrennt.
+
+ 
+### v280 – Escape-Schließverhalten am Suchbutton (20.11.2026)
+
+**Gefundener Browserregressionsfehler:** Die neue Lupe zeigt zunächst die sieben Menüoptionen. Wird sie per Klick aktiviert, bleibt der Tastaturfokus auf dem Lupenbutton. Das bestehende Escape-Handling schloss das Menü nur, wenn Fokus auf Sucheingabe oder innerhalb des Menüs lag. In `ui/search-type-menu.js` wird nun auch der auslösende Button für Escape berücksichtigt. Damit bleibt der bisherige Test für das vollständige Schließen der Auswahl (vor Geometriesuchen) gültig und er prüft echtes Benutzerverhalten statt einen Workaround. PWA-Worker-Version **v280**. Noch nicht freigegeben, vollständige Gates erneut erforderlich.

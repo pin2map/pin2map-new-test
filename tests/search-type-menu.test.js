@@ -56,3 +56,9 @@ test("dedicated marker search and hardware Find use the search input",()=>{
  assert.match(src,/this\.input\.addEventListener\("pointerdown"/);
  assert.match(src,/this\.returnToCreation\(\)/);
 });
+
+test("Escape dismisses the chooser while its magnifier trigger holds focus",()=>{
+ const src=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ assert.match(src,/e\.target!==this\.button/);
+ assert.match(src,/key==="escape"\)\{e\.preventDefault\(\);this\.close\(\)/);
+});

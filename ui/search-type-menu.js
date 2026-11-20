@@ -143,7 +143,7 @@
    this.doc.addEventListener("keydown",e=>{
     if(!this.open||e.altKey||e.ctrlKey||e.metaKey||e.isComposing)return;
     const inInput=e.target===this.input,inMenu=this.menu.contains(e.target);
-    if(!inInput&&!inMenu)return;
+    if(!inInput&&!inMenu&&e.target!==this.button)return;
     const key=String(e.key||"").toLowerCase();
     if(key==="escape"){e.preventDefault();this.close();return;}
     if(this.searchMode){
