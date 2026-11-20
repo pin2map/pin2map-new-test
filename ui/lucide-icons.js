@@ -23,6 +23,16 @@
       ["path",{d:"m21 21-4.35-4.35"}],
       ["path",{d:"M8 11h6"}]
     ],
+    "map-pin-search": [
+      ["path",{d:"M11 20.5S4 14.8 4 10a8 8 0 0 1 15.5-2.7"}],
+      ["circle",{cx:10.5,cy:10,r:2}],
+      ["circle",{cx:17,cy:16,r:4}],
+      ["path",{d:"m20 19 2 2"}]
+    ],
+    "calendar-days": [
+      ["rect",{x:3,y:5,width:18,height:16,rx:2}],
+      ["path",{d:"M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"}]
+    ],
     "map-pin": [["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],["circle",{cx:12,cy:10,r:2}]],
     // Lucide car (side silhouette), canonical icon name.
     "car": [
