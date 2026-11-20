@@ -108,7 +108,7 @@
         }
         if(key==="tab"&&inInput&&!e.shiftKey){
           e.preventDefault();this.highlight(0);
-          this.menu.children[0].focus({preventScroll:true});
+          this.menu.querySelectorAll(".search-type-choice")[0].focus({preventScroll:true});
           return;
         }
         if(key==="arrowdown"||key==="arrowup"){
@@ -116,7 +116,7 @@
           this.highlight(inInput||!this.menu.querySelector(".is-selected")?
             (key==="arrowdown"?0:CHOICES.length-1):
             this.active+(key==="arrowdown"?1:-1));
-          this.menu.children[this.active].focus({preventScroll:true});
+          this.menu.querySelectorAll(".search-type-choice")[this.active].focus({preventScroll:true});
           return;
         }
         if(key==="enter"){
