@@ -22,6 +22,7 @@
   function search(project,{query="",kind="all",track=false,link=false,note=false,created="any",now=null}={}){
     if(!TYPES.includes(kind))throw new TypeError("Unknown object search type");
     const needle=text(query.trim());
+    if(!["any","today","yesterday"].includes(created))throw new TypeError("Unknown creation date filter");
     if(created!=="any"&&!(now instanceof Date))throw new TypeError("Calendar clock required");
     const day=created==="today"?calendarDay(now):created==="yesterday"?calendarDay(now,-1):null;
     if(created!=="any"&&!day)throw new TypeError("Unknown creation date filter");
