@@ -445,7 +445,7 @@
       setTileLayer();
       mapAdapter.setView({center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom},{animate:false});
       renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateLabelButton();
-      favoritesPanel?.render?.();
+      syncFavoritePanel();
       showNotice(choice==="add"?"Daten hinzugefügt":"Projekt importiert");
     }catch(error){
       if(committed){
