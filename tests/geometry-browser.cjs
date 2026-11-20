@@ -741,6 +741,27 @@ const viewports=[
      .evaluateAll(buttons=>buttons.map(b=>b.getAttribute("aria-label")));
    assert.deepEqual(riverActionOrder,["Ebene: Privat","Link","Wikipedia","Dialog schließen"],
      "River now shares the full object-editor footer instead of a special four-button editor");
+   // Geometry-specific layer and URL popups must work even after search flows.
+   await page.locator("#geometryEditor .geometry-layer").click();
+   await page.locator("#geometryLayerMenu").waitFor({state:"visible"});
+   const geometryLayerRows=page.locator("#geometryLayerMenu .pin-layer-option");
+   assert.ok(await geometryLayerRows.count()>=2,"Geometry layer picker includes all layers");
+   const geometryLayerBounds=await page.locator("#geometryLayerMenu").boundingBox();
+   assert.ok(geometryLayerBounds&&geometryLayerBounds.width>=120&&geometryLayerBounds.height>=40,
+     "Geometry layer menu remains usable");
+   await geometryLayerRows.filter({hasText:"Privat"}).click();
+   await page.locator("#geometryEditor .geometry-link").click();
+   await page.locator("#geometryUrlBlock").waitFor({state:"visible"});
+   const geometryUrl=await page.locator("#geometryUrlBlock").boundingBox();
+   const geometryField=await page.locator("#geometryUrlBlock .pin-url-field").boundingBox();
+   const geometryActions=await page.locator("#geometryUrlBlock .pin-url-actions").boundingBox();
+   assert.ok(geometryUrl&&geometryField&&geometryActions&&geometryUrl.width>=120&&geometryUrl.height>=140,
+     "Geometry URL editor must have a usable surface");
+   assert.ok(geometryField.y>=geometryUrl.y&&geometryField.y+geometryField.height<=geometryActions.y+2,
+     "Geometry URL textarea must not overlap its actions");
+   assert.ok(geometryActions.y+geometryActions.height<=geometryUrl.y+geometryUrl.height+2,
+     "Geometry URL actions remain inside the surface");
+   await page.locator("#geometryEditor .geometry-link").click();
    const river=(await waitForStored(project=>project?.rivers?.length>=1,"river")).rivers[0];
    assert.equal(river.layerId,"private");
    assert.equal(river.chains[0].length,3);

@@ -2890,3 +2890,42 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
 }
+
+/* v287: one invariant layout for all object URL popups in iOS WebKit.
+ * Fieldsets are not reliable flex containers on Safari: they can paint an
+ * additional capsule over the label while children overflow the notes area.
+ * Put the popup on a two-row grid and keep the native fieldset as a block. */
+#pinUrlBlock.pin-url-popup,
+#geometryUrlBlock.pin-url-popup{
+  display:grid;
+  grid-template-rows:minmax(0,1fr) auto;
+  row-gap:8px;
+  overflow:hidden;
+  background:#fff;
+}
+#pinUrlBlock.pin-url-popup.hidden,
+#geometryUrlBlock.pin-url-popup.hidden{display:none}
+#pinUrlBlock .pin-url-field,
+#geometryUrlBlock .pin-url-field{
+  display:block;box-sizing:border-box;min-width:0;min-height:0;
+  height:100%;max-height:100%;margin:0;overflow:hidden;
+  background:#fff;
+}
+#pinUrlBlock .pin-url-field legend,
+#geometryUrlBlock .pin-url-field legend{
+  display:table;width:auto;max-width:calc(100% - 12px);
+  box-sizing:border-box;line-height:1.2;
+}
+#pinUrlBlock #pinUrl,
+#geometryUrlBlock #geometryUrl{
+  display:block;box-sizing:border-box;width:100%;
+  height:calc(100% - 17px);min-height:0;max-height:100%;
+  margin:0;overflow-y:auto;resize:none;
+  background:#fff;
+}
+#pinUrlBlock .pin-url-actions,
+#geometryUrlBlock .pin-url-actions{
+  position:relative;display:flex;align-items:center;justify-content:flex-end;
+  flex-wrap:nowrap;min-height:34px;margin:0;z-index:1;
+  background:#fff;
+}

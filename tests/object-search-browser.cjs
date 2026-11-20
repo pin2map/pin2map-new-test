@@ -195,6 +195,14 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:30000});
     await page.locator("#searchInput").fill("Karlsruhe");
     await page.locator('.search-type-choice[data-search-type="objects"]').click();
+    // Search must intercept map clicks. Exit search and enable the hidden
+    // source layer using the real UI, without reinitializing the application.
+    await page.locator(".object-search-exit").click();
+    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
+    await page.locator("#layersButton").click();
+    const layerRow=page.locator('#layersList .list-dialog-row[data-item-id="layer-1"]');
+    await layerRow.locator("button.layer-eye").click();
+    await page.locator("#layersClose").click();
     await page.locator(".pin-marker").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible"});
     await page.locator("#pinLayerTrigger").click();
@@ -208,7 +216,16 @@ const base=process.env.PIN2MAP_TEST_URL||
     const urlBox=await page.locator("#pinUrlBlock").boundingBox();
     assert.ok(urlBox.height>=140&&urlBox.width>=120,"URL editor remains a coherent panel");
     const actionsBox=await page.locator("#pinUrlBlock .pin-url-actions").boundingBox();
+    const fieldBox=await page.locator("#pinUrlBlock .pin-url-field").boundingBox();
+    const textBox=await page.locator("#pinUrl").boundingBox();
+    assert.ok(fieldBox.y>=urlBox.y&&fieldBox.y+fieldBox.height<=urlBox.y+urlBox.height,
+      "URL fieldset stays within popup");
+    assert.ok(textBox.y>=fieldBox.y&&textBox.y+textBox.height<=fieldBox.y+fieldBox.height+2,
+      "URL textarea stays within fieldset");
+    assert.ok(fieldBox.y+fieldBox.height<=actionsBox.y+2,"URL buttons do not overlay input/fieldset");
     assert.ok(actionsBox.y+actionsBox.height<=urlBox.y+urlBox.height+2,"URL actions fit inside popup");
+    assert.equal(await page.locator("#pinUrlBlock").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(255, 255, 255)","URL popup is opaque");
     assert.deepEqual(errors,[],width+" browser errors");
     console.log("PASS first-tap focus, 7th search choice, duplicate ID counts, Cmd+F, mobile controls:",width);
    }finally{await context.close();}
