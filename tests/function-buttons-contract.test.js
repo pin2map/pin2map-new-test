@@ -37,3 +37,10 @@ test("future import/export is covered by specification but not falsely exposed a
  assert.ok(!read("index.html").includes('id="importExportButton"'));
  assert.ok(read("docs/FUNCTION_BUTTONS_CONTRACT_2026-11-18.md").includes("Import/Export"));
 });
+
+test("import/export map launcher is hidden while pin dialog is open",()=>{
+ const css=read("styles.css"),html=read("index.html");
+ assert.match(html,/id="transferButton"[^>]*aria-controls="transferPanel"/);
+ assert.match(css,/body\.pin-open #app button:is\([^)]*#transferButton/);
+ assert.match(css,/body\.pin-open #app #transferPanel\{display:none\}/);
+});
