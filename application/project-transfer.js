@@ -64,6 +64,15 @@
       throw Error("Ungültige Favoriten.");
     return project;
   }
+  function removeEmptyLayers(project){
+    // The mandatory private layer is retained even without content. Other
+    // layers are transferred only when they own a pin, area, or river.
+    const occupied=new Set([...(project.pins||[]),...(project.areas||[]),
+      ...(project.rivers||[])].map(x=>x.layerId));
+    project.layers=project.layers.filter(layer=>
+      layer.id==="private"||occupied.has(layer.id));
+    return project;
+  }
   function fromLegacy(doc,name){
     if(!isObj(doc)||doc.format!=="pin2map"||typeof doc.list!=="string")
       throw Error("Nicht unterstütztes Vorgängerformat.");
@@ -153,12 +162,12 @@
     const incoming={layers,pins,areas,rivers,favorites:[],...(viewport?{viewport}:{})};
     // Do not embed the predecessor source file in the NEW data model.
     // Unsupported entries are reported by the import preview.
-    return {project:safeProject(incoming),unresolved:unresolved.length,legacy:true};
+    return {project:removeEmptyLayers(safeProject(incoming)),unresolved:unresolved.length,legacy:true};
   }
   function fromNew(doc){
     if(!isObj(doc)||doc.format!=="pin2map-new"||doc.version!==1)
       throw Error("Nicht unterstützte pin2map-Dateiversion.");
-    return {project:safeProject(doc.project),unresolved:0,legacy:false};
+    return {project:removeEmptyLayers(safeProject(doc.project)),unresolved:0,legacy:false};
   }
   function parseProject(text,name="Projekt.pin2map"){
     if(typeof text!=="string"||text.length>50*1024*1024)throw Error("Datei ist zu groß.");
@@ -169,12 +178,12 @@
     throw Error("Unbekanntes pin2map-Dateiformat.");
   }
   function encodeProject(state){
-    const project=safeProject(state);
+    const project=removeEmptyLayers(safeProject(state));
     return JSON.stringify({format:"pin2map-new",version:1,created:new Date().toISOString(),
       project});
   }
   function merge(base,incoming){
-    const current=safeProject(base),other=safeProject(incoming);
+    const current=safeProject(base),other=removeEmptyLayers(safeProject(incoming));
     const result=clone(current),layerMap=new Map([["private","private"]]);
     const layerNames=new Set(result.layers.map(l=>l.name.toLocaleLowerCase("de")));
     const allIds=new Set([...result.layers,...result.pins,...(result.areas||[]),...(result.rivers||[])].map(x=>x.id));
@@ -273,7 +282,7 @@
   }
   function exportSubset(state,{visible=false,filterPins=null}={}){
     const source=safeProject(state);
-    if(!visible)return source;
+    if(!visible)return removeEmptyLayers(source);
     const active=new Set(source.layers.filter(l=>l.visible).map(l=>l.id));
     const project={...source,
       pins:source.pins.filter(pin=>active.has(pin.layerId)&&(!filterPins||filterPins(pin))),
@@ -282,7 +291,7 @@
       favorites:[],
       layers:source.layers.filter(l=>l.id==="private"||active.has(l.id))
     };
-    return safeProject(project);
+    return removeEmptyLayers(safeProject(project));
   }
   const api=Object.freeze({safeProject,parseProject,encodeProject,merge,gpxRead,encodeGpx,exportSubset});
   root.Pin2MapProjectTransfer=api;
