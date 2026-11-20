@@ -232,3 +232,16 @@ test("private layer is retained in an otherwise empty imported project",()=>{
    {id:"empty",name:"Test",visible:true}],pins:[],areas:[],rivers:[],favorites:[]};
  assert.deepEqual(transfer.parseProject(transfer.encodeProject(project)).project.layers.map(l=>l.id),["private"]);
 });
+
+test("iPad file picker does not pre-filter .pin2map or .gpx files",()=>{
+ const fs=require("node:fs"),path=require("node:path");
+ const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ const input=html.match(/<input[^>]*id="transferFileInput"[^>]*>/)?.[0];
+ assert.ok(input,"import input exists");
+ assert.doesNotMatch(input,/\saccept=/,"native iPad file chooser must not gray out custom extension");
+ assert.match(app,/file\.size>50\*1024\*1024/,"size guard remains in app");
+ assert.match(app,/projectTransfer\.parseProject\(contents,file\.name\)/,
+   "invalid files are rejected by content parser after selection");
+ assert.match(app,/projectTransfer\.gpxRead\(contents/);
+});
