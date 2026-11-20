@@ -129,7 +129,9 @@ const viewports=[
        getComputedStyle(el).fontSize==="0px";
    }),true,"Search clear × must use centered CSS strokes, not a font baseline");
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
-   assert.equal(await page.locator(".search-type-choice").count(),6);
+   assert.equal(await page.locator(".search-type-choice").count(),7);
+    assert.equal(await page.locator(".search-type-choice").nth(6).getAttribute("data-search-type"),"objects");
+    assert.equal(await page.locator(".search-type-choice").nth(6).locator("svg").count(),1,"Saved-object search icon missing");
    assert.equal(await page.locator(".search-type-choice.is-selected").count(),0,"Opening must not prehighlight Pin");
    for(let i=0;i<modes.length;i++){
      const option=page.locator(".search-type-choice").nth(i);
