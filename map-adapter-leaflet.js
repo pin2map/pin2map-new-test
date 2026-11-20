@@ -557,6 +557,21 @@
       this.updateRiverLabels();
       this.updateAreaLabels();
     }
+    showAttachedGpx(chains){
+      this.clearAttachedGpx();
+      const group=window.L.featureGroup().addTo(this.map);
+      for(const chain of chains){
+        window.L.polyline(chain,{color:"#ed4035",weight:5,opacity:.92,
+          interactive:false}).addTo(group);
+      }
+      this.attachedGpxLayer=group;
+      const bounds=group.getBounds();
+      if(bounds.isValid())this.map.fitBounds(bounds,{padding:[40,40],maxZoom:15});
+    }
+    clearAttachedGpx(){
+      if(this.attachedGpxLayer)this.map.removeLayer(this.attachedGpxLayer);
+      this.attachedGpxLayer=null;
+    }
     renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},onRiverLine=()=>{}}={}){
       // Keep exactly one viewport listener across redraws; do not recreate
       // geometry layers on map pan/zoom, only reposition lightweight labels.
