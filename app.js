@@ -342,8 +342,8 @@
     $("transferImport").focus({preventScroll:true});
   }
   function filename(ext){
-    const raw=$("transferExportName").value.trim().replace(/\\.(?:pin2map|gpx)$/i,"")
-      .replace(/[\\/:*?"<>|\\r\\n]+/g,"-").slice(0,96);
+    const raw=$("transferExportName").value.trim().replace(/\.(?:pin2map|gpx)$/i,"")
+      .replace(/[\\/:*?"<>|\r\n]+/g,"-").slice(0,96);
     return (raw||"pin2map-"+new Date().toISOString().slice(0,10))+"."+ext;
   }
   function downloadTransfer(content,extension,mime){
