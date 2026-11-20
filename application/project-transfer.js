@@ -53,7 +53,8 @@
     if(!isObj(doc)||doc.format!=="pin2map"||typeof doc.list!=="string")
       throw Error("Nicht unterstütztes Vorgängerformat.");
     const layers=[{id:"private",name:"Privat",color:"#808080",visible:true}];
-    const pins=[],unresolved=[];
+    const pins=[],areas=[],unresolved=[];
+    const cache=isObj(doc.cache)?doc.cache:{};
     const colors={red:"#e64545",blue:"#326cc2",green:"#16836b",yellow:"#ffd700",
       orange:"#e07c2b",purple:"#865ab8",pink:"#c14d72"};
     const visibility=isObj(doc.categoryVisibility)?doc.categoryVisibility:{};
@@ -81,6 +82,25 @@
       const labelMatch=raw.match(/\s+\((.*)\)\s*$/);
       const query=labelMatch?raw.slice(0,labelMatch.index).trim():raw;
       const name=(labelMatch?.[1]||query).trim();
+      const saved=isObj(cache[line])?cache[line]:null;
+      if(saved && !area && saved.kind==="pin"){
+        try{
+          const loc=point(saved.lat,saved.lon);
+          if(!layerId)ensureCategory("Ohne Kategorie");
+          pins.push({id:id(),lat:loc.lat,lng:loc.lng,name:name.slice(0,120),layerId,
+            note:string(saved.note),url:string(saved.pinUrl),
+            ...(saved.createdAt?{createdAt:saved.createdAt}:{})});
+          continue;
+        }catch(_){}
+      }
+      if(saved && area && saved.kind==="area" &&
+        ["Polygon","MultiPolygon"].includes(saved.geometry?.type) &&
+        Array.isArray(saved.geometry?.coordinates) && saved.geometry.coordinates.length){
+        if(!layerId)ensureCategory("Ohne Kategorie");
+        areas.push({id:id(),name:name.slice(0,120),layerId,kind:"area",
+          geometry:clone(saved.geometry),note:"",url:""});
+        continue;
+      }
       const coord=query.match(/^([-+]?\d+(?:\.\d+)?)\s*,\s*([-+]?\d+(?:\.\d+)?)$/);
       if(coord&&!area){
         try{
@@ -97,6 +117,17 @@
     const viewport=Array.isArray(doc.view?.center)&&doc.view.center.length===2?
       {lat:Number(doc.view.center[0]),lng:Number(doc.view.center[1]),zoom:Number(doc.view.zoom)||6}:null;
     const rivers=[];
+    // Restore separately persisted predecessor river geometry.
+    for(const legacyRiver of (Array.isArray(doc.rivers)?doc.rivers:[])){
+      if(!isObj(legacyRiver)||!Array.isArray(legacyRiver.chains))continue;
+      try{
+        const chains=legacyRiver.chains.map(chain=>chain.map(p=>{
+          const valid=point(p[0],p[1]);return [valid.lat,valid.lng];
+        })).filter(chain=>chain.length>=2);
+        if(chains.length)rivers.push({id:id(),name:string(legacyRiver.name)||"Fluss (Vorgänger)",
+          layerId:"private",chains,note:"",url:""});
+      }catch(_){}
+    }
     for(const chain of (Array.isArray(doc.gpxTracks)?doc.gpxTracks:[])){
       if(!Array.isArray(chain)||chain.length<2)continue;
       try{
@@ -104,7 +135,7 @@
         rivers.push({id:id(),name:"GPX-Track (Vorgänger)",layerId:"private",chains:[valid],note:"",url:""});
       }catch(_){}
     }
-    const incoming={layers,pins,areas:[],rivers,favorites:[],...(viewport?{viewport}:{})};
+    const incoming={layers,pins,areas,rivers,favorites:[],...(viewport?{viewport}:{})};
     // Unconverted legacy categories, rivers and caches must not disappear.
     incoming.legacySources=[{filename:name,original:clone(doc),unresolved}];
     return {project:safeProject(incoming),unresolved:unresolved.length,legacy:true};
