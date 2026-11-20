@@ -245,3 +245,59 @@ test("iPad file picker does not pre-filter .pin2map or .gpx files",()=>{
    "invalid files are rejected by content parser after selection");
  assert.match(app,/projectTransfer\.gpxRead\(contents/);
 });
+
+test("add import places every pin, area and river in ONE new file-named layer",()=>{
+  const current=base(),incoming=base();
+  incoming.pins.push({id:"second",name:"Start mit GPX",lat:48,lng:9,layerId:"private",
+    gpxAttachment:{filename:"Tour.gpx",chains:[[[48,9],[48.1,9.1]]] }});
+  incoming.viewport={lat:1,lng:2,zoom:3};incoming.basemap="topo";
+  incoming.favorites.push({id:"newFav",name:"Other favorite"});
+  const copy=JSON.parse(JSON.stringify(current));
+  const merged=transfer.addInNewLayer(current,incoming,"Wanderung.pin2map");
+  const target=merged.layers.find(l=>l.name==="Wanderung.pin2map");
+  assert.ok(target);
+  assert.equal(merged.layers.length,current.layers.length+1);
+  assert.equal(merged.pins.length,current.pins.length+incoming.pins.length);
+  assert.equal(merged.areas.length,current.areas.length+incoming.areas.length);
+  assert.equal(merged.rivers.length,current.rivers.length+incoming.rivers.length);
+  for(const kind of ["pins","areas","rivers"]){
+    for(const obj of merged[kind].slice(current[kind].length))assert.equal(obj.layerId,target.id);
+    assert.equal(new Set(merged[kind].map(o=>o.id)).size,merged[kind].length);
+  }
+  assert.deepEqual(merged.pins[0],current.pins[0]);
+  assert.deepEqual(merged.favorites,current.favorites);
+  assert.deepEqual(merged.viewport,current.viewport);
+  assert.equal(merged.basemap,current.basemap);
+  assert.deepEqual(current,copy,"add must not mutate the existing project");
+  assert.equal(merged.pins.at(-1).gpxAttachment.filename,"Tour.gpx");
+});
+test("repeated file imports use distinct layer names and remap IDs",()=>{
+  let state=base();
+  state=transfer.addInNewLayer(state,base(),"PV_Tour_4.gpx");
+  state=transfer.addInNewLayer(state,base(),"PV_Tour_4.gpx");
+  assert.deepEqual(state.layers.slice(-2).map(l=>l.name),["PV_Tour_4.gpx","PV_Tour_4.gpx (2)"]);
+  assert.equal(new Set([...state.layers,...state.pins,...state.areas,...state.rivers].map(x=>x.id)).size,
+    state.layers.length+state.pins.length+state.areas.length+state.rivers.length);
+});
+test("add does not create a blank layer for a project without geographic objects",()=>{
+  const empty={layers:[{id:"private",name:"Privat"}],pins:[],areas:[],rivers:[],favorites:[]};
+  assert.throws(()=>transfer.addInNewLayer(base(),empty,"empty.pin2map"),/keine Pins, Flächen oder Flüsse/);
+});
+test("full replacement retains imported favorites and view, without remapping objects",()=>{
+  const imported=base();
+  imported.basemap="topo";imported.viewport={lat:40,lng:-3,zoom:11};
+  imported.pins[0].name="Aus importierter Datei";
+  const restored=transfer.parseProject(transfer.encodeProject(imported)).project;
+  assert.deepEqual(restored,imported);
+  assert.equal(restored.pins[0].id,"pinA");
+  assert.equal(restored.favorites[0].id,"fav1");
+});
+test("UI explicitly distinguishes replace from add-in-one-layer",()=>{
+ const fs=require("node:fs"),path=require("node:path");
+ const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ assert.match(app,/transferPending=\{\.\.\.result,filename:file\.name\}/);
+ assert.match(app,/projectTransfer\.addInNewLayer\(state,transferPending\.project,transferPending\.filename\)/);
+ assert.match(html,/id="transferAdd"[^>]*>Hinzufügen: Neue Ebene mit Dateinamen/);
+ assert.match(html,/id="transferReplace"[^>]*>Alles ersetzen: Gesamtes Projekt laden/);
+});
