@@ -529,7 +529,7 @@ const viewports=[
    await page.locator("#searchInput").fill("Testsee");
    await page.keyboard.press("Tab");
    assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.searchType),"pin");
-   await page.keyboard.press("s");
+   await page.keyboard.press("e"); // See now uses E; S chooses marker search.
    await page.locator("#searchResults .result").first().waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon svg").count(),1);
    await page.locator("#searchResults .result").first().click();
