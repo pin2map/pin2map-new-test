@@ -17,6 +17,9 @@
     if(!isObj(data)||!Array.isArray(data.layers)||!Array.isArray(data.pins))
       throw Error("Die Datei enthält kein gültiges pin2map-Projekt.");
     const project=clone(data);
+    // Old transitional builds may contain an embedded predecessor backup.
+    // It is not part of the NEW format and must not be propagated.
+    delete project.legacySources;
     if(project.layers.length>10000||project.pins.length>150000||
       (project.areas||[]).length>20000||(project.rivers||[]).length>20000)
       throw Error("Projekt überschreitet die zulässigen Größen.");
@@ -148,8 +151,8 @@
       }catch(_){}
     }
     const incoming={layers,pins,areas,rivers,favorites:[],...(viewport?{viewport}:{})};
-    // Unconverted legacy categories, rivers and caches must not disappear.
-    if(unresolved.length)incoming.legacySources=[{filename:name,original:clone(doc),unresolved}];
+    // Do not embed the predecessor source file in the NEW data model.
+    // Unsupported entries are reported by the import preview.
     return {project:safeProject(incoming),unresolved:unresolved.length,legacy:true};
   }
   function fromNew(doc){
@@ -194,8 +197,6 @@
     if(!Array.isArray(result.favorites))result.favorites=[];
     for(const favorite of other.favorites||[])
       result.favorites.push({...favorite,...(favorite.id?{id:nextId()}:{})});
-    if(other.legacySources?.length)
-      result.legacySources=[...(result.legacySources||[]),...clone(other.legacySources)];
     return safeProject(result);
   }
   function gpxRead(text,DOMParserApi=root.DOMParser,{attachTracks=false,filename="Route.gpx"}={}){
@@ -272,13 +273,6 @@
   }
   function exportSubset(state,{visible=false,filterPins=null}={}){
     const source=safeProject(state);
-    // Older NEW builds stored whole predecessor files even when every list
-    // entry had already been converted. Avoid carrying those redundant
-    // source copies in subsequent exports; retain any unresolved originals.
-    if(Array.isArray(source.legacySources)){
-      source.legacySources=source.legacySources.filter(entry=>entry?.unresolved?.length);
-      if(!source.legacySources.length)delete source.legacySources;
-    }
     if(!visible)return source;
     const active=new Set(source.layers.filter(l=>l.visible).map(l=>l.id));
     const project={...source,
@@ -288,8 +282,6 @@
       favorites:[],
       layers:source.layers.filter(l=>l.id==="private"||active.has(l.id))
     };
-    // Legacy raw-source documents cannot be sliced per visible item safely.
-    delete project.legacySources;
     return safeProject(project);
   }
   const api=Object.freeze({safeProject,parseProject,encodeProject,merge,gpxRead,encodeGpx,exportSubset});
