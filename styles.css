@@ -2682,8 +2682,6 @@ body.object-search-active #app #searchButton.p2m-icon-control .p2m-lucide{color:
 
 /* v274 search-mode redesign: mobile-first and keyboard-safe, no new project UI layer. */
 #app .search-creation-choices{display:flex;flex-direction:column;gap:3px}
-#app .search-creation-choices.hidden,
-#app .object-search-options.hidden{display:none}
 #app .search-type-menu.object-search-mode{
   width:min(390px,calc(100vw - 22px));padding:9px;
   color:#c92f39;overflow-y:auto;-webkit-overflow-scrolling:touch;
