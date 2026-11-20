@@ -129,7 +129,7 @@ const viewports=[
        getComputedStyle(el).fontSize==="0px";
    }),true,"Search clear × must use centered CSS strokes, not a font baseline");
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-search-menu.png"});
-   assert.equal(await page.locator(".search-type-choice").count(),6,"Only creation choices in normal mode");
+   assert.equal(await page.locator(".search-type-choice").count(),7,"Six creation modes plus saved marker search");
    assert.equal(await page.locator(".search-type-choice.is-selected").count(),0,"Opening must not prehighlight Pin");
    for(let i=0;i<modes.length;i++){
      const option=page.locator(".search-type-choice").nth(i);
@@ -682,10 +682,9 @@ const viewports=[
    }
    await page.locator("#searchButton").click();
    assert.equal(await contextMenu.isHidden(),true);
-   // The magnifier enters persistent object-search mode; leave it explicitly
-   // before testing the original Fluss creation shortcut.
-   assert.equal(await page.locator(".object-search-options").isVisible(),true);
-   await page.locator('[data-search-action="end"]').click();
+   // The magnifier now opens creation choices. Saved marker search is option seven.
+   assert.equal(await page.locator('.search-type-choice[data-search-type="objects"]').isVisible(),true);
+   await page.keyboard.press("Escape");
    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
 
    // Fast mock for the otherwise deliberately slow multi-stage river search.
