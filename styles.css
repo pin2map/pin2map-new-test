@@ -2622,3 +2622,35 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
   --p2m-map-control-border:#6a409d;
   --p2m-map-control-ink:#fff;
 }
+
+
+/* Project transfer launcher shares the established top-left corner geometry.
+   It sits immediately beneath Properties, without shifting any existing UI. */
+#app #transferButton.transfer-map-button.p2m-icon-control{
+  position:absolute!important;
+  left:var(--p2m-top-corner-inset,12px)!important;right:auto!important;
+  top:calc(var(--p2m-top-corner-offset,12px) + var(--p2m-map-circle-size,44px) + 8px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;transform:none!important;
+  display:grid;place-items:center;
+  width:var(--p2m-map-circle-size,44px);height:var(--p2m-map-circle-size,44px);
+  border-radius:50%;border:1px solid #9badbe;
+  background:#fff;color:#173b66;box-shadow:0 2px 8px #0003;
+  padding:0;z-index:1400;cursor:pointer;
+}
+#app #transferButton.transfer-map-button.p2m-icon-control[aria-expanded="true"]{
+  background:#1764bf;color:white;
+}
+#app #transferPanel.transfer-panel:not(.hidden){
+  left:var(--p2m-top-corner-inset,12px)!important;right:auto!important;
+  top:calc(var(--p2m-top-corner-offset,12px) + 2 * var(--p2m-map-circle-size,44px) + 16px + env(safe-area-inset-top,0px))!important;
+  bottom:auto!important;transform:none!important;
+  width:min(400px,calc(100vw - 20px));z-index:1600!important;
+  max-height:calc(100dvh - var(--p2m-top-corner-offset,12px) - 2 * var(--p2m-map-circle-size,44px) - 32px - env(safe-area-inset-top,0px));
+  overflow:auto;
+}
+#app #transferPanel .full{display:block;width:100%;margin:9px 0;text-align:left;font-weight:600}
+#app #transferPanel .danger{background:#ae3030;color:white}
+#app #transferPanel .panel-head h2{font-size:17px}
+#app #transferFileInfo{display:block;overflow-wrap:anywhere}
+body.pin-open #app #transferButton,
+body.pin-open #app #transferPanel{display:none!important}
