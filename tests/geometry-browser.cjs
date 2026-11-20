@@ -682,7 +682,11 @@ const viewports=[
    }
    await page.locator("#searchButton").click();
    assert.equal(await contextMenu.isHidden(),true);
-   await page.keyboard.press("Escape");
+   // The magnifier enters persistent object-search mode; leave it explicitly
+   // before testing the original Fluss creation shortcut.
+   assert.equal(await page.locator(".object-search-options").isVisible(),true);
+   await page.locator('[data-search-action="end"]').click();
+   assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
 
    // Fast mock for the otherwise deliberately slow multi-stage river search.
    await page.route(/nominatim\.openstreetmap\.org\/search/,async route=>{
