@@ -55,8 +55,11 @@ const base=process.env.PIN2MAP_TEST_URL||
       await page.setViewportSize({width,height:Math.min(height,390)});
       // Desktop emulation cannot raise an actual iOS software keyboard.
       // Exercise the EXACT keyboard-constrained CSS state and its fixed portal.
-      await page.locator("#searchTypeMenu").evaluate(el=>el.classList.add("keyboard-constrained"));
-      assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).position),"fixed",
+      const keyboardPosition=await page.locator("#searchTypeMenu").evaluate(el=>{
+        el.classList.add("keyboard-constrained");
+        return getComputedStyle(el).position;
+      });
+      assert.equal(keyboardPosition,"fixed",
         "keyboard menu must escape #app overflow clipping");
       assert.equal(await page.locator(".search-creation-scroll-hint").isVisible(),true,
         "compact menu communicates that additional options exist");
