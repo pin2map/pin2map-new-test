@@ -67,25 +67,35 @@ test("GPX export uses coordinates and escapes labels",()=>{
 });
 test("new GPX input contains strict waypoints and tracks",()=>{
   class Elem{
-    constructor(tag,attrs={},text="",children=[]){this.tag=tag;this.attrs=attrs;this.textContent=text;this.children=children;this.localName=tag;}
+    constructor(tag,attrs={},children=[],text=""){
+      this.tag=tag;this.attrs=attrs;this.children=children;
+      this.textContent=text;this.localName=tag;
+    }
     getAttribute(k){return this.attrs[k]??null;}
     getElementsByTagNameNS(ns,name){
-      const descend=(v)=>v.children.flatMap(c=>[...(c.tag===name?[c]:[]),...descend(c)]);
+      const descend=element=>element.children.flatMap(child=>
+        [...(child.tag===name?[child]:[]),...descend(child)]);
       return descend(this);
     }
-    getElementsByTagName(name){return this.getElementsByTagNameNS("*",name);}
   }
+  const root=new Elem("gpx",{},[
+    new Elem("wpt",{lat:"49.1",lon:"8.4"},[new Elem("name",{},[],"Wegpunkt")]),
+    new Elem("trk",{},[
+      new Elem("name",{},[],"Weg"),
+      new Elem("trkseg",{},[
+        new Elem("trkpt",{lat:"49",lon:"8"}),
+        new Elem("trkpt",{lat:"50",lon:"9"})
+      ])
+    ])
+  ]);
   class Parser{
-    parseFromString(){return {documentElement:{localName:"gpx"},
-      getElementsByTagName(){return []},
-      getElementsByTagNameNS(ns,name){
-        const doc=new Elem("doc",{},'',[
-          new Elem("wpt",{lat:"49.1",lon:"8.4"},"",[new Elem("name",{},"Wegpunkt")]),
-          new Elem("trk",{},"",[new Elem("name",{},"Weg"),new Elem("trkseg",{},"",[
-            new Elem("trkpt",{lat:"49",lon:"8"}),new Elem("trkpt",{lat:"50",lon:"9"})])])]);
-        return doc.getElementsByTagNameNS(ns,name);
-      }
-    }}}
+    parseFromString(){
+      return {
+        documentElement:root,
+        getElementsByTagName:()=>[],
+        getElementsByTagNameNS:(ns,name)=>root.getElementsByTagNameNS(ns,name)
+      };
+    }
   }
   const read=transfer.gpxRead("<gpx/>",Parser);
   assert.equal(read.project.pins.length,1);
