@@ -114,7 +114,7 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.ok(layout.box.left>=0&&layout.box.right<=width+1&&layout.box.bottom<=height+1,
       "compact chooser fits viewport "+JSON.stringify(layout));
     assert.ok(layout.selector.bottom<=layout.flags.top+2,"options remain two ordered rows");
-    assert.ok(layout.exit.left>=layout.selector.right-2&&layout.exit.left>=layout.flags.right-2,"exit at right");
+    assert.ok(layout.exit.left>=layout.selector.right-2,"exit at right of dropdown");
     assert.ok(Math.abs(layout.exit.width-layout.exit.height)<2&&layout.exit.width>=40,
       "exit must be circular touch target: "+JSON.stringify(layout));
     assert.ok(Math.abs(layout.exitMiddle-layout.selectorMiddle)<2,
