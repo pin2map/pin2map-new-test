@@ -8,7 +8,7 @@ test("seven search modes retain accessible icon and keyboard contracts",()=>{
   assert.deepEqual(CHOICES.map(x=>[x.id,x.label,x.shortcut]),[
     ["pin","Pin","p"],["gps","GPS-Location","l"],["area","Gebiet","g"],
     ["lake","See","s"],["river","Fluss","f"],["plate","Kennzeichen","k"],
-    ["objects","Suchen","u"]]]);
+    ["objects","Suchen","u"]]);
   assert.equal(CHOICES[0].icon,"map-pin");
   assert.equal(CHOICES[1].icon,"locate-fixed");
   assert.equal(CHOICES[5].icon,"car");
