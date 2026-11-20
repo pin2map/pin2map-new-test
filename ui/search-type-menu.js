@@ -7,7 +7,8 @@
     {id:"area",label:"Gebiet",shortcut:"g",asset:"region.svg"},
     {id:"lake",label:"See",shortcut:"s",asset:"lake.svg"},
     {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"},
-    {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"}
+    {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"},
+    {id:"objects",label:"Suchen",shortcut:"u",icon:"map-pin-search"}
   ]);
   class SearchTypeMenu{
     constructor({document:doc,getElement,icons,onChoose}){
@@ -50,6 +51,33 @@
         // Hover must not set keyboard selection.
         this.menu.append(button);
       });
+      // Project-object search controls live in the chooser, not the place-search form.
+      const separator=()=>{const el=this.doc.createElement("hr");el.className="object-search-divider";return el;};
+      // Place a subtle divider after the six existing geographic actions.
+      this.menu.insertBefore(separator(),this.menu.children[6]);
+      const options=this.doc.createElement("div");options.className="object-search-options";
+      const selector=this.doc.createElement("select");selector.className="object-search-kind";
+      selector.setAttribute("aria-label","Gespeicherte Objekttypen durchsuchen");
+      for(const [value,label] of [["all","Pins, Flächen, Flüsse, Text"],["pins","Nur Pins"],["areas","Nur Gebiete"],["lakes","Nur Seen"],["rivers","Nur Flüsse"],["texts","Nur Textinhalte"]]){
+        const option=this.doc.createElement("option");option.value=value;option.textContent=label;selector.append(option);
+      }
+      options.append(selector);
+      const flags=this.doc.createElement("div");flags.className="object-search-flags";
+      for(const [key,label] of [["track","Mit Track"],["link","Mit Link"],["note","Mit Notiz"]]){
+        const field=this.doc.createElement("label");
+        const box=this.doc.createElement("input");box.type="checkbox";box.dataset.flag=key;
+        field.append(box,this.doc.createTextNode(label));flags.append(field);
+      }
+      options.append(flags,separator());
+      const dates=this.doc.createElement("div");dates.className="object-search-dates";
+      for(const [id,label] of [["today","Heute erstellt"],["yesterday","Gestern erstellt"]]){
+        const btn=this.doc.createElement("button");btn.type="button";
+        btn.className="object-search-date";btn.dataset.created=id;
+        btn.append(this.icons.svg("calendar-days",this.doc),this.doc.createTextNode(label));
+        btn.addEventListener("click",()=>{this.close();this.onChoose("objects",{...this.searchOptions(),created:id});});
+        dates.append(btn);
+      }
+      options.append(dates);this.menu.append(options);
       this.button.setAttribute("aria-haspopup","menu");
       this.button.setAttribute("aria-controls","searchTypeMenu");
       this.button.setAttribute("aria-expanded","false");
@@ -103,20 +131,27 @@
       this.doc.defaultView?.addEventListener("resize",()=>{if(this.open)this.position();});
       this.bound=true;
     }
+    searchOptions(){
+      return {kind:this.menu.querySelector(".object-search-kind")?.value||"all",
+        track:!!this.menu.querySelector('[data-flag="track"]')?.checked,
+        link:!!this.menu.querySelector('[data-flag="link"]')?.checked,
+        note:!!this.menu.querySelector('[data-flag="note"]')?.checked};
+    }
     position(){
       const rect=this.form.getBoundingClientRect();
       const appRect=this.app.getBoundingClientRect();
-      const width=this.menu.offsetWidth||265;
-      const height=this.menu.offsetHeight||200;
+      const width=this.menu.offsetWidth||320;
+      const height=this.menu.offsetHeight||400;
       const desired=rect.left-appRect.left+(rect.width-width)/2;
       this.menu.style.left=Math.max(8,Math.min(desired,appRect.width-width-8))+"px";
       const below=rect.bottom-appRect.top+9;
       this.menu.style.top=Math.max(8,Math.min(below,appRect.height-height-8))+"px";
+      this.menu.style.maxHeight=Math.max(160,appRect.height-24)+"px";
     }
     highlight(index){
       const selected=Number.isInteger(index);
       if(selected)this.active=(index+CHOICES.length)%CHOICES.length;
-      [...this.menu.children].forEach((b,i)=>{
+      [...this.menu.querySelectorAll(".search-type-choice")].forEach((b,i)=>{
         b.classList.toggle("is-selected",selected&&i===this.active);
         b.setAttribute("aria-current",selected&&i===this.active?"true":"false");
       });
@@ -136,7 +171,7 @@
     toggle(){this.open?this.close():this.show();}
     choose(index){
       const choice=CHOICES[index];this.close();
-      this.onChoose(choice.id);
+      this.onChoose(choice.id,choice.id==="objects"?this.searchOptions():undefined);
     }
   }
   SearchTypeMenu.CHOICES=CHOICES;
