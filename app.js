@@ -410,7 +410,7 @@
       const result=/\.gpx$/i.test(file.name)?projectTransfer.gpxRead(contents,undefined,
         {attachTracks:transferGpxMode==="start",filename:file.name}):
         projectTransfer.parseProject(contents,file.name);
-      transferPending=result;
+      transferPending={...result,filename:file.name};
       $("transferFileInfo").textContent=file.name;
       const project=result.project;
       const counts=project.pins.length+" Pins, "+(project.areas||[]).length+
@@ -422,7 +422,7 @@
         (result.project.pins.some(pin=>pin.gpxAttachment)?" · Start-Pins mit GPX-Trackanhang.":"");
       $("transferMain").classList.add("hidden");
       $("transferConfirm").classList.remove("hidden");
-      $("transferFeedback").textContent="Bitte Hinzufügen oder Überschreiben auswählen.";
+      $("transferFeedback").textContent="Bitte vollständiges Ersetzen oder Import in eine neue Ebene auswählen.";
     })().catch(error=>{
       transferPending=null;
       $("transferFeedback").textContent="Import nicht möglich: "+String(error?.message||error);
@@ -435,7 +435,7 @@
     const previous=state;
     let committed=false;
     try{
-      const candidate=choice==="add"?projectTransfer.merge(state,transferPending.project):
+      const candidate=choice==="add"?projectTransfer.addInNewLayer(state,transferPending.project,transferPending.filename):
         projectTransfer.safeProject(transferPending.project);
       // Replace and merge are both committed in one IndexedDB transaction.
       // Never mutate the current project during parsing/validation.
@@ -459,7 +459,7 @@
       mapAdapter.setView({center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom},{animate:false});
       renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateLabelButton();
       syncFavoritePanel();
-      showNotice(choice==="add"?"Daten hinzugefügt":"Projekt importiert");
+      showNotice(choice==="add"?"Objekte in neue Ebene importiert":"Projekt vollständig ersetzt");
     }catch(error){
       if(committed){
         closeTransferDialog();
