@@ -228,7 +228,7 @@
     }
     if(attachTracks){
       for(const track of attachments){
-        const first=track.chains[0][0],label=string(filename).replace(/\\.gpx$/i,"")||track.name;
+        const first=track.chains[0][0],label=string(filename).replace(/\.gpx$/i,"")||track.name;
         pins.push({id:id(),name:label.slice(0,120),lat:first[0],lng:first[1],
           layerId:"private",gpxAttachment:{filename:String(filename),name:track.name,chains:track.chains}});
       }
