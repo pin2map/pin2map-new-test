@@ -151,6 +151,9 @@
     // Escape belongs to the visible chooser, even if focus fell back to <body>
     // after the trigger button blurred while closing another floating dialog.
     if(key==="escape"){
+     // Visible place results own Escape until they have been dismissed.
+     const placeResults=this.el("searchResults");
+     if(!this.searchMode&&placeResults&&!placeResults.classList.contains("hidden"))return;
      e.preventDefault();e.stopPropagation();
      if(this.searchMode)this.finishAndFocus();
      else this.close();

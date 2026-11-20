@@ -72,3 +72,9 @@ test("Escape closes stored-object search but restores focus to its cleared input
  const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
  assert.match(css,/grid-template-columns:repeat\(4,max-content\)/);
 });
+
+test("visible place results retain Escape before the object chooser can consume it",()=>{
+ const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ assert.match(code,/const placeResults=this\.el\("searchResults"\)/);
+ assert.match(code,/if\(!this\.searchMode&&placeResults&&!placeResults\.classList\.contains\("hidden"\)\)return/);
+});
