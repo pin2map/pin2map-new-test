@@ -1092,7 +1092,7 @@
     if(created!=="any"){input.value="";searchForm.updateClear();}
     if(!query&&created==="any"){input.focus();return;}
     const matches=objectSearch.search(state,{query,kind:options.kind||"all",
-      track:options.track,link:options.link,note:options.note,created});
+      track:options.track,link:options.link,note:options.note,created,now:new Date()});
     searchForm.cancel();cancelGeometrySearch();searchView.hide();
     if(!matches.length){showNotice("Keine passenden gespeicherten Objekte gefunden");return;}
     const prior=objectSearchView?.viewport||mapAdapter.getViewport();
