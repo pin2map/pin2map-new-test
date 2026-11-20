@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-16 (Entwicklung **v231**, gemeinsame Favoriten-/Ebenen-Listendialogarchitektur in der Entwicklungs-Preview mit grünen CI-/Chromium-/HTTPS-Gates, **keine stabile main-Freigabe**. Node-/Architektur-/gezielte Chromium-/HTTPS-Tests grün; ungeklärter GPS-Namensfokus im alten Geometrie-End-to-End-Test und fachlich widersprüchliche Merge-Zielauswahl noch offen. Stabile Hauptversion `main` unverändert.) · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-20 (Entwicklung **v272**, neue lokale Objektsuche und Datums-Schnellfilter auf dem Feature-Branch implementiert; **Node-/Chromium-/Architektur-/HTTPS-/Preview-Gates für v272 noch nicht nachgewiesen**; keine stabile main-Freigabe). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
