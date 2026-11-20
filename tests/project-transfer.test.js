@@ -183,6 +183,7 @@ test("GPX start-pin import creates an attached route at first trackpoint",()=>{
   assert.equal(pin.lat,43.756605);
   assert.equal(pin.lng,4.83463);
   assert.equal(pin.gpxAttachment.filename,"PV_Tour_4.gpx");
+  assert.equal(pin.gpxAttachment.sourceGpx,"<gpx/>");
   assert.equal(pin.gpxAttachment.chains[0].length,353);
   const restored=transfer.parseProject(transfer.encodeProject(data.project));
   assert.deepEqual(restored.project.pins[0].gpxAttachment,pin.gpxAttachment);
