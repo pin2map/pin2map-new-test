@@ -1026,7 +1026,8 @@ body.pin-open #refreshButton.refresh-map-button{display:none!important}
    launchers. Old favorites-open hiding selectors were removed in v227. */
 body.pin-open #app #favoritesPanel,
 body.pin-open #app #favoritesButton,
-body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton,#transferButton),
+body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton),
+body.pin-open #app #transferButton.transfer-map-button.p2m-icon-control,
 body.pin-open #app #basemapMenu,
 body.pin-open #app #pinInfoMenu,
 body.pin-open #app .topbar,
