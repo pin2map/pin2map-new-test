@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-20 (Entwicklung **v274**, kompakter zweistufiger Suchdialog mit Datumsauswahl auf der Entwicklungs-Preview; Node-/Chromium-/Architektur-/HTTPS-/WebKit-Gates erfolgreich für Funktionscommit `2b8d83cc`; reale iPhone-Abnahme offen; keine stabile main-Freigabe). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-20 (Entwicklung **v276**, kompakte Objektsuchoptionen nach Vorgänger-App inklusive Live-Neufilterung, rotem Kreis-X und Wiederherstellung des Kartenstatus auf der Preview; Node-/Chromium-/Architektur-/HTTPS-/WebKit-Gates für Funktionscommit `28b104c6` erfolgreich; reale iPhone-Abnahme offen; keine stabile main-Freigabe). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -2154,3 +2154,19 @@ Die alten failed/cancelled Läufe zu v272 und die v273-Testvorstufen sind dokume
 ### v276 – gezielter Live-Browser-Fix für den kompakten Suchdialog (20.11.2026)
 
 Die erste v275-Preview wurde über HTTPS mit passender Worker-Version veröffentlicht, aber der neue veröffentlichte Chromium-Test meldete einen tatsächlichen Fehler: Die rechte Suchmodus-X-Schaltfläche war geometrisch nicht nachweisbar kreisförmig. Deshalb **keine v275-Freigabe**. Die Größe ist nun durch feste Breite/Höhe, Mindest-/Maximalgrenzen, `box-sizing` und `aspect-ratio` geschützt, einschließlich 320-px-Breite. Die Fehlermeldung im Browsertest enthält bei einem erneuten Fehler die exakte Geometrie. Zusätzlich stellt die Option „Nur Flächen und Seen“ sowohl Gebiete als auch Seen bereit, abgesichert durch einen Domain-Test. Der Service Worker erhält für die neue HTTPS-Veröffentlichung die eindeutige Kennung **v276**. Neuer Node-/Chromium-/Architektur-/Preview-/WebKit-Gesamtlauf wird benötigt; bis zum vollständigen Erfolg keine Freigabe.
+
+ 
+### v276 – Verifizierte Freigabe des kompakten Suchdialogs (20.11.2026)
+
+**Funktionscommit:** `28b104c6907411d80e0bcfca46d9848c6740f00a`. Der erste Versuch v275 (Commit `90dc3484`) lieferte zwar die Assets aus, bestand aber den veröffentlichten Test der Kreisgeometrie nicht und wurde daher **nicht** freigegeben. v276 korrigiert die rechte X-Geometrie und die Auswahl „Nur Flächen und Seen“.
+
+**Belege für denselben Funktionsstand:**
+- [Modular core checks #44775407893](https://github.com/pin2map/pin2map-new-test/actions/runs/44775407893): **completed/success**, alle Node- und Chromium-Regressionen.
+- [Leaflet modular architecture gates #44775407889](https://github.com/pin2map/pin2map-new-test/actions/runs/44775407889): **completed/success**.
+- [Separater WebKit-Release-Gate #44775408008](https://github.com/pin2map/pin2map-new-test/actions/runs/44775408008): **completed/success**.
+- [Preview Pages, HTTPS, Browser und WebKit postpublish #44775408347](https://github.com/pin2map/pin2map-new-test/actions/runs/44775408347): **completed/success**, alle drei Jobs (`webkit-geometry-preflight`, `preview`, `webkit-geometry-postpublish`) erfolgreich; explizit grüne HTTPS-Worker-/Assets-Prüfung und veröffentlichter Chromium-Test `tests/object-search-browser.cjs` für 320/375/390/1280 Pixel.
+- **Preview-URL:** https://pin2map.github.io/pin2map-new-test/preview/ · Quell- und ausgelieferte PWA-Worker-Version **v276**.
+
+**Funktionsumfang geprüft:** Lupe schaltet vom ursprünglichen sechszeiligen Erstellungsauswahlmenü auf die zweizeilige Suchansicht, sucht lokalen Text auch in bisher unsichtbaren Ebenen, Dropdown und drei Checkboxen aktualisieren Treffer unmittelbar, rechtes rotes kreisrundes X und kleines Suchkapsel-X beenden beide den Suchmodus mit unveränderten Projektdaten/Ebenensichtbarkeiten. Ältere Browser-/Geometrieabläufe wurden mitgeprüft.
+
+**Noch offen:** reale iPhone-/Safari-Geräteabnahme durch Nutzer; automatisierte iPhone-Viewport-Tests sind keine echten Touch-/Tastaturtests. `main` und `reference/*` bleiben unverändert.
