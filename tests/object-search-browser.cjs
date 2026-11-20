@@ -5,7 +5,9 @@ const {chromium}=require("playwright");
 const base=process.env.PIN2MAP_TEST_URL||
   "https://pin2map.github.io/pin2map-new-test/preview/";
 (async()=>{
- const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
+ const browser=await chromium.launch({headless:true,
+  executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE||undefined,
+  args:["--no-sandbox"]});
  try{
   for(const width of [320,375,1280]){
    const context=await browser.newContext({viewport:{width,height:width===320?568:width===375?667:800},serviceWorkers:"block"});
