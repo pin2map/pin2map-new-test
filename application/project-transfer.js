@@ -38,7 +38,9 @@
           point(item.lat,item.lng);
           if(item.gpxAttachment!==undefined){
             const a=item.gpxAttachment;
-            if(!isObj(a)||!Array.isArray(a.chains)||!a.chains.length||
+            if(!isObj(a)||(a.sourceGpx!==undefined&&
+              (typeof a.sourceGpx!=="string"||a.sourceGpx.length>50*1024*1024))||
+              !Array.isArray(a.chains)||!a.chains.length||
               !a.chains.every(chain=>Array.isArray(chain)&&chain.length>=2&&chain.every(p=>
               Array.isArray(p)&&p.length>=2&&Number.isFinite(Number(p[0]))&&Number.isFinite(Number(p[1]))&&
               Math.abs(Number(p[0]))<=90&&Math.abs(Number(p[1]))<=180)))
@@ -230,7 +232,8 @@
       for(const track of attachments){
         const first=track.chains[0][0],label=string(filename).replace(/\.gpx$/i,"")||track.name;
         pins.push({id:id(),name:label.slice(0,120),lat:first[0],lng:first[1],
-          layerId:"private",gpxAttachment:{filename:String(filename),name:track.name,chains:track.chains}});
+          layerId:"private",gpxAttachment:{filename:String(filename),name:track.name,chains:track.chains,
+            ...(attachments.length===1?{sourceGpx:text}:{})}});
       }
     }
     if(!pins.length&&!rivers.length)throw Error("GPX enthält weder Wegpunkte noch Tracks/Routen.");
