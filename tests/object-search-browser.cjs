@@ -20,6 +20,9 @@ const base=process.env.PIN2MAP_TEST_URL||
      const dbName=location.pathname.includes("/preview/")?"pin2map-new-preview-v1":"pin2map-new-v1";
      const state=window.Pin2MapProjectModel.defaultProject();
      state.layers[1].visible=false;
+     // Keep the test marker in the unobstructed map centre when the original
+     // viewport is restored after search; never force-click through map buttons.
+     state.viewport={lat:49.01,lng:8.405,zoom:8};
      const d=new Date(),y=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1,12).toISOString();
      const today=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12).toISOString();
      state.pins=[
