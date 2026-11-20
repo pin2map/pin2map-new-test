@@ -681,7 +681,7 @@
     geometryEditor.show(type,item,state.layers,{x:rect.left+xy.x,y:rect.top+xy.y});
   }
   function saveGeometry(type,id,patch){
-    const result=projectFeatures.change(state,type,id,patch);
+    const result=projectFeatures.change(state,type,id,patch,{updatedAt:new Date().toISOString()});
     if(result){save();renderGeometry();}
     return result;
   }
@@ -1001,7 +1001,7 @@
   function createAreaObject(source,kind,nameOverride=null,layerId=PRIVATE_ID){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
     const area=projectFeatures.createArea(state,{
-      id:uid(),name,kind,geometry:source.geojson
+      id:uid(),name,kind,geometry:source.geojson,createdAt:new Date().toISOString()
     },layerId);
     save();renderLayers();renderGeometry();
     return area;
@@ -1322,7 +1322,7 @@
           save();renderLayers();renderMarkers();
         }else if(entry.kind==="river"){
           projectFeatures.createRiver(state,{
-            id:uid(),name:entry.label,chains:entry.chains
+            id:uid(),name:entry.label,chains:entry.chains,createdAt:new Date().toISOString()
           },layerId);
           save();renderLayers();renderGeometry();
         }else createAreaObject({name:entry.label,geojson:entry.geojson},
