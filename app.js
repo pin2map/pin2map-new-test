@@ -749,7 +749,9 @@
   }
   function renderPinPanel(){
     const pin=selectedPin();
-    if(attachedRoutePinId&&(!pin||pin.id!==attachedRoutePinId))hideAttachedRoute();
+    // A rendered GPX route is independent of the open pin dialog.
+    // Only the explicit "Route verbergen" action (or project replacement)
+    // removes it from the map.
     pinEditorView.render({
       pin,moving:uiState.moveMode,layerVisible:pin?!!layerById(pin.layerId)?.visible:true,
       onLayout:updatePanelLayout
