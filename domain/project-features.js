@@ -25,7 +25,7 @@
     ensure(state);
     if(state.areas.some(a=>a.id===id))throw new Error("Duplicate area id");
     const area={id:String(id),name:String(name).trim().slice(0,120),kind,layerId:privateLayerId,
-      geometry,note:String(note),url:String(url)};
+      geometry,note:String(note),url:String(url),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
     state.areas.push(area);return area;
   }
   function createRiver(state,{id,name,chains,note="",url=""},privateLayerId="private"){
@@ -34,7 +34,7 @@
     ensure(state);
     if(state.rivers.some(r=>r.id===id))throw new Error("Duplicate river id");
     const river={id:String(id),name:String(name).trim().slice(0,120),layerId:privateLayerId,
-      chains,note:String(note),url:String(url)};
+      chains,note:String(note),url:String(url),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
     state.rivers.push(river);return river;
   }
   function change(state,type,id,patch){
@@ -48,6 +48,7 @@
         item[key]=key==="name"?String(patch[key]).trim().slice(0,120):String(patch[key]||"");
       }
     }
+    if(Object.keys(patch).some(key=>["name","note","url","layerId"].includes(key)))item.updatedAt=new Date().toISOString();
     return item;
   }
   function remove(state,type,id){
