@@ -206,3 +206,29 @@ test("UI never launches share sheet from a download-only export",()=>{
   assert.match(app,/pin\.gpxAttachment/);
   assert.match(app,/toggleAttachedRoute/);
 });
+
+test("import and export ignore empty layers but keep private and all occupied layers",()=>{
+ const project=base();
+ project.layers.push({id:"empty",name:"Leere Ebene",visible:true,color:"#123456"});
+ project.layers.push({id:"hidden-empty",name:"Versteckte Leere",visible:false,color:"#123456"});
+ project.layers.push({id:"area-only",name:"Nur Fläche",visible:true,color:"#123456"});
+ project.areas.push({id:"areaB",name:"Fläche",kind:"area",layerId:"area-only",
+   geometry:{type:"Polygon",coordinates:[[[8,50],[9,50],[9,51],[8,50]]] }});
+ const encoded=transfer.encodeProject(project);
+ const round=transfer.parseProject(encoded).project;
+ assert.deepEqual(round.layers.map(l=>l.id),["private","work","area-only"]);
+ assert.equal(round.areas.length,2);
+ assert.equal(round.pins.length,1);
+ assert.deepEqual(project.layers.map(l=>l.id),["private","work","empty","hidden-empty","area-only"],
+   "export must not mutate the user's project");
+ const visible=transfer.exportSubset(project,{visible:true});
+ assert.deepEqual(visible.layers.map(l=>l.id),["private","work","area-only"]);
+ const merged=transfer.merge(base(),project);
+ assert.ok(!merged.layers.some(l=>l.name==="Leere Ebene"||l.name==="Versteckte Leere"));
+ assert.equal(merged.areas.length,3);
+});
+test("private layer is retained in an otherwise empty imported project",()=>{
+ const project={layers:[{id:"private",name:"Privat",visible:true},
+   {id:"empty",name:"Test",visible:true}],pins:[],areas:[],rivers:[],favorites:[]};
+ assert.deepEqual(transfer.parseProject(transfer.encodeProject(project)).project.layers.map(l=>l.id),["private"]);
+});
