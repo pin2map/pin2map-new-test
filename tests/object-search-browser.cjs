@@ -38,6 +38,12 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator(".pin-marker").count(),0,"hidden layer baseline");
     await page.locator("#searchInput").fill("Karlsruhe");
     await page.locator("#searchTypeMenu").waitFor({state:"visible"});
+    // Search popover must not block the actual map launcher at 35dvh.
+    const launcherHit=await page.evaluate(()=>{
+      const button=document.querySelector("#basemapButton"),b=button.getBoundingClientRect();
+      return document.elementFromPoint((b.left+b.right)/2,(b.top+b.bottom)/2)?.closest("#basemapButton")===button;
+    });
+    assert.equal(launcherHit,true,"search popup intercepts basemap button");
     const dateButtons=page.locator(".object-search-date");
     assert.equal(await dateButtons.count(),2);
     assert.equal(await dateButtons.nth(0).innerText(),"Heute erstellt");
