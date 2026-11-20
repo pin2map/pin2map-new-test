@@ -19,12 +19,14 @@
     const d=new Date(date.getFullYear(),date.getMonth(),date.getDate()+offset);
     return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
   }
-  function search(project,{query="",kind="all",track=false,link=false,note=false,created="any",now=new Date()}={}){
+  function search(project,{query="",kind="all",track=false,link=false,note=false,created="any",now=null}={}){
     if(!TYPES.includes(kind))throw new TypeError("Unknown object search type");
     const needle=text(query.trim());
+    if(created!=="any"&&!(now instanceof Date))throw new TypeError("Calendar clock required");
     const day=created==="today"?calendarDay(now):created==="yesterday"?calendarDay(now,-1):null;
     if(created!=="any"&&!day)throw new TypeError("Unknown creation date filter");
     if(!needle&&!day)return [];
+    const displayDate=value=>{const key=dateKey(value);return key?[key,key.slice(8,10)+"."+key.slice(5,7)+"."+key.slice(0,4)]:[];};
     const result=[];
     for(const collection of ["pins","areas","rivers"]){
       for(const object of project?.[collection]||[]){
@@ -39,7 +41,8 @@
         if(note&&!text(object.note).trim())continue;
         if(day&&dateKey(object.createdAt)!==day)continue;
         const fields=[object.name,object.note,object.url,object.createdAt,object.updatedAt,
-          gpx.filename,object.gpxFilename,object.gpxName];
+          gpx.filename,object.gpxFilename,object.gpxName,
+          ...displayDate(object.createdAt),...displayDate(object.updatedAt)];
         if(needle&&!fields.some(v=>text(v).includes(needle)))continue;
         result.push({type,id:object.id,object});
       }
