@@ -144,14 +144,16 @@
    this.doc.addEventListener("keydown",e=>{
     if(!this.open||e.altKey||e.ctrlKey||e.metaKey||e.isComposing)return;
     const inInput=e.target===this.input,inMenu=this.menu.contains(e.target);
-    if(!inInput&&!inMenu&&e.target!==this.button&&!this.searchMode)return;
     const key=String(e.key||"").toLowerCase();
+    // Escape belongs to the visible chooser, even if focus fell back to <body>
+    // after the trigger button blurred while closing another floating dialog.
     if(key==="escape"){
      e.preventDefault();e.stopPropagation();
      if(this.searchMode)this.finishAndFocus();
      else this.close();
      return;
     }
+    if(!inInput&&!inMenu&&e.target!==this.button)return;
     if(this.searchMode){
      if(key==="enter"&&inInput){e.preventDefault();this.input.blur();this.execute();}
      return;
