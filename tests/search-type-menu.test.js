@@ -98,6 +98,13 @@ test("approved search dialog uses actual viewport height, including iPhone keybo
  assert.ok(keyboard.maxHeight>44);
  const shifted=layout(420,40);
  assert.equal(shifted.maxHeight,331,"account for visualViewport.offsetTop");
+ const horizontallyShifted=SearchTypeMenu.chooserLayout({form,app,
+  visualViewport:{offsetLeft:20,offsetTop:0,width:350,height:420},
+  innerHeight:844,menuWidth:340,contentHeight:364});
+ assert.ok(horizontallyShifted.left>=28,
+  "keep the menu inside the visible horizontal viewport");
+ assert.ok(horizontallyShifted.left+340<=20+350-8,
+  "menu must not extend beyond the shifted viewport");
  const cramped=layout(420,0,{left:40,top:310,bottom:354,width:310,height:44});
  assert.equal(cramped.top,363,"never move chooser above the search field");
  assert.equal(cramped.maxHeight,49,"honestly report actual remaining space");
