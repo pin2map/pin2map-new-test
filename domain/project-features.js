@@ -19,25 +19,27 @@
     if(!Array.isArray(state.rivers))state.rivers=[];
     return state;
   }
-  function createArea(state,{id,name,geometry,kind="area",note="",url=""},privateLayerId="private"){
+  function createArea(state,{id,name,geometry,kind="area",note="",url="",createdAt=""},privateLayerId="private"){
     if(!["area","lake"].includes(kind)||!isPolygon(geometry))throw new TypeError("Valid area polygon required");
     if(!id||!String(name||"").trim())throw new TypeError("Area id and name required");
     ensure(state);
     if(state.areas.some(a=>a.id===id))throw new Error("Duplicate area id");
     const area={id:String(id),name:String(name).trim().slice(0,120),kind,layerId:privateLayerId,
-      geometry,note:String(note),url:String(url),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+      geometry,note:String(note),url:String(url)};
+    if(createdAt){area.createdAt=String(createdAt);area.updatedAt=String(createdAt);}
     state.areas.push(area);return area;
   }
-  function createRiver(state,{id,name,chains,note="",url=""},privateLayerId="private"){
+  function createRiver(state,{id,name,chains,note="",url="",createdAt=""},privateLayerId="private"){
     if(!validateChains(chains)||!id||!String(name||"").trim())
       throw new TypeError("Valid named river line required");
     ensure(state);
     if(state.rivers.some(r=>r.id===id))throw new Error("Duplicate river id");
     const river={id:String(id),name:String(name).trim().slice(0,120),layerId:privateLayerId,
-      chains,note:String(note),url:String(url),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};
+      chains,note:String(note),url:String(url)};
+    if(createdAt){river.createdAt=String(createdAt);river.updatedAt=String(createdAt);}
     state.rivers.push(river);return river;
   }
-  function change(state,type,id,patch){
+  function change(state,type,id,patch,{updatedAt=""}={}){
     ensure(state);
     const collection=type==="river"?state.rivers:state.areas;
     const item=collection.find(x=>x.id===id);
@@ -48,7 +50,7 @@
         item[key]=key==="name"?String(patch[key]).trim().slice(0,120):String(patch[key]||"");
       }
     }
-    if(Object.keys(patch).some(key=>["name","note","url","layerId"].includes(key)))item.updatedAt=new Date().toISOString();
+    if(updatedAt&&Object.keys(patch).some(key=>["name","note","url","layerId"].includes(key)))item.updatedAt=String(updatedAt);
     return item;
   }
   function remove(state,type,id){
