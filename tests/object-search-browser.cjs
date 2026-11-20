@@ -48,6 +48,19 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe");
     await page.locator("#searchTypeMenu").waitFor({state:"visible"});
     assert.equal(await page.locator(".search-type-choice:visible").count(),7,"six creation choices plus saved marker search");
+    // A reduced viewport simulates the keyboard's available screen height.
+    // The last action must remain reachable by scrolling the popover itself.
+    if(width<=390){
+      const original=page.viewportSize();
+      await page.setViewportSize({width,height:Math.min(height,390)});
+      await page.locator('.search-type-choice[data-search-type="objects"]').scrollIntoViewIfNeeded();
+      const bounds=await page.locator("#searchTypeMenu").boundingBox();
+      const item=await page.locator('.search-type-choice[data-search-type="objects"]').boundingBox();
+      assert.ok(bounds&&item&&bounds.y+bounds.height<=390+1,"menu must stay above simulated keyboard");
+      assert.ok(item.y>=bounds.y-1&&item.y+item.height<=bounds.y+bounds.height+1,
+        "last action accessible by internal popover scrolling");
+      await page.setViewportSize(original);
+    }
     assert.equal(await page.locator(".object-search-options:visible").count(),0,"specialized options are not yet visible");
     const launcherPriority=await page.evaluate(()=>{
      const button=document.querySelector("#basemapButton"),b=button.getBoundingClientRect();
@@ -167,6 +180,25 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.locator("#settingsButton").click();
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"opening settings closes search chooser");
     assert.equal(await page.locator("#settingsPanel").isVisible(),true,"newly opened dialog remains visible");
+    // A previous search must never prevent opening and using Pin's layer and URL dialogs.
+    await page.reload({waitUntil:"domcontentloaded"});
+    await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:30000});
+    await page.locator("#searchInput").fill("Karlsruhe");
+    await page.locator('.search-type-choice[data-search-type="objects"]').click();
+    await page.locator(".pin-marker").first().click();
+    await page.locator("#pinPanel").waitFor({state:"visible"});
+    await page.locator("#pinLayerTrigger").click();
+    await page.locator("#pinLayerMenu").waitFor({state:"visible"});
+    assert.ok(await page.locator("#pinLayerMenu .pin-layer-option").count()>=2,"layer choices available after search");
+    const layerBox=await page.locator("#pinLayerMenu").boundingBox();
+    assert.ok(layerBox.height>=40&&layerBox.width>=100,"layer chooser has usable dimensions");
+    await page.locator("#pinLayerMenu .pin-layer-option").first().click();
+    await page.locator("#pinUrlButton").click();
+    await page.locator("#pinUrlBlock").waitFor({state:"visible"});
+    const urlBox=await page.locator("#pinUrlBlock").boundingBox();
+    assert.ok(urlBox.height>=140&&urlBox.width>=120,"URL editor remains a coherent panel");
+    const actionsBox=await page.locator("#pinUrlBlock .pin-url-actions").boundingBox();
+    assert.ok(actionsBox.y+actionsBox.height<=urlBox.y+urlBox.height+2,"URL actions fit inside popup");
     assert.deepEqual(errors,[],width+" browser errors");
     console.log("PASS first-tap focus, 7th search choice, duplicate ID counts, Cmd+F, mobile controls:",width);
    }finally{await context.close();}

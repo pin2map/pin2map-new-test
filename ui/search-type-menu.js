@@ -21,6 +21,7 @@
    if(!this.menu||!this.button||!this.input||!this.form||!this.app)
     throw new TypeError("Search chooser elements required");
    this.app.append(this.menu);
+   this.viewportConstrained=false;
    this.open=false;this.active=0;this.searchMode=false;
 
   }
@@ -31,6 +32,8 @@
   }
   buildCreation(){
    const list=this.makeElement("div","search-creation-choices");
+   const hint=this.makeElement("div","search-creation-scroll-hint","Weitere Optionen ↓");
+   hint.setAttribute("aria-hidden","true");list.append(hint);
    CHOICES.forEach((choice,i)=>{
     if(choice.id==="objects")list.append(this.makeElement("hr","search-creation-divider"));
     const button=this.makeElement("button","search-type-choice");
@@ -242,13 +245,21 @@
    const rect=this.form.getBoundingClientRect(),appRect=this.app.getBoundingClientRect();
    const viewport=this.doc.defaultView?.visualViewport;
    const visibleBottom=viewport?viewport.offsetTop+viewport.height:appRect.height;
-   const width=this.menu.offsetWidth||340,height=this.menu.offsetHeight||350;
+   const keyboardShown=Boolean(viewport&&this.doc.defaultView.innerHeight-viewport.height>120);
+   this.viewportConstrained=keyboardShown;
+   this.menu.classList.toggle("keyboard-constrained",keyboardShown);
+   const width=this.menu.offsetWidth||340;
    const desired=rect.left-appRect.left+(rect.width-width)/2;
    this.menu.style.left=Math.max(8,Math.min(desired,appRect.width-width-8))+"px";
    const below=rect.bottom-appRect.top+9;
-   const available=Math.max(120,visibleBottom-below-12);
+   const available=Math.max(44,visibleBottom-below-12);
    this.menu.style.top=Math.max(8,below)+"px";
    this.menu.style.maxHeight=available+"px";
+   this.menu.style.overflowY="auto";
+   // Keep the seventh option discoverable when iOS keyboard reduces viewport.
+   this.menu.dataset.scrollable=String(this.menu.scrollHeight>this.menu.clientHeight+1);
+   this.menu.setAttribute("aria-description",keyboardShown?
+    "Liste scrollbar. Nach unten wischen für weitere Optionen.":"");
   }
   highlight(index){
    if(Number.isInteger(index))this.active=(index+CHOICES.length)%CHOICES.length;

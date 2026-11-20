@@ -134,11 +134,16 @@
    // The title and footer are HARD boundaries, even for long layer lists.
    const popupTop=Math.max(top+margin,panel.top+gap,(header?.bottom??panel.top)+gap);
    const popupBottom=Math.min(bottom-margin,panel.bottom-gap,(footer?.top??panel.bottom)-gap);
-   const height=Math.min(Math.max(0,popupBottom-popupTop),
+   const ownerRoom=Math.max(0,popupBottom-popupTop);
+   // When the keyboard or a stale visual viewport leaves no room inside the
+   // editor, keep the layer selector usable inside the CURRENT visual viewport.
+   const cramped=ownerRoom<44;
+   const bottomEdge=cramped?bottom-margin:popupBottom;
+   const height=Math.min(
+    cramped?Math.max(0,bottom-top-2*margin):ownerRoom,
     Math.min(460,14+43*Math.max(1,visibleRows)));
    const x=Math.max(panelLeft,Math.min(panel.left+(panel.width-width)/2,panelRight-width));
-   // Bottom-anchored: grow upward from the action row.
-   return {left:x,top:popupBottom-height,width,height};
+   return {left:x,top:bottomEdge-height,width,height};
   }
   static positionPopup({panel,header,footer,popup,doc,kind="url",keyboardAnchor=null}){
    const win=doc.defaultView,vv=win?.visualViewport;
@@ -170,10 +175,17 @@
    const desired=keyboardAnchor?
      keyboardAnchor.top+viewTop-keyboardAnchor.visualOffsetTop:upper;
    const room=Math.max(0,bottom-upper);
-   const popupHeight=Math.min(320,room);
-   const popupTop=Math.max(upper,Math.min(desired,bottom-popupHeight));
+   // The iOS keyboard can push the editor below the visual viewport.
+   // Never collapse the URL editor to a zero-height field and overlapping controls.
+   const usableViewport=Math.max(0,height-2*margin);
+   const compact=room<170;
+   const popupHeight=Math.min(320,compact?usableViewport:room);
+   const popupTop=compact?
+     viewTop+margin+Math.max(0,(usableViewport-popupHeight)/2):
+     Math.max(upper,Math.min(desired,bottom-popupHeight));
    popup.style.top=popupTop+"px";
    popup.style.height=popupHeight+"px";
+   popup.style.maxHeight=popupHeight+"px";
   }
  }
  root.Pin2MapObjectDialogCore=ObjectDialogCore;

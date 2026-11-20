@@ -675,6 +675,7 @@
   }
   function openGeometryEditor(type,item,position){
     if(!geometryEditor)return;
+    endObjectSearchIfNeeded();
     closeAllMapMenus();
     const xy=mapAdapter.project(position);
     const rect=mapAdapter.getContainer().getBoundingClientRect();
@@ -779,6 +780,7 @@
     else pinLayerPicker.setOpen(false);
   }
   function selectPin(id){
+    endObjectSearchIfNeeded();
     closeAllMapMenus();
     pinOverlapZoom?.close();
     pinSession.select(id);
@@ -1132,6 +1134,13 @@
       currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
     objectSearchSpotlight?.schedule();
     showNotice(matches.length+" "+(matches.length===1?"Objekt":"Objekte")+" gefunden");
+  }
+  function endObjectSearchIfNeeded(){
+    // Reset the search viewport, input and keyboard before either editor opens.
+    // Otherwise its layer and URL popovers inherit a stale mobile viewport.
+    if(!searchTypeMenu?.searchMode&&!objectSearchView)return;
+    searchTypeMenu?.exitSearchMode();
+    endObjectSearch();
   }
   function endObjectSearch(){
     resetObjectSearch();
