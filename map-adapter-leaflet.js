@@ -518,6 +518,16 @@
         item.marker.setOpacity(1);
       }
     }
+    getRiverLabelTargets(){
+      return (this.riverNameMarkers||[]).flatMap(item=>{
+        if(item.marker.options.opacity===0)return [];
+        const element=item.marker.getElement()?.querySelector(".p2m-river-name-label");
+        if(!element)return [];
+        const r=element.getBoundingClientRect();
+        if(r.width<=0||r.height<=0)return [];
+        return [{type:"river",rects:[{left:r.left,right:r.right,top:r.top,bottom:r.bottom}]}];
+      });
+    }
     getAreaLabelTargets(){
       const rect=element=>{
         const r=element.getBoundingClientRect();

@@ -32,7 +32,7 @@
   });
   const currentPinFilter = pinFilter.createFilter();
   const objectSearch=window.Pin2MapObjectSearch;
-  let objectSearchView=null;
+  let objectSearchView=null,objectSearchSpotlight=null;
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
@@ -1091,6 +1091,7 @@
     searchForm?.updateClear?.();
     $("searchClear").setAttribute("aria-label","Suchfeld leeren");
     renderMarkers();renderGeometry();
+    objectSearchSpotlight?.setActive(false);
     if(restore&&before)mapAdapter.setView(before,{animate:false});
   }
   function runObjectSearch(options={}){
@@ -1122,12 +1123,14 @@
       ids:new Set(matches.map(m=>m.type+":"+m.id))};
     document.body.classList.add("object-search-active");
     renderMarkers();renderGeometry();
+    objectSearchSpotlight?.setActive(true);
     const selected={layers:state.layers.map(l=>({...l,visible:true})),
       pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
       areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
       rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
     fitVisibleProject.fit({project:selected,pinFilter,
       currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
+    objectSearchSpotlight?.schedule();
     showNotice(matches.length+" "+(matches.length===1?"Objekt":"Objekte")+" gefunden");
   }
   function endObjectSearch(){
@@ -1409,7 +1412,16 @@
       onInfoClick:id=>selectPin(id),
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;handleMarkerTap(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
+    })
+    objectSearchSpotlight=new window.Pin2MapObjectSearchSpotlight.ObjectSearchSpotlight({
+      document,mapPort:mapAdapter,
+      getTargets:()=>[
+        ...markerView.hitTargets(),
+        ...mapAdapter.getAreaLabelTargets(),
+        ...mapAdapter.getRiverLabelTargets()
+      ]
     });
+;
     featureOverlapZoom=new window.Pin2MapFeatureOverlapZoom.FeatureOverlapZoom({
       mapPort:mapAdapter,
       getTargets:()=>[...markerView.hitTargets(),...mapAdapter.getAreaLabelTargets()],

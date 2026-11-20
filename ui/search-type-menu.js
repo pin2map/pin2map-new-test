@@ -87,7 +87,7 @@
     field.querySelector("input").addEventListener("change",()=>this.execute());
     flags.append(field);
    }
-   const hidden=this.makeCheck("hidden","Auch ausgeblendete",true);
+   const hidden=this.makeCheck("hidden","Ausgeblendete",true);
    hidden.classList.add("object-search-hidden-flag");
    hidden.querySelector("input").addEventListener("change",()=>this.execute());
    flags.append(hidden);
@@ -117,6 +117,7 @@
     this.returnToCreation();
    },{capture:true});
    this.input.addEventListener("focus",()=>{
+    if(this.suppressOpenOnFocus){this.suppressOpenOnFocus=false;return;}
     this.returnToCreation();
     this.show();
    });
@@ -143,9 +144,14 @@
    this.doc.addEventListener("keydown",e=>{
     if(!this.open||e.altKey||e.ctrlKey||e.metaKey||e.isComposing)return;
     const inInput=e.target===this.input,inMenu=this.menu.contains(e.target);
-    if(!inInput&&!inMenu&&e.target!==this.button)return;
+    if(!inInput&&!inMenu&&e.target!==this.button&&!this.searchMode)return;
     const key=String(e.key||"").toLowerCase();
-    if(key==="escape"){e.preventDefault();this.close();return;}
+    if(key==="escape"){
+     e.preventDefault();e.stopPropagation();
+     if(this.searchMode)this.finishAndFocus();
+     else this.close();
+     return;
+    }
     if(this.searchMode){
      if(key==="enter"&&inInput){e.preventDefault();this.input.blur();this.execute();}
      return;
@@ -215,6 +221,13 @@
    this.button.setAttribute("aria-label","Gespeicherte Objekte suchen");
    this.button.title="Gespeicherte Objekte suchen";
    this.show();this.position();
+  }
+  finishAndFocus(){
+   // The focus event must not reopen the creation choices after Escape.
+   this.exitSearchMode();
+   this.onExit();
+   this.suppressOpenOnFocus=true;
+   this.input.focus({preventScroll:true});
   }
   exitSearchMode(){
    this.searchMode=false;

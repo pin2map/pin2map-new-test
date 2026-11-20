@@ -62,3 +62,13 @@ test("Escape dismisses the chooser while its magnifier trigger holds focus",()=>
  assert.match(src,/e\.target!==this\.button/);
  assert.match(src,/key==="escape"\)\{e\.preventDefault\(\);this\.close\(\)/);
 });
+
+test("Escape closes stored-object search but restores focus to its cleared input",()=>{
+ const source=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ assert.match(source,/if\(this\.searchMode\)this\.finishAndFocus\(\)/);
+ assert.match(source,/this\.exitSearchMode\(\);\s*this\.onExit\(\);\s*this\.suppressOpenOnFocus=true;\s*this\.input\.focus/);
+ assert.match(source,/if\(this\.suppressOpenOnFocus\)/);
+ assert.match(source,/this\.makeCheck\("hidden","Ausgeblendete",true\)/);
+ const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
+ assert.match(css,/grid-template-columns:repeat\(4,max-content\)/);
+});
