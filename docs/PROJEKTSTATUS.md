@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-20 (Entwicklung **v276**, kompakte Objektsuchoptionen nach Vorgänger-App inklusive Live-Neufilterung, rotem Kreis-X und Wiederherstellung des Kartenstatus auf der Preview; Node-/Chromium-/Architektur-/HTTPS-/WebKit-Gates für Funktionscommit `28b104c6` erfolgreich; reale iPhone-Abnahme offen; keine stabile main-Freigabe). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-20 (Entwicklung **v278**: Dialogvorrang vor Kartenbuttons, vollständige Schließkoordination, permanente Zählung Pins/Flächen/Gewässer, zentriertes rotes X und standardmäßig „Auch ausgeblendete“ im Suchfilter; Node-/Chromium-/Architektur-/HTTPS-/WebKit-Gates für Funktionscommit `eb472d67` erfolgreich; reale iPhone-Abnahme offen; keine stabile main-Freigabe). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -2186,3 +2186,17 @@ Die erste v275-Preview wurde über HTTPS mit passender Worker-Version veröffent
 **Kein v277-Freigabeerfolg:** Architektur-/Node-/WebKit-Vorprüfungen erfolgreich, jedoch reale Chromium-Regressionsfehler: (a) Nach dem Schließen anderer Dialoge verlor das Suchfeld beim Neuöffnen den Fokus, sodass die bestehende Enter-zu-Ortssuche nicht zuverlässig funktionierte; (b) der veröffentlichte Kartenstart-Test klickte einen Kartenbutton direkt durch den darüberliegenden Suchdialog. Fall (b) ist nach dem verbindlichen Dialogprioritätsvertrag korrekt blockiert und darf nicht durch Absenken des Dialog-z-index „repariert“ werden.
 
 **Korrektur:** Der modulare Suchmenü-Port stellt den Eingabefokus nach dem koordinierten Schließen fremder Dialoge wieder her, ohne eine rekursive Öffnung auszulösen. Der bestehende Live-Kartenstart-Test schließt die sichtbare Suchauswahl zuerst mittels Escape, bevor er die Kartenwahl real anklickt. Die strenge Überdeckungsassertion im separaten Suchbrowser-Test bleibt aktiv. Eindeutige PWA-Worker-Version **v278**. Alle Node-, Chromium-, Architektur-, Preview-/HTTPS- und WebKit-Gates werden für den neuen Funktionscommit vollständig erneut geprüft; bis dahin **keine Freigabe**.
+
+ 
+### v278 – Vollständig verifizierte Preview-Freigabe (20.11.2026)
+
+**Funktionscommit** `eb472d67819b5907c36238255c0dafa70e0ca9e1`, **Preview-PWA-Version** `pin2map-preview-v278` / Quellworker `pin2map-new-v278`. Nach den dokumentierten fehlgeschlagenen v277-Gates sind für exakt v278 alle Pflichtprüfungen abgeschlossen:
+
+- [Modular core Node + Chromium #44779352945](https://github.com/pin2map/pin2map-new-test/actions/runs/44779352945): **completed/success**.
+- [Architektur #44779352724](https://github.com/pin2map/pin2map-new-test/actions/runs/44779352724): **completed/success**.
+- [Separater WebKit-Release-Gate #44779352815](https://github.com/pin2map/pin2map-new-test/actions/runs/44779352815): **completed/success**.
+- [GitHub Pages Preview/HTTPS/Chromium + WebKit nach Veröffentlichung #44779352799](https://github.com/pin2map/pin2map-new-test/actions/runs/44779352799): **completed/success** für alle drei Jobs `webkit-geometry-preflight`, `preview` und `webkit-geometry-postpublish`. Die Live-Asset- und Worker-Version wurden auf der echten Preview bestätigt; der spezielle Suchbrowser-Test für 320/375/390/1280 px prüft Statuszahlen, sichtbare und ausgeblendete Ebenen, zentriertes X, Dialogvorrang, automatische Menüexklusivität und korrektes Rücksetzen. Der allgemeine Kartenstart-Test schließt den Suchdialog vor dem Anklicken eines dort verdeckten Kartenbuttons, wie es der Funktionsbutton-Vertrag ausdrücklich verlangt.
+- Preview: https://pin2map.github.io/pin2map-new-test/preview/ . Kein Merge nach `main` und keine Änderung an `reference/*`.
+- **Noch offen:** Nutzerbeurteilung auf einem echten iPhone/Safari; automatisierte mobile Browsergrößen allein ersetzen diese nicht.
+
+Das Einchecken dieser Dokumentation ist ausschließlich eine Statusaktualisierung ohne neue PWA-Funktionsversion oder erneuten Deploy.
