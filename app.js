@@ -1081,6 +1081,7 @@
     const before=objectSearchView.viewport;
     objectSearchView=null;
     document.body.classList.remove("object-search-active");
+    searchForm?.updateClear?.();
     $("searchClear").setAttribute("aria-label","Suchfeld leeren");
     renderMarkers();renderGeometry();
     if(restore&&before)mapAdapter.setView(before,{animate:false});
