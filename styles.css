@@ -2627,8 +2627,8 @@ body:not(.pin-open) #app #settingsPanel.panel:not(.hidden){
 #app #transferPanel .danger{background:#ae3030;color:white}
 #app #transferPanel .panel-head h2{font-size:17px}
 #app #transferFileInfo{display:block;overflow-wrap:anywhere}
-body.pin-open #app #transferButton,
-body.pin-open #app #transferPanel{display:none}
+body.pin-open #app #transferButton.transfer-map-button.p2m-icon-control,
+body.pin-open #app #transferPanel.transfer-panel:not(.hidden){display:none!important}
 
 /* v264 – functional-button contract: dialog precedence and blue ON states.
    The deliberately repeated #app ID raises specificity above historical
