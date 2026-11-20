@@ -321,7 +321,7 @@
     onRenderMarkers:()=>renderMarkers()
   });
   const projectTransfer=window.Pin2MapProjectTransfer;
-  let transferPending=null,transferBusy=false;
+  let transferPending=null,transferBusy=false,transferGpxMode="normal";
   function closeTransferDialog(){
     $("transferPanel").classList.add("hidden");
     $("transferButton").setAttribute("aria-expanded","false");
@@ -346,46 +346,27 @@
       .replace(/[\\/:*?"<>|\r\n]+/g,"-").slice(0,96);
     return (raw||"pin2map-"+new Date().toISOString().slice(0,10))+"."+ext;
   }
-  function downloadTransfer(content,extension,mime){
-    const blob=new Blob([content],{type:mime}),name=filename(extension);
-    const fallback=()=>{
-      const url=URL.createObjectURL(blob),link=document.createElement("a");
-      link.href=url;link.download=name;
-      document.body.append(link);link.click();link.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),30000);
-    };
-    // iOS/iPadOS: keep the share invocation inside the original click event.
-    // The predecessor uses this native share path for .pin2map and GPX files.
-    if(navigator.share&&navigator.canShare&&typeof File!=="undefined"){
-      try{
-        const file=new File([blob],name,{type:mime});
-        if(navigator.canShare({files:[file]})){
-          void navigator.share({files:[file]}).then(()=>{
-            $("transferFeedback").textContent="Dateifreigabe abgeschlossen.";
-          }).catch(error=>{
-            if(error?.name==="AbortError"){
-              $("transferFeedback").textContent="Dateifreigabe abgebrochen.";
-            }else{
-              fallback();
-              $("transferFeedback").textContent="Datei zum Download übergeben.";
-            }
-          });
-          return;
-        }
-      }catch(_){/* Fallback download below */}
-    }
-    fallback();
+  function downloadTransfer(content,extension,mime,preferredName=null){
+    // A single intentional browser download. Never open the native share
+    // sheet AND start a download for the same user click.
+    const blob=new Blob([content],{type:mime}),name=preferredName||filename(extension);
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download=name;
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
   }
   function exportTransfer(type){
     if(transferBusy)return;
     try{
-      // In-memory state already contains the latest edits; a file/share action
-      // must not lose its user gesture while awaiting IndexedDB on Safari.
-      const content=type==="gpx"?projectTransfer.encodeGpx(state):projectTransfer.encodeProject(state);
+      const visible=document.querySelector('input[name="transferScope"]:checked')?.value==="visible";
+      const subset=projectTransfer.exportSubset(state,{
+        visible,filterPins:pin=>pinFilter.isVisible(pin,state.layers,currentPinFilter)
+      });
+      const content=type==="gpx"?projectTransfer.encodeGpx(subset):projectTransfer.encodeProject(subset);
       void persistence.writeNow().catch(()=>showNotice("Lokale Speicherung nicht bestätigt"));
       downloadTransfer(content,type==="gpx"?"gpx":"pin2map",
         type==="gpx"?"application/gpx+xml;charset=utf-8":"application/json;charset=utf-8");
-      $("transferFeedback").textContent="Datei zum Sichern bzw. Teilen bereitgestellt.";
+      $("transferFeedback").textContent="Download gestartet ("+(visible?"nur sichtbare":"alle")+" Elemente).";
     }catch(error){
       $("transferFeedback").textContent="Export fehlgeschlagen: "+String(error?.message||error);
     }
@@ -397,7 +378,8 @@
     (async()=>{
       if(file.size>50*1024*1024)throw Error("Maximale Dateigröße: 50 MB.");
       const contents=await file.text();
-      const result=/\\.gpx$/i.test(file.name)?projectTransfer.gpxRead(contents):
+      const result=/\\.gpx$/i.test(file.name)?projectTransfer.gpxRead(contents,undefined,
+        {attachTracks:transferGpxMode==="start",filename:file.name}):
         projectTransfer.parseProject(contents,file.name);
       transferPending=result;
       $("transferFileInfo").textContent=file.name;
@@ -407,7 +389,8 @@
         project.layers.length+" Ebenen";
       $("transferFileSummary").textContent=counts+
         (result.unresolved?" · "+result.unresolved+" alte Orts-/Gebietsabfragen konnten ohne Geodaten nicht als Objekte angelegt werden. Der vollständige Originalinhalt bleibt zur späteren Konvertierung gespeichert.":"")+
-        (result.gpx?" · GPX enthält keine pin2map-Ebenen/Favoriten.":"");
+        (result.gpx?" · GPX enthält keine pin2map-Ebenen/Favoriten.":"")+
+        (result.project.pins.some(pin=>pin.gpxAttachment)?" · Start-Pins mit GPX-Trackanhang.":"");
       $("transferMain").classList.add("hidden");
       $("transferConfirm").classList.remove("hidden");
       $("transferFeedback").textContent="Bitte Hinzufügen oder Überschreiben auswählen.";
@@ -467,7 +450,12 @@
     $("transferPanel").addEventListener("keydown",e=>{
       if(e.key==="Escape"){e.preventDefault();closeTransferDialog();}
     });
-    $("transferImport").addEventListener("click",()=>$("transferFileInput").click());
+    $("transferImport").addEventListener("click",()=>{
+      transferGpxMode="normal";$("transferFileInput").click();
+    });
+    $("transferImportHike").addEventListener("click",()=>{
+      transferGpxMode="start";$("transferFileInput").click();
+    });
     $("transferFileInput").addEventListener("change",e=>chooseTransferFile(e.target.files?.[0]));
     $("transferExport").addEventListener("click",()=>void exportTransfer("project"));
     $("transferExportGpx").addEventListener("click",()=>void exportTransfer("gpx"));
