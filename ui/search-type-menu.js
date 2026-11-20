@@ -101,6 +101,9 @@
         const inInput=e.target===this.input;
         const inMenu=this.menu.contains(e.target);
         if(!inInput&&!inMenu)return;
+        // Native options and checkboxes must retain arrows, Space and Enter.
+        const nativeControl=inMenu&&!!e.target.closest?.("select,input,label,.object-search-date");
+        if(nativeControl&&key!=="escape")return;
         if(key==="escape"){
           e.preventDefault();this.close();
           if(inMenu)this.input.focus({preventScroll:true});
