@@ -66,3 +66,7 @@ test("checked inclusion flags are permissive; unchecking excludes matching metad
  assert.deepEqual(search(project,{query:"Karlsruhe",includeNote:false}).map(x=>x.id),["a","c","d","f"]);
  assert.deepEqual(search(project,{query:"Karlsruhe",kind:"pins"}).map(x=>x.id),["a","b","c"]);
 });
+
+test("Areas filter includes lake geometries as its dropdown label promises",()=>{
+ assert.deepEqual(search(project,{query:"Karlsruhe",kind:"areas"}).map(x=>x.id),["d","e"]);
+});

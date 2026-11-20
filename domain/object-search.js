@@ -31,7 +31,7 @@
     collection==="rivers"?"rivers":"pins";
    const category=type==="lakes"?"areas":type;
    const hasText=Boolean(text(object.note).trim()||text(object.url).trim());
-   if(kind!=="all"&&kind!==type&&!(kind==="texts"&&hasText))continue;
+   if(kind!=="all"&&kind!==type&&!(kind==="areas"&&type==="lakes")&&!(kind==="texts"&&hasText))continue;
    if(!(category==="pins"&&pins||category==="areas"&&areas||category==="rivers"&&rivers))continue;
    const gpx=object.gpxAttachment||{};
    const hasTrack=Boolean(gpx.chains?.length||object.gpxKey||object.gpxTrackId||object.gpxFileId||object.gpxRef);

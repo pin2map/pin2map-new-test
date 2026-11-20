@@ -2711,7 +2711,7 @@ body.object-search-active #app #searchButton.p2m-icon-control .p2m-lucide{color:
   flex:0 0 17px;width:17px;height:17px;margin:0;accent-color:#1680e2;
 }
 #app .object-search-exit{
-  width:46px;min-width:46px;height:46px;min-height:46px;align-self:center;
+  width:46px;min-width:46px;max-width:46px;height:46px;min-height:46px;max-height:46px;\n  box-sizing:border-box;aspect-ratio:1/1;flex:none;align-self:center;
   border:0;border-radius:999px;background:#c92f39;color:white;
   display:flex;align-items:center;justify-content:center;
   padding:0;cursor:pointer;
@@ -2731,7 +2731,7 @@ body.object-search-mode #app .topbar .search #searchButton.p2m-icon-control:is(:
 body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#fff;stroke:#fff}
 @media(max-width:360px){
  #app .object-search-options{grid-template-columns:minmax(0,1fr) 42px;gap:6px}
- #app .object-search-exit{min-width:42px;width:42px}
+ #app .object-search-exit{min-width:42px;max-width:42px;width:42px;min-height:42px;max-height:42px;height:42px}
  #app .object-search-compact-controls .object-search-check{font-size:11px;gap:2px}
  #app .object-search-compact-controls .object-search-check input{width:15px;height:15px;flex-basis:15px}
  #app .object-search-compact-controls .object-search-kind{font-size:12px}

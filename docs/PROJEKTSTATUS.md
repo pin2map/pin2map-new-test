@@ -2149,3 +2149,8 @@ Die alten failed/cancelled Läufe zu v272 und die v273-Testvorstufen sind dokume
 **Tests:** Domain-Regressionen für Einschluss/Ausschluss, unveränderte bisherige Suchmerkmale; neuer veröffentlichter Chromium-Browsertest bei 320/375/390/1280 Pixeln kontrolliert rechte Kreisform, Dropdown und drei Häkchen, unmittelbare Suche ohne Bestätigung, rote Lupe und beide Schließmethoden sowie Wiederherstellung versteckter Ebenen. Alle bisherigen Node-, Architektur-, Chromium-, Preview-HTTPS- und WebKit-Gates bleiben erforderlich.
 
 **Status zum Zeitpunkt der Implementierung:** vollständig vorbereitet, GitHub-Actions-/HTTPS-Live-Gates **noch offen**. Nicht vor grünem Gesamt-Deploy als freigegeben markieren. `main` und `reference/*` bleiben unverändert; echte iPhone-Abnahme erfolgt durch den Nutzer.
+
+ 
+### v276 – gezielter Live-Browser-Fix für den kompakten Suchdialog (20.11.2026)
+
+Die erste v275-Preview wurde über HTTPS mit passender Worker-Version veröffentlicht, aber der neue veröffentlichte Chromium-Test meldete einen tatsächlichen Fehler: Die rechte Suchmodus-X-Schaltfläche war geometrisch nicht nachweisbar kreisförmig. Deshalb **keine v275-Freigabe**. Die Größe ist nun durch feste Breite/Höhe, Mindest-/Maximalgrenzen, `box-sizing` und `aspect-ratio` geschützt, einschließlich 320-px-Breite. Die Fehlermeldung im Browsertest enthält bei einem erneuten Fehler die exakte Geometrie. Zusätzlich stellt die Option „Nur Flächen und Seen“ sowohl Gebiete als auch Seen bereit, abgesichert durch einen Domain-Test. Der Service Worker erhält für die neue HTTPS-Veröffentlichung die eindeutige Kennung **v276**. Neuer Node-/Chromium-/Architektur-/Preview-/WebKit-Gesamtlauf wird benötigt; bis zum vollständigen Erfolg keine Freigabe.

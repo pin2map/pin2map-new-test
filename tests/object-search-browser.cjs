@@ -78,7 +78,7 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.ok(layout.selector.bottom<=layout.flags.top+2,"options remain two ordered rows");
     assert.ok(layout.exit.left>=layout.selector.right-2&&layout.exit.left>=layout.flags.right-2,"exit at right");
     assert.ok(Math.abs(layout.exit.width-layout.exit.height)<2&&layout.exit.width>=40,
-      "exit must be circular touch target");
+      "exit must be circular touch target: "+JSON.stringify(layout));
     assert.equal(await page.locator(".object-search-exit svg").count(),1);
     assert.equal(await page.locator(".object-search-exit").evaluate(el=>getComputedStyle(el).backgroundColor),
       "rgb(201, 47, 57)");
