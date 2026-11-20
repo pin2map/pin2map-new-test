@@ -347,21 +347,45 @@
     return (raw||"pin2map-"+new Date().toISOString().slice(0,10))+"."+ext;
   }
   function downloadTransfer(content,extension,mime){
-    const blob=new Blob([content],{type:mime});
-    const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download=filename(extension);
-    document.body.append(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    const blob=new Blob([content],{type:mime}),name=filename(extension);
+    const fallback=()=>{
+      const url=URL.createObjectURL(blob),link=document.createElement("a");
+      link.href=url;link.download=name;
+      document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),30000);
+    };
+    // iOS/iPadOS: keep the share invocation inside the original click event.
+    // The predecessor uses this native share path for .pin2map and GPX files.
+    if(navigator.share&&navigator.canShare&&typeof File!=="undefined"){
+      try{
+        const file=new File([blob],name,{type:mime});
+        if(navigator.canShare({files:[file]})){
+          void navigator.share({files:[file]}).then(()=>{
+            $("transferFeedback").textContent="Dateifreigabe abgeschlossen.";
+          }).catch(error=>{
+            if(error?.name==="AbortError"){
+              $("transferFeedback").textContent="Dateifreigabe abgebrochen.";
+            }else{
+              fallback();
+              $("transferFeedback").textContent="Datei zum Download übergeben.";
+            }
+          });
+          return;
+        }
+      }catch(_){/* Fallback download below */}
+    }
+    fallback();
   }
-  async function exportTransfer(type){
+  function exportTransfer(type){
     if(transferBusy)return;
     try{
-      // Persist first so an export includes the latest edited notes and layers.
-      await persistence.writeNow();
+      // In-memory state already contains the latest edits; a file/share action
+      // must not lose its user gesture while awaiting IndexedDB on Safari.
       const content=type==="gpx"?projectTransfer.encodeGpx(state):projectTransfer.encodeProject(state);
+      void persistence.writeNow().catch(()=>showNotice("Lokale Speicherung nicht bestätigt"));
       downloadTransfer(content,type==="gpx"?"gpx":"pin2map",
         type==="gpx"?"application/gpx+xml;charset=utf-8":"application/json;charset=utf-8");
-      $("transferFeedback").textContent="Datei zum Sichern übergeben.";
+      $("transferFeedback").textContent="Datei zum Sichern bzw. Teilen bereitgestellt.";
     }catch(error){
       $("transferFeedback").textContent="Export fehlgeschlagen: "+String(error?.message||error);
     }
