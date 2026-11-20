@@ -8,6 +8,7 @@
   const string=x=>String(x??"").trim();
   const id=()=>root.crypto?.randomUUID?.()||"import-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2);
   function point(lat,lng){
+    if(lat===null||lng===null||String(lat).trim()===""||String(lng).trim()==="")throw Error("Fehlende Koordinaten");
     lat=Number(lat);lng=Number(lng);
     if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180)
       throw Error("Ungültige Koordinaten");return {lat,lng};
