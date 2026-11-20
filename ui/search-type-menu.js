@@ -208,7 +208,14 @@
    });
   }
   show(){
-   if(!this.open)this.onBeforeOpen();
+   if(!this.open){
+    const focused=this.doc.activeElement===this.input;
+    this.onBeforeOpen();
+    // Closing competing dialogs may move focus. Preserve normal Enter-to-place-search.
+    this.open=true;
+    this.menu.classList.remove("hidden");
+    if(focused&&this.doc.activeElement!==this.input)this.input.focus({preventScroll:true});
+   }
    this.open=true;this.menu.classList.remove("hidden");
    this.button.setAttribute("aria-expanded","true");
    this.input.setAttribute("aria-expanded","true");

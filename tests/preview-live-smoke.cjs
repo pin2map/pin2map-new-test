@@ -128,6 +128,11 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(await mapMenu.locator(".basemap-menu-title").count(),0);
         assert.equal(await mapMenu.locator('[data-basemap="street"]').textContent(),"Standard");
         assert.equal(await mapMenu.locator("hr.basemap-satellite-divider").count(),2);
+        // Dialogs intentionally sit ABOVE map buttons: dismiss the search
+        // chooser before touching a map button it geometrically overlaps.
+        await search.focus();
+        await page.keyboard.press("Escape");
+        assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
         await chooser.click();
         assert.equal(await chooser.getAttribute("aria-expanded"),"true");
         assert.equal(await chooser.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
