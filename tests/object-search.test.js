@@ -33,19 +33,21 @@ test("no wildcard when no text or date; invalid and legacy dates do not match",(
  assert.deepEqual(search(project,{created:"today",now}).map(x=>x.id),["a","d"]);
  assert.throws(()=>search(project,{created:"tomorrow"}),/Unknown/);
 });
-test("UI contains three inline dates and active filter remains transient",()=>{
+test("compact predecessor-style options show select, three flags and one circular exit",()=>{
  const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
  const sw=fs.readFileSync(path.resolve(__dirname,"../sw.js"),"utf8");
- assert.match(ui,/"today","Heute"/);assert.match(ui,/"yesterday","Gestern"/);
- assert.match(ui,/Erstellungs-Datum/);assert.match(ui,/Änderungs-Datum/);
- assert.match(ui,/Erneut suchen/);assert.match(ui,/Suche beenden/);
- assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) minmax\(0,1.35fr\)/);
- assert.match(app,/objectSearchView/);assert.match(app,/renderMarkers\(\);renderGeometry\(\)/);
+ assert.match(ui,/Pins, Flächen, Flüsse, Text/);
+ assert.match(ui,/Mit Track/);assert.match(ui,/Mit Link/);assert.match(ui,/Mit Notiz/);
+ assert.match(ui,/object-search-exit/);assert.match(ui,/Suche beenden/);
+ assert.doesNotMatch(ui,/Erneut suchen|Gestern|object-search-picker/);
+ assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(css,/border-radius:999px;background:#c92f39;color:white/);
+ assert.match(app,/objectSearchView/);
  assert.ok(html.indexOf("domain/object-search.js")<html.indexOf("app.js"));
- assert.match(sw,/".\/domain\/object-search.js"/);
+ assert.match(sw,/"\.\/domain\/object-search.js"/);
 });
 
 test("category checkboxes, text inclusion and selectable change date respect original layers",()=>{
@@ -55,4 +57,12 @@ test("category checkboxes, text inclusion and selectable change date respect ori
  assert.deepEqual(search(project,{created:"date",date:"2026-11-19",dateField:"createdAt"}).map(x=>x.id),["b","e","f"]);
  assert.throws(()=>search(project,{created:"date",date:"19.11.2026"}),/Valid calendar date/);
  assert.equal(project.layers[0].visible,false);
+});
+
+test("checked inclusion flags are permissive; unchecking excludes matching metadata",()=>{
+ assert.deepEqual(search(project,{query:"Karlsruhe",includeTrack:true,includeLink:true,includeNote:true}).map(x=>x.id),["a","b","c","d","e","f"]);
+ assert.deepEqual(search(project,{query:"Karlsruhe",includeTrack:false}).map(x=>x.id),["a","c","d","e","f"]);
+ assert.deepEqual(search(project,{query:"Karlsruhe",includeLink:false}).map(x=>x.id),["a","b","d","e","f"]);
+ assert.deepEqual(search(project,{query:"Karlsruhe",includeNote:false}).map(x=>x.id),["a","c","d","f"]);
+ assert.deepEqual(search(project,{query:"Karlsruhe",kind:"pins"}).map(x=>x.id),["a","b","c"]);
 });

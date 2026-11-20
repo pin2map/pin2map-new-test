@@ -14,7 +14,7 @@
  }
  function search(project,options={}){
   const {query="",kind="all",pins=true,areas=true,rivers=true,texts=true,
-   track=false,link=false,note=false,created="any",date="",dateField="createdAt",now=null}=options;
+   track=false,link=false,note=false,includeTrack=true,includeLink=true,includeNote=true,created="any",date="",dateField="createdAt",now=null}=options;
   if(!TYPES.includes(kind))throw new TypeError("Unknown object search type");
   if(!["any","today","yesterday","date"].includes(created))throw new TypeError("Unknown creation date filter");
   if(!["createdAt","updatedAt"].includes(dateField))throw new TypeError("Unknown date field");
@@ -36,6 +36,7 @@
    const gpx=object.gpxAttachment||{};
    const hasTrack=Boolean(gpx.chains?.length||object.gpxKey||object.gpxTrackId||object.gpxFileId||object.gpxRef);
    if(track&&!hasTrack||link&&!text(object.url).trim()||note&&!text(object.note).trim())continue;
+   if(!includeTrack&&hasTrack||!includeLink&&text(object.url).trim()||!includeNote&&text(object.note).trim())continue;
    if(day&&dateKey(object[dateField])!==day)continue;
    const display=value=>{const d=dateKey(value);return d?[d,d.slice(8,10)+"."+d.slice(5,7)+"."+d.slice(0,4)]:[];};
    const fields=[object.name,object.createdAt,object.updatedAt,

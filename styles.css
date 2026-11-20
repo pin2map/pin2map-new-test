@@ -2680,55 +2680,46 @@ body.object-search-active #app #searchButton.p2m-icon-control .p2m-lucide{color:
   #app .object-search-date .p2m-lucide{width:14px;height:14px}
 }
 
-/* v274 search-mode redesign: mobile-first and keyboard-safe, no new project UI layer. */
+/* v275 – compact predecessor-style search options; fixed 2 rows and X across both. */
 #app .search-creation-choices{display:flex;flex-direction:column;gap:3px}
 #app .search-type-menu.object-search-mode{
-  width:min(390px,calc(100vw - 22px));padding:9px;
-  color:#c92f39;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  width:min(390px,calc(100vw - 20px));padding:8px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
-#app .object-search-options{display:flex;flex-direction:column;gap:9px;padding:0}
-#app .object-search-heading{font-weight:700;font-size:15px;color:#c92f39;padding:3px 5px 0}
-#app .object-search-block{
-  border:1px solid #cbd3de;border-radius:10px;padding:9px;
-  background:#fff;display:flex;flex-direction:column;gap:10px;
+#app .object-search-options{
+  display:grid;grid-template-columns:minmax(0,1fr) 46px;
+  gap:9px;align-items:stretch;padding:0;
 }
-#app .object-search-types{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-  column-gap:10px;row-gap:8px;
+#app .object-search-compact-controls{
+  min-width:0;display:grid;grid-template-rows:38px 38px;gap:6px;
 }
-#app .object-search-check{
-  display:flex;align-items:center;gap:7px;min-width:0;
-  color:#c92f39;font-size:14px;font-weight:500;line-height:1.25;cursor:pointer;
+#app .object-search-compact-controls .object-search-kind{
+  width:100%;min-width:0;min-height:38px;padding:3px 7px;
+  background:white;color:#202f42;font-size:14px;line-height:1.2;
+  border:1px solid #aeb9c8;border-radius:7px;
 }
-#app .object-search-check input{
-  margin:0;width:18px;height:18px;min-width:18px;accent-color:#c92f39;
+#app .object-search-compact-controls .object-search-flags{
+  min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:center;column-gap:4px;
 }
-#app .object-search-action,#app .object-search-end{
-  min-height:40px;padding:7px 12px;border:1px solid #c92f39;
-  border-radius:10px;background:#fff;color:#c92f39;
-  font:600 14px/1.2 system-ui,sans-serif;cursor:pointer;
+#app .object-search-compact-controls .object-search-check{
+  display:flex;align-items:center;gap:4px;min-width:0;
+  font:500 12px/1.1 system-ui,sans-serif;
+  color:#263443;white-space:nowrap;cursor:pointer;
 }
-#app .object-search-action{align-self:center;min-width:150px}
-#app .object-search-end{align-self:center;min-width:150px;border:0;text-decoration:underline}
-#app .object-search-dates{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr);
-  align-items:center;gap:6px;
+#app .object-search-compact-controls .object-search-check input{
+  flex:0 0 17px;width:17px;height:17px;margin:0;accent-color:#1680e2;
 }
-#app .object-search-date{
-  color:#c92f39;border-color:#e0a6ac;background:#fff;
-  font:600 13px/1.1 system-ui,sans-serif;min-height:42px;
+#app .object-search-exit{
+  width:46px;min-width:46px;height:46px;min-height:46px;align-self:center;
+  border:0;border-radius:999px;background:#c92f39;color:white;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;
 }
-#app .object-search-date.is-active{background:#c92f39;color:white}
-#app .object-search-picker{
-  box-sizing:border-box;min-width:0;width:100%;max-width:100%;
-  min-height:42px;padding:4px;border:1px solid #e0a6ac;border-radius:9px;
-  background:#fff;color:#c92f39;font:500 12px system-ui,sans-serif;
-  color-scheme:light;
+#app .object-search-exit .p2m-lucide{
+  width:22px;height:22px;color:#fff;stroke:#fff;stroke-width:3;
 }
-#app .object-search-date-types{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
-}
-#app .object-search-date-types .object-search-check{font-size:12px}
+#app .object-search-exit:focus-visible{outline:2px solid #c92f39;outline-offset:3px}
 body.object-search-mode #app #searchClear.search-clear span{background:#c92f39}
 body.object-search-mode #app .topbar .search #searchButton.p2m-icon-control{
   --p2m-button-bg:#c92f39;--p2m-button-ink:#fff;
@@ -2737,12 +2728,11 @@ body.object-search-mode #app .topbar .search #searchButton.p2m-icon-control::bef
 body.object-search-mode #app .topbar .search #searchButton.p2m-icon-control:is(:hover,:active)::before{
   background:#c92f39;border-color:#c92f39;
 }
-body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{
-  color:#fff;stroke:#fff;
-}
+body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#fff;stroke:#fff}
 @media(max-width:360px){
- #app .object-search-check{font-size:12px;gap:5px}
- #app .object-search-date-types .object-search-check{font-size:11px}
- #app .object-search-block{padding:7px}
- #app .object-search-date{font-size:12px}
+ #app .object-search-options{grid-template-columns:minmax(0,1fr) 42px;gap:6px}
+ #app .object-search-exit{min-width:42px;width:42px}
+ #app .object-search-compact-controls .object-search-check{font-size:11px;gap:2px}
+ #app .object-search-compact-controls .object-search-check input{width:15px;height:15px;flex-basis:15px}
+ #app .object-search-compact-controls .object-search-kind{font-size:12px}
 }

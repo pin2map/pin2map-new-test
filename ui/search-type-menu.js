@@ -21,7 +21,7 @@
     throw new TypeError("Search chooser elements required");
    this.app.append(this.menu);
    this.open=false;this.active=0;this.searchMode=false;
-   this.created="any";this.dateField="createdAt";this.fixedDate="";
+
   }
   makeElement(tag,cls,text){
    const el=this.doc.createElement(tag);
@@ -60,49 +60,32 @@
    return field;
   }
   buildSearch(){
+   // Predecessor-style compact control: two option rows, shared exit button.
    const section=this.makeElement("section","object-search-options");
-   const title=this.makeElement("div","object-search-heading","Suchoptionen:");
-   section.append(title);
-   const filters=this.makeElement("div","object-search-block object-search-filter-block");
-   const types=this.makeElement("div","object-search-types");
-   for(const [id,label,checked] of [
-    ["pins","Pins",true],["areas","Gebiete",true],
-    ["rivers","Flüsse",true],["texts","Text",true],
-    ["track","Mit Track",false],["link","Mit Link",false],
-    ["note","Mit Notiz",false]
-   ])types.append(this.makeCheck(id,label,checked));
-   filters.append(types);
-   const again=this.makeElement("button","object-search-action","Erneut suchen");
-   again.type="button";again.dataset.searchAction="again";
-   again.addEventListener("click",()=>this.execute({created:"any"}));
-   filters.append(again);section.append(filters);
-   const dates=this.makeElement("div","object-search-block object-search-date-block");
-   const row=this.makeElement("div","object-search-dates");
-   for(const [id,label] of [["today","Heute"],["yesterday","Gestern"]]){
-    const btn=this.makeElement("button","object-search-date",label);
-    btn.type="button";btn.dataset.created=id;
-    btn.addEventListener("click",()=>this.execute({created:id}));
-    row.append(btn);
+   const controls=this.makeElement("div","object-search-compact-controls");
+   const selector=this.doc.createElement("select");
+   selector.className="object-search-kind";selector.setAttribute("aria-label","Suchbereich auswählen");
+   for(const [id,label] of [
+    ["all","Pins, Flächen, Flüsse, Text"],
+    ["pins","Nur Pins"],["areas","Nur Flächen und Seen"],
+    ["rivers","Nur Flüsse"],["texts","Nur Text"]
+   ]){
+    const option=this.doc.createElement("option");option.value=id;option.textContent=label;
+    selector.append(option);
    }
-   const picker=this.doc.createElement("input");
-   picker.type="date";picker.className="object-search-picker";
-   picker.setAttribute("aria-label","Suchdatum wählen");
-   picker.addEventListener("change",()=>{if(picker.value)this.execute({created:"date",date:picker.value});});
-   row.append(picker);dates.append(row);
-   const dateTypes=this.makeElement("div","object-search-date-types");
-   const created=this.makeCheck("createdAt","Erstellungs-Datum",true);
-   const updated=this.makeCheck("updatedAt","Änderungs-Datum",false);
-   const setField=id=>{
-    this.dateField=id;created.querySelector("input").checked=id==="createdAt";
-    updated.querySelector("input").checked=id==="updatedAt";
-    if(this.created!=="any")this.execute({created:this.created,date:this.fixedDate});
-   };
-   created.querySelector("input").addEventListener("change",()=>setField("createdAt"));
-   updated.querySelector("input").addEventListener("change",()=>setField("updatedAt"));
-   dateTypes.append(created,updated);dates.append(dateTypes);
-   section.append(dates);
-   const end=this.makeElement("button","object-search-end","Suche beenden");
+   selector.addEventListener("change",()=>this.execute());
+   controls.append(selector);
+   const flags=this.makeElement("div","object-search-flags");
+   for(const [id,label] of [["track","Mit Track"],["link","Mit Link"],["note","Mit Notiz"]]){
+    const field=this.makeCheck(id,label,true);
+    field.querySelector("input").addEventListener("change",()=>this.execute());
+    flags.append(field);
+   }
+   controls.append(flags);section.append(controls);
+   const end=this.makeElement("button","object-search-exit");
    end.type="button";end.dataset.searchAction="end";
+   end.setAttribute("aria-label","Suche beenden");end.title="Suche beenden";
+   end.append(this.icons.svg("x",this.doc));
    end.addEventListener("click",()=>{this.exitSearchMode();this.onExit();});
    section.append(end);
    return section;
@@ -124,7 +107,7 @@
     e.preventDefault();e.stopPropagation();
     this.input.blur(); // iOS keyboard must close before displaying search options.
     if(!this.searchMode)this.enterSearchMode();
-    this.execute({created:"any"});
+    this.execute();
    });
    this.doc.addEventListener("pointerdown",e=>{
     if(this.open&&!this.menu.contains(e.target)&&!this.form.contains(e.target))this.close();
@@ -136,7 +119,7 @@
     const key=String(e.key||"").toLowerCase();
     if(key==="escape"){e.preventDefault();this.close();return;}
     if(this.searchMode){
-     if(key==="enter"&&inInput){e.preventDefault();this.input.blur();this.execute({created:"any"});}
+     if(key==="enter"&&inInput){e.preventDefault();this.input.blur();this.execute();}
      return;
     }
     if(key==="enter"&&inInput){this.close();return;}
@@ -164,17 +147,13 @@
   }
   searchOptions(){
    const checked=id=>!!this.searchPanel.querySelector('[data-search-flag="'+id+'"]')?.checked;
-   return {pins:checked("pins"),areas:checked("areas"),rivers:checked("rivers"),
-    texts:checked("texts"),track:checked("track"),link:checked("link"),note:checked("note"),
-    dateField:this.dateField};
+   return {kind:this.searchPanel.querySelector(".object-search-kind")?.value||"all",
+    includeTrack:checked("track"),includeLink:checked("link"),includeNote:checked("note")};
   }
-  execute({created="any",date=""}={}){
-   this.created=created;this.fixedDate=date;
-   this.input.blur(); // keep the keyboard closed for all option-triggered searches.
-   this.searchPanel.querySelectorAll("[data-created]").forEach(b=>
-    b.classList.toggle("is-active",b.dataset.created===created));
+  execute(){
+   this.input.blur();
    this.show();
-   this.onSearch({...this.searchOptions(),created,date});
+   this.onSearch({...this.searchOptions(),created:"any"});
   }
   enterSearchMode(){
    this.searchMode=true;this.creation.classList.add("hidden");
@@ -185,7 +164,7 @@
    this.show();this.position();
   }
   exitSearchMode(){
-   this.searchMode=false;this.created="any";this.fixedDate="";this.dateField="createdAt";
+   this.searchMode=false;
    this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
    this.menu.classList.remove("object-search-mode");this.close();
    this.button.setAttribute("aria-label","Gespeicherte Objekte suchen");
