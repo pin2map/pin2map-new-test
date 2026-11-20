@@ -269,6 +269,13 @@
   }
   function exportSubset(state,{visible=false,filterPins=null}={}){
     const source=safeProject(state);
+    // Older NEW builds stored whole predecessor files even when every list
+    // entry had already been converted. Avoid carrying those redundant
+    // source copies in subsequent exports; retain any unresolved originals.
+    if(Array.isArray(source.legacySources)){
+      source.legacySources=source.legacySources.filter(entry=>entry?.unresolved?.length);
+      if(!source.legacySources.length)delete source.legacySources;
+    }
     if(!visible)return source;
     const active=new Set(source.layers.filter(l=>l.visible).map(l=>l.id));
     const project={...source,
