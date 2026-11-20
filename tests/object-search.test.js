@@ -33,15 +33,26 @@ test("no wildcard when no text or date; invalid and legacy dates do not match",(
  assert.deepEqual(search(project,{created:"today",now}).map(x=>x.id),["a","d"]);
  assert.throws(()=>search(project,{created:"tomorrow"}),/Unknown/);
 });
-test("UI contains two equal date controls and active filter remains transient",()=>{
+test("UI contains three inline dates and active filter remains transient",()=>{
  const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
  const sw=fs.readFileSync(path.resolve(__dirname,"../sw.js"),"utf8");
- assert.match(ui,/Heute erstellt/);assert.match(ui,/Gestern erstellt/);
- assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+ assert.match(ui,/"today","Heute"/);assert.match(ui,/"yesterday","Gestern"/);
+ assert.match(ui,/Erstellungs-Datum/);assert.match(ui,/Änderungs-Datum/);
+ assert.match(ui,/Erneut suchen/);assert.match(ui,/Suche beenden/);
+ assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\) minmax\(0,1.35fr\)/);
  assert.match(app,/objectSearchView/);assert.match(app,/renderMarkers\(\);renderGeometry\(\)/);
  assert.ok(html.indexOf("domain/object-search.js")<html.indexOf("app.js"));
  assert.match(sw,/".\/domain\/object-search.js"/);
+});
+
+test("category checkboxes, text inclusion and selectable change date respect original layers",()=>{
+ assert.deepEqual(search(project,{query:"Karlsruhe",pins:false,areas:true,rivers:false}).map(x=>x.id),["d","e"]);
+ assert.deepEqual(search(project,{query:"Karlsruhe",texts:false}).map(x=>x.id),["a","d","f"]);
+ assert.deepEqual(search(project,{created:"today",now,dateField:"updatedAt"}).map(x=>x.id),["a","b"]);
+ assert.deepEqual(search(project,{created:"date",date:"2026-11-19",dateField:"createdAt"}).map(x=>x.id),["b","e","f"]);
+ assert.throws(()=>search(project,{created:"date",date:"19.11.2026"}),/Valid calendar date/);
+ assert.equal(project.layers[0].visible,false);
 });

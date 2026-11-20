@@ -1088,18 +1088,30 @@
   }
   function runObjectSearch(options={}){
     const created=options.created||"any";
-    const input=$("searchInput"),query=created==="any"?input.value.trim():"";
-    if(created!=="any"){input.value="";searchForm.updateClear();}
-    if(!query&&created==="any"){input.focus();return;}
-    const matches=objectSearch.search(state,{query,kind:options.kind||"all",
-      track:options.track,link:options.link,note:options.note,created,now:new Date()});
+    const query=created==="any"?$("searchInput").value.trim():"";
     searchForm.cancel();cancelGeometrySearch();searchView.hide();
-    if(!matches.length){showNotice("Keine passenden gespeicherten Objekte gefunden");return;}
+    document.body.classList.add("object-search-mode");
+    // The active red capsule signals search mode, not whether a match exists.
+    $("searchClear").classList.remove("hidden");
+    $("searchClear").setAttribute("aria-label","Suchfilter zurücksetzen");
+    const matches=objectSearch.search(state,{query,...options,created,now:new Date()});
+    if(!query&&created==="any"){
+      resetObjectSearch();
+      document.body.classList.add("object-search-mode");
+      $("searchClear").classList.remove("hidden");
+      showNotice("Suchtext eingeben oder Datum auswählen");
+      return;
+    }
+    if(!matches.length){
+      resetObjectSearch();
+      document.body.classList.add("object-search-mode");
+      $("searchClear").classList.remove("hidden");
+      showNotice("Keine passenden gespeicherten Objekte gefunden");
+      return;
+    }
     const prior=objectSearchView?.viewport||mapAdapter.getViewport();
     objectSearchView={viewport:prior,ids:new Set(matches.map(m=>m.type+":"+m.id))};
     document.body.classList.add("object-search-active");
-    $("searchClear").classList.remove("hidden");
-    $("searchClear").setAttribute("aria-label","Objektsuche zurücksetzen");
     renderMarkers();renderGeometry();
     const selected={layers:state.layers.map(l=>({...l,visible:true})),
       pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
@@ -1109,9 +1121,16 @@
       currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
     showNotice(matches.length+" "+(matches.length===1?"Objekt":"Objekte")+" gefunden");
   }
+  function endObjectSearch(){
+    resetObjectSearch();
+    document.body.classList.remove("object-search-mode");
+    const input=$("searchInput");
+    input.value="";input.blur();
+    searchForm.updateClear();
+    searchView.hide();
+  }
   function runSearchMode(mode,options){
     clearObjectPreview();
-    if(mode==="objects"){runObjectSearch(options);return;}
     resetObjectSearch({restore:false});
     if(mode==="plate"){findPlateCode($("searchInput").value);return;}
     if(mode==="gps"){gpsLocation?.locate();return;}
@@ -1130,16 +1149,22 @@
     });},
     onResults:renderResults,
     onMessage:searchMessage,
-    onInputChange:()=>{resetObjectSearch();searchView.hide();cancelGeometrySearch();},
+    onInputChange:()=>{resetObjectSearch();searchView.hide();cancelGeometrySearch();
+      if(searchTypeMenu?.searchMode){document.body.classList.add("object-search-mode");
+        $("searchClear").classList.remove("hidden");}},
     cancelSearch:()=>placeSearch.cancel()
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
     bindTransfer();
     searchForm.bind();
-    $("searchClear").addEventListener("click",()=>resetObjectSearch());
+    $("searchClear").addEventListener("click",()=>{
+      if(searchTypeMenu?.searchMode){resetObjectSearch();document.body.classList.add("object-search-mode");
+        $("searchClear").classList.remove("hidden");}
+    });
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
-      document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode
+      document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode,
+      onSearch:runObjectSearch,onExit:endObjectSearch
     });
     searchTypeMenu.bind();
     pinInfoMenu.bind();
