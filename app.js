@@ -417,7 +417,7 @@
         " Flächen, "+(project.rivers||[]).length+" Flüsse/Tracks, "+
         project.layers.length+" Ebenen";
       $("transferFileSummary").textContent=counts+
-        (result.unresolved?" · "+result.unresolved+" alte Orts-/Gebietsabfragen konnten ohne Geodaten nicht als Objekte angelegt werden. Der vollständige Originalinhalt bleibt zur späteren Konvertierung gespeichert.":"")+
+        (result.unresolved?" · "+result.unresolved+" alte Orts-/Gebietsabfragen konnten ohne Geodaten nicht übernommen werden. Bitte die Originaldatei aufbewahren.":"")+
         (result.gpx?" · GPX enthält keine pin2map-Ebenen/Favoriten.":"")+
         (result.project.pins.some(pin=>pin.gpxAttachment)?" · Start-Pins mit GPX-Trackanhang.":"");
       $("transferMain").classList.add("hidden");
