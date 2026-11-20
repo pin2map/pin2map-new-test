@@ -2779,3 +2779,12 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
  #app #searchTypeMenu .object-search-results{font-size:11px}
  #app #searchTypeMenu .object-search-flags{column-gap:1px}
 }
+
+/* v279 – seventh creation option is separated without changing menu layering. */
+#app .search-creation-divider{
+  display:block;box-sizing:border-box;width:calc(100% - 12px);height:1px;
+  border:0;background:#cbd4df;margin:7px 6px;
+}
+#app .search-type-choice[data-search-type="objects"] .p2m-lucide{
+  color:#c92f39;
+}

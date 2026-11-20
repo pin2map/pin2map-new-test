@@ -91,3 +91,10 @@ test("search results and dialog contract are wired without changing saved visibi
  assert.match(app,/onBeforeOpen:closeAllMapMenus/);
  assert.match(css,/#app #searchTypeMenu\.search-type-menu:not\(\.hidden\)\{[\s\S]*?z-index:1650/);
 });
+
+test("repeated records with the same pin ID count as one map marker",()=>{
+ const repeated={...project,pins:Array.from({length:8},()=>({...project.pins[0]}))};
+ const found=search(repeated,{query:"Karlsruhe"});
+ assert.deepEqual(found.map(x=>x.id),["a"]);
+ assert.equal(repeated.pins.length,8,"search does not mutate stored data");
+});

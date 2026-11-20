@@ -26,6 +26,7 @@
   if(!needle&&!day)return [];
   const visibleLayers=new Set((project?.layers||[]).filter(layer=>layer.visible===true).map(layer=>layer.id));
   const hits=[];
+  const seen=new Set();
   for(const collection of ["pins","areas","rivers"])for(const object of project?.[collection]||[]){
    if(!object||!object.id)continue;
    if(!includeHidden&&!visibleLayers.has(object.layerId))continue;
@@ -45,6 +46,10 @@
     ...display(object.createdAt),...display(object.updatedAt)];
    if(texts)fields.push(object.note,object.url,gpx.filename,object.gpxFilename,object.gpxName);
    if(needle&&!fields.some(v=>text(v).includes(needle)))continue;
+   // Leaflet marker ownership is keyed by ID: count each displayed marker once.
+   const key=type+":"+String(object.id);
+   if(seen.has(key))continue;
+   seen.add(key);
    hits.push({type,id:object.id,object});
   }
   return hits;

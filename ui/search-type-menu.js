@@ -6,14 +6,15 @@
   {id:"pin",label:"Pin",shortcut:"p",icon:"map-pin"},
   {id:"gps",label:"GPS-Location",shortcut:"l",icon:"locate-fixed"},
   {id:"area",label:"Gebiet",shortcut:"g",asset:"region.svg"},
-  {id:"lake",label:"See",shortcut:"s",asset:"lake.svg"},
+  {id:"lake",label:"See",shortcut:"e",asset:"lake.svg"},
   {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"},
-  {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"}
+  {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"},
+  {id:"objects",label:"Markierungen Suchen",shortcut:"s",icon:"scan-search"}
  ]);
  class SearchTypeMenu{
-  constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{}}){
+  constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{},onEdit=()=>{}}){
    this.doc=doc;this.el=getElement;this.icons=icons;
-   this.onChoose=onChoose;this.onSearch=onSearch;this.onExit=onExit;this.onBeforeOpen=onBeforeOpen;
+   this.onChoose=onChoose;this.onSearch=onSearch;this.onExit=onExit;this.onBeforeOpen=onBeforeOpen;this.onEdit=onEdit;
    this.menu=this.el("searchTypeMenu");this.button=this.el("searchButton");
    this.input=this.el("searchInput");this.form=this.el("searchForm");
    this.app=this.el("app");
@@ -31,6 +32,7 @@
   buildCreation(){
    const list=this.makeElement("div","search-creation-choices");
    CHOICES.forEach((choice,i)=>{
+    if(choice.id==="objects")list.append(this.makeElement("hr","search-creation-divider"));
     const button=this.makeElement("button","search-type-choice");
     button.type="button";button.setAttribute("role","menuitem");
     button.dataset.searchType=choice.id;
@@ -109,13 +111,31 @@
    this.input.setAttribute("aria-controls","searchTypeMenu");
    this.input.setAttribute("aria-haspopup","menu");
    this.input.setAttribute("aria-expanded","false");
-   this.input.addEventListener("focus",()=>this.show());
-   this.input.addEventListener("input",()=>{if(!this.open)this.show();});
+   // Close competing panels BEFORE native pointer focus so iOS can type on the first tap.
+   this.input.addEventListener("pointerdown",()=>{
+    if(!this.open){this.onBeforeOpen();this.preparedOpen=true;}
+    this.returnToCreation();
+   },{capture:true});
+   this.input.addEventListener("focus",()=>{
+    this.returnToCreation();
+    this.show();
+   });
+   this.input.addEventListener("click",()=>this.show());
+   this.input.addEventListener("input",()=>{
+    this.returnToCreation();
+    if(!this.open)this.show();
+   });
+   this.doc.addEventListener("keydown",event=>{
+    if(event.isComposing||event.altKey||!(event.metaKey||event.ctrlKey)||String(event.key).toLowerCase()!=="f")return;
+    event.preventDefault();event.stopPropagation();
+    this.focusInput();
+   },true);
    this.button.addEventListener("click",e=>{
     e.preventDefault();e.stopPropagation();
-    this.input.blur(); // iOS keyboard must close before displaying search options.
-    if(!this.searchMode)this.enterSearchMode();
-    this.execute();
+    this.input.blur();
+    // The magnifier opens the creation chooser; saved-object filtering is an explicit choice.
+    if(this.searchMode)this.execute();
+    else this.show();
    });
    this.doc.addEventListener("pointerdown",e=>{
     if(this.open&&!this.menu.contains(e.target)&&!this.form.contains(e.target))this.close();
@@ -168,6 +188,21 @@
    const results=this.searchPanel?.querySelector(".object-search-results");
    if(results)results.textContent=pins+" Pins · "+areas+" Flächen · "+waters+" Gewässer";
   }
+  returnToCreation(){
+   if(!this.searchMode)return;
+   this.searchMode=false;
+   this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
+   this.menu.classList.remove("object-search-mode");
+   this.onEdit();
+  }
+  focusInput(){
+   // This path also handles hardware Cmd+F / Ctrl+F without losing focus to overlay cleanup.
+   this.returnToCreation();
+   if(!this.open){this.onBeforeOpen();this.preparedOpen=true;}
+   this.input.focus({preventScroll:true});
+   this.input.select();
+   this.show();
+  }
   execute(){
    this.input.blur();
    this.show();
@@ -210,7 +245,8 @@
   show(){
    if(!this.open){
     const focused=this.doc.activeElement===this.input;
-    this.onBeforeOpen();
+    if(!this.preparedOpen)this.onBeforeOpen();
+    this.preparedOpen=false;
     // Closing competing dialogs may move focus. Preserve normal Enter-to-place-search.
     this.open=true;
     this.menu.classList.remove("hidden");
@@ -230,7 +266,11 @@
   toggle(){this.open?this.close():this.show();}
   choose(index){
    const choice=CHOICES[index];if(!choice)return;
-   this.close();this.onChoose(choice.id);
+   this.close();
+   if(choice.id==="objects"){
+    this.enterSearchMode();this.execute();return;
+   }
+   this.onChoose(choice.id);
   }
  }
  SearchTypeMenu.CHOICES=CHOICES;

@@ -692,9 +692,16 @@
   }
   function renderMarkers(){
     if(!markerView)return;
-    const visible=objectSearchView?
-      state.pins.filter(p=>objectSearchView.ids.has("pins:"+p.id)):
-      pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
+    const visible=objectSearchView?(()=>{
+      // Keep one rendered pin per stable identifier, matching Leaflet's marker ownership.
+      const seen=new Set();
+      return state.pins.filter(p=>{
+        if(!objectSearchView.ids.has("pins:"+p.id)||
+          (!objectSearchView.includeHidden&&!state.layers.some(l=>l.id===p.layerId&&l.visible))||
+          seen.has(p.id))return false;
+        seen.add(p.id);return true;
+      });
+    })():pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
     pinInfoService.setVisiblePins(temporaryInfoPin?[...visible,temporaryInfoPin.point]:visible);
     markerView.render({
       pins:visible,
@@ -1111,7 +1118,8 @@
       return;
     }
     const prior=objectSearchView?.viewport||mapAdapter.getViewport();
-    objectSearchView={viewport:prior,ids:new Set(matches.map(m=>m.type+":"+m.id))};
+    objectSearchView={viewport:prior,includeHidden:options.includeHidden!==false,
+      ids:new Set(matches.map(m=>m.type+":"+m.id))};
     document.body.classList.add("object-search-active");
     renderMarkers();renderGeometry();
     const selected={layers:state.layers.map(l=>({...l,visible:true})),
@@ -1133,6 +1141,7 @@
   function runSearchMode(mode,options){
     clearObjectPreview();
     resetObjectSearch({restore:false});
+    if(mode==="objects"){searchTypeMenu.enterSearchMode();searchTypeMenu.execute();return;}
     if(mode==="plate"){findPlateCode($("searchInput").value);return;}
     if(mode==="gps"){gpsLocation?.locate();return;}
     if(mode==="pin"){searchForm.submit();return;}
@@ -1150,9 +1159,11 @@
     });},
     onResults:renderResults,
     onMessage:searchMessage,
-    onInputChange:()=>{resetObjectSearch();searchView.hide();cancelGeometrySearch();
-      if(searchTypeMenu?.searchMode){document.body.classList.add("object-search-mode");
-        $("searchClear").classList.remove("hidden");}},
+    onInputChange:()=>{
+      resetObjectSearch();searchView.hide();cancelGeometrySearch();
+      if(searchTypeMenu?.searchMode)searchTypeMenu.returnToCreation();
+      document.body.classList.remove("object-search-mode");
+    },
     cancelSearch:()=>placeSearch.cancel()
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
@@ -1168,7 +1179,11 @@
     },true);
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
       document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode,
-      onSearch:runObjectSearch,onExit:endObjectSearch,onBeforeOpen:closeAllMapMenus
+      onSearch:runObjectSearch,onExit:endObjectSearch,onBeforeOpen:closeAllMapMenus,
+      onEdit:()=>{
+        resetObjectSearch();document.body.classList.remove("object-search-mode");
+        searchForm.updateClear();
+      }
     });
     searchTypeMenu.bind();
     pinInfoMenu.bind();

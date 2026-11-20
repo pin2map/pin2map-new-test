@@ -26,6 +26,8 @@ const base=process.env.PIN2MAP_TEST_URL||
       {id:"search-today",name:"Karlsruhe Bahnhof",lat:49.01,lng:8.405,layerId:"layer-1",note:"",url:"",createdAt:today,updatedAt:today},
       {id:"search-yesterday",name:"Berlin Mitte",lat:52.52,lng:13.4,layerId:"layer-1",note:"",url:"",createdAt:y,updatedAt:today}
      ];
+     // Repeated legacy records with one ID must not inflate the visible marker count.
+     state.pins.push(...Array.from({length:6},()=>({...state.pins[0]})));
      state.areas=[{id:"search-area",name:"Karlsruhe Testgebiet",layerId:"layer-1",kind:"area",createdAt:today,
       geometry:{type:"Polygon",coordinates:[[[8.4,49],[8.41,49],[8.41,49.01],[8.4,49]]]},note:"",url:""}];
      const db=await new Promise((resolve,reject)=>{
@@ -39,9 +41,13 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.reload({waitUntil:"domcontentloaded"});
     await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:30000});
     assert.equal(await page.locator(".pin-marker").count(),0,"hidden layer baseline");
-    await page.locator("#searchInput").fill("Karlsruhe");
+    await page.locator("#searchInput").click();
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true,
+      "first tap must retain focus for typing");
+    await page.keyboard.type("Karlsruhe");
+    assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe");
     await page.locator("#searchTypeMenu").waitFor({state:"visible"});
-    assert.equal(await page.locator(".search-type-choice:visible").count(),6,"creation menu shows six options only");
+    assert.equal(await page.locator(".search-type-choice:visible").count(),7,"six creation choices plus saved marker search");
     assert.equal(await page.locator(".object-search-options:visible").count(),0,"specialized options are not yet visible");
     const launcherPriority=await page.evaluate(()=>{
      const button=document.querySelector("#basemapButton"),b=button.getBoundingClientRect();
@@ -53,7 +59,7 @@ const base=process.env.PIN2MAP_TEST_URL||
     });
     assert.equal(launcherPriority.overlap?launcherPriority.isMenu:launcherPriority.isButton,true,
       "open dialog must never be under a map launcher");
-    await page.locator("#searchButton").click();
+    await page.locator('.search-type-choice[data-search-type="objects"]').click();
     assert.equal(await page.locator(".search-type-choice:visible").count(),0,"creation options replaced");
     assert.equal(await page.locator(".object-search-options:visible").count(),1);
     assert.equal(await page.locator(".pin-marker").count(),1,"search retrieves hidden pin");
@@ -109,24 +115,37 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator(".object-search-results").innerText(),"0 Pins · 0 Flächen · 0 Gewässer");
     await checks.nth(3).check();
     assert.equal(await page.locator(".pin-marker").count(),1,"hidden-only pin included again");
+    // Editing while filtered restores the normal choices before the next saved-object search.
+    await page.locator("#searchInput").click();
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true);
+    assert.equal(await page.locator(".search-type-choice:visible").count(),7);
+    assert.equal(await page.locator(".object-search-options:visible").count(),0);
+    await page.locator("#searchInput").fill("Karlsruhe");
+    assert.equal(await page.locator(".search-type-choice:visible").count(),7);
+    await page.locator('.search-type-choice[data-search-type="objects"]').click();
+    assert.equal(await page.locator(".pin-marker").count(),1);
     await page.locator(".object-search-exit").click();
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"right X closes chooser");
     assert.equal(await page.locator(".pin-marker").count(),0,"right X restores hidden layer");
     assert.ok(!await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")));
+    await page.keyboard.press("Meta+f");
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true,
+      "Cmd+F must activate the application search field");
+    assert.equal(await page.locator(".search-type-choice:visible").count(),7);
     await page.locator("#searchInput").fill("Karlsruhe");
-    await page.locator("#searchButton").click();
+    await page.locator('.search-type-choice[data-search-type="objects"]').click();
     assert.equal(await page.locator(".pin-marker").count(),1);
     await page.locator("#searchClear").click();
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"small capsule X exits too");
     assert.equal(await page.locator(".pin-marker").count(),0);
     assert.ok(!await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")));
     await page.locator("#searchInput").fill("Karlsruhe");
-    await page.locator("#searchButton").click();
+    await page.locator('.search-type-choice[data-search-type="objects"]').click();
     await page.locator("#settingsButton").click();
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"opening settings closes search chooser");
     assert.equal(await page.locator("#settingsPanel").isVisible(),true,"newly opened dialog remains visible");
     assert.deepEqual(errors,[],width+" browser errors");
-    console.log("PASS creation/search split, day/change filters and mobile controls:",width);
+    console.log("PASS first-tap focus, 7th search choice, duplicate ID counts, Cmd+F, mobile controls:",width);
    }finally{await context.close();}
   }
  }finally{await browser.close();}
