@@ -126,3 +126,79 @@ test("predecessor cache rehydrates named pins, polygons and drawn rivers offline
   assert.equal(result.project.rivers[0].name,"Donau");
   assert.equal(result.unresolved,1);
 });
+
+test("visible-only export excludes hidden layers, pins, geometry and favorites",()=>{
+  const state=base();
+  state.layers[1].visible=false;
+  const filtered=transfer.exportSubset(state,{visible:true});
+  assert.equal(filtered.pins.length,0);
+  assert.equal(filtered.areas.length,0);
+  assert.equal(filtered.rivers.length,0);
+  assert.equal(filtered.favorites.length,0);
+  assert.equal(filtered.layers.length,1);
+  const everything=transfer.exportSubset(state,{visible:false});
+  assert.equal(everything.pins.length,1);
+  assert.equal(everything.favorites.length,1);
+});
+test("export is compact, drops only redundant fully converted legacy copies",()=>{
+  const state=base();
+  state.legacySources=[{filename:"old.pin2map",original:{payload:"a".repeat(2000)},unresolved:[]}];
+  const compact=transfer.exportSubset(state);
+  assert.equal(compact.legacySources,undefined);
+  assert.equal(state.legacySources.length,1);
+  const file=transfer.encodeProject(compact);
+  assert.ok(file.length<1500,"compact export must not carry redundant backup");
+  assert.equal(transfer.parseProject(file).project.pins.length,1);
+  state.legacySources[0].unresolved=["@Unbekannt"];
+  assert.equal(transfer.exportSubset(state).legacySources.length,1);
+});
+test("GPX start-pin import creates an attached route at first trackpoint",()=>{
+  class Element{
+    constructor(name,attrs={},children=[],content=""){
+      this.localName=name;this.attrs=attrs;this.children=children;this.textContent=content;
+    }
+    getAttribute(k){return this.attrs[k]??null;}
+    getElementsByTagNameNS(ns,name){
+      const descend=el=>el.children.flatMap(c=>[
+        ...(c.localName===name?[c]:[]),...descend(c)]);
+      return descend(this);
+    }
+  }
+  const points=Array.from({length:353},(_,i)=>
+    new Element("trkpt",{lat:String(43.756605+i*.00001),lon:String(4.83463+i*.00001)}));
+  const root=new Element("gpx",{},[new Element("trk",{},[
+    new Element("name",{},[],"GPSies Track"),
+    new Element("trkseg",{},points)
+  ])]);
+  class Parser{parseFromString(){return{
+    documentElement:root,getElementsByTagName:()=>[],
+    getElementsByTagNameNS:(ns,name)=>root.getElementsByTagNameNS(ns,name)
+  };}}
+  const data=transfer.gpxRead("<gpx/>",Parser,
+    {attachTracks:true,filename:"PV_Tour_4.gpx"});
+  assert.equal(data.project.rivers.length,0);
+  assert.equal(data.project.pins.length,1);
+  const pin=data.project.pins[0];
+  assert.equal(pin.name,"PV_Tour_4");
+  assert.equal(pin.lat,43.756605);
+  assert.equal(pin.lng,4.83463);
+  assert.equal(pin.gpxAttachment.filename,"PV_Tour_4.gpx");
+  assert.equal(pin.gpxAttachment.chains[0].length,353);
+  const restored=transfer.parseProject(transfer.encodeProject(data.project));
+  assert.deepEqual(restored.project.pins[0].gpxAttachment,pin.gpxAttachment);
+  const exported=transfer.encodeGpx(restored.project);
+  assert.equal((exported.match(/<trkpt /g)||[]).length,353);
+  assert.match(exported,/<wpt lat="43.756605" lon="4.83463">/);
+});
+test("UI never launches share sheet from a download-only export",()=>{
+  const fs=require("node:fs"),path=require("node:path");
+  const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+  const download=app.slice(app.indexOf("function downloadTransfer("),app.indexOf("function exportTransfer("));
+  assert.doesNotMatch(download,/navigator\.share|navigator\.canShare/);
+  assert.match(download,/link\.download=name/);
+  assert.match(html,/name="transferScope" value="visible"/);
+  assert.match(html,/id="transferImportHike"/);
+  assert.match(app,/pin\.gpxAttachment/);
+  assert.match(app,/toggleAttachedRoute/);
+});
