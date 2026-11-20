@@ -322,10 +322,10 @@
   });
   const projectTransfer=window.Pin2MapProjectTransfer;
   let transferPending=null,transferBusy=false,transferGpxMode="normal";
-  let attachedRouteLayer=null,attachedRoutePinId=null;
+  let attachedRoutePinId=null;
   function hideAttachedRoute(){
-    if(attachedRouteLayer&&mapAdapter?.map)mapAdapter.map.removeLayer(attachedRouteLayer);
-    attachedRouteLayer=null;attachedRoutePinId=null;
+    mapAdapter?.clearAttachedGpx?.();
+    attachedRoutePinId=null;
     $("pinGpxRoute").textContent="Route anzeigen";
     $("pinGpxRoute").setAttribute("aria-pressed","false");
   }
@@ -334,16 +334,11 @@
     if(!attachment?.chains?.length)return;
     if(attachedRoutePinId===pin.id){hideAttachedRoute();return;}
     hideAttachedRoute();
-    const group=window.L.featureGroup().addTo(mapAdapter.map);
-    for(const chain of attachment.chains){
-      window.L.polyline(chain,{color:"#ed4035",weight:5,opacity:.92,
-        interactive:false}).addTo(group);
-    }
-    attachedRouteLayer=group;attachedRoutePinId=pin.id;
+    mapAdapter.showAttachedGpx(attachment.chains);
+    attachedRoutePinId=pin.id;
     $("pinGpxRoute").textContent="Route verbergen";
     $("pinGpxRoute").setAttribute("aria-pressed","true");
-    const bounds=group.getBounds();
-    if(bounds.isValid())mapAdapter.map.fitBounds(bounds,{padding:[40,40],maxZoom:15});
+
   }
   function exportAttachedRoute(){
     const pin=selectedPin();
