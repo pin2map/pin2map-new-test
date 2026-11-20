@@ -421,12 +421,15 @@
     if(choice==="replace"&&!window.confirm("Wirklich alle aktuellen Pins, Flächen, Flüsse, Ebenen und Favoriten durch die importierten Daten ersetzen?"))return;
     transferBusy=true;
     const previous=state;
+    let committed=false;
     try{
       const candidate=choice==="add"?projectTransfer.merge(state,transferPending.project):
         projectTransfer.safeProject(transferPending.project);
       // Replace and merge are both committed in one IndexedDB transaction.
       // Never mutate the current project during parsing/validation.
       const next={...defaults(),...candidate};
+      if(!["street","international","humanitarian","topo","satellite"].includes(next.basemap))
+        next.basemap=previous.basemap;
       window.Pin2MapLayerPalette.repairPrivate(next);
       projectFeatures.ensure(next);
       placeSearch.cleanup(next);
@@ -436,6 +439,7 @@
       state=next;
       if(!projectStore)throw Error("Lokaler Projektspeicher nicht verfügbar");
       await persistence.writeNow();
+      committed=true;
       uiState.clearSelection();uiState.moveMode=false;
       closeTransferDialog();
       setTileLayer();
@@ -444,8 +448,14 @@
       favoritesPanel?.render?.();
       showNotice(choice==="add"?"Daten hinzugefügt":"Projekt importiert");
     }catch(error){
-      state=previous;
-      $("transferFeedback").textContent="Import abgebrochen, bisheriges Projekt bleibt erhalten: "+String(error?.message||error);
+      if(committed){
+        closeTransferDialog();
+        showNotice("Daten importiert, aber Kartenanzeige konnte nicht vollständig aktualisiert werden.");
+        console.warn("Imported project display:",error);
+      }else{
+        state=previous;
+        $("transferFeedback").textContent="Import abgebrochen, bisheriges Projekt bleibt erhalten: "+String(error?.message||error);
+      }
     }finally{transferBusy=false;}
   }
   function bindTransfer(){
