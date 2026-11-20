@@ -208,6 +208,38 @@
       result.favorites.push({...favorite,...(favorite.id?{id:nextId()}:{})});
     return safeProject(result);
   }
+  function addInNewLayer(base,incoming,filename){
+    const current=safeProject(base),other=safeProject(incoming);
+    const imported=[...other.pins,...(other.areas||[]),...(other.rivers||[])];
+    if(!imported.length)throw Error("Die Datei enthält keine Pins, Flächen oder Flüsse zum Hinzufügen.");
+    const rawName=string(filename).split(/[\\/]/).pop().slice(0,120);
+    if(!rawName)throw Error("Der Dateiname für die neue Ebene fehlt.");
+    const result=clone(current);
+    // A second import of the same file creates a distinct layer. Never
+    // overwrite an existing one or mutate the project's current settings.
+    const names=new Set(result.layers.map(layer=>layer.name.toLocaleLowerCase("de")));
+    let name=rawName,number=2;
+    while(names.has(name.toLocaleLowerCase("de"))){
+      const suffix=" ("+number++ +")";
+      name=rawName.slice(0,120-suffix.length)+suffix;
+    }
+    const ids=new Set([...result.layers,...result.pins,...(result.areas||[]),
+      ...(result.rivers||[])].map(obj=>obj.id));
+    function uniqueId(){
+      let value=id();while(ids.has(value))value=id();
+      ids.add(value);return value;
+    }
+    const layerId=uniqueId();
+    result.layers.push({id:layerId,name,color:"#326cc2",visible:true});
+    for(const kind of ["pins","areas","rivers"]){
+      if(!Array.isArray(result[kind]))result[kind]=[];
+      for(const obj of other[kind]||[])
+        result[kind].push({...obj,id:uniqueId(),layerId});
+    }
+    // Favorites, viewport, basemap and all other project preferences remain
+    // owned by the receiving project when importing into a new layer.
+    return safeProject(result);
+  }
   function gpxRead(text,DOMParserApi=root.DOMParser,{attachTracks=false,filename="Route.gpx"}={}){
     if(!DOMParserApi)throw Error("GPX/XML-Parser nicht verfügbar.");
     const doc=new DOMParserApi().parseFromString(text,"application/xml");
@@ -293,7 +325,7 @@
     };
     return removeEmptyLayers(safeProject(project));
   }
-  const api=Object.freeze({safeProject,parseProject,encodeProject,merge,gpxRead,encodeGpx,exportSubset});
+  const api=Object.freeze({safeProject,parseProject,encodeProject,merge,addInNewLayer,gpxRead,encodeGpx,exportSubset});
   root.Pin2MapProjectTransfer=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
