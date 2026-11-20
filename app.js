@@ -31,6 +31,8 @@
     fetchImpl:(...args)=>fetch(...args)
   });
   const currentPinFilter = pinFilter.createFilter();
+  const objectSearch=window.Pin2MapObjectSearch;
+  let objectSearchView=null;
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
@@ -657,10 +659,12 @@
   function renderGeometry(){
     if(!mapAdapter?.renderProjectGeometry)return;
     const visible=new Set(state.layers.filter(l=>l.visible).map(l=>l.id));
+    const isMatch=(type,id,layerId)=>objectSearchView?
+      objectSearchView.ids.has(type+":"+id):visible.has(layerId);
     const layerColors=Object.fromEntries(state.layers.map(l=>[l.id,l.color]));
     mapAdapter.renderProjectGeometry({
-      areas:(state.areas||[]).filter(a=>visible.has(a.layerId)),
-      rivers:(state.rivers||[]).filter(r=>visible.has(r.layerId)),
+      areas:(state.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
+      rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
       layerColors,
       onAreaLabel:(area,point)=>{
         if(featureOverlapZoom?.handleTap("area",area.id))return;
@@ -688,7 +692,9 @@
   }
   function renderMarkers(){
     if(!markerView)return;
-    const visible=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
+    const visible=objectSearchView?
+      state.pins.filter(p=>objectSearchView.ids.has("pins:"+p.id)):
+      pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
     pinInfoService.setVisiblePins(temporaryInfoPin?[...visible,temporaryInfoPin.point]:visible);
     markerView.render({
       pins:visible,
@@ -1070,8 +1076,42 @@
       if(run===featureRun){featureController=null;setGeometryBusy("");}
     }
   }
-  function runSearchMode(mode){
+  function resetObjectSearch({restore=true}={}){
+    if(!objectSearchView)return;
+    const before=objectSearchView.viewport;
+    objectSearchView=null;
+    document.body.classList.remove("object-search-active");
+    $("searchClear").setAttribute("aria-label","Suchfeld leeren");
+    renderMarkers();renderGeometry();
+    if(restore&&before)mapAdapter.setView(before,{animate:false});
+  }
+  function runObjectSearch(options={}){
+    const created=options.created||"any";
+    const input=$("searchInput"),query=created==="any"?input.value.trim():"";
+    if(created!=="any"){input.value="";searchForm.updateClear();}
+    if(!query&&created==="any"){input.focus();return;}
+    const matches=objectSearch.search(state,{query,kind:options.kind||"all",
+      track:options.track,link:options.link,note:options.note,created});
+    searchForm.cancel();cancelGeometrySearch();searchView.hide();
+    if(!matches.length){showNotice("Keine passenden gespeicherten Objekte gefunden");return;}
+    const prior=objectSearchView?.viewport||mapAdapter.getViewport();
+    objectSearchView={viewport:prior,ids:new Set(matches.map(m=>m.type+":"+m.id))};
+    document.body.classList.add("object-search-active");
+    $("searchClear").classList.remove("hidden");
+    $("searchClear").setAttribute("aria-label","Objektsuche zurücksetzen");
+    renderMarkers();renderGeometry();
+    const selected={layers:state.layers.map(l=>({...l,visible:true})),
+      pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
+      areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
+      rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
+    fitVisibleProject.fit({project:selected,pinFilter,
+      currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
+    showNotice(matches.length+" "+(matches.length===1?"Objekt":"Objekte")+" gefunden");
+  }
+  function runSearchMode(mode,options){
     clearObjectPreview();
+    if(mode==="objects"){runObjectSearch(options);return;}
+    resetObjectSearch({restore:false});
     if(mode==="plate"){findPlateCode($("searchInput").value);return;}
     if(mode==="gps"){gpsLocation?.locate();return;}
     if(mode==="pin"){searchForm.submit();return;}
@@ -1089,13 +1129,14 @@
     });},
     onResults:renderResults,
     onMessage:searchMessage,
-    onInputChange:()=>{searchView.hide();cancelGeometrySearch();},
+    onInputChange:()=>{resetObjectSearch();searchView.hide();cancelGeometrySearch();},
     cancelSearch:()=>placeSearch.cancel()
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
     bindTransfer();
     searchForm.bind();
+    $("searchClear").addEventListener("click",()=>resetObjectSearch());
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
       document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode
     });
