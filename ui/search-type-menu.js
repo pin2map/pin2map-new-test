@@ -95,6 +95,7 @@
    const setField=id=>{
     this.dateField=id;created.querySelector("input").checked=id==="createdAt";
     updated.querySelector("input").checked=id==="updatedAt";
+    if(this.created!=="any")this.execute({created:this.created,date:this.fixedDate});
    };
    created.querySelector("input").addEventListener("change",()=>setField("createdAt"));
    updated.querySelector("input").addEventListener("change",()=>setField("updatedAt"));
@@ -138,6 +139,7 @@
      if(key==="enter"&&inInput){e.preventDefault();this.input.blur();this.execute({created:"any"});}
      return;
     }
+    if(key==="enter"&&inInput){this.close();return;}
     if(key==="tab"&&inInput&&!e.shiftKey){
      e.preventDefault();this.highlight(0);
      this.creation.querySelectorAll(".search-type-choice")[0].focus({preventScroll:true});
@@ -168,6 +170,7 @@
   }
   execute({created="any",date=""}={}){
    this.created=created;this.fixedDate=date;
+   this.input.blur(); // keep the keyboard closed for all option-triggered searches.
    this.searchPanel.querySelectorAll("[data-created]").forEach(b=>
     b.classList.toggle("is-active",b.dataset.created===created));
    this.show();

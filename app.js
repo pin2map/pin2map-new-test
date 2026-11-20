@@ -1158,10 +1158,16 @@
   function bind() {
     bindTransfer();
     searchForm.bind();
-    $("searchClear").addEventListener("click",()=>{
-      if(searchTypeMenu?.searchMode){resetObjectSearch();document.body.classList.add("object-search-mode");
-        $("searchClear").classList.remove("hidden");}
-    });
+    $("searchClear").addEventListener("click",event=>{
+      if(!searchTypeMenu?.searchMode)return;
+      // In object mode, × resets the filter without reopening the iPhone keyboard.
+      event.preventDefault();event.stopImmediatePropagation();
+      $("searchInput").value="";$("searchInput").blur();
+      searchForm.cancel();cancelGeometrySearch();searchView.hide();
+      resetObjectSearch();document.body.classList.add("object-search-mode");
+      $("searchClear").classList.remove("hidden");
+      searchTypeMenu.show();
+    },true);
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
       document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode,
       onSearch:runObjectSearch,onExit:endObjectSearch
