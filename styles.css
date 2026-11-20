@@ -2879,3 +2879,14 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
 #geometryUrlBlock .pin-url-actions{
   flex:0 0 auto;
 }
+
+/* v286: iOS virtual keyboard must not clip the chooser at #app overflow:hidden.
+ * Fixed positioning escapes the app's clipping rectangle while remaining
+ * constrained by visualViewport coordinates computed in SearchTypeMenu.position. */
+#app #searchTypeMenu.search-type-menu.keyboard-constrained:not(.hidden){
+  position:fixed;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}

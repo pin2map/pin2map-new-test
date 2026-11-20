@@ -53,6 +53,13 @@ const base=process.env.PIN2MAP_TEST_URL||
     if(width<=390){
       const original=page.viewportSize();
       await page.setViewportSize({width,height:Math.min(height,390)});
+      // Desktop emulation cannot raise an actual iOS software keyboard.
+      // Exercise the EXACT keyboard-constrained CSS state and its fixed portal.
+      await page.locator("#searchTypeMenu").evaluate(el=>el.classList.add("keyboard-constrained"));
+      assert.equal(await page.locator("#searchTypeMenu").evaluate(el=>getComputedStyle(el).position),"fixed",
+        "keyboard menu must escape #app overflow clipping");
+      assert.equal(await page.locator(".search-creation-scroll-hint").isVisible(),true,
+        "compact menu communicates that additional options exist");
       await page.locator('.search-type-choice[data-search-type="objects"]').scrollIntoViewIfNeeded();
       const bounds=await page.locator("#searchTypeMenu").boundingBox();
       const item=await page.locator('.search-type-choice[data-search-type="objects"]').boundingBox();
