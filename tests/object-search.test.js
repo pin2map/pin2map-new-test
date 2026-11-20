@@ -94,7 +94,7 @@ test("search results and dialog contract are wired without changing saved visibi
 
 test("repeated records with the same pin ID count as one map marker",()=>{
  const repeated={...project,pins:Array.from({length:8},()=>({...project.pins[0]}))};
- const found=search(repeated,{query:"Karlsruhe"});
+ const found=search(repeated,{query:"Karlsruhe",kind:"pins"});
  assert.deepEqual(found.map(x=>x.id),["a"]);
  assert.equal(repeated.pins.length,8,"search does not mutate stored data");
 });
