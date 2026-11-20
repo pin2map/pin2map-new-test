@@ -2671,7 +2671,7 @@ body.pin-open #app #transferPanel{display:none}
 #app .object-search-date .p2m-lucide{width:16px;height:16px;flex-shrink:0}
 body.object-search-active #app #searchClear.search-clear span{background:#c92f39}
 body.object-search-active #app #searchButton.p2m-icon-control{
-  background:#c92f39;border-color:#c92f39;color:#fff;
+  --p2m-button-bg:#c92f39;--p2m-button-border:#c92f39;--p2m-button-ink:#fff;
 }
 body.object-search-active #app #searchButton.p2m-icon-control .p2m-lucide{color:#fff;stroke:#fff}
 @media(max-width:360px){
