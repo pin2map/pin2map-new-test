@@ -203,14 +203,16 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:30000});
     await page.locator("#searchInput").fill("Karlsruhe");
     await page.locator('.search-type-choice[data-search-type="objects"]').click();
-    // Search must intercept map clicks. Exit search and enable the hidden
-    // source layer using the real UI, without reinitializing the application.
-    await page.locator(".object-search-exit").click();
-    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
-    await page.locator("#layersButton").click();
-    const layerRow=page.locator('#layersList .list-dialog-row[data-item-id="layer-1"]');
-    await layerRow.locator("button.layer-eye").click();
-    await page.locator("#layersClose").click();
+    // A tap outside the dialog closes only the chooser. Matching markers
+    // stay visible and are fitted to the map; only then can they be clicked.
+    const mapBounds=await page.locator("#map").boundingBox();
+    await page.locator("#map").click({position:{
+      x:Math.round(mapBounds.width*.82),y:Math.round(mapBounds.height*.7)
+    }});
+    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,
+      "outside tap closes the search chooser");
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "the matching hidden-layer pin remains visible with the chooser closed");
     await page.locator(".pin-marker").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible"});
     await page.locator("#pinLayerTrigger").click();
