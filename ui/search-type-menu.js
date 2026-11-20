@@ -242,26 +242,40 @@
    this.button.setAttribute("aria-label","Gespeicherte Objekte suchen");
    this.button.title="Gespeicherte Objekte suchen";
   }
+  // Pure viewport geometry: approved single-column list, no artificial
+  // minimum height, and no mixing of fixed and app-relative coordinates.
+  static chooserLayout({form,app,visualViewport,innerHeight,menuWidth,contentHeight}){
+   const keyboard=Boolean(visualViewport&&innerHeight-visualViewport.height>120);
+   const origin=keyboard?{x:0,y:0}:{x:app.left,y:app.top};
+   const leftEdge=keyboard?(visualViewport.offsetLeft||0):app.left;
+   const rightEdge=keyboard?leftEdge+visualViewport.width:app.right;
+   const upper=keyboard?(visualViewport.offsetTop||0):app.top;
+   const lower=keyboard?upper+visualViewport.height:app.bottom;
+   const margin=8,gap=9;
+   const x=Math.max(leftEdge+margin,Math.min(
+    form.left+form.width/2-menuWidth/2,rightEdge-margin-menuWidth));
+   const desiredTop=form.bottom+gap;
+   const below=Math.max(0,lower-margin-desiredTop);
+   const above=Math.max(0,form.top-gap-(upper+margin));
+   // Preserve placement beneath search whenever useful space exists.
+   // Only when genuinely cramped use the larger free area above it.
+   const placeAbove=below<120&&above>below;
+   const maxHeight=Math.max(0,Math.min(contentHeight,placeAbove?above:below));
+   const top=placeAbove?form.top-gap-maxHeight:desiredTop;
+   return {keyboard,left:x-origin.x,top:top-origin.y,maxHeight,placeAbove};
+  }
   position(){
-   const rect=this.form.getBoundingClientRect(),appRect=this.app.getBoundingClientRect();
-   const view=this.doc.defaultView,viewport=view?.visualViewport;
-   const keyboardShown=Boolean(viewport&&view.innerHeight-viewport.height>120);
-   this.viewportConstrained=keyboardShown;
-   this.menu.classList.toggle("keyboard-constrained",keyboardShown);
-   const width=this.menu.offsetWidth||340;
-   // Fixed menus use viewport coordinates; absolute menus use #app coordinates.
-   // Never subtract the app origin from visualViewport bounds a second time.
-   const left=keyboardShown?rect.left:rect.left-appRect.left;
-   const horizontalRoom=keyboardShown?(viewport?.width||view.innerWidth):appRect.width;
-   this.menu.style.left=Math.max(8,Math.min(left+(rect.width-width)/2,horizontalRoom-width-8))+"px";
-   const top=keyboardShown?rect.bottom+9:rect.bottom-appRect.top+9;
-   const visibleBottom=viewport?viewport.offsetTop+viewport.height:(view?.innerHeight||appRect.bottom);
-   const bottom=keyboardShown?visibleBottom:visibleBottom-appRect.top;
-   // Preserve the approved one-column layout on every device. Limit height
-   // only when the actual visible viewport cannot contain the full menu.
-   const available=Math.max(44,bottom-top-12);
-   this.menu.style.top=Math.max(8,top)+"px";
-   this.menu.style.maxHeight=available+"px";
+   const form=this.form.getBoundingClientRect(),app=this.app.getBoundingClientRect();
+   const view=this.doc.defaultView,visualViewport=view?.visualViewport;
+   const keyboard=Boolean(visualViewport&&view.innerHeight-visualViewport.height>120);
+   this.viewportConstrained=keyboard;
+   this.menu.classList.toggle("keyboard-constrained",keyboard);
+   const layout=SearchTypeMenu.chooserLayout({form,app,visualViewport,
+    innerHeight:view?.innerHeight||app.height,
+    menuWidth:this.menu.offsetWidth||340,contentHeight:this.menu.scrollHeight});
+   this.menu.style.left=layout.left+"px";
+   this.menu.style.top=layout.top+"px";
+   this.menu.style.maxHeight=layout.maxHeight+"px";
    this.menu.style.overflowY="auto";
    this.menu.dataset.scrollable=String(this.menu.scrollHeight>this.menu.clientHeight+1);
    this.menu.setAttribute("aria-description",this.menu.dataset.scrollable==="true"?

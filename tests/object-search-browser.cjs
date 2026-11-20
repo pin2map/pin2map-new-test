@@ -70,6 +70,21 @@ const base=process.env.PIN2MAP_TEST_URL||
         label+" choices may never form two columns or overlap");
     };
     await assertSingleColumn("standard viewport "+width);
+    const full=await page.locator("#searchTypeMenu").evaluate(menu=>{
+      const m=menu.getBoundingClientRect(),s=document.querySelector("#searchForm").getBoundingClientRect();
+      const last=menu.querySelector(".search-type-choice:last-child").getBoundingClientRect();
+      return {menu:{left:m.left,right:m.right,top:m.top,bottom:m.bottom},
+        search:{left:s.left,right:s.right,bottom:s.bottom},
+        lastBottom:last.bottom,scroll:menu.scrollHeight,client:menu.clientHeight};
+    });
+    assert.ok(Math.abs((full.menu.left+full.menu.right-full.search.left-full.search.right)/2)<9,
+      "dialog horizontally centered under search: "+JSON.stringify(full));
+    assert.ok(full.menu.top>=full.search.bottom+7,"dialog immediately under search");
+    assert.ok(full.menu.bottom<=height+1,"menu fits visible viewport");
+    if(height-full.search.bottom>full.scroll+20){
+      assert.ok(full.client>=full.scroll-2,"all seven choices visible when there is room");
+      assert.ok(full.lastBottom<=full.menu.bottom+1,"last choice must be fully visible");
+    }
     // A reduced viewport simulates the keyboard's available screen height.
     // The last action must remain reachable by scrolling the popover itself.
     if(width<=768){
@@ -85,6 +100,12 @@ const base=process.env.PIN2MAP_TEST_URL||
       assert.equal(keyboardState.position,"fixed",
         "keyboard menu must escape #app overflow clipping");
       await assertSingleColumn("keyboard viewport "+width);
+      const reduced=await page.locator("#searchTypeMenu").evaluate(menu=>{
+        const r=menu.getBoundingClientRect();
+        return {height:r.height,top:r.top,bottom:r.bottom};
+      });
+      assert.ok(reduced.height>=150,
+        "keyboard layout must not collapse to an arbitrary short strip: "+JSON.stringify(reduced));
       await page.locator('.search-type-choice[data-search-type="objects"]').scrollIntoViewIfNeeded();
       const bounds=await page.locator("#searchTypeMenu").boundingBox();
       const item=await page.locator('.search-type-choice[data-search-type="objects"]').boundingBox();

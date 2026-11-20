@@ -80,8 +80,28 @@ test("creation chooser preserves the same single-column design on keyboard and e
  assert.doesNotMatch(css,/keyboard-constrained \.search-creation-choices\s*\{/);
  assert.doesNotMatch(css,/keyboard-constrained \.search-type-choice\s*\{/);
  assert.doesNotMatch(js,/search-creation-scroll-hint|Weitere Optionen/);
- assert.match(js,/keyboardShown\?rect\.bottom\+9:rect\.bottom-appRect\.top\+9/);
- assert.match(js,/this\.menu\.style\.maxHeight=available\+"px"/);
+});
+test("approved search dialog uses actual viewport height, including iPhone keyboard",()=>{
+ const {SearchTypeMenu}=require("../ui/search-type-menu.js");
+ const app={left:0,top:0,right:390,bottom:844,width:390,height:844};
+ const form={left:40,top:68,bottom:112,width:310,height:44};
+ const layout=(height,offsetTop=0,anchor=form)=>SearchTypeMenu.chooserLayout({
+  form:anchor,app,visualViewport:{offsetLeft:0,offsetTop,width:390,height},
+  innerHeight:844,menuWidth:340,contentHeight:364});
+ const full=layout(800);
+ assert.equal(full.maxHeight,364,"show full seven-row dialog when it fits");
+ assert.equal(full.top,121,"keep the approved placement beneath search");
+ const keyboard=layout(420);
+ assert.equal(keyboard.keyboard,true);
+ assert.equal(keyboard.top,121);
+ assert.equal(keyboard.maxHeight,291,"use the entire space above the keyboard");
+ assert.ok(keyboard.maxHeight>44);
+ const shifted=layout(420,40);
+ assert.equal(shifted.maxHeight,331,"account for visualViewport.offsetTop");
+ const cramped=layout(420,0,{left:40,top:310,bottom:354,width:310,height:44});
+ assert.equal(cramped.placeAbove,true,"relocate only if almost no room remains below");
+ assert.ok(cramped.maxHeight>=290,"use the available alternate space");
+ assert.ok(cramped.top>=8&&cramped.top+cramped.maxHeight<=412);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
