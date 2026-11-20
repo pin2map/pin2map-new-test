@@ -34,7 +34,17 @@
         if(!isObj(item)||!string(item.id)||!ids.has(item.layerId)||objectIds.has(item.id))
           throw Error("Ungültige oder doppelte "+kind+"-ID bzw. Ebene.");
         objectIds.add(item.id);
-        if(kind==="Pin")point(item.lat,item.lng);
+        if(kind==="Pin"){
+          point(item.lat,item.lng);
+          if(item.gpxAttachment!==undefined){
+            const a=item.gpxAttachment;
+            if(!isObj(a)||!Array.isArray(a.chains)||!a.chains.length||
+              !a.chains.every(chain=>Array.isArray(chain)&&chain.length>=2&&chain.every(p=>
+              Array.isArray(p)&&p.length>=2&&Number.isFinite(Number(p[0]))&&Number.isFinite(Number(p[1]))&&
+              Math.abs(Number(p[0]))<=90&&Math.abs(Number(p[1]))<=180)))
+              throw Error("Ungültiger GPX-Anhang");
+          }
+        }
         if(kind==="Fläche"&&(!["area","lake"].includes(item.kind)||
           !["Polygon","MultiPolygon"].includes(item.geometry?.type)||!Array.isArray(item.geometry?.coordinates)))
           throw Error("Ungültige Polygongeometrie.");
@@ -137,7 +147,7 @@
     }
     const incoming={layers,pins,areas,rivers,favorites:[],...(viewport?{viewport}:{})};
     // Unconverted legacy categories, rivers and caches must not disappear.
-    incoming.legacySources=[{filename:name,original:clone(doc),unresolved}];
+    if(unresolved.length)incoming.legacySources=[{filename:name,original:clone(doc),unresolved}];
     return {project:safeProject(incoming),unresolved:unresolved.length,legacy:true};
   }
   function fromNew(doc){
@@ -156,7 +166,7 @@
   function encodeProject(state){
     const project=safeProject(state);
     return JSON.stringify({format:"pin2map-new",version:1,created:new Date().toISOString(),
-      project},null,2);
+      project});
   }
   function merge(base,incoming){
     const current=safeProject(base),other=safeProject(incoming);
@@ -186,7 +196,7 @@
       result.legacySources=[...(result.legacySources||[]),...clone(other.legacySources)];
     return safeProject(result);
   }
-  function gpxRead(text,DOMParserApi=root.DOMParser){
+  function gpxRead(text,DOMParserApi=root.DOMParser,{attachTracks=false,filename="Route.gpx"}={}){
     if(!DOMParserApi)throw Error("GPX/XML-Parser nicht verfügbar.");
     const doc=new DOMParserApi().parseFromString(text,"application/xml");
     if(doc.getElementsByTagName("parsererror").length||
@@ -199,17 +209,29 @@
       return {id:id(),name:(names(w)||"GPX-Punkt "+(i+1)).slice(0,120),
         ...p,layerId:"private"};
     });
-    const rivers=[];
+    const rivers=[],attachments=[];
     for(const trk of elements(doc,"trk")){
       const chains=elements(trk,"trkseg").map(seg=>elements(seg,"trkpt").map(pt=>{
         const p=point(pt.getAttribute("lat"),pt.getAttribute("lon"));return [p.lat,p.lng];
       })).filter(chain=>chain.length>=2);
-      if(chains.length)rivers.push({id:id(),layerId:"private",name:names(trk),
-        chains,note:"",url:""});
+      if(chains.length){
+        if(attachTracks)attachments.push({name:names(trk),chains});
+        else rivers.push({id:id(),layerId:"private",name:names(trk),chains,note:"",url:""});
+      }
     }
     for(const route of elements(doc,"rte")){
       const chain=elements(route,"rtept").map(pt=>{const p=point(pt.getAttribute("lat"),pt.getAttribute("lon"));return [p.lat,p.lng]});
-      if(chain.length>=2)rivers.push({id:id(),layerId:"private",name:names(route),chains:[chain],note:"",url:""});
+      if(chain.length>=2){
+        if(attachTracks)attachments.push({name:names(route),chains:[chain]});
+        else rivers.push({id:id(),layerId:"private",name:names(route),chains:[chain],note:"",url:""});
+      }
+    }
+    if(attachTracks){
+      for(const track of attachments){
+        const first=track.chains[0][0],label=string(filename).replace(/\\.gpx$/i,"")||track.name;
+        pins.push({id:id(),name:label.slice(0,120),lat:first[0],lng:first[1],
+          layerId:"private",gpxAttachment:{filename:String(filename),name:track.name,chains:track.chains}});
+      }
     }
     if(!pins.length&&!rivers.length)throw Error("GPX enthält weder Wegpunkte noch Tracks/Routen.");
     return {project:safeProject({layers:[{id:"private",name:"Privat",color:"#808080",visible:true}],
@@ -223,6 +245,17 @@
       '<gpx version="1.1" creator="pin2map NEW" xmlns="http://www.topografix.com/GPX/1/1">'];
     for(const p of project.pins)out.push('<wpt lat="'+p.lat+'" lon="'+p.lng+'"><name>'+
       xmlEscape(p.name||"Pin")+'</name></wpt>');
+    for(const pin of project.pins){
+      const attachment=pin.gpxAttachment;
+      if(!attachment?.chains?.length)continue;
+      out.push('<trk><name>'+xmlEscape(attachment.name||attachment.filename||pin.name)+'</name>');
+      for(const chain of attachment.chains){
+        out.push('<trkseg>');
+        for(const pt of chain)out.push('<trkpt lat="'+pt[0]+'" lon="'+pt[1]+'"></trkpt>');
+        out.push('</trkseg>');
+      }
+      out.push('</trk>');
+    }
     for(const river of project.rivers||[]){
       out.push('<trk><name>'+xmlEscape(river.name)+'</name>');
       for(const chain of river.chains){
@@ -234,7 +267,22 @@
     }
     out.push('</gpx>');return out.join("\n");
   }
-  const api=Object.freeze({safeProject,parseProject,encodeProject,merge,gpxRead,encodeGpx});
+  function exportSubset(state,{visible=false,filterPins=null}={}){
+    const source=safeProject(state);
+    if(!visible)return source;
+    const active=new Set(source.layers.filter(l=>l.visible).map(l=>l.id));
+    const project={...source,
+      pins:source.pins.filter(pin=>active.has(pin.layerId)&&(!filterPins||filterPins(pin))),
+      areas:(source.areas||[]).filter(a=>active.has(a.layerId)),
+      rivers:(source.rivers||[]).filter(r=>active.has(r.layerId)),
+      favorites:[],
+      layers:source.layers.filter(l=>l.id==="private"||active.has(l.id))
+    };
+    // Legacy raw-source documents cannot be sliced per visible item safely.
+    delete project.legacySources;
+    return safeProject(project);
+  }
+  const api=Object.freeze({safeProject,parseProject,encodeProject,merge,gpxRead,encodeGpx,exportSubset});
   root.Pin2MapProjectTransfer=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
