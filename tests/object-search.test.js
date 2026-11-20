@@ -83,7 +83,7 @@ test("search results and dialog contract are wired without changing saved visibi
  const menu=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
- assert.match(menu,/Auch ausgeblendete/);
+ assert.match(menu,/Ausgeblendete/);
  assert.match(menu,/object-search-results/);
  assert.match(menu,/setResults\(matches=\[\]\)/);
  assert.match(menu,/this\.onBeforeOpen\(\)/);

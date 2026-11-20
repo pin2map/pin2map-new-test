@@ -60,7 +60,7 @@ test("dedicated marker search and hardware Find use the search input",()=>{
 test("Escape dismisses the chooser while its magnifier trigger holds focus",()=>{
  const src=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  assert.match(src,/e\.target!==this\.button/);
- assert.match(src,/key==="escape"\)\{e\.preventDefault\(\);this\.close\(\)/);
+ assert.match(src,/if\(this\.searchMode\)this\.finishAndFocus\(\)/);
 });
 
 test("Escape closes stored-object search but restores focus to its cleared input",()=>{
