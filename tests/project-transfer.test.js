@@ -11,7 +11,7 @@ function base(){
       chains:[[[50,8],[51,9]]],note:"",url:""}],
     favorites:[{id:"fav1",name:"Favorit",lat:50,lng:8}],
     viewport:{lat:51,lng:9,zoom:8},allowGeocode:true,basemap:"street",
-    geoCache:{q:{time:1,results:[]}},legacySources:[]};
+    geoCache:{q:{time:1,results:[]}}};
 }
 test("full pin2map NEW round trip preserves all project collections, metadata, favorites and viewport",()=>{
   const state=base();
@@ -35,7 +35,7 @@ test("merge preserves original data and remaps colliding IDs and layers",()=>{
   assert.notEqual(merged.pins[1].layerId,"work");
   assert.deepEqual(one,base());
 });
-test("legacy .pin2map reads coordinate lists, preserves unresolved names and raw sources",()=>{
+test("legacy .pin2map reads resolved coordinates and reports unresolved entries without embedding raw sources",()=>{
   const file={format:"pin2map",version:1,
     list:"# 📍 [Red] Reise\n50.1122, 8.6821 (Frankfurt)\n@Schwarzwald (Gebiet)\nBerlin\n",
     cache:{source:"keep"},categoryVisibility:{Reise:false},rivers:[{name:"old",chains:[]}]};
@@ -47,8 +47,10 @@ test("legacy .pin2map reads coordinate lists, preserves unresolved names and raw
   assert.equal(result.project.layers[1].name,"Reise");
   assert.equal(result.project.layers[1].visible,false);
   assert.equal(result.unresolved,2);
-  assert.deepEqual(result.project.legacySources[0].original,file);
-  assert.deepEqual(transfer.parseProject(transfer.encodeProject(result.project)).project.legacySources[0].original,file);
+  assert.equal(result.project.legacySources,undefined);
+  const roundTrip=transfer.parseProject(transfer.encodeProject(result.project));
+  assert.equal(roundTrip.project.legacySources,undefined);
+  assert.doesNotMatch(transfer.encodeProject(result.project),/"legacySources"|"original"/);
 });
 test("never silently accept malformed or unsupported project files",()=>{
   assert.throws(()=>transfer.parseProject('{"x":true}'),/Unbekanntes/);
@@ -140,17 +142,18 @@ test("visible-only export excludes hidden layers, pins, geometry and favorites",
   assert.equal(everything.pins.length,1);
   assert.equal(everything.favorites.length,1);
 });
-test("export is compact, drops only redundant fully converted legacy copies",()=>{
+test("all NEW exports drop legacy backup source even when unresolved entries were present",()=>{
   const state=base();
-  state.legacySources=[{filename:"old.pin2map",original:{payload:"a".repeat(2000)},unresolved:[]}];
-  const compact=transfer.exportSubset(state);
-  assert.equal(compact.legacySources,undefined);
+  state.legacySources=[{filename:"old.pin2map",
+    original:{payload:"a".repeat(2000)},unresolved:["@Unbekannt"]}];
+  const full=transfer.exportSubset(state);
+  assert.equal(full.legacySources,undefined);
   assert.equal(state.legacySources.length,1);
-  const file=transfer.encodeProject(compact);
-  assert.ok(file.length<1500,"compact export must not carry redundant backup");
-  assert.equal(transfer.parseProject(file).project.pins.length,1);
-  state.legacySources[0].unresolved=["@Unbekannt"];
-  assert.equal(transfer.exportSubset(state).legacySources.length,1);
+  const json=transfer.encodeProject(state);
+  assert.doesNotMatch(json,/legacySources|@Unbekannt|old.pin2map/);
+  assert.ok(json.length<1500,"compact export excludes predecessor backup");
+  assert.equal(transfer.parseProject(json).project.legacySources,undefined);
+  assert.equal(transfer.merge(base(),state).legacySources,undefined);
 });
 test("GPX start-pin import creates an attached route at first trackpoint",()=>{
   class Element{
