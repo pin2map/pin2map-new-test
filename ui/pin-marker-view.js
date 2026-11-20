@@ -12,7 +12,7 @@
   // No additional persistent marker state or schema is introduced.
   function statusFlags(pin){
     const hasText=value=>typeof value==="string"&&value.trim().length>0;
-    const hasGpx=Boolean(pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
+    const hasGpx=Boolean(pin.gpxAttachment?.chains?.length||pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
     return {note:hasText(pin.note),url:hasText(pin.url),gpx:hasGpx};
   }
   function appearance({pin,color,selected}){
