@@ -11,9 +11,9 @@
   {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"}
  ]);
  class SearchTypeMenu{
-  constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{}}){
+  constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{}}){
    this.doc=doc;this.el=getElement;this.icons=icons;
-   this.onChoose=onChoose;this.onSearch=onSearch;this.onExit=onExit;
+   this.onChoose=onChoose;this.onSearch=onSearch;this.onExit=onExit;this.onBeforeOpen=onBeforeOpen;
    this.menu=this.el("searchTypeMenu");this.button=this.el("searchButton");
    this.input=this.el("searchInput");this.form=this.el("searchForm");
    this.app=this.el("app");
@@ -62,6 +62,10 @@
   buildSearch(){
    // Predecessor-style compact control: two option rows, shared exit button.
    const section=this.makeElement("section","object-search-options");
+   const results=this.makeElement("div","object-search-results");
+   results.setAttribute("role","status");results.setAttribute("aria-live","polite");
+   results.textContent="0 Pins · 0 Flächen · 0 Gewässer";
+   section.append(results);
    const controls=this.makeElement("div","object-search-compact-controls");
    const selector=this.doc.createElement("select");
    selector.className="object-search-kind";selector.setAttribute("aria-label","Suchbereich auswählen");
@@ -81,6 +85,10 @@
     field.querySelector("input").addEventListener("change",()=>this.execute());
     flags.append(field);
    }
+   const hidden=this.makeCheck("hidden","Auch ausgeblendete",true);
+   hidden.classList.add("object-search-hidden-flag");
+   hidden.querySelector("input").addEventListener("change",()=>this.execute());
+   flags.append(hidden);
    controls.append(flags);section.append(controls);
    const end=this.makeElement("button","object-search-exit");
    end.type="button";end.dataset.searchAction="end";
@@ -148,7 +156,17 @@
   searchOptions(){
    const checked=id=>!!this.searchPanel.querySelector('[data-search-flag="'+id+'"]')?.checked;
    return {kind:this.searchPanel.querySelector(".object-search-kind")?.value||"all",
-    includeTrack:checked("track"),includeLink:checked("link"),includeNote:checked("note")};
+    includeTrack:checked("track"),includeLink:checked("link"),includeNote:checked("note"),includeHidden:checked("hidden")};
+  }
+  setResults(matches=[]){
+   let pins=0,areas=0,waters=0;
+   for(const match of matches){
+    if(match.type==="pins")pins++;
+    else if(match.type==="areas")areas++;
+    else if(match.type==="lakes"||match.type==="rivers")waters++;
+   }
+   const results=this.searchPanel?.querySelector(".object-search-results");
+   if(results)results.textContent=pins+" Pins · "+areas+" Flächen · "+waters+" Gewässer";
   }
   execute(){
    this.input.blur();
@@ -190,6 +208,7 @@
    });
   }
   show(){
+   if(!this.open)this.onBeforeOpen();
    this.open=true;this.menu.classList.remove("hidden");
    this.button.setAttribute("aria-expanded","true");
    this.input.setAttribute("aria-expanded","true");

@@ -43,11 +43,16 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.locator("#searchTypeMenu").waitFor({state:"visible"});
     assert.equal(await page.locator(".search-type-choice:visible").count(),6,"creation menu shows six options only");
     assert.equal(await page.locator(".object-search-options:visible").count(),0,"specialized options are not yet visible");
-    const launcherHit=await page.evaluate(()=>{
+    const launcherPriority=await page.evaluate(()=>{
      const button=document.querySelector("#basemapButton"),b=button.getBoundingClientRect();
-     return document.elementFromPoint((b.left+b.right)/2,(b.top+b.bottom)/2)?.closest("#basemapButton")===button;
+     const menu=document.querySelector("#searchTypeMenu"),m=menu.getBoundingClientRect();
+     const x=(b.left+b.right)/2,y=(b.top+b.bottom)/2;
+     const overlap=x>=m.left&&x<=m.right&&y>=m.top&&y<=m.bottom;
+     const hit=document.elementFromPoint(x,y);
+     return {overlap,isMenu:!!hit?.closest("#searchTypeMenu"),isButton:!!hit?.closest("#basemapButton")};
     });
-    assert.equal(launcherHit,true,"creation menu intercepts basemap launcher");
+    assert.equal(launcherPriority.overlap?launcherPriority.isMenu:launcherPriority.isButton,true,
+      "open dialog must never be under a map launcher");
     await page.locator("#searchButton").click();
     assert.equal(await page.locator(".search-type-choice:visible").count(),0,"creation options replaced");
     assert.equal(await page.locator(".object-search-options:visible").count(),1);
@@ -59,8 +64,9 @@ const base=process.env.PIN2MAP_TEST_URL||
     const options=page.locator(".object-search-kind");
     assert.equal(await options.inputValue(),"all","all objects selected by default");
     const checks=page.locator(".object-search-flags input");
-    assert.equal(await checks.count(),3);
-    assert.deepEqual(await checks.evaluateAll(els=>els.map(e=>e.checked)),[true,true,true]);
+    assert.equal(await checks.count(),4);
+    assert.deepEqual(await checks.evaluateAll(els=>els.map(e=>e.checked)),[true,true,true,true]);
+    assert.equal(await page.locator(".object-search-results").innerText(),"1 Pins · 1 Flächen · 0 Gewässer");
     const layout=await page.evaluate(()=>{
       const el=document.querySelector("#searchTypeMenu");
       const b=el.getBoundingClientRect(),opts=document.querySelector(".object-search-options");
@@ -71,6 +77,8 @@ const base=process.env.PIN2MAP_TEST_URL||
         selector:{top:selector.top,bottom:selector.bottom,right:selector.right},
         flags:{top:flags.top,bottom:flags.bottom,right:flags.right},
         exit:{left:exit.left,top:exit.top,width:exit.width,height:exit.height},
+        controls:{top:opts.querySelector(".object-search-compact-controls").getBoundingClientRect().top,
+          bottom:opts.querySelector(".object-search-compact-controls").getBoundingClientRect().bottom},
         width:innerWidth,height:innerHeight};
     });
     assert.ok(layout.box.left>=0&&layout.box.right<=width+1&&layout.box.bottom<=height+1,
@@ -79,19 +87,28 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.ok(layout.exit.left>=layout.selector.right-2&&layout.exit.left>=layout.flags.right-2,"exit at right");
     assert.ok(Math.abs(layout.exit.width-layout.exit.height)<2&&layout.exit.width>=40,
       "exit must be circular touch target: "+JSON.stringify(layout));
+    assert.ok(Math.abs(layout.exit.top+layout.exit.height/2-(layout.controls.top+layout.controls.bottom)/2)<2,
+      "right X vertically centered next to filter controls");
     assert.equal(await page.locator(".object-search-exit svg").count(),1);
     assert.equal(await page.locator(".object-search-exit").evaluate(el=>getComputedStyle(el).backgroundColor),
       "rgb(201, 47, 57)");
     // Changing any option re-runs the search immediately, with no Apply button.
     await options.selectOption("rivers");
+    assert.equal(await page.locator(".object-search-results").innerText(),"0 Pins · 0 Flächen · 0 Gewässer");
     assert.equal(await page.locator(".pin-marker").count(),0,"type change filters immediately");
     await options.selectOption("pins");
+    assert.equal(await page.locator(".object-search-results").innerText(),"1 Pins · 0 Flächen · 0 Gewässer");
     assert.equal(await page.locator(".pin-marker").count(),1,"type change refreshes immediately");
     await checks.nth(0).uncheck();
     assert.equal(await page.locator(".pin-marker").count(),1,"unchecking track refreshes without losing normal pin");
     await checks.nth(1).uncheck();
     await checks.nth(2).uncheck();
     assert.equal(await page.locator(".pin-marker").count(),1);
+    await checks.nth(3).uncheck();
+    assert.equal(await page.locator(".pin-marker").count(),0,"hidden-only pin removed instantly");
+    assert.equal(await page.locator(".object-search-results").innerText(),"0 Pins · 0 Flächen · 0 Gewässer");
+    await checks.nth(3).check();
+    assert.equal(await page.locator(".pin-marker").count(),1,"hidden-only pin included again");
     await page.locator(".object-search-exit").click();
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"right X closes chooser");
     assert.equal(await page.locator(".pin-marker").count(),0,"right X restores hidden layer");
@@ -103,6 +120,11 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"small capsule X exits too");
     assert.equal(await page.locator(".pin-marker").count(),0);
     assert.ok(!await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")));
+    await page.locator("#searchInput").fill("Karlsruhe");
+    await page.locator("#searchButton").click();
+    await page.locator("#settingsButton").click();
+    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"opening settings closes search chooser");
+    assert.equal(await page.locator("#settingsPanel").isVisible(),true,"newly opened dialog remains visible");
     assert.deepEqual(errors,[],width+" browser errors");
     console.log("PASS creation/search split, day/change filters and mobile controls:",width);
    }finally{await context.close();}

@@ -70,3 +70,24 @@ test("checked inclusion flags are permissive; unchecking excludes matching metad
 test("Areas filter includes lake geometries as its dropdown label promises",()=>{
  assert.deepEqual(search(project,{query:"Karlsruhe",kind:"areas"}).map(x=>x.id),["d","e"]);
 });
+
+test("hidden layers are included by default but excluded on request, with no mutation",()=>{
+ const withVisible={...project,layers:[{id:"hidden",visible:false},{id:"visible",visible:true}],
+  pins:[...project.pins,{id:"g",layerId:"visible",name:"Karlsruhe sichtbar"}]};
+ assert.deepEqual(search(withVisible,{query:"Karlsruhe",includeHidden:false}).map(x=>x.id),["g"]);
+ assert.deepEqual(search(withVisible,{query:"Karlsruhe",includeHidden:true}).map(x=>x.id),["a","b","c","g","d","e","f"]);
+ assert.equal(withVisible.layers[0].visible,false);
+ assert.equal(withVisible.layers[1].visible,true);
+});
+test("search results and dialog contract are wired without changing saved visibility",()=>{
+ const menu=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
+ const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
+ const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
+ assert.match(menu,/Auch ausgeblendete/);
+ assert.match(menu,/object-search-results/);
+ assert.match(menu,/setResults\(matches=\[\]\)/);
+ assert.match(menu,/this\.onBeforeOpen\(\)/);
+ assert.match(app,/searchTypeMenu\?\.setResults\(matches\)/);
+ assert.match(app,/onBeforeOpen:closeAllMapMenus/);
+ assert.match(css,/#app #searchTypeMenu\.search-type-menu:not\(\.hidden\)\{[\s\S]*?z-index:1650/);
+});

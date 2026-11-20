@@ -1095,6 +1095,7 @@
     $("searchClear").classList.remove("hidden");
     $("searchClear").setAttribute("aria-label","Suchfilter zurücksetzen");
     const matches=objectSearch.search(state,{query,...options,created,now:new Date()});
+    searchTypeMenu?.setResults(matches);
     if(!query&&created==="any"){
       resetObjectSearch();
       document.body.classList.add("object-search-mode");
@@ -1167,7 +1168,7 @@
     },true);
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
       document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode,
-      onSearch:runObjectSearch,onExit:endObjectSearch
+      onSearch:runObjectSearch,onExit:endObjectSearch,onBeforeOpen:closeAllMapMenus
     });
     searchTypeMenu.bind();
     pinInfoMenu.bind();

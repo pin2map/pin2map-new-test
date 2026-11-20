@@ -14,7 +14,7 @@
  }
  function search(project,options={}){
   const {query="",kind="all",pins=true,areas=true,rivers=true,texts=true,
-   track=false,link=false,note=false,includeTrack=true,includeLink=true,includeNote=true,created="any",date="",dateField="createdAt",now=null}=options;
+   track=false,link=false,note=false,includeTrack=true,includeLink=true,includeNote=true,includeHidden=true,created="any",date="",dateField="createdAt",now=null}=options;
   if(!TYPES.includes(kind))throw new TypeError("Unknown object search type");
   if(!["any","today","yesterday","date"].includes(created))throw new TypeError("Unknown creation date filter");
   if(!["createdAt","updatedAt"].includes(dateField))throw new TypeError("Unknown date field");
@@ -24,9 +24,11 @@
   if(created==="date"&&!day)throw new TypeError("Valid calendar date required");
   const needle=text(query.trim());
   if(!needle&&!day)return [];
+  const visibleLayers=new Set((project?.layers||[]).filter(layer=>layer.visible===true).map(layer=>layer.id));
   const hits=[];
   for(const collection of ["pins","areas","rivers"])for(const object of project?.[collection]||[]){
    if(!object||!object.id)continue;
+   if(!includeHidden&&!visibleLayers.has(object.layerId))continue;
    const type=collection==="areas"?(object.kind==="lake"?"lakes":"areas"):
     collection==="rivers"?"rivers":"pins";
    const category=type==="lakes"?"areas":type;
