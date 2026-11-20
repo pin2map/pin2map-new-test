@@ -2654,3 +2654,28 @@ body.pin-open #app #transferPanel{display:none}
   --p2m-map-control-border:#6a409d;
   --p2m-map-control-ink:#fff;
 }
+
+/* Saved-object search is a transient overlay; preserve original search hit geometry. */
+#app .search-type-menu{
+  width:min(340px,calc(100vw - 24px));
+  max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;
+}
+#app .object-search-divider{width:100%;height:1px;margin:5px 0;border:0;background:#d9e0e8}
+#app .object-search-options{display:flex;flex-direction:column;gap:10px;padding:4px 5px 6px}
+#app .object-search-kind{box-sizing:border-box;width:100%;min-height:39px;border:1px solid #9cb6d3;border-radius:8px;background:white;color:#243b54;padding:5px 8px;font-size:15px}
+#app .object-search-flags{display:flex;justify-content:space-between;gap:5px;flex-wrap:wrap}
+#app .object-search-flags label{display:inline-flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;color:#283d56;cursor:pointer}
+#app .object-search-flags input{width:16px;height:16px;margin:0;accent-color:#1764bf}
+#app .object-search-dates{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;width:100%}
+#app .object-search-date{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:42px;padding:6px 4px;border:1px solid #b6c7da;border-radius:9px;background:#f4f7fa;color:#243b54;font:600 12px/1.2 system-ui,sans-serif;cursor:pointer}
+#app .object-search-date .p2m-lucide{width:16px;height:16px;flex-shrink:0}
+body.object-search-active #app #searchClear.search-clear span{background:#c92f39}
+body.object-search-active #app #searchButton.p2m-icon-control{
+  background:#c92f39!important;border-color:#c92f39!important;color:#fff!important;
+}
+body.object-search-active #app #searchButton.p2m-icon-control .p2m-lucide{color:#fff!important;stroke:#fff!important}
+@media(max-width:360px){
+  #app .search-type-menu{width:calc(100vw - 16px)}
+  #app .object-search-date{font-size:11px;gap:3px}
+  #app .object-search-date .p2m-lucide{width:14px;height:14px}
+}
