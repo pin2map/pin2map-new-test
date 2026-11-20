@@ -8,8 +8,8 @@ const base=process.env.PIN2MAP_TEST_URL||
  const browser=await chromium.launch({headless:true,
   executablePath:process.env.PIN2MAP_CHROMIUM_EXECUTABLE||undefined,args:["--no-sandbox"]});
  try{
-  for(const width of [320,375,390,1280]){
-   const height=width===320?568:width===375?667:width===390?844:800;
+  for(const width of [320,375,390,768,1280]){
+   const height=width===320?568:width===375?667:width===390?844:width===768?1024:800;
    const context=await browser.newContext({viewport:{width,height},serviceWorkers:"block"});
    const page=await context.newPage(),errors=[];
    page.on("pageerror",err=>errors.push(err.message));
@@ -51,9 +51,28 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe");
     await page.locator("#searchTypeMenu").waitFor({state:"visible"});
     assert.equal(await page.locator(".search-type-choice:visible").count(),7,"six creation choices plus saved marker search");
+    const assertSingleColumn=async label=>{
+      const layout=await page.locator("#searchTypeMenu").evaluate(menu=>{
+        const choices=[...menu.querySelectorAll(".search-type-choice")].map(el=>{
+          const r=el.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};
+        });
+        const list=menu.querySelector(".search-creation-choices"),style=getComputedStyle(list);
+        return {display:style.display,direction:style.flexDirection,choices,
+          hint:!!menu.querySelector(".search-creation-scroll-hint")};
+      });
+      assert.equal(layout.display,"flex",label+" must be a flex list");
+      assert.equal(layout.direction,"column",label+" must be one column");
+      assert.equal(layout.hint,false,label+" must not insert an unapproved compact bar");
+      assert.equal(layout.choices.length,7,label+" must show all seven entries");
+      assert.ok(layout.choices.every(r=>Math.abs(r.left-layout.choices[0].left)<2),
+        label+" every choice must start at the same x coordinate: "+JSON.stringify(layout));
+      assert.ok(layout.choices.every((r,i)=>i===0||r.top>=layout.choices[i-1].bottom-1),
+        label+" choices may never form two columns or overlap");
+    };
+    await assertSingleColumn("standard viewport "+width);
     // A reduced viewport simulates the keyboard's available screen height.
     // The last action must remain reachable by scrolling the popover itself.
-    if(width<=390){
+    if(width<=768){
       const original=page.viewportSize();
       await page.setViewportSize({width,height:Math.min(height,390)});
       // Let real viewport resize handlers settle before simulating the keyboard.
@@ -61,20 +80,15 @@ const base=process.env.PIN2MAP_TEST_URL||
       await page.waitForTimeout(180);
       const keyboardState=await page.locator("#searchTypeMenu").evaluate(el=>{
         el.classList.add("keyboard-constrained");
-        const hint=el.querySelector(".search-creation-scroll-hint");
-        const rect=hint?.getBoundingClientRect();
-        return {position:getComputedStyle(el).position,
-          hintVisible:!!hint&&getComputedStyle(hint).display!=="none"&&
-            getComputedStyle(hint).visibility!=="hidden"&&rect.width>0&&rect.height>0};
+        return {position:getComputedStyle(el).position};
       });
       assert.equal(keyboardState.position,"fixed",
         "keyboard menu must escape #app overflow clipping");
-      assert.equal(keyboardState.hintVisible,true,
-        "compact menu communicates that additional options exist");
+      await assertSingleColumn("keyboard viewport "+width);
       await page.locator('.search-type-choice[data-search-type="objects"]').scrollIntoViewIfNeeded();
       const bounds=await page.locator("#searchTypeMenu").boundingBox();
       const item=await page.locator('.search-type-choice[data-search-type="objects"]').boundingBox();
-      assert.ok(bounds&&item&&bounds.y+bounds.height<=390+1,"menu must stay above simulated keyboard");
+      assert.ok(bounds&&item&&bounds.y+bounds.height<=Math.min(height,390)+1,"menu must stay above simulated keyboard");
       assert.ok(item.y>=bounds.y-1&&item.y+item.height<=bounds.y+bounds.height+1,
         "last action accessible by internal popover scrolling");
       await page.setViewportSize(original);

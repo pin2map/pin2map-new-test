@@ -32,8 +32,6 @@
   }
   buildCreation(){
    const list=this.makeElement("div","search-creation-choices");
-   const hint=this.makeElement("div","search-creation-scroll-hint","Weitere Optionen ↓");
-   hint.setAttribute("aria-hidden","true");list.append(hint);
    CHOICES.forEach((choice,i)=>{
     if(choice.id==="objects")list.append(this.makeElement("hr","search-creation-divider"));
     const button=this.makeElement("button","search-type-choice");
@@ -246,22 +244,27 @@
   }
   position(){
    const rect=this.form.getBoundingClientRect(),appRect=this.app.getBoundingClientRect();
-   const viewport=this.doc.defaultView?.visualViewport;
-   const visibleBottom=viewport?viewport.offsetTop+viewport.height:appRect.height;
-   const keyboardShown=Boolean(viewport&&this.doc.defaultView.innerHeight-viewport.height>120);
+   const view=this.doc.defaultView,viewport=view?.visualViewport;
+   const keyboardShown=Boolean(viewport&&view.innerHeight-viewport.height>120);
    this.viewportConstrained=keyboardShown;
    this.menu.classList.toggle("keyboard-constrained",keyboardShown);
    const width=this.menu.offsetWidth||340;
-   const desired=rect.left-appRect.left+(rect.width-width)/2;
-   this.menu.style.left=Math.max(8,Math.min(desired,appRect.width-width-8))+"px";
-   const below=rect.bottom-appRect.top+9;
-   const available=Math.max(44,visibleBottom-below-12);
-   this.menu.style.top=Math.max(8,below)+"px";
+   // Fixed menus use viewport coordinates; absolute menus use #app coordinates.
+   // Never subtract the app origin from visualViewport bounds a second time.
+   const left=keyboardShown?rect.left:rect.left-appRect.left;
+   const horizontalRoom=keyboardShown?(viewport?.width||view.innerWidth):appRect.width;
+   this.menu.style.left=Math.max(8,Math.min(left+(rect.width-width)/2,horizontalRoom-width-8))+"px";
+   const top=keyboardShown?rect.bottom+9:rect.bottom-appRect.top+9;
+   const visibleBottom=viewport?viewport.offsetTop+viewport.height:(view?.innerHeight||appRect.bottom);
+   const bottom=keyboardShown?visibleBottom:visibleBottom-appRect.top;
+   // Preserve the approved one-column layout on every device. Limit height
+   // only when the actual visible viewport cannot contain the full menu.
+   const available=Math.max(44,bottom-top-12);
+   this.menu.style.top=Math.max(8,top)+"px";
    this.menu.style.maxHeight=available+"px";
    this.menu.style.overflowY="auto";
-   // Keep the seventh option discoverable when iOS keyboard reduces viewport.
    this.menu.dataset.scrollable=String(this.menu.scrollHeight>this.menu.clientHeight+1);
-   this.menu.setAttribute("aria-description",keyboardShown?
+   this.menu.setAttribute("aria-description",this.menu.dataset.scrollable==="true"?
     "Liste scrollbar. Nach unten wischen für weitere Optionen.":"");
   }
   highlight(index){

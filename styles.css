@@ -2831,42 +2831,14 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
   z-index:590;pointer-events:none;overflow:visible;
 }
 
-/* v284: Keyboard-safe chooser and stable popup surfaces.
- * The list scrolls inside the visible visual viewport; never under iOS keyboard. */
+/* v289: invariant creation chooser on desktop, iPhone and iPad.
+ * Keyboard only constrains the visible scroll area; it never changes
+ * columns, row size, typography or introduces a collapsed option bar. */
 #app #searchTypeMenu.search-type-menu.keyboard-constrained{
   overflow-y:auto;
   overflow-x:hidden;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
-  scrollbar-gutter:stable;
-}
-#app #searchTypeMenu .search-creation-scroll-hint{display:none}
-#app #searchTypeMenu.keyboard-constrained .search-creation-choices{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  align-content:start;gap:3px;
-  min-height:0;
-}
-#app #searchTypeMenu.keyboard-constrained .search-creation-scroll-hint{
-  display:block;grid-column:1/-1;
-  position:sticky;top:0;z-index:2;
-  padding:3px 7px;
-  background:#f0f4f9;color:#45607b;
-  font:600 11px/1.35 system-ui,sans-serif;text-align:center;
-  border-radius:6px;
-}
-#app #searchTypeMenu.keyboard-constrained .search-type-choice{
-  min-width:0;min-height:42px;
-  gap:5px;padding:7px 6px;
-  font-size:12px;line-height:1.2;
-}
-#app #searchTypeMenu.keyboard-constrained .search-type-choice .p2m-lucide,
-#app #searchTypeMenu.keyboard-constrained .search-type-choice .search-type-icon{
-  width:19px;height:19px;flex-basis:19px;
-}
-#app #searchTypeMenu.keyboard-constrained .search-creation-divider,
-#app #searchTypeMenu.keyboard-constrained .search-type-choice[data-search-type="objects"]{
-  grid-column:1/-1;
 }
 /* URL editors keep one coherent opaque panel and reachable actions with keyboard open. */
 #pinUrlBlock.pin-url-popup,
@@ -2880,9 +2852,8 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
   flex:0 0 auto;
 }
 
-/* v286: iOS virtual keyboard must not clip the chooser at #app overflow:hidden.
- * Fixed positioning escapes the app's clipping rectangle while remaining
- * constrained by visualViewport coordinates computed in SearchTypeMenu.position. */
+/* v289: iOS keyboard can shrink the visible viewport, but the approved
+ * single-column chooser remains unchanged. Fixed positioning avoids #app clipping. */
 #app #searchTypeMenu.search-type-menu.keyboard-constrained:not(.hidden){
   position:fixed;
   overflow-y:auto;

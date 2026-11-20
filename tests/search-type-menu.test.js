@@ -73,6 +73,16 @@ test("Escape closes stored-object search but restores focus to its cleared input
  assert.match(css,/grid-template-columns:repeat\(4,max-content\)/);
 });
 
+test("creation chooser preserves the same single-column design on keyboard and every device",()=>{
+ const js=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
+ assert.match(css,/#app \.search-creation-choices\{display:flex;flex-direction:column/);
+ assert.doesNotMatch(css,/keyboard-constrained \.search-creation-choices\s*\{/);
+ assert.doesNotMatch(css,/keyboard-constrained \.search-type-choice\s*\{/);
+ assert.doesNotMatch(js,/search-creation-scroll-hint|Weitere Optionen/);
+ assert.match(js,/keyboardShown\?rect\.bottom\+9:rect\.bottom-appRect\.top\+9/);
+ assert.match(js,/this\.menu\.style\.maxHeight=available\+"px"/);
+});
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  assert.match(code,/const placeResults=this\.el\("searchResults"\)/);
