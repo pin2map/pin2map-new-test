@@ -30,7 +30,7 @@
   positionPopup(){this.urlController.position();}
   show(mode){this.urlController.show(mode==="url");}
   render(pin){
-   if(!pin){this.pinId=null;this.show("notes");return;}
+   if(!pin){this.pinId=null;this.show("notes");this.el("pinGpxActions")?.classList.add("hidden");return;}
    if(this.pinId!==pin.id){
     this.pinId=pin.id;this.urlSnapshot=String(pin.url||"");
     this.el("pinNotes").value=String(pin.note||"");
@@ -47,7 +47,7 @@
    this.refreshUrlOpen();
    this.el("pinUrlButton").classList.toggle("has-url",Boolean(String(pin.url||"").trim()));
    // GPX UI is future-only until a concrete persisted track association exists.
-   const hasGpx=Boolean(pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
+   const hasGpx=Boolean(pin.gpxAttachment?.chains?.length||pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
    this.el("pinGpxActions")?.classList.toggle("hidden",!hasGpx);
   }
   setWeather(enabled){
