@@ -103,3 +103,26 @@ test("new GPX input contains strict waypoints and tracks",()=>{
   assert.equal(read.project.rivers[0].chains[0].length,2);
   assert.equal(read.project.pins[0].name,"Wegpunkt");
 });
+
+test("predecessor cache rehydrates named pins, polygons and drawn rivers offline",()=>{
+  const polygon={type:"Polygon",coordinates:[[[8,50],[9,50],[9,51],[8,50]]]};
+  const doc={format:"pin2map",version:1,
+    list:"# 📍 [Red] Reise\\nFrankfurt (Stadt)\\n@Spessart (Wald)\\nBlaue Donau\\n",
+    cache:{
+      "Frankfurt (Stadt)":{kind:"pin",lat:50.11,lon:8.68,note:"Notiz",
+        pinUrl:"https://example.org",createdAt:"2025-12-01"},
+      "@Spessart (Wald)":{kind:"area",geometry:polygon}
+    },
+    rivers:[{name:"Donau",chains:[[[48.1,11.1],[48.2,11.2]]]}]};
+  // Use actual predecessor list newlines.
+  doc.list=doc.list.replaceAll("\\n","\n");
+  const result=transfer.parseProject(JSON.stringify(doc),"reise.pin2map");
+  assert.equal(result.project.pins.length,1);
+  assert.equal(result.project.pins[0].name,"Stadt");
+  assert.equal(result.project.pins[0].note,"Notiz");
+  assert.equal(result.project.areas.length,1);
+  assert.deepEqual(result.project.areas[0].geometry,polygon);
+  assert.equal(result.project.rivers.length,1);
+  assert.equal(result.project.rivers[0].name,"Donau");
+  assert.equal(result.unresolved,1);
+});
