@@ -58,6 +58,7 @@
 <script defer src="./application/map-favorites.js"></script>
 <script defer src="./application/project-persistence.js"></script>
 <script defer src="./application/project-hydration.js"></script>
+<script defer src="./application/project-transfer.js"></script>
 <script defer src="./application/layer-palette.js"></script>
 <script defer src="./application/layer-operations.js"></script>
 <script defer src="./application/layer-creation.js"></script>
@@ -157,6 +158,26 @@
     <p id="favoritesMessage" class="favorites-message" role="status" aria-live="polite"></p>
   </aside>
   <button id="settingsButton" type="button" data-pin-icon="settings" class="settings-map-button" title="Einstellungen" aria-label="Einstellungen" aria-expanded="false" aria-controls="settingsPanel">⚙</button>
+  <button id="transferButton" type="button" data-pin-icon="arrow-up-down" class="transfer-map-button" title="Daten importieren oder exportieren" aria-label="Daten importieren oder exportieren" aria-haspopup="dialog" aria-expanded="false" aria-controls="transferPanel"></button>
+  <aside id="transferPanel" class="panel transfer-panel hidden" role="dialog" aria-label="Daten importieren und exportieren">
+    <div class="panel-head"><h2>Daten importieren / exportieren</h2><button type="button" id="transferClose" class="close" data-pin-icon="x" aria-label="Schließen">×</button></div>
+    <div id="transferMain">
+      <p class="muted small">Das vollständige Projekt einschließlich Pins, Ebenen, Flächen, Flüssen und Favoriten als Datei sichern oder Daten aus einer Datei übernehmen.</p>
+      <button type="button" id="transferImport" class="secondary full">Datei importieren (.pin2map / GPX)</button>
+      <button type="button" id="transferExport" class="secondary full">Projekt exportieren (.pin2map)</button>
+      <button type="button" id="transferExportGpx" class="secondary full">Pins und Tracks als GPX exportieren</button>
+      <p class="muted small">GPX enthält nur Wegpunkte und Tracks. Für eine vollständige Sicherung die pin2map-Datei verwenden.</p>
+    </div>
+    <div id="transferConfirm" class="hidden">
+      <strong id="transferFileInfo"></strong><p id="transferFileSummary" class="muted small"></p>
+      <button type="button" id="transferAdd" class="secondary full">Daten hinzufügen</button>
+      <button type="button" id="transferReplace" class="danger full">Alles überschreiben</button>
+      <button type="button" id="transferBack" class="secondary full">Abbrechen</button>
+      <p class="muted small">Überschreiben ersetzt das Projekt und kann nicht rückgängig gemacht werden. Sichere es bei Bedarf zuvor über Export.</p>
+    </div>
+    <p id="transferFeedback" class="muted small" role="status" aria-live="polite"></p>
+    <input type="file" id="transferFileInput" accept=".pin2map,.gpx,application/gpx+xml,application/json" class="sr-only" tabindex="-1">
+  </aside>
   <button id="refreshButton" data-pin-icon="refresh-cw" class="refresh-map-button" type="button" title="Neueste Version laden" aria-label="Neueste Version laden">⟳</button>
   <button id="layersButton" data-pin-icon="layers" class="layers-bottom-button" type="button" title="Ebenen auswählen" aria-label="Ebenen auswählen" aria-expanded="false" aria-pressed="false">☷</button>
   <button id="pinInfoButton" data-pin-icon="message-circle-exclamation-point-off" class="pin-info-button" aria-busy="false" type="button" title="Pin-Informationen auswählen" aria-label="Pin-Informationen auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="pinInfoMenu"></button>
