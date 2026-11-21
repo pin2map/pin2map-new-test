@@ -76,7 +76,7 @@
   function fromLegacy(doc,name){
     if(!isObj(doc)||doc.format!=="pin2map"||typeof doc.list!=="string")
       throw Error("Nicht unterstütztes Vorgängerformat.");
-    const layers=[{id:"private",name:"Privat",color:"#808080",visible:true}];
+    const layers=[{id:"private",name:"Privat",color:"#E64294",visible:true}];
     const pins=[],areas=[],unresolved=[];
     const cache=isObj(doc.cache)?doc.cache:{};
     const colors={red:"#e64545",blue:"#326cc2",green:"#16836b",yellow:"#ffd700",
@@ -279,7 +279,7 @@
       }
     }
     if(!pins.length&&!rivers.length)throw Error("GPX enthält weder Wegpunkte noch Tracks/Routen.");
-    return {project:safeProject({layers:[{id:"private",name:"Privat",color:"#808080",visible:true}],
+    return {project:safeProject({layers:[{id:"private",name:"Privat",color:"#E64294",visible:true}],
       pins,areas:[],rivers,favorites:[]}),unresolved:0,gpx:true};
   }
   const xmlEscape=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;")
