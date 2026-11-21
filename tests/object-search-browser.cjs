@@ -27,12 +27,12 @@ const base=process.env.PIN2MAP_TEST_URL||
      const today=new Date(d.getFullYear(),d.getMonth(),d.getDate(),12).toISOString();
      state.pins=[
       {id:"search-today",name:"Karlsruhe Bahnhof",lat:49.01,lng:8.405,layerId:"layer-1",note:"",url:"",createdAt:today,updatedAt:today},
-      {id:"search-yesterday",name:"Berlin Mitte",lat:52.52,lng:13.4,layerId:"layer-1",note:"",url:"",createdAt:y,updatedAt:today}
+      {id:"search-yesterday",name:"Berlin Mitte",lat:52.52,lng:13.4,layerId:"layer-1",note:"Notizprobe",url:"https://example.com/karlsruhe",createdAt:y,updatedAt:today,gpxAttachment:{filename:"tour.gpx",chains:[[[52.52,13.4],[52.53,13.41]]]}}
      ];
      // Repeated legacy records with one ID must not inflate the visible marker count.
      state.pins.push(...Array.from({length:6},()=>({...state.pins[0]})));
      state.areas=[{id:"search-area",name:"Karlsruhe Testgebiet",layerId:"layer-1",kind:"area",createdAt:today,
-      geometry:{type:"Polygon",coordinates:[[[8.4,49],[8.41,49],[8.41,49.01],[8.4,49]]]},note:"",url:""}];
+      geometry:{type:"Polygon",coordinates:[[[8.4,49],[8.41,49],[8.41,49.01],[8.4,49]]]},note:"Notizprobe",url:""}];
      const db=await new Promise((resolve,reject)=>{
       const req=indexedDB.open(dbName,1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
      });
@@ -101,107 +101,84 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.locator('.search-type-choice[data-search-type="objects"]').click();
     assert.equal(await page.locator(".search-type-choice:visible").count(),0,"creation options replaced");
     assert.equal(await page.locator(".object-search-options:visible").count(),1);
-    assert.equal(await page.locator(".pin-marker").count(),1,"search retrieves hidden pin");
+    assert.equal(await page.locator("#searchButton").count(),0,"magnifier is removed");
     assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe");
-    assert.equal(await page.locator(".p2m-object-search-spotlight circle").count()>0,true,
-      "spotlight must illuminate saved marker and geometry labels");
-    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).pointerEvents),"none");
-    assert.equal(await page.locator("#searchButton").evaluate(el=>getComputedStyle(el,"::before").backgroundColor),"rgb(201, 47, 57)");
-    assert.equal(await page.locator("#searchButton svg").evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
-    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),false,"keyboard dismissed");
-    const options=page.locator(".object-search-kind");
-    assert.equal(await options.inputValue(),"all","all objects selected by default");
+    assert.equal(await page.locator(".pin-marker").count(),0,
+      "hidden-layer matches excluded until checkbox enabled");
+    assert.equal(await page.locator(".object-search-results").innerText(),
+      "0 Pins · 0 Flächen · 0 Gewässer");
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),false);
     const checks=page.locator(".object-search-flags input");
-    assert.equal(await checks.count(),4);
-    assert.deepEqual(await checks.evaluateAll(els=>els.map(e=>e.checked)),[true,true,true,true]);
-    assert.equal(await page.locator(".object-search-results").innerText(),"1 Pins · 1 Flächen · 0 Gewässer");
-    const layout=await page.evaluate(()=>{
-      const el=document.querySelector("#searchTypeMenu");
-      const b=el.getBoundingClientRect(),opts=document.querySelector(".object-search-options");
-      const selector=opts.querySelector("select").getBoundingClientRect();
-      const flags=opts.querySelector(".object-search-flags").getBoundingClientRect();
-      const exit=opts.querySelector(".object-search-exit").getBoundingClientRect();
-      return {box:{left:b.left,right:b.right,top:b.top,bottom:b.bottom},
-        selector:{top:selector.top,bottom:selector.bottom,right:selector.right},
-        flags:{top:flags.top,bottom:flags.bottom,right:flags.right},
-        exit:{left:exit.left,top:exit.top,width:exit.width,height:exit.height},
-        flagRows:[...opts.querySelectorAll(".object-search-flags label")].map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom};}),
-        selectorMiddle:(selector.top+selector.bottom)/2,exitMiddle:(exit.top+exit.bottom)/2,
-        flagClipped:opts.querySelector(".object-search-flags").scrollWidth>opts.querySelector(".object-search-flags").clientWidth+1,
-        width:innerWidth,height:innerHeight};
+    assert.equal(await checks.count(),3,"exactly three extension options");
+    assert.deepEqual(await checks.evaluateAll(els=>els.map(el=>el.checked)),[false,false,false]);
+    assert.deepEqual(await page.locator(".object-search-flags label").allInnerTexts(),
+      ["Notizen","URLs","Ausgeblendete Objekte"]);
+    assert.equal(await page.locator(".object-search-scope legend").innerText(),"Suche erweitern auf");
+    const layout=await page.locator(".object-search-scope").evaluate(scope=>{
+      const r=scope.getBoundingClientRect(),labels=[...scope.querySelectorAll("label")].map(el=>{
+       const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom};
+      });
+      return {bounds:{left:r.left,right:r.right},labels,
+       overflow:scope.scrollWidth>scope.clientWidth+1};
     });
-    assert.ok(layout.box.left>=0&&layout.box.right<=width+1&&layout.box.bottom<=height+1,
-      "compact chooser fits viewport "+JSON.stringify(layout));
-    assert.ok(layout.selector.bottom<=layout.flags.top+2,"options remain two ordered rows");
-    assert.ok(layout.exit.left>=layout.selector.right-2,"exit at right of dropdown");
-    assert.ok(Math.abs(layout.exit.width-layout.exit.height)<2&&layout.exit.width>=40,
-      "exit must be circular touch target: "+JSON.stringify(layout));
-    assert.ok(Math.abs(layout.exitMiddle-layout.selectorMiddle)<2,
-      "right X and dropdown must share horizontal center");
-    assert.equal(layout.flagRows.length,4,"four flags in a single row");
-    assert.ok(layout.flagRows.every(r=>Math.abs(r.top-layout.flagRows[0].top)<2),
-      "checkboxes must remain on the same horizontal row");
-    assert.equal(layout.flagClipped,false,"checkbox row must not overflow at iPhone width");
-    assert.equal(await page.locator(".object-search-hidden-flag").innerText(),"Ausgeblendete");
-    assert.equal(await page.locator(".object-search-exit svg").count(),1);
-    assert.equal(await page.locator(".object-search-exit").evaluate(el=>getComputedStyle(el).backgroundColor),
-      "rgb(201, 47, 57)");
-    // Changing any option re-runs the search immediately, with no Apply button.
-    await options.selectOption("rivers");
-    assert.equal(await page.locator(".object-search-results").innerText(),"0 Pins · 0 Flächen · 0 Gewässer");
-    assert.equal(await page.locator(".pin-marker").count(),0,"type change filters immediately");
-    await options.selectOption("pins");
-    assert.equal(await page.locator(".object-search-results").innerText(),"1 Pins · 0 Flächen · 0 Gewässer");
-    assert.equal(await page.locator(".pin-marker").count(),1,"type change refreshes immediately");
-    await checks.nth(0).uncheck();
-    assert.equal(await page.locator(".pin-marker").count(),1,"unchecking track refreshes without losing normal pin");
+    assert.ok(layout.labels.every(x=>Math.abs(x.top-layout.labels[0].top)<2),
+      "three options must stay on one row: "+JSON.stringify(layout));
+    assert.ok(layout.labels.every(x=>x.left>=layout.bounds.left-1&&x.right<=layout.bounds.right+1),
+      "all option labels visible: "+JSON.stringify(layout));
+    assert.equal(layout.overflow,false,"option fieldset must not overflow");
+    assert.equal(await page.locator("#searchClear span").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(201, 47, 57)","small X turns red");
+    await checks.nth(2).check();
+    assert.equal(await page.locator(".pin-marker").count(),1,"hidden pin appears immediately");
+    assert.equal(await page.locator(".object-search-results").innerText(),
+      "1 Pins · 1 Flächen · 0 Gewässer");
+    await checks.nth(1).check();
+    assert.equal(await page.locator(".pin-marker").count(),2,"URL match adds second pin");
     await checks.nth(1).uncheck();
+    assert.equal(await page.locator(".pin-marker").count(),1);
+    await checks.nth(0).check();
+    await page.locator("#searchInput").fill("Notizprobe");
+    assert.equal(await page.locator(".pin-marker").count(),1,"pin notes match immediately");
+    assert.equal(await page.locator(".object-search-results").innerText(),
+      "1 Pins · 1 Flächen · 0 Gewässer","area notes matched");
+    await checks.nth(0).uncheck();
+    assert.equal(await page.locator(".pin-marker").count(),0,"disabling notes excludes note-only hits");
+    await page.locator("#searchInput").fill("Karlsruhe");
+    const gpx=page.locator(".object-search-gpx");
+    await gpx.click();
+    assert.equal(await gpx.getAttribute("aria-pressed"),"true");
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "GPX search ignores query while including hidden layer");
     await checks.nth(2).uncheck();
+    assert.equal(await page.locator(".pin-marker").count(),0,
+      "GPX search respects hidden checkbox");
+    await checks.nth(2).check();
     assert.equal(await page.locator(".pin-marker").count(),1);
-    await checks.nth(3).uncheck();
-    assert.equal(await page.locator(".pin-marker").count(),0,"hidden-only pin removed instantly");
-    assert.equal(await page.locator(".object-search-results").innerText(),"0 Pins · 0 Flächen · 0 Gewässer");
-    await checks.nth(3).check();
-    assert.equal(await page.locator(".pin-marker").count(),1,"hidden-only pin included again");
-    // Editing while filtered restores the normal choices before the next saved-object search.
-    await page.locator("#searchInput").click();
-    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true);
-    assert.equal(await page.locator(".search-type-choice:visible").count(),7);
-    assert.equal(await page.locator(".object-search-options:visible").count(),0);
-    await page.locator("#searchInput").fill("Karlsruhe");
-    assert.equal(await page.locator(".search-type-choice:visible").count(),7);
-    await page.locator('.search-type-choice[data-search-type="objects"]').click();
-    assert.equal(await page.locator(".pin-marker").count(),1);
-    await page.locator(".object-search-exit").click();
-    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"right X closes chooser");
-    assert.equal(await page.locator(".p2m-object-search-spotlight").isHidden(),true,"spotlight removed after search");
-    assert.equal(await page.locator(".pin-marker").count(),0,"right X restores hidden layer");
-    assert.ok(!await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")));
-    await page.keyboard.press("Meta+f");
-    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true,
-      "Cmd+F must activate the application search field");
-    assert.equal(await page.locator(".search-type-choice:visible").count(),7);
-    await page.locator("#searchInput").fill("Karlsruhe");
-    await page.locator('.search-type-choice[data-search-type="objects"]').click();
-    assert.equal(await page.locator(".pin-marker").count(),1);
+    await gpx.click();
+    assert.equal(await page.locator(".pin-marker").count(),1,"GPX mode toggles back to text search");
+    const before=await page.locator("#searchClear").boundingBox();
     await page.locator("#searchClear").click();
-    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"small capsule X exits too");
-    assert.equal(await page.locator(".pin-marker").count(),0);
-    assert.ok(!await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")));
+    assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe","red X preserves query");
+    assert.equal(await page.locator(".search-type-choice:visible").count(),7,
+      "red X returns to standard choices");
+    assert.equal(await page.locator(".object-search-options:visible").count(),0);
+    assert.equal(await page.locator(".pin-marker").count(),0,"red X restores normal map");
+    assert.equal(await page.locator("#searchClear span").evaluate(el=>getComputedStyle(el).backgroundColor),
+      "rgb(111, 115, 120)","X turns gray again");
+    const after=await page.locator("#searchClear").boundingBox();
+    assert.ok(Math.abs(before.width-after.width)<1&&Math.abs(before.height-after.height)<1,
+      "X does not change dimensions");
+    await page.locator("#searchClear").click();
+    assert.equal(await page.locator("#searchInput").inputValue(),"","gray X clears field");
+    await page.keyboard.press("Meta+f");
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true);
     await page.locator("#searchInput").fill("Karlsruhe");
     await page.locator('.search-type-choice[data-search-type="objects"]').click();
-    await options.focus();
+    await checks.nth(2).check();
     await page.keyboard.press("Escape");
-    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"Escape closes search dialog");
-    assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")),false,
-      "Escape exits object-filter mode");
-    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true,
-      "Escape leaves keyboard focus in search input");
-    assert.equal(await page.locator("#searchInput").inputValue(),"","Escape clears old query");
-    assert.equal(await page.locator(".pin-marker").count(),0,"Escape restores original map display");
-    await page.keyboard.type("Karlsruhe");
-    assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe","type immediately after Escape");
-    assert.equal(await page.locator(".search-type-choice:visible").count(),7,"typing opens normal chooser");
+    assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")),false);
+    assert.equal(await page.locator("#searchInput").inputValue(),"","Escape clears query");
+    await page.locator("#searchInput").fill("Karlsruhe");
     await page.locator('.search-type-choice[data-search-type="objects"]').click();
     await page.locator("#settingsButton").click();
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,"opening settings closes search chooser");
@@ -211,6 +188,7 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:30000});
     await page.locator("#searchInput").fill("Karlsruhe");
     await page.locator('.search-type-choice[data-search-type="objects"]').click();
+    await page.locator('[data-search-flag="hidden"]').check();
     // A tap outside the dialog closes only the chooser. Matching markers
     // stay visible and are fitted to the map; only then can they be clicked.
     const mapBounds=await page.locator("#map").boundingBox();
@@ -245,7 +223,7 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator("#pinUrlBlock").evaluate(el=>getComputedStyle(el).backgroundColor),
       "rgb(255, 255, 255)","URL popup is opaque");
     assert.deepEqual(errors,[],width+" browser errors");
-    console.log("PASS first-tap focus, 7th search choice, duplicate ID counts, Cmd+F, mobile controls:",width);
+    console.log("PASS v294 search field, 3 flags, GPX, dialogs and mobile controls:",width);
    }finally{await context.close();}
   }
  }finally{await browser.close();}
