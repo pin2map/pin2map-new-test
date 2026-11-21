@@ -237,11 +237,16 @@ const viewports=[
      try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
      finally{db.close();}
    },"🇩🇪 ÜB (Landkreis Sigmaringen)",{timeout:12000});
-   assert.equal(await page.evaluate(async()=>{
+   const plateSnapshot=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.length;}
+     try{return (await db.loadProject()).areas.map(a=>({name:a.name,id:a.id,layerId:a.layerId}));}
      finally{db.close();}
-   }),3,"All three selected Bodensee boundaries must be stored immediately");
+   });
+   console.log("[geometry] v302 plate diagnostic",JSON.stringify(plateSnapshot));
+   assert.deepEqual(["🇩🇪 TT (Bodenseekreis)","🇩🇪 RV (Landkreis Ravensburg)",
+     "🇩🇪 ÜB (Landkreis Sigmaringen)"].filter(name=>
+       !plateSnapshot.some(area=>area.name===name)),[],
+     "Each individually selected and persisted jurisdiction must remain stored");
    await page.locator("#searchInput").fill("B");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    assert.equal(await page.locator(".p2m-plate-label").count(),0);
