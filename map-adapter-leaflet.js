@@ -586,7 +586,7 @@
       this.attachedGpxLayer=null;
     }
     renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},
-      onRiverLine=()=>{},highlightIds=null}={}){
+      onRiverLine=()=>{},highlightIds=null,flashIds=null}={}){
       // Keep exactly one viewport listener across redraws; do not recreate
       // geometry layers on map pan/zoom, only reposition lightweight labels.
       if(!this.riverLabelMoveHandler){
@@ -609,7 +609,8 @@
         pointTotal=prepared.totalPoints;
         const color=layerColors[area.layerId]||"#326cc2";
         const geo=window.L.geoJSON(prepared.geometry,{
-          interactive:false,style:{color,weight:2,fillColor:color,fillOpacity:.24,interactive:false}
+          interactive:false,style:{color,weight:2,fillColor:color,fillOpacity:.24,interactive:false,
+           className:flashIds?.has((area.kind==="lake"?"lakes":"areas")+":"+area.id)?"p2m-new-object-blink-geometry":""}
         }).addTo(group);
         const bounds=geo.getBounds();
         if(!bounds.isValid()||!area.name)continue;
@@ -634,7 +635,8 @@
         for(const chain of river.chains||[]){
           if(chain.length<2)continue;
           const line=window.L.polyline(chain,{color,weight:5,opacity:.9,
-            lineCap:"round",lineJoin:"round",interactive:false}).addTo(group);
+            lineCap:"round",lineJoin:"round",interactive:false,
+            className:flashIds?.has("rivers:"+river.id)?"p2m-new-object-blink-geometry":""}).addTo(group);
           const hit=window.L.polyline(chain,{color,weight:24,opacity:.015,
             lineCap:"round",lineJoin:"round",interactive:true,bubblingMouseEvents:false}).addTo(group);
           hit.on("click",e=>{
