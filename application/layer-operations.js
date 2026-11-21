@@ -36,8 +36,13 @@
     return {...info,removedPinIds};
   }
   function renameAndColor(project,id,name,color,cleanText,hex){
-    if(id==="private")return false;
     const layer=find(project,id);if(!layer)return false;
+    if(id==="private"){
+      if(cleanText(name)!=="Privat")return false;
+      const chosen=hex(color);if(!chosen)return false;
+      layer.color=chosen;project.privateColorCustomized=true;
+      return layer;
+    }
     const next=cleanText(name);
     if(!next||project.layers.some(l=>l.id!==id&&l.name.toLocaleLowerCase("de-DE")===
       next.toLocaleLowerCase("de-DE")))return false;
