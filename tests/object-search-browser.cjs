@@ -151,6 +151,11 @@ const base=process.env.PIN2MAP_TEST_URL||
     await page.locator("#searchInput").fill("Karlsruhe");
     await kind.selectOption("all");
     assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 1 Fläche · 0 Gewässer");
+    await page.keyboard.press("Meta+f");
+    assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")),true,
+      "hardware Find must not end search");
+    assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true,
+      "hardware Find focuses the existing search field");
     const layout=await page.locator(".object-search-options").evaluate(panel=>{
       const row=panel.querySelector(".object-search-toprow").getBoundingClientRect();
       const flags=[...panel.querySelectorAll(".object-search-flags label")].map(x=>x.getBoundingClientRect());

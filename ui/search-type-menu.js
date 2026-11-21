@@ -189,8 +189,8 @@
    this.onEdit();
   }
   focusInput(){
-   // This path also handles hardware Cmd+F / Ctrl+F without losing focus to overlay cleanup.
-   this.returnToCreation();
+   // Ctrl/Cmd+F focuses the shared field, but never exits an active search.
+   if(!this.searchMode)this.returnToCreation();
    if(!this.open){this.onBeforeOpen();this.preparedOpen=true;}
    this.input.focus({preventScroll:true});
    this.input.select();
