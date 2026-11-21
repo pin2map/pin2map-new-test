@@ -3041,6 +3041,18 @@ body.object-search-mode #app #searchClear.search-clear span{
  flex:0 0 15px;width:15px;height:15px;
 }
 @media(max-width:375px){
+ /* The one-line hidden-layer wording needs more room than the native select
+    on 320px screens. Keep both grid cells and their actual text in bounds. */
+ #app #searchTypeMenu.object-search-mode .object-search-toprow{
+  grid-template-columns:minmax(0,47fr) minmax(0,53fr);
+  column-gap:3px;
+ }
+ #app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-check{
+  font-size:9px;gap:2px;
+ }
+ #app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-check input{
+  flex:0 0 13px;width:13px;height:13px;
+ }
  #app #searchTypeMenu.object-search-mode .object-search-flags{gap:1px}
  #app #searchTypeMenu.object-search-mode .object-search-flags .object-search-check{
   gap:1px;font-size:9px;
