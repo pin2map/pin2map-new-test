@@ -33,13 +33,14 @@ test("Kartentip preview retains camera; searched previews keep auto-fit",()=>{
   assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,"","map"\)/);
 });
 
-test("Transient Kartentip pin uses existing information coordinator without persistence",()=>{
-  const app=source("app.js"),adapter=source("map-adapter-leaflet.js");
-  assert.match(app,/temporaryInfoPin=entry.kind==="point"&&entry.source==="map"\?entry:null/);
-  assert.match(app,/setVisiblePins\(temporaryInfoPin\?\[\.\.\.visible,temporaryInfoPin.point\]:visible\)/);
-  assert.match(app,/pinInfoService.label\(temporaryInfoPin.point\)/);
-  assert.match(app,/renderTemporaryPinInfo\(\)/);
-  assert.match(adapter,/setTemporaryPinInfo\(html\)/);
-  assert.match(adapter,/if\(old.pinMarker\)this.setMarkerInfo\(old.pinMarker,""\)/);
-  assert.match(app,/if\(temporaryInfoPin\)\{temporaryInfoPin=null;renderMarkers\(\);\}/);
+test("Kartentip pin immediately enters the regular stored pin-info dataflow",()=>{
+ const app=source("app.js");
+ assert.match(app,/onPin:point=>addPin\(point\.lat,point\.lng,"","map"\)/);
+ assert.match(app,/created=pinOps\.createPin\(state,/);
+ assert.match(app,/layerId:PRIVATE_ID/);
+ assert.match(app,/pinInfoService\.setVisiblePins\(temporaryInfoPin\?\[\.\.\.visible,temporaryInfoPin\.point\]:visible\)/);
+ assert.match(app,/save\(\);renderLayers\(\);renderMarkers\(\);renderGeometry\(\)/);
+ assert.match(app,/void dbWrite\(\)\.catch/);
+ assert.doesNotMatch(app.split("function showObjectPreview(entry){")[1].split("function addPin(lat,lng")[0],
+  /temporaryInfoPin=entry|platePanel\.show|temporaryLayerPicker\.show/);
 });
