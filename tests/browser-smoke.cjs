@@ -230,12 +230,12 @@ async function longPress(page,x,y,ms=725){
       "Clearing via the search input closes results");
     step("mobile-safe search clear is explicit and cancels without submitting");
     const searchClear=page.locator("#searchClear");
-    assert.equal(await searchClear.isHidden(),true);
+    assert.equal(await searchClear.isVisible(),true,"sole X remains visible without text");
     await page.locator("#searchInput").fill("Hamburg");
     assert.equal(await searchClear.isVisible(),true);
     await searchClear.click();
     assert.equal(await page.locator("#searchInput").inputValue(),"");
-    assert.equal(await searchClear.isHidden(),true);
+    assert.equal(await searchClear.isVisible(),true,"X remains visible after clearing");
     assert.equal(await page.locator("#searchResults").isHidden(),true);
     assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),true);
 
