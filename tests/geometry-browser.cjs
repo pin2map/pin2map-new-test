@@ -236,6 +236,12 @@ const viewports=[
      try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
      finally{db.close();}
    },"🇩🇪 RV (Landkreis Ravensburg)",{timeout:12000});
+   console.log("[geometry] after RV selection",JSON.stringify(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return {areas:(await db.loadProject()).areas.map(a=>a.name),
+       writes:window.__v302AreaWriteTrace};}
+     finally{db.close();}
+   })));
    await page.locator("#searchInput").fill("ÜB");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"ÜB"}).first().click();
