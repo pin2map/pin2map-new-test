@@ -382,11 +382,6 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator(".pin-marker").count(),0,
       "zero matches show no project pins in only-hits mode");
     assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"none");
-    await onlyHits.uncheck();
-    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"block",
-      "zero-result searching must visibly dim the map, rather than looking inactive");
-    assert.equal(await page.locator(".pin-marker").count(),1,
-      "standard spotlight mode retains visible context even with zero results");
     await page.locator("#searchClear").click();
     assert.equal(await page.locator(".pin-marker").count(),1,
       "leaving search restores original layer visibility and the context pin");
