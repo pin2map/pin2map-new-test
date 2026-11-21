@@ -211,10 +211,11 @@ test("v300 only-hits is a visual search toggle, never a persistent search filter
  assert.match(ui,/\["onlyHits","Nur Treffer"\]/);
  assert.match(ui,/onlyHits:checked\("onlyHits"\)/);
  assert.match(app,/objectSearchView\?\.onlyHits/);
- assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!objectSearchView\.onlyHits\)/);
- assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!view\.onlyHits\)/);
+ assert.match(app,/objectSearchSpotlight\?\.setActive\(!objectSearchView\.onlyHits&&\(matches\.length>0\|\|!!query/);
+ assert.match(app,/objectSearchSpotlight\?\.setActive\(!view\.onlyHits&&\(matches\.length>0\|\|!!\$\("searchInput"\)\.value\.trim\(\)/);
  assert.match(app,/if\(!displayOnlyChanged\)fitObjectSearchMatches\(matches\)/);
- assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ assert.match(css,/width:min\(340px,calc\(100vw - 24px\)\)/);
+ assert.match(css,/display:flex;flex-wrap:nowrap;/);
  const {searchExpanded}=require("../domain/object-search.js");
  const example={layers:[{id:"v",visible:true}],pins:[
   {id:"found",name:"Saale",layerId:"v"},
