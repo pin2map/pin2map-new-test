@@ -107,7 +107,7 @@ test("single fixed viewport geometry fills free space without keyboard-state bra
  const js=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
  assert.doesNotMatch(js,/keyboard-constrained|viewportConstrained|contentHeight:this\\.menu\\.scrollHeight/);
- assert.match(css,/#app \\.search-type-menu\\{[\\s\\S]*?position:fixed;/);
+ assert.match(css,/#app \.search-type-menu\{[\s\S]*?position:fixed;/);
  assert.doesNotMatch(css,/#searchTypeMenu.*keyboard-constrained/);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
