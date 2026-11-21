@@ -211,8 +211,8 @@ test("v300 only-hits is a visual search toggle, never a persistent search filter
  assert.match(ui,/\["onlyHits","Nur Treffer"\]/);
  assert.match(ui,/onlyHits:checked\("onlyHits"\)/);
  assert.match(app,/objectSearchView\?\.onlyHits/);
- assert.match(app,/objectSearchSpotlight\?\.setActive\(!objectSearchView\.onlyHits&&\(matches\.length>0\|\|!!query/);
- assert.match(app,/objectSearchSpotlight\?\.setActive\(!view\.onlyHits&&\(matches\.length>0\|\|!!\$\("searchInput"\)\.value\.trim\(\)/);
+ assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!objectSearchView\.onlyHits\)/);
+ assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!view\.onlyHits\)/);
  assert.match(app,/if\(!displayOnlyChanged\)fitObjectSearchMatches\(matches\)/);
  assert.match(css,/width:min\(340px,calc\(100vw - 24px\)\)/);
  assert.match(css,/display:flex;flex-wrap:nowrap;/);
@@ -222,4 +222,20 @@ test("v300 only-hits is a visual search toggle, never a persistent search filter
   {id:"context",name:"Berlin",layerId:"v"}],areas:[],rivers:[]};
  assert.deepEqual(searchExpanded(example,{query:"saale",onlyHits:true}).map(m=>m.id),["found"]);
  assert.deepEqual(searchExpanded(example,{query:"saale",onlyHits:false}).map(m=>m.id),["found"]);
+});
+
+// Regression fixture: all five matching objects must be found as in v299.
+test("five visible sal matches survive the v300 display-only toggle",()=>{
+ const {searchExpanded}=require("../domain/object-search.js");
+ const sample={layers:[{id:"v",visible:true}],pins:[
+  {id:"p1",layerId:"v",name:"Salzburg"},
+  {id:"p2",layerId:"v",name:"Salzach"},
+  {id:"p3",layerId:"v",name:"Ort",note:"Saline"}],areas:[
+  {id:"a1",layerId:"v",kind:"area",name:"Salzgebiet"},
+  {id:"a2",layerId:"v",kind:"lake",name:"Salzsee"}],rivers:[]};
+ for(const onlyHits of [false,true]){
+  const result=searchExpanded(sample,{query:"sal",kind:"all",onlyHits});
+  assert.equal(result.length,5,"the display-only toggle must not alter matching");
+  assert.deepEqual(result.map(m=>m.id),["p1","p2","p3","a1","a2"]);
+ }
 });
