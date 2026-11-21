@@ -28,7 +28,7 @@ async function metrics(page){
    navigation:rect("pinPanel"),
    details:rect("pinNotesBlock"),footer:rect("closePin"),
    routingRow:rect("pinPanel"),routingCount:get("pinPanel").querySelectorAll(".pin-navigation-buttons button").length,
-   routingDisabled:[...get("pinPanel").querySelectorAll(".pin-navigation-buttons button")].every(b=>b.disabled),
+   routingDisabled:[...get("pinPanel").querySelectorAll(".pin-navigation-routing button")].every(b=>b.disabled),
    noteHeight:notes.getBoundingClientRect().height,
    noteFont:Number.parseFloat(getComputedStyle(notes).fontSize),
    nameFont:Number.parseFloat(getComputedStyle(get("pinName")).fontSize),
@@ -158,12 +158,14 @@ async function metrics(page){
     const nameRect=await page.locator("#pinPanel .pin-editor-head").boundingBox();
     assert.ok(navRect.y-nameRect.y-nameRect.height>=10,"Navigation must breathe above");
     assert.equal(m.routingCount,5,"Two external and three routing controls must be visible");
-    assert.equal(m.routingDisabled,true,"All future navigation controls must stay inert");
+    assert.equal(m.routingDisabled,true,"Only internal pin2map routing remains future-only");
+    assert.equal(await page.locator("#pinNavCopy").isEnabled(),true);
+    assert.equal(await page.locator("#pinNavApple").isEnabled(),true);
     assert.ok(m.details.y>navRect.y+navRect.height,"Notes follow navigation");
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
     assert.ok(Math.abs(m.noteHeight-145)<=1,JSON.stringify(m));
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
-    for(const b of m.routingButtons)assert.ok(b.disabled&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size "+JSON.stringify(b));
+    for(const [index,b] of m.routingButtons.entries())assert.ok(b.disabled===(index>=2)&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size and activation "+JSON.stringify(b));
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
     const sectors=await page.locator(".pin-status-segments").evaluateAll(nodes=>
       nodes.map(n=>["note","url","gpx"].map(t=>
