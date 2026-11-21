@@ -420,8 +420,17 @@ const viewports=[
    await page.locator(".p2m-area-name-label").first().click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
-   assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),4);
+   assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),5);
+   assert.equal(await page.locator("#geometryEditor .geometry-actions .geometry-color").count(),1);
    assert.equal(await page.locator("#geometryName").inputValue(),"Testfläche");
+   await page.locator(".geometry-native-color").fill("#aabbcc");
+   await page.waitForFunction(async()=>{
+     const store=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await store.loadProject()).areas.some(a=>a.color==="#AABBCC");}
+     finally{store.close();}
+   });
+   assert.equal(await page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry").first().getAttribute("stroke"),"#AABBCC");
+   assert.equal(await page.locator(".geometry-color-dot").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(170, 187, 204)");
    async function readStoredProject(){
      return page.evaluate(async()=>{
        const db=await window.Pin2MapIndexedDBProjectStore.open();
@@ -456,6 +465,10 @@ const viewports=[
    }
    assert.equal(savedArea.layerId,"private");
    assert.equal(savedArea.geometry.type,"Polygon");
+   assert.equal(savedArea.color,undefined,"No override: area inherits layer color");
+   const areaLabel=page.locator(".p2m-area-name-label").first();
+   assert.equal(await areaLabel.locator('img[src$="region.svg"]').count(),1);
+   assert.equal(await areaLabel.locator(".p2m-object-status svg path").count(),2);
    await page.locator("#geometryNotes").fill("Testkommentar");
    // Touch devices open the shared full-screen note editor. Save/close it
    // explicitly before using the geometry dialog's own OK button.
@@ -671,11 +684,11 @@ const viewports=[
    assert.equal(await page.locator("#geometrySearchBusy").isHidden(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-link").isVisible(),true);
-   assert.equal(await page.locator("#geometryEditor .geometry-actions button:not(.hidden)").count(),4);
+   assert.equal(await page.locator("#geometryEditor .geometry-actions button:not(.hidden)").count(),5);
    const riverActionOrder=await page.locator("#geometryEditor .geometry-actions button:not(.hidden)")
      .evaluateAll(buttons=>buttons.map(b=>b.getAttribute("aria-label")));
-   assert.deepEqual(riverActionOrder,["Ebene: Privat","Link","Wikipedia","Dialog schließen"],
-     "River now shares the full object-editor footer instead of a special four-button editor");
+   assert.deepEqual(riverActionOrder,["Ebene: Privat","Objektfarbe auswählen","Link","Wikipedia","Dialog schließen"],
+     "River editor must have individual color at the second footer position");
    // Geometry-specific layer and URL popups must work even after search flows.
    await page.locator("#geometryEditor .geometry-layer").click();
    await page.locator("#geometryLayerMenu").waitFor({state:"visible"});
@@ -699,6 +712,13 @@ const viewports=[
    await page.locator("#geometryEditor .geometry-link").click();
    const river=(await waitForStored(project=>project?.rivers?.length>=1,"river")).rivers[0];
    assert.equal(river.layerId,"private");
+   assert.equal(river.color,undefined);
+   await page.locator(".geometry-native-color").fill("#102938");
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).rivers.some(r=>r.color==="#102938");}
+     finally{db.close();}
+   });
    assert.equal(river.chains[0].length,3);
    await page.locator("#geometryEditor .geometry-ok").click();
    // A river label must follow the visible course when only part of the
@@ -733,6 +753,7 @@ const viewports=[
    await page.waitForFunction(()=>document.querySelectorAll(".p2m-area-name-wrap").length===2,
      null,{timeout:10000});
    assert.equal(await page.locator(".p2m-river-name-label").count(),1);
+   assert.equal(await page.locator(".p2m-river-name-label img[src$='river.svg']").count(),1);
    await page.screenshot({path:"geometry-browser-artifacts/"+view.name+"-areas-river.png"});
    // New South Wales regression: clicking near the shore may have the
    // correct state in reverse hierarchy even when the searched polygon
