@@ -3049,3 +3049,14 @@ body.object-search-mode #app #searchClear.search-clear span{
   flex-basis:14px;width:14px;height:14px;
  }
 }
+
+/* v302: only freshly persisted objects pulse, never their Leaflet hitboxes,
+   labels, or transparent river tap corridors. Class expires after 30 seconds. */
+#map .leaflet-marker-icon.pin-icon.p2m-new-object-blink .pin-marker-shape,
+#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry{
+ animation:p2m-temporary-pin-blink 1.3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion:reduce){
+ #map .leaflet-marker-icon.pin-icon.p2m-new-object-blink .pin-marker-shape,
+ #map .leaflet-overlay-pane path.p2m-new-object-blink-geometry{animation:none}
+}
