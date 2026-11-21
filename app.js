@@ -915,6 +915,11 @@
   // No temporary confirmation, preview marker or layer-choice step is used.
   function showObjectPreview(entry){
     if(!entry)return null;
+    // License-plate results are intentionally Object.freeze()d by the domain.
+    // Only the local per-pin naming state may carry savedId; never mutate a
+    // frozen source result. Ordinary map-pin entries retain their identity for
+    // the asynchronous reverse-name callback.
+    if(!Object.isExtensible(entry))entry={...entry};
     clearObjectPreview();
     const privateLayer=layerById(PRIVATE_ID);
     if(!privateLayer)throw Error("Privat-Ebene fehlt");
