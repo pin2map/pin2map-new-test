@@ -3062,12 +3062,12 @@ body.object-search-mode #app #searchClear.search-clear span{
  }
 }
 
-/* v302: only freshly persisted objects pulse, never their Leaflet hitboxes,
-   labels, or transparent river tap corridors. Class expires after 30 seconds. */
+/* v303: only freshly persisted objects pulse, never their Leaflet hitboxes,
+   labels, or transparent river tap corridors. Class expires after 10 seconds. */
 #map .leaflet-marker-icon.pin-icon.p2m-new-object-blink .pin-marker-shape,
 #map .leaflet-overlay-pane path.p2m-new-object-blink-geometry{
- /* 23 cycles = 29.9 seconds. End opaque even if a background timer is delayed. */
- animation:p2m-temporary-pin-blink 1.3s ease-in-out 23 forwards;
+ /* Seven 1.3-second cycles = 9.1 seconds; JS removes the class by 10s. */
+ animation:p2m-temporary-pin-blink 1.3s ease-in-out 7 forwards;
 }
 @media (prefers-reduced-motion:reduce){
  #map .leaflet-marker-icon.pin-icon.p2m-new-object-blink .pin-marker-shape,

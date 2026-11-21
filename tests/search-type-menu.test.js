@@ -7,7 +7,7 @@ const {CHOICES}=require("../ui/search-type-menu.js");
 test("seven menu actions retain accessible icon and keyboard contracts",()=>{
   assert.deepEqual(CHOICES.map(x=>[x.id,x.label,x.shortcut]),[
     ["pin","Pin","p"],["gps","GPS-Location","l"],["area","Gebiet","g"],
-    ["lake","See","e"],["river","Fluss","f"],["plate","Kennzeichen","k"],["objects","Markierungen Suchen","s"]]);
+    ["lake","See","s"],["river","Fluss","f"],["plate","Kennzeichen","k"],["objects","Markierungen Suchen","m"]]);
   assert.equal(CHOICES[0].icon,"map-pin");
   assert.equal(CHOICES[1].icon,"locate-fixed");
   assert.equal(CHOICES[5].icon,"car");
@@ -118,4 +118,34 @@ test("visible place results retain Escape before the object chooser can consume 
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  assert.match(code,/const placeResults=this\.el\("searchResults"\)/);
  assert.match(code,/if\(!this\.searchMode&&placeResults&&!placeResults\.classList\.contains\("hidden"\)\)return/);
+});
+
+test("v303 shared icons have one registry and no independent result copies",()=>{
+ const registry=require("../ui/object-type-icons.js");
+ const menu=require("../ui/search-type-menu.js").CHOICES;
+ for(const type of ["area","lake","river","plate"]){
+  const descriptor=registry.descriptor(type);
+  const option=menu.find(c=>c.id===type);
+  assert.ok(option);
+  assert.equal(option.icon,descriptor.icon);
+  assert.equal(option.asset,descriptor.asset);
+ }
+ const results=fs.readFileSync(path.join(__dirname,"../ui/search-results.js"),"utf8");
+ const core=fs.readFileSync(path.join(__dirname,"../ui/object-dialog-core.js"),"utf8");
+ const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ assert.match(results,/this\.objectIcons\.element\("area"/);
+ assert.match(results,/this\.objectIcons\.element\(featureIcon/);
+ assert.match(core,/objectIcons\.element\(choice\.id/);
+ assert.doesNotMatch(app,/featureIconOf:[\s\S]*?"vector-polygon"/);
+ const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ const worker=fs.readFileSync(path.join(__dirname,"../sw.js"),"utf8");
+ assert.ok(html.includes('src="./ui/object-type-icons.js"'));
+ assert.ok(worker.includes('"./ui/object-type-icons.js"'));
+});
+test("v303 flash is capped at ten seconds",()=>{
+ const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
+ assert.ok(app.includes("deadline=Date.now()+10000"));
+ assert.ok(app.includes("},10000);"));
+ assert.ok(css.includes("animation:p2m-temporary-pin-blink 1.3s ease-in-out 7 forwards"));
 });

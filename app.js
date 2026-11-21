@@ -37,12 +37,12 @@
   const recentlyCreated=new Map();
   const activeFlashIds=()=>new Set([...recentlyCreated].filter(([,end])=>Date.now()<end).map(([id])=>id));
   function flashNewObject(type,id){
-    const key=type+":"+id,deadline=Date.now()+30000;
+    const key=type+":"+id,deadline=Date.now()+10000;
     recentlyCreated.set(key,deadline);
     setTimeout(()=>{
       if(recentlyCreated.get(key)!==deadline)return;
       recentlyCreated.delete(key);renderMarkers();renderGeometry();
-    },30000);
+    },10000);
   }
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
@@ -105,10 +105,10 @@
     kindOf:result=>result.__plateEntry||result.__plateChoice||result.__featureType?
       null:placeDomain.kind(result),
     featureIconOf:result=>result.__plateChoice?
-      (result.kind==="point"?"map-pin":"vector-polygon"):
-      result.__plateEntry?"car":result.__featureType==="river"?"spline":
-      result.__featureType==="lake"?"waves-horizontal":
-      result.__featureType?"vector-polygon":null,
+      (result.kind==="point"?"pin":"area"):
+      result.__plateEntry?"plate":result.__featureType==="river"?"river":
+      result.__featureType==="lake"?"lake":
+      result.__featureType?"area":null,
     icons:window.Pin2MapIcons,
     duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry||r.__plateChoice)?[]:
       placeDomain.duplicateCoordinates(results)

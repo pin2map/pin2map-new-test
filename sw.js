@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v302';
+const CACHE='pin2map-new-v303';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -77,6 +77,7 @@ const CORE=[
   "./adapters/esri-imagery-metadata.js",
   "./ui/satellite-inspector.js",
   "./ui/lucide-icons.js",
+  "./ui/object-type-icons.js",
   "./ui/map-control-feedback.js",
   "./ui/pwa-refresh.js",
   "./ui/search-results.js",

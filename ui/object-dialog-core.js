@@ -8,10 +8,12 @@
   static get okLabel(){return OK_LABEL;}
   static descriptor(type){
    const id=type==="lake"?"lake":type==="river"?"river":type==="area"?"area":"pin";
-   const choices=root.Pin2MapSearchTypeMenu?.CHOICES||[];
-   const choice=choices.find(x=>x.id===id);
-   if(!choice)throw new Error("Missing canonical search symbol for "+id);
-   return {id,label:choice.label,icon:choice.icon||null,asset:choice.asset||null};
+   const objectIcons=root.Pin2MapObjectTypeIcons||
+    (typeof require==="function"?require("./object-type-icons.js"):null);
+   const choice=objectIcons.descriptor(id);
+   if(!choice)throw new Error("Missing canonical object symbol for "+id);
+   return {id,label:({pin:"Pin",area:"Gebiet",lake:"See",river:"Fluss"})[id],
+    icon:choice.icon||null,asset:choice.asset||null};
   }
   static objectType(type){return type==="area"?"Fläche":type==="lake"?"See":type==="river"?"Fluss":"Pin";}
   static setOpened(button,open){
@@ -37,11 +39,9 @@
    button.classList.add("object-delete-trigger");
    const holder=doc.createElement("span");
    holder.className="object-delete-art";
-   if(choice.asset){
-    const image=doc.createElement("img");image.src="./assets/"+choice.asset;
-    image.alt="";image.setAttribute("aria-hidden","true");
-    holder.append(image);
-   }else holder.append(icons.svg(choice.icon,doc));
+   const objectIcons=root.Pin2MapObjectTypeIcons||
+    (typeof require==="function"?require("./object-type-icons.js"):null);
+   holder.append(objectIcons.element(choice.id,doc,icons));
    button.append(holder);
    button.setAttribute("aria-label",this.objectType(type)+" löschen");
    button.setAttribute("title",this.objectType(type)+" löschen");

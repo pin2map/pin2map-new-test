@@ -480,7 +480,8 @@ const viewports=[
    assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.searchType),"pin");
    await page.keyboard.press("e"); // See now uses E; S chooses marker search.
    await page.locator("#searchResults .result").first().waitFor({state:"visible",timeout:12000});
-   assert.equal(await page.locator(".result-feature-icon svg").count(),1);
+   assert.equal(await page.locator('.result-feature-icon img[src$="region.svg"]').count(),1,
+     "Area search result must reuse the same area icon as the search chooser");
    await page.locator("#searchResults .result").first().click();
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();

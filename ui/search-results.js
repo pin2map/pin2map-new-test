@@ -20,6 +20,8 @@
       this.kindOf=kindOf;
       this.duplicateCoordinates=duplicateCoordinates;
       this.featureIconOf=featureIconOf;this.icons=icons;
+      this.objectIcons=root.Pin2MapObjectTypeIcons||
+       (typeof require==="function"?require("./object-type-icons.js"):null);
       this.onCancel=onCancel;
       // Presentation geometry only: the results sheet is attached to the
       // OUTER search block, appears below the outer block and can extend
@@ -148,18 +150,17 @@
         const hierarchy=result.__featureType==="areaHierarchy";
         if(hierarchy){
           item.classList.add("result-area-hierarchy");
-          const symbol=this.document.createElement("img");
-          symbol.className="result-area-symbol";
-          symbol.src="./assets/region.svg";
-          symbol.alt="";
-          symbol.setAttribute("aria-hidden","true");
+          const symbol=this.objectIcons.element("area",this.document,this.icons);
+          symbol.classList.add("result-area-symbol");
           heading.append(symbol);
         }
         const featureIcon=hierarchy?null:this.featureIconOf(result);
         if(featureIcon&&this.icons){
           const holder=this.document.createElement("span");
           holder.className="result-feature-icon";
-          holder.append(this.icons.svg(featureIcon,this.document));
+          holder.append(this.objectIcons.descriptor(featureIcon)?
+           this.objectIcons.element(featureIcon,this.document,this.icons):
+           this.icons.svg(featureIcon,this.document));
           heading.append(holder);
         }
         heading.append(title);

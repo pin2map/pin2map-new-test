@@ -2,14 +2,16 @@
 /* Search chooser: one compact creation chooser and an independent persisted-in-memory
  * object-search mode. No project data, persistence or Leaflet APIs here. */
 (function(root){
+ const TYPES=root.Pin2MapObjectTypeIcons||
+  (typeof require==="function"?require("./object-type-icons.js"):null);
  const CHOICES=Object.freeze([
-  {id:"pin",label:"Pin",shortcut:"p",icon:"map-pin"},
-  {id:"gps",label:"GPS-Location",shortcut:"l",icon:"locate-fixed"},
-  {id:"area",label:"Gebiet",shortcut:"g",asset:"region.svg"},
-  {id:"lake",label:"See",shortcut:"e",asset:"lake.svg"},
-  {id:"river",label:"Fluss",shortcut:"f",asset:"river.svg"},
-  {id:"plate",label:"Kennzeichen",shortcut:"k",icon:"car"},
-  {id:"objects",label:"Markierungen Suchen",shortcut:"s",icon:"scan-search"}
+  {id:"pin",label:"Pin",shortcut:"p",...TYPES.descriptor("pin")},
+  {id:"gps",label:"GPS-Location",shortcut:"l",...TYPES.descriptor("gps")},
+  {id:"area",label:"Gebiet",shortcut:"g",...TYPES.descriptor("area")},
+  {id:"lake",label:"See",shortcut:"s",...TYPES.descriptor("lake")},
+  {id:"river",label:"Fluss",shortcut:"f",...TYPES.descriptor("river")},
+  {id:"plate",label:"Kennzeichen",shortcut:"k",...TYPES.descriptor("plate")},
+  {id:"objects",label:"Markierungen Suchen",shortcut:"m",...TYPES.descriptor("objects")}
  ]);
  class SearchTypeMenu{
   constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{},onEdit=()=>{}}){
@@ -36,12 +38,9 @@
     const button=this.makeElement("button","search-type-choice");
     button.type="button";button.setAttribute("role","menuitem");
     button.dataset.searchType=choice.id;
-    if(choice.icon)button.append(this.icons.svg(choice.icon,this.doc));
-    else{
-     const icon=this.makeElement("img","search-type-icon");
-     icon.alt="";icon.setAttribute("aria-hidden","true");
-     icon.src="./assets/"+choice.asset;button.append(icon);
-    }
+    const symbol=TYPES.element(choice.id,this.doc,this.icons);
+    if(choice.asset)symbol.classList.add("search-type-icon");
+    button.append(symbol);
     const label=this.makeElement("span");
     const j=choice.label.toLowerCase().indexOf(choice.shortcut);
     if(j<0)throw Error("Search shortcut not in visible label: "+choice.id);
