@@ -132,17 +132,18 @@ const base=process.env.PIN2MAP_TEST_URL||
       "Auch in ausgeblendete Ebenen");
     const hidden=page.locator('[data-search-flag="hidden"]');
     await hidden.check();
-    assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 1 Fläche · 0 Gewässer");
-    assert.equal(await page.locator(".pin-marker").count(),2,
-      "two distinct pins render despite repeated legacy stored records");
+    assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer",
+      "Name + Notiz must exclude the URL-only match");
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "only one hidden-layer pin matches Name + Notiz despite legacy duplicate records");
     await page.locator("#searchInput").fill("Karlsruher");
     assert.equal(await page.locator("#objectSearchCount").innerText(),
       "0 Pins · 0 Flächen · 0 Gewässer",
       "each text edit re-runs the active search without Enter");
     await page.locator("#searchInput").fill("Karlsruhe");
     assert.equal(await page.locator("#objectSearchCount").innerText(),
-      "2 Pins · 1 Fläche · 0 Gewässer",
-      "deleting a suffix restores earlier results immediately");
+      "1 Pin · 1 Fläche · 0 Gewässer",
+      "deleting a suffix restores the Name + Notiz matches immediately");
     await kind.selectOption("all-name");
     assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer",
       "name-only excludes the pin found via URL text");
@@ -167,7 +168,7 @@ const base=process.env.PIN2MAP_TEST_URL||
     await checks.nth(0).uncheck();await checks.nth(1).uncheck();await checks.nth(2).uncheck();
     await page.locator("#searchInput").fill("Karlsruhe");
     await kind.selectOption("all");
-    assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 1 Fläche · 0 Gewässer");
+    assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer");
     await page.keyboard.press("Meta+f");
     assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")),true,
       "hardware Find must not end search");
@@ -270,14 +271,14 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.match(await page.locator("#pinName").inputValue(),/Karlsruhe/,
       "a matching named pin was opened for live edit regression");
     await page.locator("#pinName").fill("Anderer Name");
+    await page.waitForFunction(()=>document.querySelector("#objectSearchCount")?.textContent?.startsWith("0 Pins"));
+    assert.equal(await page.locator("#objectSearchCount").innerText(),
+      "0 Pins · 1 Fläche · 0 Gewässer",
+      "edited pin immediately leaves an active search when it ceases to match");
+    await page.locator("#pinName").fill("Karlsruhe Bahnhof");
     await page.waitForFunction(()=>document.querySelector("#objectSearchCount")?.textContent?.startsWith("1 Pin"));
     assert.equal(await page.locator("#objectSearchCount").innerText(),
       "1 Pin · 1 Fläche · 0 Gewässer",
-      "edited pin immediately leaves an active search when it ceases to match");
-    await page.locator("#pinName").fill("Karlsruhe Bahnhof");
-    await page.waitForFunction(()=>document.querySelector("#objectSearchCount")?.textContent?.startsWith("2 Pins"));
-    assert.equal(await page.locator("#objectSearchCount").innerText(),
-      "2 Pins · 1 Fläche · 0 Gewässer",
       "edited pin immediately rejoins an active search when it matches again");
     await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu").waitFor({state:"visible"});
