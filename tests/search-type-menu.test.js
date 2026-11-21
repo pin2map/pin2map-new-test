@@ -76,7 +76,7 @@ test("Escape closes stored-object search but restores focus to its cleared input
 test("creation chooser preserves the same single-column design on keyboard and every device",()=>{
  const js=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
- assert.match(css,/#app \.search-creation-choices\{display:flex;flex-direction:column/);
+ assert.match(css,/#app \.search-creation-choices\{display:flex;flex:0 0 auto;flex-direction:column/);
  assert.doesNotMatch(css,/keyboard-constrained \.search-creation-choices\s*\{/);
  assert.doesNotMatch(css,/keyboard-constrained \.search-type-choice\s*\{/);
  assert.doesNotMatch(js,/search-creation-scroll-hint|Weitere Optionen/);
@@ -89,7 +89,7 @@ test("approved search dialog uses actual viewport height, including iPhone keybo
   form:anchor,app,visualViewport:{offsetLeft:0,offsetTop,width:390,height},
   innerHeight:844,menuWidth:340});
  const full=layout(800);
- assert.equal(full.maxHeight,671,"provide all available space and let natural content determine height");
+ assert.equal(full.maxHeight,715,"use app.bottom - 8 - (form.bottom + 9) in normal mode");
  assert.equal(full.top,121,"keep the approved placement beneath search");
  const keyboard=layout(420);
  assert.equal(keyboard.keyboard,true);
