@@ -136,7 +136,7 @@ const viewports=[
      assert.equal(await option.locator((i<=1||i===5)?"svg":"img").count(),1,
        "Missing icon "+modes[i][1]);
      assert.equal(await option.locator("kbd").count(),0);
-     assert.equal(await option.locator("strong").innerText(),["P","L","G","e","F","K"][i]);
+     assert.equal(await option.locator("strong").innerText(),["P","L","G","S","F","K"][i]);
      assert.equal(await option.locator("strong").evaluate(el=>
        getComputedStyle(el).textDecorationLine.includes("underline")),true);
      if(i===1)assert.equal(await option.locator("span").first().innerText(),"GPS-Location");

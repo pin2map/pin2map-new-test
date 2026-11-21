@@ -30,12 +30,12 @@ test("every creation entry is connected to immediate save; old menus stay hidden
   .split("function addPin(lat,lng")[0];
  assert.doesNotMatch(creation,/platePanel\.show|temporaryLayerPicker\.show|showTemporaryPin|showTemporaryRiver/);
 });
-test("new persisted object pulse expires after 30 seconds without touching project data",()=>{
+test("new persisted object pulse expires after 10 seconds without touching project data",()=>{
  const app=read("app.js"),css=read("styles.css");
- assert.match(app,/Date\.now\(\)\+30000/);
+ assert.match(app,/Date\.now\(\)\+10000/);
  assert.match(app,/setTimeout\(\(\)=>\{/);
- assert.match(app,/\},30000\);/);
- assert.match(css,/animation:p2m-temporary-pin-blink 1\.3s ease-in-out 23 forwards/);
+ assert.match(app,/\},10000\);/);
+ assert.match(css,/animation:p2m-temporary-pin-blink 1\.3s ease-in-out 7 forwards/);
  assert.match(css,/\.p2m-new-object-blink \.pin-marker-shape/);
  assert.match(css,/path\.p2m-new-object-blink-geometry/);
  assert.match(css,/prefers-reduced-motion:reduce/);

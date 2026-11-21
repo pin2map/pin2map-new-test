@@ -21,6 +21,12 @@ class Element{
   }
   append(...children){this.children.push(...children);}
   prepend(...children){this.children.unshift(...children);}
+  insertBefore(child,reference){
+    const index=this.children.indexOf(reference);
+    if(index<0)throw new Error("insertBefore reference is not a child");
+    this.children.splice(index,0,child);
+    return child;
+  }
   replaceChildren(...children){this.children=[...children];}
   addEventListener(type,fn){this.listeners[type]=fn;}
   setAttribute(k,v){this.attrs[k]=String(v);}

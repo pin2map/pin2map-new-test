@@ -16,7 +16,9 @@ const html=read("index.html");
 const sw=read("sw.js");
 test("all four object dialogs have one shared foundation and one canonical search icon owner",()=>{
  assert.match(core,/class ObjectDialogCore/);
- assert.match(core,/Pin2MapSearchTypeMenu\?\.CHOICES/);
+ assert.match(core,/Pin2MapObjectTypeIcons/);
+ assert.match(read("ui/object-type-icons.js"),/const TYPES=Object\.freeze\(/);
+ assert.doesNotMatch(core,/Pin2MapSearchTypeMenu\?\.CHOICES/);
  assert.match(pin,/core\.configureSurface\(/);
  assert.match(pin,/core\.arrangeFooter\(/);
  assert.match(geometry,/this\.core\.configureSurface\(/);
