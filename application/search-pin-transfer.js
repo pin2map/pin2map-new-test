@@ -1,6 +1,6 @@
 "use strict";
-/* Stage a selected geocoder result as a temporary pin preview via an injected
- * callback. Permanent Pin creation and persistence happen ONLY after Yes in app.
+/* Transfer a selected geocoder result to the application's immediate Pin creation
+ * port. Project creation and persistence remain outside this service.
  * Provider/network, UI rendering and project persistence remain elsewhere. */
 (function(root){
   class SearchPinTransfer{
