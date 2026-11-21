@@ -46,3 +46,15 @@ Bestandsschutz gilt für abgenommene Funktionen, Dialoge und Layouts. Wenn eine 
 ## Spezifische QS-Regel nach iPhone-Suchdialogfehler (21.11.2026)
 
 Für UI-Fehler muss der beobachtete kaputte Zustand in einem Negativtest reproduzierbar scheitern; anschließend muss der Fix denselben Test bestehen. Echte Pixel-/Box-Geometrie, freie Viewport-Höhe und tatsächlich sichtbare letzte Option prüfen, nicht bloß DOM-Existenz oder Scrollbarkeit. Eine bereits durch `maxHeight` begrenzte Flex-Box darf ihre eigene `scrollHeight` nicht als Eingabe für ihre künftige Maximalhöhe benutzen. Mobile Browseremulation nie als reale iPhone-Safari-Prüfung ausgeben. Freigabe bei gegenteiligem Gerätetest zurücknehmen und Tests nachschärfen.
+
+## Verbindliche Problemlösungsstrategie: Ursachenklärung statt Patch-Kaskaden (21.11.2026)
+
+Bei Fehlern, insbesondere bei wiederholtem Fehlschlag oder einer Regression nach einem Fix, **nicht spekulativ mehrere kleine Änderungen nacheinander ausprobieren**. Stattdessen:
+
+1. **Ist und Soll bestimmen:** Den tatsächlich beobachteten Fehler, den geltenden UI-/Funktionsvertrag und die messbaren Randbedingungen festhalten. Technische Vermutungen ausdrücklich als Hypothesen kennzeichnen, bis sie überprüft sind.
+2. **Ursache prüfen und Komplexität reduzieren:** Zuständige Datenflüsse, Zustände, Koordinatensysteme und Abhängigkeiten nachvollziehen. Schlägt ein Korrekturversuch fehl, die bisherige Herangehensweise kritisch verwerfen, statt weitere symptomatische Patches daraufzustapeln.
+3. **Bei Bedarf betroffene Lösung sauber neu aufbauen:** Eine einfache, nachvollziehbare, möglichst zustandsarme Implementierung des **eng begrenzten betroffenen Bereichs** einer Patch-Kaskade vorziehen. Nicht die gesamte Anwendung neu schreiben, wenn nur ein isolierter Teil betroffen ist. Keine unautorisierte Änderung an Layout, Verhalten oder Funktionen; für eine bessere abweichende Lösung zuerst den Nutzer fragen.
+4. **Dann gezielt und unabhängig prüfen:** Zuerst reproduzierbaren Negativtest für den Originalfehler und die konkrete Ursache, danach positiven Vertrags-/Rendering-Test und bestehende Regressionen. Neue Tests dürfen die fehlerhafte Implementierung nicht zum Soll erklären.
+5. **Freigabe nur auf Nachweis:** Node-, Architektur-, echte Browser-, HTTPS- und erforderliche WebKit-Gates abwarten; echte iOS-Geräteabnahme gesondert kennzeichnen. Gescheiterte oder unvollständige Gates nicht als Erfolg melden.
+
+**Stop-Regel:** Nach einer fehlgeschlagenen Korrektur oder wiederholten Fehlversuchen keine weitere ad-hoc-Codeänderung, bevor Ursache, Vertragsgrenzen und gegebenenfalls Neuaufbauansatz erneut geprüft wurden. Diagnostik und Qualitätssicherung haben Vorrang vor schneller Commit-/Test-Wiederholung.
