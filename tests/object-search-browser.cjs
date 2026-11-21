@@ -107,6 +107,16 @@ const base=process.env.PIN2MAP_TEST_URL||
       "hidden-layer matches excluded until checkbox enabled");
     assert.equal(await page.locator("#objectSearchCount").innerText(),
       "0 Pins · 0 Flächen · 0 Gewässer");
+    const captionGeometry=await page.locator("#objectSearchCount").evaluate(el=>{
+      const r=el.getBoundingClientRect(),form=document.querySelector("#searchForm"),
+        f=form.getBoundingClientRect();
+      return {top:r.top,bottom:r.bottom,height:r.height,formTop:f.top,
+        overflow:getComputedStyle(form).overflow};
+    });
+    assert.equal(captionGeometry.overflow,"visible","counter may not be clipped");
+    assert.ok(captionGeometry.height>=10&&captionGeometry.top<captionGeometry.formTop&&
+      captionGeometry.bottom>captionGeometry.formTop,
+      "counter must straddle the upper border: "+JSON.stringify(captionGeometry));
     assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),false);
     const checks=page.locator(".object-search-flags input");
     assert.equal(await checks.count(),3);

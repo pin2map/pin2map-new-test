@@ -2967,3 +2967,6 @@ body.object-search-mode #app #searchClear.search-clear span{
  white-space:nowrap;pointer-events:none;
 }
 #app .search.object-search-count-active .object-search-count{display:block}
+
+/* v295 search count may cross the pill's top border; standard mode stays clipped. */
+#app .topbar .search.object-search-count-active{overflow:visible}
