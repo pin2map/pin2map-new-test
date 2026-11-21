@@ -93,12 +93,12 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
           "; core asset failures: "+JSON.stringify(assetFailures));
         // Cross-platform search clear works without the browser-native X.
         const search=page.locator("#searchInput"),clear=page.locator("#searchClear");
-        assert.equal(await clear.isHidden(),true);
+        assert.equal(await clear.isVisible(),true,"search X stays visible even when field is empty");
         await search.fill("Stuttgart");
         assert.equal(await clear.isVisible(),true);
         await clear.click();
         assert.equal(await search.inputValue(),"");
-        assert.equal(await clear.isHidden(),true);
+        assert.equal(await clear.isVisible(),true,"search X stays visible even when field is empty");
         assert.equal(await page.locator("#searchResults").isHidden(),true);
         // Pin information overlays are intentionally visible beside the editor;
         // only map control buttons disappear when body.pin-open is active.
