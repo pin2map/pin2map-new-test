@@ -21,7 +21,6 @@
    if(!this.menu||!this.button||!this.input||!this.form||!this.app)
     throw new TypeError("Search chooser elements required");
    this.app.append(this.menu);
-   this.viewportConstrained=false;
    this.open=false;this.active=0;this.searchMode=false;
 
   }
@@ -183,6 +182,7 @@
    const view=this.doc.defaultView;
    view?.addEventListener("resize",()=>{if(this.open)this.position();});
    view?.visualViewport?.addEventListener("resize",()=>{if(this.open)this.position();});
+   view?.visualViewport?.addEventListener("scroll",()=>{if(this.open)this.position();});
    this.bound=true;
   }
   searchOptions(){
@@ -242,42 +242,35 @@
    this.button.setAttribute("aria-label","Gespeicherte Objekte suchen");
    this.button.title="Gespeicherte Objekte suchen";
   }
-  // Pure viewport geometry: approved single-column list, no artificial
-  // minimum height, and no mixing of fixed and app-relative coordinates.
-  static chooserLayout({form,app,visualViewport,innerHeight,menuWidth}){
-   const keyboard=Boolean(visualViewport&&innerHeight-visualViewport.height>120);
-   const origin=keyboard?{x:0,y:0}:{x:app.left,y:app.top};
-   const leftEdge=keyboard?(visualViewport.offsetLeft||0):app.left;
-   const rightEdge=keyboard?leftEdge+visualViewport.width:app.right;
-   const upper=keyboard?(visualViewport.offsetTop||0):app.top;
-   const lower=keyboard?upper+visualViewport.height:app.bottom;
-   const margin=8,gap=9;
-   const x=Math.max(leftEdge+margin,Math.min(
-    form.left+form.width/2-menuWidth/2,rightEdge-margin-menuWidth));
-   const top=Math.max(upper+margin,form.bottom+gap);
-   // A height-limited flex menu must never measure itself to compute its own
-   // next height: on iOS this creates a sticky collapsed white strip.
-   const maxHeight=Math.max(0,lower-margin-top);
-   // This contract never moves the chooser above or over the search field.
-   // If the visual viewport truly leaves no room below it, report the
-   // available space faithfully rather than fabricating a 44px minimum.
-   return {keyboard,left:x-origin.x,top:top-origin.y,maxHeight};
+  // One viewport coordinate system for every device and keyboard state.
+  // The menu always uses position:fixed. No detection of a virtual keyboard
+  // or switching between app-relative and screen-relative positioning.
+  static chooserLayout({form,visualViewport,innerWidth,innerHeight,menuWidth}){
+   const leftEdge=visualViewport?.offsetLeft||0;
+   const topEdge=visualViewport?.offsetTop||0;
+   const rightEdge=leftEdge+(visualViewport?.width||innerWidth);
+   const bottomEdge=topEdge+(visualViewport?.height||innerHeight);
+   const inset=8,gap=9;
+   const centered=form.left+form.width/2-menuWidth/2;
+   const left=Math.max(leftEdge+inset,Math.min(centered,rightEdge-inset-menuWidth));
+   const top=Math.max(topEdge+inset,form.bottom+gap);
+   // Maximum available space, NOT the current/collapsed menu height.
+   // CSS flex:0 0 auto keeps the seven choices at their approved natural size.
+   return {left,top,maxHeight:Math.max(0,bottomEdge-inset-top)};
   }
   position(){
-   const form=this.form.getBoundingClientRect(),app=this.app.getBoundingClientRect();
-   const view=this.doc.defaultView,visualViewport=view?.visualViewport;
-   const keyboard=Boolean(visualViewport&&view.innerHeight-visualViewport.height>120);
-   this.viewportConstrained=keyboard;
-   this.menu.classList.toggle("keyboard-constrained",keyboard);
-   const layout=SearchTypeMenu.chooserLayout({form,app,visualViewport,
-    innerHeight:view?.innerHeight||app.height,
+   const form=this.form.getBoundingClientRect(),view=this.doc.defaultView;
+   const layout=SearchTypeMenu.chooserLayout({form,visualViewport:view?.visualViewport,
+    innerWidth:view?.innerWidth||this.app.clientWidth,
+    innerHeight:view?.innerHeight||this.app.clientHeight,
     menuWidth:this.menu.offsetWidth||340});
    this.menu.style.left=layout.left+"px";
    this.menu.style.top=layout.top+"px";
    this.menu.style.maxHeight=layout.maxHeight+"px";
    this.menu.style.overflowY="auto";
-   this.menu.dataset.scrollable=String(this.menu.scrollHeight>this.menu.clientHeight+1);
-   this.menu.setAttribute("aria-description",this.menu.dataset.scrollable==="true"?
+   const scrollable=this.menu.scrollHeight>this.menu.clientHeight+1;
+   this.menu.dataset.scrollable=String(scrollable);
+   this.menu.setAttribute("aria-description",scrollable?
     "Liste scrollbar. Nach unten wischen für weitere Optionen.":"");
   }
   highlight(index){

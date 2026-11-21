@@ -1878,9 +1878,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 /* Geometry-search components own all new styles. Never affect Pin panel. */
 #app .search{position:relative}
 #app .search-type-menu{
-  /* Mounted at #app root: a search-form descendant would be clipped by
-     the pill's overflow:hidden. Coordinates are assigned by its UI owner. */
-  position:absolute;z-index:1085;box-sizing:border-box;
+  /* Mounted at #app root to escape the search pill and app clipping.
+     Fixed viewport coordinates are computed by SearchTypeMenu. */
+  position:fixed;z-index:1085;box-sizing:border-box;
   width:min(265px,calc(100vw - 24px));padding:6px;
   border:1px solid #bdc9d9;border-radius:12px;background:#fff;
   box-shadow:0 8px 26px #142a4460;display:flex;flex-direction:column;gap:3px;
@@ -2831,15 +2831,8 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
   z-index:590;pointer-events:none;overflow:visible;
 }
 
-/* v289: invariant creation chooser on desktop, iPhone and iPad.
- * Keyboard only constrains the visible scroll area; it never changes
- * columns, row size, typography or introduces a collapsed option bar. */
-#app #searchTypeMenu.search-type-menu.keyboard-constrained{
-  overflow-y:auto;
-  overflow-x:hidden;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-}
+/* v293: the search chooser uses one fixed-position, single-column layout
+ * on desktop and mobile, independent of keyboard state. */
 /* URL editors keep one coherent opaque panel and reachable actions with keyboard open. */
 #pinUrlBlock.pin-url-popup,
 #geometryUrlBlock.pin-url-popup{
@@ -2850,16 +2843,6 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
 #pinUrlBlock .pin-url-actions,
 #geometryUrlBlock .pin-url-actions{
   flex:0 0 auto;
-}
-
-/* v289: iOS keyboard can shrink the visible viewport, but the approved
- * single-column chooser remains unchanged. Fixed positioning avoids #app clipping. */
-#app #searchTypeMenu.search-type-menu.keyboard-constrained:not(.hidden){
-  position:fixed;
-  overflow-y:auto;
-  overflow-x:hidden;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
 }
 
 /* v287: one invariant layout for all object URL popups in iOS WebKit.

@@ -85,70 +85,8 @@ const base=process.env.PIN2MAP_TEST_URL||
       assert.ok(full.client>=full.scroll-2,"all seven choices visible when there is room");
       assert.ok(full.lastBottom<=full.menu.bottom+1,"last choice must be fully visible");
     }
-    // Exact screenshot regression: Safari can transiently clamp menu height.
-    // When there is enough visible space, a new real resize must restore
-    // the full seven-row list, never leave an empty white strip.
-    if(width<=768){
-      const recovered=await page.evaluate(()=>{
-        const menu=document.querySelector("#searchTypeMenu");
-        const screenHeight=Math.max(560,Math.min(innerHeight,720));
-        Object.defineProperty(window,"visualViewport",{configurable:true,value:{
-          offsetTop:0,offsetLeft:0,width:innerWidth,height:screenHeight
-        }});
-        menu.style.maxHeight="0px";
-        window.dispatchEvent(new Event("resize"));
-        const m=menu.getBoundingClientRect();
-        const last=menu.querySelector(".search-type-choice:last-child").getBoundingClientRect();
-        return {height:m.height,scroll:menu.scrollHeight,client:menu.clientHeight,
-          lastBottom:last.bottom,menuBottom:m.bottom,
-          free:screenHeight-document.querySelector("#searchForm").getBoundingClientRect().bottom};
-      });
-      assert.ok(recovered.free>350,"screenshot regression precondition: ample room");
-      assert.ok(recovered.height>300&&recovered.client>=recovered.scroll-2,
-        "a collapsed strip must recover when viewport has room: "+JSON.stringify(recovered));
-      assert.ok(recovered.lastBottom<=recovered.menuBottom+1,
-        "seven full choices must become visible again");
-      await page.evaluate(()=>{delete window.visualViewport;window.dispatchEvent(new Event("resize"));});
-      await assertSingleColumn("recovered menu "+width);
-    }
-    // Exercise the REAL positioning code with an iOS-style visualViewport.
-    // Simply adding keyboard-constrained CSS is not a geometry regression test.
-    if(width<=768){
-      const simulatedHeight=Math.min(height-150,450);
-      const geometry=await page.evaluate(visibleHeight=>{
-        Object.defineProperty(window,"visualViewport",{configurable:true,value:{
-          offsetTop:0,offsetLeft:0,width:innerWidth,height:visibleHeight
-        }});
-        window.dispatchEvent(new Event("resize"));
-        const menu=document.querySelector("#searchTypeMenu");
-        const field=document.querySelector("#searchForm");
-        const m=menu.getBoundingClientRect(),f=field.getBoundingClientRect();
-        return {position:getComputedStyle(menu).position,
-          keyboard:menu.classList.contains("keyboard-constrained"),
-          top:m.top,bottom:m.bottom,height:m.height,
-          fieldBottom:f.bottom,scrollHeight:menu.scrollHeight,
-          clientHeight:menu.clientHeight};
-      },simulatedHeight);
-      assert.equal(geometry.position,"fixed","keyboard menu must escape app clipping");
-      assert.equal(geometry.keyboard,true,"real resize must activate keyboard layout");
-      await assertSingleColumn("keyboard viewport "+width);
-      assert.ok(geometry.top>=geometry.fieldBottom+7,
-        "search chooser must remain below search field: "+JSON.stringify(geometry));
-      assert.ok(geometry.bottom<=simulatedHeight+1,
-        "keyboard menu must fit the actual visible viewport: "+JSON.stringify(geometry));
-      assert.ok(geometry.height>=150,
-        "do not collapse menu when the visible viewport has room: "+JSON.stringify(geometry));
-      await page.locator('.search-type-choice[data-search-type="objects"]').scrollIntoViewIfNeeded();
-      const bounds=await page.locator("#searchTypeMenu").boundingBox();
-      const item=await page.locator('.search-type-choice[data-search-type="objects"]').boundingBox();
-      assert.ok(bounds&&item&&item.y>=bounds.y-1&&item.y+item.height<=bounds.y+bounds.height+1,
-        "last menu item must be accessible by internal scrolling");
-      await page.evaluate(()=>{
-        delete window.visualViewport;
-        window.dispatchEvent(new Event("resize"));
-      });
-      await assertSingleColumn("restored viewport "+width);
-    }
+    // Layout contract is also exercised in dedicated Chromium + WebKit
+    // tests with a truly constrained visualViewport and keyboard transitions.
     assert.equal(await page.locator(".object-search-options:visible").count(),0,"specialized options are not yet visible");
     const launcherPriority=await page.evaluate(()=>{
      const button=document.querySelector("#basemapButton"),b=button.getBoundingClientRect();

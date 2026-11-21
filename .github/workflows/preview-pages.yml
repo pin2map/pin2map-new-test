@@ -53,12 +53,18 @@ jobs:
         env:
           PIN2MAP_TEST_URL: http://127.0.0.1:8765/
         run: node tests/geometry-layer-webkit-regression.cjs
+      - name: REQUIRED single-column search chooser geometry in WebKit and Chromium
+        env:
+          PIN2MAP_TEST_URL: http://127.0.0.1:8765/
+        run: node tests/search-chooser-webkit-browser.cjs
       - name: Preserve pre-publication screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: webkit-geometry-preflight-18layers
-          path: geometry-layer-regression-artifacts/*.png
+          path: |
+            geometry-layer-regression-artifacts/*.png
+            search-chooser-regression-artifacts/*.png
           if-no-files-found: warn
 
   preview:
@@ -427,10 +433,16 @@ jobs:
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/geometry-layer-webkit-regression.cjs
+      - name: REQUIRED published search chooser geometry in WebKit and Chromium
+        env:
+          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
+        run: node tests/search-chooser-webkit-browser.cjs
       - name: Preserve post-publication screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: webkit-geometry-published-18layers
-          path: geometry-layer-regression-artifacts/*.png
+          path: |
+            geometry-layer-regression-artifacts/*.png
+            search-chooser-regression-artifacts/*.png
           if-no-files-found: warn

@@ -81,37 +81,34 @@ test("creation chooser preserves the same single-column design on keyboard and e
  assert.doesNotMatch(css,/keyboard-constrained \.search-type-choice\s*\{/);
  assert.doesNotMatch(js,/search-creation-scroll-hint|Weitere Optionen/);
 });
-test("approved search dialog uses actual viewport height, including iPhone keyboard",()=>{
+test("single fixed viewport geometry fills free space without keyboard-state branches",()=>{
  const {SearchTypeMenu}=require("../ui/search-type-menu.js");
- const app={left:0,top:0,right:390,bottom:844,width:390,height:844};
  const form={left:40,top:68,bottom:112,width:310,height:44};
- const layout=(height,offsetTop=0,anchor=form)=>SearchTypeMenu.chooserLayout({
-  form:anchor,app,visualViewport:{offsetLeft:0,offsetTop,width:390,height},
-  innerHeight:844,menuWidth:340});
- const full=layout(800);
- assert.equal(full.maxHeight,715,"use app.bottom - 8 - (form.bottom + 9) in normal mode");
- assert.equal(full.top,121,"keep the approved placement beneath search");
- const keyboard=layout(420);
- assert.equal(keyboard.keyboard,true);
- assert.equal(keyboard.top,121);
- assert.equal(keyboard.maxHeight,291,"use the entire space above the keyboard");
- assert.ok(keyboard.maxHeight>44);
- const shifted=layout(420,40);
- assert.equal(shifted.maxHeight,331,"account for visualViewport.offsetTop");
- const horizontallyShifted=SearchTypeMenu.chooserLayout({form,app,
-  visualViewport:{offsetLeft:20,offsetTop:0,width:350,height:420},
-  innerHeight:844,menuWidth:340});
- assert.ok(horizontallyShifted.left>=28,
-  "keep the menu inside the visible horizontal viewport");
- assert.ok(horizontallyShifted.left+340<=20+350,
-  "menu must not be clipped by the shifted viewport");
- const cramped=layout(420,0,{left:40,top:310,bottom:354,width:310,height:44});
- assert.equal(cramped.top,363,"never move chooser above the search field");
- assert.equal(cramped.maxHeight,49,"honestly report actual remaining space");
- assert.ok(cramped.top+cramped.maxHeight<=412);
- const source=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
- assert.doesNotMatch(source,/contentHeight:this\.menu\.scrollHeight|Math\.min\(contentHeight,/,
-  "a previously collapsed menu must never determine its future maximum height");
+ const layout=(viewport)=>SearchTypeMenu.chooserLayout({
+  form,visualViewport:viewport,innerWidth:390,innerHeight:844,menuWidth:340});
+ assert.deepEqual(layout(null),{left:25,top:121,maxHeight:715});
+ assert.deepEqual(layout({offsetLeft:0,offsetTop:0,width:390,height:570}),
+  {left:25,top:121,maxHeight:441},
+  "iPhone keyboard with plenty of map visible must show the whole chooser");
+ assert.deepEqual(layout({offsetLeft:0,offsetTop:0,width:390,height:420}),
+  {left:25,top:121,maxHeight:291},
+  "only genuine viewport shortage may require internal scrolling");
+ assert.deepEqual(layout({offsetLeft:0,offsetTop:40,width:390,height:420}),
+  {left:25,top:121,maxHeight:331});
+ const shifted=layout({offsetLeft:20,offsetTop:0,width:350,height:420});
+ assert.ok(shifted.left>=28&&shifted.left+340<=370,
+  "dialog must stay within horizontally displaced visible viewport");
+ const cramped=SearchTypeMenu.chooserLayout({
+  form:{left:40,top:310,bottom:354,width:310,height:44},
+  visualViewport:{offsetLeft:0,offsetTop:0,width:390,height:420},
+  innerWidth:390,innerHeight:844,menuWidth:340});
+ assert.equal(cramped.top,363,"always position below the field");
+ assert.equal(cramped.maxHeight,49,"never invent available space");
+ const js=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
+ assert.doesNotMatch(js,/keyboard-constrained|viewportConstrained|contentHeight:this\\.menu\\.scrollHeight/);
+ assert.match(css,/#app \\.search-type-menu\\{[\\s\\S]*?position:fixed;/);
+ assert.doesNotMatch(css,/#searchTypeMenu.*keyboard-constrained/);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
