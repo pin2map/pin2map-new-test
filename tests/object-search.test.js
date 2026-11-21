@@ -78,7 +78,9 @@ test("search result count is in the search bar and maps to stable object identit
  assert.match(menu,/this\.el\("objectSearchCount"\)/);
  assert.match(menu,/const ids=new Set\(\),count=/);
  assert.match(app,/searchTypeMenu\?\.setResults\(matches\)/);
- assert.match(app,/highlightIds:objectSearchView\?\.ids/);
+ // Spotlight mode highlights matching geometry; only-hits mode must
+ // deliberately render the same hits normally, without special emphasis.
+ assert.match(app,/highlightIds:objectSearchView\?\.onlyHits\?null:objectSearchView\?\.ids/);
 });
 test("repeated records with the same pin ID count as one map marker",()=>{
  const repeated={...project,pins:Array.from({length:8},()=>({...project.pins[0]}))};
