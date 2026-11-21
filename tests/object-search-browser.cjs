@@ -199,6 +199,8 @@ const base=process.env.PIN2MAP_TEST_URL||
         topChildrenInBounds:topChildren.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
         overflow:panel.scrollWidth>panel.clientWidth+1};
     });
+    const dialogWidth=await page.locator("#searchTypeMenu").evaluate(el=>el.getBoundingClientRect().width);
+    assert.ok(dialogWidth<=340.5,"active search chooser must not exceed normal 340px chooser: "+dialogWidth);
     assert.ok(layout.singleLine&&layout.redBorder&&layout.hiddenLabelInBounds&&
       layout.sameLine&&layout.flagTextFits&&layout.inBounds&&layout.topChildrenInBounds&&
       Math.abs(layout.rowWidth-layout.bottomWidth)<2&&!layout.overflow,
@@ -380,6 +382,11 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator(".pin-marker").count(),0,
       "zero matches show no project pins in only-hits mode");
     assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"none");
+    await onlyHits.uncheck();
+    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"block",
+      "zero-result searching must visibly dim the map, rather than looking inactive");
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "standard spotlight mode retains visible context even with zero results");
     await page.locator("#searchClear").click();
     assert.equal(await page.locator(".pin-marker").count(),1,
       "leaving search restores original layer visibility and the context pin");
