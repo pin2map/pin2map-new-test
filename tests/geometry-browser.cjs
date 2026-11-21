@@ -174,7 +174,7 @@ const viewports=[
    assert.equal(await gpsIcon.evaluate(el=>el.classList.contains("p2m-new-object-blink")),true);
    await gpsIcon.click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
-   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$/);
+   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
    await page.locator("#closePin").click();
    await page.locator(".pin-icon").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
