@@ -207,6 +207,19 @@ const viewports=[
          addresstype:"county",type:"administrative",class:"boundary",
          address:{country_code:"de"},geojson:poly}])});
    });
+   await page.evaluate(()=>{
+     window.__v302AreaWriteTrace=[];
+     let serial=0;
+     const Store=window.Pin2MapIndexedDBProjectStore;
+     const original=Store.prototype.saveProject;
+     Store.prototype.saveProject=function(project){
+       const n=++serial,names=(project.areas||[]).map(a=>a.name);
+       window.__v302AreaWriteTrace.push({n,phase:"queued",names});
+       return original.call(this,project).then(result=>{
+         window.__v302AreaWriteTrace.push({n,phase:"completed",names});return result;
+       });
+     };
+   });
    await page.locator("#searchInput").fill("TT");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"Bodenseekreis"}).first().click();
@@ -243,6 +256,7 @@ const viewports=[
      finally{db.close();}
    });
    console.log("[geometry] v302 plate diagnostic",JSON.stringify(plateSnapshot));
+   console.log("[geometry] v302 write order",JSON.stringify(await page.evaluate(()=>window.__v302AreaWriteTrace)));
    assert.deepEqual(["🇩🇪 TT (Bodenseekreis)","🇩🇪 RV (Landkreis Ravensburg)",
      "🇩🇪 ÜB (Landkreis Sigmaringen)"].filter(name=>
        !plateSnapshot.some(area=>area.name===name)),[],
