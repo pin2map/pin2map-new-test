@@ -889,13 +889,9 @@ const viewports=[
    await page.locator("#searchInput").fill("HVL");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator('#searchResults .result').filter({hasText:"HVL"}).first().click();
-   await page.waitForFunction(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.some(pin=>
-       pin.layerId==="private"&&pin.name.includes("HVL")&&pin.name.includes("Rathenow")&&
-       pin.name.includes("Ersatzort"));}
-     finally{db.close();}
-   },null,{timeout:12000});
+   await waitForStored(project=>project?.pins?.some(pin=>
+     pin.layerId==="private"&&pin.name.includes("HVL")&&pin.name.includes("Rathenow")&&
+     pin.name.includes("Ersatzort")),"HVL geographic fallback");
    assert.equal(await page.locator(".p2m-temporary-pin").count(),0);
    assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
    assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
@@ -920,12 +916,9 @@ const viewports=[
    await page.locator("#searchInput").fill("GU");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"Graz"}).first().click();
-   await page.waitForFunction(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.some(pin=>
-       pin.layerId==="private"&&pin.name.includes("GU")&&pin.name.includes("Gratkorn"))}
-     finally{db.close();}
-   },null,{timeout:12000});
+   await waitForStored(project=>project?.pins?.some(pin=>
+     pin.layerId==="private"&&pin.name.includes("GU")&&pin.name.includes("Gratkorn")),
+     "GU geographic fallback");
    await page.locator("#searchInput").fill("B");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    assert.equal(await page.evaluate(async()=>{
