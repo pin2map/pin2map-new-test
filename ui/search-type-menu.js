@@ -106,7 +106,7 @@
    this.input.addEventListener("click",()=>this.show());
    this.input.addEventListener("input",()=>{
     if(!this.open)this.show();
-    if(this.searchMode)this.onSearch({...this.searchOptions(),created:"any"});
+    // SearchFormController owns live filtering when the input text changes.
    });
    this.doc.addEventListener("keydown",event=>{
     if(event.isComposing||event.altKey||!(event.metaKey||event.ctrlKey)||String(event.key).toLowerCase()!=="f")return;

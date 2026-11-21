@@ -57,9 +57,9 @@ test("dedicated marker search and hardware Find use the search input",()=>{
  assert.match(src,/this\.returnToCreation\(\)/);
 });
 
-test("Escape dismisses the chooser while its magnifier trigger holds focus",()=>{
+test("Escape dismisses the chooser without the removed magnifier",()=>{
  const src=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
- assert.match(src,/e\.target!==this\.button/);
+ assert.match(src,/e\.target!==this\.clear/);
  assert.match(src,/if\(this\.searchMode\)this\.finishAndFocus\(\)/);
 });
 
@@ -68,9 +68,9 @@ test("Escape closes stored-object search but restores focus to its cleared input
  assert.match(source,/if\(this\.searchMode\)this\.finishAndFocus\(\)/);
  assert.match(source,/this\.exitSearchMode\(\);\s*this\.onExit\(\);\s*this\.suppressOpenOnFocus=true;\s*this\.input\.focus/);
  assert.match(source,/if\(this\.suppressOpenOnFocus\)/);
- assert.match(source,/this\.makeCheck\("hidden","Ausgeblendete",true\)/);
+ assert.match(source,/\["hidden","Ausgeblendete Objekte"\]/);
  const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
- assert.match(css,/grid-template-columns:repeat\(4,max-content\)/);
+ assert.match(css,/grid-template-columns:max-content max-content minmax\(0,1fr\)/);
 });
 
 test("creation chooser preserves the same single-column design on keyboard and every device",()=>{
@@ -109,6 +109,16 @@ test("single fixed viewport geometry fills free space without keyboard-state bra
  assert.doesNotMatch(js,/keyboard-constrained|viewportConstrained|contentHeight:this\\.menu\\.scrollHeight/);
  assert.match(css,/#app \.search-type-menu\{[\s\S]*?position:fixed;/);
  assert.doesNotMatch(css,/#searchTypeMenu.*keyboard-constrained/);
+});
+test("the approved search options have exactly three fields and independent GPX action",()=>{
+ const ui=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
+ assert.match(html,/placeholder="Suchen\\/Finden"/);
+ assert.doesNotMatch(html,/id="searchButton"/);
+ assert.doesNotMatch(ui,/object-search-kind|object-search-exit|Mit Track|Mit Link/);
+ for(const label of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
+  assert.ok(ui.includes(label));
+ assert.match(ui,/returnToStandardChoices\\(\\)/);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");

@@ -33,23 +33,17 @@ test("no wildcard when no text or date; invalid and legacy dates do not match",(
  assert.deepEqual(search(project,{created:"today",now}).map(x=>x.id),["a","d"]);
  assert.throws(()=>search(project,{created:"tomorrow"}),/Unknown/);
 });
-test("compact predecessor-style options show select, three flags and one circular exit",()=>{
+test("simplified options contain only three text/visibility flags and a GPX action",()=>{
  const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
- const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
- const sw=fs.readFileSync(path.resolve(__dirname,"../sw.js"),"utf8");
- assert.match(ui,/Pins, Flächen, Flüsse, Text/);
- assert.match(ui,/Mit Track/);assert.match(ui,/Mit Link/);assert.match(ui,/Mit Notiz/);
- assert.match(ui,/object-search-exit/);assert.match(ui,/Suche beenden/);
- assert.doesNotMatch(ui,/Erneut suchen|Gestern|object-search-picker/);
- assert.match(css,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
- assert.match(css,/border-radius:999px;background:#c92f39;color:white/);
- assert.match(app,/objectSearchView/);
- assert.ok(html.indexOf("domain/object-search.js")<html.indexOf("app.js"));
- assert.match(sw,/"\.\/domain\/object-search.js"/);
+ for(const option of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
+  assert.ok(ui.includes(option));
+ assert.doesNotMatch(ui,/object-search-kind|object-search-exit|Mit Track|Mit Link/);
+ assert.match(css,/grid-template-columns:max-content max-content minmax\\(0,1fr\\)/);
+ assert.doesNotMatch(html,/id="searchButton"/);
+ assert.match(html,/placeholder="Suchen\\/Finden"/);
 });
-
 test("category checkboxes, text inclusion and selectable change date respect original layers",()=>{
  assert.deepEqual(search(project,{query:"Karlsruhe",pins:false,areas:true,rivers:false}).map(x=>x.id),["d","e"]);
  assert.deepEqual(search(project,{query:"Karlsruhe",texts:false}).map(x=>x.id),["a","d","f"]);
@@ -97,4 +91,28 @@ test("repeated records with the same pin ID count as one map marker",()=>{
  const found=search(repeated,{query:"Karlsruhe",kind:"pins"});
  assert.deepEqual(found.map(x=>x.id),["a"]);
  assert.equal(repeated.pins.length,8,"search does not mutate stored data");
+});
+
+test("expanded search matches name, creation date, notes across all types, URLs and hidden GPX",()=>{
+ const {searchExpanded}=require("../domain/object-search.js");
+ const sample={layers:[{id:"on",visible:true},{id:"off",visible:false}],
+ pins:[
+  {id:"p1",layerId:"on",name:"Test Pin",createdAt:"2026-11-21T12:00:00Z",note:"geheim"},
+  {id:"p2",layerId:"off",name:"Andere Pin",note:"memo",url:"https://example.org/test",
+   gpxAttachment:{chains:[[[1,2],[3,4]]]}}
+ ],areas:[
+  {id:"a",layerId:"on",name:"Gebiet",kind:"area",note:"test"},
+  {id:"l",layerId:"on",name:"See",kind:"lake",note:"test"}],
+ rivers:[{id:"r",layerId:"on",name:"Fluss",note:"test"}]};
+ assert.deepEqual(searchExpanded(sample,{query:"test"}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",notes:true}).map(x=>x.id),["p1","a","l","r"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",urls:true}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",urls:true,includeHidden:true}).map(x=>x.id),["p1","p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"geheim"}),[]);
+ assert.deepEqual(searchExpanded(sample,{query:"geheim",notes:true}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"21.11.2026"}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",gpxOnly:true}),[]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",gpxOnly:true,includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"",gpxOnly:true,includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.equal(sample.layers[1].visible,false);
 });

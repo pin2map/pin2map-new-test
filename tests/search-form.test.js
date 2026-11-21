@@ -8,7 +8,7 @@ function fixture(kind="results"){
   const listeners=new Map(),button={disabled:false};
   const clearHandlers=new Map(),classes=new Set(["hidden"]);
   const clear={classList:{contains:name=>classes.has(name),
-    toggle:(name,force)=>force?classes.add(name):classes.delete(name)},
+    toggle:(name,force)=>force?classes.add(name):classes.delete(name),remove:name=>classes.delete(name)},
     addEventListener:(event,fn)=>clearHandlers.set(event,fn),
     removeEventListener:event=>clearHandlers.delete(event),
     emit:()=>clearHandlers.get("click")?.()};
@@ -126,7 +126,7 @@ test("explicit cross-platform clear button hides when empty and cancels results 
   assert.equal(x.clear.classList.contains("hidden"),false);
   x.clear.emit();
   assert.equal(x.input.value,"");
-  assert.equal(x.clear.classList.contains("hidden"),true);
+  assert.equal(x.clear.classList.contains("hidden"),false,"sole X remains visible with empty text");
   assert.equal(x.getCancelled(),1);
   assert.equal(x.getDismissed(),1);
   assert.deepEqual(x.calls,[],"clear never submits");
@@ -141,6 +141,7 @@ test("search clear button is explicitly available for touch and not native WebKi
   const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
   const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
   assert.match(html,/id="searchClear" class="search-clear hidden" aria-label="Suchfeld leeren"/);
-  assert.match(css,/#app #searchClear\.search-clear/);
+  assert.match(css,/#app #searchClear\\.search-clear/);
+  assert.doesNotMatch(html,/id="searchButton"/);
   assert.match(css,/#searchInput::-webkit-search-cancel-button/);
 });
