@@ -2506,3 +2506,6 @@ Beantragt: gemeinsame Gebiet/See/Fluss-Symbole und zweigeteilte Notiz-/URL-Anzei
 ### v305 – Palette und unclipped Farbindikator (21.11.2026; technische Gates zunächst offen)
 
 Nutzerauftrag: echter Lucide-`palette`-Button und vollständig sichtbarer Farbpunkt am unteren rechten Rand im Gebiet-/See-/Flusseditor. Eng begrenzte CSS-Korrektur für `.geometry-color` und `.geometry-color-dot`, Lucide-Registry erweitert und Editor auf `palette` umgestellt, Version `pin2map-new-v305`. Unit- und Chromium-Test validieren Icon und reale Box-Geometrie, insbesondere den zuvor fehlerhaften `overflow:hidden`-Zustand. Node-/Architektur-/Chromium-/WebKit-/Pages-/HTTPS-Veröffentlichung müssen vor Freigabe nachgewiesen werden. Schutzbranches und Bestandsdaten unverändert.
+
+
+**v305 Präzisierung während laufender Freigabe (21.11.2026):** Nach Nutzer-Screenshot entspricht die zeitweilig um `-3px` nach außen versetzte Position des Farbpunktes nicht der verbindlichen Ebenenbutton-Referenz. Korrigiert wird ausschließlich die gemeinsame CSS-Positionierung von Ebenen- und Objektfarbpunkt (relative `right`/`bottom`/Größe identisch), mit Browser-Boxvergleich beider Buttons. v305 bis zu neuen vollständigen CI-/HTTPS-Gates offen.

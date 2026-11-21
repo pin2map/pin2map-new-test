@@ -2204,10 +2204,12 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
  height:145px;font:400 16px/1.35 system-ui,-apple-system,sans-serif;
 }
 #app .geometry-editor .pin-layer-trigger-icon{width:23px;height:23px}
-#app .geometry-editor .geometry-layer>.pin-layer-dot{
+/* Shared geometric placement for the layer and individual object-color indicators. */
+#app .geometry-editor .geometry-layer>.pin-layer-dot,
+#app .geometry-editor .geometry-color>.geometry-color-dot{
  position:absolute;right:1px;bottom:1px;display:block;
  width:10px;height:10px;border:2px solid #fff;border-radius:50%;
- box-shadow:0 0 0 1px #a7b4c1;
+ box-shadow:0 0 0 1px #a7b4c1;pointer-events:none;
 }
 #app .geometry-editor .geometry-wiki .pin-wikipedia-logo{width:25px;height:25px}
 #app .geometry-editor .geometry-head legend{font-size:11px;font-weight:700;color:#6a7785}
@@ -3086,11 +3088,6 @@ body.object-search-mode #app #searchClear.search-clear span{
 #map .p2m-feature-label-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
 /* v305: fully visible color indicator across the circular button boundary. */
 #app .geometry-editor .geometry-color{position:relative;overflow:visible}
-#app .geometry-editor .geometry-color-dot{
- position:absolute;right:-3px;bottom:-3px;width:10px;height:10px;
- border:2px solid white;border-radius:50%;box-shadow:0 0 0 1px #a7b4c1;
- pointer-events:none;
-}
 /* A real native color input overlays the circle, so iOS and desktops open
    their own system picker on a genuine user click, not a scripted proxy. */
 #app .geometry-editor .geometry-native-color{

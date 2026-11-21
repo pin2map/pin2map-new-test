@@ -422,22 +422,24 @@ const viewports=[
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),5);
    assert.equal(await page.locator("#geometryEditor .geometry-actions .geometry-color").count(),1);
-   // v305: verify the complete swatch is rendered outside the circular border.
-   const swatch=await page.locator("#geometryEditor .geometry-color").evaluate(button=>{
-     const dot=button.querySelector(".geometry-color-dot"),rect=button.getBoundingClientRect();
-     const swatchRect=dot.getBoundingClientRect();
-     const radius=Math.min(rect.width,rect.height)/2;
-     const cx=(swatchRect.left+swatchRect.right)/2-(rect.left+rect.right)/2;
-     const cy=(swatchRect.top+swatchRect.bottom)/2-(rect.top+rect.bottom)/2;
-     return {overflow:getComputedStyle(button).overflowX,swatchWidth:swatchRect.width,
-       distance:Math.hypot(cx,cy),radius,
-       symbolDots:button.querySelectorAll("svg circle").length};
+   // Color and layer badges must have identical relative box geometry, as
+   // required by the existing central UI control contract.
+   const badges=await page.locator("#geometryEditor").evaluate(panel=>{
+     const measure=selector=>{
+       const button=panel.querySelector(selector),dot=button.querySelector("span.pin-layer-dot,span.geometry-color-dot");
+       const b=button.getBoundingClientRect(),d=dot.getBoundingClientRect();
+       return {right:b.right-d.right,bottom:b.bottom-d.bottom,width:d.width,height:d.height,
+         visible:getComputedStyle(button).overflowX==="visible",
+         color:getComputedStyle(dot).backgroundColor};
+     };
+     return {layer:measure(".geometry-layer"),color:measure(".geometry-color"),
+       paletteDots:panel.querySelectorAll(".geometry-color svg circle").length};
    });
-   assert.equal(swatch.overflow,"visible","Color dot must not be clipped by the button");
-   assert.equal(swatch.symbolDots,4,"Color action uses genuine Lucide palette");
-   // CSS uses border-box sizing: declared 10px includes both 2px borders.
-   assert.ok(swatch.swatchWidth>=9.5&&swatch.distance>swatch.radius,
-     "Color dot must straddle the outside of the circular button: "+JSON.stringify(swatch));
+   assert.equal(badges.paletteDots,4,"Color button must use canonical Lucide palette");
+   assert.equal(badges.color.visible,true,"Color swatch must remain unclipped");
+   for(const coordinate of ["right","bottom","width","height"])
+     assert.ok(Math.abs(badges.layer[coordinate]-badges.color[coordinate])<=0.5,
+       "Both button indicators must share the exact same placement: "+JSON.stringify(badges));
    assert.equal(await page.locator("#geometryName").inputValue(),"Testfläche");
    await page.locator(".geometry-native-color").fill("#aabbcc");
    await page.waitForFunction(async()=>{
