@@ -188,7 +188,7 @@
    const danger=mode==="delete"||mode==="deleteAll";
    const section=this.doc.createElement("section");
    section.className="favorite-confirm list-dialog-confirm"+(danger?" favorite-confirm-danger":"");
-   const layerEditor=Boolean(renderExtra)&&(mode==="new"||mode==="rename");
+   const layerEditor=Boolean(renderExtra)&&["new","rename","private-color"].includes(mode);
    const caption=this.doc.createElement(layerEditor?"strong":"p");
    caption.textContent=title;
    if(layerEditor)caption.className="layer-editor-title";
@@ -221,7 +221,7 @@
   keepEditorVisible(){
    if(!this.open)return;
    const searchFocused=this.doc.activeElement===this.el(this.searchId);
-   const editorActive=["new","rename","replace"].includes(this.mode);
+   const editorActive=["new","rename","replace","private-color"].includes(this.mode);
    const panel=this.el(this.panelId);
    const touchKeyboardLayout=!this.doc.defaultView?.matchMedia?.(
      "(hover: hover) and (pointer: fine)")?.matches;
