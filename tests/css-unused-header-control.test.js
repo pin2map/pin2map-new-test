@@ -11,5 +11,6 @@ test("retired topbtn class does not return to current header or stylesheet",()=>
   assert.doesNotMatch(html,/\btopbtn\b/);
   assert.match(html,/<header class="topbar">/);
   assert.match(html,/<form id="searchForm" class="search"/);
-  assert.match(html,/id="searchButton"/);
+  assert.doesNotMatch(html,/id="searchButton"/);
+  assert.match(html,/id="searchClear"/);
 });

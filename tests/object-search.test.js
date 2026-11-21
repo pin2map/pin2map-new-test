@@ -40,9 +40,9 @@ test("simplified options contain only three text/visibility flags and a GPX acti
  for(const option of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
   assert.ok(ui.includes(option));
  assert.doesNotMatch(ui,/object-search-kind|object-search-exit|Mit Track|Mit Link/);
- assert.match(css,/grid-template-columns:max-content max-content minmax\\(0,1fr\\)/);
+ assert.match(css,/grid-template-columns:max-content max-content minmax\(0,1fr\)/);
  assert.doesNotMatch(html,/id="searchButton"/);
- assert.match(html,/placeholder="Suchen\\/Finden"/);
+ assert.match(html,/placeholder="Suchen\/Finden"/);
 });
 test("category checkboxes, text inclusion and selectable change date respect original layers",()=>{
  assert.deepEqual(search(project,{query:"Karlsruhe",pins:false,areas:true,rivers:false}).map(x=>x.id),["d","e"]);

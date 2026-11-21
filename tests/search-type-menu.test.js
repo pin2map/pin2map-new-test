@@ -113,12 +113,12 @@ test("single fixed viewport geometry fills free space without keyboard-state bra
 test("the approved search options have exactly three fields and independent GPX action",()=>{
  const ui=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
- assert.match(html,/placeholder="Suchen\\/Finden"/);
+ assert.match(html,/placeholder="Suchen\/Finden"/);
  assert.doesNotMatch(html,/id="searchButton"/);
  assert.doesNotMatch(ui,/object-search-kind|object-search-exit|Mit Track|Mit Link/);
  for(const label of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
   assert.ok(ui.includes(label));
- assert.match(ui,/returnToStandardChoices\\(\\)/);
+ assert.match(ui,/returnToStandardChoices\(\)/);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");

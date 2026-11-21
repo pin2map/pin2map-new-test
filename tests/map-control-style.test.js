@@ -25,7 +25,8 @@ test("binding common map-control rule inherits automatically; search and dialogs
   assert.ok(!rule.includes("#searchButton"),"Scoped rule must not style search button");
   assert.ok(!rule.includes("#pinPanel"),"Scoped rule must not style dialog buttons");
   const head=html.split('<header class="topbar">')[1].split("</header>")[0];
-  assert.ok(head.includes('id="searchButton"'));
+  assert.ok(head.includes('id="searchClear"'));
+  assert.ok(!head.includes('id="searchButton"'));
   const outside=html.split("</header>")[1].split('<aside id="layersPanel"')[0];
   for(const id of ["settingsButton","refreshButton","layersButton","labelsToggle","basemapButton"]){
     assert.ok(outside.includes('id="'+id+'"'),"map overlay outside header: "+id);

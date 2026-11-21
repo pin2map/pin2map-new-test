@@ -84,7 +84,7 @@ test("mount replaces fallback character without changing accessible button label
 test("all icon controls use central circular styling and remain offline",()=>{
   const html=read("index.html"),css=read("styles.css"),sw=read("sw.js");
   for(const [id,name] of Object.entries({
-    searchButton:"search",refreshButton:"refresh-cw",settingsButton:"settings",
+    refreshButton:"refresh-cw",settingsButton:"settings",
     layersButton:"layers",labelsToggle:"tags",confirmMove:"check",cancelMove:"x"
   })){
     const tag=html.match(new RegExp("<button[^>]*id=\""+id+"\"[^>]*>"));
