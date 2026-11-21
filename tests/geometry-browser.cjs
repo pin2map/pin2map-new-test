@@ -647,33 +647,21 @@ const viewports=[
    await page.waitForFunction(()=>document.querySelector("#geometrySearchBusy")&&
      !document.querySelector("#geometrySearchBusy").classList.contains("hidden"),
      null,{timeout:5000});
-   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:30000});
-   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
-   assert.equal(await page.evaluate(async()=>{
+   await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).rivers.length;}finally{db.close();}
-   }),0,"River line must be temporary before confirmation");
-   const temporaryRiver=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible");
-   const riverHit=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-river-hit");
-   assert.ok(await temporaryRiver.count()>0,"Temporary river needs animated centerline");
-   assert.ok(await riverHit.count()>0,"Temporary river retains separate 24px touch corridor");
-   assert.equal(await temporaryRiver.first().evaluate(el=>
-     getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
-   assert.equal(await riverHit.first().evaluate(el=>
-     getComputedStyle(el).animationName),"none",
-     "The transparent river touch corridor must not blink");
-   await page.locator(".p2m-plate-label").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
-     buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Verschieben","Speichern"]);
-   await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
-   assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
-   await page.locator(".p2m-plate-label").click();
-   await page.locator(".plate-area-yes").click();
-   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
-   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
+     try{return (await db.loadProject()).rivers.some(r=>r.name==="Testfluss"&&r.layerId==="private");}
+     finally{db.close();}
+   },null,{timeout:30000});
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+   assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
+   const savedRiverStroke=page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry");
+   assert.ok(await savedRiverStroke.count()>0,"Saved river centerline must pulse");
+   assert.equal(await savedRiverStroke.first().evaluate(el=>getComputedStyle(el).animationName),
+     "p2m-temporary-pin-blink");
+   assert.equal(await page.locator("#map .leaflet-overlay-pane path.leaflet-interactive").evaluateAll(
+     els=>els.filter(el=>getComputedStyle(el).animationName!=="none").length),0,
+     "Interactive river touch corridors must not pulse");
    await page.locator(".p2m-river-name-label").first().click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometrySearchBusy").isHidden(),true);
