@@ -452,53 +452,23 @@ async function longPress(page,x,y,ms=725){
       "Long press must never create a pin before user chooses");
     assert.equal(await page.locator("#mapActionChooser button").count(),2);
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
-    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
-    assert.equal(await page.locator("#pinPanel").isHidden(),true,
-      "New pin must remain temporary until its pink marker is tapped and Yes is chosen");
-    assert.equal(await page.evaluate(async()=>{
+    await page.locator(".pin-marker").waitFor({state:"visible",timeout});
+    assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true,
+      "Immediate creation never opens the former confirmation menu");
+    assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true,
+      "No layer picker is involved in immediate Privat creation");
+    assert.equal(await page.locator(".p2m-temporary-pin").count(),0,
+      "New pins are ordinary stored project markers, not transient previews");
+    await page.waitForFunction(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
-      try{return (await store.loadProject()).pins.length;}finally{store.close();}
-    }),0,"Temporary pin must never enter project persistence");
-    await page.locator(".p2m-temporary-pin").click();
-    await page.locator("#plateAreaConfirm").waitFor({state:"visible",timeout});
-    await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
-    assert.equal(await page.locator("#pinPanel").isHidden(),true);
-    await page.locator(".p2m-temporary-pin").click();
-    await page.locator(".plate-area-yes").click();
-    await page.locator("#temporaryLayerPicker").waitFor({state:"visible",timeout});
-    const visibleLayersBeforeFilter=await page.locator("#temporaryLayerPicker [role='option']:visible").count();
-    assert.ok(visibleLayersBeforeFilter>=1,"Temporary picker must show available layers before filtering");
-    const quickFilter=page.locator("#temporaryLayerPicker .pin-layer-filter-input");
-    await quickFilter.fill("does-not-exist");
-    assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),0);
-    assert.equal(await page.locator("#temporaryLayerPicker .pin-layer-filter-empty").isVisible(),true);
-    await page.locator("#temporaryLayerPicker .pin-layer-filter-clear").click();
-    assert.equal(await page.locator("#temporaryLayerPicker [role='option']:visible").count(),
-      visibleLayersBeforeFilter,"Reset must restore EVERY available layer, not just the private layer");
-    assert.equal(await page.evaluate(async()=>{
-      const db=await window.Pin2MapIndexedDBProjectStore.open();
-      try{return (await db.loadProject()).pins.length;}finally{db.close();}
-    }),0,"Filtering cannot save a temporary pin");
-    assert.equal(await page.locator("#pinPanel").isHidden(),true,
-      "Green check opens layer list, not the full pin editor");
-    assert.equal(await page.evaluate(async()=>{
-      const store=await window.Pin2MapIndexedDBProjectStore.open();
-      try{return (await store.loadProject()).pins.length;}finally{store.close();}
-    }),0,"No pin may persist before explicit layer selection");
-    // The second creation route uses a native prompt from the temporary
-    // object layer picker; cancel must keep the unsaved pin unchanged.
-    let promptDefault=null;
-    page.once("dialog",async dialog=>{
-      promptDefault=dialog.defaultValue();
-      await dialog.dismiss();
-    });
-    await page.locator("#temporaryLayerPicker .temporary-layer-create").click();
-    assert.match(promptDefault,/^\d{2}\.\d{2}\.\d{4}-\d{2}$/);
-    assert.equal(promptDefault,await page.evaluate(()=>window.Pin2MapLayerCreation.suggestedName()));
-    assert.equal(await page.locator("#temporaryLayerPicker").isVisible(),true);
-    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-    await page.locator("#pinPanel").waitFor({state:"hidden",timeout});
-    await page.locator(".pin-icon:not(.p2m-temporary-pin)").first().click();
+      try{return (await store.loadProject()).pins.length===1;}finally{store.close();}
+    },null,{timeout});
+    const freshIcon=page.locator("#map .pin-icon").first();
+    assert.equal(await freshIcon.evaluate(el=>el.classList.contains("p2m-new-object-blink")),true,
+      "Newly persisted pin must pulse without delaying storage");
+    assert.equal(await freshIcon.locator(".pin-marker-shape").evaluate(el=>
+      getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
+    await freshIcon.click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     // Surface any incidental error from the initial long-press separately
     // from a later preview error, rather than hiding it in a final count.
@@ -766,14 +736,14 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#searchResults button.result").count(),2);
     assert.equal(await page.locator(".pin-marker").count(),0,"Multiple results must not auto-create pins");
     await page.locator("#searchResults button.result").first().click();
-    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
+    await page.waitForFunction(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject()).pins.length===1;}finally{store.close();}
+    },null,{timeout});
+    assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+    assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
-    await page.locator(".p2m-temporary-pin").click();
-    await page.locator(".plate-area-yes").click();
-    await page.locator("#temporaryLayerPicker").waitFor({state:"visible",timeout});
-    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-    assert.equal(await page.locator("#pinPanel").isHidden(),true);
-    await page.locator(".pin-icon:not(.p2m-temporary-pin)").first().click();
+    await page.locator(".pin-icon").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinName").inputValue(),"Stuttgart");
     assert.equal(await page.locator(".pin-marker").count(),1);
@@ -793,13 +763,12 @@ async function longPress(page,x,y,ms=725){
     assert.ok(Math.abs(projectAfterSelection.viewport.lat-48.7758)<0.25,
       "Choosing place keeps the selected location near the visible map center");
     await runCachedSearch("singlehit");
-    await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout});
-    await page.locator(".p2m-temporary-pin").click();
-    await page.locator(".plate-area-yes").click();
-    await page.locator("#temporaryLayerPicker").waitFor({state:"visible",timeout});
-    await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-    assert.equal(await page.locator("#pinPanel").isHidden(),true);
-    await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
+    await page.waitForFunction(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject()).pins.length===2;}finally{store.close();}
+    },null,{timeout});
+    assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+    await page.locator(".pin-icon").last().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinName").inputValue(),"Frankfurt");
     assert.equal(await page.locator(".pin-marker").count(),2);
