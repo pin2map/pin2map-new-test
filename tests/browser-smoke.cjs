@@ -487,11 +487,13 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinName").fill("  Reise-Testpin  ");
     await page.locator("#pinName").blur();
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin");
-    step("pin details: multiline notes, floating URL popup, five routing placeholders and six footer controls");
+    step("pin details: active external navigation, three inert routing actions and six footer controls");
     assert.equal(await page.locator("#pinNotes").count(),1);
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     assert.equal(await page.locator("#pinPanel .pin-navigation-buttons button").count(),5);
-    for(const item of await page.locator("#pinPanel .pin-navigation-buttons button").all())
+    assert.equal(await page.locator("#pinNavCopy").isEnabled(),true);
+    assert.equal(await page.locator("#pinNavApple").isEnabled(),true);
+    for(const item of await page.locator("#pinPanel .pin-navigation-routing button").all())
       assert.equal(await item.isDisabled(),true);
     assert.equal(await page.locator("#deletePin").isVisible(),true);
     assert.equal(await page.locator("#cancelPin").count(),0);
@@ -513,7 +515,7 @@ async function longPress(page,x,y,ms=725){
     }
     await page.locator("#pinPanel .pin-nav-add").hover({force:true});
     assert.equal(await page.locator("#pinPanel .pin-nav-add").evaluate(el=>getComputedStyle(el).backgroundColor),
-      "rgb(82, 96, 109)","Disabled placeholder + still has a legible hover style");
+      "rgb(82, 96, 109)","Active coordinate button remains legible on hover");
     await page.locator("#pinName").hover();
     await page.locator("#pinNotes").fill("Erste Zeile\nZweite Zeile");
     step("desktop note editor opens centered with a larger editing area");
