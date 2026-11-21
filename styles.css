@@ -3084,9 +3084,10 @@ body.object-search-mode #app #searchClear.search-clear span{
 #map .p2m-object-status{display:inline-flex;flex:none;width:14px;height:14px}
 #map .p2m-object-status svg{width:100%;height:100%;display:block}
 #map .p2m-feature-label-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
-#app .geometry-editor .geometry-color{position:relative;overflow:hidden}
+/* v305: fully visible color indicator across the circular button boundary. */
+#app .geometry-editor .geometry-color{position:relative;overflow:visible}
 #app .geometry-editor .geometry-color-dot{
- position:absolute;right:1px;bottom:1px;width:10px;height:10px;
+ position:absolute;right:-3px;bottom:-3px;width:10px;height:10px;
  border:2px solid white;border-radius:50%;box-shadow:0 0 0 1px #a7b4c1;
  pointer-events:none;
 }

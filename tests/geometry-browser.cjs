@@ -422,6 +422,21 @@ const viewports=[
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
    assert.equal(await page.locator("#geometryEditor .geometry-actions button").count(),5);
    assert.equal(await page.locator("#geometryEditor .geometry-actions .geometry-color").count(),1);
+   // v305: verify the complete swatch is rendered outside the circular border.
+   const swatch=await page.locator("#geometryEditor .geometry-color").evaluate(button=>{
+     const dot=button.querySelector(".geometry-color-dot"),rect=button.getBoundingClientRect();
+     const swatchRect=dot.getBoundingClientRect();
+     const radius=Math.min(rect.width,rect.height)/2;
+     const cx=(swatchRect.left+swatchRect.right)/2-(rect.left+rect.right)/2;
+     const cy=(swatchRect.top+swatchRect.bottom)/2-(rect.top+rect.bottom)/2;
+     return {overflow:getComputedStyle(button).overflowX,swatchWidth:swatchRect.width,
+       distance:Math.hypot(cx,cy),radius,
+       symbolDots:button.querySelectorAll("svg circle").length};
+   });
+   assert.equal(swatch.overflow,"visible","Color dot must not be clipped by the button");
+   assert.equal(swatch.symbolDots,4,"Color action uses genuine Lucide palette");
+   assert.ok(swatch.swatchWidth>=13&&swatch.distance>swatch.radius,
+     "Color dot must straddle the outside of the circular button: "+JSON.stringify(swatch));
    assert.equal(await page.locator("#geometryName").inputValue(),"Testfläche");
    await page.locator(".geometry-native-color").fill("#aabbcc");
    await page.waitForFunction(async()=>{

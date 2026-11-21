@@ -83,7 +83,7 @@
       let actions;
       const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleLayerPicker(),"geometry-layer");
       const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
-      const color=this.makeButton("range","Objektfarbe auswählen",()=>{},"geometry-color");
+      const color=this.makeButton("palette","Objektfarbe auswählen",()=>{},"geometry-color");
       const colorDotObject=doc.createElement("span");colorDotObject.className="geometry-color-dot";
       color.append(colorDotObject);this.colorDot=colorDotObject;
       const nativeColor=doc.createElement("input");nativeColor.type="color";

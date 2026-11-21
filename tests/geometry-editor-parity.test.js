@@ -64,6 +64,7 @@ test("area editor uses area deletion artwork and pin-style layer indicator",()=>
   assert.equal(editor.removeButton.children[0].children[0].src,"./assets/region.svg");
   assert.equal(editor.layerButton.children[0].iconName,"layers-arrow-down");
   assert.equal(editor.layerDot.style.backgroundColor,"#326cc2");
+  assert.equal(editor.colorButton.children[0].iconName,"palette");
   assert.equal(editor.expandButton.classList.contains("hidden"),false);
 });
 test("area layer popover uses colored dot, eye, name, and persists only selection",()=>{

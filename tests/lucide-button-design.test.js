@@ -28,6 +28,13 @@ test("all selected control icons are available as offline Lucide SVG geometry",(
   }
   assert.throws(()=>Icons.svg("unsupported",documentStub()),RangeError);
 });
+test("geometry color action has the genuine offline Lucide palette geometry",()=>{
+  const palette=Icons.svg("palette",documentStub());
+  assert.deepEqual(palette.children.map(n=>n.name),["circle","circle","circle","circle","path"]);
+  assert.equal(palette.children[4].attributes.d,"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z");
+  assert.match(read("ui/geometry-editor.js"),/this\.makeButton\("palette","Objektfarbe auswählen"/);
+});
+
 test("time zone chooser and value labels use exact bundled Lucide geometries",()=>{
   const html=read("index.html"),css=read("styles.css");
   const catalog={
