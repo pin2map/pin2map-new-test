@@ -609,8 +609,9 @@
         pointTotal=prepared.totalPoints;
         const color=layerColors[area.layerId]||"#326cc2";
         const geo=window.L.geoJSON(prepared.geometry,{
-          interactive:false,style:{color,weight:2,fillColor:color,fillOpacity:.24,interactive:false,
-           className:flashIds?.has((area.kind==="lake"?"lakes":"areas")+":"+area.id)?"p2m-new-object-blink-geometry":""}
+          interactive:false,
+          className:flashIds?.has((area.kind==="lake"?"lakes":"areas")+":"+area.id)?"p2m-new-object-blink-geometry":"",
+          style:{color,weight:2,fillColor:color,fillOpacity:.24,interactive:false}
         }).addTo(group);
         const bounds=geo.getBounds();
         if(!bounds.isValid()||!area.name)continue;
