@@ -51,7 +51,7 @@ assert.equal(els.layersUnite.classList.contains("hidden"),false,
 assert.equal(els.layersUnite.disabled,true,"Merge button starts disabled");
 const privateRow=els.layersList.children[0];
 const workRow=els.layersList.children[1];
-assert.equal(privateRow.children.length,3,"Private has no edit, but has eye, selection and deletion");
+assert.equal(privateRow.children.length,4,"Privat has a color-only editor plus eye, selection and deletion");
 assert.equal(workRow.children.length,4,"Standard row has eye, selection, edit and delete");
 assert.match(workRow.children[1].children[1].textContent,/2 Pins/);
 assert.match(workRow.children[1].children[1].textContent,/Flächen/);
