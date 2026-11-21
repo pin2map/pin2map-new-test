@@ -42,3 +42,7 @@ Die operative Regel steht vollständig in [docs/ENTWICKLUNGSARBEITSABLAUF_2026-1
 ## Bestandsschutz mit Vorschlagsrecht und vertragstreue Tests (21.11.2026)
 
 Bestandsschutz gilt für abgenommene Funktionen, Dialoge und Layouts. Wenn eine bessere technische oder gestalterische Lösung sinnvoll erscheint, zunächst begründeten Vorschlag an den Nutzer richten; Umsetzung der Abweichung **nur nach ausdrücklicher Nutzerzustimmung**. Fehlerkorrekturen autorisieren keine Nebenänderungen. Testerwartungen müssen aus dem vorbestehenden Vertrag stammen und dürfen nicht nachträglich an unerlaubte UI-Änderungen angepasst werden. Für Layoutaussagen reale Browsergeometrie prüfen; echte iPhone-Safari-Abnahme von emulierten Tests unterscheiden. Kein Freigabeversprechen ohne entsprechenden Nachweis.
+
+## Spezifische QS-Regel nach iPhone-Suchdialogfehler (21.11.2026)
+
+Für UI-Fehler muss der beobachtete kaputte Zustand in einem Negativtest reproduzierbar scheitern; anschließend muss der Fix denselben Test bestehen. Echte Pixel-/Box-Geometrie, freie Viewport-Höhe und tatsächlich sichtbare letzte Option prüfen, nicht bloß DOM-Existenz oder Scrollbarkeit. Eine bereits durch `maxHeight` begrenzte Flex-Box darf ihre eigene `scrollHeight` nicht als Eingabe für ihre künftige Maximalhöhe benutzen. Mobile Browseremulation nie als reale iPhone-Safari-Prüfung ausgeben. Freigabe bei gegenteiligem Gerätetest zurücknehmen und Tests nachschärfen.

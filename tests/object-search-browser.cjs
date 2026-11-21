@@ -85,6 +85,32 @@ const base=process.env.PIN2MAP_TEST_URL||
       assert.ok(full.client>=full.scroll-2,"all seven choices visible when there is room");
       assert.ok(full.lastBottom<=full.menu.bottom+1,"last choice must be fully visible");
     }
+    // Exact screenshot regression: Safari can transiently clamp menu height.
+    // When there is enough visible space, a new real resize must restore
+    // the full seven-row list, never leave an empty white strip.
+    if(width<=768){
+      const recovered=await page.evaluate(()=>{
+        const menu=document.querySelector("#searchTypeMenu");
+        const screenHeight=Math.max(560,Math.min(innerHeight,720));
+        Object.defineProperty(window,"visualViewport",{configurable:true,value:{
+          offsetTop:0,offsetLeft:0,width:innerWidth,height:screenHeight
+        }});
+        menu.style.maxHeight="0px";
+        window.dispatchEvent(new Event("resize"));
+        const m=menu.getBoundingClientRect();
+        const last=menu.querySelector(".search-type-choice:last-child").getBoundingClientRect();
+        return {height:m.height,scroll:menu.scrollHeight,client:menu.clientHeight,
+          lastBottom:last.bottom,menuBottom:m.bottom,
+          free:screenHeight-document.querySelector("#searchForm").getBoundingClientRect().bottom};
+      });
+      assert.ok(recovered.free>350,"screenshot regression precondition: ample room");
+      assert.ok(recovered.height>300&&recovered.client>=recovered.scroll-2,
+        "a collapsed strip must recover when viewport has room: "+JSON.stringify(recovered));
+      assert.ok(recovered.lastBottom<=recovered.menuBottom+1,
+        "seven full choices must become visible again");
+      await page.evaluate(()=>{delete window.visualViewport;window.dispatchEvent(new Event("resize"));});
+      await assertSingleColumn("recovered menu "+width);
+    }
     // Exercise the REAL positioning code with an iOS-style visualViewport.
     // Simply adding keyboard-constrained CSS is not a geometry regression test.
     if(width<=768){

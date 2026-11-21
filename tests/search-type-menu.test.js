@@ -87,9 +87,9 @@ test("approved search dialog uses actual viewport height, including iPhone keybo
  const form={left:40,top:68,bottom:112,width:310,height:44};
  const layout=(height,offsetTop=0,anchor=form)=>SearchTypeMenu.chooserLayout({
   form:anchor,app,visualViewport:{offsetLeft:0,offsetTop,width:390,height},
-  innerHeight:844,menuWidth:340,contentHeight:364});
+  innerHeight:844,menuWidth:340});
  const full=layout(800);
- assert.equal(full.maxHeight,364,"show full seven-row dialog when it fits");
+ assert.equal(full.maxHeight,671,"provide all available space and let natural content determine height");
  assert.equal(full.top,121,"keep the approved placement beneath search");
  const keyboard=layout(420);
  assert.equal(keyboard.keyboard,true);
@@ -100,7 +100,7 @@ test("approved search dialog uses actual viewport height, including iPhone keybo
  assert.equal(shifted.maxHeight,331,"account for visualViewport.offsetTop");
  const horizontallyShifted=SearchTypeMenu.chooserLayout({form,app,
   visualViewport:{offsetLeft:20,offsetTop:0,width:350,height:420},
-  innerHeight:844,menuWidth:340,contentHeight:364});
+  innerHeight:844,menuWidth:340});
  assert.ok(horizontallyShifted.left>=28,
   "keep the menu inside the visible horizontal viewport");
  assert.ok(horizontallyShifted.left+340<=20+350,
@@ -109,6 +109,9 @@ test("approved search dialog uses actual viewport height, including iPhone keybo
  assert.equal(cramped.top,363,"never move chooser above the search field");
  assert.equal(cramped.maxHeight,49,"honestly report actual remaining space");
  assert.ok(cramped.top+cramped.maxHeight<=412);
+ const source=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
+ assert.doesNotMatch(source,/contentHeight:this\.menu\.scrollHeight|Math\.min\(contentHeight,/,
+  "a previously collapsed menu must never determine its future maximum height");
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");

@@ -2681,7 +2681,7 @@ body.object-search-active #app #searchButton.p2m-icon-control .p2m-lucide{color:
 }
 
 /* v275 – compact predecessor-style search options; fixed 2 rows and X across both. */
-#app .search-creation-choices{display:flex;flex-direction:column;gap:3px}
+#app .search-creation-choices{display:flex;flex:0 0 auto;flex-direction:column;gap:3px}
 #app .search-type-menu.object-search-mode{
   width:min(390px,calc(100vw - 20px));padding:8px;
   overflow-y:auto;-webkit-overflow-scrolling:touch;

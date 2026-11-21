@@ -244,7 +244,7 @@
   }
   // Pure viewport geometry: approved single-column list, no artificial
   // minimum height, and no mixing of fixed and app-relative coordinates.
-  static chooserLayout({form,app,visualViewport,innerHeight,menuWidth,contentHeight}){
+  static chooserLayout({form,app,visualViewport,innerHeight,menuWidth}){
    const keyboard=Boolean(visualViewport&&innerHeight-visualViewport.height>120);
    const origin=keyboard?{x:0,y:0}:{x:app.left,y:app.top};
    const leftEdge=keyboard?(visualViewport.offsetLeft||0):app.left;
@@ -255,7 +255,9 @@
    const x=Math.max(leftEdge+margin,Math.min(
     form.left+form.width/2-menuWidth/2,rightEdge-margin-menuWidth));
    const top=Math.max(upper+margin,form.bottom+gap);
-   const maxHeight=Math.max(0,Math.min(contentHeight,lower-margin-top));
+   // A height-limited flex menu must never measure itself to compute its own
+   // next height: on iOS this creates a sticky collapsed white strip.
+   const maxHeight=Math.max(0,lower-margin-top);
    // This contract never moves the chooser above or over the search field.
    // If the visual viewport truly leaves no room below it, report the
    // available space faithfully rather than fabricating a 44px minimum.
@@ -269,7 +271,7 @@
    this.menu.classList.toggle("keyboard-constrained",keyboard);
    const layout=SearchTypeMenu.chooserLayout({form,app,visualViewport,
     innerHeight:view?.innerHeight||app.height,
-    menuWidth:this.menu.offsetWidth||340,contentHeight:this.menu.scrollHeight});
+    menuWidth:this.menu.offsetWidth||340});
    this.menu.style.left=layout.left+"px";
    this.menu.style.top=layout.top+"px";
    this.menu.style.maxHeight=layout.maxHeight+"px";
