@@ -398,6 +398,8 @@ const viewports=[
    await page.locator("#searchResults .result").first()
      .waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon").count(),1);
+   assert.equal(await page.locator('.result-feature-icon img[src$="region.svg"]').count(),1,
+     "Gebiet result must render the same icon as the search chooser");
    await page.locator("#searchResults .result").first().click();
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
@@ -478,10 +480,10 @@ const viewports=[
    await page.locator("#searchInput").fill("Testsee");
    await page.keyboard.press("Tab");
    assert.equal(await page.evaluate(()=>document.activeElement?.dataset?.searchType),"pin");
-   await page.keyboard.press("e"); // See now uses E; S chooses marker search.
+   await page.keyboard.press("s"); // See uses S; Markierungen Suchen uses M.
    await page.locator("#searchResults .result").first().waitFor({state:"visible",timeout:12000});
-   assert.equal(await page.locator('.result-feature-icon img[src$="region.svg"]').count(),1,
-     "Area search result must reuse the same area icon as the search chooser");
+   assert.equal(await page.locator('.result-feature-icon img[src$="lake.svg"]').count(),1,
+     "See result must reuse the same lake.svg icon as the search chooser");
    assert.deepEqual(await page.locator('.result-feature-icon img').first().evaluate(el=>{
      const s=getComputedStyle(el);return [Math.round(parseFloat(s.width)),Math.round(parseFloat(s.height))];
    }),[19,19],"Canonical area asset retains the normal result-icon geometry");
