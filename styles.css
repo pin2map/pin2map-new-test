@@ -2883,3 +2883,62 @@ body.object-search-mode #app #searchButton.p2m-icon-control .p2m-lucide{color:#f
   flex-wrap:nowrap;min-height:34px;margin:0;z-index:1;
   background:#fff;
 }
+
+/* v294 – approved simplified search field with the original 30px clear X
+ * in the vacated right-side position; all other map buttons unchanged. */
+#app #searchClear.search-clear{
+  display:inline-flex;flex:0 0 30px;min-width:30px;max-width:30px;
+  width:30px;height:40px;order:2;
+}
+body.object-search-mode #app #searchClear.search-clear span{
+  background:#c92f39;
+}
+/* Exactly three search-extension options on one horizontal line. */
+#app #searchTypeMenu.object-search-mode .object-search-options{
+  display:flex;flex-direction:column;gap:9px;padding:3px 4px 6px;
+}
+#app #searchTypeMenu .object-search-results{
+  display:block;grid-column:auto;grid-row:auto;padding:2px 0 6px;
+}
+#app #searchTypeMenu .object-search-scope{
+  display:block;min-width:0;margin:0;padding:10px 7px 8px;
+  border:1px solid #9eb5ce;border-radius:9px;background:#fff;
+}
+#app #searchTypeMenu .object-search-scope legend{
+  display:table;width:auto;margin:0 0 0 4px;padding:0 5px;
+  font:700 12px/1.15 system-ui,sans-serif;color:#427eae;
+}
+#app #searchTypeMenu .object-search-flags{
+  display:grid;grid-template-columns:max-content max-content minmax(0,1fr);
+  grid-column:auto;grid-row:auto;justify-content:space-between;
+  gap:5px;align-items:center;
+}
+#app #searchTypeMenu .object-search-flags .object-search-check{
+  display:inline-flex;align-items:center;gap:4px;min-width:0;
+  font:500 clamp(10px,2.7vw,12px)/1.1 system-ui,sans-serif;
+  white-space:nowrap;color:#263443;cursor:pointer;
+}
+#app #searchTypeMenu .object-search-flags .object-search-check:last-child{
+  justify-self:end;
+}
+#app #searchTypeMenu .object-search-flags .object-search-check input{
+  flex:0 0 15px;width:15px;height:15px;margin:0;accent-color:#1680e2;
+}
+#app #searchTypeMenu .object-search-gpx{
+  display:inline-flex;align-items:center;justify-content:center;
+  box-sizing:border-box;align-self:flex-start;min-height:36px;padding:7px 12px;
+  border:1px solid #aebfd1;border-radius:7px;
+  color:#243b54;background:#eef3f8;white-space:nowrap;
+  font:600 12px/1.2 system-ui,sans-serif;cursor:pointer;
+}
+#app #searchTypeMenu .object-search-gpx[aria-pressed="true"]{
+  background:#cfe5ff;border-color:#5189bd;
+}
+@media(max-width:360px){
+ #app #searchTypeMenu .object-search-scope{padding:9px 4px 7px}
+ #app #searchTypeMenu .object-search-flags{gap:2px}
+ #app #searchTypeMenu .object-search-flags .object-search-check{gap:2px;font-size:10px}
+ #app #searchTypeMenu .object-search-flags .object-search-check input{
+  flex-basis:13px;width:13px;height:13px;
+ }
+}

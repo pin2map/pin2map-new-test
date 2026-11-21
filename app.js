@@ -1091,49 +1091,31 @@
     objectSearchView=null;
     document.body.classList.remove("object-search-active");
     searchForm?.updateClear?.();
-    $("searchClear").setAttribute("aria-label","Suchfeld leeren");
     renderMarkers();renderGeometry();
     objectSearchSpotlight?.setActive(false);
     if(restore&&before)mapAdapter.setView(before,{animate:false});
   }
   function runObjectSearch(options={}){
-    const created=options.created||"any";
-    const query=created==="any"?$("searchInput").value.trim():"";
+    const query=$("searchInput").value.trim();
     searchForm.cancel();cancelGeometrySearch();searchView.hide();
     document.body.classList.add("object-search-mode");
-    // The active red capsule signals search mode, not whether a match exists.
-    $("searchClear").classList.remove("hidden");
-    $("searchClear").setAttribute("aria-label","Suchfilter zurücksetzen");
-    const matches=objectSearch.search(state,{query,...options,created,now:new Date()});
+    const matches=objectSearch.searchExpanded(state,{query,...options});
     searchTypeMenu?.setResults(matches);
-    if(!query&&created==="any"){
-      resetObjectSearch();
-      document.body.classList.add("object-search-mode");
-      $("searchClear").classList.remove("hidden");
-      showNotice("Suchtext eingeben oder Datum auswählen");
-      return;
-    }
-    if(!matches.length){
-      resetObjectSearch();
-      document.body.classList.add("object-search-mode");
-      $("searchClear").classList.remove("hidden");
-      showNotice("Keine passenden gespeicherten Objekte gefunden");
-      return;
-    }
     const prior=objectSearchView?.viewport||mapAdapter.getViewport();
-    objectSearchView={viewport:prior,includeHidden:options.includeHidden!==false,
+    objectSearchView={viewport:prior,includeHidden:options.includeHidden===true,
       ids:new Set(matches.map(m=>m.type+":"+m.id))};
-    document.body.classList.add("object-search-active");
+    document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(true);
-    const selected={layers:state.layers.map(l=>({...l,visible:true})),
-      pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
-      areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
-      rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
-    fitVisibleProject.fit({project:selected,pinFilter,
-      currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
-    objectSearchSpotlight?.schedule();
-    showNotice(matches.length+" "+(matches.length===1?"Objekt":"Objekte")+" gefunden");
+    objectSearchSpotlight?.setActive(matches.length>0);
+    if(matches.length){
+      const selected={layers:state.layers.map(l=>({...l,visible:true})),
+        pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
+        areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
+        rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
+      fitVisibleProject.fit({project:selected,pinFilter,
+        currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
+      objectSearchSpotlight?.schedule();
+    }
   }
   function endObjectSearchIfNeeded(){
     // Reset the search viewport, input and keyboard before either editor opens.
@@ -1172,9 +1154,12 @@
     onResults:renderResults,
     onMessage:searchMessage,
     onInputChange:()=>{
-      resetObjectSearch();searchView.hide();cancelGeometrySearch();
-      if(searchTypeMenu?.searchMode)searchTypeMenu.returnToCreation();
-      document.body.classList.remove("object-search-mode");
+      searchView.hide();cancelGeometrySearch();
+      if(searchTypeMenu?.searchMode){
+        runObjectSearch(searchTypeMenu.searchOptions());
+      }else{
+        resetObjectSearch();document.body.classList.remove("object-search-mode");
+      }
     },
     cancelSearch:()=>placeSearch.cancel()
   });
@@ -1184,10 +1169,12 @@
     searchForm.bind();
     $("searchClear").addEventListener("click",event=>{
       if(!searchTypeMenu?.searchMode)return;
-      // Both the capsule × and the compact red × end the search mode.
+      // Red X restores the seven creation choices but preserves the query.
       event.preventDefault();event.stopImmediatePropagation();
-      searchTypeMenu.exitSearchMode();
-      endObjectSearch();
+      resetObjectSearch();
+      document.body.classList.remove("object-search-mode");
+      searchTypeMenu.returnToStandardChoices();
+      searchForm.updateClear();
     },true);
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
       document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode,
@@ -1203,7 +1190,7 @@
     // map buttons. The capture handler precedes each launcher's own toggle.
     const mapLauncherSelector=[
       "#favoritesButton","#layersButton","#settingsButton","#transferButton","#basemapButton",
-      "#pinInfoButton","#searchButton","#searchTypeButton","#refreshButton",
+      "#pinInfoButton","#searchTypeButton","#refreshButton",
       "#labelsToggle",".pin-zoom-buttons button"
     ].join(",");
     document.addEventListener("click",event=>{
