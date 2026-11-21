@@ -178,6 +178,8 @@
   returnToCreation(){
    if(!this.searchMode)return;
    this.searchMode=false;
+   this.clear.setAttribute("aria-label","Suchfeld leeren");
+   this.clear.title="Suchfeld leeren";
    this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
    this.menu.classList.remove("object-search-mode");
    this.onEdit();
@@ -196,6 +198,8 @@
   }
   enterSearchMode(){
    this.searchMode=true;this.gpxOnly=false;
+   this.clear.setAttribute("aria-label","Markierungssuche verlassen");
+   this.clear.title="Markierungssuche verlassen";
    this.searchPanel.querySelector(".object-search-gpx").setAttribute("aria-pressed","false");
    this.input.blur();this.creation.classList.add("hidden");
    this.searchPanel.classList.remove("hidden");
@@ -211,6 +215,8 @@
   }
   exitSearchMode(){
    this.searchMode=false;
+   this.clear.setAttribute("aria-label","Suchfeld leeren");
+   this.clear.title="Suchfeld leeren";
    this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
    this.menu.classList.remove("object-search-mode");this.close();
   }

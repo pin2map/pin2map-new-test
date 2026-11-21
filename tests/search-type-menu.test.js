@@ -119,6 +119,8 @@ test("the approved search options have exactly three fields and independent GPX 
  for(const label of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
   assert.ok(ui.includes(label));
  assert.match(ui,/returnToStandardChoices\(\)/);
+ assert.match(ui,/this\.clear\.setAttribute\("aria-label","Markierungssuche verlassen"\)/);
+ assert.match(ui,/this\.clear\.setAttribute\("aria-label","Suchfeld leeren"\)/);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
