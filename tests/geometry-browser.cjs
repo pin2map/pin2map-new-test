@@ -478,6 +478,8 @@ const viewports=[
      assert.equal(await page.locator("#geometryMobileNoteEditor").isHidden(),true);
    }
    await page.locator("#geometryNotes").blur();
+   const noteStatus=await page.locator(".p2m-area-name-label .p2m-object-status path").first().getAttribute("fill");
+   assert.equal(noteStatus,"#d94f55","A note colors only the left half red");
    await page.locator('.geometry-actions .geometry-ok').click();
    assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    // Polygons must be completely noninteractive; ONLY the area name marker
@@ -526,6 +528,8 @@ const viewports=[
    const lake=(await waitForStored(project=>project?.areas?.some(a=>a.kind==="lake"),
      "lake")).areas.find(a=>a.kind==="lake");
    assert.equal(lake.layerId,"private");
+   assert.equal(await page.locator('.p2m-area-name-label img[src$="lake.svg"]').count(),1,
+     "Lake map label uses the canonical See symbol");
    await page.locator(".geometry-ok").click();
    // The area/see name markers must remain legible inside a partially shown
    // polygon at different zoom levels, not fixed at the complete bounds center.
