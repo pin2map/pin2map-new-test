@@ -207,41 +207,30 @@ const viewports=[
          addresstype:"county",type:"administrative",class:"boundary",
          address:{country_code:"de"},geojson:poly}])});
    });
-   await page.evaluate(()=>{
-     window.__v302AreaWriteTrace=[];
-     let serial=0;
-     const Store=window.Pin2MapIndexedDBProjectStore;
-     const original=Store.prototype.saveProject;
-     Store.prototype.saveProject=function(project){
-       const n=++serial,names=(project.areas||[]).map(a=>a.name);
-       window.__v302AreaWriteTrace.push({n,phase:"queued",names});
-       return original.call(this,project).then(result=>{
-         window.__v302AreaWriteTrace.push({n,phase:"completed",names});return result;
-       });
-     };
-   });
+   // Unlike waitForFunction with async DB predicates, explicitly await each
+   // transaction read before accepting an individual saved-area result.
+   async function waitForSavedPlateArea(name){
+     const deadline=Date.now()+12000;
+     while(Date.now()<deadline){
+       const present=await page.evaluate(async expected=>{
+         const db=await window.Pin2MapIndexedDBProjectStore.open();
+         try{return (await db.loadProject()).areas.some(a=>
+           a.name===expected&&a.layerId==="private");}
+         finally{db.close();}
+       },name);
+       if(present)return;
+       await page.waitForTimeout(120);
+     }
+     throw Error("Missing persisted Privat area: "+name);
+   }
    await page.locator("#searchInput").fill("TT");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"Bodenseekreis"}).first().click();
-   await page.waitForFunction(async name=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
-     finally{db.close();}
-   },"🇩🇪 TT (Bodenseekreis)",{timeout:12000});
+   await waitForSavedPlateArea("🇩🇪 TT (Bodenseekreis)");
    await page.locator("#searchInput").fill("RV");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"Landkreis Ravensburg"}).first().click();
-   await page.waitForFunction(async name=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
-     finally{db.close();}
-   },"🇩🇪 RV (Landkreis Ravensburg)",{timeout:12000});
-   console.log("[geometry] after RV selection",JSON.stringify(await page.evaluate(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return {areas:(await db.loadProject()).areas.map(a=>a.name),
-       writes:window.__v302AreaWriteTrace};}
-     finally{db.close();}
-   })));
+   await waitForSavedPlateArea("🇩🇪 RV (Landkreis Ravensburg)");
    await page.locator("#searchInput").fill("ÜB");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"ÜB"}).first().click();
@@ -251,18 +240,12 @@ const viewports=[
      "ÜB is shared by exactly three administrative districts");
    await page.locator("#searchResults .result")
      .filter({hasText:"Landkreis Sigmaringen"}).first().click();
-   await page.waitForFunction(async name=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
-     finally{db.close();}
-   },"🇩🇪 ÜB (Landkreis Sigmaringen)",{timeout:12000});
+   await waitForSavedPlateArea("🇩🇪 ÜB (Landkreis Sigmaringen)");
    const plateSnapshot=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas.map(a=>({name:a.name,id:a.id,layerId:a.layerId}));}
      finally{db.close();}
    });
-   console.log("[geometry] v302 plate diagnostic",JSON.stringify(plateSnapshot));
-   console.log("[geometry] v302 write order",JSON.stringify(await page.evaluate(()=>window.__v302AreaWriteTrace)));
    assert.deepEqual(["🇩🇪 TT (Bodenseekreis)","🇩🇪 RV (Landkreis Ravensburg)",
      "🇩🇪 ÜB (Landkreis Sigmaringen)"].filter(name=>
        !plateSnapshot.some(area=>area.name===name)),[],
@@ -299,11 +282,7 @@ const viewports=[
      .filter({hasText:"Landkreis Konstanz"}).first();
    await kn.waitFor({state:"visible",timeout:12000});
    await kn.click();
-   await page.waitForFunction(async name=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
-     finally{db.close();}
-   },"🇩🇪 KN (Landkreis Konstanz)",{timeout:12000});
+   await waitForSavedPlateArea("🇩🇪 KN (Landkreis Konstanz)");
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas.length;}
@@ -338,11 +317,7 @@ const viewports=[
      .waitFor({state:"visible",timeout:12000});
    assert.ok((await kaChoices.allInnerTexts()).some(t=>t.includes("Stadt Karlsruhe")));
    await kaChoices.filter({hasText:"Landkreis Karlsruhe"}).first().click();
-   await page.waitForFunction(async name=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
-     finally{db.close();}
-   },"🇩🇪 KA (Landkreis Karlsruhe)",{timeout:12000});
+   await waitForSavedPlateArea("🇩🇪 KA (Landkreis Karlsruhe)");
    await page.locator("#searchInput").fill("B");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    assert.equal(await page.locator(".p2m-plate-label").count(),0,
@@ -365,11 +340,7 @@ const viewports=[
    assert.ok(await candidates.count()>=2);
    assert.ok((await candidates.allInnerTexts()).some(t=>t.includes("Bukarest")));
    await candidates.filter({hasText:"Berlin"}).first().click();
-   await page.waitForFunction(async name=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name===name&&a.layerId==="private");}
-     finally{db.close();}
-   },"🇩🇪 B (Berlin)",{timeout:12000});
+   await waitForSavedPlateArea("🇩🇪 B (Berlin)");
    assert.equal(await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).areas.length;}finally{db.close();}
