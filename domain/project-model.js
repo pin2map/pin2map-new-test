@@ -7,14 +7,14 @@
  */
 (function(root){
   const PRIVATE_ID="private";
-  const DEFAULT_COLORS=Object.freeze(["#326cc2","#e07c2b","#865ab8","#16836b","#c14d72","#8a7431"]);
+  const DEFAULT_COLORS=Object.freeze(["#326cc2","#e07c2b","#865ab8","#16836b","#c14d72","#808080"]);
   function cleanText(value,maxLength=120){
     return String(value??"").trim().slice(0,maxLength);
   }
   function defaultProject(){
     return {
       layers:[
-        {id:PRIVATE_ID,name:"Privat",color:"#808080",visible:true},
+        {id:PRIVATE_ID,name:"Privat",color:"#E64294",visible:true},
         {id:"layer-1",name:"Ebene 1",color:DEFAULT_COLORS[1],visible:true}
       ],
       pins:[],areas:[],rivers:[],favorites:[],
