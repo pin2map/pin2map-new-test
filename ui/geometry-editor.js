@@ -79,15 +79,24 @@
       let actions;
       const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleLayerPicker(),"geometry-layer");
       const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
+      const color=this.makeButton("range","Objektfarbe auswählen",()=>{},"geometry-color");
+      const colorDotObject=doc.createElement("span");colorDotObject.className="geometry-color-dot";
+      color.append(colorDotObject);this.colorDot=colorDotObject;
+      const nativeColor=doc.createElement("input");nativeColor.type="color";
+      nativeColor.className="geometry-native-color";nativeColor.setAttribute("aria-label","Individuelle Objektfarbe wählen");
+      nativeColor.addEventListener("input",()=>{this.applyObjectColor(nativeColor.value);});
+      nativeColor.addEventListener("change",()=>{this.applyObjectColor(nativeColor.value);nativeColor.blur();});
+      color.append(nativeColor);this.nativeColor=nativeColor;
       const link=this.makeButton("link-2","Link",()=>this.toggleSub("link"),"geometry-link");
       const wiki=this.makeButton("wikipedia","Wikipedia",()=>this.onWikipedia(this.model?.name||""),"geometry-wiki");
       const ok=this.makeButton(null,this.core.okLabel,()=>{this.flush();this.close();},"geometry-ok");
       this.core.configureOk(ok);
       actions=this.core.createFooter(doc,{layer,url:link,wiki,ok});
+      actions.insertBefore(color,link);
       actions.classList.add("geometry-actions");
       panel.append(header,notes,actions);
       this.header=header;this.actions=actions;
-      this.removeButton=remove;this.layerButton=layer;this.linkButton=link;
+      this.removeButton=remove;this.layerButton=layer;this.colorButton=color;this.linkButton=link;
       this.nameInput=name;this.notesInput=textarea;
       this.notesRow=notes;this.notesLegend=notesLegend;this.legend=legend;this.expandButton=expand;
       this.core.configureSurface(panel,header,notes,actions);
@@ -120,6 +129,12 @@
       if(!this.model)return;
       const changed=this.onUpdate(this.type,this.model.id,patch);
       if(changed)this.model=changed;
+    }
+    applyObjectColor(value){
+      if(!this.model||!/^#[0-9a-f]{6}$/i.test(value))return;
+      this.update({color:value.toUpperCase()});
+      this.colorDot.style.backgroundColor=value;
+      this.colorButton.setAttribute("title","Objektfarbe: "+value.toUpperCase());
     }
     toggleLayerPicker(){
       if(!this.model)return;
@@ -265,7 +280,11 @@
       this.notesRow.classList.remove("hidden");
       this.linkButton.classList.remove("hidden");
       this.expandButton.classList.remove("hidden");
-      this.layerDot.style.backgroundColor=this.layers.find(l=>l.id===item.layerId)?.color||"#a4b0bd";
+      const inheritedColor=this.layers.find(l=>l.id===item.layerId)?.color||"#a4b0bd";
+      this.layerDot.style.backgroundColor=inheritedColor;
+      this.colorDot.style.backgroundColor=item.color||inheritedColor;
+      this.nativeColor.value=/^#[0-9a-f]{6}$/i.test(item.color||"")?item.color:inheritedColor;
+      this.colorButton.title=item.color?"Objektfarbe: "+item.color:"Objektfarbe auswählen";
       this.layerButton.setAttribute("aria-label","Ebene: "+(this.layers.find(l=>l.id===item.layerId)?.name||"Privat"));
       this.nameInput.value=item.name||"";
       this.notesInput.value=item.note||"";

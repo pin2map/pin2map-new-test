@@ -607,7 +607,7 @@
           touchDevice:touch,existingPoints:pointTotal
         });
         pointTotal=prepared.totalPoints;
-        const color=layerColors[area.layerId]||"#326cc2";
+        const color=/^#[0-9a-f]{6}$/i.test(area.color||"")?area.color:(layerColors[area.layerId]||"#326cc2");
         const geo=window.L.geoJSON(prepared.geometry,{
           interactive:false,
           className:flashIds?.has((area.kind==="lake"?"lakes":"areas")+":"+area.id)?"p2m-new-object-blink-geometry":"",
@@ -617,7 +617,12 @@
         if(!bounds.isValid()||!area.name)continue;
         const content=document.createElement("span");
         content.className="p2m-area-name-label";
-        content.textContent=area.name;
+        const typeIcons=window.Pin2MapObjectTypeIcons;
+        const symbol=typeIcons.element(area.kind==="lake"?"lake":"area",document);
+        symbol.classList.add("p2m-feature-label-type");
+        content.append(symbol,window.Pin2MapObjectStatus.halves(area,document));
+        const title=document.createElement("span");title.className="p2m-feature-label-name";title.textContent=area.name;
+        content.append(title);
         const marker=window.L.marker(bounds.getCenter(),{
           keyboard:true,interactive:true,zIndexOffset:highlightIds?.has("areas:"+area.id)||highlightIds?.has("lakes:"+area.id)?1800:350,
           icon:window.L.divIcon({html:content.outerHTML,className:"p2m-area-name-wrap",
@@ -632,7 +637,7 @@
           geometry:prepared.geometry,name:area.name});
       }
       for(const river of rivers){
-        const color=layerColors[river.layerId]||"#1689e5";
+        const color=/^#[0-9a-f]{6}$/i.test(river.color||"")?river.color:(layerColors[river.layerId]||"#1689e5");
         for(const chain of river.chains||[]){
           if(chain.length<2)continue;
           const line=window.L.polyline(chain,{color,weight:5,opacity:.9,
@@ -647,7 +652,12 @@
         }
         if((river.chains||[]).some(chain=>chain.length>=2)&&river.name){
           const name=document.createElement("span");
-          name.textContent=river.name;name.className="p2m-river-name-label";
+          name.className="p2m-river-name-label";
+          const symbol=window.Pin2MapObjectTypeIcons.element("river",document);
+          symbol.classList.add("p2m-feature-label-type");
+          name.append(symbol,window.Pin2MapObjectStatus.halves(river,document));
+          const title=document.createElement("span");title.className="p2m-feature-label-name";title.textContent=river.name;
+          name.append(title);
           // The initial coordinate is only a placeholder; updateRiverLabels
           // immediately moves it onto the currently visible section.
           const marker=window.L.marker([0,0],{

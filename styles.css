@@ -3075,3 +3075,24 @@ body.object-search-mode #app #searchClear.search-clear span{
  #map .leaflet-marker-icon.pin-icon.p2m-new-object-blink .pin-marker-shape,
  #map .leaflet-overlay-pane path.p2m-new-object-blink-geometry{animation:none}
 }
+
+/* v304 canonical object labels: icon and two-half status are part of one hit target. */
+#map .p2m-area-name-label,#map .p2m-river-name-label{
+ display:inline-flex;align-items:center;gap:5px;max-width:min(320px,85vw);
+}
+#map .p2m-feature-label-type{display:block;flex:none;width:16px;height:16px;object-fit:contain}
+#map .p2m-object-status{display:inline-flex;flex:none;width:14px;height:14px}
+#map .p2m-object-status svg{width:100%;height:100%;display:block}
+#map .p2m-feature-label-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#app .geometry-editor .geometry-color{position:relative;overflow:hidden}
+#app .geometry-editor .geometry-color-dot{
+ position:absolute;right:1px;bottom:1px;width:10px;height:10px;
+ border:2px solid white;border-radius:50%;box-shadow:0 0 0 1px #a7b4c1;
+ pointer-events:none;
+}
+/* A real native color input overlays the circle, so iOS and desktops open
+   their own system picker on a genuine user click, not a scripted proxy. */
+#app .geometry-editor .geometry-native-color{
+ position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;
+ border:0;padding:0;margin:0;
+}

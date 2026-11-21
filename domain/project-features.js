@@ -19,23 +19,25 @@
     if(!Array.isArray(state.rivers))state.rivers=[];
     return state;
   }
-  function createArea(state,{id,name,geometry,kind="area",note="",url="",createdAt=""},privateLayerId="private"){
+  function createArea(state,{id,name,geometry,kind="area",note="",url="",color=null,createdAt=""},privateLayerId="private"){
     if(!["area","lake"].includes(kind)||!isPolygon(geometry))throw new TypeError("Valid area polygon required");
     if(!id||!String(name||"").trim())throw new TypeError("Area id and name required");
     ensure(state);
     if(state.areas.some(a=>a.id===id))throw new Error("Duplicate area id");
     const area={id:String(id),name:String(name).trim().slice(0,120),kind,layerId:privateLayerId,
       geometry,note:String(note),url:String(url)};
+    if(color!==null){if(!/^#[0-9A-F]{6}$/i.test(color))throw new RangeError("Invalid object color");area.color=color.toUpperCase();}
     if(createdAt){area.createdAt=String(createdAt);area.updatedAt=String(createdAt);}
     state.areas.push(area);return area;
   }
-  function createRiver(state,{id,name,chains,note="",url="",createdAt=""},privateLayerId="private"){
+  function createRiver(state,{id,name,chains,note="",url="",color=null,createdAt=""},privateLayerId="private"){
     if(!validateChains(chains)||!id||!String(name||"").trim())
       throw new TypeError("Valid named river line required");
     ensure(state);
     if(state.rivers.some(r=>r.id===id))throw new Error("Duplicate river id");
     const river={id:String(id),name:String(name).trim().slice(0,120),layerId:privateLayerId,
       chains,note:String(note),url:String(url)};
+    if(color!==null){if(!/^#[0-9A-F]{6}$/i.test(color))throw new RangeError("Invalid object color");river.color=color.toUpperCase();}
     if(createdAt){river.createdAt=String(createdAt);river.updatedAt=String(createdAt);}
     state.rivers.push(river);return river;
   }
@@ -44,13 +46,17 @@
     const collection=type==="river"?state.rivers:state.areas;
     const item=collection.find(x=>x.id===id);
     if(!item)return null;
-    for(const key of ["name","note","url","layerId"]){
+    for(const key of ["name","note","url","layerId","color"]){
       if(Object.hasOwn(patch,key)){
         if(key==="layerId"&&!state.layers.some(l=>l.id===patch.layerId))throw new Error("Unknown layer");
-        item[key]=key==="name"?String(patch[key]).trim().slice(0,120):String(patch[key]||"");
+        if(key==="color"){
+          if(patch.color!==null&&!/^#[0-9A-F]{6}$/i.test(patch.color||""))throw new RangeError("Invalid object color");
+          if(patch.color===null)delete item.color;
+          else item.color=patch.color.toUpperCase();
+        }else item[key]=key==="name"?String(patch[key]).trim().slice(0,120):String(patch[key]||"");
       }
     }
-    if(updatedAt&&Object.keys(patch).some(key=>["name","note","url","layerId"].includes(key)))item.updatedAt=String(updatedAt);
+    if(updatedAt&&Object.keys(patch).some(key=>["name","note","url","layerId","color"].includes(key)))item.updatedAt=String(updatedAt);
     return item;
   }
   function remove(state,type,id){

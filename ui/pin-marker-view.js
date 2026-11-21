@@ -20,8 +20,10 @@
     const safeColor=/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(color)?color:"#3676c4";
     // Three 120-degree sectors: top-left note, top-right URL, bottom GPX.
     // Status is derived entirely from existing persisted pin fields.
-    const noteColor=flags.note?"#d94f55":"#e8edf2";
-    const urlColor=flags.url?"#2979d1":"#e8edf2";
+    const palette=root.Pin2MapObjectStatus?.COLORS||
+      (typeof require==="function"?require("./object-status.js").COLORS:null);
+    const noteColor=flags.note?palette.note:palette.empty;
+    const urlColor=flags.url?palette.url:palette.empty;
     const gpxColor=flags.gpx?"#8f989f":"#e8edf2";
     const html='<div class="pin-marker'+(selected?' selected':'')+'" style="color:'+safeColor+'">'
       +'<svg class="pin-marker-shape" viewBox="0 0 30 40" aria-hidden="true">'

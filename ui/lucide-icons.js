@@ -33,6 +33,12 @@
       ["rect",{x:3,y:5,width:18,height:16,rx:2}],
       ["path",{d:"M16 3v4M8 3v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"}]
     ],
+    "range": [
+      ["path",{d:"M4 6h16M4 12h16M4 18h16"}],
+      ["circle",{cx:9,cy:6,r:2,fill:"white"}],
+      ["circle",{cx:16,cy:12,r:2,fill:"white"}],
+      ["circle",{cx:7,cy:18,r:2,fill:"white"}]
+    ],
     "map-pin": [["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],["circle",{cx:12,cy:10,r:2}]],
     // Lucide car (side silhouette), canonical icon name.
     "car": [
