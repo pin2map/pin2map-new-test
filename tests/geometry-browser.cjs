@@ -899,7 +899,9 @@ const viewports=[
    assert.equal(await page.locator(".p2m-temporary-pin").count(),0);
    assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
    assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
-   await page.locator(".pin-icon").last().click();
+   // Older mixed pin/area fixtures overlap and are not the chosen reference place.
+   // Select the freshly created, visibly pulsing marker rather than a DOM-last pin.
+   await page.locator(".pin-icon.p2m-new-object-blink").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
    // A plate-search pin is NOT a newly created GPS pin: opening it may
