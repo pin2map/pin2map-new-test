@@ -771,22 +771,16 @@ const viewports=[
      }
    });
    await page.locator("#searchResults .result").first().click();
-   // Search selects a temporary preview, not a stored geometry. Confirm
-   // the object and explicitly choose its destination layer.
-   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
-   assert.deepEqual(await page.evaluate(()=>window.__mapTapCameraTrace),[],
-     "Area chosen from Kartentip must not recenter or zoom");
-   assert.equal(await page.evaluate(async()=>{
+   // Map-tap polygon selection is persisted immediately without moving the camera.
+   await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(x=>x.name==="Neusüdwales");}
+     try{return (await db.loadProject()).areas.some(x=>x.name==="Neusüdwales"&&x.layerId==="private");}
      finally{db.close();}
-   }),false,"Selecting New South Wales must not bypass the temporary preview");
-   await page.locator(".p2m-plate-label").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   await page.locator(".plate-area-yes").click();
-   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
-   await page.locator('#temporaryLayerPicker [role="option"]')
-     .filter({hasText:"Privat"}).click();
+   },null,{timeout:10000});
+   assert.deepEqual(await page.evaluate(()=>window.__mapTapCameraTrace),[],
+     "A state picked from Kartentip must not recenter or zoom");
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+   assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
    const nsw=(await waitForStored(project=>project?.areas?.some(
      area=>area.name==="Neusüdwales"),"New South Wales via hierarchy")).areas
      .find(area=>area.name==="Neusüdwales");
@@ -832,17 +826,14 @@ const viewports=[
      "Military restriction must be offered at the map tap");
    await page.evaluate(()=>{window.__mapTapCameraTrace=[];});
    await page.locator("#searchResults .result").filter({hasText:"Nationalpark Jasmund"}).click();
-   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
-   assert.deepEqual(await page.evaluate(()=>window.__mapTapCameraTrace),[],
-     "National park picked from Kartentip must not move map");
-   assert.equal(await page.evaluate(async()=>{
+   await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.name==="Nationalpark Jasmund");}
+     try{return (await db.loadProject()).areas.some(a=>a.name==="Nationalpark Jasmund"&&a.layerId==="private");}
      finally{db.close();}
-   }),false,"The selected national park is only a temporary preview");
-   await page.locator(".p2m-plate-label").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   await page.locator(".plate-area-no").click();
+   },null,{timeout:10000});
+   assert.deepEqual(await page.evaluate(()=>window.__mapTapCameraTrace),[],
+     "National park selected from Kartentip must not move the map");
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
    await page.unroute(/ovp\.dresel\.systems\/api\/interpreter/);
    await page.unroute(/nominatim\.openstreetmap\.org\/lookup/);
    // True browser regression for a mixed pin + area LABEL at the same map
