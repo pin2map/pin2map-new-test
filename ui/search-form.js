@@ -38,10 +38,10 @@
     cancel(){
       ++this.revision;
       this.cancelSearch();
-      this.element("searchButton").disabled=false;
+
     }
     updateClear(){
-      this.element("searchClear")?.classList.toggle("hidden",!this.element("searchInput").value);
+      this.element("searchClear")?.classList.remove("hidden");
     }
     clearInput(){
       const input=this.element("searchInput");
@@ -60,15 +60,13 @@
       const query=this.element("searchInput").value.trim();
       if(!query)return;
       const revision=++this.revision;
-      const button=this.element("searchButton");
-      button.disabled=false;
+
       const result=await this.search(query,{
         onStart:()=>{
           if(revision!==this.revision)return;
-          button.disabled=true;
           this.onMessage("Ort wird gesucht …");
         },
-        onFinish:()=>{if(revision===this.revision)button.disabled=false;}
+        onFinish:()=>{}
       });
       if(revision!==this.revision)return;
       switch(result.kind){

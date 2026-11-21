@@ -15,13 +15,13 @@
   constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{},onEdit=()=>{}}){
    this.doc=doc;this.el=getElement;this.icons=icons;
    this.onChoose=onChoose;this.onSearch=onSearch;this.onExit=onExit;this.onBeforeOpen=onBeforeOpen;this.onEdit=onEdit;
-   this.menu=this.el("searchTypeMenu");this.button=this.el("searchButton");
+   this.menu=this.el("searchTypeMenu");this.clear=this.el("searchClear");
    this.input=this.el("searchInput");this.form=this.el("searchForm");
    this.app=this.el("app");
-   if(!this.menu||!this.button||!this.input||!this.form||!this.app)
+   if(!this.menu||!this.clear||!this.input||!this.form||!this.app)
     throw new TypeError("Search chooser elements required");
    this.app.append(this.menu);
-   this.open=false;this.active=0;this.searchMode=false;
+   this.open=false;this.active=0;this.searchMode=false;this.gpxOnly=false;
 
   }
   makeElement(tag,cls,text){
@@ -62,82 +62,57 @@
    return field;
   }
   buildSearch(){
-   // Predecessor-style compact control: two option rows, shared exit button.
-   const section=this.makeElement("section","object-search-options");
-   const results=this.makeElement("div","object-search-results");
+   const panel=this.makeElement("section","object-search-options");
+   const results=this.makeElement("div","object-search-results","0 Pins · 0 Flächen · 0 Gewässer");
    results.setAttribute("role","status");results.setAttribute("aria-live","polite");
-   results.textContent="0 Pins · 0 Flächen · 0 Gewässer";
-   section.append(results);
-   const controls=this.makeElement("div","object-search-compact-controls");
-   const selector=this.doc.createElement("select");
-   selector.className="object-search-kind";selector.setAttribute("aria-label","Suchbereich auswählen");
-   for(const [id,label] of [
-    ["all","Pins, Flächen, Flüsse, Text"],
-    ["pins","Nur Pins"],["areas","Nur Flächen und Seen"],
-    ["rivers","Nur Flüsse"],["texts","Nur Text"]
-   ]){
-    const option=this.doc.createElement("option");option.value=id;option.textContent=label;
-    selector.append(option);
-   }
-   selector.addEventListener("change",()=>this.execute());
-   controls.append(selector);
+   const scope=this.makeElement("fieldset","object-search-scope");
+   scope.append(this.makeElement("legend",null,"Suche erweitern auf"));
    const flags=this.makeElement("div","object-search-flags");
-   for(const [id,label] of [["track","Mit Track"],["link","Mit Link"],["note","Mit Notiz"]]){
-    const field=this.makeCheck(id,label,true);
+   for(const [id,label] of [
+    ["notes","Notizen"],["urls","URLs"],["hidden","Ausgeblendete Objekte"]
+   ]){
+    const field=this.makeCheck(id,label,false);
     field.querySelector("input").addEventListener("change",()=>this.execute());
     flags.append(field);
    }
-   const hidden=this.makeCheck("hidden","Ausgeblendete",true);
-   hidden.classList.add("object-search-hidden-flag");
-   hidden.querySelector("input").addEventListener("change",()=>this.execute());
-   flags.append(hidden);
-   controls.append(flags);section.append(controls);
-   const end=this.makeElement("button","object-search-exit");
-   end.type="button";end.dataset.searchAction="end";
-   end.setAttribute("aria-label","Suche beenden");end.title="Suche beenden";
-   end.append(this.icons.svg("x",this.doc));
-   end.addEventListener("click",()=>{this.exitSearchMode();this.onExit();});
-   section.append(end);
-   return section;
+   scope.append(flags);
+   const gpx=this.makeElement("button","object-search-gpx","Alle Pins mit GPX");
+   gpx.type="button";gpx.dataset.searchAction="gpx";
+   gpx.setAttribute("aria-pressed","false");
+   gpx.addEventListener("click",()=>{
+    this.gpxOnly=!this.gpxOnly;
+    gpx.setAttribute("aria-pressed",String(this.gpxOnly));
+    this.execute();
+   });
+   panel.append(results,scope,gpx);
+   return panel;
   }
   bind(){
    if(this.bound)return;
    this.creation=this.buildCreation();this.searchPanel=this.buildSearch();
    this.menu.replaceChildren(this.creation,this.searchPanel);
    this.searchPanel.classList.add("hidden");
-   this.button.setAttribute("aria-haspopup","menu");
-   this.button.setAttribute("aria-controls","searchTypeMenu");
-   this.button.setAttribute("aria-expanded","false");
    this.input.setAttribute("aria-controls","searchTypeMenu");
    this.input.setAttribute("aria-haspopup","menu");
    this.input.setAttribute("aria-expanded","false");
    // Close competing panels BEFORE native pointer focus so iOS can type on the first tap.
    this.input.addEventListener("pointerdown",()=>{
     if(!this.open){this.onBeforeOpen();this.preparedOpen=true;}
-    this.returnToCreation();
    },{capture:true});
    this.input.addEventListener("focus",()=>{
     if(this.suppressOpenOnFocus){this.suppressOpenOnFocus=false;return;}
-    this.returnToCreation();
     this.show();
    });
    this.input.addEventListener("click",()=>this.show());
    this.input.addEventListener("input",()=>{
-    this.returnToCreation();
     if(!this.open)this.show();
+    if(this.searchMode)this.onSearch({...this.searchOptions(),created:"any"});
    });
    this.doc.addEventListener("keydown",event=>{
     if(event.isComposing||event.altKey||!(event.metaKey||event.ctrlKey)||String(event.key).toLowerCase()!=="f")return;
     event.preventDefault();event.stopPropagation();
     this.focusInput();
    },true);
-   this.button.addEventListener("click",e=>{
-    e.preventDefault();e.stopPropagation();
-    this.input.blur();
-    // The magnifier opens the creation chooser; saved-object filtering is an explicit choice.
-    if(this.searchMode)this.execute();
-    else this.show();
-   });
    this.doc.addEventListener("pointerdown",e=>{
     if(this.open&&!this.menu.contains(e.target)&&!this.form.contains(e.target))this.close();
    });
@@ -156,7 +131,7 @@
      else this.close();
      return;
     }
-    if(!inInput&&!inMenu&&e.target!==this.button)return;
+    if(!inInput&&!inMenu&&e.target!==this.clear)return;
     if(this.searchMode){
      if(key==="enter"&&inInput){e.preventDefault();this.input.blur();this.execute();}
      return;
@@ -187,8 +162,8 @@
   }
   searchOptions(){
    const checked=id=>!!this.searchPanel.querySelector('[data-search-flag="'+id+'"]')?.checked;
-   return {kind:this.searchPanel.querySelector(".object-search-kind")?.value||"all",
-    includeTrack:checked("track"),includeLink:checked("link"),includeNote:checked("note"),includeHidden:checked("hidden")};
+   return {notes:checked("notes"),urls:checked("urls"),
+    includeHidden:checked("hidden"),gpxOnly:this.gpxOnly};
   }
   setResults(matches=[]){
    let pins=0,areas=0,waters=0;
@@ -216,16 +191,15 @@
    this.show();
   }
   execute(){
-   this.input.blur();
    this.show();
    this.onSearch({...this.searchOptions(),created:"any"});
   }
   enterSearchMode(){
-   this.searchMode=true;this.creation.classList.add("hidden");
+   this.searchMode=true;this.gpxOnly=false;
+   this.searchPanel.querySelector(".object-search-gpx").setAttribute("aria-pressed","false");
+   this.input.blur();this.creation.classList.add("hidden");
    this.searchPanel.classList.remove("hidden");
    this.menu.classList.add("object-search-mode");
-   this.button.setAttribute("aria-label","Gespeicherte Objekte suchen");
-   this.button.title="Gespeicherte Objekte suchen";
    this.show();this.position();
   }
   finishAndFocus(){
@@ -239,8 +213,6 @@
    this.searchMode=false;
    this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
    this.menu.classList.remove("object-search-mode");this.close();
-   this.button.setAttribute("aria-label","Gespeicherte Objekte suchen");
-   this.button.title="Gespeicherte Objekte suchen";
   }
   // One viewport coordinate system for every device and keyboard state.
   // The menu always uses position:fixed. No detection of a virtual keyboard
@@ -291,16 +263,15 @@
     if(focused&&this.doc.activeElement!==this.input)this.input.focus({preventScroll:true});
    }
    this.open=true;this.menu.classList.remove("hidden");
-   this.button.setAttribute("aria-expanded","true");
    this.input.setAttribute("aria-expanded","true");
    if(!this.searchMode){this.active=0;this.highlight(null);}
    this.position();
   }
   close(){
    this.open=false;this.menu.classList.add("hidden");
-   this.button.setAttribute("aria-expanded","false");
    this.input.setAttribute("aria-expanded","false");
   }
+  returnToStandardChoices(){this.exitSearchMode();this.show();}
   toggle(){this.open?this.close():this.show();}
   choose(index){
    const choice=CHOICES[index];if(!choice)return;

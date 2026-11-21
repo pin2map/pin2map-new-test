@@ -54,7 +54,39 @@
   }
   return hits;
  }
- const api=Object.freeze({search,dateKey,calendarDay,TYPES});
+ // Contract v294: a match in ANY enabled field is sufficient. GPX mode
+ // ignores the search text, but obeys the visibility checkbox.
+ function searchExpanded(project,{query="",notes=false,urls=false,includeHidden=false,gpxOnly=false}={}){
+  const needle=text(String(query).trim());
+  if(!needle&&!gpxOnly)return [];
+  const visibleLayers=new Set((project?.layers||[]).filter(l=>l.visible===true).map(l=>l.id));
+  const hits=[],seen=new Set();
+  for(const collection of ["pins","areas","rivers"]){
+   for(const object of project?.[collection]||[]){
+    if(!object?.id)continue;
+    if(!includeHidden&&!visibleLayers.has(object.layerId))continue;
+    const type=collection==="areas"?(object.kind==="lake"?"lakes":"areas"):collection;
+    const key=type+":"+object.id;
+    if(seen.has(key))continue;
+    const gpx=object.gpxAttachment||{};
+    const hasTrack=Boolean(gpx.chains?.length||object.gpxKey||object.gpxTrackId||
+     object.gpxFileId||object.gpxRef);
+    if(gpxOnly){
+     if(type!=="pins"||!hasTrack)continue;
+    }else{
+     const day=dateKey(object.createdAt);
+     const fields=[object.name,object.createdAt,day,
+      day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):""];
+     if(notes)fields.push(object.note);
+     if(urls)fields.push(object.url);
+     if(!fields.some(value=>text(value).includes(needle)))continue;
+    }
+    seen.add(key);hits.push({type,id:object.id,object});
+   }
+  }
+  return hits;
+ }
+ const api=Object.freeze({search,searchExpanded,dateKey,calendarDay,TYPES});
  root.Pin2MapObjectSearch=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
