@@ -553,7 +553,9 @@
       for(const item of this.areaNameMarkers){
         // Reserve space for longer labels so the whole tappable name
         // remains inside the viewport, not merely its zero-sized anchor.
-        const padding=Math.max(45,Math.min(135,item.name.length*3.9));
+        const renderedWidth=item.marker.getElement()?.querySelector(".p2m-area-name-label")?.getBoundingClientRect()?.width;
+        const padding=Math.max(45,Math.min(185,
+          Number.isFinite(renderedWidth)&&renderedWidth>0?renderedWidth/2+10:item.name.length*3.9+30));
         const point=anchor.visibleAnchor(item.geometry,
           latLng=>this.project(latLng),width,height,{padding});
         if(!point){
