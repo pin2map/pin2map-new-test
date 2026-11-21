@@ -213,7 +213,31 @@ const base=process.env.PIN2MAP_TEST_URL||
       "outside tap closes the search chooser");
     assert.equal(await page.locator(".pin-marker").count(),2,
       "all matched and contextual markers remain visible with chooser closed");
-    await page.locator(".pin-marker").first().click();
+    // A matching marker can legitimately sit beneath fixed map chrome after
+    // fitting distant search results. Pan the map normally to bring the marker
+    // into the usable centre; never force-click through an unrelated control.
+    const matchingPin=page.locator(".pin-marker").first();
+    const markerCanReceiveClick=()=>matchingPin.evaluate(el=>{
+      const r=el.getBoundingClientRect(),x=(r.left+r.right)/2,y=(r.top+r.bottom)/2;
+      const hit=document.elementFromPoint(x,y),owner=el.closest(".leaflet-marker-icon");
+      return !!(hit&&(hit===el||el.contains(hit)||
+        (owner&&hit.closest(".leaflet-marker-icon")===owner)));
+    });
+    if(!await markerCanReceiveClick()){
+      const iconRect=await matchingPin.boundingBox();
+      const centerX=mapBounds.x+mapBounds.width*.5;
+      const centerY=mapBounds.y+mapBounds.height*.55;
+      const dx=centerX-(iconRect.x+iconRect.width/2);
+      const dy=centerY-(iconRect.y+iconRect.height/2);
+      await page.mouse.move(centerX,centerY);
+      await page.mouse.down();
+      await page.mouse.move(centerX+dx,centerY+dy,{steps:18});
+      await page.mouse.up();
+      await page.waitForTimeout(320);
+    }
+    assert.equal(await markerCanReceiveClick(),true,
+      "search marker must be reachable by a real click after panning");
+    await matchingPin.click();
     await page.locator("#pinPanel").waitFor({state:"visible"});
     assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")),true,
       "opening a matching pin editor must preserve search mode");
