@@ -486,25 +486,15 @@ const viewports=[
    await page.locator("#searchResults .result").first().waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon svg").count(),1);
    await page.locator("#searchResults .result").first().click();
-   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:8000});
-   assert.equal(await page.evaluate(async()=>{
+   await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.some(a=>a.kind==="lake");}
+     try{return (await db.loadProject()).areas.some(a=>a.kind==="lake"&&a.layerId==="private");}
      finally{db.close();}
-   }),false,"A pink lake preview must not be stored");
-   const temporaryLake=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible");
-   assert.ok(await temporaryLake.count()>0,"Temporary lakes must use the animated polygon renderer");
-   assert.equal(await temporaryLake.first().evaluate(el=>
-     getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
-   await page.locator(".p2m-plate-label").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
-     buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Verschieben","Speichern"]);
-   await page.locator(".plate-area-yes").click();
-   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
-   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   },null,{timeout:10000});
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+   assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
+   const lakePulse=page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry");
+   assert.ok(await lakePulse.count()>0,"A saved lake polygon blinks immediately");
    // Overlapping area labels intentionally zoom first, then show an object
    // chooser at maximum zoom. Follow that real interaction instead of
    // assuming the first label tap must always open an editor.
