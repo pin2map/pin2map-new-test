@@ -50,7 +50,9 @@ function fixture(){
   const patches=[],deleted=[];
   const editor=new GeometryEditor({
     document:doc,icons:{svg:(name)=>{const el=new Element("svg");el.iconName=name;return el;}},
-    onUpdate:(_type,_id,patch)=>{patches.push(patch);Object.assign(item,patch);return item;},
+    onUpdate:(_type,_id,patch)=>{patches.push(patch);Object.assign(item,patch);
+      if(Object.hasOwn(patch,"color")&&patch.color===null)delete item.color;
+      return item;},
     onDelete:(type,id)=>deleted.push([type,id]),onWikipedia(){}
   });
   const layers=[{id:"private",name:"Privat",color:"#326cc2",visible:true},
@@ -121,4 +123,13 @@ test("area URL overlay stays within editor and ends above footer actions",()=>{
   assert.ok(popupTop+popupHeight<=466,"URL must end above bottom buttons");
   assert.ok(parseFloat(editor.urlPopup.style.left)>=120);
   assert.equal(editor.urlPopup.classList.contains("hidden"),false);
+});
+
+test("geometry color menu is available even before any override is chosen",()=>{
+ const {editor,item}=fixture();
+ assert.equal(item.color,undefined);
+ editor.colorButton.click();
+ assert.equal(editor.colorMenu.classList.contains("hidden"),false);
+ assert.equal(editor.noColorButton.textContent,"Keine Farbe");
+ assert.equal(editor.nativeColor.type,"color");
 });

@@ -65,6 +65,16 @@
       ["path",{d:"M12 2v2M12 20v2M2 12h2M20 12h2"}],
       ["circle",{cx:12,cy:12,r:8}],["circle",{cx:12,cy:12,r:3}]
     ],
+    // Canonical Lucide SVG geometries, locally bundled for offline navigation.
+    "map-pin-check": [
+      ["path",{d:"M19.43 12.935c.357-.967.57-1.955.57-2.935a8 8 0 0 0-16 0c0 4.993 5.539 10.193 7.399 11.799a1 1 0 0 0 1.202 0 32.197 32.197 0 0 0 .813-.728"}],
+      ["circle",{cx:12,cy:10,r:3}],["path",{d:"m16 18 2 2 4-4"}]
+    ],
+    "clipboard-check": [
+      ["rect",{width:8,height:4,x:8,y:2,rx:1,ry:1}],
+      ["path",{d:"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"}],
+      ["path",{d:"m9 14 2 2 4-4"}]
+    ],
     "map-pin-plus-inside": [
       ["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],
       ["path",{d:"M12 7v6"}],["path",{d:"M9 10h6"}]

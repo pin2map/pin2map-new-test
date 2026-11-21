@@ -175,6 +175,41 @@ const viewports=[
    await gpsIcon.click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
+   // v306: copy WGS84 coordinates, show the success glyph for precisely one
+   // second, and open Apple Maps from an anchored two-choice menu.
+   await page.evaluate(()=>{
+     window.__copiedPinCoords=null;window.__openedAppleLinks=[];
+     Object.defineProperty(navigator,"clipboard",{configurable:true,value:{
+       writeText:async text=>{window.__copiedPinCoords=text;}
+     }});
+     window.open=url=>{window.__openedAppleLinks.push(url);return null;};
+   });
+   assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
+   await page.locator("#pinNavCopy").click();
+   await page.waitForFunction(()=>window.__copiedPinCoords==="47.650100, 9.180200");
+   assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"clipboard-check");
+   await page.waitForTimeout(1150);
+   assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
+   await page.locator("#pinNavApple").click();
+   await page.locator("#pinAppleMenu").waitFor({state:"visible"});
+   const applePosition=await page.evaluate(()=>{
+     const button=document.querySelector("#pinNavApple").getBoundingClientRect();
+     const menu=document.querySelector("#pinAppleMenu").getBoundingClientRect();
+     return {bottom:button.bottom,top:menu.top,height:menu.height,viewport:innerHeight};
+   });
+   assert.ok(applePosition.top>=applePosition.bottom||
+     applePosition.bottom+applePosition.height+7>applePosition.viewport-10,
+     "Apple menu must appear directly below the button whenever it fits");
+   await page.locator('#pinAppleMenu [data-apple-mode="driving"]').click();
+   const driving=await page.evaluate(()=>window.__openedAppleLinks.at(-1));
+   assert.equal(new URL(driving).searchParams.get("daddr"),"47.650100,9.180200");
+   assert.equal(new URL(driving).searchParams.get("dirflg"),"d");
+   await page.locator("#pinNavApple").click();
+   await page.locator('#pinAppleMenu [data-apple-mode="satellite"]').click();
+   const satellite=await page.evaluate(()=>window.__openedAppleLinks.at(-1));
+   assert.equal(new URL(satellite).searchParams.get("ll"),"47.650100,9.180200");
+   assert.equal(new URL(satellite).searchParams.get("t"),"k");
+
    await page.locator("#closePin").click();
    await page.locator(".pin-icon").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
@@ -441,6 +476,7 @@ const viewports=[
      assert.ok(Math.abs(badges.layer[coordinate]-badges.color[coordinate])<=0.5,
        "Both button indicators must share the exact same placement: "+JSON.stringify(badges));
    assert.equal(await page.locator("#geometryName").inputValue(),"Testfläche");
+   await page.locator("#geometryEditor .geometry-color").click();
    await page.locator(".geometry-native-color").fill("#aabbcc");
    await page.waitForFunction(async()=>{
      const store=await window.Pin2MapIndexedDBProjectStore.open();
@@ -449,6 +485,29 @@ const viewports=[
    });
    assert.equal(await page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry").first().getAttribute("stroke"),"#AABBCC");
    assert.equal(await page.locator(".geometry-color-dot").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(170, 187, 204)");
+   // v306: the color popup must offer a reset independent of the native OS
+   // picker. Removing the override restores the layer color and persistence.
+   await page.locator("#geometryEditor .geometry-color").click();
+   await page.locator("#geometryColorMenu").waitFor({state:"visible"});
+   assert.equal(await page.locator("#geometryColorMenu .geometry-no-color").innerText(),"Keine Farbe");
+   const originalLayerColor=await page.locator("#geometryEditor .geometry-layer>.pin-layer-dot")
+     .evaluate(el=>getComputedStyle(el).backgroundColor);
+   await page.locator("#geometryColorMenu .geometry-no-color").click();
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.some(a=>a.name==="Testfläche"&&!Object.hasOwn(a,"color"));}
+     finally{db.close();}
+   });
+   assert.equal(await page.locator(".geometry-color-dot").evaluate(el=>getComputedStyle(el).backgroundColor),
+     originalLayerColor,"Cleared color inherits the selected layer color");
+   await page.locator("#geometryEditor .geometry-color").click();
+   await page.locator(".geometry-native-color").fill("#aabbcc");
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).areas.some(a=>a.name==="Testfläche"&&a.color==="#AABBCC");}
+     finally{db.close();}
+   });
+
    async function readStoredProject(){
      return page.evaluate(async()=>{
        const db=await window.Pin2MapIndexedDBProjectStore.open();
@@ -735,6 +794,7 @@ const viewports=[
    const river=(await waitForStored(project=>project?.rivers?.length>=1,"river")).rivers[0];
    assert.equal(river.layerId,"private");
    assert.equal(river.color,undefined);
+   await page.locator("#geometryEditor .geometry-color").click();
    await page.locator(".geometry-native-color").fill("#102938");
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();

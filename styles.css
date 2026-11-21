@@ -3090,7 +3090,36 @@ body.object-search-mode #app #searchClear.search-clear span{
 #app .geometry-editor .geometry-color{position:relative;overflow:visible}
 /* A real native color input overlays the circle, so iOS and desktops open
    their own system picker on a genuine user click, not a scripted proxy. */
+/* Native picker plus explicit inheritance reset, anchored to the color action. */
+#app .geometry-editor .geometry-color-menu{
+ position:absolute;z-index:1900;display:flex;flex-direction:column;gap:4px;
+ box-sizing:border-box;width:155px;padding:6px;
+ border:1px solid #b9c6d5;border-radius:10px;background:#fff;
+ box-shadow:0 6px 22px #162e4660;
+}
+#app .geometry-editor .geometry-color-choice,
+#app .geometry-editor .geometry-no-color{
+ position:relative;display:flex;align-items:center;box-sizing:border-box;
+ width:100%;min-height:37px;margin:0;padding:7px 10px;
+ border:1px solid #c8d4df;border-radius:7px;background:#f5f8fc;
+ color:#263a51;font:600 13px system-ui;cursor:pointer;text-align:left;
+}
+#app .geometry-editor .geometry-no-color{background:#fff}
 #app .geometry-editor .geometry-native-color{
  position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;
  border:0;padding:0;margin:0;
 }
+/* Apple choices float outside the pin dialog so they cannot be clipped. */
+.pin-apple-menu{
+ position:fixed;z-index:2150;display:flex;flex-direction:column;gap:3px;
+ box-sizing:border-box;padding:6px;border:1px solid #b9c6d5;
+ border-radius:11px;background:#fff;box-shadow:0 6px 22px #162e4660;
+}
+.pin-apple-menu.hidden{display:none}
+.pin-apple-menu .pin-apple-choice{
+ display:block;box-sizing:border-box;width:100%;min-height:40px;padding:8px 12px;
+ border:0;border-radius:7px;background:#f5f8fc;color:#213a52;
+ text-align:left;font:600 14px system-ui;
+}
+.pin-apple-menu .pin-apple-choice:focus-visible{outline:2px solid #1764bf;outline-offset:-2px}
+

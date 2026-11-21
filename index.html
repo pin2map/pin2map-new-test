@@ -123,6 +123,8 @@
 <script defer src="./ui/ui-state.js"></script>
 <script defer src="./ui/pin-editor.js"></script>
 <script defer src="./ui/pin-editor-actions.js"></script>
+<script defer src="./application/apple-maps-links.js"></script>
+<script defer src="./ui/pin-navigation.js"></script>
 <script defer src="./ui/pin-details.js"></script>
 <script defer src="./ui/pin-note-editor.js"></script>
 <script defer src="./ui/map-gesture-controller.js"></script>
@@ -270,11 +272,11 @@
     
     <p id="pinCoords" class="sr-only" aria-live="off"></p>
     <p id="pinHiddenInfo" class="muted small hidden">Dieser Pin liegt in einer ausgeblendeten Ebene. <button id="showPinLayer" type="button" data-pin-icon="eye" title="Ebene einblenden" aria-label="Ebene einblenden"></button></p>
-    <div class="pin-navigation-row" aria-label="Navigation und Routing – später verfügbar">
+    <div class="pin-navigation-row" aria-label="Navigation und Routing">
       <fieldset class="pin-navigation-group pin-navigation-external"><legend>Navi extern</legend>
         <div class="pin-navigation-buttons">
-          <button type="button" class="pin-nav-add" data-pin-icon="plus" title="Koordinaten – später verfügbar" aria-label="Koordinaten – später verfügbar" disabled></button>
-          <button type="button" class="pin-nav-apple" data-pin-icon="apple-brand" title="Apple Karten – später verfügbar" aria-label="Apple Karten – später verfügbar" disabled></button>
+          <button type="button" id="pinNavCopy" class="pin-nav-add" data-pin-icon="map-pin-check" title="Pin-Koordinaten kopieren" aria-label="Pin-Koordinaten kopieren"></button>
+          <button type="button" id="pinNavApple" class="pin-nav-apple" data-pin-icon="apple-brand" title="Apple Karten" aria-label="Apple Karten" aria-expanded="false" aria-controls="pinAppleMenu"></button>
         </div>
       </fieldset>
       <fieldset class="pin-navigation-group pin-navigation-routing"><legend>pin2map Routing</legend>

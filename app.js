@@ -262,6 +262,13 @@
       if(focus)requestAnimationFrame(keepSelectedAbovePanel);
     }
   });
+  const pinNavigation=new window.Pin2MapPinNavigation({
+    document,getElement:$,icons:window.Pin2MapIcons,getPin:selectedPin,
+    writeText:value=>navigator.clipboard.writeText(value),
+    openExternal:url=>window.open(url,"_blank","noopener,noreferrer"),
+    onNotice:message=>showNotice(message),
+    makeUrl:(mode,pin)=>window.Pin2MapAppleMapsLinks.url(mode,pin)
+  });
   const noteEditor=new window.Pin2MapPinNoteEditor({
     getElement:$,document,
     onChange:value=>{
@@ -535,6 +542,7 @@
     pinInfoMenu.close();
     basemapMenu.close();
     pinDetails.closeTransient();
+    pinNavigation.close();
     noteEditor.close?.();
     pinLayerPicker.setOpen(false);
     cancelGeometrySearch();
@@ -811,6 +819,7 @@
       onLayout:updatePanelLayout
     });
     pinDetails.render(pin);
+    pinNavigation.render(pin);
     if(pin?.gpxAttachment?.chains?.length){
       const active=attachedRoutePinId===pin.id;
       $("pinGpxRoute").textContent=active?"Route verbergen":"Route anzeigen";
@@ -1377,6 +1386,7 @@
 
     pinEditorActions.bind();
     pinDetails.bind();
+    pinNavigation.bind();
     noteEditor.bind();
     window.Pin2MapObjectDialogCore.bindNoteLaunch({
       textarea:$("pinNotes"),expand:$("pinNotesExpand"),editor:noteEditor,

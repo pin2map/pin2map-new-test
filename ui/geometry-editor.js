@@ -83,16 +83,26 @@
       let actions;
       const layer=this.makeButton("layers-arrow-down","Ebene ändern",()=>this.toggleLayerPicker(),"geometry-layer");
       const colorDot=doc.createElement("span");colorDot.className="pin-layer-dot";layer.append(colorDot);this.layerDot=colorDot;
-      const color=this.makeButton("palette","Objektfarbe auswählen",()=>{},"geometry-color");
+      const color=this.makeButton("palette","Objektfarbe auswählen",()=>this.toggleColorPicker(),"geometry-color");
       const colorDotObject=doc.createElement("span");colorDotObject.className="geometry-color-dot";
       color.append(colorDotObject);this.colorDot=colorDotObject;
+      // The native system picker remains a genuine user-controlled input.
+      // A separate reset action cannot be inserted into the OS picker itself.
+      const colorMenu=doc.createElement("div");colorMenu.id="geometryColorMenu";
+      colorMenu.className="geometry-color-menu hidden";
+      colorMenu.setAttribute("role","group");colorMenu.setAttribute("aria-label","Objektfarbe");
+      const chooseColor=doc.createElement("label");chooseColor.className="geometry-color-choice";
+      chooseColor.textContent="Farbe wählen";
       const nativeColor=doc.createElement("input");nativeColor.type="color";
       nativeColor.className="geometry-native-color";nativeColor.setAttribute("aria-label","Individuelle Objektfarbe wählen");
-      // Do not let the parent round button preventDefault() cancel the native picker.
-      nativeColor.addEventListener("click",event=>event.stopPropagation());
-      nativeColor.addEventListener("input",()=>{this.applyObjectColor(nativeColor.value);});
-      nativeColor.addEventListener("change",()=>{this.applyObjectColor(nativeColor.value);nativeColor.blur();});
-      color.append(nativeColor);this.nativeColor=nativeColor;
+      nativeColor.addEventListener("input",()=>this.applyObjectColor(nativeColor.value));
+      nativeColor.addEventListener("change",()=>{this.applyObjectColor(nativeColor.value);this.dismissPopup();});
+      chooseColor.append(nativeColor);
+      const noColor=doc.createElement("button");noColor.type="button";
+      noColor.className="geometry-no-color";noColor.textContent="Keine Farbe";
+      noColor.addEventListener("click",()=>this.resetObjectColor());
+      colorMenu.append(chooseColor,noColor);
+      this.colorMenu=colorMenu;this.noColorButton=noColor;this.nativeColor=nativeColor;
       const link=this.makeButton("link-2","Link",()=>this.toggleSub("link"),"geometry-link");
       const wiki=this.makeButton("wikipedia","Wikipedia",()=>this.onWikipedia(this.model?.name||""),"geometry-wiki");
       const ok=this.makeButton(null,this.core.okLabel,()=>{this.flush();this.close();},"geometry-ok");
@@ -100,7 +110,7 @@
       actions=this.core.createFooter(doc,{layer,url:link,wiki,ok});
       actions.insertBefore(color,link);
       actions.classList.add("geometry-actions");
-      panel.append(header,notes,actions);
+      panel.append(header,notes,actions,colorMenu);
       this.header=header;this.actions=actions;
       this.removeButton=remove;this.layerButton=layer;this.colorButton=color;this.linkButton=link;
       this.nameInput=name;this.notesInput=textarea;
@@ -141,6 +151,27 @@
       this.update({color:value.toUpperCase()});
       this.colorDot.style.backgroundColor=value;
       this.colorButton.setAttribute("title","Objektfarbe: "+value.toUpperCase());
+    }
+    resetObjectColor(){
+      if(!this.model)return;
+      this.update({color:null});
+      const inherited=this.layers.find(layer=>layer.id===this.model.layerId)?.color||"#a4b0bd";
+      this.colorDot.style.backgroundColor=inherited;
+      this.nativeColor.value=inherited;
+      this.colorButton.title="Objektfarbe auswählen";
+      this.dismissPopup();
+    }
+    toggleColorPicker(){
+      if(!this.model)return;
+      if(!this.colorMenu.classList.contains("hidden"))return this.dismissPopup();
+      this.dismissPopup();
+      const button=this.colorButton.getBoundingClientRect();
+      const parent=this.panel.getBoundingClientRect();
+      const popupWidth=155,popupHeight=100;
+      this.colorMenu.style.left=Math.max(8,Math.min(button.left-parent.left,parent.width-popupWidth-8))+"px";
+      this.colorMenu.style.top=Math.max(8,button.top-parent.top-popupHeight-5)+"px";
+      this.colorMenu.classList.remove("hidden");
+      this.popupMode="color";
     }
     toggleLayerPicker(){
       if(!this.model)return;
@@ -252,6 +283,7 @@
     normalizedUrl(raw){return this.core.normalizedUrl(raw);}
     dismissPopup(){
       this.popupMode=null;
+      this.colorMenu?.classList.add("hidden");
       if(this.layerPicker)this.layerPicker.setOpen(false);
       else if(this.layerMenu)this.layerMenu.classList.add("hidden");
       if(this.urlController)this.urlController.close();
