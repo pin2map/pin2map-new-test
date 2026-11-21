@@ -542,6 +542,8 @@ const viewports=[
    const labels=await contextMenu.locator("button").evaluateAll(buttons=>
      buttons.map(button=>button.getAttribute("aria-label")));
    assert.deepEqual(labels,["Gebiet suchen","Pin setzen"]);
+   assert.equal(await contextMenu.locator('button[aria-label="Gebiet suchen"] img[src$="region.svg"]').count(),1,
+     "Map area action must reuse the central Gebiet icon");
    assert.equal(await contextMenu.locator("button span").count(),0);
    const chooserRect=await contextMenu.boundingBox();
    assert.ok(chooserRect&&chooserRect.width<=120&&chooserRect.height<=60,

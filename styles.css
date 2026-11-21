@@ -1930,7 +1930,8 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   margin:0;padding:0;border:1px solid #c5cdd5;border-radius:50%;
   background:white;color:#193757;cursor:pointer;
 }
-#app .map-action-chooser button .p2m-lucide{
+#app .map-action-chooser button .p2m-lucide,
+#app .map-action-chooser button img{
   width:22px;height:22px;flex:none;
 }
 #app .map-action-chooser button:hover{background:#e4eef9}

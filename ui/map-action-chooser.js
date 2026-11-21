@@ -7,6 +7,8 @@
     constructor({document:doc,getElement,icons,onPin,onArea}){
       this.doc=doc;this.el=getElement;this.icons=icons;
       this.onPin=onPin;this.onArea=onArea;
+      this.objectIcons=root.Pin2MapObjectTypeIcons||
+       (typeof require==="function"?require("./object-type-icons.js"):null);
       this.box=this.el("mapActionChooser");
       this.point=null;
     }
@@ -15,14 +17,15 @@
       const b=this.box;
       b.replaceChildren();
       const rows=[
-        ["scan-search","Gebiet suchen",()=>this.onArea(this.point)],
+        ["area","Gebiet suchen",()=>this.onArea(this.point)],
         ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)]
       ];
       for(const [icon,label,action] of rows){
         const button=this.doc.createElement("button");
         button.type="button";button.title=label;button.setAttribute("aria-label",label);
         // Icon-only, but retain accessible text via title and aria-label.
-        button.append(this.icons.svg(icon,this.doc));
+        button.append(this.objectIcons.descriptor(icon)?
+         this.objectIcons.element(icon,this.doc,this.icons):this.icons.svg(icon,this.doc));
         button.addEventListener("click",e=>{e.stopPropagation();this.close();action();});
         b.append(button);
       }

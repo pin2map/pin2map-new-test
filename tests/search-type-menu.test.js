@@ -151,3 +151,10 @@ test("v303 flash is capped at ten seconds",()=>{
  assert.ok(app.includes("},10000);"));
  assert.ok(css.includes("animation:p2m-temporary-pin-blink 1.3s ease-in-out 7 forwards"));
 });
+
+test("map area action uses the central Gebiet symbol, not an independent magnifier",()=>{
+ const action=fs.readFileSync(path.join(__dirname,"../ui/map-action-chooser.js"),"utf8");
+ assert.match(action,/\["area","Gebiet suchen"/);
+ assert.match(action,/this\.objectIcons\.element\(icon/);
+ assert.doesNotMatch(action,/\["scan-search","Gebiet suchen"/);
+});
