@@ -889,9 +889,21 @@ const viewports=[
    await page.locator("#searchInput").fill("HVL");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator('#searchResults .result').filter({hasText:"HVL"}).first().click();
+   try{
    await waitForStored(project=>project?.pins?.some(pin=>
      pin.layerId==="private"&&pin.name.includes("HVL")&&pin.name.includes("Rathenow")&&
      pin.name.includes("Ersatzort")),"HVL geographic fallback");
+   }catch(error){
+     const diagnostic=await page.evaluate(()=>({
+       results:document.querySelector("#searchResults")?.textContent?.slice(0,700),
+       busy:document.querySelector("#geometrySearchBusy")?.textContent,
+       notice:document.querySelector("#notice")?.textContent,
+       pins:[...document.querySelectorAll(".pin-icon")].map(el=>el.outerHTML.slice(0,160)),
+       mode:document.body.className
+     }));
+     console.log("[geometry] HVL diagnosis",JSON.stringify({diagnostic,errors}));
+     throw error;
+   }
    assert.equal(await page.locator(".p2m-temporary-pin").count(),0);
    assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
    assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
