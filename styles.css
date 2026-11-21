@@ -1913,8 +1913,9 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .search-results .result-heading .result-feature-icon{
   display:inline-flex;align-items:center;margin-right:7px;vertical-align:middle;
 }
-#app .search-results .result-heading .result-feature-icon .p2m-lucide{
-  width:19px;height:19px;
+#app .search-results .result-heading .result-feature-icon .p2m-lucide,
+#app .search-results .result-heading .result-feature-icon img{
+  width:19px;height:19px;display:block;flex:none;
 }
 #app .map-action-chooser{
   position:fixed;z-index:1550;display:flex;gap:6px;align-items:center;

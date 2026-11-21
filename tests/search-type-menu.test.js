@@ -12,6 +12,8 @@ test("seven menu actions retain accessible icon and keyboard contracts",()=>{
   assert.equal(CHOICES[1].icon,"locate-fixed");
   assert.equal(CHOICES[5].icon,"car");
   assert.equal(CHOICES[6].icon,"scan-search");
+ assert.equal(CHOICES.find(x=>x.id==="lake").shortcut,"s");
+ assert.equal(CHOICES.find(x=>x.id==="objects").shortcut,"m");
   for(const option of CHOICES.filter(o=>o.asset)){
     const filename=path.join(__dirname,"../assets",option.asset);
     assert.match(fs.readFileSync(filename,"utf8"),/^<svg[^>]+viewBox="0 0 24 24"/);
