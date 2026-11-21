@@ -84,6 +84,8 @@
       color.append(colorDotObject);this.colorDot=colorDotObject;
       const nativeColor=doc.createElement("input");nativeColor.type="color";
       nativeColor.className="geometry-native-color";nativeColor.setAttribute("aria-label","Individuelle Objektfarbe wählen");
+      // Do not let the parent round button preventDefault() cancel the native picker.
+      nativeColor.addEventListener("click",event=>event.stopPropagation());
       nativeColor.addEventListener("input",()=>{this.applyObjectColor(nativeColor.value);});
       nativeColor.addEventListener("change",()=>{this.applyObjectColor(nativeColor.value);nativeColor.blur();});
       color.append(nativeColor);this.nativeColor=nativeColor;
