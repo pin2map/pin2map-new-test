@@ -107,7 +107,8 @@ test("v295 controls separate type from AND properties with hidden visibility",()
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
  assert.match(html,/placeholder="Suchen\/Finden"/);
  assert.doesNotMatch(html,/id="searchButton"/);
- for(const label of ["Alle Objekte","Nur Pins","Mit Track","Mit Link","Mit Notiz","Alle finden"])
+ for(const label of ["Alle Objekte (Name + Notiz)","Alle Objekte (nur Name)",
+  "Nur Pins","Mit Track","Mit Link","Mit Notiz","Auch in ausgeblendete Ebenen"])
   assert.ok(ui.includes(label));
  assert.match(ui,/object-search-kind/);
  assert.match(ui,/track:checked\("track"\),link:checked\("link"\),note:checked\("note"\)/);
