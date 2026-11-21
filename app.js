@@ -677,13 +677,15 @@
   function renderGeometry(){
     if(!mapAdapter?.renderProjectGeometry)return;
     const visible=new Set(state.layers.filter(l=>l.visible).map(l=>l.id));
-    const isMatch=(type,id,layerId)=>visible.has(layerId)||
-      !!objectSearchView?.ids.has(type+":"+id);
+    const isMatch=(type,id,layerId)=>
+      objectSearchView?.onlyHits
+        ?objectSearchView.ids.has(type+":"+id)
+        :visible.has(layerId)||!!objectSearchView?.ids.has(type+":"+id);
     const layerColors=Object.fromEntries(state.layers.map(l=>[l.id,l.color]));
     mapAdapter.renderProjectGeometry({
       areas:(state.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
       rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
-      layerColors,highlightIds:objectSearchView?.ids,
+      layerColors,highlightIds:objectSearchView?.onlyHits?null:objectSearchView?.ids,
       onAreaLabel:(area,point)=>{
         const hitType=area.kind==="lake"?"lakes":"areas";
         if(!objectSearchView?.ids.has(hitType+":"+area.id)&&
@@ -713,12 +715,14 @@
   function renderMarkers(){
     if(!markerView)return;
     const regular=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
-    const visible=[...regular],seen=new Set(regular.map(p=>p.id));
+    const onlyHits=!!objectSearchView?.onlyHits;
+    const visible=onlyHits?[]:[...regular],seen=new Set(visible.map(p=>p.id));
     if(objectSearchView){
-      for(const pin of state.pins){
-        if(objectSearchView.ids.has("pins:"+pin.id)&&!seen.has(pin.id)){
-          visible.push(pin);seen.add(pin.id);
-        }
+      // The canonical search matches have already been deduplicated by ID.
+      // Do not reveal older duplicate records or hidden-layer nonmatches.
+      for(const match of objectSearchView.matches){
+        if(match.type!=="pins"||seen.has(match.id))continue;
+        visible.push(match.object);seen.add(match.id);
       }
     }
     pinInfoService.setVisiblePins(temporaryInfoPin?[...visible,temporaryInfoPin.point]:visible);
@@ -726,7 +730,8 @@
       pins:visible,
       layers:state.layers,selectedPinId:uiState.selectedPinId,
       labelsVisible:state.labelsVisible,
-      highlightIds:new Set([...(objectSearchView?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
+      highlightIds:onlyHits?null:
+        new Set([...(objectSearchView?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
     });
     renderTemporaryPinInfo();
   }
@@ -1132,7 +1137,7 @@
       ids:new Set(matches.map(m=>m.type+":"+m.id))};
     document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(matches.length>0);
+    objectSearchSpotlight?.setActive(matches.length>0&&!view.onlyHits);
     objectSearchSpotlight?.schedule();
     // Editing a matching object must never reset the user's current viewport.
   }
@@ -1148,16 +1153,23 @@
   }
   function runObjectSearch(options={}){
     const query=$("searchInput").value.trim();
+    const previous=objectSearchView;
+    const displayOnlyChanged=!!previous&&previous.query===query&&
+      Object.keys(options).every(key=>key==="onlyHits"||
+        options[key]===previous.options[key])&&
+      previous.onlyHits!==(options.onlyHits===true);
     searchForm.cancel();cancelGeometrySearch();searchView.hide();
     document.body.classList.add("object-search-mode");
     const matches=objectSearch.searchExpanded(state,{query,...options});
     searchTypeMenu?.setResults(matches);
     objectSearchView={includeHidden:options.includeHidden===true,
+      onlyHits:options.onlyHits===true,query,
       ids:new Set(matches.map(m=>m.type+":"+m.id)),matches,options:{...options}};
     document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(matches.length>0);
-    fitObjectSearchMatches(matches);
+    objectSearchSpotlight?.setActive(matches.length>0&&!objectSearchView.onlyHits);
+    // A display-only toggle must not unexpectedly change the user's viewport.
+    if(!displayOnlyChanged)fitObjectSearchMatches(matches);
   }
   function endObjectSearch(){
     resetObjectSearch();

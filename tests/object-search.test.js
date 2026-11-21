@@ -201,3 +201,22 @@ test("v298 search scope exposes only six ordered choices with the two all-object
  ]);
  assert.doesNotMatch(ui,/\["texts","Objekte mit Text"\]/);
 });
+
+test("v300 only-hits is a visual search toggle, never a persistent search filter",()=>{
+ const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
+ const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
+ const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
+ assert.match(ui,/\["onlyHits","Nur Treffer"\]/);
+ assert.match(ui,/onlyHits:checked\("onlyHits"\)/);
+ assert.match(app,/objectSearchView\?\.onlyHits/);
+ assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!objectSearchView\.onlyHits\)/);
+ assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!view\.onlyHits\)/);
+ assert.match(app,/if\(!displayOnlyChanged\)fitObjectSearchMatches\(matches\)/);
+ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/);
+ const {searchExpanded}=require("../domain/object-search.js");
+ const example={layers:[{id:"v",visible:true}],pins:[
+  {id:"found",name:"Saale",layerId:"v"},
+  {id:"context",name:"Berlin",layerId:"v"}],areas:[],rivers:[]};
+ assert.deepEqual(searchExpanded(example,{query:"saale",onlyHits:true}).map(m=>m.id),["found"]);
+ assert.deepEqual(searchExpanded(example,{query:"saale",onlyHits:false}).map(m=>m.id),["found"]);
+});

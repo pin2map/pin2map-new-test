@@ -119,9 +119,9 @@ const base=process.env.PIN2MAP_TEST_URL||
       "counter must straddle the upper border: "+JSON.stringify(captionGeometry));
     assert.equal(await page.locator("#searchInput").evaluate(el=>document.activeElement===el),false);
     const checks=page.locator(".object-search-flags input");
-    assert.equal(await checks.count(),3);
+    assert.equal(await checks.count(),4);
     assert.deepEqual(await page.locator(".object-search-flags label").allInnerTexts(),
-      ["Mit Track","Mit Link","Mit Notiz"]);
+      ["Mit Track","Mit Link","Mit Notiz","Nur Treffer"]);
     const kind=page.locator(".object-search-kind");
     assert.equal(await kind.inputValue(),"all");
     assert.deepEqual(await kind.locator("option").allTextContents(),[
@@ -176,7 +176,8 @@ const base=process.env.PIN2MAP_TEST_URL||
       "hardware Find focuses the existing search field");
     const layout=await page.locator(".object-search-options").evaluate(panel=>{
       const row=panel.querySelector(".object-search-toprow").getBoundingClientRect();
-      const flags=[...panel.querySelectorAll(".object-search-flags label")].map(x=>x.getBoundingClientRect());
+      const flagNodes=[...panel.querySelectorAll(".object-search-flags label")];
+      const flags=flagNodes.map(x=>x.getBoundingClientRect());
       const p=panel.getBoundingClientRect();
       const bottom=panel.querySelector(".object-search-flags").getBoundingClientRect();
       const topChildren=[...panel.querySelector(".object-search-toprow").children].map(el=>el.getBoundingClientRect());
@@ -191,14 +192,15 @@ const base=process.env.PIN2MAP_TEST_URL||
           parseFloat(dialogStyle.borderTopWidth)>=2&&
           dialogStyle.borderTopColor==="rgb(201, 47, 57)",
         hiddenLabelInBounds:hiddenRect.left>=p.left-1&&hiddenRect.right<=p.right+1,
-        sameLine:flags.every(r=>Math.abs(r.top-flags[0].top)<2),
+        sameLine:flags.length===4&&flags.every(r=>Math.abs(r.top-flags[0].top)<2),
+        flagTextFits:flagNodes.every(el=>el.scrollWidth<=el.clientWidth+1),
         inBounds:flags.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
         rowWidth:row.width,bottomWidth:bottom.width,
         topChildrenInBounds:topChildren.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
         overflow:panel.scrollWidth>panel.clientWidth+1};
     });
     assert.ok(layout.singleLine&&layout.redBorder&&layout.hiddenLabelInBounds&&
-      layout.sameLine&&layout.inBounds&&layout.topChildrenInBounds&&
+      layout.sameLine&&layout.flagTextFits&&layout.inBounds&&layout.topChildrenInBounds&&
       Math.abs(layout.rowWidth-layout.bottomWidth)<2&&!layout.overflow,
       "compact controls must fit 320px and wider without clipping: "+JSON.stringify(layout));
     await page.waitForTimeout(300);
@@ -313,6 +315,75 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.ok(actionsBox.y+actionsBox.height<=urlBox.y+urlBox.height+2,"URL actions fit inside popup");
     assert.equal(await page.locator("#pinUrlBlock").evaluate(el=>getComputedStyle(el).backgroundColor),
       "rgb(255, 255, 255)","URL popup is opaque");
+    // Fresh live fixture: one visible nonmatch, hidden matching pin + area.
+    // "Nur Treffer" must exclude context without touching persistent layers
+    // or altering the current map transform.
+    await page.evaluate(async()=>{
+      const dbName=location.pathname.includes("/preview/")?
+        "pin2map-new-preview-v1":"pin2map-new-v1";
+      const db=await new Promise((resolve,reject)=>{
+        const req=indexedDB.open(dbName,1);
+        req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+      });
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction("kv","readwrite"),store=tx.objectStore("kv");
+        const get=store.get("appState");
+        get.onsuccess=()=>{
+          const state=get.result;
+          state.pins.push({id:"visible-context",name:"Nichttreffer Hamburg",
+            lat:49.02,lng:8.42,layerId:state.layers[0].id,note:""});
+          state.areas.push({id:"visible-context-area",name:"Nichttreffergebiet",
+            layerId:state.layers[0].id,kind:"area",
+            geometry:{type:"Polygon",coordinates:[[[8.45,49],[8.46,49],
+              [8.46,49.01],[8.45,49]]]}})
+          store.put(state,"appState");
+        };
+        tx.oncomplete=resolve;tx.onerror=reject;
+      });db.close();
+    });
+    await page.reload({waitUntil:"domcontentloaded"});
+    await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true",null,{timeout:30000});
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "nonmatching visible context pin is initially rendered");
+    await page.locator("#searchInput").fill("Karlsruhe");
+    await page.locator('.search-type-choice[data-search-type="objects"]').click();
+    await page.locator('[data-search-flag="hidden"]').check();
+    assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer");
+    assert.equal(await page.locator(".pin-marker").count(),2,
+      "spotlight mode keeps the visible nonmatch as context");
+    assert.equal((await page.locator("#map .p2m-area-name-label").allTextContents())
+      .some(text=>text.includes("Nichttreffergebiet")),true,
+      "context area is visible in normal spotlight mode");
+    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"block");
+    const onlyHits=page.locator('[data-search-flag="onlyHits"]');
+    const viewportBefore=await page.locator("#map .leaflet-map-pane").evaluate(el=>el.style.transform);
+    await onlyHits.check();
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "only matching pins remain in the map");
+    assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer",
+      "display-only switching must not change the hit count");
+    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"none",
+      "only-hits mode uses a normal, undimmed map");
+    assert.equal(await page.locator("#map .leaflet-map-pane").evaluate(el=>el.style.transform),viewportBefore,
+      "display-only switching preserves the viewport");
+    assert.equal((await page.locator("#map .p2m-area-name-label").allTextContents())
+      .some(text=>text.includes("Nichttreffergebiet")),false,
+      "nonmatching context area must also be absent in only-hits mode");
+    await onlyHits.uncheck();
+    assert.equal(await page.locator(".pin-marker").count(),2,
+      "nonmatching context pin returns immediately when unchecked");
+    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"block",
+      "spotlights return when only-hits mode ends");
+    assert.equal(await page.locator("#map .leaflet-map-pane").evaluate(el=>el.style.transform),viewportBefore);
+    await onlyHits.check();
+    await page.locator("#searchInput").fill("Kein Treffer");
+    assert.equal(await page.locator(".pin-marker").count(),0,
+      "zero matches show no project pins in only-hits mode");
+    assert.equal(await page.locator(".p2m-object-search-spotlight").evaluate(el=>getComputedStyle(el).display),"none");
+    await page.locator("#searchClear").click();
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "leaving search restores original layer visibility and the context pin");
+
     assert.deepEqual(errors,[],width+" browser errors");
     console.log("PASS v295 search scope, AND filters, contextual markers, dialogs:",width);
    }finally{await context.close();}

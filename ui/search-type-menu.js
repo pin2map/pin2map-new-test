@@ -76,7 +76,7 @@
    hidden.querySelector("input").addEventListener("change",()=>this.execute());
    row.append(select,hidden);
    const flags=this.makeElement("div","object-search-flags");
-   for(const [id,label] of [["track","Mit Track"],["link","Mit Link"],["note","Mit Notiz"]]){
+   for(const [id,label] of [["track","Mit Track"],["link","Mit Link"],["note","Mit Notiz"],["onlyHits","Nur Treffer"]]){
     const field=this.makeCheck(id,label,false);
     field.querySelector("input").addEventListener("change",()=>this.execute());
     flags.append(field);
@@ -161,7 +161,7 @@
    const checked=id=>!!this.searchPanel.querySelector('[data-search-flag="'+id+'"]')?.checked;
    return {kind:this.searchPanel.querySelector(".object-search-kind").value,
       track:checked("track"),link:checked("link"),note:checked("note"),
-      includeHidden:checked("hidden")};
+      includeHidden:checked("hidden"),onlyHits:checked("onlyHits")};
   }
   setResults(matches=[]){
    const ids=new Set(),count={pins:0,areas:0,waters:0};
