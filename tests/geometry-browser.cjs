@@ -80,7 +80,7 @@ const viewports=[
      }finally{db.close();}
    });
    await page.reload({waitUntil:"domcontentloaded"});
-   await page.waitForFunction(()=>document.querySelector("#searchButton")&&
+   await page.waitForFunction(()=>document.querySelector("#searchInput")&&
      document.querySelector(".leaflet-container"),null,{timeout:15000});
    await page.evaluate(()=>{
      window.__geometryWrites=[];
@@ -116,7 +116,7 @@ const viewports=[
      chooserGeometry.rect.right<=chooserGeometry.appRight+1&&
      chooserGeometry.rect.bottom<=chooserGeometry.appBottom+1&&
      Math.abs(chooserGeometry.triggerCenter-chooserGeometry.menuCenter)<2,
-     "Search chooser must be fully visible BELOW the magnifier: "+JSON.stringify(chooserGeometry));
+     "Search chooser must be fully visible BELOW the search field: "+JSON.stringify(chooserGeometry));
    assert.equal(chooserGeometry.hit,"pin",
      "First search option must be clickable at its visual center");
    // The cancel × must be precisely centered, even with Safari font metrics.
@@ -631,7 +631,7 @@ const viewports=[
      // physical map surface remains tappable; close using its own button,
      // then verify the two-step behavior through a smaller search menu.
      await page.locator("#settingsButton").click();
-     await page.locator("#searchButton").click();
+     await page.locator("#searchInput").click();
      await page.locator("#searchTypeMenu").waitFor({state:"visible"});
      await clickMap();
      assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
@@ -680,9 +680,9 @@ const viewports=[
      await clickMap();await contextMenu.waitFor({state:"visible",timeout:5000});
      await clickMap();assert.equal(await contextMenu.isHidden(),true);
    }
-   await page.locator("#searchButton").click();
+   await page.locator("#searchInput").click();
    assert.equal(await contextMenu.isHidden(),true);
-   // The magnifier now opens creation choices. Saved marker search is option seven.
+   // Clicking the search field opens creation choices. Saved marker search is option seven.
    assert.equal(await page.locator('.search-type-choice[data-search-type="objects"]').isVisible(),true);
    await page.keyboard.press("Escape");
    assert.equal(await page.locator("#searchTypeMenu").isHidden(),true);
