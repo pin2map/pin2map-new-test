@@ -181,6 +181,6 @@ test("app passes manual unnamed pin to naming service with cleanup on save",()=>
  assert.match(app,/if\(entry\.autoNamed\)void manualPinLocality\.resolve\(entry\)/);
  assert.match(app,/manualPinLocality\.setCurrent\(entry\)/);
  assert.match(app,/function clearObjectPreview\(\)\{[\s\S]*?manualPinLocality\.invalidate\(\)/);
- assert.match(app,/mapAdapter\.updateTemporaryPinLabel\(entry\)/);
+ assert.match(app,/pinOps\.renamePin\(state,pin\.id,entry\.name,\{cleanText\}\)/);
  assert.match(app,/const name=entry\.referencePlace\?/);
 });
