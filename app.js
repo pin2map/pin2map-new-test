@@ -33,6 +33,17 @@
   const currentPinFilter = pinFilter.createFilter();
   const objectSearch=window.Pin2MapObjectSearch;
   let objectSearchView=null,objectSearchSpotlight=null;
+  // Presentation only: fresh persisted objects blink for at most 30 seconds.
+  const recentlyCreated=new Map();
+  const activeFlashIds=()=>new Set([...recentlyCreated].filter(([,end])=>Date.now()<end).map(([id])=>id));
+  function flashNewObject(type,id){
+    const key=type+":"+id,deadline=Date.now()+30000;
+    recentlyCreated.set(key,deadline);
+    setTimeout(()=>{
+      if(recentlyCreated.get(key)!==deadline)return;
+      recentlyCreated.delete(key);renderMarkers();renderGeometry();
+    },30000);
+  }
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
@@ -686,6 +697,7 @@
       areas:(state.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
       rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
       layerColors,highlightIds:objectSearchView?.onlyHits?null:objectSearchView?.ids,
+      flashIds:activeFlashIds(),
       onAreaLabel:(area,point)=>{
         const hitType=area.kind==="lake"?"lakes":"areas";
         if(!objectSearchView?.ids.has(hitType+":"+area.id)&&
@@ -729,7 +741,7 @@
     markerView.render({
       pins:visible,
       layers:state.layers,selectedPinId:uiState.selectedPinId,
-      labelsVisible:state.labelsVisible,
+      labelsVisible:state.labelsVisible,flashIds:new Set([...activeFlashIds()].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5))),
       highlightIds:onlyHits?null:
         new Set([...(objectSearchView?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
     });
@@ -843,7 +855,14 @@
     geocoder,pickName:placeDomain.nearbyLocalityName,
     detailZoom:placeDomain.reversePlaceZoom,
     allowed:()=>state.allowGeocode,
-    onName:entry=>mapAdapter.updateTemporaryPinLabel(entry)
+    onName:entry=>{
+      if(!entry.savedId)return;
+      const pin=pinOps.findPin(state,entry.savedId);
+      if(!pin||pin.name!=="Neuer Pin")return;
+      pinOps.renamePin(state,pin.id,entry.name,{cleanText});
+      save();renderMarkers();
+      void dbWrite().catch(()=>showNotice("Pinname konnte nicht gespeichert werden"));
+    }
   });
   // Reuse the saved pin's target picker, drag preview, guide and confirm
   // bar. The temporary object's position changes ONLY on confirm; no pin or
@@ -892,17 +911,47 @@
     if(entry.autoNamed)void manualPinLocality.resolve(entry);
     return true;
   }
-  // All creation pathways must stage an ephemeral object first. These
-  // previews are map-only and never enter state, IndexedDB or project layers.
+  // Every accepted new object becomes a real Privat object immediately.
+  // No temporary confirmation, preview marker or layer-choice step is used.
   function showObjectPreview(entry){
-    manualPinLocality.setCurrent(entry);
-    temporaryInfoPin=entry.kind==="point"&&entry.source==="map"?entry:null;
-    const onTap=position=>{if(!temporaryMoveEntry)platePanel.show(entry,position);};
-    if(entry.kind==="point")mapAdapter.showTemporaryPin(entry,onTap);
-    else if(entry.kind==="river")mapAdapter.showTemporaryRiver(entry,onTap);
-    else mapAdapter.showTemporaryPlateArea(entry,onTap);
-    renderMarkers();
-    return entry;
+    if(!entry)return null;
+    clearObjectPreview();
+    const privateLayer=layerById(PRIVATE_ID);
+    if(!privateLayer)throw Error("Privat-Ebene fehlt");
+    uiState.clearSelection();geometryEditor?.close(false);renderPinPanel();
+    let created=null;
+    if(entry.kind==="point"){
+      const name=entry.referencePlace?
+        entry.label+" – "+entry.referencePlace+" (Ersatzort)":
+        entry.name||entry.label||"Neuer Pin";
+      created=pinOps.createPin(state,{
+        id:uid(),lat:entry.point.lat,lng:entry.point.lng,name,layerId:PRIVATE_ID
+      },{validatePosition:projectModel.position,cleanText});
+      entry.savedId=created.id;
+      if(entry.source==="gps")pendingNewGpsPinId=created.id;
+      manualPinLocality.setCurrent(entry);
+      flashNewObject("pins",created.id);
+      if(!entry.preserveViewport&&entry.source!=="search"&&entry.source!=="gps")
+        mapAdapter.setView({center:entry.point,zoom:Math.max(mapAdapter.getViewport().zoom,12)},{animate:false});
+    }else if(entry.kind==="river"){
+      created=projectFeatures.createRiver(state,{
+        id:uid(),name:entry.label,chains:entry.chains,createdAt:new Date().toISOString()
+      },PRIVATE_ID);
+      flashNewObject("rivers",created.id);
+      if(!entry.preserveViewport)mapAdapter.fitGeometry(created);
+    }else if(entry.geojson){
+      created=projectFeatures.createArea(state,{
+        id:uid(),name:entry.label,kind:entry.featureKind||"area",
+        geometry:entry.geojson,createdAt:new Date().toISOString()
+      },PRIVATE_ID);
+      flashNewObject(created.kind==="lake"?"lakes":"areas",created.id);
+      if(!entry.preserveViewport)mapAdapter.fitGeometry(created);
+    }
+    if(!created)return null;
+    save();renderLayers();renderMarkers();renderGeometry();
+    if(!privateLayer.visible)showNotice("Objekt in ausgeblendeter Ebene Privat gespeichert");
+    void dbWrite().catch(()=>showNotice("Objekt konnte nicht gespeichert werden"));
+    return created;
   }
   function addPin(lat,lng,name,source="search"){
     if(!Number.isFinite(lat)||Math.abs(lat)>90||
@@ -915,9 +964,9 @@
       autoNamed:source==="map"&&!name,
       label:name||"Neuer Pin",name:name||"",source,
        preserveViewport:source==="map"};
-    showObjectPreview(entry);
-    if(entry.autoNamed)void manualPinLocality.resolve(entry);
-    return entry;
+    const saved=showObjectPreview(entry);
+    if(saved&&entry.autoNamed)void manualPinLocality.resolve(entry);
+    return saved;
   }
   function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
@@ -1045,6 +1094,7 @@
     const area=projectFeatures.createArea(state,{
       id:uid(),name,kind,geometry:source.geojson,createdAt:new Date().toISOString()
     },layerId);
+    flashNewObject(kind==="lake"?"lakes":"areas",area.id);
     save();renderLayers();renderGeometry();
     return area;
   }
@@ -1358,8 +1408,7 @@
       defaults,privateLayerId:PRIVATE_ID,cleanupSearch:project=>placeSearch.cleanup(project)
     });
     if(!Array.isArray(state.favorites))state.favorites=[];
-    // The immutable private layer always uses the agreed medium gray,
-    // including restored projects created before the palette contract.
+    // Preserve personalized Privat colors; migrate only legacy default gray.
     window.Pin2MapLayerPalette.repairPrivate(state);
     projectFeatures.ensure(state);
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
@@ -1380,7 +1429,7 @@
     gpsLocation=new window.Pin2MapGpsLocationController({
       document,getElement:$,geolocation:navigator.geolocation,
       mapPort:mapAdapter,onNotice:showNotice,
-      // GPS fixes are staged as complete pink pins, never persisted here.
+      // A valid GPS fix is immediately saved as a normal Privat pin.
       onAccept:(point,name)=>addPin(point.lat,point.lng,name,"gps")
     });
     gpsLocation.bind();
