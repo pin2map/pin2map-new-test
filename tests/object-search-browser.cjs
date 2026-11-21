@@ -234,8 +234,8 @@ const base=process.env.PIN2MAP_TEST_URL||
     }});
     assert.equal(await page.locator("#searchTypeMenu").isHidden(),true,
       "outside tap closes the search chooser");
-    assert.equal(await page.locator(".pin-marker").count(),2,
-      "all matched and contextual markers remain visible with chooser closed");
+    assert.equal(await page.locator(".pin-marker").count(),1,
+      "the single Name + Notiz matching pin remains visible with chooser closed");
     // A matching marker can legitimately sit beneath fixed map chrome after
     // fitting distant search results. Pan the map normally to bring the marker
     // into the usable centre; never force-click through an unrelated control.
