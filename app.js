@@ -1137,7 +1137,7 @@
       ids:new Set(matches.map(m=>m.type+":"+m.id))};
     document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(!view.onlyHits&&(matches.length>0||!!$("searchInput").value.trim()||!!view.options.track||!!view.options.link||!!view.options.note));
+    objectSearchSpotlight?.setActive(matches.length>0&&!view.onlyHits);
     objectSearchSpotlight?.schedule();
     // Editing a matching object must never reset the user's current viewport.
   }
@@ -1167,7 +1167,7 @@
       ids:new Set(matches.map(m=>m.type+":"+m.id)),matches,options:{...options}};
     document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(!objectSearchView.onlyHits&&(matches.length>0||!!query||!!options.track||!!options.link||!!options.note));
+    objectSearchSpotlight?.setActive(matches.length>0&&!objectSearchView.onlyHits);
     // A display-only toggle must not unexpectedly change the user's viewport.
     if(!displayOnlyChanged)fitObjectSearchMatches(matches);
   }
