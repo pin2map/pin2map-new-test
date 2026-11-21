@@ -7,7 +7,7 @@ const read=p=>fs.readFileSync(path.join(__dirname,"..",p),"utf8");
 test("palette has exactly nine predecessor defaults and three independent signal colors",()=>{
  assert.deepEqual(palette.DEFAULT_STANDARD,[
  "#FF0000","#1E90FF","#32CD32","#FFD700","#FF8C00",
- "#8A2BE2","#8A7431","#008B8B","#8B4513"]);
+ "#8A2BE2","#808080","#008B8B","#E64294"]);
  assert.deepEqual(palette.DEFAULT_SIGNALS,{red:"#F5222D",yellow:"#FFC400",green:"#19BD39"});
  const p={layers:[{id:"private",name:"Privat",color:"#808080",visible:true}]};
  assert.equal(palette.colors(p).standard.length,9);
@@ -43,6 +43,9 @@ test("safe layer deletion removes pins and geometry, preserves other layers and 
  assert.equal(operations.removeEntireLayer(p,"private"),false);
  assert.equal(p.areas.length,1);
  assert.equal(operations.renameAndColor(p,"private","New","#2563EB",x=>x,palette.hex),false);
+  assert.ok(operations.renameAndColor(p,"private","Privat","#E64294",x=>x,palette.hex));
+  assert.equal(p.privateColorCustomized,true);
+  assert.equal(p.layers[0].color,"#E64294");
  assert.ok(operations.renameAndColor(p,"a","B","#FFCBA4",x=>x,palette.hex));
  assert.equal(p.layers[1].name,"B");
  assert.equal(operations.deleteContents(p,"a"),true);
@@ -141,7 +144,7 @@ test("saved v236 nine-color defaults migrate pink slot to screenshot ochre, leav
   "#8A2BE2","#FF1493","#008B8B","#8B4513"];
  const saved={layers:[{id:"private",color:"#808080"},{id:"existing",color:"#FF1493"}],
   colorSettings:{standard:prior.slice()}};
- assert.equal(palette.colors(saved).standard[6],"#8A7431");
+ assert.equal(palette.colors(saved).standard[6],"#808080");
  assert.equal(saved.layers[1].color,"#FF1493",
   "Previously created layers must not be recolored automatically");
  saved.colorSettings.standard[6]="#C34567";
