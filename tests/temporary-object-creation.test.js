@@ -90,24 +90,23 @@ test("move on a temporary pin opens move UI without removing or saving",()=>{
  assert.deepEqual(x.removed,[]);
  assert.equal(x.box.hidden,true);
 });
-test("every new object creation is routed through temporary preview",()=>{
- const app=read("app.js"),map=read("map-adapter-leaflet.js");
+test("all accepted new object paths commit directly to Privat without requiring confirmation",()=>{
+ const app=read("app.js");
  assert.match(app,/function showObjectPreview\(entry\)/);
- assert.match(app,/function addPin\(lat,lng,name,source="search"\)[\s\S]*?showObjectPreview\(entry\);[\s\S]*?return entry/);
- assert.match(app,/function previewAreaObject\(source,kind,nameOverride=null,preserveViewport=false\)/);
- assert.match(app,/label:name,geojson:source.geojson,preserveViewport/);
- assert.match(app,/showObjectPreview\(\{kind:"river",label:/);
+ assert.match(app,/pinOps\.createPin\(state,/);
+ assert.match(app,/projectFeatures\.createArea\(state,/);
+ assert.match(app,/projectFeatures\.createRiver\(state,/);
+ assert.match(app,/layerId:PRIVATE_ID/);
+ assert.match(app,/if\(entry\.kind==="point"\)/);
+ assert.match(app,/else if\(entry\.kind==="river"\)/);
+ assert.match(app,/if\(!created\)return null;/);
+ assert.match(app,/save\(\);renderLayers\(\);renderMarkers\(\);renderGeometry\(\);/);
+ assert.match(app,/onPin:point=>addPin\(point\.lat,point\.lng,"","map"\)/);
+ assert.match(app,/onAccept:\(point,name\)=>addPin\(point\.lat,point\.lng,name,"gps"\)/);
  assert.match(app,/if\(kind==="area"\|\|kind==="lake"\)\{previewAreaObject/);
- assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,"","map"\)/);
- assert.match(app,/onAccept:\(point,name\)=>addPin\(point.lat,point.lng,name,"gps"\)/);
- assert.match(app,/autoNamed:source==="map"&&!name/);
- assert.match(app,/onAccept:\(entry,anchor\)=>temporaryLayerPicker\.show\(entry,state\.layers,anchor\)/);
- assert.match(app,/onMove:entry=>beginTemporaryMove\(entry\)/);
- assert.match(app,/onChoose:\(entry,layerId\)=>\{/);
- assert.match(app,/if\(!layer\)return;/);
- assert.match(map,/showTemporaryPin\(entry,onLabel\)/);
- assert.match(map,/showTemporaryRiver\(entry,onLabel\)/);
- assert.match(map,/showTemporaryPlateArea\(entry,onLabel\)/);
- const sw=read("sw.js");
- assert.match(sw,/ui\/license-plate-panel\.js/);
+ assert.match(app,/showObjectPreview\(\{kind:"river",label:/);
+ assert.match(app,/showObjectPreview\(result\)/);
+ // No creation entry point may show the old preview panel or picker.
+ const creation=app.split("function showObjectPreview(entry){")[1].split("function addPin(lat,lng")[0];
+ assert.doesNotMatch(creation,/platePanel\.show|temporaryLayerPicker\.show|showTemporaryPin|showTemporaryRiver/);
 });
