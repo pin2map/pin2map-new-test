@@ -81,7 +81,7 @@
         this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pinId===this.relocationSourceId);
       }
     }
-    render({pins,layers,selectedPinId=null,labelsVisible=true,highlightIds=null}){
+    render({pins,layers,selectedPinId=null,labelsVisible=true,highlightIds=null,flashIds=null}){
       const colorsByLayer=Object.fromEntries(layers.map(l=>[l.id,l.color]));
       const placements=layout(pins,{
         selectedPinId,labelsVisible,
@@ -107,6 +107,7 @@
         this.map.setMarkerLabel(marker,label);
         this.map.setMarkerInfo?.(marker,this.formatInfo(this.getInfoLabel(pin)),()=>this.onInfoClick(pin.id));
         this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pin.id===this.relocationSourceId);
+        this.map.getMarkerElement?.(marker)?.classList.toggle("p2m-new-object-blink",!!flashIds?.has(pin.id));
         this.attachGesture(marker,pin.id);
       }
       for(const [id,marker] of this.markers){
