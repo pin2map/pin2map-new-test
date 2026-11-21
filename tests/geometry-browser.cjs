@@ -893,30 +893,17 @@ const viewports=[
    await page.locator("#searchInput").fill("HVL");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator('#searchResults .result').filter({hasText:"HVL"}).first().click();
-   await page.locator(".p2m-temporary-pin-label").waitFor({state:"visible",timeout:12000});
-   assert.match(await page.locator(".p2m-temporary-pin-label").innerText(),/Rathenow.*Ersatzort/);
-   const beforePins=await page.evaluate(async()=>{
+   await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.length;}finally{db.close();}
-   });
-   await page.locator(".p2m-temporary-pin-label").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
-     buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Verschieben","Speichern"]);
-   await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
-   assert.equal(await page.locator(".p2m-temporary-pin").isVisible(),true);
-   assert.equal(await page.evaluate(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.length;}finally{db.close();}
-   }),beforePins,"No must not persist a reference town");
-   await page.locator(".p2m-temporary-pin-label").click();
-   await page.locator(".plate-area-yes").click();
-   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
-   assert.equal(await page.locator("#pinPanel").isHidden(),true);
-   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-   assert.equal(await page.locator("#pinPanel").isHidden(),true);
-   await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
+     try{return (await db.loadProject()).pins.some(pin=>
+       pin.layerId==="private"&&pin.name.includes("HVL")&&pin.name.includes("Rathenow")&&
+       pin.name.includes("Ersatzort"));}
+     finally{db.close();}
+   },null,{timeout:12000});
+   assert.equal(await page.locator(".p2m-temporary-pin").count(),0);
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+   assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
+   await page.locator(".pin-icon").last().click();
    await page.locator("#pinPanel").waitFor({state:"visible"});
    assert.match(await page.locator("#pinName").inputValue(),/HVL.*Rathenow.*Ersatzort/);
    // A plate-search pin is NOT a newly created GPS pin: opening it may
@@ -935,12 +922,19 @@ const viewports=[
    await page.locator("#searchInput").fill("GU");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
    await page.locator("#searchResults .result").filter({hasText:"Graz"}).first().click();
-   await page.locator(".p2m-temporary-pin-label").waitFor({state:"visible",timeout:12000});
-   assert.match(await page.locator(".p2m-temporary-pin-label").innerText(),/Gratkorn.*Ersatzort/);
+   await page.waitForFunction(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.some(pin=>
+       pin.layerId==="private"&&pin.name.includes("GU")&&pin.name.includes("Gratkorn"))}
+     finally{db.close();}
+   },null,{timeout:12000});
    await page.locator("#searchInput").fill("B");
    await page.locator('.search-type-choice[data-search-type="plate"]').click();
-   assert.equal(await page.locator(".p2m-temporary-pin-label").count(),0,
-     "Any new search clears the temporary Austrian fallback point");
+   assert.equal(await page.evaluate(async()=>{
+     const db=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await db.loadProject()).pins.some(pin=>pin.name.includes("Gratkorn"));}
+     finally{db.close();}
+   }),true,"A new search must preserve the previously stored Austrian fallback pin");
    await page.locator("#searchResults .result").first().waitFor({state:"visible"});
    assert.deepEqual(errors,[],view.name+" page errors");
    console.log("[geometry] PASS",view.name,"search modes, private saved polygons, lake, river and UI");
