@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-21 (Entwicklung **v295, Implementierungskandidat; Pflicht-Gates und echte Geräteabnahme noch offen**, stabile main unverändert). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-21 (Entwicklung **v304 technisch veröffentlicht und mit Node-, Architektur-, Chromium-, WebKit- und HTTPS-Live-Gates geprüft; reale Geräteabnahme offen**, stabile main unverändert). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
