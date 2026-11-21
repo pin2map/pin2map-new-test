@@ -2922,7 +2922,7 @@ body.object-search-mode #app #searchClear.search-clear span{
   justify-self:end;
 }
 #app #searchTypeMenu .object-search-flags .object-search-check input{
-  flex:0 0 15px;width:15px;height:15px;margin:0;accent-color:#1680e2;
+  flex:0 0 13px;width:13px;height:13px;margin:0;accent-color:#1680e2;
 }
 #app #searchTypeMenu .object-search-gpx{
   display:inline-flex;align-items:center;justify-content:center;
@@ -3014,20 +3014,28 @@ body.object-search-mode #app #searchClear.search-clear span{
 /* v300: four equally sized search property switches, consistent row widths.
  * A wider chooser is capped by the visual viewport on narrow devices. */
 #app #searchTypeMenu.search-type-menu.object-search-mode{
- width:min(520px,calc(100vw - 12px));
+ width:min(340px,calc(100vw - 24px));
 }
 #app #searchTypeMenu.object-search-mode .object-search-toprow,
 #app #searchTypeMenu.object-search-mode .object-search-flags{
  width:100%;min-width:0;box-sizing:border-box;
 }
+#app #searchTypeMenu.object-search-mode .object-search-toprow{
+ grid-template-columns:minmax(0,55fr) minmax(0,45fr);
+ column-gap:5px;
+}
+#app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-kind,
+#app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-check{
+ font-size:11px;
+}
 #app #searchTypeMenu.object-search-mode .object-search-flags{
- display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
- gap:4px;justify-content:stretch;align-items:center;
+ display:flex;flex-wrap:nowrap;
+ gap:2px;justify-content:space-between;align-items:center;
 }
 #app #searchTypeMenu.object-search-mode .object-search-flags .object-search-check{
  display:inline-flex;justify-content:center;align-items:center;
  gap:3px;white-space:nowrap;min-width:0;
- font-size:clamp(9px,2.6vw,13px);
+ font-size:clamp(9px,2.4vw,11px);
 }
 #app #searchTypeMenu.object-search-mode .object-search-flags input{
  flex:0 0 15px;width:15px;height:15px;
@@ -3035,7 +3043,7 @@ body.object-search-mode #app #searchClear.search-clear span{
 @media(max-width:375px){
  #app #searchTypeMenu.object-search-mode .object-search-flags{gap:1px}
  #app #searchTypeMenu.object-search-mode .object-search-flags .object-search-check{
-  gap:2px;font-size:9px;
+  gap:1px;font-size:9px;
  }
  #app #searchTypeMenu.object-search-mode .object-search-flags input{
   flex-basis:14px;width:14px;height:14px;
