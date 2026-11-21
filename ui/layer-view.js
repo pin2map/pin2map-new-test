@@ -140,23 +140,27 @@
   }
   editor(mode,index){
    const layer=this.values[index];
-   if(mode==="new"||mode==="rename"){
+   if(mode==="new"||mode==="rename"||mode==="private-color"){
+    const privateColor=mode==="private-color";
     const creating=mode==="new",name=creating?this.getSuggestedName():layer.name;
     this.draftIndex=creating?this.getNextIndex():
       (Number.isInteger(layer.paletteIndex)?layer.paletteIndex:0);
     this.draftColor=creating?this.getPalette()[this.draftIndex]:layer.color;
     return this.actionEditor({
-     mode,index,title:creating?"Neue Ebene erstellen:":"Ebene umbenennen?",
+     mode,index,title:creating?"Neue Ebene erstellen:":privateColor?"Farbe der Ebene Privat:":"Ebene umbenennen?",
      nameLabel:"Farbe und Name der Ebene:",nameValue:name,
-     confirmLabel:creating?"Erstellen":"Übernehmen",
+     confirmLabel:creating?"Erstellen":privateColor?"Farbe übernehmen":"Übernehmen",
      onConfirm:value=>{
       if(creating){
         this.el("layersList").scrollTop=0;
         this.onCreate(value,this.draftColor,this.draftIndex);
        }
-      else this.onRename(layer.id,value,this.draftColor,this.draftIndex);
+      else this.onRename(layer.id,privateColor?"Privat":value,this.draftColor,this.draftIndex);
      },
-     renderExtra:ports=>this.paletteEditor(ports)
+     renderExtra:ports=>{
+      this.paletteEditor(ports);
+      if(privateColor){ports.input.readOnly=true;ports.input.setAttribute("aria-readonly","true");}
+     }
     });
    }
    if(mode==="delete"){
@@ -254,8 +258,8 @@
     const data=this.geometryCounts[id]||{};
     const detail=(this.counts[id]||0)+" Pins · "+(data.areas||0)+
      " Flächen · "+(data.waters||0)+" Gewässer";
-    const edit=privateLayer||this.mergeMode?null:this.button("square-pen","Ebene bearbeiten",
-     ()=>this.start("rename",index),"favorite-icon favorite-edit");
+    const edit=this.mergeMode?null:this.button("square-pen",privateLayer?"Farbe von Privat ändern":"Ebene bearbeiten",
+     ()=>this.start(privateLayer?"private-color":"rename",index),"favorite-icon favorite-edit");
     const remove=this.mergeMode?null:this.button("trash",privateLayer?
       "Alle Objekte in Privat löschen":"Ebene oder ihre Objekte löschen",
      ()=>this.start("delete",index),"favorite-icon favorite-remove");
