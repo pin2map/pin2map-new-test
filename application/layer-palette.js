@@ -6,11 +6,11 @@
  // index.html defaults (Red, DodgerBlue, LimeGreen, Gold, DarkOrange,
  // BlueViolet, user-supplied ochre, DarkCyan, SaddleBrown), normalized to HEX.
  const DEFAULT_STANDARD=Object.freeze(["#FF0000","#1E90FF","#32CD32",
-  "#FFD700","#FF8C00","#8A2BE2","#8A7431","#008B8B","#8B4513"]);
+  "#FFD700","#FF8C00","#8A2BE2","#808080","#008B8B","#E64294"]);
  const LEGACY_STANDARD=Object.freeze(["#2563EB","#FFCBA4","#2AA198","#FF6F61",
   "#8FD3FF","#D9A441","#4F8A66","#7ED957","#C8A2FF","#FFE234","#9B5DE5","#FF8C32"]);
  const DEFAULT_SIGNALS=Object.freeze({red:"#F5222D",yellow:"#FFC400",green:"#19BD39"});
- const PRIVATE_COLOR="#808080";
+ const PRIVATE_COLOR="#E64294";
  function hex(value){const s=String(value||"").trim().toUpperCase();return /^#[0-9A-F]{6}$/.test(s)?s:null;}
  function colors(project){
   const saved=project?.colorSettings||{};
@@ -23,7 +23,8 @@
     // Translate that unchanged default to the user-supplied ochre without
     // rewriting existing layer colors or overriding personalized slots.
     if(Array.isArray(saved.standard)&&saved.standard.length===9&&
-       i===6&&stored==="#FF1493")return c;
+       (i===6&&["#FF1493","#8A7431"].includes(stored)||
+        i===8&&stored==="#8B4513"))return c;
     return Array.isArray(saved.standard)&&saved.standard.length===12&&
       stored===LEGACY_STANDARD[i]?c:stored||c;
    }),
@@ -78,7 +79,11 @@
  }
  function repairPrivate(project){
   const layer=project.layers?.find(l=>l.id==="private");
-  if(layer)layer.color=PRIVATE_COLOR;
+  if(layer){
+   const previous=hex(layer.color);
+   if(!previous||previous==="#808080"&&!project.privateColorCustomized)
+    layer.color=PRIVATE_COLOR;
+  }
  }
  const api=Object.freeze({DEFAULT_STANDARD,DEFAULT_SIGNALS,PRIVATE_COLOR,
   hex,colors,setColor,nextLayerNumber,nextLayerColorIndex,recordLayer,repairPrivate});
