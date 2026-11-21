@@ -141,7 +141,7 @@ test("search clear button is explicitly available for touch and not native WebKi
   const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
   const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
   assert.match(html,/id="searchClear" class="search-clear hidden" aria-label="Suchfeld leeren"/);
-  assert.match(css,/#app #searchClear\\.search-clear/);
+  assert.match(css,/#app #searchClear\.search-clear/);
   assert.doesNotMatch(html,/id="searchButton"/);
   assert.match(css,/#searchInput::-webkit-search-cancel-button/);
 });
