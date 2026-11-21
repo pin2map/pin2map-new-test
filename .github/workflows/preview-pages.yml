@@ -251,12 +251,17 @@ jobs:
           PY
 
       - uses: actions/configure-pages@v5
+      # Retry-safe: different attempts of one workflow run must never upload
+      # two artifacts both called "github-pages" (deploy-pages rejects them).
       - uses: actions/upload-pages-artifact@v3
         with:
+          name: p2m-preview-${{ github.run_id }}-${{ github.run_attempt }}
           path: site-root
 
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: p2m-preview-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Verify published preview HTML CSS JS and service worker over HTTPS
         env:
