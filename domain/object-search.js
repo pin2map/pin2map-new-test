@@ -54,33 +54,32 @@
   }
   return hits;
  }
- // Contract v294: a match in ANY enabled field is sufficient. GPX mode
- // ignores the search text, but obeys the visibility checkbox.
- function searchExpanded(project,{query="",notes=false,urls=false,includeHidden=false,gpxOnly=false}={}){
+ // v295: object scope and AND-combined property filters. Empty query is allowed.
+ function searchExpanded(project,{query="",kind="all",track=false,link=false,note=false,
+   includeHidden=false}={}){
+  if(!TYPES.includes(kind))throw new TypeError("Unknown object search type");
   const needle=text(String(query).trim());
-  if(!needle&&!gpxOnly)return [];
-  const visibleLayers=new Set((project?.layers||[]).filter(l=>l.visible===true).map(l=>l.id));
+  if(!needle&&!track&&!link&&!note)return [];
+  const visible=new Set((project?.layers||[]).filter(l=>l.visible===true).map(l=>l.id));
   const hits=[],seen=new Set();
   for(const collection of ["pins","areas","rivers"]){
    for(const object of project?.[collection]||[]){
     if(!object?.id)continue;
-    if(!includeHidden&&!visibleLayers.has(object.layerId))continue;
+    if(!includeHidden&&!visible.has(object.layerId))continue;
     const type=collection==="areas"?(object.kind==="lake"?"lakes":"areas"):collection;
-    const key=type+":"+object.id;
-    if(seen.has(key))continue;
     const gpx=object.gpxAttachment||{};
     const hasTrack=Boolean(gpx.chains?.length||object.gpxKey||object.gpxTrackId||
-     object.gpxFileId||object.gpxRef);
-    if(gpxOnly){
-     if(type!=="pins"||!hasTrack)continue;
-    }else{
-     const day=dateKey(object.createdAt);
-     const fields=[object.name,object.createdAt,day,
-      day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):""];
-     if(notes)fields.push(object.note);
-     if(urls)fields.push(object.url);
-     if(!fields.some(value=>text(value).includes(needle)))continue;
-    }
+       object.gpxFileId||object.gpxRef);
+    const hasNote=Boolean(text(object.note).trim()),hasLink=Boolean(text(object.url).trim());
+    if(!(kind==="all"||kind===type||kind==="areas"&&type==="lakes"||
+      kind==="texts"&&(hasNote||hasLink)))continue;
+    if(track&&!hasTrack||link&&!hasLink||note&&!hasNote)continue;
+    const day=dateKey(object.createdAt);
+    const fields=[object.name,object.createdAt,day,
+      day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):"",object.note,object.url];
+    if(needle&&!fields.some(v=>text(v).includes(needle)))continue;
+    const key=collection+":"+String(object.id);
+    if(seen.has(key))continue;
     seen.add(key);hits.push({type,id:object.id,object});
    }
   }

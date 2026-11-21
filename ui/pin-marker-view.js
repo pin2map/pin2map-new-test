@@ -81,7 +81,7 @@
         this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pinId===this.relocationSourceId);
       }
     }
-    render({pins,layers,selectedPinId=null,labelsVisible=true}){
+    render({pins,layers,selectedPinId=null,labelsVisible=true,highlightIds=null}){
       const colorsByLayer=Object.fromEntries(layers.map(l=>[l.id,l.color]));
       const placements=layout(pins,{
         selectedPinId,labelsVisible,
@@ -102,6 +102,7 @@
           this.markers.set(pin.id,marker);
         }
         this.map.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
+        this.map.setMarkerPriority?.(marker,highlightIds?.has(pin.id)?1500:0);
         this.map.setMarkerAppearance(marker,look);
         this.map.setMarkerLabel(marker,label);
         this.map.setMarkerInfo?.(marker,this.formatInfo(this.getInfoLabel(pin)),()=>this.onInfoClick(pin.id));

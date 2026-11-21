@@ -21,7 +21,7 @@
    if(!this.menu||!this.clear||!this.input||!this.form||!this.app)
     throw new TypeError("Search chooser elements required");
    this.app.append(this.menu);
-   this.open=false;this.active=0;this.searchMode=false;this.gpxOnly=false;
+   this.open=false;this.active=0;this.searchMode=false;
 
   }
   makeElement(tag,cls,text){
@@ -63,28 +63,25 @@
   }
   buildSearch(){
    const panel=this.makeElement("section","object-search-options");
-   const results=this.makeElement("div","object-search-results","0 Pins · 0 Flächen · 0 Gewässer");
-   results.setAttribute("role","status");results.setAttribute("aria-live","polite");
-   const scope=this.makeElement("fieldset","object-search-scope");
-   scope.append(this.makeElement("legend",null,"Suche erweitern auf"));
+   const row=this.makeElement("div","object-search-toprow");
+   const select=this.makeElement("select","object-search-kind");
+   select.setAttribute("aria-label","Objektarten durchsuchen");
+   for(const [value,label] of [["all","Alle Objekte"],["pins","Nur Pins"],
+      ["areas","Flächen und Seen"],["lakes","Nur Seen"],["rivers","Nur Flüsse"],
+      ["texts","Objekte mit Text"]]){
+    const opt=this.makeElement("option",null,label);opt.value=value;select.append(opt);
+   }
+   select.addEventListener("change",()=>this.execute());
+   const hidden=this.makeCheck("hidden","Alle finden",false);
+   hidden.querySelector("input").addEventListener("change",()=>this.execute());
+   row.append(select,hidden);
    const flags=this.makeElement("div","object-search-flags");
-   for(const [id,label] of [
-    ["notes","Notizen"],["urls","URLs"],["hidden","Ausgeblendete Objekte"]
-   ]){
+   for(const [id,label] of [["track","Mit Track"],["link","Mit Link"],["note","Mit Notiz"]]){
     const field=this.makeCheck(id,label,false);
     field.querySelector("input").addEventListener("change",()=>this.execute());
     flags.append(field);
    }
-   scope.append(flags);
-   const gpx=this.makeElement("button","object-search-gpx","Alle Pins mit GPX");
-   gpx.type="button";gpx.dataset.searchAction="gpx";
-   gpx.setAttribute("aria-pressed","false");
-   gpx.addEventListener("click",()=>{
-    this.gpxOnly=!this.gpxOnly;
-    gpx.setAttribute("aria-pressed",String(this.gpxOnly));
-    this.execute();
-   });
-   panel.append(results,scope,gpx);
+   panel.append(row,flags);
    return panel;
   }
   bind(){
@@ -127,8 +124,7 @@
      const placeResults=this.el("searchResults");
      if(!this.searchMode&&placeResults&&!placeResults.classList.contains("hidden"))return;
      e.preventDefault();e.stopPropagation();
-     if(this.searchMode)this.finishAndFocus();
-     else this.close();
+     this.close();
      return;
     }
     if(!inInput&&!inMenu&&e.target!==this.clear)return;
@@ -162,18 +158,25 @@
   }
   searchOptions(){
    const checked=id=>!!this.searchPanel.querySelector('[data-search-flag="'+id+'"]')?.checked;
-   return {notes:checked("notes"),urls:checked("urls"),
-    includeHidden:checked("hidden"),gpxOnly:this.gpxOnly};
+   return {kind:this.searchPanel.querySelector(".object-search-kind").value,
+      track:checked("track"),link:checked("link"),note:checked("note"),
+      includeHidden:checked("hidden")};
   }
   setResults(matches=[]){
-   let pins=0,areas=0,waters=0;
+   const ids=new Set(),count={pins:0,areas:0,waters:0};
    for(const match of matches){
-    if(match.type==="pins")pins++;
-    else if(match.type==="areas")areas++;
-    else if(match.type==="lakes"||match.type==="rivers")waters++;
+    const kind=match.type==="lakes"?"areas":match.type;
+    const key=kind+":"+match.id;
+    if(ids.has(key))continue;
+    ids.add(key);
+    if(kind==="pins")count.pins++;
+    else if(kind==="areas"&&match.type!=="lakes")count.areas++;
+    else if(match.type==="lakes"||kind==="rivers")count.waters++;
    }
-   const results=this.searchPanel?.querySelector(".object-search-results");
-   if(results)results.textContent=pins+" Pins · "+areas+" Flächen · "+waters+" Gewässer";
+   const caption=this.el("objectSearchCount");
+   if(caption)caption.textContent=count.pins+" "+(count.pins===1?"Pin":"Pins")+
+    " · "+count.areas+" "+(count.areas===1?"Fläche":"Flächen")+
+    " · "+count.waters+" Gewässer";
   }
   returnToCreation(){
    if(!this.searchMode)return;
@@ -182,6 +185,7 @@
    this.clear.title="Suchfeld leeren";
    this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
    this.menu.classList.remove("object-search-mode");
+   this.form.classList.remove("object-search-count-active");
    this.onEdit();
   }
   focusInput(){
@@ -194,16 +198,17 @@
   }
   execute(){
    this.show();
-   this.onSearch({...this.searchOptions(),created:"any"});
+   this.onSearch(this.searchOptions());
   }
   enterSearchMode(){
-   this.searchMode=true;this.gpxOnly=false;
+   this.searchMode=true;
    this.clear.setAttribute("aria-label","Markierungssuche verlassen");
    this.clear.title="Markierungssuche verlassen";
-   this.searchPanel.querySelector(".object-search-gpx").setAttribute("aria-pressed","false");
+   
    this.input.blur();this.creation.classList.add("hidden");
    this.searchPanel.classList.remove("hidden");
    this.menu.classList.add("object-search-mode");
+   this.form.classList.add("object-search-count-active");
    this.show();this.position();
   }
   finishAndFocus(){
@@ -218,7 +223,8 @@
    this.clear.setAttribute("aria-label","Suchfeld leeren");
    this.clear.title="Suchfeld leeren";
    this.creation.classList.remove("hidden");this.searchPanel.classList.add("hidden");
-   this.menu.classList.remove("object-search-mode");this.close();
+   this.menu.classList.remove("object-search-mode");
+   this.form.classList.remove("object-search-count-active");this.close();
   }
   // One viewport coordinate system for every device and keyboard state.
   // The menu always uses position:fixed. No detection of a virtual keyboard

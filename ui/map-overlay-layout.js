@@ -6,6 +6,7 @@
   class MapOverlayLayoutCoordinator{
     constructor({mapPort,windowPort,getPin,isMoving,isMarkerPressActive,
       panelPositioner,movePreview,onPersistViewport,onRenderMarkers,
+      onGeometryLayout=()=>{},
       requestFrame=callback=>root.requestAnimationFrame(callback),
       cancelFrame=id=>root.cancelAnimationFrame(id)}){
       if(!mapPort||typeof mapPort.on!=="function"||
@@ -21,6 +22,7 @@
       this.isMarkerPressActive=isMarkerPressActive;
       this.panel=panelPositioner;this.preview=movePreview;
       this.onPersistViewport=onPersistViewport;this.onRenderMarkers=onRenderMarkers;
+      this.onGeometryLayout=onGeometryLayout;
       this.requestFrame=requestFrame;this.cancelFrame=cancelFrame;
       this.frame=null;this.bound=false;
       this.onMove=()=>this.schedule();
@@ -42,6 +44,7 @@
     }
     layout(){
       this.panel.layout({pin:this.getPin(),moving:this.isMoving()});
+      this.onGeometryLayout();
     }
     keepVisibleAtOpen(){
       // This may pan only on initial opening, never during move/zoom frames.

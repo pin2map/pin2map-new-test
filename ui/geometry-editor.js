@@ -271,6 +271,11 @@
       this.notesInput.value=item.note||"";
       this.linkButton.classList.toggle("has-url",Boolean(item.url));
       this.panel.classList.remove("hidden");
+      this.reposition(screen);
+      this.removeButton.classList.remove("river-remove");
+    }
+    reposition(screen){
+      if(!this.model||this.panel.classList.contains("hidden")||!screen)return;
       const app=this.doc.getElementById("app");
       const rect=app.getBoundingClientRect();
       const Positioner=root.Pin2MapPinPanelPositioner||
@@ -290,7 +295,6 @@
       // Never use a stale offsetHeight from before the final browser layout.
       this.tip.style.top="";
       this.tip.classList.remove("hidden");
-      this.removeButton.classList.remove("river-remove");
     }
     close(notify=true){
       if(notify)this.onClose();

@@ -415,6 +415,7 @@
       const p=latLng(position);
       return window.L.marker([p.lat,p.lng],options).addTo(this.map);
     }
+    setMarkerPriority(marker,priority=0){marker.setZIndexOffset(priority);}
     setMarkerPosition(marker,position) {
       const p=latLng(position); marker.setLatLng([p.lat,p.lng]);
     }
@@ -525,7 +526,9 @@
         if(!element)return [];
         const r=element.getBoundingClientRect();
         if(r.width<=0||r.height<=0)return [];
-        return [{type:"river",rects:[{left:r.left,right:r.right,top:r.top,bottom:r.bottom}]}];
+        const ll=item.marker.getLatLng();
+        return [{type:"river",id:item.id,name:item.name,position:{lat:ll.lat,lng:ll.lng},
+          rects:[{left:r.left,right:r.right,top:r.top,bottom:r.bottom}]}];
       });
     }
     getAreaLabelTargets(){
@@ -582,7 +585,8 @@
       if(this.attachedGpxLayer)this.map.removeLayer(this.attachedGpxLayer);
       this.attachedGpxLayer=null;
     }
-    renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},onRiverLine=()=>{}}={}){
+    renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},
+      onRiverLine=()=>{},highlightIds=null}={}){
       // Keep exactly one viewport listener across redraws; do not recreate
       // geometry layers on map pan/zoom, only reposition lightweight labels.
       if(!this.riverLabelMoveHandler){
@@ -613,7 +617,7 @@
         content.className="p2m-area-name-label";
         content.textContent=area.name;
         const marker=window.L.marker(bounds.getCenter(),{
-          keyboard:true,interactive:true,zIndexOffset:350,
+          keyboard:true,interactive:true,zIndexOffset:highlightIds?.has("areas:"+area.id)||highlightIds?.has("lakes:"+area.id)?1800:350,
           icon:window.L.divIcon({html:content.outerHTML,className:"p2m-area-name-wrap",
             iconSize:[0,0],iconAnchor:[0,0]})
         }).addTo(group);
@@ -644,7 +648,7 @@
           // The initial coordinate is only a placeholder; updateRiverLabels
           // immediately moves it onto the currently visible section.
           const marker=window.L.marker([0,0],{
-            interactive:true,keyboard:true,zIndexOffset:300,
+            interactive:true,keyboard:true,zIndexOffset:highlightIds?.has("rivers:"+river.id)?1800:300,
             icon:window.L.divIcon({html:name.outerHTML,className:"p2m-river-name-wrap",
               iconSize:[0,0],iconAnchor:[0,0]})
           }).addTo(group);
@@ -655,7 +659,7 @@
             const point=marker.getLatLng();
             onRiverLine(river,{lat:point.lat,lng:point.lng});
           });
-          this.riverNameMarkers.push({marker,chains:river.chains});
+          this.riverNameMarkers.push({marker,id:river.id,name:river.name,chains:river.chains});
         }
       }
       this.updateFeatureLabels();

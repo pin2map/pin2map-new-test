@@ -57,22 +57,14 @@ test("dedicated marker search and hardware Find use the search input",()=>{
  assert.match(src,/this\.returnToCreation\(\)/);
 });
 
-test("Escape dismisses the chooser without the removed magnifier",()=>{
- const src=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
- assert.match(src,/e\.target!==this\.clear/);
- assert.match(src,/if\(this\.searchMode\)this\.finishAndFocus\(\)/);
-});
-
-test("Escape closes stored-object search but restores focus to its cleared input",()=>{
+test("Escape only hides the chooser; red X is the explicit search exit",()=>{
  const source=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
- assert.match(source,/if\(this\.searchMode\)this\.finishAndFocus\(\)/);
- assert.match(source,/this\.exitSearchMode\(\);\s*this\.onExit\(\);\s*this\.suppressOpenOnFocus=true;\s*this\.input\.focus/);
- assert.match(source,/if\(this\.suppressOpenOnFocus\)/);
- assert.match(source,/\["hidden","Ausgeblendete Objekte"\]/);
- const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
- assert.match(css,/grid-template-columns:max-content max-content minmax\(0,1fr\)/);
+ assert.match(source,/if\(key==="escape"\)/);
+ assert.match(source,/this\.close\(\)/);
+ assert.match(source,/returnToStandardChoices\(\)/);
+ assert.match(source,/this\.clear\.setAttribute\("aria-label","Markierungssuche verlassen"\)/);
+ assert.match(source,/this\.clear\.setAttribute\("aria-label","Suchfeld leeren"\)/);
 });
-
 test("creation chooser preserves the same single-column design on keyboard and every device",()=>{
  const js=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
@@ -110,17 +102,16 @@ test("single fixed viewport geometry fills free space without keyboard-state bra
  assert.match(css,/#app \.search-type-menu\{[\s\S]*?position:fixed;/);
  assert.doesNotMatch(css,/#searchTypeMenu.*keyboard-constrained/);
 });
-test("the approved search options have exactly three fields and independent GPX action",()=>{
+test("v295 controls separate type from AND properties with hidden visibility",()=>{
  const ui=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
  assert.match(html,/placeholder="Suchen\/Finden"/);
  assert.doesNotMatch(html,/id="searchButton"/);
- assert.doesNotMatch(ui,/object-search-kind|object-search-exit|Mit Track|Mit Link/);
- for(const label of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
+ for(const label of ["Alle Objekte","Nur Pins","Mit Track","Mit Link","Mit Notiz","Alle finden"])
   assert.ok(ui.includes(label));
+ assert.match(ui,/object-search-kind/);
+ assert.match(ui,/track:checked\("track"\),link:checked\("link"\),note:checked\("note"\)/);
  assert.match(ui,/returnToStandardChoices\(\)/);
- assert.match(ui,/this\.clear\.setAttribute\("aria-label","Markierungssuche verlassen"\)/);
- assert.match(ui,/this\.clear\.setAttribute\("aria-label","Suchfeld leeren"\)/);
 });
 test("visible place results retain Escape before the object chooser can consume it",()=>{
  const code=fs.readFileSync(path.join(__dirname,"../ui/search-type-menu.js"),"utf8");

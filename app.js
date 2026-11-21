@@ -561,6 +561,17 @@
       keepVisibleAtOpen:options=>panelPositioner?.keepVisibleAtOpen(options)
     },
     movePreview:{positionBar:()=>moveView.positionBar()},
+    onGeometryLayout:()=>{
+      if(!geometryEditor?.model)return;
+      const item=geometryEditor.model;
+      const target=geometryEditor.type==="river"?
+        mapAdapter.getRiverLabelTargets().find(t=>t.id===item.id):
+        mapAdapter.getAreaLabelTargets().find(t=>t.id===item.id);
+      if(!target)return;
+      const rect=mapAdapter.getContainer().getBoundingClientRect();
+      const xy=mapAdapter.project(target.position);
+      geometryEditor.reposition({x:rect.left+xy.x,y:rect.top+xy.y});
+    },
     onPersistViewport:()=>persistViewport(),onRenderMarkers:()=>renderMarkers(),
     requestFrame:callback=>requestAnimationFrame(callback),
     cancelFrame:id=>cancelAnimationFrame(id)
@@ -659,13 +670,13 @@
   function renderGeometry(){
     if(!mapAdapter?.renderProjectGeometry)return;
     const visible=new Set(state.layers.filter(l=>l.visible).map(l=>l.id));
-    const isMatch=(type,id,layerId)=>objectSearchView?
-      objectSearchView.ids.has(type+":"+id):visible.has(layerId);
+    const isMatch=(type,id,layerId)=>visible.has(layerId)||
+      !!objectSearchView?.ids.has(type+":"+id);
     const layerColors=Object.fromEntries(state.layers.map(l=>[l.id,l.color]));
     mapAdapter.renderProjectGeometry({
       areas:(state.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
       rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
-      layerColors,
+      layerColors,highlightIds:objectSearchView?.ids,
       onAreaLabel:(area,point)=>{
         if(featureOverlapZoom?.handleTap("area",area.id))return;
         openGeometryEditor("area",area,point);
@@ -675,7 +686,6 @@
   }
   function openGeometryEditor(type,item,position){
     if(!geometryEditor)return;
-    endObjectSearchIfNeeded();
     closeAllMapMenus();
     const xy=mapAdapter.project(position);
     const rect=mapAdapter.getContainer().getBoundingClientRect();
@@ -693,21 +703,21 @@
   }
   function renderMarkers(){
     if(!markerView)return;
-    const visible=objectSearchView?(()=>{
-      // Keep one rendered pin per stable identifier, matching Leaflet's marker ownership.
-      const seen=new Set();
-      return state.pins.filter(p=>{
-        if(!objectSearchView.ids.has("pins:"+p.id)||
-          (!objectSearchView.includeHidden&&!state.layers.some(l=>l.id===p.layerId&&l.visible))||
-          seen.has(p.id))return false;
-        seen.add(p.id);return true;
-      });
-    })():pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
+    const regular=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
+    const visible=[...regular],seen=new Set(regular.map(p=>p.id));
+    if(objectSearchView){
+      for(const pin of state.pins){
+        if(objectSearchView.ids.has("pins:"+pin.id)&&!seen.has(pin.id)){
+          visible.push(pin);seen.add(pin.id);
+        }
+      }
+    }
     pinInfoService.setVisiblePins(temporaryInfoPin?[...visible,temporaryInfoPin.point]:visible);
     markerView.render({
       pins:visible,
       layers:state.layers,selectedPinId:uiState.selectedPinId,
-      labelsVisible:state.labelsVisible
+      labelsVisible:state.labelsVisible,
+      highlightIds:new Set([...(objectSearchView?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
     });
     renderTemporaryPinInfo();
   }
@@ -780,7 +790,6 @@
     else pinLayerPicker.setOpen(false);
   }
   function selectPin(id){
-    endObjectSearchIfNeeded();
     closeAllMapMenus();
     pinOverlapZoom?.close();
     pinSession.select(id);
@@ -1085,15 +1094,13 @@
       if(run===featureRun){featureController=null;setGeometryBusy("");}
     }
   }
-  function resetObjectSearch({restore=true}={}){
+  function resetObjectSearch(){
     if(!objectSearchView)return;
-    const before=objectSearchView.viewport;
     objectSearchView=null;
     document.body.classList.remove("object-search-active");
-    searchForm?.updateClear?.();
     renderMarkers();renderGeometry();
     objectSearchSpotlight?.setActive(false);
-    if(restore&&before)mapAdapter.setView(before,{animate:false});
+    // No view restoration: the user keeps the exact map position.
   }
   function runObjectSearch(options={}){
     const query=$("searchInput").value.trim();
@@ -1101,8 +1108,7 @@
     document.body.classList.add("object-search-mode");
     const matches=objectSearch.searchExpanded(state,{query,...options});
     searchTypeMenu?.setResults(matches);
-    const prior=objectSearchView?.viewport||mapAdapter.getViewport();
-    objectSearchView={viewport:prior,includeHidden:options.includeHidden===true,
+    objectSearchView={includeHidden:options.includeHidden===true,
       ids:new Set(matches.map(m=>m.type+":"+m.id))};
     document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
@@ -1117,24 +1123,15 @@
       objectSearchSpotlight?.schedule();
     }
   }
-  function endObjectSearchIfNeeded(){
-    // Reset the search viewport, input and keyboard before either editor opens.
-    // Otherwise its layer and URL popovers inherit a stale mobile viewport.
-    if(!searchTypeMenu?.searchMode&&!objectSearchView)return;
-    searchTypeMenu?.exitSearchMode();
-    endObjectSearch();
-  }
   function endObjectSearch(){
     resetObjectSearch();
     document.body.classList.remove("object-search-mode");
-    const input=$("searchInput");
-    input.value="";input.blur();
-    searchForm.updateClear();
-    searchView.hide();
+    $("searchInput").blur();
+    searchForm.updateClear();searchView.hide();
   }
   function runSearchMode(mode,options){
     clearObjectPreview();
-    resetObjectSearch({restore:false});
+    resetObjectSearch();
     if(mode==="objects"){searchTypeMenu.enterSearchMode();searchTypeMenu.execute();return;}
     if(mode==="plate"){findPlateCode($("searchInput").value);return;}
     if(mode==="gps"){gpsLocation?.locate();return;}
@@ -1412,10 +1409,11 @@
     objectSearchSpotlight=new window.Pin2MapObjectSearchSpotlight.ObjectSearchSpotlight({
       document,mapPort:mapAdapter,
       getTargets:()=>[
-        ...markerView.hitTargets(),
-        ...mapAdapter.getAreaLabelTargets(),
+        ...markerView.hitTargets(),...mapAdapter.getAreaLabelTargets(),
         ...mapAdapter.getRiverLabelTargets()
-      ]
+      ].filter(item=>objectSearchView?.ids.has(
+        (item.type==="pin"?"pins":item.type==="river"?"rivers":
+          item.kind==="lake"?"lakes":"areas")+":"+item.id))
     });
 ;
     featureOverlapZoom=new window.Pin2MapFeatureOverlapZoom.FeatureOverlapZoom({

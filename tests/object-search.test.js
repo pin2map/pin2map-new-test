@@ -33,16 +33,15 @@ test("no wildcard when no text or date; invalid and legacy dates do not match",(
  assert.deepEqual(search(project,{created:"today",now}).map(x=>x.id),["a","d"]);
  assert.throws(()=>search(project,{created:"tomorrow"}),/Unknown/);
 });
-test("simplified options contain only three text/visibility flags and a GPX action",()=>{
+test("v295 search controls use a compact category dropdown and three AND properties",()=>{
  const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
- const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
- for(const option of ["Notizen","URLs","Ausgeblendete Objekte","Suche erweitern auf","Alle Pins mit GPX"])
-  assert.ok(ui.includes(option));
- assert.doesNotMatch(ui,/object-search-kind|object-search-exit|Mit Track|Mit Link/);
- assert.match(css,/grid-template-columns:max-content max-content minmax\(0,1fr\)/);
- assert.doesNotMatch(html,/id="searchButton"/);
+ for(const word of ["Alle Objekte","Nur Pins","Flächen und Seen","Nur Seen","Nur Flüsse",
+   "Alle finden","Mit Track","Mit Link","Mit Notiz"])assert.ok(ui.includes(word));
+ assert.match(ui,/object-search-kind/);
+ assert.match(html,/id="objectSearchCount"/);
  assert.match(html,/placeholder="Suchen\/Finden"/);
+ assert.doesNotMatch(html,/id="searchButton"/);
 });
 test("category checkboxes, text inclusion and selectable change date respect original layers",()=>{
  assert.deepEqual(search(project,{query:"Karlsruhe",pins:false,areas:true,rivers:false}).map(x=>x.id),["d","e"]);
@@ -73,19 +72,14 @@ test("hidden layers are included by default but excluded on request, with no mut
  assert.equal(withVisible.layers[0].visible,false);
  assert.equal(withVisible.layers[1].visible,true);
 });
-test("search results and dialog contract are wired without changing saved visibility",()=>{
+test("search result count is in the search bar and maps to stable object identities",()=>{
  const menu=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
- const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
- assert.match(menu,/Ausgeblendete/);
- assert.match(menu,/object-search-results/);
- assert.match(menu,/setResults\(matches=\[\]\)/);
- assert.match(menu,/this\.onBeforeOpen\(\)/);
+ assert.match(menu,/this\.el\("objectSearchCount"\)/);
+ assert.match(menu,/const ids=new Set\(\),count=/);
  assert.match(app,/searchTypeMenu\?\.setResults\(matches\)/);
- assert.match(app,/onBeforeOpen:closeAllMapMenus/);
- assert.match(css,/#app #searchTypeMenu\.search-type-menu:not\(\.hidden\)\{[\s\S]*?z-index:1650/);
+ assert.match(app,/highlightIds:objectSearchView\?\.ids/);
 });
-
 test("repeated records with the same pin ID count as one map marker",()=>{
  const repeated={...project,pins:Array.from({length:8},()=>({...project.pins[0]}))};
  const found=search(repeated,{query:"Karlsruhe",kind:"pins"});
@@ -93,7 +87,7 @@ test("repeated records with the same pin ID count as one map marker",()=>{
  assert.equal(repeated.pins.length,8,"search does not mutate stored data");
 });
 
-test("expanded search matches name, creation date, notes across all types, URLs and hidden GPX",()=>{
+test("v295 stored search: query, optional properties, empty string, visibility and dedup",()=>{
  const {searchExpanded}=require("../domain/object-search.js");
  const sample={layers:[{id:"on",visible:true},{id:"off",visible:false}],
  pins:[
@@ -104,15 +98,17 @@ test("expanded search matches name, creation date, notes across all types, URLs 
   {id:"a",layerId:"on",name:"Gebiet",kind:"area",note:"test"},
   {id:"l",layerId:"on",name:"See",kind:"lake",note:"test"}],
  rivers:[{id:"r",layerId:"on",name:"Fluss",note:"test"}]};
- assert.deepEqual(searchExpanded(sample,{query:"test"}).map(x=>x.id),["p1"]);
- assert.deepEqual(searchExpanded(sample,{query:"test",notes:true}).map(x=>x.id),["p1","a","l","r"]);
- assert.deepEqual(searchExpanded(sample,{query:"test",urls:true}).map(x=>x.id),["p1"]);
- assert.deepEqual(searchExpanded(sample,{query:"test",urls:true,includeHidden:true}).map(x=>x.id),["p1","p2"]);
- assert.deepEqual(searchExpanded(sample,{query:"geheim"}),[]);
- assert.deepEqual(searchExpanded(sample,{query:"geheim",notes:true}).map(x=>x.id),["p1"]);
- assert.deepEqual(searchExpanded(sample,{query:"21.11.2026"}).map(x=>x.id),["p1"]);
- assert.deepEqual(searchExpanded(sample,{query:"test",gpxOnly:true}),[]);
- assert.deepEqual(searchExpanded(sample,{query:"test",gpxOnly:true,includeHidden:true}).map(x=>x.id),["p2"]);
- assert.deepEqual(searchExpanded(sample,{query:"",gpxOnly:true,includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",kind:"pins"}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",note:true}).map(x=>x.id),["p1","a","l","r"]);
+ assert.deepEqual(searchExpanded(sample,{query:"",note:true,kind:"pins"}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"",track:true,kind:"pins",includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",link:true,includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"",note:true,link:true,track:true,includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",kind:"lakes"}).map(x=>x.id),["l"]);
+ assert.deepEqual(searchExpanded(sample,{query:"21.11.2026",kind:"pins"}).map(x=>x.id),["p1"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",kind:"all"}).map(x=>x.id),["p1","a","l","r"]);
  assert.equal(sample.layers[1].visible,false);
+ const repeated={...sample,pins:[sample.pins[0],{...sample.pins[0]},sample.pins[1]]};
+ assert.equal(searchExpanded(repeated,{query:"test",kind:"pins"}).length,1);
 });
+
