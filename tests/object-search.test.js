@@ -160,3 +160,17 @@ test("live search membership follows addition and edits on every object kind",()
  assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),[]);
  assert.deepEqual(searchExpanded(state,{...criteria,includeHidden:true}).map(x=>x.id),["area"]);
 });
+
+test("first record of a legacy duplicate ID remains authoritative after edits",()=>{
+ const {searchExpanded}=require("../domain/object-search.js");
+ const project={layers:[{id:"a",visible:true}],pins:[
+  {id:"same",layerId:"a",name:"Anderer Name"},
+  {id:"same",layerId:"a",name:"Saale (stale duplicate)"}
+ ],areas:[],rivers:[]};
+ assert.deepEqual(searchExpanded(project,{query:"saale"}).map(x=>x.id),[],
+   "stale duplicate must not resurrect a renamed pin");
+ project.pins[0].name="Saale-Kirche";
+ assert.deepEqual(searchExpanded(project,{query:"saale"}).map(x=>x.id),["same"]);
+ project.pins[0].name="Unpassend";
+ assert.deepEqual(searchExpanded(project,{query:"saale"}).map(x=>x.id),[]);
+});

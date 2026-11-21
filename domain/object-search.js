@@ -65,6 +65,12 @@
   for(const collection of ["pins","areas","rivers"]){
    for(const object of project?.[collection]||[]){
     if(!object?.id)continue;
+    // Identity is resolved BEFORE applying filters. Otherwise a stale
+    // duplicate record can resurrect a pin whose authoritative first
+    // record was edited to no longer match the active search.
+    const key=collection+":"+String(object.id);
+    if(seen.has(key))continue;
+    seen.add(key);
     if(!includeHidden&&!visible.has(object.layerId))continue;
     const type=collection==="areas"?(object.kind==="lake"?"lakes":"areas"):collection;
     const gpx=object.gpxAttachment||{};
@@ -78,9 +84,7 @@
     const fields=[object.name,object.createdAt,day,
       day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):"",object.note,object.url];
     if(needle&&!fields.some(v=>text(v).includes(needle)))continue;
-    const key=collection+":"+String(object.id);
-    if(seen.has(key))continue;
-    seen.add(key);hits.push({type,id:object.id,object});
+    hits.push({type,id:object.id,object});
    }
   }
   return hits;
