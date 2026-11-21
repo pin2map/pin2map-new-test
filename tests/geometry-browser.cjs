@@ -162,66 +162,27 @@ const viewports=[
    await page.locator("#searchInput").fill("bodensee");
    await page.keyboard.press("Tab");
    await page.keyboard.press("l");
-   await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout:10000});
-   assert.equal(await page.evaluate(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.length;}finally{db.close();}
-   }),0,"Locating GPS must not create a Pin");
-   assert.equal(await page.locator("#gpsPinPrompt").isHidden(),true);
-   await page.locator(".p2m-temporary-pin").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
-   assert.equal(await page.locator(".p2m-temporary-pin").isVisible(),true);
-   assert.equal(await page.evaluate(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.length;}finally{db.close();}
-   }),0,"Outside click must leave the temporary GPS pin unsaved");
-   await page.locator(".p2m-temporary-pin").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   assert.deepEqual(await page.locator("#plateAreaConfirm button").evaluateAll(
-     buttons=>buttons.map(button=>button.getAttribute("aria-label"))),
-     ["Entfernen","Verschieben","Speichern"]);
-   await page.locator("#plateAreaConfirm .plate-area-no").click();
-   assert.equal(await page.locator(".p2m-temporary-pin").count(),0,
-     "Entfernen must delete the temporary GPS pin immediately");
-   assert.equal(await page.evaluate(async()=>{
-     const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).pins.length;}finally{db.close();}
-   }),0,"Entfernen must not persist GPS pin");
-   await page.locator("#searchInput").click();
-   await page.locator('.search-type-choice[data-search-type="gps"]').click();
-   await page.locator(".p2m-temporary-pin").waitFor({state:"visible",timeout:10000});
-   await page.locator(".p2m-temporary-pin").click();
-   await page.locator(".plate-area-yes").click();
-   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
-   assert.equal(await page.locator("#pinPanel").isHidden(),true);
-   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-   assert.equal(await page.locator("#pinPanel").isHidden(),true);
-   await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
-   await page.locator("#pinPanel").waitFor({state:"visible"});
-   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \d{4}-\d{2}-\d{2} \d{2}:\d{2}$/);
-   // Only the first opening of this newly saved GPS pin selects its name.
-   await page.waitForFunction(()=>{
-     const el=document.querySelector("#pinName");
-     return !!el&&el.value.length>0&&document.activeElement===el&&
-       el.selectionStart===0&&el.selectionEnd===el.value.length;
-   },null,{timeout:4000});
-   await page.locator("#closePin").click();
-   await page.locator(".pin-icon:not(.p2m-temporary-pin)").last().click();
-   await page.locator("#pinPanel").waitFor({state:"visible"});
-   assert.equal(await page.locator("#pinName").evaluate(el=>
-     document.activeElement===el&&el.selectionStart===0&&
-     el.selectionEnd===el.value.length),false,
-     "Reopening a saved GPS pin must not auto-select its name");
    await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins.length===1;}finally{db.close();}
-   },null,{timeout:8000});
+   },null,{timeout:10000});
+   assert.equal(await page.locator(".p2m-temporary-pin").count(),0);
+   assert.equal(await page.locator("#gpsPinPrompt").isHidden(),true);
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+   assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
+   const gpsIcon=page.locator(".pin-icon").last();
+   assert.equal(await gpsIcon.evaluate(el=>el.classList.contains("p2m-new-object-blink")),true);
+   await gpsIcon.click();
+   await page.locator("#pinPanel").waitFor({state:"visible"});
+   assert.match(await page.locator("#pinName").inputValue(),/^GPS - \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$/);
+   await page.locator("#closePin").click();
+   await page.locator(".pin-icon").last().click();
+   await page.locator("#pinPanel").waitFor({state:"visible"});
    const savedGpsPins=await page.evaluate(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
      try{return (await db.loadProject()).pins;}finally{db.close();}
    });
-   assert.equal(savedGpsPins.length,1,"Yes creates exactly one private GPS Pin: "+JSON.stringify(savedGpsPins));
+   assert.equal(savedGpsPins.length,1,"Valid GPS discovery saves exactly one Privat pin: "+JSON.stringify(savedGpsPins));
    assert.equal(savedGpsPins[0].layerId,"private");
    assert.ok(Math.abs(savedGpsPins[0].lat-47.6501)<0.001,
      "GPS position must match mocked coordinates: "+JSON.stringify(savedGpsPins[0]));
