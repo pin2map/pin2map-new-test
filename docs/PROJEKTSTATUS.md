@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-21 (Entwicklung **v304 technisch veröffentlicht und mit Node-, Architektur-, Chromium-, WebKit- und HTTPS-Live-Gates geprüft; reale Geräteabnahme offen**, stabile main unverändert). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-21 (Entwicklung **v305 technisch veröffentlicht; Node-, Architektur-, Chromium-, WebKit- sowie HTTPS-Live- und Service-Worker-Gates vollständig erfolgreich; reale iOS-Geräteabnahme offen**, stabile main unverändert). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -2509,3 +2509,16 @@ Nutzerauftrag: echter Lucide-`palette`-Button und vollständig sichtbarer Farbpu
 
 
 **v305 Präzisierung während laufender Freigabe (21.11.2026):** Nach Nutzer-Screenshot entspricht die zeitweilig um `-3px` nach außen versetzte Position des Farbpunktes nicht der verbindlichen Ebenenbutton-Referenz. Korrigiert wird ausschließlich die gemeinsame CSS-Positionierung von Ebenen- und Objektfarbpunkt (relative `right`/`bottom`/Größe identisch), mit Browser-Boxvergleich beider Buttons. v305 bis zu neuen vollständigen CI-/HTTPS-Gates offen.
+
+
+### v305 – Zentrale Gleichstellung beider Farbindikatoren: technisch veröffentlicht (21.11.2026)
+
+**Verbindliche Nutzerpräzisierung umgesetzt:** Beim zweiten Fußleistenknopf des Gebiets-/See-/Flusseditors bleibt das korrekte Lucide-Icon `palette`; der Objektfarbpunkt verwendet jetzt exakt dieselbe relative Rechteckposition (`right:1px;bottom:1px`), Größe, weiße Kontur und Schatten wie der vorhandene Ebenen-Farbpunkt. Die Regeln beider Punkte liegen in **einer** gemeinsamen CSS-Deklaration für `.geometry-layer>.pin-layer-dot` und `.geometry-color>.geometry-color-dot`, ohne zweite abweichende Geometrie-Definition. `.geometry-color` bleibt `overflow:visible` gegen Abschneiden. Die Browser-Regression prüft relativ zu beiden echten Button-Rechtecken die Gleichheit von rechter/unterer Position sowie Breite/Höhe (Toleranz 0,5 px), sichtbaren Überlauf und vier Kreise des `palette`-SVG; die alte versetzte Stellung und `overflow:hidden` scheitern damit reproduzierbar. Der native Farbwähler, Speichern/Vererben und der restliche Editor wurden nicht verändert.
+
+**Fertig nachgewiesen für Commit [`fb614644bf40a7cf37715c190c0fdb2f285de3a3`](https://github.com/pin2map/pin2map-new-test/commit/fb614644bf40a7cf37715c190c0fdb2f285de3a3):**
+- [Modular core checks 44926293194](https://github.com/pin2map/pin2map-new-test/actions/runs/44926293194): Node **success**, vollständiger echter Chromium-Smoke einschließlich neuer Farbpunkt-Boxprüfung **success**.
+- [Leaflet modular architecture gates 44926293043](https://github.com/pin2map/pin2map-new-test/actions/runs/44926293043): **success**.
+- [Safari/WebKit geometry layer regression 44926293048](https://github.com/pin2map/pin2map-new-test/actions/runs/44926293048): **success**.
+- [Development preview / Pages 44926293059](https://github.com/pin2map/pin2map-new-test/actions/runs/44926293059): `webkit-geometry-preflight`, `preview`, `webkit-geometry-postpublish` alle **success**. Pages-Deployment exakt des v305-Commits bestätigt. Tatsächlicher HTTPS-Abruf der Preview prüfte `pin2map-preview-v305` sowie HTML/CSS (exakter Bytevergleich mit dem Feature-Checkout), JavaScript und Service Worker erfolgreich (`PASS: exact preview worker version and all updated assets served`). Die Live-Browserprüfung für Telefon, Tablet, Desktop und Tracking-URL sowie weitere veröffentlichte Dialog-, Such- und Geometrie-Browserregressionen bestand vollständig; WebKit-Nachtest auf der ausgelieferten Version ebenfalls erfolgreich.
+
+**Freigabestatus:** v305 technisch fertig und veröffentlicht unter https://pin2map.github.io/pin2map-new-test/preview/ ; reale iPhone-/iPad-Safari-Geräteabnahme bleibt gesondert **OFFEN**. Unveränderte `main`-/`reference/*`-Branches und isolierte Preview, keine Änderung an Nutzerdaten. Der ältere Kandidatenlauf `ff79322...` und der Zwischenlauf `74c6b81...` sind für die Freigabe nicht maßgeblich.
