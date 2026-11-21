@@ -2,7 +2,7 @@
 const test=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 const Layout=require("../ui/map-overlay-layout.js");
-function fixture(){
+function fixture({geometry=false}={}){
   const events=[],handlers=new Map(),windows=new Map(),frames=new Map();
   let next=0,activePress=false,moving=false,pin={id:"pin-1"};
   const map={
@@ -22,6 +22,7 @@ function fixture(){
     movePreview:{positionBar:()=>events.push("position-bar")},
     onPersistViewport:()=>events.push("persist"),
     onRenderMarkers:()=>events.push("markers"),
+    onGeometryLayout:()=>{if(geometry)events.push("geometry");},
     requestFrame:fn=>{let id=++next;frames.set(id,fn);return id;},
     cancelFrame:id=>{events.push(["cancel-frame",id]);frames.delete(id);}
   });
@@ -80,4 +81,16 @@ test("module order, offline cache and composition preserve map engine separation
   assert.ok(html.indexOf("./ui/map-overlay-layout.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/ui\/map-overlay-layout\.js"/);
   assert.match(sw,/const CACHE='pin2map-new-v\d+'/);
+});
+
+test("v295: geometry dialog follows each coalesced viewport movement frame",()=>{
+ const x=fixture({geometry:true});
+ x.coordinator.bind();x.events.length=0;
+ x.fire("move");x.fire("move");x.flush();
+ assert.deepEqual(x.events,[
+  ["layout",{pin:{id:"pin-1"},moving:false}],"geometry","position-bar"
+ ],"one map frame reanchors both pin and geometry editors");
+ x.events.length=0;x.fire("moveend");x.flush();
+ assert.ok(x.events.includes("geometry"),"map moveend also reanchors geometry editor");
+ x.coordinator.dispose();
 });

@@ -161,8 +161,13 @@ const base=process.env.PIN2MAP_TEST_URL||
     });
     assert.ok(layout.sameLine&&layout.inBounds&&!layout.overflow,
       "compact controls must fit 320px and wider without clipping: "+JSON.stringify(layout));
+    await page.waitForTimeout(300);
+    const viewportBeforeExit=await page.locator("#map .leaflet-map-pane").evaluate(el=>el.style.transform);
     const before=await page.locator("#searchClear").boundingBox();
     await page.locator("#searchClear").click();
+    await page.waitForTimeout(300);
+    assert.equal(await page.locator("#map .leaflet-map-pane").evaluate(el=>el.style.transform),
+      viewportBeforeExit,"red X must not restore the pre-search viewport");
     assert.equal(await page.locator("#searchInput").inputValue(),"Karlsruhe","red X preserves query");
     assert.equal(await page.locator(".search-type-choice:visible").count(),7,
       "red X returns to standard choices");
@@ -205,6 +210,12 @@ const base=process.env.PIN2MAP_TEST_URL||
       "all matched and contextual markers remain visible with chooser closed");
     await page.locator(".pin-marker").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible"});
+    assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-mode")),true,
+      "opening a matching pin editor must preserve search mode");
+    assert.equal(await page.locator("#searchClear").getAttribute("aria-label"),
+      "Markierungssuche verlassen","only red X ends search");
+    assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-active")),true,
+      "spotlight remains active behind the editor");
     await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu").waitFor({state:"visible"});
     assert.ok(await page.locator("#pinLayerMenu .pin-layer-option").count()>=2,"layer choices available after search");
