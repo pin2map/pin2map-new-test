@@ -403,30 +403,22 @@ const viewports=[
      .waitFor({state:"visible",timeout:12000});
    assert.equal(await page.locator(".result-feature-icon").count(),1);
    await page.locator("#searchResults .result").first().click();
-   await page.locator(".p2m-plate-label").waitFor({state:"visible",timeout:10000});
-   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
-   assert.equal(await page.evaluate(async()=>{
+   await page.waitForFunction(async()=>{
      const db=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await db.loadProject()).areas.length;}finally{db.close();}
-   }),0,"Area selection must stage pink preview without persisting");
-   const temporaryArea=page.locator("#map .leaflet-overlay-pane path.p2m-temporary-geometry-visible");
-   assert.ok(await temporaryArea.count()>0,"A temporary area must have animated SVG path(s)");
-   assert.equal(await temporaryArea.first().evaluate(el=>
-     getComputedStyle(el).animationName),"p2m-temporary-pin-blink");
+     try{return (await db.loadProject()).areas.some(a=>a.name==="Testfläche"&&a.layerId==="private");}
+     finally{db.close();}
+   },null,{timeout:10000});
+   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
+   assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
+   assert.equal(await page.locator("#temporaryLayerPicker").isHidden(),true);
+   const newArea=page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry");
+   assert.ok(await newArea.count()>0,"Directly persisted area pulses as a map path");
+   assert.equal(await newArea.first().evaluate(el=>getComputedStyle(el).animationName),
+     "p2m-temporary-pin-blink");
    await page.emulateMedia({reducedMotion:"reduce"});
-   assert.equal(await temporaryArea.first().evaluate(el=>
-     getComputedStyle(el).animationName),"none","Reduced motion disables area blinking");
+   assert.equal(await newArea.first().evaluate(el=>getComputedStyle(el).animationName),
+     "none","Reduced motion disables the freshly saved area pulse");
    await page.emulateMedia({reducedMotion:"no-preference"});
-   await page.locator(".p2m-plate-label").click();
-   await page.locator("#plateAreaConfirm").waitFor({state:"visible"});
-   await page.evaluate(()=>document.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true})));
-   assert.equal(await page.locator(".p2m-plate-label").isVisible(),true);
-   await page.locator(".p2m-plate-label").click();
-   await page.locator(".plate-area-yes").click();
-   await page.locator("#temporaryLayerPicker").waitFor({state:"visible"});
-   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
-   await page.locator('#temporaryLayerPicker [role="option"]').filter({hasText:"Privat"}).click();
-   assert.equal(await page.locator("#geometryEditor").isHidden(),true);
    await page.locator(".p2m-area-name-label").first().click();
    await page.locator("#geometryEditor").waitFor({state:"visible",timeout:10000});
    assert.equal(await page.locator("#geometryEditor .geometry-notes").isVisible(),true);
