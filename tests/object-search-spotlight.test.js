@@ -12,3 +12,17 @@ test("spotlight clamps large labels and ignores degenerate geometries",()=>{
  assert.equal(circleFromRect({left:10,right:10,top:1,bottom:2},{left:0,top:0}),null);
  assert.equal(circleFromRect({left:NaN,right:10,top:1,bottom:2},{left:0,top:0}),null);
 });
+
+test("overlapping result circles share one count; separated circles do not",()=>{
+ const {groupCircles}=require("../ui/object-search-spotlight.js");
+ const items=[{id:"pins:a",x:100,y:100,radius:60},
+   {id:"pins:b",x:105,y:102,radius:60},
+   {id:"pins:c",x:109,y:103,radius:60},
+   {id:"pins:c",x:109,y:103,radius:60},
+   {id:"pins:far",x:320,y:100,radius:40}];
+ const groups=groupCircles(items);
+ assert.equal(groups.length,2);
+ assert.deepEqual(groups.map(g=>new Set(g.map(c=>c.id)).size),[3,1]);
+ const source=require("node:fs").readFileSync(require("node:path").resolve(__dirname,"../ui/object-search-spotlight.js"),"utf8");
+ assert.doesNotMatch(source,/setAttribute\("stroke","rgba\(255,255,255/);
+});

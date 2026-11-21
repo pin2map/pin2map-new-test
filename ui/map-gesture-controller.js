@@ -43,6 +43,7 @@
       event.stopPropagation();
       if(markerPressStart)return;
       const gesture={id:event.pointerId,x:event.clientX,y:event.clientY,
+        lastX:event.clientX,lastY:event.clientY,dragging:false,
         activated:false,cancelled:false,finished:false,wasDraggable:mapAdapter.isPanEnabled()};
       markerPressStart=gesture;
       if(gesture.wasDraggable)mapAdapter.setPanEnabled(false);
@@ -61,18 +62,28 @@
       const onMove=e=>{
         if(e.pointerId!==gesture.id || gesture.finished)return;
         e.stopPropagation();
-        // Before zooming, movement cancels the hold. After zooming, no dragging occurs.
-        if(!gesture.activated && Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>11){
-          gesture.cancelled=true;cleanup();
-        }else if(gesture.activated)e.preventDefault();
+        if(gesture.activated){e.preventDefault();return;}
+        if(!gesture.dragging&&Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>11){
+          gesture.dragging=true;clearTimer(markerPressTimer);markerPressTimer=null;
+        }
+        if(gesture.dragging&&gesture.wasDraggable){
+          // Leaflet drag starts were stopped on the pin. Transfer the
+          // captured pointer's displacement to the map instead.
+          e.preventDefault();
+          mapAdapter.panBy({x:gesture.lastX-e.clientX,
+            y:gesture.lastY-e.clientY},{animate:false});
+        }
+        gesture.lastX=e.clientX;gesture.lastY=e.clientY;
       };
       const onUp=e=>{
         if(e.pointerId!==gesture.id || gesture.finished)return;
         e.stopPropagation();e.preventDefault();
-        const tap=!gesture.activated&&!gesture.cancelled;
+        const tap=!gesture.activated&&!gesture.cancelled&&!gesture.dragging;
         suppressFor(600);
         cleanup();
-        if(tap){
+        if(gesture.dragging){
+          persistViewport();updatePanelLayout();
+        }else if(tap){
           if(onTap)onTap();else selectPin(id);
         }else if(!transient)renderMarkers();
       };

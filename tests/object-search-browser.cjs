@@ -129,6 +129,14 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 1 Fläche · 0 Gewässer");
     assert.equal(await page.locator(".pin-marker").count(),2,
       "two distinct pins render despite repeated legacy stored records");
+    await page.locator("#searchInput").fill("Karlsruher");
+    assert.equal(await page.locator("#objectSearchCount").innerText(),
+      "0 Pins · 0 Flächen · 0 Gewässer",
+      "each text edit re-runs the active search without Enter");
+    await page.locator("#searchInput").fill("Karlsruhe");
+    assert.equal(await page.locator("#objectSearchCount").innerText(),
+      "2 Pins · 1 Fläche · 0 Gewässer",
+      "deleting a suffix restores earlier results immediately");
     await kind.selectOption("pins");
     assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 0 Flächen · 0 Gewässer");
     assert.equal(await page.locator(".pin-marker").count(),2,
@@ -245,6 +253,18 @@ const base=process.env.PIN2MAP_TEST_URL||
       "Markierungssuche verlassen","only red X ends search");
     assert.equal(await page.locator("body").evaluate(el=>el.classList.contains("object-search-active")),true,
       "spotlight remains active behind the editor");
+    assert.match(await page.locator("#pinName").inputValue(),/Karlsruhe/,
+      "a matching named pin was opened for live edit regression");
+    await page.locator("#pinName").fill("Anderer Name");
+    await page.waitForFunction(()=>document.querySelector("#objectSearchCount")?.textContent?.startsWith("1 Pin"));
+    assert.equal(await page.locator("#objectSearchCount").innerText(),
+      "1 Pin · 1 Fläche · 0 Gewässer",
+      "edited pin immediately leaves an active search when it ceases to match");
+    await page.locator("#pinName").fill("Karlsruhe Bahnhof");
+    await page.waitForFunction(()=>document.querySelector("#objectSearchCount")?.textContent?.startsWith("2 Pins"));
+    assert.equal(await page.locator("#objectSearchCount").innerText(),
+      "2 Pins · 1 Fläche · 0 Gewässer",
+      "edited pin immediately rejoins an active search when it matches again");
     await page.locator("#pinLayerTrigger").click();
     await page.locator("#pinLayerMenu").waitFor({state:"visible"});
     assert.ok(await page.locator("#pinLayerMenu .pin-layer-option").count()>=2,"layer choices available after search");

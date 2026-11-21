@@ -580,7 +580,14 @@
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
   });
-  const save = () => persistence.save();
+  // Project mutations re-evaluate the live search without moving the map.
+  // The microtask runs after the caller has completed its object update.
+  const save = () => {
+    persistence.save();
+    if(objectSearchView)queueMicrotask(()=>{
+      if(objectSearchView)refreshObjectSearch();
+    });
+  };
   const dbWrite = () => persistence.writeNow();
   function persistViewport() {
     persistence.saveViewport(mapAdapter.getViewport());
@@ -767,6 +774,10 @@
   const keepSelectedAbovePanel = ()=>mapOverlayLayout.keepVisibleAtOpen();
   function fitAllPins(){
     flushHistoryRecord();
+    if(objectSearchView){
+      fitObjectSearchMatches(objectSearchView.matches);
+      return;
+    }
     fitVisiblePins({
       pins:state.pins,layers:state.layers,filter:currentPinFilter,
       pinFilter,mapPort:mapAdapter,onEmpty:()=>showNotice("Keine sichtbaren Pins vorhanden"),
@@ -808,9 +819,12 @@
   }
   function handleMarkerTap(id){
     if(uiState.moveMode||satelliteInspector.isActive())return;
-    // An explicit search hit must open its editor, never invoke overlap zoom.
-    // Normal non-hit taps still retain the existing overlap choice behavior.
-    if(objectSearchView?.ids.has("pins:"+id)){selectPin(id);return;}
+    // Search hits use the existing overlap zoom/chooser, excluding contextual non-hits.
+    if(objectSearchView?.ids.has("pins:"+id)){
+      pinOverlapZoom.handleTap(id,markerView.visiblePins().filter(
+        pin=>objectSearchView.ids.has("pins:"+pin.id)));
+      return;
+    }
     if(featureOverlapZoom?.handleTap("pin",id))return;
     if(pinOverlapZoom)pinOverlapZoom.handleTap(id);
     else selectPin(id);
@@ -1107,6 +1121,31 @@
     objectSearchSpotlight?.setActive(false);
     // No view restoration: the user keeps the exact map position.
   }
+  function refreshObjectSearch(){
+    const view=objectSearchView;
+    if(!view)return;
+    const matches=objectSearch.searchExpanded(state,{
+      query:$("searchInput").value.trim(),...view.options
+    });
+    searchTypeMenu?.setResults(matches);
+    objectSearchView={...view,matches,
+      ids:new Set(matches.map(m=>m.type+":"+m.id))};
+    document.body.classList.toggle("object-search-active",matches.length>0);
+    renderMarkers();renderGeometry();
+    objectSearchSpotlight?.setActive(matches.length>0);
+    objectSearchSpotlight?.schedule();
+    // Editing a matching object must never reset the user's current viewport.
+  }
+  function fitObjectSearchMatches(matches){
+    if(!matches.length)return;
+    const selected={layers:state.layers.map(l=>({...l,visible:true})),
+      pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
+      areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
+      rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
+    fitVisibleProject.fit({project:selected,pinFilter,
+      currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
+    objectSearchSpotlight?.schedule();
+  }
   function runObjectSearch(options={}){
     const query=$("searchInput").value.trim();
     searchForm.cancel();cancelGeometrySearch();searchView.hide();
@@ -1114,19 +1153,11 @@
     const matches=objectSearch.searchExpanded(state,{query,...options});
     searchTypeMenu?.setResults(matches);
     objectSearchView={includeHidden:options.includeHidden===true,
-      ids:new Set(matches.map(m=>m.type+":"+m.id))};
+      ids:new Set(matches.map(m=>m.type+":"+m.id)),matches,options:{...options}};
     document.body.classList.toggle("object-search-active",matches.length>0);
     renderMarkers();renderGeometry();
     objectSearchSpotlight?.setActive(matches.length>0);
-    if(matches.length){
-      const selected={layers:state.layers.map(l=>({...l,visible:true})),
-        pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
-        areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
-        rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
-      fitVisibleProject.fit({project:selected,pinFilter,
-        currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
-      objectSearchSpotlight?.schedule();
-    }
+    fitObjectSearchMatches(matches);
   }
   function endObjectSearch(){
     resetObjectSearch();
@@ -1157,9 +1188,8 @@
     onMessage:searchMessage,
     onInputChange:()=>{
       searchView.hide();cancelGeometrySearch();
-      if(searchTypeMenu?.searchMode){
-        runObjectSearch(searchTypeMenu.searchOptions());
-      }else{
+      // SearchTypeMenu re-executes after stale place requests are cancelled.
+      if(!searchTypeMenu?.searchMode){
         resetObjectSearch();document.body.classList.remove("object-search-mode");
       }
     },

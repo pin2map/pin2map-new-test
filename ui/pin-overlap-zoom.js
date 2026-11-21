@@ -151,9 +151,9 @@
       menu.style.top=Math.max(8,Math.min(y+28,app.height-height-8))+"px";
       menu.querySelector(".pin-overlap-choice")?.focus({preventScroll:true});
     }
-    handleTap(id){
+    handleTap(id,pinsOverride=null){
       this.close();
-      const pins=this.getPins();
+      const pins=pinsOverride||this.getPins();
       const group=connectedPins(pins,id,pin=>this.map.project(pin));
       if(group.length<=1){
         this.onSelect(id);

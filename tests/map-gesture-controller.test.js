@@ -120,12 +120,19 @@ test("topographic map caps held zoom at 17",()=>{
   h.pinElement.dispatch("pointerdown");h.time.advance(550);
   assert.deepEqual(h.zooms,[17]);
 });
-test("marker pointer movement cancels zoom, without selecting a pin",()=>{
+test("dragging from a pin pans the map and never selects or long-zooms",()=>{
   const h=harness();h.gestures.attachMarkerLongPress(h.marker,"pin-a");
   h.pinElement.dispatch("pointerdown");
-  h.pinElement.dispatch("pointermove",{clientX:112});
+  h.pinElement.dispatch("pointermove",{clientX:112,clientY:105});
+  h.pinElement.dispatch("pointermove",{clientX:125,clientY:119});
   h.time.advance(600);assert.deepEqual(h.zooms,[]);
-  assert.deepEqual(h.selected,[]);assert.equal(h.panEnabled(),true);
+  assert.deepEqual(h.selected,[]);assert.equal(h.panEnabled(),false);
+  assert.deepEqual(h.pans,[{x:-12,y:-5},{x:-13,y:-14}],
+    "Leaflet panBy has inverse sign relative to the pointer displacement");
+  h.pinElement.dispatch("pointerup",{clientX:125,clientY:119});
+  assert.equal(h.panEnabled(),true);
+  assert.equal(h.viewportSaves(),1);
+  assert.deepEqual(h.selected,[]);
 });
 
 test("temporary pin alternates long-press 18/14 without saving, selecting or opening editor",()=>{

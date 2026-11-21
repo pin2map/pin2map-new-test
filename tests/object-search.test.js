@@ -113,14 +113,50 @@ test("v295 stored search: query, optional properties, empty string, visibility a
 });
 
 
-test("v295: a matched pin/area opens its editor before overlap zoom, other taps preserve overlap logic",()=>{
+
+test("search hits preserve the normal overlap disambiguation and filter to matching pins",()=>{
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const tap=app.split("function handleMarkerTap(id){")[1].split("function updateModeUI()")[0];
- assert.match(tap,/objectSearchView\?\.ids\.has\("pins:"\+id\)\)\{selectPin\(id\);return;\}/);
+ assert.match(tap,/objectSearchView\?\.ids\.has\("pins:"\+id\)/);
+ assert.match(tap,/pinOverlapZoom\.handleTap\(id,markerView\.visiblePins\(\)\.filter/);
  assert.ok(tap.indexOf('objectSearchView?.ids.has("pins:"+id)')<
-   tap.indexOf('featureOverlapZoom?.handleTap("pin",id)'),
-   "matched pin bypasses generic overlap handler, unmatched pin does not");
- const area=app.split("onAreaLabel:(area,point)=>{")[1].split("onRiverLine:")[0];
- assert.match(area,/!objectSearchView\?\.ids\.has\(hitType\+":"\+area\.id\)/);
- assert.match(area,/openGeometryEditor\("area",area,point\)/);
+  tap.indexOf('featureOverlapZoom?.handleTap("pin",id)'));
+ const controller=fs.readFileSync(path.resolve(__dirname,"../ui/pin-overlap-zoom.js"),"utf8");
+ assert.match(controller,/handleTap\(id,pinsOverride=null\)/);
+});
+test("active search re-evaluates after every object save without moving the viewport",()=>{
+ const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
+ const search=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
+ assert.match(search,/if\(this\.searchMode\)this\.onSearch\(this\.searchOptions\(\)\)/);
+ assert.match(app,/if\(objectSearchView\)queueMicrotask\(/);
+ const refresh=app.split("function refreshObjectSearch(){")[1].split("function fitObjectSearchMatches(")[0];
+ for(const expected of ["objectSearch.searchExpanded","searchTypeMenu?.setResults(matches)",
+   "renderMarkers();renderGeometry()","objectSearchSpotlight?.schedule()"])
+   assert.ok(refresh.includes(expected),expected);
+ assert.doesNotMatch(refresh,/fitVisibleProject|fitObjectSearchMatches|setView|fitBounds/);
+});
+
+test("live search membership follows addition and edits on every object kind",()=>{
+ const {searchExpanded}=require("../domain/object-search.js");
+ const layers=[{id:"shown",visible:true},{id:"hidden",visible:false}];
+ const state={layers,pins:[],areas:[],rivers:[]};
+ const criteria={query:"saale",kind:"all",includeHidden:false};
+ assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),[]);
+ state.pins.push({id:"new",layerId:"shown",name:"Saale-Kirche"});
+ assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),["new"]);
+ state.pins[0].name="Anderer Name";
+ assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),[]);
+ state.pins[0].note="An der Saale";
+ assert.deepEqual(searchExpanded(state,{...criteria,note:true}).map(x=>x.id),["new"]);
+ state.pins[0].note="";
+ state.areas.push({id:"area",layerId:"shown",name:"Saale Gebiet",kind:"area"});
+ state.rivers.push({id:"river",layerId:"shown",name:"Saale Fluss"});
+ assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),["area","river"]);
+ state.areas[0].name="Ohne Treffer";
+ state.rivers[0].name="Kein Treffer";
+ assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),[]);
+ state.areas[0].name="Saale Gebiet";
+ state.areas[0].layerId="hidden";
+ assert.deepEqual(searchExpanded(state,criteria).map(x=>x.id),[]);
+ assert.deepEqual(searchExpanded(state,{...criteria,includeHidden:true}).map(x=>x.id),["area"]);
 });

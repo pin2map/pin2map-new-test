@@ -13,6 +13,42 @@
    y:(rect.top+rect.bottom)/2-offset.top,
    radius:Math.max(minRadius,Math.min(maxRadius,Math.hypot(width,height)/2+11))};
  }
+ // Screen-space circle groups share one count if one hit falls inside
+ // another's aperture. Distinct object IDs, not DOM nodes, are counted.
+ function groupCircles(circles){
+  // Spatial buckets keep densely overlaid search hits linear in practice.
+  // A circle's centre must be inside another aperture (+8px tolerance).
+  const size=176,buckets=new Map();
+  const cell=c=>({x:Math.floor(c.x/size),y:Math.floor(c.y/size)});
+  const key=(x,y)=>x+","+y;
+  circles.forEach((circle,index)=>{
+   const c=cell(circle),k=key(c.x,c.y);
+   if(!buckets.has(k))buckets.set(k,new Set());
+   buckets.get(k).add(index);
+  });
+  const groups=[],visited=new Set();
+  for(let i=0;i<circles.length;i++){
+   if(visited.has(i))continue;
+   const queue=[i],group=[];visited.add(i);
+   const initial=cell(circles[i]);buckets.get(key(initial.x,initial.y)).delete(i);
+   for(let at=0;at<queue.length;at++){
+    const current=circles[queue[at]],c=cell(current);
+    group.push(current);
+    for(let x=c.x-1;x<=c.x+1;x++)for(let y=c.y-1;y<=c.y+1;y++){
+     const k=key(x,y),bucket=buckets.get(k);
+     if(!bucket)continue;
+     for(const j of bucket){
+      const other=circles[j];
+      if(Math.hypot(current.x-other.x,current.y-other.y)>
+       Math.max(current.radius,other.radius)+8)continue;
+      visited.add(j);bucket.delete(j);queue.push(j);
+     }
+    }
+   }
+   groups.push(group);
+  }
+  return groups;
+ }
  class ObjectSearchSpotlight{
   constructor({mapPort,getTargets,requestFrame=cb=>requestAnimationFrame(cb),
     cancelFrame=id=>cancelAnimationFrame(id),document:doc=document}={}){
@@ -33,8 +69,8 @@
    this.shade=doc.createElementNS(SVG,"rect");
    this.shade.setAttribute("fill","rgba(16,31,52,0.32)");
    this.shade.setAttribute("mask","url(#"+this.id+")");
-   this.rings=doc.createElementNS(SVG,"g");
-   this.overlay.append(this.defs,this.shade,this.rings);
+   this.badges=doc.createElementNS(SVG,"g");
+   this.overlay.append(this.defs,this.shade,this.badges);
    this.map.getContainer().append(this.overlay);
    this.overlay.style.display="none";
    this.unsub=this.map.on("move zoom moveend zoomend resize",()=>this.schedule());
@@ -44,7 +80,7 @@
    if(this.active)this.schedule();
    else{
     if(this.pending!==null)this.cancel(this.pending);
-    this.pending=null;this.apertures.replaceChildren();this.rings.replaceChildren();
+    this.pending=null;this.apertures.replaceChildren();this.badges.replaceChildren();
    }
   }
   schedule(){
@@ -59,7 +95,7 @@
    this.overlay.setAttribute("viewBox","0 0 "+width+" "+height);
    this.base.setAttribute("width",width);this.base.setAttribute("height",height);
    this.shade.setAttribute("width",width);this.shade.setAttribute("height",height);
-   const holes=[],rings=[];
+   const holes=[],circles=[];
    for(const item of this.getTargets()||[]){
     // Pins use their icon's first rectangle; area/river labels use name rectangles.
     const bounds=item.rects?.[0];
@@ -68,23 +104,40 @@
     if(circle.x+circle.radius<0||circle.y+circle.radius<0||
       circle.x-circle.radius>width||circle.y-circle.radius>height)continue;
     const hole=this.doc.createElementNS(SVG,"circle");
-    const ring=this.doc.createElementNS(SVG,"circle");
-    for(const shape of [hole,ring]){
-     shape.setAttribute("cx",circle.x);shape.setAttribute("cy",circle.y);
-     shape.setAttribute("r",circle.radius);
-    }
+    hole.setAttribute("cx",circle.x);hole.setAttribute("cy",circle.y);
+    hole.setAttribute("r",circle.radius);
     hole.setAttribute("fill","black");holes.push(hole);
-    ring.setAttribute("fill","none");ring.setAttribute("stroke","rgba(255,255,255,0.85)");
-    ring.setAttribute("stroke-width","4");rings.push(ring);
+    circles.push({...circle,id:item.type+":"+item.id});
    }
    this.apertures.replaceChildren(...holes);
-   this.rings.replaceChildren(...rings);
+   const badges=[];
+   for(const group of groupCircles(circles)){
+    const count=new Set(group.map(c=>c.id)).size;
+    if(count<2)continue;
+    const left=Math.min(...group.map(c=>c.x-c.radius));
+    const middle=(Math.min(...group.map(c=>c.y))+
+      Math.max(...group.map(c=>c.y)))/2;
+    const x=Math.max(5,Math.min(width-34,left-37));
+    const y=Math.max(20,Math.min(height-10,middle));
+    const box=this.doc.createElementNS(SVG,"rect");
+    box.setAttribute("x",x);box.setAttribute("y",y-16);
+    box.setAttribute("width","29");box.setAttribute("height","30");
+    box.setAttribute("rx","8");box.setAttribute("fill","#fff");
+    box.setAttribute("stroke","#60758a");box.setAttribute("stroke-width","1.5");
+    const label=this.doc.createElementNS(SVG,"text");
+    label.setAttribute("x",x+14.5);label.setAttribute("y",y+5);
+    label.setAttribute("text-anchor","middle");
+    label.setAttribute("font-size","17");label.setAttribute("font-weight","700");
+    label.setAttribute("fill","#182c45");label.textContent=String(count);
+    badges.push(box,label);
+   }
+   this.badges.replaceChildren(...badges);
   }
   dispose(){
    this.setActive(false);this.unsub?.();this.overlay.remove();
   }
  }
- const api=Object.freeze({ObjectSearchSpotlight,circleFromRect});
+ const api=Object.freeze({ObjectSearchSpotlight,circleFromRect,groupCircles});
  root.Pin2MapObjectSearchSpotlight=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

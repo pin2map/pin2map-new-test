@@ -103,7 +103,8 @@
    this.input.addEventListener("click",()=>this.show());
    this.input.addEventListener("input",()=>{
     if(!this.open)this.show();
-    // SearchFormController owns live filtering when the input text changes.
+    // Re-run on each edit: typing, backspace, paste, and mobile input.
+    if(this.searchMode)this.onSearch(this.searchOptions());
    });
    this.doc.addEventListener("keydown",event=>{
     if(event.isComposing||event.altKey||!(event.metaKey||event.ctrlKey)||String(event.key).toLowerCase()!=="f")return;
