@@ -72,7 +72,7 @@
     const opt=this.makeElement("option",null,label);opt.value=value;select.append(opt);
    }
    select.addEventListener("change",()=>this.execute());
-   const hidden=this.makeCheck("hidden","Auch in ausgeblendete Ebenen",false);
+   const hidden=this.makeCheck("hidden","Auch Ausgeblendete",false);
    hidden.querySelector("input").addEventListener("change",()=>this.execute());
    row.append(select,hidden);
    const flags=this.makeElement("div","object-search-flags");

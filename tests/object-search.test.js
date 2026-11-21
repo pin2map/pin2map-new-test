@@ -37,7 +37,7 @@ test("v295 search controls use a compact category dropdown and three AND propert
  const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
  for(const word of ["Alle Objekte","Nur Pins","Flächen und Seen","Nur Seen","Nur Flüsse",
-   "Auch in ausgeblendete Ebenen","Mit Track","Mit Link","Mit Notiz"])assert.ok(ui.includes(word));
+   "Auch Ausgeblendete","Mit Track","Mit Link","Mit Notiz"])assert.ok(ui.includes(word));
  assert.match(ui,/object-search-kind/);
  assert.match(html,/id="objectSearchCount"/);
  assert.match(html,/placeholder="Suchen\/Finden"/);

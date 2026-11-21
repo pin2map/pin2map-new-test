@@ -2975,7 +2975,7 @@ body.object-search-mode #app #searchClear.search-clear span{
  width:100%;box-sizing:border-box;
 }
 #app #searchTypeMenu.object-search-mode .object-search-toprow{
- display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ display:grid;grid-template-columns:minmax(0,44fr) minmax(0,56fr);
  column-gap:8px;align-items:center;
 }
 #app #searchTypeMenu.object-search-mode .object-search-kind{
@@ -2983,7 +2983,7 @@ body.object-search-mode #app #searchClear.search-clear span{
 }
 #app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-check{
  display:inline-flex;align-items:center;min-width:0;gap:4px;
- white-space:normal;line-height:1.2;
+ white-space:nowrap;line-height:1.2;
 }
 #app #searchTypeMenu.object-search-mode .object-search-flags{
  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
@@ -2997,6 +2997,15 @@ body.object-search-mode #app #searchClear.search-clear span{
  #app #searchTypeMenu.object-search-mode .object-search-flags .object-search-check{
   font-size:10px;gap:2px;
  }
+}
+
+/* v299: a red outline identifies only the open object-search options dialog.
+ * Keep creation chooser and search pill untouched. */
+#app #searchTypeMenu.object-search-mode{
+ border:2px solid #c92f39;
+}
+#app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-check{
+ white-space:nowrap;
 }
 
 /* v295 search count may cross the pill's top border; standard mode stays clipped. */

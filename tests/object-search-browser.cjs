@@ -129,7 +129,7 @@ const base=process.env.PIN2MAP_TEST_URL||
       "Flächen und Seen","Nur Seen","Nur Flüsse"
     ],"search options must keep user-approved order and omit the redundant text entry");
     assert.equal((await page.locator(".object-search-toprow .object-search-check").textContent()).trim(),
-      "Auch in ausgeblendete Ebenen");
+      "Auch Ausgeblendete");
     const hidden=page.locator('[data-search-flag="hidden"]');
     await hidden.check();
     assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer",
@@ -180,13 +180,25 @@ const base=process.env.PIN2MAP_TEST_URL||
       const p=panel.getBoundingClientRect();
       const bottom=panel.querySelector(".object-search-flags").getBoundingClientRect();
       const topChildren=[...panel.querySelector(".object-search-toprow").children].map(el=>el.getBoundingClientRect());
-      return {sameLine:flags.every(r=>Math.abs(r.top-flags[0].top)<2),
+      const hiddenLabel=panel.querySelector(".object-search-toprow .object-search-check");
+      const hiddenRect=hiddenLabel.getBoundingClientRect();
+      const hiddenStyle=getComputedStyle(hiddenLabel);
+      const dialog=panel.closest("#searchTypeMenu");
+      const dialogStyle=getComputedStyle(dialog);
+      return {singleLine:hiddenStyle.whiteSpace==="nowrap"&&
+          hiddenLabel.scrollHeight<=hiddenLabel.clientHeight+1,
+        redBorder:dialogStyle.borderTopStyle==="solid"&&
+          parseFloat(dialogStyle.borderTopWidth)>=2&&
+          dialogStyle.borderTopColor==="rgb(201, 47, 57)",
+        hiddenLabelInBounds:hiddenRect.left>=p.left-1&&hiddenRect.right<=p.right+1,
+        sameLine:flags.every(r=>Math.abs(r.top-flags[0].top)<2),
         inBounds:flags.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
         rowWidth:row.width,bottomWidth:bottom.width,
         topChildrenInBounds:topChildren.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
         overflow:panel.scrollWidth>panel.clientWidth+1};
     });
-    assert.ok(layout.sameLine&&layout.inBounds&&layout.topChildrenInBounds&&
+    assert.ok(layout.singleLine&&layout.redBorder&&layout.hiddenLabelInBounds&&
+      layout.sameLine&&layout.inBounds&&layout.topChildrenInBounds&&
       Math.abs(layout.rowWidth-layout.bottomWidth)<2&&!layout.overflow,
       "compact controls must fit 320px and wider without clipping: "+JSON.stringify(layout));
     await page.waitForTimeout(300);
