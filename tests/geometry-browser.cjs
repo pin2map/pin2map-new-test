@@ -435,7 +435,8 @@ const viewports=[
    });
    assert.equal(swatch.overflow,"visible","Color dot must not be clipped by the button");
    assert.equal(swatch.symbolDots,4,"Color action uses genuine Lucide palette");
-   assert.ok(swatch.swatchWidth>=13&&swatch.distance>swatch.radius,
+   // CSS uses border-box sizing: declared 10px includes both 2px borders.
+   assert.ok(swatch.swatchWidth>=9.5&&swatch.distance>swatch.radius,
      "Color dot must straddle the outside of the circular button: "+JSON.stringify(swatch));
    assert.equal(await page.locator("#geometryName").inputValue(),"Testfläche");
    await page.locator(".geometry-native-color").fill("#aabbcc");
