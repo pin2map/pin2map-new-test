@@ -2968,5 +2968,36 @@ body.object-search-mode #app #searchClear.search-clear span{
 }
 #app .search.object-search-count-active .object-search-count{display:block}
 
+/* v298: both search rows use the same available width, without
+ * allowing the longer hidden-layer wording to overflow a phone viewport. */
+#app #searchTypeMenu.object-search-mode .object-search-toprow,
+#app #searchTypeMenu.object-search-mode .object-search-flags{
+ width:100%;box-sizing:border-box;
+}
+#app #searchTypeMenu.object-search-mode .object-search-toprow{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ column-gap:8px;align-items:center;
+}
+#app #searchTypeMenu.object-search-mode .object-search-kind{
+ width:100%;max-width:none;min-width:0;
+}
+#app #searchTypeMenu.object-search-mode .object-search-toprow .object-search-check{
+ display:inline-flex;align-items:center;min-width:0;gap:4px;
+ white-space:normal;line-height:1.2;
+}
+#app #searchTypeMenu.object-search-mode .object-search-flags{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:5px;align-items:center;justify-content:stretch;
+}
+#app #searchTypeMenu.object-search-mode .object-search-flags .object-search-check{
+ min-width:0;display:inline-flex;align-items:center;justify-content:center;
+ gap:4px;white-space:nowrap;
+}
+@media(max-width:360px){
+ #app #searchTypeMenu.object-search-mode .object-search-flags .object-search-check{
+  font-size:10px;gap:2px;
+ }
+}
+
 /* v295 search count may cross the pill's top border; standard mode stays clipped. */
 #app .topbar .search.object-search-count-active{overflow:visible}

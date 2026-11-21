@@ -37,7 +37,7 @@ test("v295 search controls use a compact category dropdown and three AND propert
  const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  const html=fs.readFileSync(path.resolve(__dirname,"../index.html"),"utf8");
  for(const word of ["Alle Objekte","Nur Pins","Flächen und Seen","Nur Seen","Nur Flüsse",
-   "Alle finden","Mit Track","Mit Link","Mit Notiz"])assert.ok(ui.includes(word));
+   "Auch in ausgeblendete Ebenen","Mit Track","Mit Link","Mit Notiz"])assert.ok(ui.includes(word));
  assert.match(ui,/object-search-kind/);
  assert.match(html,/id="objectSearchCount"/);
  assert.match(html,/placeholder="Suchen\/Finden"/);
@@ -102,7 +102,10 @@ test("v295 stored search: query, optional properties, empty string, visibility a
  assert.deepEqual(searchExpanded(sample,{query:"test",note:true}).map(x=>x.id),["p1","a","l","r"]);
  assert.deepEqual(searchExpanded(sample,{query:"",note:true,kind:"pins"}).map(x=>x.id),["p1"]);
  assert.deepEqual(searchExpanded(sample,{query:"",track:true,kind:"pins",includeHidden:true}).map(x=>x.id),["p2"]);
- assert.deepEqual(searchExpanded(sample,{query:"test",link:true,includeHidden:true}).map(x=>x.id),["p2"]);
+ assert.deepEqual(searchExpanded(sample,{query:"test",link:true,includeHidden:true}).map(x=>x.id),[],
+   "the all-object default searches Name + Notiz, not URL content");
+ assert.deepEqual(searchExpanded(sample,{query:"test",link:true,kind:"pins",includeHidden:true}).map(x=>x.id),["p2"],
+   "existing pin-only scope retains its optional URL text matching");
  assert.deepEqual(searchExpanded(sample,{query:"",note:true,link:true,track:true,includeHidden:true}).map(x=>x.id),["p2"]);
  assert.deepEqual(searchExpanded(sample,{query:"test",kind:"lakes"}).map(x=>x.id),["l"]);
  assert.deepEqual(searchExpanded(sample,{query:"21.11.2026",kind:"pins"}).map(x=>x.id),["p1"]);
@@ -173,4 +176,28 @@ test("first record of a legacy duplicate ID remains authoritative after edits",(
  assert.deepEqual(searchExpanded(project,{query:"saale"}).map(x=>x.id),["same"]);
  project.pins[0].name="Unpassend";
  assert.deepEqual(searchExpanded(project,{query:"saale"}).map(x=>x.id),[]);
+});
+
+test("v298 all-object search defaults to name and note; name-only excludes note and URL",()=>{
+ const {searchExpanded}=require("../domain/object-search.js");
+ const p={layers:[{id:"on",visible:true}],pins:[
+  {id:"name",layerId:"on",name:"Saale",note:"irrelevant"},
+  {id:"note",layerId:"on",name:"Kirche",note:"An der Saale"},
+  {id:"url",layerId:"on",name:"Kirche",url:"https://example.test/saale"}
+ ],areas:[],rivers:[]};
+ assert.deepEqual(searchExpanded(p,{query:"saale",kind:"all"}).map(m=>m.id),["name","note"]);
+ assert.deepEqual(searchExpanded(p,{query:"saale",kind:"all-name"}).map(m=>m.id),["name"]);
+ assert.deepEqual(searchExpanded(p,{query:"saale",kind:"pins"}).map(m=>m.id),["name","note","url"]);
+ assert.deepEqual(searchExpanded(p,{query:"",kind:"all-name",link:true}).map(m=>m.id),["url"]);
+});
+test("v298 search scope exposes only six ordered choices with the two all-object modes first",()=>{
+ const ui=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
+ const options=[...ui.matchAll(/\["(all|all-name|pins|areas|lakes|rivers)","([^"]+)"\]/g)];
+ assert.deepEqual(options.map(m=>[m[1],m[2]]),[
+  ["all","Alle Objekte (Name + Notiz)"],
+  ["all-name","Alle Objekte (nur Name)"],
+  ["pins","Nur Pins"],["areas","Flächen und Seen"],
+  ["lakes","Nur Seen"],["rivers","Nur Flüsse"]
+ ]);
+ assert.doesNotMatch(ui,/\["texts","Objekte mit Text"\]/);
 });

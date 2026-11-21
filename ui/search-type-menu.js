@@ -66,13 +66,13 @@
    const row=this.makeElement("div","object-search-toprow");
    const select=this.makeElement("select","object-search-kind");
    select.setAttribute("aria-label","Objektarten durchsuchen");
-   for(const [value,label] of [["all","Alle Objekte"],["pins","Nur Pins"],
-      ["areas","Flächen und Seen"],["lakes","Nur Seen"],["rivers","Nur Flüsse"],
-      ["texts","Objekte mit Text"]]){
+   for(const [value,label] of [["all","Alle Objekte (Name + Notiz)"],
+      ["all-name","Alle Objekte (nur Name)"],["pins","Nur Pins"],
+      ["areas","Flächen und Seen"],["lakes","Nur Seen"],["rivers","Nur Flüsse"]]){
     const opt=this.makeElement("option",null,label);opt.value=value;select.append(opt);
    }
    select.addEventListener("change",()=>this.execute());
-   const hidden=this.makeCheck("hidden","Alle finden",false);
+   const hidden=this.makeCheck("hidden","Auch in ausgeblendete Ebenen",false);
    hidden.querySelector("input").addEventListener("change",()=>this.execute());
    row.append(select,hidden);
    const flags=this.makeElement("div","object-search-flags");

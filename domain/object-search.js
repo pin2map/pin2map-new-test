@@ -2,7 +2,7 @@
 /* Pure stored object search, independent of layer visibility and map rendering. */
 (function(root){
  const text=v=>String(v??"").normalize("NFKC").toLocaleLowerCase("de");
- const TYPES=Object.freeze(["all","pins","areas","lakes","rivers","texts"]);
+ const TYPES=Object.freeze(["all","all-name","pins","areas","lakes","rivers","texts"]);
  function dateKey(value){
   if(typeof value!=="string"||!value.trim())return null;
   const stamp=Date.parse(value);if(!Number.isFinite(stamp))return null;
@@ -77,12 +77,16 @@
     const hasTrack=Boolean(gpx.chains?.length||object.gpxKey||object.gpxTrackId||
        object.gpxFileId||object.gpxRef);
     const hasNote=Boolean(text(object.note).trim()),hasLink=Boolean(text(object.url).trim());
-    if(!(kind==="all"||kind===type||kind==="areas"&&type==="lakes"||
+    if(!(kind==="all"||kind==="all-name"||kind===type||kind==="areas"&&type==="lakes"||
       kind==="texts"&&(hasNote||hasLink)))continue;
     if(track&&!hasTrack||link&&!hasLink||note&&!hasNote)continue;
     const day=dateKey(object.createdAt);
     const fields=[object.name,object.createdAt,day,
-      day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):"",object.note,object.url];
+      day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):""];
+    // All-object modes explicitly distinguish name-only from name + note.
+    // Other category filters retain their existing optional URL text match.
+    if(kind!=="all-name")fields.push(object.note);
+    if(kind!=="all"&&kind!=="all-name")fields.push(object.url);
     if(needle&&!fields.some(v=>text(v).includes(needle)))continue;
     hits.push({type,id:object.id,object});
    }

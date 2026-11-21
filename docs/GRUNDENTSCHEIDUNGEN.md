@@ -2282,3 +2282,21 @@ Die im v237-Vertrag eingeführte, dezente Blinkanimation gilt **für die sichtba
 - **Autozoom:** Bei aktiver Objektsuche passt der bestehende Autozoom-Button die Karte ausschließlich auf die aktuelle Treffermenge ein und stellt so deren Übersicht wieder her. Ohne aktive Objektsuche bleibt das bisherige Einpassen aller sichtbaren Pins unverändert.
 
 Pflicht-QS: Node-Domain-/Gesten-/Spotlight-/Duplikat-Regressionen, echter Chromium-Interaktionstest für Eingabe- und Bearbeitungsaktualisierung, Architektur, WebKit vor/nach Veröffentlichung und HTTPS-Service-Worker-/Asset-Gate. Tatsächliche iPhone-/iPad-Safari-Abnahme bleibt eine eigene Nutzerprüfung.
+
+
+## Suchdialogpräzisierung v298 (21.11.2026)
+
+Die Option für die Suche in ausgeblendeten Ebenen heißt **„Auch in ausgeblendete Ebenen“**; sie bleibt standardmäßig deaktiviert und verändert beim Aktivieren keine persistenten Ebeneneinstellungen. Die Suchart-Auswahl enthält exakt diese Reihenfolge:
+
+1. **Alle Objekte (Name + Notiz)** – Standard; der eingegebene Suchtext wird mit Namen, Notizen und den bisher durchsuchbaren Erstellungsdatumsangaben abgeglichen. URL-Inhalte zählen bei dieser Suchart nicht als Freitexttreffer.
+2. **Alle Objekte (nur Name)** – prüft Namen und die bisher durchsuchbaren Erstellungsdatumsangaben, aber nicht Notizen oder URL-Inhalte.
+3. **Nur Pins** – bisheriger fachlicher Umfang.
+4. **Flächen und Seen** – bisheriger fachlicher Umfang.
+5. **Nur Seen** – bisheriger fachlicher Umfang.
+6. **Nur Flüsse** – bisheriger fachlicher Umfang.
+
+Die frühere Auswahl **„Objekte mit Text“** entfällt. Die Checkboxen „Mit Track“, „Mit Link“ und „Mit Notiz“ bleiben in beiden Gesamtobjekt-Sucharten unabhängig voneinander anwendbare UND-Eigenschaftsfilter, einschließlich leerem Suchtext. Das bestehende Such-/Treffer- und Datenaktualisierungsverhalten einschließlich der Trefferzählung bleibt erhalten.
+
+**Layout:** Die untere Reihe mit drei Checkboxen nutzt dieselbe vollständige nutzbare Breite wie die darüberliegende Auswahl-/Ebenenreihe. Drei gleich breite Spalten halten die drei Checkboxen in einer Zeile; die längere Ebenenbeschriftung darf auf sehr schmalen mobilen Viewports umbrechen, aber nicht über den Dialog hinausragen. Die bisherige iOS-Viewport-/Tastatur- und Barrierefreiheitslogik bleibt unverändert.
+
+Die App-Preview wird erst nach Architektur-, vollständigen Node-/Chromium-, Safari-/WebKit- und HTTPS-Pages-Live-Gates als technisch veröffentlicht gemeldet. Echte iPhone-Safari-Geräteabnahme bleibt getrennt.

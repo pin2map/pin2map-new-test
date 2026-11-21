@@ -124,6 +124,12 @@ const base=process.env.PIN2MAP_TEST_URL||
       ["Mit Track","Mit Link","Mit Notiz"]);
     const kind=page.locator(".object-search-kind");
     assert.equal(await kind.inputValue(),"all");
+    assert.deepEqual(await kind.locator("option").allTextContents(),[
+      "Alle Objekte (Name + Notiz)","Alle Objekte (nur Name)","Nur Pins",
+      "Flächen und Seen","Nur Seen","Nur Flüsse"
+    ],"search options must keep user-approved order and omit the redundant text entry");
+    assert.equal((await page.locator(".object-search-toprow .object-search-check").textContent()).trim(),
+      "Auch in ausgeblendete Ebenen");
     const hidden=page.locator('[data-search-flag="hidden"]');
     await hidden.check();
     assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 1 Fläche · 0 Gewässer");
@@ -137,6 +143,9 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator("#objectSearchCount").innerText(),
       "2 Pins · 1 Fläche · 0 Gewässer",
       "deleting a suffix restores earlier results immediately");
+    await kind.selectOption("all-name");
+    assert.equal(await page.locator("#objectSearchCount").innerText(),"1 Pin · 1 Fläche · 0 Gewässer",
+      "name-only excludes the pin found via URL text");
     await kind.selectOption("pins");
     assert.equal(await page.locator("#objectSearchCount").innerText(),"2 Pins · 0 Flächen · 0 Gewässer");
     assert.equal(await page.locator(".pin-marker").count(),2,
@@ -168,11 +177,16 @@ const base=process.env.PIN2MAP_TEST_URL||
       const row=panel.querySelector(".object-search-toprow").getBoundingClientRect();
       const flags=[...panel.querySelectorAll(".object-search-flags label")].map(x=>x.getBoundingClientRect());
       const p=panel.getBoundingClientRect();
+      const bottom=panel.querySelector(".object-search-flags").getBoundingClientRect();
+      const topChildren=[...panel.querySelector(".object-search-toprow").children].map(el=>el.getBoundingClientRect());
       return {sameLine:flags.every(r=>Math.abs(r.top-flags[0].top)<2),
         inBounds:flags.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
-        rowWidth:row.width,overflow:panel.scrollWidth>panel.clientWidth+1};
+        rowWidth:row.width,bottomWidth:bottom.width,
+        topChildrenInBounds:topChildren.every(r=>r.left>=p.left-1&&r.right<=p.right+1),
+        overflow:panel.scrollWidth>panel.clientWidth+1};
     });
-    assert.ok(layout.sameLine&&layout.inBounds&&!layout.overflow,
+    assert.ok(layout.sameLine&&layout.inBounds&&layout.topChildrenInBounds&&
+      Math.abs(layout.rowWidth-layout.bottomWidth)<2&&!layout.overflow,
       "compact controls must fit 320px and wider without clipping: "+JSON.stringify(layout));
     await page.waitForTimeout(300);
     const viewportBeforeExit=await page.locator("#map .leaflet-map-pane").evaluate(el=>el.style.transform);
