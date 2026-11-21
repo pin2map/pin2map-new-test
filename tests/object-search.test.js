@@ -112,3 +112,15 @@ test("v295 stored search: query, optional properties, empty string, visibility a
  assert.equal(searchExpanded(repeated,{query:"test",kind:"pins"}).length,1);
 });
 
+
+test("v295: a matched pin/area opens its editor before overlap zoom, other taps preserve overlap logic",()=>{
+ const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
+ const tap=app.split("function handleMarkerTap(id){")[1].split("function updateModeUI()")[0];
+ assert.match(tap,/objectSearchView\?\.ids\.has\("pins:"\+id\)\)\{selectPin\(id\);return;\}/);
+ assert.ok(tap.indexOf('objectSearchView?.ids.has("pins:"+id)')<
+   tap.indexOf('featureOverlapZoom?.handleTap("pin",id)'),
+   "matched pin bypasses generic overlap handler, unmatched pin does not");
+ const area=app.split("onAreaLabel:(area,point)=>{")[1].split("onRiverLine:")[0];
+ assert.match(area,/!objectSearchView\?\.ids\.has\(hitType\+":"\+area\.id\)/);
+ assert.match(area,/openGeometryEditor\("area",area,point\)/);
+});

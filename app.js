@@ -678,7 +678,9 @@
       rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
       layerColors,highlightIds:objectSearchView?.ids,
       onAreaLabel:(area,point)=>{
-        if(featureOverlapZoom?.handleTap("area",area.id))return;
+        const hitType=area.kind==="lake"?"lakes":"areas";
+        if(!objectSearchView?.ids.has(hitType+":"+area.id)&&
+          featureOverlapZoom?.handleTap("area",area.id))return;
         openGeometryEditor("area",area,point);
       },
       onRiverLine:(river,point)=>openGeometryEditor("river",river,point)
@@ -806,6 +808,9 @@
   }
   function handleMarkerTap(id){
     if(uiState.moveMode||satelliteInspector.isActive())return;
+    // An explicit search hit must open its editor, never invoke overlap zoom.
+    // Normal non-hit taps still retain the existing overlap choice behavior.
+    if(objectSearchView?.ids.has("pins:"+id)){selectPin(id);return;}
     if(featureOverlapZoom?.handleTap("pin",id))return;
     if(pinOverlapZoom)pinOverlapZoom.handleTap(id);
     else selectPin(id);
