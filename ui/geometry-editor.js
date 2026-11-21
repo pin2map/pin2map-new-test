@@ -40,6 +40,10 @@
           if(!this.model)return;
           this.update({layerId:id});
           this.layerDot.style.backgroundColor=layer.color;
+          if(!this.model.color){
+            this.colorDot.style.backgroundColor=layer.color;
+            this.nativeColor.value=layer.color;
+          }
           this.layerButton.setAttribute("aria-label","Ebene: "+layer.name);
           this.popupMode=null;
         }
