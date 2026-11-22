@@ -8,13 +8,16 @@ const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
 test("opening either object editor always closes competing object dialogs first",()=>{
  const app=read("app.js");
  assert.match(app,/function openGeometryEditor\(type,item,position\)\{[\s\S]*?closeAllMapMenus\(\);[\s\S]*?geometryEditor\.show\(/);
- assert.match(app,/function selectPin\(id\)\{\s*closeAllMapMenus\(\);[\s\S]*?pinSession\.select\(id\)/);
+ const selection=read("ui/pin-selection-controller.js");
+ assert.match(app,/function selectPin\(id\)\{pinSelection\.select\(id\);\}/);
+ assert.match(selection,/select\(id\)\{\s*this\.closeMapMenus\(\);\s*this\.getPinOverlap\(\)\?\.close\(\);\s*this\.selectPinUseCase\(id\)/);
+ assert.match(app,/selectPinUseCase:id=>pinSession\.select\(id\)/);
  // v295: closing competing editors must NOT terminate the active object search.
  const areaOpen=app.split("function openGeometryEditor(type,item,position){")[1].split("function saveGeometry(")[0];
- const pinOpen=app.split("function selectPin(id){")[1].split("function handleMarkerTap(")[0];
+ const pinOpen=selection.split("select(id){")[1].split("handleMarkerTap(")[0];
  for(const code of [areaOpen,pinOpen]){
   assert.doesNotMatch(code,/endObjectSearch|resetObjectSearch|exitSearchMode/);
-  assert.match(code,/closeAllMapMenus\(\)/);
+  assert.match(code,/closeAllMapMenus\(\)|this\.closeMapMenus\(\)/);
  }
  // The v315 UI coordinator owns the menu lifecycle; the composition root
  // still supplies the exact editor and selection cleanup through injected ports.
