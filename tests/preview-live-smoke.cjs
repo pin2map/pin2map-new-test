@@ -312,8 +312,13 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.equal(await page.locator("#searchResults").isHidden(),true,
           "Published search input edit must hide current result list");
         await page.locator("#searchInput").press("Enter");
+        // Key delivery completes before the async search service resolves.
+        // Verify the real feedback state, not a same-tick scheduling race.
+        await page.locator("#searchResults").waitFor({state:"visible",timeout:10000});
         assert.equal(await page.locator("#searchResults").isVisible(),true,
           "Explicit Enter must reopen search feedback");
+        assert.ok((await page.locator("#searchResults").textContent()).trim().length>0,
+          "Explicit Enter must show real feedback, not an empty overlay");
         await page.locator("#searchInput").fill("");
         assert.equal(await page.locator("#searchResults").isHidden(),true);
 

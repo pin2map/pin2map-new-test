@@ -135,7 +135,11 @@ async function metrics(page){
       for(let repeat=0;repeat<8;repeat++){
         await page.locator("#closePin").click();
         await page.locator("#pinPanel").waitFor({state:"hidden"});
-        await selectedMarker.tap({force:true});
+        assert.equal(await page.locator("#pinMobileNoteEditor").isHidden(),true,
+          "Pin reopening must not leave a modal note editor over the marker");
+        // Do not bypass real hit testing: a forced touch can hit the note field
+        // through an overlay rather than reopening the saved pin.
+        await selectedMarker.tap();
         await page.locator("#pinPanel").waitFor({state:"visible"});
         const current=await pinCenter(),box=await page.locator("#pinPanel").boundingBox();
         assert.ok(Math.abs(current.x-stable.x)<=1&&Math.abs(current.y-stable.y)<=1,
