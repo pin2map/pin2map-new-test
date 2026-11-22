@@ -389,7 +389,7 @@
       mapAdapter.setView({center:{lat:state.viewport.lat,lng:state.viewport.lng},
         zoom:state.viewport.zoom},{animate:false});
       renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateLabelButton();
-      syncFavoritePanel();
+      favoritesController.sync();
     },
     onNotice:message=>showNotice(message),
     onError:(message,error)=>console.warn(message,error)
@@ -480,68 +480,35 @@
     if(view){pinOverlapZoom?.close();overlayCoordinator.closeAll();
       mapAdapter.setView(view,{animate:false});persistViewport();}
   }
-  function currentFavorites(){return favorites.items(state).slice(0,favorites.ACTIVE_CAPACITY);}
-  function setFavoriteMessage(message){$("favoritesMessage").textContent=message;}
-  function syncFavoritePanel(){favoritesPanel?.render(currentFavorites());}
-  function suggestFavoriteName(){
-    const size=mapAdapter.getSize(),middle={x:size.x/2,y:size.y/2};
-    let nearest=null,best=Infinity;
-    const visible=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
-    for(const pin of visible){
-      const point=mapAdapter.project(pin);
-      if(point.x<0||point.y<0||point.x>size.x||point.y>size.y)continue;
-      const dist=(point.x-middle.x)**2+(point.y-middle.y)**2;
-      if(dist<best){nearest=pin;best=dist;}
+  const favoritesController=new window.Pin2MapMapFavoritesController({
+    document,getElement:$,icons:window.Pin2MapIcons,
+    Panel:window.Pin2MapMapFavoritesPanel,favorites,
+    getProject:()=>state,
+    getVisiblePins:()=>pinFilter.visiblePins(state.pins,state.layers,currentPinFilter),
+    mapPort:{
+      getSize:()=>mapAdapter.getSize(),
+      getViewport:()=>mapAdapter.getViewport(),
+      project:pin=>mapAdapter.project(pin),
+      setView:(viewport,options)=>mapAdapter.setView(viewport,options)
+    },
+    onSave:()=>save(),
+    onRenderProject:()=>{renderLayers();renderMarkers();renderPinPanel();},
+    onStopSatellite:()=>satelliteInspector.stop(),
+    onSetBasemap:()=>setTileLayer(),
+    onFlushHistory:()=>flushHistoryRecord(),
+    onPersistViewport:()=>persistViewport(),
+    onBeforeOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();},
+    getSearch:()=>{
+      try{return localStorage.getItem("pin2map-favorites-search-v1")||"";}
+      catch(_){return "";}
+    },
+    onSearchChange:value=>{
+      try{
+        if(value)localStorage.setItem("pin2map-favorites-search-v1",value);
+        else localStorage.removeItem("pin2map-favorites-search-v1");
+      }catch(_){}
     }
-    return nearest?.name?.trim()||"Unbekannt "+new Date().toISOString().slice(0,10);
-  }
-  function addMapFavorite(name){
-    const letter=favorites.append(state,mapAdapter.getViewport(),state.layers,
-      new Date().toISOString(),name,state.basemap);
-    if(!letter){setFavoriteMessage("Maximale Anzahl von 500 Favoriten erreicht.");return;}
-    save();syncFavoritePanel();setFavoriteMessage("Favorit gespeichert.");
-  }
-  function replaceMapFavorite(index,name){
-    if(favorites.replace(state,index,mapAdapter.getViewport(),state.layers,
-      new Date().toISOString(),name,state.basemap)){
-      save();syncFavoritePanel();setFavoriteMessage("Favorit ersetzt.");
-    }
-  }
-  function renameMapFavorite(index,name){
-    if(favorites.rename(state,index,name)){
-      save();syncFavoritePanel();setFavoriteMessage("Favorit umbenannt.");
-    }
-  }
-  function removeMapFavorite(index){
-    if(favorites.remove(state,index)){
-      save();syncFavoritePanel();
-      setFavoriteMessage("Favorit entfernt. Die Liste wurde lückenlos neu geordnet.");
-    }
-  }
-  function removeAllMapFavorites(){
-    if(favorites.removeAll(state)){
-      save();
-      syncFavoritePanel();
-      setFavoriteMessage("Alle Favoriten gelöscht.");
-    }
-  }
-  function openMapFavorite(index){
-    const viewport=favorites.apply(state,index);
-    if(!viewport)return;
-    const favorite=state.favorites[index];
-    if(favorite?.basemap&&["street","topo","international","satellite","humanitarian"].includes(favorite.basemap)
-      &&state.basemap!==favorite.basemap){
-      satelliteInspector.stop();state.basemap=favorite.basemap;setTileLayer();
-    }
-    save();renderLayers();renderMarkers();renderPinPanel();
-    favoritesPanel.close();
-    setFavoriteMessage("");
-    // Preserve a just-completed zoom/drag even when its animation and
-    // 320ms gesture-coalescing timer have not settled yet.
-    flushHistoryRecord();
-    mapAdapter.setView(viewport,{animate:false});
-    persistViewport();
-  }
+  });
   function setTileLayer() {
     mapAdapter.setBasemap(state.basemap,{
       esriRelief:!!state.esriRelief,
@@ -1178,49 +1145,7 @@
       if(historyRecordTimer!==null)clearTimeout(historyRecordTimer);
       historyRecordTimer=setTimeout(flushHistoryRecord,320);
     });
-    favoritesPanel=new window.Pin2MapMapFavoritesPanel({
-      document,getElement:$,icons:window.Pin2MapIcons,
-      onOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();setFavoriteMessage("");},
-      onAdd:addMapFavorite,onReplace:replaceMapFavorite,onRename:renameMapFavorite,
-      onRemove:removeMapFavorite,onRemoveAll:removeAllMapFavorites,
-      onReorder:(from,to)=>{
-        if(!favorites.reorder(state,from,to))return;
-        save();syncFavoritePanel();
-      },
-      onChoose:openMapFavorite,suggestName:suggestFavoriteName,
-      capacity:favorites.ACTIVE_CAPACITY,
-      getSearch:()=>{
-        try{return localStorage.getItem("pin2map-favorites-search-v1")||"";}
-        catch(_){return "";}
-      },
-      onSearchChange:value=>{
-        try{
-          if(value)localStorage.setItem("pin2map-favorites-search-v1",value);
-          else localStorage.removeItem("pin2map-favorites-search-v1");
-        }catch(_){}
-      }
-    });
-    // No modal dialog is used: replacement confirmation is inside the panel.
-    window.Pin2MapIcons.mount($("favoritesButton"),"star");
-    const favoriteAdd=$("favoritesAdd");
-    favoriteAdd.replaceChildren(window.Pin2MapIcons.svg("plus",document),
-      document.createTextNode("Ansicht hinzufügen"));
-    $("favoritesButton").addEventListener("click",()=>favoritesPanel.toggle(currentFavorites()));
-    $("favoritesClose").addEventListener("click",()=>favoritesPanel.close());
-    $("favoritesCloseBottom").addEventListener("click",()=>favoritesPanel.close());
-    favoriteAdd.addEventListener("click",()=>{
-      if(favoriteAdd.disabled)return;
-      setFavoriteMessage("");favoritesPanel.start("new");
-    });
-    // Every click/tap outside the panel (especially on the map) closes it,
-    // consistent with the existing overlay convention. No map content is hidden.
-    document.addEventListener("pointerdown",event=>{
-      if(favoritesPanel.open&&!event.target.closest("#favoritesPanel,#favoritesButton"))
-        favoritesPanel.close();
-    });
-    document.addEventListener("keydown",event=>{
-      if(event.key==="Escape"&&favoritesPanel.open){event.preventDefault();favoritesPanel.close();}
-    });
+    favoritesPanel=favoritesController.bind();
     mapAdapter.addScaleControl();
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";
     for(const field of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){

@@ -125,3 +125,13 @@ assert.doesNotMatch(app,/mapLauncherSelector|document\.addEventListener\("click"
   "Launcher classification and capture must not regress into the composition root");
 const overlay=source("ui/map-overlay-coordinator.js");
 assert.match(overlay,/bindMapLaunchers\(\)/);
+
+const favoriteController=source("ui/map-favorites-controller.js");
+assert.match(app,/new window\.Pin2MapMapFavoritesController/);
+assert.match(app,/favoritesPanel=favoritesController\.bind\(\)/);
+assert.doesNotMatch(app,/function (?:currentFavorites|suggestFavoriteName|addMapFavorite|replaceMapFavorite|renameMapFavorite|removeMapFavorite|removeAllMapFavorites|openMapFavorite)\s*\(/,
+  "Map-favorites UI orchestration must stay outside composition root");
+assert.match(favoriteController,/this\.favorites\.apply\(project,index\)/);
+assert.match(favoriteController,/this\.onFlushHistory\(\);[\s\S]*?this\.mapPort\.setView\(viewport,\{animate:false\}\);[\s\S]*?this\.onPersistViewport\(\)/);
+assert.ok(source("index.html").includes('src="./ui/map-favorites-controller.js"'));
+assert.ok(source("sw.js").includes('"./ui/map-favorites-controller.js"'));
