@@ -95,8 +95,11 @@ test("Layers merge owns the helper slot and only the footer confirms or cancels"
  assert.match(header,/id="layersSearchClear"/);
  assert.match(helper,/1 Sek\. halten und an neue Pos\. verschieben\./);
  assert.match(helper,/Markieren zum Zusammenführen/);
- assert.match(app,/layerView\.footerAction\(\)/);
- assert.match(app,/layerView\.footerCancel\(\)/);
+ const controls=read("ui/map-view-controls.js");
+ assert.match(app,/mapViewControls\.bindSettingsAndLayerActions\(\)/);
+ assert.match(controls,/this\.listen\("addLayer","click",\(\)=>this\.layerView\.footerAction\(\)\)/);
+ assert.match(controls,/this\.listen\("layersCloseBottom","click",\(\)=>this\.layerView\.footerCancel\(\)\)/);
+ assert.match(controls,/this\.listen\("layersUnite","click",\(\)=>this\.layerView\.beginMerge\(\)\)/);
  assert.match(layer,/confirmMerge\(\)/);
  assert.match(layer,/this\.mergeMode\?"Zusammenführen":"\+ Ebene hinzufügen"/);
  assert.doesNotMatch(layer,/banner\.append\(this\.labeledButton/);
