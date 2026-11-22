@@ -9,7 +9,11 @@ test("closing a pin dialog or selecting another pin does not hide its GPX overla
   assert.doesNotMatch(render,/hideAttachedRoute\(/);
   const close=app.slice(app.indexOf("function closeAllMapMenus(){"),app.indexOf("const mapClickCoordinator"));
   assert.doesNotMatch(close,/hideAttachedRoute\(|clearAttachedGpx/);
-  assert.match(render,/pinGpxActions\.render\(pin\)/);
+  assert.match(render,/pinSelection\.render\(\)/);
+  const selection=read("ui/pin-selection-controller.js");
+  assert.match(selection,/this\.renderGpxActions\(pin\)/);
+  assert.match(app,/renderGpxActions:pin=>pinGpxActions\.render\(pin\)/);
+  assert.doesNotMatch(selection,/hideAttachedRoute\(|clearAttachedGpx/);
   assert.match(actions,/this\.activePinId===pin\.id/);
   assert.match(actions,/Route verbergen/);
 });
