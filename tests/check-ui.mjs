@@ -110,10 +110,15 @@ check(gestures.includes("attachMarkerLongPress") &&
   gestures.includes("attachLongPress"),
   "touch, mouse and marker gestures live in dedicated controller");
 const mapClick=read("application/map-click-coordinator.js");
+const interaction=read("ui/map-interaction-controller.js");
 check(map.includes("onMapClick(callback,") &&
-  app.includes("mapAdapter.onMapClick(position=>{") &&
-  app.includes("if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}") &&
-  app.includes("mapClickCoordinator.handle(position);") &&
+  app.includes("onMapClick:handler=>mapAdapter.onMapClick(handler,") &&
+  app.includes("isSatellitePicking:()=>satelliteInspector.isActive()") &&
+  app.includes("onSatellitePick:position=>satelliteInspector.pick(position)") &&
+  app.includes("onRegularMapClick:position=>mapClickCoordinator.handle(position)") &&
+  app.includes("allowNonSurface:()=>uiState.moveMode||temporaryMove.isActive()||satelliteInspector.isActive()") &&
+  interaction.includes("if(this.isSatellitePicking()){this.onSatellitePick(position);return;}") &&
+  interaction.includes("this.onRegularMapClick(position);") &&
   app.includes("onSurfacePointerDown:") &&
   mapClick.includes("handle(position)") && mapClick.includes("this.previewMove(position)") &&
   mapClick.includes("this.onOrdinaryClick(position)"),
