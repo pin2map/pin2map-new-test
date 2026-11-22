@@ -167,3 +167,15 @@ assert.match(mapViewControls,/this\.setGeocodeEnabled\(event\.target\.checked\);
 assert.match(mapViewControls,/this\.overlayCoordinator\.closeAll\(\);this\.layerView\.show\(\)/);
 assert.ok(source("index.html").includes('src="./ui/map-view-controls.js"'));
 assert.ok(source("sw.js").includes('"./ui/map-view-controls.js"'));
+
+const mapInteraction=source("ui/map-interaction-controller.js");
+assert.match(app,/new window\.Pin2MapMapInteractionController/);
+assert.match(app,/mapInteraction\.bindPinMoveButtons\(\)/);
+assert.match(app,/mapInteraction\.bindMapClick\(\)/);
+assert.match(app,/mapInteraction\.bindLongPress\(\)/);
+assert.match(mapInteraction,/this\.onMapClick\(position=>/);
+assert.match(mapInteraction,/if\(this\.isSatellitePicking\(\)\)\{this\.onSatellitePick\(position\);return;\}/);
+assert.match(mapInteraction,/this\.onRegularMapClick\(position\)/);
+assert.match(app,/allowNonSurface:\(\)=>uiState\.moveMode\|\|temporaryMove\.isActive\(\)\|\|satelliteInspector\.isActive\(\)/);
+assert.ok(source("index.html").includes('src="./ui/map-interaction-controller.js"'));
+assert.ok(source("sw.js").includes('"./ui/map-interaction-controller.js"'));

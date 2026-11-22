@@ -783,6 +783,23 @@
     },
     cancelSearch:()=>placeSearch.cancel()
   });
+  const mapInteraction=new window.Pin2MapMapInteractionController({
+    getElement:$,
+    closeTransient:()=>pinDetails.closeTransient(),
+    onMoveBegin:()=>moveController.begin(),
+    isTemporaryMoveActive:()=>temporaryMove.isActive(),
+    onTemporaryMoveCancel:()=>temporaryMove.cancel(),
+    onRegularMoveCancel:()=>moveController.cancel(),
+    onTemporaryMoveConfirm:()=>temporaryMove.confirm(),
+    onRegularMoveConfirm:()=>moveController.confirm(),
+    onMapClick:handler=>mapAdapter.onMapClick(handler,{
+      allowNonSurface:()=>uiState.moveMode||temporaryMove.isActive()||satelliteInspector.isActive()
+    }),
+    isSatellitePicking:()=>satelliteInspector.isActive(),
+    onSatellitePick:position=>satelliteInspector.pick(position),
+    onRegularMapClick:position=>mapClickCoordinator.handle(position),
+    attachLongPress:()=>gestures.attachLongPress()
+  });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   const mapViewControls=new window.Pin2MapMapViewControls({
     getElement:$,document,
@@ -866,22 +883,11 @@
       closeTransient:()=>pinDetails.closeTransient(),
       matchMedia:query=>window.matchMedia(query)
     });
-    for(const id of ["deletePin","movePin","pinLayerTrigger","closePin"]){
-      $(id).addEventListener("click",()=>pinDetails.closeTransient());
-    }
-    $("movePin").addEventListener("click",()=>moveController.begin());
-    $("cancelMove").addEventListener("click",()=>temporaryMove.isActive()?temporaryMove.cancel():moveController.cancel());
-    $("confirmMove").addEventListener("click",()=>temporaryMove.isActive()?temporaryMove.confirm():moveController.confirm());
+    mapInteraction.bindPinMoveButtons();
     pinDeleteDialog.bind();
 
-    mapAdapter.onMapClick(position=>{
-      if(satelliteInspector.isActive()){satelliteInspector.pick(position);return;}
-      // Move-target acceptance must take precedence over pin ghost-click
-      // suppression; MapClickCoordinator already enforces this contract.
-      mapClickCoordinator.handle(position);
-    },{allowNonSurface:()=>uiState.moveMode||temporaryMove.isActive()||satelliteInspector.isActive()});
-
-    gestures.attachLongPress();
+    mapInteraction.bindMapClick();
+    mapInteraction.bindLongPress();
     mapOverlayLayout.bind();
     document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden"){flushHistoryRecord();persistence.flushOnHidden();} });
   }
