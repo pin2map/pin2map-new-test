@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v308';
+const CACHE='pin2map-new-v309';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -29,6 +29,7 @@ const CORE=[
   "./application/project-persistence.js",
   "./application/project-hydration.js",
   "./application/project-transfer.js",
+  "./application/gpx-attachment-export.js",
   "./application/layer-palette.js",
   "./application/layer-operations.js",
   "./application/layer-creation.js",
@@ -95,6 +96,7 @@ const CORE=[
   "./ui/pin-editor-actions.js",
   "./application/apple-maps-links.js",
   "./ui/pin-navigation.js",
+  "./ui/pin-gpx-actions.js",
   "./ui/pin-details.js",
   "./ui/pin-note-editor.js",
   "./ui/map-gesture-controller.js",

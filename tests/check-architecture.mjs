@@ -42,6 +42,10 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
    filename+": UI must not know database or map engine");
 }
 const app=source("app.js");
+assert.doesNotMatch(app,/function (?:hideAttachedRoute|toggleAttachedRoute|exportAttachedRoute)\s*\(/,
+  "GPX attachment display/export must remain outside the composition root");
+assert.match(app,/Pin2MapPinGpxActions/);
+assert.match(app,/Pin2MapGpxAttachmentExport/);
 assert.doesNotMatch(app,/\bL\s*\./,"Active application must only use map adapter");
 assert.match(app,/Pin2MapProjectModel/,"Domain model must be used by app");
 assert.match(app,/projectModel\.defaultProject/);

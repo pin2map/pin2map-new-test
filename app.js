@@ -342,35 +342,18 @@
   });
   const projectTransfer=window.Pin2MapProjectTransfer;
   let transferPending=null,transferBusy=false,transferGpxMode="normal";
-  let attachedRoutePinId=null;
-  function hideAttachedRoute(){
-    mapAdapter?.clearAttachedGpx?.();
-    attachedRoutePinId=null;
-    $("pinGpxRoute").textContent="Route anzeigen";
-    $("pinGpxRoute").setAttribute("aria-pressed","false");
-  }
-  function toggleAttachedRoute(){
-    const pin=selectedPin(),attachment=pin?.gpxAttachment;
-    if(!attachment?.chains?.length)return;
-    if(attachedRoutePinId===pin.id){hideAttachedRoute();return;}
-    hideAttachedRoute();
-    mapAdapter.showAttachedGpx(attachment.chains);
-    attachedRoutePinId=pin.id;
-    $("pinGpxRoute").textContent="Route verbergen";
-    $("pinGpxRoute").setAttribute("aria-pressed","true");
-
-  }
-  function exportAttachedRoute(){
-    const pin=selectedPin();
-    if(!pin?.gpxAttachment?.chains?.length)return;
-    try{
-      const content=pin.gpxAttachment.sourceGpx||
-        projectTransfer.encodeGpx({...state,pins:[pin],rivers:[]});
-      const safe=String(pin.gpxAttachment.filename||pin.name||"GPX-Route")
-        .replace(/[^a-zA-Z0-9_äöüÄÖÜß. -]/g,"-").replace(/\.gpx$/i,"").slice(0,90);
-      downloadTransfer(content,"gpx","application/gpx+xml;charset=utf-8",(safe||"GPX-Route")+".gpx");
-    }catch(error){showNotice("GPX-Export fehlgeschlagen: "+error.message);}
-  }
+  const pinGpxActions=new window.Pin2MapPinGpxActions({
+    getElement:$,getPin:selectedPin,
+    mapPort:{
+      show:chains=>mapAdapter.showAttachedGpx(chains),
+      clear:()=>mapAdapter?.clearAttachedGpx?.()
+    },
+    prepareExport:pin=>window.Pin2MapGpxAttachmentExport.prepare(
+      pin,state,projectTransfer.encodeGpx),
+    download:(content,name)=>downloadTransfer(content,"gpx",
+      "application/gpx+xml;charset=utf-8",name),
+    onNotice:message=>showNotice(message)
+  });
   function closeTransferDialog(){
     $("transferPanel").classList.add("hidden");
     $("transferButton").setAttribute("aria-expanded","false");
@@ -472,7 +455,7 @@
       if(!projectStore)throw Error("Lokaler Projektspeicher nicht verfügbar");
       await persistence.writeNow();
       committed=true;
-      hideAttachedRoute();
+      pinGpxActions.hide();
       uiState.clearSelection();uiState.moveMode=false;
       closeTransferDialog();
       setTileLayer();
@@ -500,8 +483,7 @@
     $("transferPanel").addEventListener("keydown",e=>{
       if(e.key==="Escape"){e.preventDefault();closeTransferDialog();}
     });
-    $("pinGpxRoute").addEventListener("click",toggleAttachedRoute);
-    $("pinGpxExport").addEventListener("click",exportAttachedRoute);
+    pinGpxActions.bind();
     $("transferImport").addEventListener("click",()=>{
       transferGpxMode="normal";$("transferFileInput").click();
     });
