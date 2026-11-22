@@ -311,10 +311,34 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await page.locator("#searchInput").fill("Stuttgart");
         assert.equal(await page.locator("#searchResults").isHidden(),true,
           "Published search input edit must hide current result list");
+        await page.evaluate(()=>{
+          window.__p2mEnterTrace={events:[]};
+          document.querySelector("#searchForm").addEventListener("submit",e=>{
+            window.__p2mEnterTrace.events.push({type:"submit",target:e.target.id});
+          },true);
+          document.querySelector("#searchInput").addEventListener("keydown",e=>{
+            window.__p2mEnterTrace.events.push({type:"keydown",key:e.key,focused:document.activeElement?.id,prevented:e.defaultPrevented});
+          },true);
+        });
         await page.locator("#searchInput").press("Enter");
-        // Key delivery completes before the async search service resolves.
-        // Verify the real feedback state, not a same-tick scheduling race.
-        await page.locator("#searchResults").waitFor({state:"visible",timeout:10000});
+        // Search feedback is asynchronous; on failure, report focus and the
+        // actual keyboard/form events without replacing the failing contract.
+        try{
+          await page.locator("#searchResults").waitFor({state:"visible",timeout:10000});
+        }catch(error){
+          const diagnostic=await page.evaluate(()=>({
+            trace:window.__p2mEnterTrace,
+            focus:document.activeElement?.id,
+            input:document.querySelector("#searchInput")?.value,
+            searchMenuHidden:document.querySelector("#searchTypeMenu")?.classList.contains("hidden"),
+            resultsHidden:document.querySelector("#searchResults")?.classList.contains("hidden"),
+            resultsText:document.querySelector("#searchResults")?.textContent,
+            allowGeocode:document.querySelector("#allowGeocode")?.checked,
+            form:document.querySelector("#searchForm")?.outerHTML.slice(0,350)
+          }));
+          console.error("LIVE ENTER DIAGNOSTIC",name,JSON.stringify(diagnostic),errors);
+          throw error;
+        }
         assert.equal(await page.locator("#searchResults").isVisible(),true,
           "Explicit Enter must reopen search feedback");
         assert.ok((await page.locator("#searchResults").textContent()).trim().length>0,

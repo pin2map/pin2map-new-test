@@ -170,6 +170,23 @@ async function metrics(page){
     assert.ok(Math.abs(m.noteHeight-145)<=1,JSON.stringify(m));
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
     for(const [index,b] of m.routingButtons.entries())assert.ok(b.disabled===(index>=2)&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size and activation "+JSON.stringify(b));
+    if(m.markerCount<2){
+      const markerDiagnostic=await page.evaluate(async()=>{
+        const store=await window.Pin2MapIndexedDBProjectStore.open();
+        try{
+          const pins=(await store.loadProject())?.pins||[];
+          return {pins:pins.map(p=>({id:p.id,lat:p.lat,lng:p.lng,layerId:p.layerId})),
+            markers:[...document.querySelectorAll(".leaflet-marker-icon.pin-icon")].map(el=>{
+              const rect=el.getBoundingClientRect();
+              return {text:el.title,x:rect.x,y:rect.y,width:rect.width,height:rect.height};
+            }),viewport:{width:innerWidth,height:innerHeight},
+            selectedPin:document.querySelector("#pinName")?.value,
+            panel:document.querySelector("#pinPanel")?.getBoundingClientRect().toJSON(),
+            map:document.querySelector("#map")?.getBoundingClientRect().toJSON()};
+        }finally{store.close();}
+      });
+      console.error("[visual] MARKER DIAGNOSTIC",viewport.name,JSON.stringify(markerDiagnostic));
+    }
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
     const sectors=await page.locator(".pin-status-segments").evaluateAll(nodes=>
       nodes.map(n=>["note","url","gpx"].map(t=>
