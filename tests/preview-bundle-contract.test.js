@@ -31,6 +31,14 @@ test("Preview workflow uses fail-closed allowlist, not entire repository rsync",
  assert.doesNotMatch(workflow,/rsync -a/);
  assert.match(workflow,/Assert Preview allowlist excludes historical experiments/);
 });
+test("real Overpass gate is isolated, retained, and cannot block unrelated preview publication",()=>{
+ const areaWorkflow=fs.readFileSync(path.join(ROOT,".github/workflows/area-provider-live.yml"),"utf8");
+ assert.doesNotMatch(workflow,/run: node tests\/area-live-provider\.cjs/);
+ assert.match(areaWorkflow,/workflow_dispatch:/);
+ assert.match(areaWorkflow,/run: node tests\/area-live-provider\.cjs/);
+ assert.doesNotMatch(areaWorkflow,/schedule:|push:/);
+ assert.ok(fs.statSync(path.join(ROOT,"tests/area-live-provider.cjs")).isFile());
+});
 test("Build publishes only app-shell assets and no historical experiments",()=>{
  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"p2m-preview-"));
  try{

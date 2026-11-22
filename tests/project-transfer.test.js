@@ -198,7 +198,7 @@ test("UI never launches share sheet from a download-only export",()=>{
   const fs=require("node:fs"),path=require("node:path");
   const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
   const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
-  const download=app.slice(app.indexOf("function downloadTransfer("),app.indexOf("function exportTransfer("));
+  const download=fs.readFileSync(path.join(__dirname,"../ui/project-transfer-controller.js"),"utf8");
   assert.doesNotMatch(download,/navigator\.share|navigator\.canShare/);
   assert.match(download,/link\.download=name/);
   assert.match(html,/name="transferScope" value="visible"/);
@@ -243,9 +243,9 @@ test("iPad file picker does not pre-filter .pin2map or .gpx files",()=>{
  assert.ok(input,"import input exists");
  assert.doesNotMatch(input,/\saccept=/,"native iPad file chooser must not gray out custom extension");
  assert.match(app,/file\.size>50\*1024\*1024/,"size guard remains in app");
- assert.match(app,/projectTransfer\.parseProject\(contents,file\.name\)/,
+ assert.match(app,/this\.transfer\.parseProject\(contents,file\.name\)/,
    "invalid files are rejected by content parser after selection");
- assert.match(app,/projectTransfer\.gpxRead\(contents/);
+ assert.match(app,/this\.transfer\.gpxRead\(contents/);
 });
 
 test("add import places every pin, area and river in ONE new file-named layer",()=>{
@@ -298,8 +298,8 @@ test("UI explicitly distinguishes replace from add-in-one-layer",()=>{
  const fs=require("node:fs"),path=require("node:path");
  const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
- assert.match(app,/transferPending=\{\.\.\.result,filename:file\.name\}/);
- assert.match(app,/projectTransfer\.addInNewLayer\(state,transferPending\.project,transferPending\.filename\)/);
+ assert.match(app,/this\.pending=\{\.\.\.result,filename:file\.name\}/);
+ assert.match(session,/this\.transfer\.addInNewLayer\(previous,incoming,filename\)/);
  assert.match(html,/id="transferAdd"[^>]*>Hinzufügen: Neue Ebene mit Dateinamen/);
  assert.match(html,/id="transferReplace"[^>]*>Alles ersetzen: Gesamtes Projekt laden/);
 });

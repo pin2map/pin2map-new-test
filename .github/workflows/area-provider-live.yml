@@ -1,0 +1,33 @@
+name: Real Overpass area provider availability (independent integration gate)
+
+# Independent on-demand integration gate. Do not block unrelated previews
+# with transient outages of third-party Overpass infrastructure.
+# The original full-polygon acceptance test remains unchanged.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-area-provider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Playwright for real Chromium requests
+        run: npm install --no-save --no-audit --no-fund playwright@1.56.1
+      - name: Locate Chromium
+        run: |
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || true)
+          if [ -z "$CHROME" ]; then echo "No system Chrome found"; exit 1; fi
+          echo "PIN2MAP_CHROMIUM_EXECUTABLE=$CHROME" >> "$GITHUB_ENV"
+      - name: Require genuine Rügen Jasmund Borgwallsee polygons through public providers
+        env:
+          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
+        run: node tests/area-live-provider.cjs

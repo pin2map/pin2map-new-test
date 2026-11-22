@@ -42,6 +42,11 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
    filename+": UI must not know database or map engine");
 }
 const app=source("app.js");
+for(const name of ["transferPending","transferBusy","chooseTransferFile","applyTransfer","downloadTransfer","openTransferDialog","closeTransferDialog","bindTransfer"]){
+ assert.doesNotMatch(app,new RegExp("\\b"+name+"\\b"),"Project transfer responsibility must not return to app.js: "+name);
+}
+assert.match(app,/Pin2MapProjectTransferSession/);
+assert.match(app,/Pin2MapProjectTransferController/);
 assert.doesNotMatch(app,/function (?:hideAttachedRoute|toggleAttachedRoute|exportAttachedRoute)\s*\(/,
   "GPX attachment display/export must remain outside the composition root");
 assert.match(app,/Pin2MapPinGpxActions/);

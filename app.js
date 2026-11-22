@@ -341,7 +341,32 @@
     onRenderMarkers:()=>renderMarkers()
   });
   const projectTransfer=window.Pin2MapProjectTransfer;
-  let transferPending=null,transferBusy=false,transferGpxMode="normal";
+  const transferSession=new window.Pin2MapProjectTransferSession({
+    transfer:projectTransfer,defaults,
+    repairPrivate:project=>window.Pin2MapLayerPalette.repairPrivate(project),
+    ensureFeatures:project=>projectFeatures.ensure(project),
+    cleanupSearch:project=>placeSearch.cleanup(project),
+    getProject:()=>state,setProject:project=>{state=project;},
+    getStore:()=>projectStore,writeProject:()=>persistence.writeNow()
+  });
+  const transferController=new window.Pin2MapProjectTransferController({
+    getElement:$,document,windowPort:window,transfer:projectTransfer,
+    session:transferSession,getProject:()=>state,
+    filterPins:(pin,project)=>pinFilter.isVisible(pin,project.layers,currentPinFilter),
+    onCloseOtherMenus:()=>closeAllMapMenus(),
+    onSave:()=>persistence.writeNow(),
+    onApplied:()=>{
+      pinGpxActions.hide();
+      uiState.clearSelection();uiState.moveMode=false;
+      setTileLayer();
+      mapAdapter.setView({center:{lat:state.viewport.lat,lng:state.viewport.lng},
+        zoom:state.viewport.zoom},{animate:false});
+      renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateLabelButton();
+      syncFavoritePanel();
+    },
+    onNotice:message=>showNotice(message),
+    onError:(message,error)=>console.warn(message,error)
+  });
   const pinGpxActions=new window.Pin2MapPinGpxActions({
     getElement:$,getPin:selectedPin,
     mapPort:{
@@ -350,156 +375,10 @@
     },
     prepareExport:pin=>window.Pin2MapGpxAttachmentExport.prepare(
       pin,state,projectTransfer.encodeGpx),
-    download:(content,name)=>downloadTransfer(content,"gpx",
+    download:(content,name)=>transferController.download(content,"gpx",
       "application/gpx+xml;charset=utf-8",name),
     onNotice:message=>showNotice(message)
   });
-  function closeTransferDialog(){
-    $("transferPanel").classList.add("hidden");
-    $("transferButton").setAttribute("aria-expanded","false");
-    $("transferConfirm").classList.add("hidden");
-    $("transferMain").classList.remove("hidden");
-    transferPending=null;
-    $("transferFileInput").value="";
-  }
-  function openTransferDialog(){
-    closeAllMapMenus();
-    $("transferPanel").classList.remove("hidden");
-    $("transferButton").setAttribute("aria-expanded","true");
-    $("transferMain").classList.remove("hidden");
-    $("transferConfirm").classList.add("hidden");
-    $("transferFeedback").textContent="";
-    if(!$("transferExportName").value.trim())
-      $("transferExportName").value="pin2map-"+new Date().toISOString().slice(0,10);
-    $("transferImport").focus({preventScroll:true});
-  }
-  function filename(ext){
-    const raw=$("transferExportName").value.trim().replace(/\.(?:pin2map|gpx)$/i,"")
-      .replace(/[\\/:*?"<>|\r\n]+/g,"-").slice(0,96);
-    return (raw||"pin2map-"+new Date().toISOString().slice(0,10))+"."+ext;
-  }
-  function downloadTransfer(content,extension,mime,preferredName=null){
-    // A single intentional browser download. Never open the native share
-    // sheet AND start a download for the same user click.
-    const blob=new Blob([content],{type:mime}),name=preferredName||filename(extension);
-    const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download=name;
-    document.body.append(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),30000);
-  }
-  function exportTransfer(type){
-    if(transferBusy)return;
-    try{
-      const visible=document.querySelector('input[name="transferScope"]:checked')?.value==="visible";
-      const subset=projectTransfer.exportSubset(state,{
-        visible,filterPins:pin=>pinFilter.isVisible(pin,state.layers,currentPinFilter)
-      });
-      const content=type==="gpx"?projectTransfer.encodeGpx(subset):projectTransfer.encodeProject(subset);
-      void persistence.writeNow().catch(()=>showNotice("Lokale Speicherung nicht bestätigt"));
-      downloadTransfer(content,type==="gpx"?"gpx":"pin2map",
-        type==="gpx"?"application/gpx+xml;charset=utf-8":"application/json;charset=utf-8");
-      $("transferFeedback").textContent="Download gestartet ("+(visible?"nur sichtbare":"alle")+" Elemente).";
-    }catch(error){
-      $("transferFeedback").textContent="Export fehlgeschlagen: "+String(error?.message||error);
-    }
-  }
-  function chooseTransferFile(file){
-    if(!file)return;
-    transferBusy=true;
-    $("transferFeedback").textContent="Datei wird geprüft …";
-    (async()=>{
-      if(file.size>50*1024*1024)throw Error("Maximale Dateigröße: 50 MB.");
-      const contents=await file.text();
-      const result=/\.gpx$/i.test(file.name)?projectTransfer.gpxRead(contents,undefined,
-        {attachTracks:transferGpxMode==="start",filename:file.name}):
-        projectTransfer.parseProject(contents,file.name);
-      transferPending={...result,filename:file.name};
-      $("transferFileInfo").textContent=file.name;
-      const project=result.project;
-      const counts=project.pins.length+" Pins, "+(project.areas||[]).length+
-        " Flächen, "+(project.rivers||[]).length+" Flüsse/Tracks, "+
-        project.layers.length+" Ebenen";
-      $("transferFileSummary").textContent=counts+
-        (result.unresolved?" · "+result.unresolved+" alte Orts-/Gebietsabfragen konnten ohne Geodaten nicht übernommen werden. Bitte die Originaldatei aufbewahren.":"")+
-        (result.gpx?" · GPX enthält keine pin2map-Ebenen/Favoriten.":"")+
-        (result.project.pins.some(pin=>pin.gpxAttachment)?" · Start-Pins mit GPX-Trackanhang.":"");
-      $("transferMain").classList.add("hidden");
-      $("transferConfirm").classList.remove("hidden");
-      $("transferFeedback").textContent="Bitte vollständiges Ersetzen oder Import in eine neue Ebene auswählen.";
-    })().catch(error=>{
-      transferPending=null;
-      $("transferFeedback").textContent="Import nicht möglich: "+String(error?.message||error);
-    }).finally(()=>{transferBusy=false;$("transferFileInput").value="";});
-  }
-  async function applyTransfer(choice){
-    if(transferBusy||!transferPending)return;
-    if(choice==="replace"&&!window.confirm("Wirklich alle aktuellen Pins, Flächen, Flüsse, Ebenen und Favoriten durch die importierten Daten ersetzen?"))return;
-    transferBusy=true;
-    const previous=state;
-    let committed=false;
-    try{
-      const candidate=choice==="add"?projectTransfer.addInNewLayer(state,transferPending.project,transferPending.filename):
-        projectTransfer.safeProject(transferPending.project);
-      // Replace and merge are both committed in one IndexedDB transaction.
-      // Never mutate the current project during parsing/validation.
-      const next={...defaults(),...candidate};
-      if(!["street","international","humanitarian","topo","satellite"].includes(next.basemap))
-        next.basemap=previous.basemap;
-      window.Pin2MapLayerPalette.repairPrivate(next);
-      projectFeatures.ensure(next);
-      placeSearch.cleanup(next);
-      if(!Number.isFinite(next.viewport?.lat)||!Number.isFinite(next.viewport?.lng)||
-        !Number.isFinite(next.viewport?.zoom)||Math.abs(next.viewport.lat)>90||
-        Math.abs(next.viewport.lng)>180)next.viewport={...previous.viewport};
-      state=next;
-      if(!projectStore)throw Error("Lokaler Projektspeicher nicht verfügbar");
-      await persistence.writeNow();
-      committed=true;
-      pinGpxActions.hide();
-      uiState.clearSelection();uiState.moveMode=false;
-      closeTransferDialog();
-      setTileLayer();
-      mapAdapter.setView({center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom},{animate:false});
-      renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateLabelButton();
-      syncFavoritePanel();
-      showNotice(choice==="add"?"Objekte in neue Ebene importiert":"Projekt vollständig ersetzt");
-    }catch(error){
-      if(committed){
-        closeTransferDialog();
-        showNotice("Daten importiert, aber Kartenanzeige konnte nicht vollständig aktualisiert werden.");
-        console.warn("Imported project display:",error);
-      }else{
-        state=previous;
-        $("transferFeedback").textContent="Import abgebrochen, bisheriges Projekt bleibt erhalten: "+String(error?.message||error);
-      }
-    }finally{transferBusy=false;}
-  }
-  function bindTransfer(){
-    $("transferButton").addEventListener("click",()=>{
-      if($("transferPanel").classList.contains("hidden"))openTransferDialog();
-      else closeTransferDialog();
-    });
-    $("transferClose").addEventListener("click",closeTransferDialog);
-    $("transferPanel").addEventListener("keydown",e=>{
-      if(e.key==="Escape"){e.preventDefault();closeTransferDialog();}
-    });
-    pinGpxActions.bind();
-    $("transferImport").addEventListener("click",()=>{
-      transferGpxMode="normal";$("transferFileInput").click();
-    });
-    $("transferImportHike").addEventListener("click",()=>{
-      transferGpxMode="start";$("transferFileInput").click();
-    });
-    $("transferFileInput").addEventListener("change",e=>chooseTransferFile(e.target.files?.[0]));
-    $("transferExport").addEventListener("click",()=>void exportTransfer("project"));
-    $("transferExportGpx").addEventListener("click",()=>void exportTransfer("gpx"));
-    $("transferAdd").addEventListener("click",()=>void applyTransfer("add"));
-    $("transferReplace").addEventListener("click",()=>void applyTransfer("replace"));
-    $("transferBack").addEventListener("click",()=>{
-      transferPending=null;$("transferConfirm").classList.add("hidden");
-      $("transferMain").classList.remove("hidden");$("transferFeedback").textContent="";
-    });
-  }
   function anyMapMenuOpen(){
     const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel","transferPanel",
       "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
@@ -510,7 +389,7 @@
       !!$("deleteDialog")?.open||!!uiState.selectedPinId;
   }
   function closeAllMapMenus(){
-    closeTransferDialog();
+    transferController.close();
     mapActionChooser?.close();
     searchTypeMenu?.close();
     gpsLocation?.close();
@@ -1251,7 +1130,8 @@
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
   function bind() {
-    bindTransfer();
+    transferController.bind();
+    pinGpxActions.bind();
     searchForm.bind();
     $("searchClear").addEventListener("click",event=>{
       if(!searchTypeMenu?.searchMode)return;

@@ -342,13 +342,6 @@ jobs:
           if [ -z "$CHROME" ]; then echo "No system Chrome found" >&2; exit 1; fi
           echo "PIN2MAP_CHROMIUM_EXECUTABLE=$CHROME" >> "$GITHUB_ENV"
 
-      - name: Verify real Rügen and Nationalpark Jasmund polygons over HTTPS
-        working-directory: preview-source
-        env:
-          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
-          PIN2MAP_CHROMIUM_EXECUTABLE: /usr/bin/google-chrome
-        run: node tests/area-live-provider.cjs
-
       - name: Confirm live Leaflet startup on clean URL and tracking URL
         working-directory: preview-source
         env:

@@ -34,3 +34,9 @@ Der bestehende `application/routing-service.js` ist nur eine providerneutrale Re
 - Vollständige Node-, Architektur-, Chromium-, WebKit-, Deployment-, HTTPS-Live- und Service-Worker-Gates vor jeder Fertigmeldung.
 
 **Nicht beschlossen:** konkrete Routinganbieter, Verkehrsmitteloptionen, Alternativen-/Optimierungsalgorithmen, gespeicherte Route-Schemata, neue externe Dienste oder vorgezogene Serversynchronisation. Diese Entscheidungen sind separat zu vereinbaren.
+
+## Beschlossener nächster Architekturabschnitt – v310 (22.11.2026)
+
+Der Auftraggeber hat ausdrücklich freigegeben, vor Routing zuerst den externen Overpass-Echtdaten-Gate vom allgemeinen Preview-Workflow zu entkoppeln und anschließend den bestehenden Projekttransfer in getrennte UI- und Application-Module zu überführen. Der unveränderte reale Rügen/Jasmund/Borgwallsee-Test bleibt separat per manueller GitHub-Workflow-Auslösung verfügbar; automatische Node-, Architektur-, Chromium-, WebKit-, HTTPS-, Service-Worker- und Offline-Gates bleiben obligatorisch. Die externe Dienstverfügbarkeit steht auf der offenen Punkte-Liste und wird bis zu neuer Beauftragung nicht weiter aktiv untersucht.
+
+Geplante Eigentümer: `application/project-transfer-session.js` hält Validierung, Projektnormalisierung, einen vollständigen Speicher-Commit und Rollback; `ui/project-transfer-controller.js` hält Dateiauswahl, Dialogzustände, Fehlertexte und browserseitigen Download. `app.js` injiziert Daten- und Kartenports und aktualisiert nach erfolgreichem Commit die Ansicht. Die ursprüngliche Import-/Export-Funktionalität, GPX-Modi, Ein-Ebene-Import, Ersetzen, Zustimmung, Warntexte, Datenschema und Persistenz bleiben unverändert. Neue Routingfunktionen oder Provider werden dadurch nicht aktiviert.
