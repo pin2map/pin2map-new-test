@@ -855,44 +855,17 @@
       getProject:()=>state,onChange:()=>save()
     });
     colorSettings.bind();
-    const settingsTabs=["General","Interface","Services","Colors"];
-    async function updateSettingsStorage(){
-      const version=$("settingsProductVersion"),usage=$("settingsStorageUsage");
-      version.textContent="Version wird ermittelt …";
-      try{
-        const worker=await window.Pin2MapPwaRefresh.versionOf(
-          navigator.serviceWorker?.controller,window.MessageChannel,1200);
-        const response=worker?null:await fetch("./sw.js?version="+Date.now(),{cache:"no-store"});
-        const code=worker||(response?.ok?
-          window.Pin2MapPwaRefresh.parseVersion(await response.text()):"nicht verfügbar");
-        version.textContent=code.replace(/^pin2map-(?:preview|new)-v/,"v");
-      }catch{version.textContent="nicht verfügbar";}
-      try{
-        const estimate=await navigator.storage?.estimate?.();
-        const caches=estimate?.usageDetails?.caches;
-        const bytes=caches??estimate?.usage;
-        if(!Number.isFinite(bytes)){usage.textContent="nicht verfügbar";return;}
-        const unit=bytes>=1048576?" MB":" KB",divisor=bytes>=1048576?1048576:1024;
-        usage.textContent="ca. "+(bytes/divisor).toLocaleString("de-DE",{maximumFractionDigits:1})+
-          unit+(caches===undefined?" (gesamter lokaler Speicher)":"");
-      }catch{usage.textContent="nicht verfügbar";}
-    }
-    const selectSettingsTab=key=>{
-      for(const tab of settingsTabs){
-        const selected=key===tab;
-        $("settings"+tab+"Content").classList.toggle("hidden",!selected);
-        $("settings"+tab+"Tab").setAttribute("aria-selected",String(selected));
-        $("settings"+tab+"Tab").tabIndex=selected?0:-1;
-      }
-      if(key==="Colors")colorSettings.render();
-      if(key==="General")void updateSettingsStorage();
-    };
-    for(const tab of settingsTabs)
-      $("settings"+tab+"Tab").addEventListener("click",()=>selectSettingsTab(tab));
-    $("settingsButton").addEventListener("click",()=>{
-      if(!$("settingsPanel").classList.contains("hidden"))selectSettingsTab("General");
+    const settingsTabs=new window.Pin2MapSettingsTabsController({
+      getElement:$,
+      renderColors:()=>colorSettings.render(),
+      versionOf:(controller,MessageChannel,timeout)=>window.Pin2MapPwaRefresh.versionOf(controller,MessageChannel,timeout),
+      parseVersion:code=>window.Pin2MapPwaRefresh.parseVersion(code),
+      getWorkerController:()=>navigator.serviceWorker?.controller,
+      getMessageChannel:()=>window.MessageChannel,
+      fetchWorker:(url,options)=>fetch(url,options),
+      estimateStorage:()=>navigator.storage?.estimate?.()
     });
-    selectSettingsTab("General");
+    settingsTabs.bind();
 
     pinEditorActions.bind();
     pinDetails.bind();

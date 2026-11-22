@@ -146,3 +146,13 @@ assert.match(presentation,/this\.mapPort\.renderProjectGeometry\(/);
 assert.match(presentation,/this\.pinInfoService\.setVisiblePins\(/);
 assert.ok(source("index.html").includes('src="./ui/project-object-presentation.js"'));
 assert.ok(source("sw.js").includes('"./ui/project-object-presentation.js"'));
+
+const settingsTabsController=source("ui/settings-tabs-controller.js");
+assert.match(app,/new window\.Pin2MapSettingsTabsController/);
+assert.match(app,/settingsTabs\.bind\(\)/);
+assert.doesNotMatch(app,/async function updateSettingsStorage\(\)/);
+assert.doesNotMatch(app,/const selectSettingsTab=key=>/);
+assert.match(settingsTabsController,/this\.select\("General"\)/);
+assert.match(settingsTabsController,/this\.getElement\("settings"\+tab\+"Tab"\)/);
+assert.ok(source("index.html").includes('src="./ui/settings-tabs-controller.js"'));
+assert.ok(source("sw.js").includes('"./ui/settings-tabs-controller.js"'));
