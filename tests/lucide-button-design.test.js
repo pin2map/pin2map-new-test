@@ -175,7 +175,10 @@ test("refresh is a separate circular map control at 35% screen height",()=>{
   assert.ok(owner.includes("height:var(--p2m-map-circle-size)!important"));
   assert.ok(owner.includes("border-radius:50%!important"));
   assert.ok(css.includes("body.pin-open #refreshButton.refresh-map-button{display:none!important}"));
-  assert.ok(app.includes('$("refreshButton").addEventListener("click"'));
+  const lifecycle=read("ui/app-lifecycle-controller.js");
+  assert.match(lifecycle,/this\.getElement\("refreshButton"\)\.addEventListener\("click",this\.onRefreshClick\)/);
+  assert.match(app,/onRefresh:\(\)=>window\.Pin2MapPwaRefresh\.refresh\(\{/);
+  assert.match(app,/appLifecycle\.bindRefresh\(\)/);
 });
 
 
