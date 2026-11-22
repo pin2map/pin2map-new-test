@@ -568,6 +568,8 @@ const viewports=[
        const status=label.querySelector(".p2m-object-status").getBoundingClientRect();
        const outer=label.getBoundingClientRect();
        const pseudo=getComputedStyle(label,"::before");
+       const border=getComputedStyle(label);
+       const borderY=parseFloat(border.borderTopWidth)+parseFloat(border.borderBottomWidth);
        const reference=document.createElement("span");
        reference.style.backgroundColor=hex;document.body.append(reference);
        const expected=getComputedStyle(reference).backgroundColor;reference.remove();
@@ -575,15 +577,17 @@ const viewports=[
          layerToken:label.style.getPropertyValue("--p2m-feature-layer-color").toUpperCase(),
          midpoint:(type.right+status.left)/2,
          stripRight:outer.left+parseFloat(pseudo.width),
-         labelHeight:outer.height,stripHeight:parseFloat(pseudo.height),
+         innerHeight:outer.height-borderY,stripHeight:parseFloat(pseudo.height),
          statusLeft:status.left};
      },layerHex);
      assert.equal(info.layerToken,layerHex.toUpperCase(),"Label must use layer color, not object override");
      assert.equal(info.actual,info.expected,"Layer-color strip must show the exact layer color");
      assert.ok(Math.abs(info.midpoint-info.stripRight)<=1.1,
        "Colored area must end halfway between type icon and note/URL circle: "+JSON.stringify(info));
-     assert.ok(Math.abs(info.labelHeight-info.stripHeight)<=1.1,
-       "Strip must cover the whole left label height: "+JSON.stringify(info));
+     // CSS absolute positioning fills the padding box, not the 1px border.
+     // The approved outer label border must remain visible on all sides.
+     assert.ok(Math.abs(info.innerHeight-info.stripHeight)<=1.1,
+       "Strip must cover the interior without painting over the label border: "+JSON.stringify(info));
      assert.ok(info.stripRight<info.statusLeft,"Status circle stays on original neutral background");
    }
    const areaLayerHex=(await readStoredProject()).layers.find(layer=>layer.id===savedArea.layerId).color;
