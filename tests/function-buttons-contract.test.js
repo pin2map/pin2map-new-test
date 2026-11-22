@@ -27,10 +27,14 @@ test("menu toggles and name-labels have consistent permanent blue-white ON visua
  assert.ok(read("ui/basemap-menu.js").includes('setAttribute("aria-expanded","true")'));
 });
 test("menu exclusivity does not suppress peer buttons",()=>{
- const app=read("app.js"),rule=contract();
- assert.ok(app.includes('if(!ownOpen)closeAllMapMenus()'));
+ const app=read("app.js"),overlay=read("ui/map-overlay-coordinator.js"),rule=contract();
+ assert.match(app,/overlayCoordinator\.bindMapLaunchers\(\)/);
+ assert.match(overlay,/if\(!\(open\[id\]\?\.\(\)\)\)this\.closeMapMenus\(\)/,
+   "only launchers without their own open menu may dismiss competitors");
  for(const id of ["favoritesButton","layersButton","settingsButton","basemapButton","pinInfoButton","labelsToggle"])
-  assert.ok(app.includes('"#'+id+'"'),id+" has central close coordination");
+  assert.ok(overlay.includes('"#'+id+'"'),id+" has central close coordination");
+ assert.match(overlay,/this\.document\.addEventListener\("click",onClick,true\)/,
+   "capture must precede each launcher's own toggle handler");
  assert.ok(!/display\s*:\s*none/.test(rule),"no hiding of other functional buttons");
 });
 test("future import/export is covered by specification but not falsely exposed as implemented",()=>{
