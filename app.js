@@ -46,7 +46,7 @@
   }
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
-  let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
+  let gestures,pinOverlapZoom,featureOverlapZoom,favoritesPanel;
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker;
   let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
@@ -455,16 +455,26 @@
   function persistViewport() {
     persistence.saveViewport(mapAdapter.getViewport());
   }
-  function flushHistoryRecord(){
-    if(historyRecordTimer!==null){clearTimeout(historyRecordTimer);historyRecordTimer=null;}
-    if(mapViewHistory)mapViewHistory.push(mapAdapter.getViewport());
-  }
-  function navigateMapHistory(direction){
-    flushHistoryRecord();
-    const view=direction==="undo"?mapViewHistory?.undo():mapViewHistory?.redo();
-    if(view){pinOverlapZoom?.close();overlayCoordinator.closeAll();
-      mapAdapter.setView(view,{animate:false});persistViewport();}
-  }
+  const mapHistoryController=new window.Pin2MapMapViewHistoryController({
+    History:window.Pin2MapMapViewHistory.MapViewHistory,
+    mapPort:{
+      getViewport:()=>mapAdapter.getViewport(),
+      setView:(view,options)=>mapAdapter.setView(view,options),
+      updateZoomHistory:availability=>mapAdapter.updateZoomHistory(availability),
+      addZoomControls:handlers=>mapAdapter.addZoomControls(handlers),
+      onMoveEnd:handler=>mapAdapter.on("moveend zoomend",handler)
+    },
+    loadHistory:()=>projectStore?.loadViewHistory(),
+    saveHistory:value=>projectStore?.saveViewHistory(value),
+    onNotice:message=>showNotice(message),
+    onFitAll:()=>fitAllPins(),
+    onBeforeNavigate:()=>{pinOverlapZoom?.close();overlayCoordinator.closeAll();},
+    onPersistViewport:()=>persistViewport(),
+    setTimer:(callback,delay)=>setTimeout(callback,delay),
+    clearTimer:id=>clearTimeout(id)
+  });
+  function flushHistoryRecord(){mapHistoryController.flush();}
+  function navigateMapHistory(direction){mapHistoryController.navigate(direction);}
   const favoritesController=new window.Pin2MapMapFavoritesController({
     document,getElement:$,icons:window.Pin2MapIcons,
     Panel:window.Pin2MapMapFavoritesPanel,favorites,
@@ -1062,27 +1072,7 @@
       },
       onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
     });
-    mapViewHistory=new window.Pin2MapMapViewHistory.MapViewHistory({
-      onChange:availability=>mapAdapter.updateZoomHistory(availability),
-      onSave:value=>projectStore?.saveViewHistory(value).catch(()=>showNotice("Ansichts-Historie konnte nicht gespeichert werden"))
-    });
-    let previouslySavedHistory=null;
-    try{previouslySavedHistory=await projectStore?.loadViewHistory();}
-    catch(_){showNotice("Ansichts-Historie konnte nicht geladen werden");}
-    const restoredViewport=mapViewHistory.load(previouslySavedHistory,mapAdapter.getViewport());
-    if(restoredViewport)mapAdapter.setView(restoredViewport,{animate:false});
-    mapAdapter.addZoomControls({
-      onFitAll:fitAllPins,
-      onUndo:()=>navigateMapHistory("undo"),
-      onRedo:()=>navigateMapHistory("redo")
-    });
-    mapAdapter.updateZoomHistory({undo:mapViewHistory.canUndo(),redo:mapViewHistory.canRedo()});
-    // A whole drag or a wheel/pinch sequence becomes one settled navigation
-    // step, rather than creating dozens of intermediate undo entries.
-    mapAdapter.on("moveend zoomend",()=>{
-      if(historyRecordTimer!==null)clearTimeout(historyRecordTimer);
-      historyRecordTimer=setTimeout(flushHistoryRecord,320);
-    });
+    await mapHistoryController.initialize();
     favoritesPanel=favoritesController.bind();
     mapAdapter.addScaleControl();
     if(!window.Pin2MapPinInfoService.MODES.includes(state.pinInfoMode))state.pinInfoMode="off";

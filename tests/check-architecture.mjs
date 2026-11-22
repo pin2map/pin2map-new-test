@@ -179,3 +179,13 @@ assert.match(mapInteraction,/this\.onRegularMapClick\(position\)/);
 assert.match(app,/allowNonSurface:\(\)=>uiState\.moveMode\|\|temporaryMove\.isActive\(\)\|\|satelliteInspector\.isActive\(\)/);
 assert.ok(source("index.html").includes('src="./ui/map-interaction-controller.js"'));
 assert.ok(source("sw.js").includes('"./ui/map-interaction-controller.js"'));
+
+const viewHistoryController=source("ui/map-view-history-controller.js");
+assert.match(app,/new window\.Pin2MapMapViewHistoryController/);
+assert.match(app,/await mapHistoryController\.initialize\(\)/);
+assert.match(app,/function flushHistoryRecord\(\)\{mapHistoryController\.flush\(\);\}/);
+assert.match(viewHistoryController,/this\.history\.load\(saved,this\.mapPort\.getViewport\(\)\)/);
+assert.match(viewHistoryController,/this\.recordTimer=this\.setTimer\(\(\)=>this\.flush\(\),320\)/);
+assert.match(viewHistoryController,/this\.onBeforeNavigate\(\);[\s\S]*this\.mapPort\.setView\(view,\{animate:false\}\)/);
+assert.ok(source("index.html").includes('src="./ui/map-view-history-controller.js"'));
+assert.ok(source("sw.js").includes('"./ui/map-view-history-controller.js"'));
