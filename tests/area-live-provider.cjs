@@ -16,6 +16,13 @@ const {chromium}=require("playwright");
     const url=process.env.PIN2MAP_TEST_URL||
       "https://pin2map.github.io/pin2map-new-test/preview/";
     let result;
+    // Diagnostic evidence for the real-provider gate: report transport failures
+    // and HTTP responses without logging coordinates or the Overpass query.
+    const providerEvents=[];
+    const providerName=url=>{
+      try {const host=new URL(url).hostname;return /dresel|overpass|private\.coffee/.test(host)?host:null;}
+      catch {return null;}
+    };
     // A startup-guard navigation can occur after DOMContentLoaded while
     // deferred assets are initializing. Require a fully mounted Leaflet map
     // before making real provider requests. One bounded fresh-page retry
@@ -23,6 +30,14 @@ const {chromium}=require("playwright");
     // missing area, wrong polygon, or failed result assertion.
     for(let attempt=1;attempt<=2;attempt++){
       const page=await context.newPage();
+      page.on("requestfailed",req=>{
+        const provider=providerName(req.url());
+        if(provider)providerEvents.push({provider,event:"network-failure",reason:req.failure()?.errorText||"unknown"});
+      });
+      page.on("response",response=>{
+        const provider=providerName(response.url());
+        if(provider)providerEvents.push({provider,event:"http",status:response.status()});
+      });
       try{
         await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
         await page.waitForFunction(()=>!!window.L&&
@@ -64,6 +79,7 @@ const {chromium}=require("playwright");
       }
     }
     console.log("LIVE_THEMATIC_AREA_RESULT",JSON.stringify(result));
+    console.log("LIVE_THEMATIC_AREA_PROVIDER_DIAGNOSTIC",JSON.stringify(providerEvents));
     assert.equal(result.extraUnavailable,false,
       "A real spatial provider must return candidates, not admin-only fallback");
     assert.ok(result.island?.osmId,"Rügen island must have a real OSM polygon identity");
