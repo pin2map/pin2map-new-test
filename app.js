@@ -597,48 +597,32 @@
       onFit:updatePanelLayout
     });
   }
-  function renderPinPanel(){
-    const pin=selectedPin();
-    // A rendered GPX route is independent of the open pin dialog.
-    // Only the explicit "Route verbergen" action (or project replacement)
-    // removes it from the map.
-    pinEditorView.render({
-      pin,moving:uiState.moveMode,layerVisible:pin?!!layerById(pin.layerId)?.visible:true,
-      onLayout:updatePanelLayout
-    });
-    pinDetails.render(pin);
-    pinNavigation.render(pin);
-    pinGpxActions.render(pin);
-    if(pin)pinLayerPicker.render({layers:state.layers,selectedLayerId:pin.layerId});
-    else pinLayerPicker.setOpen(false);
-  }
-  function selectPin(id){
-    closeAllMapMenus();
-    pinOverlapZoom?.close();
-    pinSession.select(id);
-    if(id===pendingNewGpsPinId){
-      pendingNewGpsPinId=null;
-      requestAnimationFrame(()=>{
-        if(uiState.selectedPinId!==id)return;
-        const input=$("pinName");
-        if(input&&!$("pinPanel").classList.contains("hidden")){
-          input.focus({preventScroll:true});input.select();
-        }
-      });
-    }
-  }
-  function handleMarkerTap(id){
-    if(uiState.moveMode||satelliteInspector.isActive())return;
-    // Search hits use the existing overlap zoom/chooser, excluding contextual non-hits.
-    if(objectSearchController.view?.ids.has("pins:"+id)){
-      pinOverlapZoom.handleTap(id,markerView.visiblePins().filter(
-        pin=>objectSearchController.view.ids.has("pins:"+pin.id)));
-      return;
-    }
-    if(featureOverlapZoom?.handleTap("pin",id))return;
-    if(pinOverlapZoom)pinOverlapZoom.handleTap(id);
-    else selectPin(id);
-  }
+  // Pin presentation, selection, search-hit and overlap priorities are owned
+  // by one UI coordinator. app.js supplies only the active use-case ports.
+  const pinSelection=new window.Pin2MapPinSelectionController({
+    getPin:selectedPin,getLayer:layerById,getLayers:()=>state.layers,
+    getMoveMode:()=>uiState.moveMode,getSelectedId:()=>uiState.selectedPinId,
+    getSearchIds:()=>objectSearchController.view?.ids,
+    isSatelliteActive:()=>satelliteInspector.isActive(),
+    getVisiblePins:()=>markerView.visiblePins(),
+    getPinOverlap:()=>pinOverlapZoom,getFeatureOverlap:()=>featureOverlapZoom,
+    closeMapMenus:closeAllMapMenus,selectPinUseCase:id=>pinSession.select(id),
+    takeGpsFocusId:id=>{
+      if(id!==pendingNewGpsPinId)return false;
+      pendingNewGpsPinId=null;return true;
+    },
+    scheduleFrame:callback=>requestAnimationFrame(callback),getElement:$,
+    renderEditor:options=>pinEditorView.render(options),
+    renderDetails:pin=>pinDetails.render(pin),
+    renderNavigation:pin=>pinNavigation.render(pin),
+    renderGpxActions:pin=>pinGpxActions.render(pin),
+    renderLayerPicker:options=>pinLayerPicker.render(options),
+    closeLayerPicker:()=>pinLayerPicker.setOpen(false),
+    onLayout:()=>updatePanelLayout()
+  });
+  function renderPinPanel(){pinSelection.render();}
+  function selectPin(id){pinSelection.select(id);}
+  function handleMarkerTap(id){pinSelection.handleMarkerTap(id);}
   function updateModeUI() {
     const picking=(uiState.moveMode||temporaryMove.isActive())&&!moveView.current();
     document.body.classList.toggle("pin-relocation-picking",picking);
