@@ -40,6 +40,8 @@ test("Pin copy and confirmation use exact bundled canonical Lucide glyphs",()=>{
  assert.match(ui,/this\.button\.classList\.toggle\("is-copied",copied\)/);
  const css=read("styles.css");
  assert.match(css,/#pinPanel \.pin-nav-add\.p2m-icon-control\.is-copied\{/);
+ assert.match(css,/@media\(hover:hover\) and \(pointer:fine\)\{\s*button\.p2m-icon-control:not\(#searchButton\):hover/,
+   "Global icon hover must never remain applied after a touch tap");
  assert.match(css,/--p2m-button-bg:#52606d;--p2m-button-ink:#fff/);
  assert.match(sw,/"\.\/application\/apple-maps-links\.js"/);
  assert.match(sw,/"\.\/ui\/pin-navigation\.js"/);

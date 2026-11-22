@@ -185,6 +185,10 @@ const viewports=[
      window.open=url=>{window.__openedAppleLinks.push(url);return null;};
    });
    assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
+   const initialCopyStyle=await page.locator("#pinNavCopy").evaluate(el=>({
+     background:getComputedStyle(el).backgroundColor,color:getComputedStyle(el).color
+   }));
+   assert.deepEqual(initialCopyStyle,{background:"rgb(22, 121, 229)",color:"rgb(255, 255, 255)"});
    await page.locator("#pinNavCopy").click();
    await page.waitForFunction(()=>window.__copiedPinCoords==="47.650100, 9.180200");
    await page.waitForFunction(()=>document.querySelector("#pinNavCopy")?.classList.contains("is-copied"));
@@ -204,6 +208,17 @@ const viewports=[
    await page.waitForTimeout(1150);
    assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
    assert.equal(await page.locator("#pinNavCopy").evaluate(el=>el.classList.contains("is-copied")),false);
+   // Regression: iPhone Safari kept the generic :hover tint after the timer,
+   // even though the icon and is-copied class had reset correctly.
+   // Move the mouse away only on desktop: touch must recover by itself.
+   if(!view.mobile)await page.mouse.move(0,0);
+   const resetCopyStyle=await page.locator("#pinNavCopy").evaluate(el=>({
+     background:getComputedStyle(el).backgroundColor,
+     color:getComputedStyle(el).color,
+     label:el.getAttribute("aria-label")
+   }));
+   assert.deepEqual(resetCopyStyle,{...initialCopyStyle,label:"Pin-Koordinaten kopieren"},
+     "After copy confirmation, touch and desktop MUST restore the original saturated blue: "+view.name);
    await page.locator("#pinNavApple").click();
    await page.locator("#pinAppleMenu").waitFor({state:"visible"});
    const applePosition=await page.evaluate(()=>{

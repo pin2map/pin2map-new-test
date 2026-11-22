@@ -364,7 +364,10 @@ button.p2m-icon-control{
   background:var(--p2m-button-bg)!important;color:var(--p2m-button-ink)!important;
   box-shadow:var(--p2m-button-shadow);line-height:1
 }
-button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied)){background:#f5f8fa!important}
+/* Hover is a mouse capability, not a sticky post-tap state on touch. */
+@media(hover:hover) and (pointer:fine){
+  button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied)){background:#f5f8fa!important}
+}
 button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active,.is-copied)){background:#e9eff4!important}
 button.p2m-icon-control:focus-visible{outline:3px solid #8bb8ec;outline-offset:2px}
 button.p2m-icon-control:disabled{opacity:.45;cursor:not-allowed}
