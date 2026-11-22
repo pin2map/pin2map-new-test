@@ -32,7 +32,7 @@ function fixture({stored=null,loadError=false,saveError=false,withoutStore=false
     setTimer:(fn,delay)=>{assert.equal(delay,320);const id=nextTimer++;timers.set(id,fn);events.push(["timer",id]);return id;},
     clearTimer:id=>{timers.delete(id);events.push(["clearTimer",id]);}
   });
-  return {controller,events,saved,timers,view:n=>{mapView=viewport(n);},get view(){return mapView;},
+  return {controller,events,saved,timers,setView:n=>{mapView=viewport(n);},get view(){return mapView;},
     get mapOnMove(){return mapOnMove;},get buttons(){return buttons;},fireTimer:()=>{
       const [id,fn]=timers.entries().next().value;timers.delete(id);fn();
     }};
@@ -49,7 +49,7 @@ test("initialization restores local history before installing zoom controls and 
 });
 test("settled move events are coalesced and only last map location is written",async()=>{
   const f=fixture();await f.controller.initialize();
-  f.view(1);f.mapOnMove();f.view(2);f.mapOnMove();
+  f.setView(1);f.mapOnMove();f.setView(2);f.mapOnMove();
   assert.equal(f.timers.size,1);
   assert.ok(f.events.some(e=>e[0]==="clearTimer"));
   f.fireTimer();
@@ -59,8 +59,8 @@ test("settled move events are coalesced and only last map location is written",a
 });
 test("Undo flushes pending navigation, dismisses overlays and persists restored viewport without animation",async()=>{
   const f=fixture();await f.controller.initialize();
-  f.view(1);f.mapOnMove();f.controller.flush();
-  f.view(2);f.mapOnMove();
+  f.setView(1);f.mapOnMove();f.controller.flush();
+  f.setView(2);f.mapOnMove();
   const previous=f.events.length;f.buttons.onUndo();
   assert.deepEqual(f.view,viewport(1));
   assert.equal(f.timers.size,0);
@@ -68,11 +68,12 @@ test("Undo flushes pending navigation, dismisses overlays and persists restored 
   assert.ok(actions.indexOf("clearTimer")<actions.indexOf("closeOverlays"));
   assert.deepEqual(actions.slice(-3),["closeOverlays","view","persistViewport"]);
   const after=f.events.length;f.buttons.onRedo();
-  assert.equal(f.events.length,after,"nothing to redo after flushing new user navigation");
+  assert.deepEqual(f.view,viewport(2),"Redo restores the previously flushed location");
+  assert.ok(f.events.length>after);
 });
 test("Undo and Redo preserve historical positions when no pending movement exists",async()=>{
   const f=fixture();await f.controller.initialize();
-  f.view(1);f.controller.flush();f.view(2);f.controller.flush();
+  f.setView(1);f.controller.flush();f.setView(2);f.controller.flush();
   f.buttons.onUndo();assert.deepEqual(f.view,viewport(1));
   f.buttons.onRedo();assert.deepEqual(f.view,viewport(2));
   const before=f.events.filter(e=>e[0]==="persistViewport").length;
@@ -87,10 +88,10 @@ test("history load failure uses current map viewport and emits the existing noti
 });
 test("save failures are reported, but absent store preserves silent optional persistence",async()=>{
   const f=fixture({saveError:true});await f.controller.initialize();
-  f.view(1);f.controller.flush();
+  f.setView(1);f.controller.flush();
   await new Promise(resolve=>setImmediate(resolve));
   assert.ok(f.events.some(e=>e[0]==="notice"&&e[1]==="Ansichts-Historie konnte nicht gespeichert werden"));
-  const g=fixture({withoutStore:true});await g.controller.initialize();g.view(1);
+  const g=fixture({withoutStore:true});await g.controller.initialize();g.setView(1);
   assert.doesNotThrow(()=>g.controller.flush());
   assert.equal(g.events.filter(x=>x[0]==="notice").length,0);
 });
