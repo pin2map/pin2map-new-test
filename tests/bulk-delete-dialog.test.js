@@ -66,7 +66,12 @@ test("composition, offline shell and script order protect the new UI boundary",(
   const sw=fs.readFileSync(path.resolve(__dirname,"../sw.js"),"utf8");
   assert.match(app,/new window\.Pin2MapBulkDeleteDialog/);
   assert.match(app,/bulkDeleteDialog\.show\(id,info\)/);
-  assert.match(app,/layerOps\.deleteLayerOrPins\(state,id,PRIVATE_ID\)/);
+  const deletion=fs.readFileSync(path.resolve(__dirname,"../application/layer-deletion-session.js"),"utf8");
+  assert.match(app,/new window\.Pin2MapLayerDeletionSession/);
+  assert.match(app,/function confirmBulkDeletion\(id\)\{layerDeletion\.confirm\(id\);\}/);
+  assert.match(app,/operations:layerOps,getProject:\(\)=>state,privateId:PRIVATE_ID/);
+  assert.match(deletion,/this\.operations\.deleteLayerOrPins\(project,id,this\.privateId\)/);
+  assert.match(deletion,/if\(obj\.layerId===id\)obj\.layerId=this\.privateId/);
   assert.doesNotMatch(app,/\$\("bulkDialog"\)\.onclose=/);
   assert.ok(html.indexOf('./ui/bulk-delete-dialog.js')>html.indexOf('./ui/layer-view.js'));
   assert.ok(html.indexOf('./ui/bulk-delete-dialog.js')<html.indexOf('./app.js'));
