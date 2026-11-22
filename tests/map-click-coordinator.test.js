@@ -35,9 +35,14 @@ test("module wired to app via map adapter and cached for offline startup",()=>{
   const read=name=>fs.readFileSync(path.resolve(__dirname,"..",name),"utf8");
   const app=read("app.js"),html=read("index.html"),sw=read("sw.js");
   assert.match(app,/new window\.Pin2MapMapClickCoordinator/);
-  assert.match(app,/mapAdapter\.onMapClick\(position=>\{/);
-  assert.match(app,/if\(satelliteInspector\.isActive\(\)\)\{satelliteInspector\.pick\(position\);return;\}/);
-  assert.match(app,/mapClickCoordinator\.handle\(position\);/);
+  const interaction=read("ui/map-interaction-controller.js");
+  assert.match(app,/onMapClick:handler=>mapAdapter\.onMapClick\(handler,/);
+  assert.match(app,/allowNonSurface:\(\)=>uiState\.moveMode\|\|temporaryMove\.isActive\(\)\|\|satelliteInspector\.isActive\(\)/);
+  assert.match(app,/isSatellitePicking:\(\)=>satelliteInspector\.isActive\(\)/);
+  assert.match(app,/onSatellitePick:position=>satelliteInspector\.pick\(position\)/);
+  assert.match(app,/onRegularMapClick:position=>mapClickCoordinator\.handle\(position\)/);
+  assert.match(interaction,/if\(this\.isSatellitePicking\(\)\)\{this\.onSatellitePick\(position\);return;\}/);
+  assert.match(interaction,/this\.onRegularMapClick\(position\)/);
   assert.ok(html.indexOf("./application/map-click-coordinator.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/application\/map-click-coordinator\.js"/);
   assert.match(sw,/const CACHE='pin2map-new-v\d+'/);
