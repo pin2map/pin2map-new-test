@@ -131,3 +131,57 @@ test("app delegates map-menu detection and closing to existing overlay coordinat
   assert.match(app,/overlayCoordinator\.closeMapMenus\(\)/);
   assert.doesNotMatch(app,/function (?:anyMapMenuOpen|closeAllMapMenus)\s*\(/);
 });
+
+test("launcher capture closes competitors but preserves second-tap toggle behavior",()=>{
+  const calls=[];let favoritesOpen=false;
+  const panels=new Map();
+  for(const id of ["layersPanel","settingsPanel","transferPanel","basemapMenu","pinInfoMenu"]){
+    panels.set(id,{classList:{contains:()=>false}});
+  }
+  const handlers=[];const removed=[];
+  const doc={
+    addEventListener:(type,fn,capture)=>handlers.push({type,fn,capture}),
+    removeEventListener:(type,fn,capture)=>removed.push({type,fn,capture}),
+    activeElement:null
+  };
+  const overlay=new Overlay({
+    getElement:id=>id==="deleteDialog"?{open:false}:panels.get(id),
+    document:doc,
+    searchView:{hide:()=>calls.push("search")},
+    uiShell:{closePanels:()=>calls.push("panels"),hideNotice:()=>calls.push("notice")},
+    basemapMenu:{close:()=>calls.push("basemap")},
+    getMoveMode:()=>false,getSelectedPinId:()=>null,
+    onCancelMove:()=>{},onClearSelection:()=>{},
+    getFavoritesOpen:()=>favoritesOpen,
+    closeAdditionalMenus:()=>calls.push("additional"),
+    onCancelGeometrySearch:()=>calls.push("geometry")
+  });
+  overlay.bindMapLaunchers();overlay.bindMapLaunchers();
+  assert.equal(handlers.length,1);
+  assert.equal(handlers[0].type,"click");
+  assert.equal(handlers[0].capture,true);
+  const click=(id)=>handlers[0].fn({target:{closest:()=>({id})}});
+  favoritesOpen=true;click("favoritesButton");
+  assert.deepEqual(calls,[],"second tap on open favorites leaves its own toggle intact");
+  favoritesOpen=false;click("favoritesButton");
+  assert.deepEqual(calls,["additional","geometry","search","panels","basemap","notice"]);
+  calls.length=0;click("layersButton");
+  assert.deepEqual(calls,[],"open layers own button must keep toggle");
+  panels.get("layersPanel").classList.contains=()=>true;
+  click("layersButton");
+  assert.equal(calls[0],"additional","closed layer launcher must dismiss competitors");
+  overlay.dispose();
+  assert.equal(removed.length,1);
+  assert.equal(removed[0].capture,true);
+});
+test("all special launcher types retain their original capture selector",()=>{
+  const overlay=fs.readFileSync(path.resolve(__dirname,"../ui/map-overlay-coordinator.js"),"utf8");
+  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
+  for(const id of ["favoritesButton","layersButton","settingsButton","transferButton",
+    "basemapButton","pinInfoButton","searchTypeButton","refreshButton","labelsToggle"])
+    assert.ok(overlay.includes("#"+id),"launcher must be intercepted: "+id);
+  assert.match(overlay,/\.pin-zoom-buttons button/);
+  assert.match(overlay,/this\.document\.addEventListener\("click",onClick,true\)/);
+  assert.match(app,/overlayCoordinator\.bindMapLaunchers\(\)/);
+  assert.doesNotMatch(app,/mapLauncherSelector/);
+});

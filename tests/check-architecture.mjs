@@ -118,3 +118,10 @@ const application=html.indexOf('src="./app.js"');
 assert.ok(domain>=0&&pinFilter>domain&&pinOperations>pinFilter&&filterOperations>pinOperations&&layerOperations>filterOperations&&layerView>layerOperations&&storage>layerView&&ui>storage&&searchView>ui&&uiState>searchView&&pinEditor>uiState&&adapter>pinEditor&&application>adapter,
   "Domain → repository → UI modules → map adapter → app load order required");
 console.log("Architectural gates passed:",modelFiles.join(", "),"; Leaflet app uses adapter");
+
+assert.match(app,/overlayCoordinator\.bindMapLaunchers\(\)/,
+  "Map launcher capture must be wired via its UI coordinator");
+assert.doesNotMatch(app,/mapLauncherSelector|document\.addEventListener\("click",event=>\{\s*const button=event\.target\?\.closest\?/,
+  "Launcher classification and capture must not regress into the composition root");
+const overlay=source("ui/map-overlay-coordinator.js");
+assert.match(overlay,/bindMapLaunchers\(\)/);

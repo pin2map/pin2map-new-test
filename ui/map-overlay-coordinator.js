@@ -3,7 +3,7 @@
  * are supplied as callbacks; no pin mutation, persistence or Leaflet here. */
 (function(root){
   class MapOverlayCoordinator{
-    constructor({getElement,document:doc,searchView,uiShell,basemapMenu,pinInfoMenu=null,getMoveMode,getSelectedPinId,onCancelMove,onClearSelection,getAdditionalMenuOpen=()=>false,closeAdditionalMenus=()=>{},onCancelGeometrySearch=()=>{},onResetPinSelection=()=>{}}){
+    constructor({getElement,document:doc,searchView,uiShell,basemapMenu,pinInfoMenu=null,getMoveMode,getSelectedPinId,onCancelMove,onClearSelection,getAdditionalMenuOpen=()=>false,closeAdditionalMenus=()=>{},onCancelGeometrySearch=()=>{},onResetPinSelection=()=>{},getFavoritesOpen=()=>false}){
       if(typeof getElement!=="function"||!doc||!searchView||!uiShell||!basemapMenu||
          [getMoveMode,getSelectedPinId,onCancelMove,onClearSelection].some(fn=>typeof fn!=="function"))
         throw new TypeError("Map overlay coordinator dependencies required");
@@ -14,7 +14,8 @@
       this.onCancelMove=onCancelMove;this.onClearSelection=onClearSelection;
       if([getAdditionalMenuOpen,closeAdditionalMenus,onCancelGeometrySearch,onResetPinSelection].some(fn=>typeof fn!=="function"))
         throw new TypeError("Map menu coordination ports required");
-      Object.assign(this,{getAdditionalMenuOpen,closeAdditionalMenus,onCancelGeometrySearch,onResetPinSelection});
+      if(typeof getFavoritesOpen!=="function")throw new TypeError("Favorites open-state port required");
+      Object.assign(this,{getAdditionalMenuOpen,closeAdditionalMenus,onCancelGeometrySearch,onResetPinSelection,getFavoritesOpen});
       this.listeners=[];
     }
     isAnyMapMenuOpen(){
@@ -60,6 +61,33 @@
       this.basemapMenu.close();
       this.uiShell.togglePanel(id);
     }
+    bindMapLaunchers(){
+      if(this.launcherBinding)return;
+      const selector=[
+        "#favoritesButton","#layersButton","#settingsButton","#transferButton","#basemapButton",
+        "#pinInfoButton","#searchTypeButton","#refreshButton",
+        "#labelsToggle",".pin-zoom-buttons button"
+      ].join(",");
+      const onClick=event=>{
+        const button=event.target?.closest?.(selector);
+        if(!button)return;
+        const id=button.id;
+        const open={
+          favoritesButton:()=>this.getFavoritesOpen(),
+          layersButton:()=>!this.element("layersPanel").classList.contains("hidden"),
+          settingsButton:()=>!this.element("settingsPanel").classList.contains("hidden"),
+          transferButton:()=>!this.element("transferPanel").classList.contains("hidden"),
+          basemapButton:()=>!this.element("basemapMenu").classList.contains("hidden"),
+          pinInfoButton:()=>!this.element("pinInfoMenu").classList.contains("hidden")
+        };
+        // The already-open launcher must receive its own toggle click.
+        if(!(open[id]?.()))this.closeMapMenus();
+      };
+      // Capture phase is part of the contract: close competitors before
+      // individual launcher listeners toggle their own panels.
+      this.document.addEventListener("click",onClick,true);
+      this.launcherBinding={onClick};
+    }
     bind(){
       if(this.listeners.length)return;
       const listen=(node,type,handler)=>{
@@ -80,6 +108,10 @@
     dispose(){
       for(const {node,type,handler} of this.listeners)node.removeEventListener(type,handler);
       this.listeners=[];
+      if(this.launcherBinding){
+        this.document.removeEventListener("click",this.launcherBinding.onClick,true);
+        this.launcherBinding=null;
+      }
     }
   }
   root.Pin2MapMapOverlayCoordinator=MapOverlayCoordinator;

@@ -297,6 +297,7 @@
     getElement:$,document,searchView,uiShell,basemapMenu,pinInfoMenu,
     getMoveMode:()=>uiState.moveMode,
     getSelectedPinId:()=>uiState.selectedPinId,
+    getFavoritesOpen:()=>!!favoritesPanel?.open,
     getAdditionalMenuOpen:()=>!!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
       !!noteEditor?.open,
     closeAdditionalMenus:()=>{
@@ -883,26 +884,8 @@
     });
     searchTypeMenu.bind();
     pinInfoMenu.bind();
-    // Circular map-launchers close competing menus without hiding any other
-    // map buttons. The capture handler precedes each launcher's own toggle.
-    const mapLauncherSelector=[
-      "#favoritesButton","#layersButton","#settingsButton","#transferButton","#basemapButton",
-      "#pinInfoButton","#searchTypeButton","#refreshButton",
-      "#labelsToggle",".pin-zoom-buttons button"
-    ].join(",");
-    document.addEventListener("click",event=>{
-      const button=event.target?.closest?.(mapLauncherSelector);
-      if(!button)return;
-      const id=button.id;
-      const ownOpen=(id==="favoritesButton"&&favoritesPanel?.open)||
-        (id==="layersButton"&&!$("layersPanel").classList.contains("hidden"))||
-        (id==="settingsButton"&&!$("settingsPanel").classList.contains("hidden"))||
-        (id==="transferButton"&&!$("transferPanel").classList.contains("hidden"))||
-        (id==="basemapButton"&&!$("basemapMenu").classList.contains("hidden"))||
-        (id==="pinInfoButton"&&!$("pinInfoMenu").classList.contains("hidden"));
-      // A second tap on the active launcher still closes its own menu.
-      if(!ownOpen)closeAllMapMenus();
-    },true);
+    // Launcher capture and same-button toggle semantics live in the UI owner.
+    overlayCoordinator.bindMapLaunchers();
     $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
     $("layersButton").addEventListener("click",()=>{
       if(!$("layersPanel").classList.contains("hidden")){layerView.close();return;}
