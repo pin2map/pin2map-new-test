@@ -329,7 +329,11 @@ test("predecessor-safe baseline keeps all lower controls clear of the footer",()
 test("routing destination has offline Lucide goal geometry",()=>{
  const goal=Icons.svg("goal",documentStub());
  assert.deepEqual(goal.children.map(n=>n.name),["path","path","path"]);
- assert.equal(goal.children[0].attributes.d,"M12 13V2l8 4-8 4");
+ assert.deepEqual(goal.children.map(n=>n.attributes.d),[
+  "M12 13V2l8 4-8 4",
+  "M20.561 10.222a9 9 0 1 1-12.55-5.29",
+  "M8.002 9.997a5 5 0 1 0 8.9 2.02"
+ ],"Goal must match canonical Lucide paths, not an invented target glyph");
  const html=read("index.html");
  assert.match(html,/id="pinRouteTarget"[^>]*data-pin-icon="goal"/);
 });
