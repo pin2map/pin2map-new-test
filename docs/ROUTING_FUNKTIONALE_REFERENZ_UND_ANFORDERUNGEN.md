@@ -2,7 +2,7 @@
 
 **Angelegt:** 22.11.2026 · **Status:** gemeinsame Anforderungserhebung eröffnet, **noch keine neuen fachlichen Routing-Entscheidungen freigegeben**.  
 **Geltung:** `pin2map/pin2map-new-test`, Branch `feature/leaflet-modular-core`.  
-**Vorgänger-Quellreferenz:** `pin2map/pin2map`, `main`, [`index.html`](https://github.com/pin2map/pin2map/blob/main/index.html), direkt am 22.11.2026 geprüft; die unten genannten Zeilen/Funktionen dienen ausschließlich zur Identifikation der Legacy-Funktion.  
+**Maßgebliche Vorgänger-Funktionsreferenz (nach ausdrücklicher Nutzerklarstellung vom 22.11.2026):** [`pin2map/pin2map-2`, `main/reference/legacy/pin2map_v10.12.71_Verbindungsauswahl_TEST.html`](https://github.com/pin2map/pin2map-2/blob/main/reference/legacy/pin2map_v10.12.71_Verbindungsauswahl_TEST.html), archivierter Original-Blob `e3906d8d17bdebdf55a09a3f731d18b96fe3e04a`. **Ältere stabile Vergleichsbasis:** [`pin2map/pin2map-2`, `main/reference/legacy/pin2map_v10.12.71_auto_zeitmarkierungen.html`](https://github.com/pin2map/pin2map-2/blob/main/reference/legacy/pin2map_v10.12.71_auto_zeitmarkierungen.html), Blob `818d613eef1e721b412be9245e83cb10af600429`, bytegleich zur bisherigen `pin2map/pin2map:main/index.html`. Beide Originale und ihre Einordnung sind in `pin2map-2/reference/legacy/README.md` dokumentiert.  
 **Bereits bestehende Querverträge:** `AGENTS.md`, `docs/GRUNDENTSCHEIDUNGEN.md`, `docs/MODULARCHITEKTUR.md`, `docs/PROJEKTSTATUS.md`, `docs/VORGAENGER_APP_MODUL_AUDIT.md`, `tests/routing-readiness-architecture.test.js`.
 
 ## 1. Zweck, Quellenwert und klare Trennung
@@ -18,7 +18,7 @@ Die Vorgänger-App dient als **funktionale und gegebenenfalls visuelle Referenz,
 
 ## 2. Im Vorgänger `pin2map/pin2map:index.html` belegtes Routing-Funktionsinventar
 
-Die Angaben sind Quellcodebefunde, keine für NEW beschlossenen Funktionsanforderungen. Referenzzeilen beziehen sich auf die am 22.11.2026 direkt gelesene Legacy-`main/index.html`.
+Die Angaben sind Quellcodebefunde, keine für NEW beschlossenen Funktionsanforderungen. **Die folgende zunächst erstellte Tabelle L-R01–L-R18 referenziert die ältere stabile Datei** (`pin2map/pin2map:main/index.html`), deren Zeilennummern nicht mit der maßgeblichen ÖPNV-Testversion übereinstimmen. **Abschnitt 2a dokumentiert verbindlich die zusätzliche/abweichende Funktionalität der neueren Testversion; bei fachlichen Widersprüchen hat sie als Funktionsreferenz Vorrang.**
 
 | ID | Funktionsbereich | Direkt belegtes Verhalten der Vorgänger-App | Beleg im Legacy-Quelltext |
 | --- | --- | --- | --- |
@@ -33,7 +33,7 @@ Die Angaben sind Quellcodebefunde, keine für NEW beschlossenen Funktionsanforde
 | L-R09 | Linienfarben | Unterschiedliche Etappenfarben optional; Fußwege im ÖPNV abweichend dargestellt | `routeLegColors`, `updateRouteLegColorButton` um 4173; `calculateTransitRoute` 4523–4532 |
 | L-R10 | Fahrtzeitmarkierungen | Bei Autorouten visuelle Markierungen im 30-Minuten-Raster, volle Stunden zusätzlich hervorgehoben | `p2mDrawDriveTimeMarkers` um 4155–4172 |
 | L-R11 | ÖPNV-Anfrage | Nur Start/Ziel, keine Zwischenziele; Fahrplanmodi Abfahrt oder Ankunft mit Datum/Uhrzeit; Fahrzeugpräferenz Alle/Bahn/Bus und zusätzliche Umsteigezeit | HTML 2495; `calculateTransitRoute` 4517–4521; `transitTimeMode`, `transitVehiclePreference`, `transitExtraTransfer` |
-| L-R12 | ÖPNV-Ergebnis | Die App verwendet **`d.itineraries[0]`**, also die erste zurückgegebene Verbindung; Anzeige von Linien, Abfahrts-/Ankunftszeiten, Haltestellen, Gleisen, Umstiegen und einzeln fokussierbaren Etappen | `calculateTransitRoute` 4521–4557; `p10730Platform` und `p10732FocusLeg` |
+| L-R12 | ÖPNV-Ergebnis (**ältere stabile Version**) | Die ältere App verwendet **`d.itineraries[0]`**; die **maßgebliche neuere Testversion** bietet dagegen eine echte Auswahl mehrerer zurückgelieferter Verbindungen und aktualisiert bei Auswahl Karte und Etappen (siehe Abschnitt 2a). | Ältere `calculateTransitRoute` 4521–4557; neuere `p2mStoreTransitAlternatives`/`p2mShowTransitAlternatives`/`p2mRenderTransitItinerary` 4534–4631 |
 | L-R13 | ÖPNV-Weitergabe | Start/Ziel mit Ortsbezeichnung, Koordinaten sowie lokalem Datum und Abfahrts-/Ankunftsauswahl an DB Navigator übergeben | `p2mDbNavigator` 4719–4742 |
 | L-R14 | Apple Karten | Routenstart/Ziel an Apple Karten mit an den Modus angepasstem Navigationsparameter; einzelne Etappen können separat übergeben werden | `openRouteInAppleMaps` um 4324–4328; Etappenaktionen 4388 |
 | L-R15 | GPX-Export | Berechnete Route als GPX mit Trackpunkten und Routenpunkt-Waypoints exportieren | `rememberRouteExport`, `exportRouteGpx` 4339–4347 |
@@ -43,10 +43,24 @@ Die Angaben sind Quellcodebefunde, keine für NEW beschlossenen Funktionsanforde
 
 ### Aussagegrenzen der Referenz
 
-- **Keine bewährte ÖPNV-Alternativenwahl belegt:** Die reguläre Vorgänger-App wählt `itineraries[0]`. Ein in historischen separaten Referenzdateien erwähnter experimenteller Alternativenansatz ist keine abgenommene Hauptfunktion.
+- **ÖPNV-Alternativenwahl ist in der gesuchten Testversion ausdrücklich vorhanden:** Anders als die ältere stabile Datei verarbeitet die neuere Testversion mehrere von Transitous gelieferte Itineraries und stellt eine echte auswählbare Liste dar. Die Archivdokumentation kennzeichnet diese Version als nach umfangreichen Tests optimiert, zugleich aber mit nicht mehr beherrschbarer Darstellung. Eine fehlerfreie/abgenommene mobile UI ist damit nicht belegt. Keine automatische Funktionsübernahme ohne neue Anforderungsfreigabe.
 - **Anbieter nicht verbindlich:** Die beobachteten OSRM-/Valhalla-/Transitous-/DB-/Apple-Endpunkte sind historische Implementierungsdetails, keine technische Entscheidung für NEW; deren aktuelle Nutzbarkeit, Quoten und Eignung müssen bei einer späteren Providerentscheidung neu geprüft werden.
 - **Keine automatische Qualitätsgarantie:** Existenz der Funktionen im Legacy-Quellcode beweist keine korrekte Routenqualität, Reisezeit, stabile Echtzeitverfügbarkeit oder durchgeführte Geräteabnahme.
 - **Keine UI-Paritätsautomatik:** Die tatsächliche Bedienoberfläche und der gewünschte Ablauf werden mit dem Auftraggeber eigenständig spezifiziert, insbesondere auf iPhone/iPad.
+
+## 2a. Maßgebliche erweiterte ÖPNV-Testversion – direkt nachgewiesene Unterschiede
+
+**Unbedingt für alle künftigen Routing-Diskussionen beachten:** Der Auftraggeber meint die **zweite, erweiterte Datei** `pin2map_v10.12.71_Verbindungsauswahl_TEST.html` aus `pin2map/pin2map-2:reference/legacy/`, **nicht** die zuvor primär untersuchte stabile `pin2map/pin2map:index.html`. Beide tragen denselben Versionspräfix `v10.12.71`; erst der Zusatz `Verbindungsauswahl_TEST` unterscheidet sie eindeutig.
+
+Nach direktem Vergleich des wirklichen Quelltexts am 22.11.2026:
+
+1. **Mehrere Verbindungen statt bloß `itineraries[0]`:** `calculateTransitRoute` (Zeilen 4622–4631) speichert mit `p2mStoreTransitAlternatives(d.itineraries,routeItems)` zunächst die Liste der zurückgegebenen Möglichkeiten; zuerst wird standardmäßig der erste darstellbare Eintrag angezeigt, die weiteren sind aber wählbar.
+2. **Explizite Alternativenliste:** `p2mTransitAlternatives`, `p2mTransitSelected`, `p2mShowTransitAlternatives` (Zeilen 4534–4583) zeigen **tatsächlich gelieferte** Verbindungen mit Abfahrts-/Ankunftszeit, Dauer und Umstiegen an. Auswahl eines anderen Eintrags aktualisiert Karte, Etappen und Hinweise, ohne den externen Provider erneut nach genau dieser Alternative fragen zu müssen. Eine ausgedachte oder vom Provider nicht gelieferte Alternative wird nicht erzeugt.
+3. **Separate Etappen-/Kartendarstellung:** `p2mRenderTransitItinerary` (Zeilen 4584–4620) rendert die jeweils ausgewählte Verbindung samt Geometrie, Farben, Routenübersicht, Haltestellen und Etappen. Etappen lassen sich auswählen und in der Karte fokussieren (`p10732FocusLeg` um Zeilen 4498–4512); die Liste bietet auch Tastaturbedienung per Pfeiltasten (4515–4529).
+4. **Ungültige oder veraltete Antworten:** `p2mTransitRequestSeq` verhindert die Übernahme später eintreffender veralteter Berechnungsergebnisse. Als Möglichkeiten werden nur Einträge mit einer nichtleeren `legs`-Liste angenommen; Fehler verwerfen die Alternativen (4534–4559, 4622–4631).
+5. **Geprüfte Grenzen:** Die archivierte `reference/legacy/README.md` nennt die ÖPNV-Verbindungsauswahl „nach umfangreichen Tests optimiert“, sagt aber ausdrücklich, dass die **Darstellung nicht mehr beherrschbar** war. Das beschreibt den historischen Entwicklungsstand; für NEW übernehmen wir daher **nur die gewünschten Fähigkeiten**, nicht die alte Layout-, Zustands- oder Handlerarchitektur.
+
+**Fachlich für spätere Abstimmung relevant, aber noch OFFEN:** Welche Alternativen angezeigt/gefiltert/sortiert werden, wie man zwischen ihnen wechselt, welche Etappeninformationen und Fokuseffekte tatsächlich gewünscht sind sowie iPhone-/iPad-Navigation und Scrollverhalten. Der Legacy-Mehrfachverbindungscode ist ein konkreter Funktionsnachweis, **noch keine neue verbindliche Umsetzungsentscheidung**. Die umfassendere detaillierte Analyse des weiteren historischen Etappen- und Layout-Codes kann bei der entsprechenden Anforderungsrunde fortgesetzt werden.
 
 ## 3. Was für pin2map NEW bereits verbindlich ist
 
