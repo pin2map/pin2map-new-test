@@ -32,7 +32,7 @@
   });
   const currentPinFilter = pinFilter.createFilter();
   const objectSearch=window.Pin2MapObjectSearch;
-  let objectSearchView=null,objectSearchSpotlight=null;
+  let objectSearchSpotlight=null;
   // Presentation only: fresh persisted objects blink for at most 30 seconds.
   const recentlyCreated=new Map();
   const activeFlashIds=()=>new Set([...recentlyCreated].filter(([,end])=>Date.now()<end).map(([id])=>id));
@@ -464,8 +464,8 @@
   // The microtask runs after the caller has completed its object update.
   const save = () => {
     persistence.save();
-    if(objectSearchView)queueMicrotask(()=>{
-      if(objectSearchView)refreshObjectSearch();
+    if(objectSearchController.view)queueMicrotask(()=>{
+      if(objectSearchController.view)refreshObjectSearch();
     });
   };
   const dbWrite = () => persistence.writeNow();
@@ -558,18 +558,18 @@
     if(!mapAdapter?.renderProjectGeometry)return;
     const visible=new Set(state.layers.filter(l=>l.visible).map(l=>l.id));
     const isMatch=(type,id,layerId)=>
-      objectSearchView?.onlyHits
-        ?objectSearchView.ids.has(type+":"+id)
-        :visible.has(layerId)||!!objectSearchView?.ids.has(type+":"+id);
+      objectSearchController.view?.onlyHits
+        ?objectSearchController.view.ids.has(type+":"+id)
+        :visible.has(layerId)||!!objectSearchController.view?.ids.has(type+":"+id);
     const layerColors=Object.fromEntries(state.layers.map(l=>[l.id,l.color]));
     mapAdapter.renderProjectGeometry({
       areas:(state.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
       rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
-      layerColors,highlightIds:objectSearchView?.onlyHits?null:objectSearchView?.ids,
+      layerColors,highlightIds:objectSearchController.view?.onlyHits?null:objectSearchController.view?.ids,
       flashIds:activeFlashIds(),
       onAreaLabel:(area,point)=>{
         const hitType=area.kind==="lake"?"lakes":"areas";
-        if(!objectSearchView?.ids.has(hitType+":"+area.id)&&
+        if(!objectSearchController.view?.ids.has(hitType+":"+area.id)&&
           featureOverlapZoom?.handleTap("area",area.id))return;
         openGeometryEditor("area",area,point);
       },
@@ -596,12 +596,12 @@
   function renderMarkers(){
     if(!markerView)return;
     const regular=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
-    const onlyHits=!!objectSearchView?.onlyHits;
+    const onlyHits=!!objectSearchController.view?.onlyHits;
     const visible=onlyHits?[]:[...regular],seen=new Set(visible.map(p=>p.id));
-    if(objectSearchView){
+    if(objectSearchController.view){
       // The canonical search matches have already been deduplicated by ID.
       // Do not reveal older duplicate records or hidden-layer nonmatches.
-      for(const match of objectSearchView.matches){
+      for(const match of objectSearchController.view.matches){
         if(match.type!=="pins"||seen.has(match.id))continue;
         visible.push(match.object);seen.add(match.id);
       }
@@ -612,7 +612,7 @@
       layers:state.layers,selectedPinId:uiState.selectedPinId,
       labelsVisible:state.labelsVisible,flashIds:new Set([...activeFlashIds()].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5))),
       highlightIds:onlyHits?null:
-        new Set([...(objectSearchView?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
+        new Set([...(objectSearchController.view?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
     });
     renderTemporaryPinInfo();
   }
@@ -660,8 +660,8 @@
   const keepSelectedAbovePanel = ()=>mapOverlayLayout.keepVisibleAtOpen();
   function fitAllPins(){
     flushHistoryRecord();
-    if(objectSearchView){
-      fitObjectSearchMatches(objectSearchView.matches);
+    if(objectSearchController.view){
+      fitObjectSearchMatches(objectSearchController.view.matches);
       return;
     }
     fitVisiblePins({
@@ -703,9 +703,9 @@
   function handleMarkerTap(id){
     if(uiState.moveMode||satelliteInspector.isActive())return;
     // Search hits use the existing overlap zoom/chooser, excluding contextual non-hits.
-    if(objectSearchView?.ids.has("pins:"+id)){
+    if(objectSearchController.view?.ids.has("pins:"+id)){
       pinOverlapZoom.handleTap(id,markerView.visiblePins().filter(
-        pin=>objectSearchView.ids.has("pins:"+pin.id)));
+        pin=>objectSearchController.view.ids.has("pins:"+pin.id)));
       return;
     }
     if(featureOverlapZoom?.handleTap("pin",id))return;
@@ -1039,65 +1039,23 @@
       if(run===featureRun){featureController=null;setGeometryBusy("");}
     }
   }
-  function resetObjectSearch(){
-    if(!objectSearchView)return;
-    objectSearchView=null;
-    document.body.classList.remove("object-search-active");
-    renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(false);
-    // No view restoration: the user keeps the exact map position.
-  }
-  function refreshObjectSearch(){
-    const view=objectSearchView;
-    if(!view)return;
-    const matches=objectSearch.searchExpanded(state,{
-      query:$("searchInput").value.trim(),...view.options
-    });
-    searchTypeMenu?.setResults(matches);
-    objectSearchView={...view,matches,
-      ids:new Set(matches.map(m=>m.type+":"+m.id))};
-    document.body.classList.toggle("object-search-active",matches.length>0);
-    renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(matches.length>0&&!view.onlyHits);
-    objectSearchSpotlight?.schedule();
-    // Editing a matching object must never reset the user's current viewport.
-  }
-  function fitObjectSearchMatches(matches){
-    if(!matches.length)return;
-    const selected={layers:state.layers.map(l=>({...l,visible:true})),
-      pins:matches.filter(m=>m.type==="pins").map(m=>m.object),
-      areas:matches.filter(m=>m.type==="areas"||m.type==="lakes").map(m=>m.object),
-      rivers:matches.filter(m=>m.type==="rivers").map(m=>m.object)};
-    fitVisibleProject.fit({project:selected,pinFilter,
-      currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout});
-    objectSearchSpotlight?.schedule();
-  }
-  function runObjectSearch(options={}){
-    const query=$("searchInput").value.trim();
-    const previous=objectSearchView;
-    const displayOnlyChanged=!!previous&&previous.query===query&&
-      Object.keys(options).every(key=>key==="onlyHits"||
-        options[key]===previous.options[key])&&
-      previous.onlyHits!==(options.onlyHits===true);
-    searchForm.cancel();cancelGeometrySearch();searchView.hide();
-    document.body.classList.add("object-search-mode");
-    const matches=objectSearch.searchExpanded(state,{query,...options});
-    searchTypeMenu?.setResults(matches);
-    objectSearchView={includeHidden:options.includeHidden===true,
-      onlyHits:options.onlyHits===true,query,
-      ids:new Set(matches.map(m=>m.type+":"+m.id)),matches,options:{...options}};
-    document.body.classList.toggle("object-search-active",matches.length>0);
-    renderMarkers();renderGeometry();
-    objectSearchSpotlight?.setActive(matches.length>0&&!objectSearchView.onlyHits);
-    // A display-only toggle must not unexpectedly change the user's viewport.
-    if(!displayOnlyChanged)fitObjectSearchMatches(matches);
-  }
-  function endObjectSearch(){
-    resetObjectSearch();
-    document.body.classList.remove("object-search-mode");
-    $("searchInput").blur();
-    searchForm.updateClear();searchView.hide();
-  }
+  const objectSearchController=new window.Pin2MapObjectSearchController({
+    document,getElement:$,searchDomain:objectSearch,
+    getProject:()=>state,getSpotlight:()=>objectSearchSpotlight,
+    getMenu:()=>searchTypeMenu,
+    render:()=>{renderMarkers();renderGeometry();},
+    onFit:selected=>fitVisibleProject.fit({project:selected,pinFilter,
+      currentFilter:currentPinFilter,mapPort:mapAdapter,onFit:updatePanelLayout}),
+    cancelPlace:()=>searchForm.cancel(),
+    cancelGeometry:()=>cancelGeometrySearch(),
+    hidePlaceResults:()=>searchView.hide(),
+    updateClear:()=>searchForm.updateClear()
+  });
+  const resetObjectSearch=()=>objectSearchController.reset();
+  const refreshObjectSearch=()=>objectSearchController.refresh();
+  const fitObjectSearchMatches=matches=>objectSearchController.fit(matches);
+  const runObjectSearch=options=>objectSearchController.run(options);
+  const endObjectSearch=()=>objectSearchController.end();
   function runSearchMode(mode,options){
     clearObjectPreview();
     resetObjectSearch();
@@ -1380,7 +1338,7 @@
       getTargets:()=>[
         ...markerView.hitTargets(),...mapAdapter.getAreaLabelTargets(),
         ...mapAdapter.getRiverLabelTargets()
-      ].filter(item=>objectSearchView?.ids.has(
+      ].filter(item=>objectSearchController.view?.ids.has(
         (item.type==="pin"?"pins":item.type==="river"?"rivers":
           item.kind==="lake"?"lakes":"areas")+":"+item.id))
     });

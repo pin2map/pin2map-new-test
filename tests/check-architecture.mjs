@@ -42,6 +42,12 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
    filename+": UI must not know database or map engine");
 }
 const app=source("app.js");
+assert.match(app,/Pin2MapObjectSearchController/);
+for(const functionName of ["resetObjectSearch","refreshObjectSearch","fitObjectSearchMatches","runObjectSearch","endObjectSearch"]){
+ assert.doesNotMatch(app,new RegExp("function "+functionName+"\\s*\\("),
+   "Persisted-object search logic must remain in its UI owner: "+functionName);
+}
+
 for(const name of ["transferPending","transferBusy","chooseTransferFile","applyTransfer","downloadTransfer","openTransferDialog","closeTransferDialog","bindTransfer"]){
  assert.doesNotMatch(app,new RegExp("\\b"+name+"\\b"),"Project transfer responsibility must not return to app.js: "+name);
 }

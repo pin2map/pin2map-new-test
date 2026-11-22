@@ -77,10 +77,11 @@ test("search result count is in the search bar and maps to stable object identit
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  assert.match(menu,/this\.el\("objectSearchCount"\)/);
  assert.match(menu,/const ids=new Set\(\),count=/);
- assert.match(app,/searchTypeMenu\?\.setResults\(matches\)/);
+ const owner=fs.readFileSync(path.resolve(__dirname,"../ui/object-search-controller.js"),"utf8");
+ assert.match(owner,/this\.getMenu\(\)\?\.setResults\(matches\)/);
  // Spotlight mode highlights matching geometry; only-hits mode must
  // deliberately render the same hits normally, without special emphasis.
- assert.match(app,/highlightIds:objectSearchView\?\.onlyHits\?null:objectSearchView\?\.ids/);
+ assert.match(app,/highlightIds:objectSearchController\.view\?\.onlyHits\?null:objectSearchController\.view\?\.ids/);
 });
 test("repeated records with the same pin ID count as one map marker",()=>{
  const repeated={...project,pins:Array.from({length:8},()=>({...project.pins[0]}))};
@@ -122,9 +123,9 @@ test("v295 stored search: query, optional properties, empty string, visibility a
 test("search hits preserve the normal overlap disambiguation and filter to matching pins",()=>{
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const tap=app.split("function handleMarkerTap(id){")[1].split("function updateModeUI()")[0];
- assert.match(tap,/objectSearchView\?\.ids\.has\("pins:"\+id\)/);
+ assert.match(tap,/objectSearchController\.view\?\.ids\.has\("pins:"\+id\)/);
  assert.match(tap,/pinOverlapZoom\.handleTap\(id,markerView\.visiblePins\(\)\.filter/);
- assert.ok(tap.indexOf('objectSearchView?.ids.has("pins:"+id)')<
+ assert.ok(tap.indexOf('objectSearchController.view?.ids.has("pins:"+id)')<
   tap.indexOf('featureOverlapZoom?.handleTap("pin",id)'));
  const controller=fs.readFileSync(path.resolve(__dirname,"../ui/pin-overlap-zoom.js"),"utf8");
  assert.match(controller,/handleTap\(id,pinsOverride=null\)/);
@@ -133,12 +134,13 @@ test("active search re-evaluates after every object save without moving the view
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  const search=fs.readFileSync(path.resolve(__dirname,"../ui/search-type-menu.js"),"utf8");
  assert.match(search,/if\(this\.searchMode\)this\.onSearch\(this\.searchOptions\(\)\)/);
- assert.match(app,/if\(objectSearchView\)queueMicrotask\(/);
- const refresh=app.split("function refreshObjectSearch(){")[1].split("function fitObjectSearchMatches(")[0];
- for(const expected of ["objectSearch.searchExpanded","searchTypeMenu?.setResults(matches)",
-   "renderMarkers();renderGeometry()","objectSearchSpotlight?.schedule()"])
+ assert.match(app,/if\(objectSearchController\.view\)queueMicrotask\(/);
+ const owner=fs.readFileSync(path.resolve(__dirname,"../ui/object-search-controller.js"),"utf8");
+ const refresh=owner.split("    refresh(){")[1].split("    fit(matches){")[0];
+ for(const expected of ["this.searchDomain.searchExpanded","this.getMenu()?.setResults(matches)",
+   "this.render()","this.spotlight()?.schedule()"])
    assert.ok(refresh.includes(expected),expected);
- assert.doesNotMatch(refresh,/fitVisibleProject|fitObjectSearchMatches|setView|fitBounds/);
+ assert.doesNotMatch(refresh,/fitVisibleProject|this.fit\(|setView|fitBounds/);
 });
 
 test("live search membership follows addition and edits on every object kind",()=>{
@@ -210,10 +212,11 @@ test("v300 only-hits is a visual search toggle, never a persistent search filter
  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
  assert.match(ui,/\["onlyHits","Nur Treffer"\]/);
  assert.match(ui,/onlyHits:checked\("onlyHits"\)/);
- assert.match(app,/objectSearchView\?\.onlyHits/);
- assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!objectSearchView\.onlyHits\)/);
- assert.match(app,/objectSearchSpotlight\?\.setActive\(matches\.length>0&&!view\.onlyHits\)/);
- assert.match(app,/if\(!displayOnlyChanged\)fitObjectSearchMatches\(matches\)/);
+ assert.match(app,/objectSearchController\.view\?\.onlyHits/);
+ const owner=fs.readFileSync(path.resolve(__dirname,"../ui/object-search-controller.js"),"utf8");
+ assert.match(owner,/this\.spotlight\(\)\?\.setActive\(matches\.length>0&&!this\.view\.onlyHits\)/);
+ assert.match(owner,/this\.spotlight\(\)\?\.setActive\(matches\.length>0&&!view\.onlyHits\)/);
+ assert.match(owner,/if\(!displayOnlyChanged\)this\.fit\(matches\)/);
  assert.match(css,/width:min\(340px,calc\(100vw - 24px\)\)/);
  assert.match(css,/display:flex;flex-wrap:nowrap;/);
  const {searchExpanded}=require("../domain/object-search.js");
