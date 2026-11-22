@@ -189,3 +189,12 @@ assert.match(viewHistoryController,/this\.recordTimer=this\.setTimer\(\(\)=>this
 assert.match(viewHistoryController,/this\.onBeforeNavigate\(\);[\s\S]*this\.mapPort\.setView\(view,\{animate:false\}\)/);
 assert.ok(source("index.html").includes('src="./ui/map-view-history-controller.js"'));
 assert.ok(source("sw.js").includes('"./ui/map-view-history-controller.js"'));
+
+const recentObjectFlash=source("ui/recent-object-flash.js");
+assert.match(app,/new window\.Pin2MapRecentObjectFlash/);
+assert.match(app,/const activeFlashIds=\(\)=>recentObjectFlash\.activeIds\(\)/);
+assert.match(app,/function flashNewObject\(type,id\)\{recentObjectFlash\.flash\(type,id\);\}/);
+assert.doesNotMatch(app,/const recentlyCreated=new Map\(\)/);
+assert.match(recentObjectFlash,/if\(this\.entries\.get\(key\)!==deadline\)return/);
+assert.ok(source("index.html").includes('src="./ui/recent-object-flash.js"'));
+assert.ok(source("sw.js").includes('"./ui/recent-object-flash.js"'));

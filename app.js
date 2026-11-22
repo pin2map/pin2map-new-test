@@ -33,17 +33,13 @@
   const currentPinFilter = pinFilter.createFilter();
   const objectSearch=window.Pin2MapObjectSearch;
   let objectSearchSpotlight=null;
-  // Presentation only: fresh persisted objects blink for at most 30 seconds.
-  const recentlyCreated=new Map();
-  const activeFlashIds=()=>new Set([...recentlyCreated].filter(([,end])=>Date.now()<end).map(([id])=>id));
-  function flashNewObject(type,id){
-    const key=type+":"+id,deadline=Date.now()+10000;
-    recentlyCreated.set(key,deadline);
-    setTimeout(()=>{
-      if(recentlyCreated.get(key)!==deadline)return;
-      recentlyCreated.delete(key);renderMarkers();renderGeometry();
-    },10000);
-  }
+  const recentObjectFlash=new window.Pin2MapRecentObjectFlash({
+    now:()=>Date.now(),
+    schedule:(callback,ms)=>setTimeout(callback,ms),
+    onExpire:()=>{renderMarkers();renderGeometry();}
+  });
+  const activeFlashIds=()=>recentObjectFlash.activeIds();
+  function flashNewObject(type,id){recentObjectFlash.flash(type,id);}
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,favoritesPanel;
