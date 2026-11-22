@@ -25,7 +25,9 @@ test("Kartentip: area search is left and pin creation is right",()=>{
 test("Kartentip preview retains camera; searched previews keep auto-fit",()=>{
   const app=source("app.js"),adapter=source("map-adapter-leaflet.js");
   const geometry=source("ui/geometry-search-controller.js");
-  assert.match(app,/preserveViewport:source==="map"/);
+  const entryOwner=source("application/pin-entry-coordinator.js");
+  assert.match(entryOwner,/preserveViewport:source==="map"/);
+  assert.match(app,/new window\.Pin2MapPinEntryCoordinator/);
   assert.match(geometry,/previewAreaObject\(choice,"area",result.name,true\)/);
   assert.match(geometry,/function previewAreaObject\(source,kind,nameOverride=null,preserveViewport=false\)/);
   assert.match(geometry,/geojson:source.geojson,preserveViewport/);
