@@ -677,21 +677,13 @@
   });
   // Immediate adoption into Privat: never reintroduce a confirmation step.
   const showObjectPreview=entry=>objectAcceptance.accept(entry);
-  function addPin(lat,lng,name,source="search"){
-    if(!Number.isFinite(lat)||Math.abs(lat)>90||
-       !Number.isFinite(lng)||Math.abs(lng)>180)return null;
-    closeAllMapMenus();
-    // Capture the user's original map scale before the preview adapter may
-    // automatically zoom in to display the temporary pin.
-    const mapZoom=mapAdapter.getViewport().zoom;
-    const entry={kind:"point",point:{lat,lng},mapZoom,
-      autoNamed:source==="map"&&!name,
-      label:name||"Neuer Pin",name:name||"",source,
-       preserveViewport:source==="map"};
-    const saved=showObjectPreview(entry);
-    if(saved&&entry.autoNamed)void manualPinLocality.resolve(entry);
-    return saved;
-  }
+  const pinEntry=new window.Pin2MapPinEntryCoordinator({
+    closeMapMenus:()=>closeAllMapMenus(),
+    getMapZoom:()=>mapAdapter.getViewport().zoom,
+    accept:entry=>showObjectPreview(entry),
+    resolveAutoName:entry=>manualPinLocality.resolve(entry)
+  });
+  function addPin(lat,lng,name,source="search"){return pinEntry.create(lat,lng,name,source);}
   function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
   const geometrySearch=new window.Pin2MapGeometrySearchController({

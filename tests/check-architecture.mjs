@@ -52,6 +52,11 @@ assert.match(temporaryMove,/this.validatePosition\(point.lat,point.lng\)/);
 assert.match(temporaryMove,/this.cancel\(\);\s*entry.point=position/);
 
 assert.match(app,/Pin2MapObjectCreationService/);
+assert.match(app,/new window\\.Pin2MapPinEntryCoordinator/);
+assert.match(app,/function addPin\\(lat,lng,name,source="search"\\)\\{return pinEntry\\.create\\(lat,lng,name,source\\);\\}/);
+assert.doesNotMatch(app,/function addPin\\(lat,lng,name,source="search"\\)\\{\\s*if\\(!Number\\.isFinite/,
+  "Pin request input validation belongs to the pin entry use case");
+
 assert.match(app,/Pin2MapObjectAcceptanceController/);
 assert.doesNotMatch(app,/created=pinOps\.createPin\(state|created=projectFeatures\.create(?:Area|River)\(state/,
   "Object creation belongs to the application use case, not app.js");
