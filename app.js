@@ -538,16 +538,14 @@
     const rect=mapAdapter.getContainer().getBoundingClientRect();
     geometryEditor.show(type,item,state.layers,{x:rect.left+xy.x,y:rect.top+xy.y});
   }
-  function saveGeometry(type,id,patch){
-    const result=projectFeatures.change(state,type,id,patch,{updatedAt:new Date().toISOString()});
-    if(result){save();renderGeometry();}
-    return result;
-  }
-  function deleteGeometry(type,id){
-    if(projectFeatures.remove(state,type,id)){
-      save();renderGeometry();showNotice(type==="river"?"Fluss entfernt":"Fläche entfernt");
-    }
-  }
+  const geometryMutations=new window.Pin2MapGeometryMutationSession({
+    features:projectFeatures,getProject:()=>state,
+    now:()=>new Date().toISOString(),
+    onSave:()=>save(),onRender:()=>renderGeometry(),
+    onNotice:message=>showNotice(message)
+  });
+  function saveGeometry(type,id,patch){return geometryMutations.change(type,id,patch);}
+  function deleteGeometry(type,id){geometryMutations.remove(type,id);}
   function renderMarkers(){objectPresentation.renderMarkers();}
   function renderTemporaryPinInfo(){objectPresentation.renderTemporaryPinInfo();}
   function deleteLayerOrPrivatePins(id) {
