@@ -24,14 +24,14 @@ test("v302: invalid relocation never mutates a freshly saved pin",()=>{
  assert.deepEqual([created.lat,created.lng],[50.971,9.795]);
 });
 test("v302: all creation entries commit without the obsolete temporary-move selector",()=>{
- const app=read("app.js"),creation=app.split("function showObjectPreview(entry){")[1]
-  .split("function addPin(lat,lng")[0];
- assert.ok(creation,"Application direct-creation composition must be present");
- assert.match(creation,/pinOps\.createPin\(state,/);
- assert.match(creation,/projectFeatures\.createArea\(state,/);
- assert.match(creation,/projectFeatures\.createRiver\(state,/);
- assert.match(creation,/layerId:PRIVATE_ID/);
- assert.doesNotMatch(creation,/beginTemporaryMove|platePanel\.show|temporaryLayerPicker\.show/);
+ const app=read("app.js"),service=read("application/object-creation-service.js"),
+   controller=read("ui/object-acceptance-controller.js");
+ assert.match(app,/showObjectPreview=entry=>objectAcceptance.accept\(entry\)/);
+ assert.match(service,/pinOperations.createPin\(project,/);
+ assert.match(service,/projectFeatures.createArea\(project,/);
+ assert.match(service,/projectFeatures.createRiver\(project,/);
+ assert.match(app,/privateId:PRIVATE_ID/);
+ assert.doesNotMatch(controller,/beginTemporaryMove|platePanel\.show|temporaryLayerPicker\.show/);
  assert.match(app,/onPin:point=>addPin\(point\.lat,point\.lng,"","map"\)/);
  assert.match(app,/onAccept:\(point,name\)=>addPin\(point\.lat,point\.lng,name,"gps"\)/);
 });

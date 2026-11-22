@@ -6,11 +6,12 @@ const model=require("../domain/project-model.js");
 const palette=require("../application/layer-palette.js");
 const ops=require("../application/layer-operations.js");
 test("Privat is immediately selected for new records, not via the obsolete layer-choice step",()=>{
- const app=read("app.js");
- const path=app.split("function showObjectPreview(entry){")[1].split("function addPin(lat,lng")[0];
- assert.match(path,/layerId:PRIVATE_ID/);
- assert.match(path,/},PRIVATE_ID\)/);
- assert.doesNotMatch(path,/temporaryLayerPicker\.show|platePanel\.show|onAccept/);
+ const app=read("app.js"),service=read("application/object-creation-service.js");
+ const controller=read("ui/object-acceptance-controller.js");
+ assert.match(app,/privateId:PRIVATE_ID/);
+ assert.match(controller,/this.service.create\(this.getProject\(\),entry,this.privateId\)/);
+ assert.match(service,/layerId\s*\}/);
+ assert.doesNotMatch(controller,/temporaryLayerPicker\.show|platePanel\.show|onAccept:/);
 });
 test("Privat has an editable color but retains its fixed name and protected identity",()=>{
  const project=model.defaultProject();
