@@ -43,8 +43,10 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
 }
 const app=source("app.js");
 assert.match(app,/new window\.Pin2MapTemporaryObjectMoveController/);
-assert.doesNotMatch(app,/\btemporaryMoveEntry\b|function (?:beginTemporaryMove|previewTemporaryMove|cancelTemporaryMove|confirmTemporaryMove)\s*\(/,
-  "Transient point relocation is owned by its UI controller, not app.js");
+assert.doesNotMatch(app,/\b(?:temporaryMoveEntry|beginTemporaryMove|previewTemporaryMove|cancelTemporaryMove|confirmTemporaryMove)\b/,
+  "No removed temporary-move function or state may be referenced by app.js");
+assert.match(app,/function clearObjectPreview\(\)\{\s*temporaryMove\.cancel\(\)/,
+  "Closing a transient object must cancel via the new state owner");
 const temporaryMove=source("ui/temporary-object-move-controller.js");
 assert.match(temporaryMove,/this.validatePosition\(point.lat,point.lng\)/);
 assert.match(temporaryMove,/this.cancel\(\);\s*entry.point=position/);

@@ -800,7 +800,7 @@
   const showPlateSelection=result=>geometrySearch.showPlateSelection(result);
   const choosePlateResult=entry=>geometrySearch.choosePlateResult(entry);
   function clearObjectPreview(){
-    cancelTemporaryMove();
+    temporaryMove.cancel();
     temporaryLayerPicker?.close();
     manualPinLocality.invalidate();
     platePanel?.close();

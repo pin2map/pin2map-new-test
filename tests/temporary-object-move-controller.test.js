@@ -85,3 +85,12 @@ test("manual naming survives confirmation and never starts reverse naming",()=>{
  assert.equal(entry.name,"Eigener Name");assert.equal(entry.label,"Eigener Name");
  assert.equal(f.events.filter(x=>Array.isArray(x)&&x[0]==="resolve").length,0);
 });
+
+test("app routes every temporary cleanup through the owning controller (v314 regression)",()=>{
+ const fs=require("node:fs"),path=require("node:path");
+ const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ assert.match(app,/function clearObjectPreview\(\)\{\s*temporaryMove\.cancel\(\)/);
+ assert.doesNotMatch(app,/\bcancelTemporaryMove\s*\(/,
+   "Removed function reference breaks all new object adoption and the live place search");
+ assert.match(app,/onMove:entry=>temporaryMove\.begin\(entry\)/);
+});
