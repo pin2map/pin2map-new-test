@@ -8,7 +8,7 @@ const ops=require("../application/pin-operations.js");
 const domain=require("../domain/project-model.js");
 function fixture(){
  const events={},elements={};
- for(const id of ["pinPanel","pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia","pinWeather","pinWeatherBlock","pinDetailTitle","pinGpxActions"]){
+ for(const id of ["pinPanel","pinNotesBlock","pinUrlBlock","pinNotes","pinUrl","pinUrlButton","pinUrlSave","pinUrlOpen","pinWikipedia","pinWeather","pinWeatherBlock","pinRouteStart","pinRouteTarget","pinRoutingStartBlock","pinRoutingTargetBlock","pinDetailTitle","pinGpxActions"]){
   const el={value:"",disabled:false,attrs:{},classes:new Set(id==="pinUrlBlock"?["hidden"]:[]),
    addEventListener(name,handler){(events[id]??={})[name]=handler;},
    setAttribute(k,v){this.attrs[k]=v;},
@@ -63,8 +63,10 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  const section=html.split('<section id="pinPanel"')[1].split("</section>")[0];
  assert.ok(section.includes('id="pinNotes"'));
  assert.ok(section.includes('class="pin-navigation-row"'));
- assert.equal((section.match(/ disabled/g)||[]).length,3,
-   "Only the three pin2map Routing placeholders remain disabled");
+ assert.equal((section.match(/ disabled/g)||[]).length,1,
+   "Only the waypoint placeholder remains disabled");
+ assert.match(section,/id="pinRouteStart"[^>]*aria-pressed="false"/);
+ assert.match(section,/id="pinRouteTarget"[^>]*data-pin-icon="goal"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinGpxRoute"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinGpxExport"[^>]*type="button"/);
  assert.ok(html.includes('id="pinUrlOpen"'));
@@ -78,4 +80,44 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  assert.ok(css.includes("@media(hover:none) and (pointer:coarse)"),"iPhone landscape must retain 16px notes");
  assert.ok(sw.includes('"./ui/pin-details.js"'));
  assert.ok(html.indexOf('./ui/pin-details.js')<html.indexOf('./app.js'));
+});
+
+test("routing Start/Ziel toggles are exclusive, reversible and leave note contents untouched",()=>{
+ const f=fixture();f.controller.render({id:"p",note:"Unverändert",url:""});
+ f.fire("pinRouteStart");
+ assert.equal(f.controller.routingMode,"start");
+ assert.equal(f.elements.pinNotesBlock.classes.has("hidden"),true);
+ assert.equal(f.elements.pinRoutingStartBlock.classes.has("hidden"),false);
+ assert.equal(f.elements.pinRoutingTargetBlock.classes.has("hidden"),true);
+ assert.equal(f.elements.pinRouteStart.attrs["aria-pressed"],"true");
+ assert.equal(f.elements.pinDetailTitle.textContent,"Routing Start");
+ f.fire("pinRouteTarget");
+ assert.equal(f.controller.routingMode,"target");
+ assert.equal(f.elements.pinRoutingStartBlock.classes.has("hidden"),true);
+ assert.equal(f.elements.pinRoutingTargetBlock.classes.has("hidden"),false);
+ assert.equal(f.elements.pinRouteStart.attrs["aria-pressed"],"false");
+ assert.equal(f.elements.pinRouteTarget.attrs["aria-pressed"],"true");
+ assert.equal(f.elements.pinDetailTitle.textContent,"Routing Ziel");
+ f.fire("pinRouteTarget");
+ assert.equal(f.controller.routingMode,null);
+ assert.equal(f.elements.pinNotesBlock.classes.has("hidden"),false);
+ assert.equal(f.elements.pinNotes.value,"Unverändert");
+ assert.equal(f.elements.pinDetailTitle.textContent,"Pin Notizen");
+ assert.equal(f.notes.length,0,"Routing toggles never persist or mutate pin notes");
+});
+test("weather and routing modes remain exclusive and pin changes clear routing state",()=>{
+ const f=fixture();f.controller.render({id:"p",note:"P",url:""});
+ f.fire("pinRouteStart");f.fire("pinWeather");
+ assert.equal(f.controller.weatherMode,true);
+ assert.equal(f.controller.routingMode,null);
+ assert.equal(f.elements.pinRoutingStartBlock.classes.has("hidden"),true);
+ assert.equal(f.elements.pinWeatherBlock.classes.has("hidden"),false);
+ f.fire("pinRouteTarget");
+ assert.equal(f.controller.weatherMode,false);
+ assert.equal(f.controller.routingMode,"target");
+ assert.equal(f.elements.pinWeatherBlock.classes.has("hidden"),true);
+ f.controller.render({id:"other",note:"Other",url:""});
+ assert.equal(f.controller.routingMode,null);
+ assert.equal(f.elements.pinRouteTarget.attrs["aria-pressed"],"false");
+ assert.equal(f.elements.pinNotesBlock.classes.has("hidden"),false);
 });

@@ -46,11 +46,13 @@ test("Pin copy and confirmation use exact bundled canonical Lucide glyphs",()=>{
  assert.match(sw,/"\.\/application\/apple-maps-links\.js"/);
  assert.match(sw,/"\.\/ui\/pin-navigation\.js"/);
 });
-test("External Pin navigation is enabled but internal pin2map routing stays inactive",()=>{
+test("External navigation is enabled, routing Start and Ziel show UI-only panels, waypoint stays inactive",()=>{
  const html=read("index.html"),section=html.split('<section id="pinPanel"')[1].split("</section>")[0];
  const row=section.split('<div class="pin-navigation-row"')[1].split('<div id="pinGpxActions"')[0];
  assert.ok(row.includes('id="pinNavCopy"')&&row.includes('id="pinNavApple"'));
- assert.equal((row.match(/ disabled/g)||[]).length,3);
+ assert.equal((row.match(/ disabled/g)||[]).length,1);
+ assert.match(row,/id="pinRouteStart"[^>]*aria-pressed="false"/);
+ assert.match(row,/id="pinRouteTarget"[^>]*data-pin-icon="goal"/);
  assert.ok(!row.includes('id="pinNavCopy" disabled'));
  assert.ok(!row.includes('id="pinNavApple" disabled'));
  assert.match(read("styles.css"),/\.pin-apple-menu\.hidden\{display:none\}/);

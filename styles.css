@@ -486,8 +486,8 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 
 
-/* Pin/area dialog family: one visual owner, one 38px action token.
-   Frame legends replace separate headings. Routing remains inert. */
+/* Pin/area dialog family: one visual owner, one 42px action token.
+   Routing Start/Ziel are UI-only panels; no route computation. */
 :root{--p2m-pin-dialog-action-size:42px}
 #pinPanel{
   padding:10px 12px!important;
@@ -647,6 +647,17 @@ body.pin-relocation-picking #map .leaflet-interactive{
   font-size:13px;
 }
 #pinPanel .pin-weather-placeholder [data-pin-icon] svg{width:29px;height:29px}
+/* Routing placeholders occupy only the existing notes fieldset. Navigation
+   and the six footer buttons keep their positions and click targets. */
+#pinPanel .pin-detail-region.pin-routing-start{border-color:#ee4545}
+#pinPanel .pin-detail-region.pin-routing-target{border-color:#36a356}
+#pinPanel .pin-detail-region .pin-routing-placeholder{
+  box-sizing:border-box;height:145px;min-height:0;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;gap:8px;color:#61738a;
+  text-align:center;font-size:13px;
+}
+#pinPanel .pin-routing-placeholder [data-pin-icon] svg{width:29px;height:29px}
+
 #pinPanel .pin-gpx-actions{
   display:flex;justify-content:stretch;gap:10px;margin:0 0 12px;
 }

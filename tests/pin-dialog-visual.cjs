@@ -28,7 +28,7 @@ async function metrics(page){
    navigation:rect("pinPanel"),
    details:rect("pinNotesBlock"),footer:rect("closePin"),
    routingRow:rect("pinPanel"),routingCount:get("pinPanel").querySelectorAll(".pin-navigation-buttons button").length,
-   routingDisabled:[...get("pinPanel").querySelectorAll(".pin-navigation-routing button")].every(b=>b.disabled),
+   routingDisabled:[...get("pinPanel").querySelectorAll(".pin-navigation-routing button")].filter(b=>b.classList.contains("pin-nav-waypoint")).every(b=>b.disabled),
    noteHeight:notes.getBoundingClientRect().height,
    noteFont:Number.parseFloat(getComputedStyle(notes).fontSize),
    nameFont:Number.parseFloat(getComputedStyle(get("pinName")).fontSize),
@@ -158,14 +158,16 @@ async function metrics(page){
     const nameRect=await page.locator("#pinPanel .pin-editor-head").boundingBox();
     assert.ok(navRect.y-nameRect.y-nameRect.height>=10,"Navigation must breathe above");
     assert.equal(m.routingCount,5,"Two external and three routing controls must be visible");
-    assert.equal(m.routingDisabled,true,"Only internal pin2map routing remains future-only");
+    assert.equal(m.routingDisabled,true,"Waypoint remains future-only");
+    assert.equal(await page.locator("#pinRouteStart").isEnabled(),true);
+    assert.equal(await page.locator("#pinRouteTarget").isEnabled(),true);
     assert.equal(await page.locator("#pinNavCopy").isEnabled(),true);
     assert.equal(await page.locator("#pinNavApple").isEnabled(),true);
     assert.ok(m.details.y>navRect.y+navRect.height,"Notes follow navigation");
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
     assert.ok(Math.abs(m.noteHeight-145)<=1,JSON.stringify(m));
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
-    for(const [index,b] of m.routingButtons.entries())assert.ok(b.disabled===(index>=2)&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size and activation "+JSON.stringify(b));
+    for(const [index,b] of m.routingButtons.entries())assert.ok(b.disabled===(index===3)&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size and activation "+JSON.stringify(b));
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
     const sectors=await page.locator(".pin-status-segments").evaluateAll(nodes=>
       nodes.map(n=>["note","url","gpx"].map(t=>
@@ -268,6 +270,46 @@ async function metrics(page){
     assert.equal(await page.locator("#deletePin").evaluate(el=>el.classList.contains("is-active")),false,
       "Blue delete-trigger state must reset on Cancel");
     assert.equal(await page.locator("#pinName").inputValue(),"Sicherheits-Testpin");
+    // UI-only routing placeholders must fit strictly between the routing
+    // row and the six-button footer, without moving either anchor.
+    const baselineRegion=await page.locator("#pinPanel .pin-detail-region").boundingBox();
+    const baselineFooter=await page.locator("#pinPanel .pin-actions").boundingBox();
+    for(const [button,block,other,color,legend] of [
+      ["pinRouteStart","pinRoutingStartBlock","pinRoutingTargetBlock","rgb(238, 69, 69)","Routing Start"],
+      ["pinRouteTarget","pinRoutingTargetBlock","pinRoutingStartBlock","rgb(54, 163, 86)","Routing Ziel"]]){
+      await page.locator("#"+button).click();
+      const snapshot=await page.evaluate(({button,block,other})=>{
+        const rect=id=>{const r=document.getElementById(id).getBoundingClientRect();
+          return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};};
+        const field=document.querySelector("#pinPanel .pin-detail-region");
+        return {region:rect(block),detailFrame:field.getBoundingClientRect().toJSON(),frame:rect("pinPanel"),detail:rect("pinNotesBlock"),
+          nav:document.querySelector("#pinPanel .pin-navigation-row").getBoundingClientRect().toJSON(),
+          footer:document.querySelector("#pinPanel .pin-actions").getBoundingClientRect().toJSON(),
+          border:getComputedStyle(field).borderTopColor,
+          title:document.getElementById("pinDetailTitle").textContent,
+          active:document.getElementById(button).getAttribute("aria-pressed"),
+          otherHidden:document.getElementById(other).classList.contains("hidden"),
+          noteHidden:document.getElementById("pinNotesBlock").classList.contains("hidden")};
+      },{button,block,other});
+      assert.equal(snapshot.border,color,"Routing field border color");
+      assert.equal(snapshot.title,legend);
+      assert.equal(snapshot.active,"true");
+      assert.ok(snapshot.otherHidden&&snapshot.noteHidden,"Mutually exclusive routing and notes");
+      assert.ok(snapshot.nav.bottom<=snapshot.region.top+1,"Routing row remains unobstructed");
+      assert.ok(snapshot.region.bottom<=snapshot.footer.top+1,"Footer remains unobstructed");
+      assert.ok(snapshot.region.left>=snapshot.frame.left&&snapshot.region.right<=snapshot.frame.right,
+        "Routing panel must be narrower than pin dialog");
+      assert.ok(Math.abs(snapshot.footer.top-baselineFooter.y)<=2,"Footer must not shift on routing toggle");
+      assert.ok(Math.abs(snapshot.detailFrame.height-baselineRegion.height)<=2,"Routing panel must keep notes footprint");
+      await page.locator("#"+button).click();
+      assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
+    }
+    await page.locator("#pinRouteStart").click();
+    await page.locator("#pinRouteTarget").click();
+    assert.equal(await page.locator("#pinRoutingStartBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinRoutingTargetBlock").isVisible(),true);
+    await page.locator("#pinRouteTarget").click();
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);

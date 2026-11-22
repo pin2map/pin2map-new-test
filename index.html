@@ -303,9 +303,9 @@
       </fieldset>
       <fieldset class="pin-navigation-group pin-navigation-routing"><legend>pin2map Routing</legend>
         <div class="pin-navigation-buttons">
-          <button type="button" class="pin-nav-start" data-pin-icon="arrow-up-right" title="Als Start – später verfügbar" aria-label="Als Start – später verfügbar" disabled></button>
+          <button type="button" id="pinRouteStart" class="pin-nav-start" data-pin-icon="arrow-up-right" title="Routing Start anzeigen" aria-label="Routing Start anzeigen" aria-controls="pinRoutingStartBlock" aria-pressed="false"></button>
           <button type="button" class="pin-nav-waypoint" data-pin-icon="plus" title="Zwischenziel – später verfügbar" aria-label="Zwischenziel – später verfügbar" disabled></button>
-          <button type="button" class="pin-nav-target" data-pin-icon="circle-dot" title="Als Ziel – später verfügbar" aria-label="Als Ziel – später verfügbar" disabled></button>
+          <button type="button" id="pinRouteTarget" class="pin-nav-target" data-pin-icon="goal" title="Routing Ziel anzeigen" aria-label="Routing Ziel anzeigen" aria-controls="pinRoutingTargetBlock" aria-pressed="false"></button>
         </div>
       </fieldset>
     </div>
@@ -319,6 +319,14 @@
       <div id="pinWeatherBlock" class="pin-weather-placeholder hidden" role="region" aria-label="Wetteransicht">
         <span data-pin-icon="thermometer-snowflake" aria-hidden="true"></span>
         <strong>Wetter</strong><span>Wetterinformationen werden später ergänzt.</span>
+      </div>
+      <div id="pinRoutingStartBlock" class="pin-routing-placeholder hidden" role="region" aria-label="Routing Start">
+        <span data-pin-icon="arrow-up-right" aria-hidden="true"></span>
+        <strong>Routing Start</strong><span>Routing-Einstellungen werden später ergänzt.</span>
+      </div>
+      <div id="pinRoutingTargetBlock" class="pin-routing-placeholder hidden" role="region" aria-label="Routing Ziel">
+        <span data-pin-icon="goal" aria-hidden="true"></span>
+        <strong>Routing Ziel</strong><span>Routing-Einstellungen werden später ergänzt.</span>
       </div>
     </fieldset>
     <div class="pin-actions">

@@ -9,6 +9,7 @@
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
    this.onWikipedia=onWikipedia;this.onLayout=onLayout;
    this.pinId=null;this.mode="notes";this.urlSnapshot="";this.weatherMode=false;
+   this.routingMode=null;
    // The URL overlay is viewport-positioned. Keep it out of the pin
    // panel's stacking/overflow context, exactly as in the reference UI.
    // The shared controller still constrains it to the panel rectangle.
@@ -36,6 +37,7 @@
     this.el("pinNotes").value=String(pin.note||"");
     this.el("pinUrl").value=this.urlSnapshot;
     this.show("notes");
+    this.setRouting(null);
     this.setWeather(false);
    }else{
     const notes=this.el("pinNotes"),url=this.el("pinUrl");
@@ -50,6 +52,24 @@
    const hasGpx=Boolean(pin.gpxAttachment?.chains?.length||pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
    this.el("pinGpxActions")?.classList.toggle("hidden",!hasGpx);
   }
+  setRouting(mode){
+   if(mode!==null&&mode!=="start"&&mode!=="target")throw new RangeError("Unsupported routing panel");
+   if(mode&&this.weatherMode)this.setWeather(false);
+   this.routingMode=mode;
+   const region=this.el("pinPanel").querySelector?.(".pin-detail-region");
+   region?.classList.toggle("pin-routing-start",mode==="start");
+   region?.classList.toggle("pin-routing-target",mode==="target");
+   this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode||Boolean(mode));
+   this.el("pinRoutingStartBlock").classList.toggle("hidden",mode!=="start");
+   this.el("pinRoutingTargetBlock").classList.toggle("hidden",mode!=="target");
+   for(const [id,active] of [["pinRouteStart",mode==="start"],["pinRouteTarget",mode==="target"]]){
+    const button=this.el(id);
+    button.classList.toggle("is-active",active);
+    button.setAttribute("aria-pressed",String(active));
+   }
+   this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":mode==="start"?"Routing Start":mode==="target"?"Routing Ziel":"Pin Notizen";
+   this.onLayout(false);
+  }
   setWeather(enabled){
    const next=Boolean(enabled);
    const panel=this.el("pinPanel");
@@ -61,14 +81,15 @@
     region.style.setProperty("--pin-weather-middle-height",Math.max(0,notes.bottom-nav.top)+"px");
     region.style.setProperty("--pin-weather-middle-top",nav.top+"px");
    }
+   if(next&&this.routingMode)this.setRouting(null);
    this.weatherMode=next;
    panel.classList.toggle("pin-weather-mode",this.weatherMode);
-   this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode);
+   this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode||Boolean(this.routingMode));
    this.el("pinWeatherBlock").classList.toggle("hidden",!this.weatherMode);
    this.el("pinWeather").classList.toggle("is-active",this.weatherMode);
    this.el("pinWeather").setAttribute("aria-pressed",String(this.weatherMode));
    this.el("pinWeather").setAttribute("aria-label",this.weatherMode?"Pin Notizen anzeigen":"Wetteransicht anzeigen");
-   this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":"Pin Notizen";
+   this.el("pinDetailTitle").textContent=this.weatherMode?"Wetter":this.routingMode==="start"?"Routing Start":this.routingMode==="target"?"Routing Ziel":"Pin Notizen";
    if(this.weatherMode&&region){
     // Match the top border of the original routing fieldsets precisely.
     const expected=Number.parseFloat(region.style.getPropertyValue("--pin-weather-middle-top"));
@@ -93,7 +114,13 @@
    this.el("pinWeather").addEventListener("click",()=>{
     this.closeTransient();this.setWeather(!this.weatherMode);
    });
-   // Routing/GPX transport controls intentionally have NO handlers.
+   this.el("pinRouteStart").addEventListener("click",()=>{
+    this.closeTransient();this.setRouting(this.routingMode==="start"?null:"start");
+   });
+   this.el("pinRouteTarget").addEventListener("click",()=>{
+    this.closeTransient();this.setRouting(this.routingMode==="target"?null:"target");
+   });
+   // Waypoint and GPX transport controls remain future-only.
   }
  }
  root.Pin2MapPinDetails=PinDetails;

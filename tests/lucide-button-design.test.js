@@ -137,7 +137,9 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  for(const title of ["Pin Name","Navi extern","pin2map Routing","Pin Notizen"])
    assert.ok(section.includes("<legend"+(title==="Pin Notizen"?" id=\"pinDetailTitle\"":"")+">"+title+"</legend>"),"Frame legend: "+title);
  const placeholder=section.match(/<div class="pin-navigation-row"[\s\S]*?<\/div>\s*<\/fieldset>\s*<\/div>/)?.[0]||"";
- assert.equal((placeholder.match(/ disabled/g)||[]).length,3);
+ assert.equal((placeholder.match(/ disabled/g)||[]).length,1);
+ assert.match(section,/id="pinRouteStart"[^>]*aria-pressed="false"/);
+ assert.match(section,/id="pinRouteTarget"[^>]*data-pin-icon="goal"/);
  assert.ok(!section.includes('id="pinCreated"')&&!section.includes('id="pinUpdated"'));
  const popup=html.slice(html.indexOf('<div id="pinUrlBlock"'));
  assert.match(popup,/class="pin-url-popup hidden"/);
@@ -145,7 +147,7 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  const ids=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
  let last=-1;
  for(const id of ids){const index=section.indexOf('id="'+id+'"');assert.ok(index>last,id);last=index;}
- for(const name of ["layers-arrow-down","link-2","save-check","external-link","thermometer-snowflake","arrow-up-right","circle-dot","apple-brand"]){
+ for(const name of ["layers-arrow-down","link-2","save-check","external-link","thermometer-snowflake","arrow-up-right","goal","apple-brand"]){
    const svg=Icons.svg(name,documentStub());assert.ok(svg.children.length,name);
  }
  // The wanted link-2 is the horizontal three-part glyph, not diagonal Link.
@@ -322,4 +324,12 @@ test("predecessor-safe baseline keeps all lower controls clear of the footer",()
   assert.ok(rule.includes("#app #basemapMenu.basemap-menu{\n  bottom:auto!important;"));
   assert.ok(rule.includes("line-height:var(--p2m-bottom-attribution-height)!important"));
   assert.ok(rule.includes("bottom:0!important"));
+});
+
+test("routing destination has offline Lucide goal geometry",()=>{
+ const goal=Icons.svg("goal",documentStub());
+ assert.deepEqual(goal.children.map(n=>n.name),["path","path","path"]);
+ assert.equal(goal.children[0].attributes.d,"M12 13V2l8 4-8 4");
+ const html=read("index.html");
+ assert.match(html,/id="pinRouteTarget"[^>]*data-pin-icon="goal"/);
 });

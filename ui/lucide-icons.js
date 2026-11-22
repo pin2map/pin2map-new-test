@@ -46,6 +46,7 @@
       ["circle",{cx:16,cy:12,r:2,fill:"white"}],
       ["circle",{cx:7,cy:18,r:2,fill:"white"}]
     ],
+    "goal": [["path",{d:"M12 13V2l8 4-8 4"}],["path",{d:"M20.55 14.55A9 9 0 1 1 9.45 3.45"}],["path",{d:"M8.3 9.7a4 4 0 1 0 6 6"}]],
     "map-pin": [["path",{d:"M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"}],["circle",{cx:12,cy:10,r:2}]],
     // Lucide car (side silhouette), canonical icon name.
     "car": [
