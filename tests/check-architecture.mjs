@@ -198,6 +198,11 @@ assert.ok(source("sw.js").includes('"./ui/map-interaction-controller.js"'));
 
 const viewHistoryController=source("ui/map-view-history-controller.js");
 assert.match(app,/new window\.Pin2MapMapViewHistoryController/);
+assert.match(app,/new window\.Pin2MapAppLifecycleController/);
+assert.match(app,/appLifecycle\.bindRefresh\(\)/);
+assert.match(app,/appLifecycle\.bindVisibility\(\)/);
+assert.doesNotMatch(app,/(?:window|document)\.addEventListener\("(?:pageshow|visibilitychange)"/,
+  "Global lifecycle listener ownership must remain in UI controller");
 assert.match(app,/await mapHistoryController\.initialize\(\)/);
 assert.match(app,/function flushHistoryRecord\(\)\{mapHistoryController\.flush\(\);\}/);
 assert.match(viewHistoryController,/this\.history\.load\(saved,this\.mapPort\.getViewport\(\)\)/);

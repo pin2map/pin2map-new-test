@@ -793,6 +793,13 @@
     writeLocalPreference:(key,value)=>localStorage.setItem(key,value)
   });
 
+  const appLifecycle=new window.Pin2MapAppLifecycleController({
+    windowTarget:window,documentTarget:document,getElement:$,
+    onRefresh:()=>window.Pin2MapPwaRefresh.refresh({
+      button:$("refreshButton"),save:dbWrite,showNotice
+    }),
+    onHidden:()=>{flushHistoryRecord();persistence.flushOnHidden();}
+  });
   function bind() {
     transferController.bind();
     pinGpxActions.bind();
@@ -819,15 +826,7 @@
     // Launcher capture and same-button toggle semantics live in the UI owner.
     overlayCoordinator.bindMapLaunchers();
     mapViewControls.bindMapButtons();
-    window.addEventListener("pageshow",()=>{
-      $("refreshButton").disabled=false;
-      $("refreshButton").removeAttribute("aria-busy");
-    });
-    $("refreshButton").addEventListener("click",()=>window.Pin2MapPwaRefresh.refresh({
-      button:$("refreshButton"),
-      save:dbWrite,
-      showNotice
-    }));
+    appLifecycle.bindRefresh();
     overlayCoordinator.bind();
     basemapMenu.bind();
     satelliteInspector.bind();
@@ -866,7 +865,7 @@
     mapInteraction.bindMapClick();
     mapInteraction.bindLongPress();
     mapOverlayLayout.bind();
-    document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden"){flushHistoryRecord();persistence.flushOnHidden();} });
+    appLifecycle.bindVisibility();
   }
   async function init() {
     if(!window.L){$("notice").textContent="Die Kartenbibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen."; $("notice").classList.remove("hidden");return;}
