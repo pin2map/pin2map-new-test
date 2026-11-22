@@ -81,7 +81,9 @@ test("search result count is in the search bar and maps to stable object identit
  assert.match(owner,/this\.getMenu\(\)\?\.setResults\(matches\)/);
  // Spotlight mode highlights matching geometry; only-hits mode must
  // deliberately render the same hits normally, without special emphasis.
- assert.match(app,/highlightIds:objectSearchController\.view\?\.onlyHits\?null:objectSearchController\.view\?\.ids/);
+ const presentation=fs.readFileSync(path.resolve(__dirname,"../ui/project-object-presentation.js"),"utf8");
+  assert.match(app,/getSearchView:\(\)=>objectSearchController\.view/);
+  assert.match(presentation,/highlightIds:view\?\.onlyHits\?null:view\?\.ids/);
 });
 test("repeated records with the same pin ID count as one map marker",()=>{
  const repeated={...project,pins:Array.from({length:8},()=>({...project.pins[0]}))};
@@ -212,7 +214,10 @@ test("v300 only-hits is a visual search toggle, never a persistent search filter
  const css=fs.readFileSync(path.resolve(__dirname,"../styles.css"),"utf8");
  assert.match(ui,/\["onlyHits","Nur Treffer"\]/);
  assert.match(ui,/onlyHits:checked\("onlyHits"\)/);
- assert.match(app,/objectSearchController\.view\?\.onlyHits/);
+ const presentation=fs.readFileSync(path.resolve(__dirname,"../ui/project-object-presentation.js"),"utf8");
+  assert.match(app,/getSearchView:\(\)=>objectSearchController\.view/);
+  assert.match(presentation,/const onlyHits=!!view\?\.onlyHits/);
+  assert.match(presentation,/view\?\.onlyHits\?view\.ids\.has/);
  const owner=fs.readFileSync(path.resolve(__dirname,"../ui/object-search-controller.js"),"utf8");
  assert.match(owner,/this\.spotlight\(\)\?\.setActive\(matches\.length>0&&!this\.view\.onlyHits\)/);
  assert.match(owner,/this\.spotlight\(\)\?\.setActive\(matches\.length>0&&!view\.onlyHits\)/);

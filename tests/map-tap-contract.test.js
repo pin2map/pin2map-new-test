@@ -43,7 +43,9 @@ test("Kartentip pin immediately enters the regular stored pin-info dataflow",()=
  assert.match(service,/pinOperations.createPin\(project,/);
  assert.match(service,/lat:entry.point.lat,lng:entry.point.lng,name,layerId/);
  assert.match(app,/privateId:PRIVATE_ID/);
- assert.match(app,/pinInfoService\.setVisiblePins\(temporaryInfoPin\?\[\.\.\.visible,temporaryInfoPin\.point\]:visible\)/);
+ const presentation=source("ui/project-object-presentation.js");
+ assert.match(app,/getTemporaryInfoPin:\(\)=>temporaryInfoPin/);
+ assert.match(presentation,/this\.pinInfoService\.setVisiblePins\(temporary\?\[\.\.\.visible,temporary\.point\]:visible\)/);
  assert.match(acceptance,/this.onSave\(\);\s*this.onRender\(\)/);
  assert.match(acceptance,/void this.onPersist\(\)\.catch/);
  assert.doesNotMatch(acceptance,/temporaryInfoPin=entry|platePanel\.show|temporaryLayerPicker\.show/);
