@@ -99,7 +99,25 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 ## 6. Eingereichte Nutzeranforderungen
 
-**Noch keine neuen fachlichen Anforderungen eingetragen.** Der Auftraggeber hat angekündigt, sie als Nächstes zu beschreiben und gemeinsam zu diskutieren. Die bereits abgenommene Start-/Ziel-Platzhalteroberfläche aus v330 ist oben ausschließlich als existierender NEW-Vertrag dokumentiert.
+### R-001 – Vier Routing-Typen und schrittweise Beschreibung (22.11.2026)
+
+**Status: EINGEREICHT – fachliche Grundvorgabe vom Auftraggeber, Einzelheiten noch in Diskussion; keine Freigabe zur Implementierung.**
+
+**Originalwortlaut des Auftraggebers (unverändert):**
+
+> Gut. Es wird zukünftig wieder vier Routing-Typen geben: Auto, Fahrrad, Fußgänger, ÖPNV. Beim ÖPNV werden wir uns auf die aufwändigen Vorarbeiten im Routen und Etappen Optimieren der Vorgänger-Version orientieren. Bei den anderen Routing-Arten wird es gegenüber der Vorgänger-Version erhebliche Abweichungen geben. Was wir übernehmen ist die Darstellung der Autoroute, die für halbe und ganze Stunden kleine marker auf die Route setze und bei den vollen Stunden die Stunden als Zahl eintrug. Ich werde kleinschrittig vorgehen, weshalb ich zunächst nur das Auto-Routing beschreibe, bevor wir zu den anderen Routing-Arten kommen.
+
+**Für die spätere Diskussion getrennt vorgemerkte Aussagen (keine ergänzten Funktionen):**
+
+- **R-001a:** Für NEW sind vier Routing-Typen vorgesehen: **Auto, Fahrrad, Fußgänger und ÖPNV**. Das entspricht den bereits providerneutral reservierten Modi `car`, `bicycle`, `pedestrian`, `transit`; es legt noch keinen Anbieter und keine Aktivierungsreihenfolge fest.
+- **R-001b:** Bei **ÖPNV** sollen insbesondere die aufwändigen Vorarbeiten zur **Routen- und Etappenoptimierung** der maßgeblichen erweiterten Vorgängerversion `pin2map_v10.12.71_Verbindungsauswahl_TEST.html` als funktionale Orientierung dienen. Das ist **keine** Entscheidung, Quellcode, Layout oder technische Algorithmen ungeprüft zu übernehmen.
+- **R-001c:** Bei den **anderen Routing-Arten** sind gegenüber der Vorgänger-App **erhebliche Abweichungen** angekündigt. Diese dürfen nicht durch vermeintliche Legacy-Parität vorab festgelegt werden.
+- **R-001d:** Beim **Autorouting** soll die aus der Vorgänger-App bekannte Anzeige von **kleinen Markern bei halben und ganzen Fahrtstunden entlang der Route** übernommen werden. **Volle Stunden** erhalten **die Stundenzahl** am Marker. Exakte Visualisierung, Berechnungs-/Rundungsdetails, Zeitskalierung und Fehlerfälle bleiben bis zur folgenden Auto-Routing-Beschreibung offen.
+- **R-001e:** Der Auftraggeber beschreibt **zuerst ausschließlich Autorouting**, Schritt für Schritt. Danach folgen die anderen Modi. **Keine voreilige fachliche Detailentscheidung** oder Routingimplementierung vor Abschluss der gemeinsamen Besprechung.
+
+**Nächster Input:** Detaillierte Anforderungen zum Autorouting. Bis dahin keine Fragen zu technischen Providern oder zur vollständigen ÖPNV-Gestaltung vorziehen.
+
+
 
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
