@@ -11,6 +11,7 @@ Bei einem neuen pin2map-NEW-Auftrag bitte **ohne Rückfrage** zunächst folgende
 4. docs/MODULARCHITEKTUR.md und docs/ENTWICKLUNGSFAHRPLAN.md
 5. Bei Deployment/Preview: docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md; bei UI/Refresh: docs/UI_CONTROLS_AND_PWA_REFRESH_2026-11-10.md.
 6. **Bei jeder GitHub-Änderung:** docs/ENTWICKLUNGSARBEITSABLAUF_2026-11-15.md (gebündelte Commits, schrittweise Gates, Umgang mit Schnittstellenlimits).
+7. **Bei jeder Routing-Anforderung, Routing-Diskussion und Routing-Entwicklung:** docs/ROUTING_FUNKTIONALE_REFERENZ_UND_ANFORDERUNGEN.md (Vorgänger-Funktionsbefunde, offene Punkte, Entscheidungen und Fortsetzung über Chats). Eingereichte Nutzerwünsche dürfen ohne ausdrückliche Freigabe nicht als beschlossen oder implementiert gelten.
 
 ## Unverhandelbare Arbeitsvereinbarung vom 10. November 2026
 

@@ -16,6 +16,7 @@ Für Chatwechsel und die nächste konkrete Aufgabe zuerst [PROJEKTSTATUS.md](PRO
 4. **docs/DEVELOPMENT_PREVIEW_PAGES_2026-11-09.md** – Veröffentlichungsumgebung, stabile/Preview-Trennung, Deployment-Nachweis.
 5. **docs/UI_CONTROLS_AND_PWA_REFRESH_2026-11-10.md** – Gestaltung der Kartenbuttons, Refresh und PWA-Updatevertrag.
 6. **docs/VORGAENGER_APP_MODUL_AUDIT.md** – Funktionsinventar der Vorgänger-App; Referenz für Verhalten, keine kopierbare Zielarchitektur.
+   **Routing-Arbeitsgrundlage:** [docs/ROUTING_FUNKTIONALE_REFERENZ_UND_ANFORDERUNGEN.md](ROUTING_FUNKTIONALE_REFERENZ_UND_ANFORDERUNGEN.md) – aus dem Legacy-Quellcode belegte Routingfunktionen, gesonderte aktuelle NEW-Verträge und kanonisches Register eingereichter/diskutierter/beschlossener Anforderungen für Chatwechsel; noch keine neuen Routing-Fachentscheidungen.
 7. **docs/ARCHITEKTURABSCHLUSS_FUNKTIONSABGLEICH_2026-11-11.md** – Abschluss der app.js-Entflechtung auf v116 und priorisierte NEW-Funktions-/UX-Gaps; für nächste UX-/Feature-Aufgabe zusammen mit Projektstatus lesen.
 8. **docs/GERAETE_ABNAHMEPLAN_IPHONE_IPAD_2026-11-11.md** – konkrete noch offene Geräteabnahmen; Ergebnisse und Gerät separat dokumentieren.
 9. **docs/BROWSER_REGRESSION_GATE_2026-11-09.md**, **docs/REGRESSION_CHECKPOINT_2026-11-09.md** – Prüfinfrastruktur und ausdrücklich als historisch datierte Prüfergebnisse.
