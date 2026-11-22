@@ -18,8 +18,11 @@ test("only intentional actions or project replacement clear the displayed route"
   assert.match(actions,/this\.mapPort\.show\(attachment\.chains\)/);
   assert.match(adapter,/showAttachedGpx\(chains\)/);
   assert.match(adapter,/clearAttachedGpx\(\)/);
-  const restore=app.slice(app.indexOf("async function applyTransfer(choice){"),app.indexOf("function bindTransfer(){"));
-  assert.match(restore,/committed=true;\s*pinGpxActions\.hide\(\)/);
+  const transferController=read("ui/project-transfer-controller.js");
+  assert.match(transferController,/const next=await this\.session\.commit\(/);
+  assert.match(transferController,/committed=true/);
+  assert.match(transferController,/await this\.onApplied\(next,choice\)/);
+  assert.match(app,/onApplied:\(\)=>\{\s*pinGpxActions\.hide\(\)/);
 });
 test("NEW project export contains no predecessor raw document records",()=>{
   const transfer=require("../application/project-transfer.js");

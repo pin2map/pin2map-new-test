@@ -238,11 +238,11 @@ test("private layer is retained in an otherwise empty imported project",()=>{
 test("iPad file picker does not pre-filter .pin2map or .gpx files",()=>{
  const fs=require("node:fs"),path=require("node:path");
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
- const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ const app=fs.readFileSync(path.join(__dirname,"../ui/project-transfer-controller.js"),"utf8");
  const input=html.match(/<input[^>]*id="transferFileInput"[^>]*>/)?.[0];
  assert.ok(input,"import input exists");
  assert.doesNotMatch(input,/\saccept=/,"native iPad file chooser must not gray out custom extension");
- assert.match(app,/file\.size>50\*1024\*1024/,"size guard remains in app");
+ assert.match(app,/file\.size>50\*1024\*1024/,"size guard remains in the transfer UI controller");
  assert.match(app,/this\.transfer\.parseProject\(contents,file\.name\)/,
    "invalid files are rejected by content parser after selection");
  assert.match(app,/this\.transfer\.gpxRead\(contents/);
@@ -296,7 +296,8 @@ test("full replacement retains imported favorites and view, without remapping ob
 });
 test("UI explicitly distinguishes replace from add-in-one-layer",()=>{
  const fs=require("node:fs"),path=require("node:path");
- const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ const app=fs.readFileSync(path.join(__dirname,"../ui/project-transfer-controller.js"),"utf8");
+ const session=fs.readFileSync(path.join(__dirname,"../application/project-transfer-session.js"),"utf8");
  const html=fs.readFileSync(path.join(__dirname,"../index.html"),"utf8");
  assert.match(app,/this\.pending=\{\.\.\.result,filename:file\.name\}/);
  assert.match(session,/this\.transfer\.addInNewLayer\(previous,incoming,filename\)/);
