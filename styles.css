@@ -3094,7 +3094,9 @@ body.object-search-mode #app #searchClear.search-clear span{
  content:"";position:absolute;top:0;bottom:0;left:0;
  width:var(--p2m-feature-label-layer-strip);
  border-radius:5px 0 0 5px;
- background:var(--p2m-feature-layer-color,#a4b0bd);
+ /* Preserve the unmistakable layer hue, but mix 65% white for
+    strong black icon contrast even on saturated blue/red layers. */
+ background:color-mix(in srgb,var(--p2m-feature-layer-color,#a4b0bd) 35%,white);
  pointer-events:none;
 }
 #map .p2m-feature-label-type{position:relative;z-index:1;display:block;flex:none;width:16px;height:16px;object-fit:contain}

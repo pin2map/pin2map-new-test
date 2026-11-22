@@ -41,7 +41,7 @@ test("one object label factory colors only the layer segment for area, lake and 
 test("all feature label types share one CSS layer strip which ends before the status indicator",()=>{
  const css=read("styles.css"),map=read("map-adapter-leaflet.js"),html=read("index.html"),sw=read("sw.js");
  assert.match(css,/#map \.p2m-area-name-label::before,#map \.p2m-river-name-label::before\{/);
- assert.match(css,/background:var\(--p2m-feature-layer-color,#a4b0bd\)/);
+ assert.match(css,/background:color-mix\(in srgb,var\(--p2m-feature-layer-color,#a4b0bd\) 35%,white\)/);
  assert.match(css,/width:var\(--p2m-feature-label-layer-strip\)/);
  assert.match(map,/Pin2MapFeatureLabel\.create\(\s*area\.kind==="lake"\?"lake":"area"/);
  assert.match(map,/Pin2MapFeatureLabel\.create\(\s*"river",river/);

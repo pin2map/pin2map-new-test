@@ -571,9 +571,21 @@ const viewports=[
        const border=getComputedStyle(label);
        const borderY=parseFloat(border.borderTopWidth)+parseFloat(border.borderBottomWidth);
        const reference=document.createElement("span");
-       reference.style.backgroundColor=hex;document.body.append(reference);
+       reference.style.backgroundColor="color-mix(in srgb, "+hex+" 35%, white)";
+       document.body.append(reference);
        const expected=getComputedStyle(reference).backgroundColor;reference.remove();
-       return {actual:pseudo.backgroundColor,expected,
+       // The rendered result must remain comfortably readable with the black
+       // geometry icon, including saturated or very dark layer colors.
+       const canvas=document.createElement("canvas");canvas.width=canvas.height=1;
+       const context=canvas.getContext("2d");
+       context.fillStyle=pseudo.backgroundColor;context.fillRect(0,0,1,1);
+       const rgba=Array.from(context.getImageData(0,0,1,1).data);
+       const linear=rgba.slice(0,3).map(v=>{
+         const x=v/255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4;
+       });
+       const luminance=linear[0]*.2126+linear[1]*.7152+linear[2]*.0722;
+       const contrast=(luminance+.05)/.05;
+       return {actual:pseudo.backgroundColor,expected,contrast,rgba,
          layerToken:label.style.getPropertyValue("--p2m-feature-layer-color").toUpperCase(),
          midpoint:(type.right+status.left)/2,
          stripRight:outer.left+parseFloat(pseudo.width),
@@ -581,7 +593,9 @@ const viewports=[
          statusLeft:status.left};
      },layerHex);
      assert.equal(info.layerToken,layerHex.toUpperCase(),"Label must use layer color, not object override");
-     assert.equal(info.actual,info.expected,"Layer-color strip must show the exact layer color");
+     assert.equal(info.actual,info.expected,"Label strip must centrally lighten the assigned layer color");
+     assert.ok(info.contrast>=7,
+       "Black type icon must remain clearly readable (>=7:1) on the tinted layer strip: "+JSON.stringify(info));
      assert.ok(Math.abs(info.midpoint-info.stripRight)<=1.1,
        "Colored area must end halfway between type icon and note/URL circle: "+JSON.stringify(info));
      // CSS absolute positioning fills the padding box, not the 1px border.
