@@ -34,6 +34,10 @@ test("properties tabs maintain version and storage estimates without modifying p
  assert.match(html,/id="settingsProductVersion"/);
  assert.match(html,/id="settingsInterfaceContent"[\s\S]*?id="showPinHitboxes"/);
  assert.match(html,/id="settingsServicesContent"[\s\S]*?id="allowGeocode"/);
- assert.match(app,/navigator\.storage\?\.estimate/);
- assert.match(app,/usageDetails\?\.caches/);
+ assert.match(app,/estimateStorage:\(\)=>navigator\.storage\?\.estimate\?\.\(\)/);
+ assert.match(app,/new window\.Pin2MapSettingsTabsController/);
+ const tabs=read("ui/settings-tabs-controller.js");
+ assert.match(tabs,/this\.estimateStorage\(\)/);
+ assert.match(tabs,/usageDetails\?\.caches/);
+ assert.match(tabs,/this\.getElement\("settings"\+tab\+"Content"\)\.classList\.toggle\("hidden",!selected\)/);
 });
