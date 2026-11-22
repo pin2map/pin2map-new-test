@@ -101,6 +101,9 @@ assert.match(persistence,/store\.saveProject\(this\.getProject\(\)\)/,
 assert.doesNotMatch(app,/projectStore\.saveProject/,
   "Project write orchestration belongs to the application use case");
 assert.match(app,/Pin2MapSearchResultsView/,"App must use independent search presentation");
+assert.doesNotMatch(app,/\$\("searchClear"\)\.addEventListener\("click"/,
+  "Search clear capture listener belongs in SearchTypeMenu UI owner");
+assert.match(source("ui/search-type-menu.js"),/bindClearButton\(\)/);
 assert.match(app,/Pin2MapUIState/,"App must use isolated UI state");
 assert.match(app,/Pin2MapPinEditorView/,"App must use pin editor view");
 assert.match(app,/Pin2MapPinOperations/,"App must use independent pin use cases");

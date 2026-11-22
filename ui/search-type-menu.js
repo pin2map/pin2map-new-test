@@ -14,9 +14,11 @@
   {id:"objects",label:"Markierungen Suchen",shortcut:"m",...TYPES.descriptor("objects")}
  ]);
  class SearchTypeMenu{
-  constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{},onEdit=()=>{}}){
+  constructor({document:doc,getElement,icons,onChoose,onSearch=()=>{},onExit=()=>{},onBeforeOpen=()=>{},onEdit=()=>{},
+    onClearStart=()=>{},onClearFinish=()=>{}}){
    this.doc=doc;this.el=getElement;this.icons=icons;
    this.onChoose=onChoose;this.onSearch=onSearch;this.onExit=onExit;this.onBeforeOpen=onBeforeOpen;this.onEdit=onEdit;
+   this.onClearStart=onClearStart;this.onClearFinish=onClearFinish;
    this.menu=this.el("searchTypeMenu");this.clear=this.el("searchClear");
    this.input=this.el("searchInput");this.form=this.el("searchForm");
    this.app=this.el("app");
@@ -83,8 +85,21 @@
    panel.append(row,flags);
    return panel;
   }
+  bindClearButton(){
+   if(this.clearBound)return;
+   this.clearBound=true;
+   this.clear.addEventListener("click",event=>{
+    if(!this.searchMode)return;
+    // Search mode owns this capture event; normal place clear remains untouched.
+    event.preventDefault();event.stopImmediatePropagation();
+    this.onClearStart();
+    this.returnToStandardChoices();
+    this.onClearFinish();
+   },true);
+  }
   bind(){
    if(this.bound)return;
+   this.bindClearButton();
    this.creation=this.buildCreation();this.searchPanel=this.buildSearch();
    this.menu.replaceChildren(this.creation,this.searchPanel);
    this.searchPanel.classList.add("hidden");

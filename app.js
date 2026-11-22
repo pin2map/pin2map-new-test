@@ -804,18 +804,13 @@
     transferController.bind();
     pinGpxActions.bind();
     searchForm.bind();
-    $("searchClear").addEventListener("click",event=>{
-      if(!searchTypeMenu?.searchMode)return;
-      // Red X restores the seven creation choices but preserves the query.
-      event.preventDefault();event.stopImmediatePropagation();
-      resetObjectSearch();
-      document.body.classList.remove("object-search-mode");
-      searchTypeMenu.returnToStandardChoices();
-      searchForm.updateClear();
-    },true);
     searchTypeMenu=new window.Pin2MapSearchTypeMenu({
       document,getElement:$,icons:window.Pin2MapIcons,onChoose:runSearchMode,
       onSearch:runObjectSearch,onExit:endObjectSearch,onBeforeOpen:closeAllMapMenus,
+      onClearStart:()=>{
+        resetObjectSearch();document.body.classList.remove("object-search-mode");
+      },
+      onClearFinish:()=>searchForm.updateClear(),
       onEdit:()=>{
         resetObjectSearch();document.body.classList.remove("object-search-mode");
         searchForm.updateClear();
