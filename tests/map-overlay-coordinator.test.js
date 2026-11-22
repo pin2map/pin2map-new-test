@@ -15,7 +15,7 @@ function fixture(){
   });
   const panels={layersPanel:el("layersPanel"),settingsPanel:el("settingsPanel")};
   for(const panel of Object.values(panels))panel.classList.owner=panel;
-  const dialog=el("deleteDialog");dialog.open=false;dialog.closed=[];
+  const dialog=el("deleteDialog");dialog.classList.owner=dialog;dialog.open=false;dialog.closed=[];
   dialog.close=value=>{dialog.open=false;dialog.closed.push(value);};
   const pinClose=el("pinClose");pinClose.dataset.close="pinPanel";
   const otherClose=el("otherClose");otherClose.dataset.close="settingsPanel";
