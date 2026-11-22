@@ -22,11 +22,18 @@
    }
    doc.body.append(this.menu);
   }
+  // Single visual-state owner: one glyph, accessibility label and CSS class
+  // for mouse, touch, desktop and PWA. No viewport/hover-specific JS branches.
+  setCopyState(copied){
+   this.button.classList.toggle("is-copied",copied);
+   this.icons.mount(this.button,copied?"clipboard-check":"map-pin-check");
+   const label=copied?"Koordinaten kopiert":"Pin-Koordinaten kopieren";
+   this.button.setAttribute("aria-label",label);
+   this.button.title=label;
+  }
   resetCopyIcon(){
    this.copyToken++;
-   this.icons.mount(this.button,"map-pin-check");
-   this.button.setAttribute("aria-label","Pin-Koordinaten kopieren");
-   this.button.title="Pin-Koordinaten kopieren";
+   this.setCopyState(false);
   }
   render(pin){
    if(!pin||this.lastPinId!==pin.id){
@@ -36,15 +43,14 @@
   async copy(){
    const pin=this.getPin();if(!pin)return;
    const token=++this.copyToken;
+   this.setCopyState(false);
    const valid=Number.isFinite(pin.lat)&&Number.isFinite(pin.lng);
    if(!valid){this.onNotice("Pin-Koordinaten ungültig");return;}
    const coordinates=pin.lat.toFixed(6)+", "+pin.lng.toFixed(6);
    try{
     await this.writeText(coordinates);
     if(token!==this.copyToken||this.getPin()?.id!==pin.id)return;
-    this.icons.mount(this.button,"clipboard-check");
-    this.button.setAttribute("aria-label","Koordinaten kopiert");
-    this.button.title="Koordinaten kopiert";
+    this.setCopyState(true);
     setTimeout(()=>{
      if(token===this.copyToken&&this.getPin()?.id===pin.id)this.resetCopyIcon();
     },1000);

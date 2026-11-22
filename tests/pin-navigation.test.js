@@ -36,7 +36,11 @@ test("Pin copy and confirmation use exact bundled canonical Lucide glyphs",()=>{
  assert.match(ui,/setTimeout\(\(\)=>\{/);
  assert.match(ui,/\},1000\)/);
  assert.match(ui,/this\.writeText\(coordinates\)/);
- assert.match(ui,/this\.icons\.mount\(this\.button,"clipboard-check"\)/);
+ assert.match(ui,/this\.icons\.mount\(this\.button,copied\?"clipboard-check":"map-pin-check"\)/);
+ assert.match(ui,/this\.button\.classList\.toggle\("is-copied",copied\)/);
+ const css=read("styles.css");
+ assert.match(css,/#pinPanel \.pin-nav-add\.p2m-icon-control\.is-copied\{/);
+ assert.match(css,/--p2m-button-bg:#52606d;--p2m-button-ink:#fff/);
  assert.match(sw,/"\.\/application\/apple-maps-links\.js"/);
  assert.match(sw,/"\.\/ui\/pin-navigation\.js"/);
 });

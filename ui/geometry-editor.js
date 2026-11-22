@@ -99,7 +99,7 @@
       nativeColor.addEventListener("change",()=>{this.applyObjectColor(nativeColor.value);this.dismissPopup();});
       chooseColor.append(nativeColor);
       const noColor=doc.createElement("button");noColor.type="button";
-      noColor.className="geometry-no-color";noColor.textContent="Keine Farbe";
+      noColor.className="geometry-no-color";noColor.textContent="Standard-Farbe";
       noColor.addEventListener("click",()=>this.resetObjectColor());
       colorMenu.append(chooseColor,noColor);
       this.colorMenu=colorMenu;this.noColorButton=noColor;this.nativeColor=nativeColor;

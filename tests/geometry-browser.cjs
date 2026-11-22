@@ -187,9 +187,23 @@ const viewports=[
    assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
    await page.locator("#pinNavCopy").click();
    await page.waitForFunction(()=>window.__copiedPinCoords==="47.650100, 9.180200");
+   await page.waitForFunction(()=>document.querySelector("#pinNavCopy")?.classList.contains("is-copied"));
    assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"clipboard-check");
+   // Desktop hover and iPhone touch were previously different even though
+   // both were the SAME confirmed-copy state. Use real computed pixels.
+   const confirmed=await page.locator("#pinNavCopy").evaluate(button=>({
+     background:getComputedStyle(button).backgroundColor,
+     foreground:getComputedStyle(button).color,
+     label:button.getAttribute("aria-label"),
+     confirmed:button.classList.contains("is-copied")
+   }));
+   assert.deepEqual(confirmed,{
+     background:"rgb(82, 96, 109)",foreground:"rgb(255, 255, 255)",
+     label:"Koordinaten kopiert",confirmed:true
+   },"Desktop and touch must share the confirmed-copy appearance: "+view.name);
    await page.waitForTimeout(1150);
    assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
+   assert.equal(await page.locator("#pinNavCopy").evaluate(el=>el.classList.contains("is-copied")),false);
    await page.locator("#pinNavApple").click();
    await page.locator("#pinAppleMenu").waitFor({state:"visible"});
    const applePosition=await page.evaluate(()=>{
@@ -485,11 +499,12 @@ const viewports=[
    });
    assert.equal(await page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry").first().getAttribute("stroke"),"#AABBCC");
    assert.equal(await page.locator(".geometry-color-dot").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(170, 187, 204)");
+   await assertLayerStrip(areaLabel,areaLayerHex); // override must NOT recolor layer segment
    // v306: the color popup must offer a reset independent of the native OS
    // picker. Removing the override restores the layer color and persistence.
    await page.locator("#geometryEditor .geometry-color").click();
    await page.locator("#geometryColorMenu").waitFor({state:"visible"});
-   assert.equal(await page.locator("#geometryColorMenu .geometry-no-color").innerText(),"Keine Farbe");
+   assert.equal(await page.locator("#geometryColorMenu .geometry-no-color" ).innerText(),"Standard-Farbe");
    const originalLayerColor=await page.locator("#geometryEditor .geometry-layer>.pin-layer-dot")
      .evaluate(el=>getComputedStyle(el).backgroundColor);
    await page.locator("#geometryColorMenu .geometry-no-color").click();
@@ -543,7 +558,35 @@ const viewports=[
    assert.equal(savedArea.layerId,"private");
    assert.equal(savedArea.geometry.type,"Polygon");
    assert.equal(savedArea.color,undefined,"No override: area inherits layer color");
+   // Negative/positive visual contract: check the strip's actual background
+   // and its right boundary against the midpoint between icon and status.
+   const assertLayerStrip=async(locator,layerHex)=>{
+     const info=await locator.evaluate((label,hex)=>{
+       const type=label.querySelector(".p2m-feature-label-type").getBoundingClientRect();
+       const status=label.querySelector(".p2m-object-status").getBoundingClientRect();
+       const outer=label.getBoundingClientRect();
+       const pseudo=getComputedStyle(label,"::before");
+       const reference=document.createElement("span");
+       reference.style.backgroundColor=hex;document.body.append(reference);
+       const expected=getComputedStyle(reference).backgroundColor;reference.remove();
+       return {actual:pseudo.backgroundColor,expected,
+         layerToken:label.style.getPropertyValue("--p2m-feature-layer-color").toUpperCase(),
+         midpoint:(type.right+status.left)/2,
+         stripRight:outer.left+parseFloat(pseudo.width),
+         labelHeight:outer.height,stripHeight:parseFloat(pseudo.height),
+         statusLeft:status.left};
+     },layerHex);
+     assert.equal(info.layerToken,layerHex.toUpperCase(),"Label must use layer color, not object override");
+     assert.equal(info.actual,info.expected,"Layer-color strip must show the exact layer color");
+     assert.ok(Math.abs(info.midpoint-info.stripRight)<=1.1,
+       "Colored area must end halfway between type icon and note/URL circle: "+JSON.stringify(info));
+     assert.ok(Math.abs(info.labelHeight-info.stripHeight)<=1.1,
+       "Strip must cover the whole left label height: "+JSON.stringify(info));
+     assert.ok(info.stripRight<info.statusLeft,"Status circle stays on original neutral background");
+   };
+   const areaLayerHex=(await readStoredProject()).layers.find(layer=>layer.id===savedArea.layerId).color;
    const areaLabel=page.locator(".p2m-area-name-label").first();
+   await assertLayerStrip(areaLabel,areaLayerHex);
    assert.equal(await areaLabel.locator('img[src$="region.svg"]').count(),1);
    assert.equal(await areaLabel.locator(".p2m-object-status svg path").count(),2);
    await page.locator("#geometryNotes").fill("Testkommentar");
@@ -607,6 +650,8 @@ const viewports=[
    assert.equal(lake.layerId,"private");
    assert.equal(await page.locator('.p2m-area-name-label img[src$="lake.svg"]').count(),1,
      "Lake map label uses the canonical See symbol");
+   const lakeLayerHex=(await readStoredProject()).layers.find(layer=>layer.id===lake.layerId).color;
+   await assertLayerStrip(page.locator('.p2m-area-name-label:has(img[src$="lake.svg"])'),lakeLayerHex);
    await page.locator(".geometry-ok").click();
    // The area/see name markers must remain legible inside a partially shown
    // polygon at different zoom levels, not fixed at the complete bounds center.
@@ -807,6 +852,8 @@ const viewports=[
    // river is in view; the entire river's fixed midpoint is not sufficient.
    const riverLabel=page.locator(".p2m-river-name-label").first();
    await riverLabel.waitFor({state:"visible",timeout:5000});
+   const riverLayerHex=(await readStoredProject()).layers.find(layer=>layer.id===river.layerId).color;
+   await assertLayerStrip(riverLabel,riverLayerHex);
    const nameBefore=await riverLabel.boundingBox();
    const mapBounds=await page.locator("#map").boundingBox();
    assert.ok(nameBefore&&mapBounds&&nameBefore.x>=mapBounds.x-2&&

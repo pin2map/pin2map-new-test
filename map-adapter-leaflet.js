@@ -617,14 +617,8 @@
         }).addTo(group);
         const bounds=geo.getBounds();
         if(!bounds.isValid()||!area.name)continue;
-        const content=document.createElement("span");
-        content.className="p2m-area-name-label";
-        const typeIcons=window.Pin2MapObjectTypeIcons;
-        const symbol=typeIcons.element(area.kind==="lake"?"lake":"area",document);
-        symbol.classList.add("p2m-feature-label-type");
-        content.append(symbol,window.Pin2MapObjectStatus.halves(area,document));
-        const title=document.createElement("span");title.className="p2m-feature-label-name";title.textContent=area.name;
-        content.append(title);
+        const content=window.Pin2MapFeatureLabel.create(
+          area.kind==="lake"?"lake":"area",area,layerColors[area.layerId]||"#326cc2",document);
         const marker=window.L.marker(bounds.getCenter(),{
           keyboard:true,interactive:true,zIndexOffset:highlightIds?.has("areas:"+area.id)||highlightIds?.has("lakes:"+area.id)?1800:350,
           icon:window.L.divIcon({html:content.outerHTML,className:"p2m-area-name-wrap",
@@ -653,13 +647,8 @@
           });
         }
         if((river.chains||[]).some(chain=>chain.length>=2)&&river.name){
-          const name=document.createElement("span");
-          name.className="p2m-river-name-label";
-          const symbol=window.Pin2MapObjectTypeIcons.element("river",document);
-          symbol.classList.add("p2m-feature-label-type");
-          name.append(symbol,window.Pin2MapObjectStatus.halves(river,document));
-          const title=document.createElement("span");title.className="p2m-feature-label-name";title.textContent=river.name;
-          name.append(title);
+          const name=window.Pin2MapFeatureLabel.create(
+            "river",river,layerColors[river.layerId]||"#1689e5",document);
           // The initial coordinate is only a placeholder; updateRiverLabels
           // immediately moves it onto the currently visible section.
           const marker=window.L.marker([0,0],{

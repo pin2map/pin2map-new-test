@@ -130,6 +130,6 @@ test("geometry color menu is available even before any override is chosen",()=>{
  assert.equal(item.color,undefined);
  editor.colorButton.click();
  assert.equal(editor.colorMenu.classList.contains("hidden"),false);
- assert.equal(editor.noColorButton.textContent,"Keine Farbe");
+ assert.equal(editor.noColorButton.textContent,"Standard-Farbe");
  assert.equal(editor.nativeColor.type,"color");
 });

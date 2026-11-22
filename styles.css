@@ -364,8 +364,8 @@ button.p2m-icon-control{
   background:var(--p2m-button-bg)!important;color:var(--p2m-button-ink)!important;
   box-shadow:var(--p2m-button-shadow);line-height:1
 }
-button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active)){background:#f5f8fa!important}
-button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active)){background:#e9eff4!important}
+button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied)){background:#f5f8fa!important}
+button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active,.is-copied)){background:#e9eff4!important}
 button.p2m-icon-control:focus-visible{outline:3px solid #8bb8ec;outline-offset:2px}
 button.p2m-icon-control:disabled{opacity:.45;cursor:not-allowed}
 button:not(.p2m-icon-control):not(.result):not(.inline-button){
@@ -525,6 +525,11 @@ body.pin-relocation-picking #map .leaflet-interactive{
 #pinPanel .pin-navigation-buttons button:disabled{opacity:1;cursor:default}
 #pinPanel .pin-nav-add.p2m-icon-control{
   --p2m-button-bg:#1679e5;--p2m-button-ink:#fff;--p2m-button-border:#b6c6d8;
+}
+/* The confirmed copy state has one owner for all pointers and viewports.
+   It is not an accidental desktop-hover style. */
+#pinPanel .pin-nav-add.p2m-icon-control.is-copied{
+  --p2m-button-bg:#52606d;--p2m-button-ink:#fff;--p2m-button-border:#52606d;
 }
 #pinPanel .pin-nav-apple{background:#fff;color:#111;font-size:22px}
 #pinPanel .pin-nav-apple .p2m-lucide{width:23px;height:23px}
@@ -3080,9 +3085,19 @@ body.object-search-mode #app #searchClear.search-clear span{
 
 /* v304 canonical object labels: icon and two-half status are part of one hit target. */
 #map .p2m-area-name-label,#map .p2m-river-name-label{
- display:inline-flex;align-items:center;gap:5px;max-width:min(320px,85vw);
+ --p2m-feature-label-layer-strip:26.5px; /* border 1 + pad 7 + icon 16 + half-gap 2.5 */
+ display:inline-flex;position:relative;align-items:center;gap:5px;max-width:min(320px,85vw);
 }
-#map .p2m-feature-label-type{display:block;flex:none;width:16px;height:16px;object-fit:contain}
+/* One shared layer-color strip: stops at the actual midpoint between the
+   object-type icon and the split note/URL status circle, never at the name. */
+#map .p2m-area-name-label::before,#map .p2m-river-name-label::before{
+ content:"";position:absolute;top:0;bottom:0;left:0;
+ width:var(--p2m-feature-label-layer-strip);
+ border-radius:5px 0 0 5px;
+ background:var(--p2m-feature-layer-color,#a4b0bd);
+ pointer-events:none;
+}
+#map .p2m-feature-label-type{position:relative;z-index:1;display:block;flex:none;width:16px;height:16px;object-fit:contain}
 #map .p2m-object-status{display:inline-flex;flex:none;width:14px;height:14px}
 #map .p2m-object-status svg{width:100%;height:100%;display:block}
 #map .p2m-feature-label-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
