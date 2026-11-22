@@ -16,8 +16,13 @@ test("opening either object editor always closes competing object dialogs first"
   assert.doesNotMatch(code,/endObjectSearch|resetObjectSearch|exitSearchMode/);
   assert.match(code,/closeAllMapMenus\(\)/);
  }
- assert.match(app,/function closeAllMapMenus\(\)\{[\s\S]*?geometryEditor\?\.close\(false\)/);
- assert.match(app,/function closeAllMapMenus\(\)\{[\s\S]*?uiState\.clearSelection\(\);renderMarkers\(\);renderPinPanel\(\)/);
+ // The v315 UI coordinator owns the menu lifecycle; the composition root
+ // still supplies the exact editor and selection cleanup through injected ports.
+ const overlays=read("ui/map-overlay-coordinator.js");
+ assert.match(app,/const closeAllMapMenus=\(\)=>overlayCoordinator\.closeMapMenus\(\)/);
+ assert.match(overlays,/closeMapMenus\(\)\{[\s\S]*?this\.closeAdditionalMenus\(\);[\s\S]*?this\.onCancelGeometrySearch\(\);[\s\S]*?this\.closeAll\(\);[\s\S]*?this\.onResetPinSelection\(\)/);
+ assert.match(app,/closeAdditionalMenus:\(\)=>\{[\s\S]*?geometryEditor\?\.close\(false\)/);
+ assert.match(app,/onResetPinSelection:\(\)=>\{[\s\S]*?uiState\.clearSelection\(\);renderMarkers\(\);renderPinPanel\(\)/);
 });
 test("properties tabs maintain version and storage estimates without modifying project data",()=>{
  const html=read("index.html"),app=read("app.js");
