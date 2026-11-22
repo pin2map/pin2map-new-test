@@ -29,12 +29,12 @@ test("injected UI owner is connected to the existing composition and offline wor
  const fs=require("node:fs"),path=require("node:path");
  const read=p=>fs.readFileSync(path.resolve(__dirname,"..",p),"utf8");
  const app=read("app.js"),menu=read("ui/search-type-menu.js");
- assert.match(app,/onClearStart:()=>{/);
- assert.match(app,/onClearFinish:()=>searchForm\.updateClear\(\)/);
+ assert.match(app,/onClearStart:\(\)=>\{/);
+ assert.match(app,/onClearFinish:\(\)=>searchForm\.updateClear\(\)/);
  assert.match(menu,/this\.clear\.addEventListener\("click"/);
  assert.match(menu,/this\.onClearStart\(\);/);
  assert.match(menu,/this\.returnToStandardChoices\(\);/);
  assert.match(menu,/this\.onClearFinish\(\);/);
  assert.doesNotMatch(app,/\$\("searchClear"\)\.addEventListener\("click"/);
- assert.match(read("sw.js"),/".\/ui\/search-type-menu\.js"/);
+ assert.match(read("sw.js"),/"\.\/ui\/search-type-menu\.js"/);
 });
