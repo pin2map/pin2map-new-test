@@ -88,3 +88,46 @@ test("composition boundary, load order and offline cache include overlay coordin
   assert.match(sw,/"\.\/ui\/map-overlay-coordinator\.js"/);
   assert.match(sw,/const CACHE='pin2map-new-v\d+'/);
 });
+
+test("map menu scan includes visible panels, transient tools, dialog and selection",()=>{
+  const x=fixture();
+  x.panels.layersPanel.hidden=true;x.panels.settingsPanel.hidden=true;
+  assert.equal(x.coordinator.isAnyMapMenuOpen(),false);
+  x.panels.layersPanel.hidden=false;
+  assert.equal(x.coordinator.isAnyMapMenuOpen(),true);
+  x.panels.layersPanel.hidden=true;
+  x.setSelected("pin-a");
+  assert.equal(x.coordinator.isAnyMapMenuOpen(),true);
+  x.setSelected(null);x.dialog.open=true;
+  assert.equal(x.coordinator.isAnyMapMenuOpen(),true);
+  x.dialog.open=false;
+  assert.equal(x.coordinator.isAnyMapMenuOpen(),false);
+});
+test("full menu dismissal preserves cancellation and reset ordering",()=>{
+  const calls=[];let selected="pin-1",moving=false;
+  const elements=new Map();
+  const element=id=>elements.get(id)||null;
+  elements.set("deleteDialog",{open:false});
+  const doc={activeElement:{blur(){calls.push("blur");}},querySelectorAll:()=>[]};
+  const controller=new Overlay({
+    getElement:element,document:doc,
+    searchView:{hide(){calls.push("search");}},
+    uiShell:{closePanels(){calls.push("panels");},hideNotice(){calls.push("notice");}},
+    basemapMenu:{close(){calls.push("basemap");}},
+    getMoveMode:()=>moving,getSelectedPinId:()=>selected,
+    onCancelMove:()=>{calls.push("move");moving=false;},
+    onClearSelection:()=>{calls.push("overlay-selection");selected=null;},
+    getAdditionalMenuOpen:()=>false,
+    closeAdditionalMenus:()=>calls.push("additional"),
+    onCancelGeometrySearch:()=>calls.push("geometry"),
+    onResetPinSelection:()=>calls.push("final-reset")
+  });
+  controller.closeMapMenus();
+  assert.deepEqual(calls,["additional","geometry","search","panels","basemap","notice","overlay-selection","blur","final-reset"]);
+});
+test("app delegates map-menu detection and closing to existing overlay coordinator",()=>{
+  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
+  assert.match(app,/overlayCoordinator\.isAnyMapMenuOpen\(\)/);
+  assert.match(app,/overlayCoordinator\.closeMapMenus\(\)/);
+  assert.doesNotMatch(app,/function (?:anyMapMenuOpen|closeAllMapMenus)\s*\(/);
+});

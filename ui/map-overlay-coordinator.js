@@ -3,7 +3,7 @@
  * are supplied as callbacks; no pin mutation, persistence or Leaflet here. */
 (function(root){
   class MapOverlayCoordinator{
-    constructor({getElement,document:doc,searchView,uiShell,basemapMenu,pinInfoMenu=null,getMoveMode,getSelectedPinId,onCancelMove,onClearSelection}){
+    constructor({getElement,document:doc,searchView,uiShell,basemapMenu,pinInfoMenu=null,getMoveMode,getSelectedPinId,onCancelMove,onClearSelection,getAdditionalMenuOpen=()=>false,closeAdditionalMenus=()=>{},onCancelGeometrySearch=()=>{},onResetPinSelection=()=>{}}){
       if(typeof getElement!=="function"||!doc||!searchView||!uiShell||!basemapMenu||
          [getMoveMode,getSelectedPinId,onCancelMove,onClearSelection].some(fn=>typeof fn!=="function"))
         throw new TypeError("Map overlay coordinator dependencies required");
@@ -12,7 +12,28 @@
       this.pinInfoMenu=pinInfoMenu;
       this.getMoveMode=getMoveMode;this.getSelectedPinId=getSelectedPinId;
       this.onCancelMove=onCancelMove;this.onClearSelection=onClearSelection;
+      if([getAdditionalMenuOpen,closeAdditionalMenus,onCancelGeometrySearch,onResetPinSelection].some(fn=>typeof fn!=="function"))
+        throw new TypeError("Map menu coordination ports required");
+      Object.assign(this,{getAdditionalMenuOpen,closeAdditionalMenus,onCancelGeometrySearch,onResetPinSelection});
       this.listeners=[];
+    }
+    isAnyMapMenuOpen(){
+      const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel","transferPanel",
+        "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
+        "pinInfoMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm","temporaryLayerPicker"];
+      return ids.some(id=>{
+        const element=this.element(id);
+        return !!element&&!element.classList.contains("hidden");
+      })||this.getAdditionalMenuOpen()||
+        !!this.element("deleteDialog")?.open||this.getSelectedPinId()!==null;
+    }
+    closeMapMenus(){
+      // The order is a behavior contract: first dismiss transient tools and
+      // pending geometry requests, then clear overlays and any pin selection.
+      this.closeAdditionalMenus();
+      this.onCancelGeometrySearch();
+      this.closeAll();
+      this.onResetPinSelection();
     }
     preparePinSelection(){
       this.searchView.hide();

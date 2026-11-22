@@ -297,6 +297,33 @@
     getElement:$,document,searchView,uiShell,basemapMenu,pinInfoMenu,
     getMoveMode:()=>uiState.moveMode,
     getSelectedPinId:()=>uiState.selectedPinId,
+    getAdditionalMenuOpen:()=>!!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
+      !!noteEditor?.open,
+    closeAdditionalMenus:()=>{
+      transferController.close();
+      mapActionChooser?.close();
+      searchTypeMenu?.close();
+      gpsLocation?.close();
+      platePanel?.close();
+      temporaryLayerPicker?.close();
+      favoritesPanel?.close();
+      geometryEditor?.flush();
+      geometryEditor?.close(false);
+      pinOverlapZoom?.close();
+      featureOverlapZoom?.close();
+      pinInfoMenu.close();
+      basemapMenu.close();
+      pinDetails.closeTransient();
+      pinNavigation.close();
+      noteEditor.close?.();
+      pinLayerPicker.setOpen(false);
+    },
+    onCancelGeometrySearch:()=>cancelGeometrySearch(),
+    onResetPinSelection:()=>{
+      if(uiState.selectedPinId!==null){
+        uiState.clearSelection();renderMarkers();renderPinPanel();
+      }
+    },
     onCancelMove:()=>moveController.cancel(),
     onClearSelection:()=>{
       uiState.selectedPinId=null;uiState.moveMode=false;
@@ -378,37 +405,8 @@
       "application/gpx+xml;charset=utf-8",name),
     onNotice:message=>showNotice(message)
   });
-  function anyMapMenuOpen(){
-    const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel","transferPanel",
-      "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
-      "pinInfoMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm","temporaryLayerPicker"];
-    return ids.some(id=>$(id)&&!$(id).classList.contains("hidden"))||
-      !!pinOverlapZoom?.menu||!!featureOverlapZoom?.menu||
-      !!noteEditor?.open||
-      !!$("deleteDialog")?.open||!!uiState.selectedPinId;
-  }
-  function closeAllMapMenus(){
-    transferController.close();
-    mapActionChooser?.close();
-    searchTypeMenu?.close();
-    gpsLocation?.close();
-    platePanel?.close();
-    temporaryLayerPicker?.close();
-    favoritesPanel?.close();
-    geometryEditor?.flush();
-    geometryEditor?.close(false);
-    pinOverlapZoom?.close();
-    featureOverlapZoom?.close();
-    pinInfoMenu.close();
-    basemapMenu.close();
-    pinDetails.closeTransient();
-    pinNavigation.close();
-    noteEditor.close?.();
-    pinLayerPicker.setOpen(false);
-    cancelGeometrySearch();
-    overlayCoordinator.closeAll();
-    if(uiState.selectedPinId!==null){uiState.clearSelection();renderMarkers();renderPinPanel();}
-  }
+  const anyMapMenuOpen=()=>overlayCoordinator.isAnyMapMenuOpen();
+  const closeAllMapMenus=()=>overlayCoordinator.closeMapMenus();
   const mapClickCoordinator = new window.Pin2MapMapClickCoordinator({
     isMoveMode:()=>uiState.moveMode||temporaryMove.isActive(),
     previewMove:position=>temporaryMove.isActive()?temporaryMove.previewAt(position):moveController.previewAt(position),
