@@ -574,7 +574,10 @@ const viewports=[
    }
    assert.equal(savedArea.layerId,"private");
    assert.equal(savedArea.geometry.type,"Polygon");
-   assert.equal(savedArea.color,undefined,"No override: area inherits layer color");
+   // At this point the native picker has explicitly re-applied #AABBCC.
+   // The absence of an override was already verified above directly after
+   // "Standard-Farbe"; assert both states rather than contradicting the flow.
+   assert.equal(savedArea.color,"#AABBCC","Explicit area color override persists");
    // Negative/positive visual contract: check the strip's actual background
    // and its right boundary against the midpoint between icon and status.
    async function assertLayerStrip(locator,layerHex){
