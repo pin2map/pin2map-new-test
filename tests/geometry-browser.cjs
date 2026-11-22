@@ -499,7 +499,9 @@ const viewports=[
    });
    assert.equal(await page.locator("#map .leaflet-overlay-pane path.p2m-new-object-blink-geometry").first().getAttribute("stroke"),"#AABBCC");
    assert.equal(await page.locator(".geometry-color-dot").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(170, 187, 204)");
-   await assertLayerStrip(areaLabel,areaLayerHex); // override must NOT recolor layer segment
+   // Geometry paint override never changes the assigned layer color strip.
+   const overrideLayerHex=(await readStoredProject()).layers.find(layer=>layer.id==="private").color;
+   await assertLayerStrip(page.locator(".p2m-area-name-label").first(),overrideLayerHex);
    // v306: the color popup must offer a reset independent of the native OS
    // picker. Removing the override restores the layer color and persistence.
    await page.locator("#geometryEditor .geometry-color").click();
@@ -560,7 +562,7 @@ const viewports=[
    assert.equal(savedArea.color,undefined,"No override: area inherits layer color");
    // Negative/positive visual contract: check the strip's actual background
    // and its right boundary against the midpoint between icon and status.
-   const assertLayerStrip=async(locator,layerHex)=>{
+   async function assertLayerStrip(locator,layerHex){
      const info=await locator.evaluate((label,hex)=>{
        const type=label.querySelector(".p2m-feature-label-type").getBoundingClientRect();
        const status=label.querySelector(".p2m-object-status").getBoundingClientRect();
@@ -583,7 +585,7 @@ const viewports=[
      assert.ok(Math.abs(info.labelHeight-info.stripHeight)<=1.1,
        "Strip must cover the whole left label height: "+JSON.stringify(info));
      assert.ok(info.stripRight<info.statusLeft,"Status circle stays on original neutral background");
-   };
+   }
    const areaLayerHex=(await readStoredProject()).layers.find(layer=>layer.id===savedArea.layerId).color;
    const areaLabel=page.locator(".p2m-area-name-label").first();
    await assertLayerStrip(areaLabel,areaLayerHex);

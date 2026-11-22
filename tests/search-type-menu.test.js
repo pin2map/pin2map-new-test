@@ -168,9 +168,13 @@ test("v304 central note and URL colors, semantic label icons, and native color o
  const adapter=fs.readFileSync(path.join(__dirname,"../map-adapter-leaflet.js"),"utf8");
  const editor=fs.readFileSync(path.join(__dirname,"../ui/geometry-editor.js"),"utf8");
  const source=fs.readFileSync(path.join(__dirname,"../domain/project-features.js"),"utf8");
- assert.ok(adapter.includes('Pin2MapObjectTypeIcons.element("river"'));
- assert.ok(adapter.includes('window.Pin2MapObjectStatus.halves(area,document)'));
- assert.ok(adapter.includes('window.Pin2MapObjectStatus.halves(river,document)'));
+ // v307 uses the *same* factory for area, lake and river. The
+ // original semantic icon and note/URL status registries are still authoritative.
+ const label=fs.readFileSync(path.join(__dirname,"../ui/feature-label.js"),"utf8");
+ assert.ok(adapter.includes('Pin2MapFeatureLabel.create('));
+ assert.ok(label.includes('icons.element(type,doc)'));
+ assert.ok(label.includes('status.halves(object,doc)'));
+ assert.ok(label.includes('label.append(symbol,status.halves(object,doc),title)'));
  assert.ok(editor.includes('nativeColor.type="color"'));
  assert.ok(editor.includes('actions.insertBefore(color,link)'));
  assert.ok(source.includes('for(const key of ["name","note","url","layerId","color"])'));
