@@ -124,11 +124,15 @@ test("v295 stored search: query, optional properties, empty string, visibility a
 
 test("search hits preserve the normal overlap disambiguation and filter to matching pins",()=>{
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
- const tap=app.split("function handleMarkerTap(id){")[1].split("function updateModeUI()")[0];
- assert.match(tap,/objectSearchController\.view\?\.ids\.has\("pins:"\+id\)/);
- assert.match(tap,/pinOverlapZoom\.handleTap\(id,markerView\.visiblePins\(\)\.filter/);
- assert.ok(tap.indexOf('objectSearchController.view?.ids.has("pins:"+id)')<
-  tap.indexOf('featureOverlapZoom?.handleTap("pin",id)'));
+ const selection=fs.readFileSync(path.resolve(__dirname,"../ui/pin-selection-controller.js"),"utf8");
+ const tap=selection.split("handleMarkerTap(id){")[1].split("\\n    }")[0];
+ assert.match(app,/function handleMarkerTap\\(id\\)\\{pinSelection\\.handleMarkerTap\\(id\\);\\}/);
+ assert.match(app,/getSearchIds:\\(\\)=>objectSearchController\\.view\\?\\.ids/);
+ assert.match(app,/getVisiblePins:\\(\\)=>markerView\\.visiblePins\\(\\)/);
+ assert.match(tap,/ids\\?\\.has\\("pins:"\\+id\\)/);
+ assert.match(tap,/this\\.getPinOverlap\\(\\)\\.handleTap\\(id,this\\.getVisiblePins\\(\\)\\.filter/);
+ assert.ok(tap.indexOf('ids?.has("pins:"+id)')<
+  tap.indexOf('this.getFeatureOverlap()?.handleTap("pin",id)'));
  const controller=fs.readFileSync(path.resolve(__dirname,"../ui/pin-overlap-zoom.js"),"utf8");
  assert.match(controller,/handleTap\(id,pinsOverride=null\)/);
 });
