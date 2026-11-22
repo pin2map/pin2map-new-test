@@ -178,7 +178,10 @@ test("app passes manual unnamed pin to naming service with cleanup on save",()=>
  assert.match(app,/allowed:\(\)=>state\.allowGeocode/);
  assert.match(app,/detailZoom:placeDomain\.reversePlaceZoom/);
  assert.match(app,/const mapZoom=mapAdapter\.getViewport\(\)\.zoom/);
- assert.match(app,/if\(entry\.autoNamed\)void manualPinLocality\.resolve\(entry\)/);
+ const temporaryMove=fs.readFileSync(path.resolve(__dirname,"../ui/temporary-object-move-controller.js"),"utf8");
+ assert.match(temporaryMove,/if\(entry\.autoNamed\)void this\.resolveName\(entry\)/);
+ assert.match(app,/resolveName:entry=>manualPinLocality\.resolve\(entry\)/);
+ assert.match(app,/if\(saved&&entry\.autoNamed\)void manualPinLocality\.resolve\(entry\)/);
  assert.match(app,/manualPinLocality\.setCurrent\(entry\)/);
  assert.match(app,/function clearObjectPreview\(\)\{[\s\S]*?manualPinLocality\.invalidate\(\)/);
  assert.match(app,/pinOps\.renamePin\(state,pin\.id,entry\.name,\{cleanText\}\)/);
