@@ -802,11 +802,7 @@
     });
     pinDetails.render(pin);
     pinNavigation.render(pin);
-    if(pin?.gpxAttachment?.chains?.length){
-      const active=attachedRoutePinId===pin.id;
-      $("pinGpxRoute").textContent=active?"Route verbergen":"Route anzeigen";
-      $("pinGpxRoute").setAttribute("aria-pressed",String(active));
-    }
+    pinGpxActions.render(pin);
     if(pin)pinLayerPicker.render({layers:state.layers,selectedLayerId:pin.layerId});
     else pinLayerPicker.setOpen(false);
   }

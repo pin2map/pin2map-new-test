@@ -29,6 +29,12 @@
       this.routeButton.textContent="Route verbergen";
       this.routeButton.setAttribute("aria-pressed","true");
     }
+    render(pin){
+      if(!pin?.gpxAttachment?.chains?.length)return;
+      const active=this.activePinId===pin.id;
+      this.routeButton.textContent=active?"Route verbergen":"Route anzeigen";
+      this.routeButton.setAttribute("aria-pressed",String(active));
+    }
     export(){
       const pin=this.getPin();
       if(!pin?.gpxAttachment?.chains?.length)return;

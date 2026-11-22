@@ -203,8 +203,10 @@ test("UI never launches share sheet from a download-only export",()=>{
   assert.match(download,/link\.download=name/);
   assert.match(html,/name="transferScope" value="visible"/);
   assert.match(html,/id="transferImportHike"/);
-  assert.match(app,/pin\.gpxAttachment/);
-  assert.match(app,/toggleAttachedRoute/);
+  const actions=fs.readFileSync(path.join(__dirname,"../ui/pin-gpx-actions.js"),"utf8");
+  assert.match(actions,/pin\?\.gpxAttachment/);
+  assert.match(actions,/toggle\(\)/);
+  assert.match(app,/Pin2MapPinGpxActions/);
 });
 
 test("import and export ignore empty layers but keep private and all occupied layers",()=>{

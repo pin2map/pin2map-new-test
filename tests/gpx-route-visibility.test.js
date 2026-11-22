@@ -2,23 +2,24 @@
 const {test}=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path");
 const read=name=>fs.readFileSync(path.join(__dirname,"..",name),"utf8");
-const app=read("app.js"),adapter=read("map-adapter-leaflet.js");
+const app=read("app.js"),adapter=read("map-adapter-leaflet.js"),
+  actions=read("ui/pin-gpx-actions.js");
 test("closing a pin dialog or selecting another pin does not hide its GPX overlay",()=>{
   const render=app.slice(app.indexOf("function renderPinPanel(){"),app.indexOf("function selectPin(id){"));
   assert.doesNotMatch(render,/hideAttachedRoute\(/);
   const close=app.slice(app.indexOf("function closeAllMapMenus(){"),app.indexOf("const mapClickCoordinator"));
   assert.doesNotMatch(close,/hideAttachedRoute\(|clearAttachedGpx/);
-  assert.match(render,/attachedRoutePinId===pin\.id/);
-  assert.match(render,/Route verbergen/);
+  assert.match(render,/pinGpxActions\.render\(pin\)/);
+  assert.match(actions,/this\.activePinId===pin\.id/);
+  assert.match(actions,/Route verbergen/);
 });
 test("only intentional actions or project replacement clear the displayed route",()=>{
-  const toggle=app.slice(app.indexOf("function toggleAttachedRoute(){"),app.indexOf("function exportAttachedRoute(){"));
-  assert.match(toggle,/if\(attachedRoutePinId===pin\.id\)\{hideAttachedRoute\(\);return;\}/);
-  assert.match(toggle,/mapAdapter\.showAttachedGpx\(attachment\.chains\)/);
+  assert.match(actions,/if\(this\.activePinId===pin\.id\)\{this\.hide\(\);return;\}/);
+  assert.match(actions,/this\.mapPort\.show\(attachment\.chains\)/);
   assert.match(adapter,/showAttachedGpx\(chains\)/);
   assert.match(adapter,/clearAttachedGpx\(\)/);
-  const restore=app.slice(app.indexOf("function applyTransfer(choice){"),app.indexOf("function bindTransfer(){"));
-  assert.match(restore,/committed=true;\s*hideAttachedRoute\(\)/);
+  const restore=app.slice(app.indexOf("async function applyTransfer(choice){"),app.indexOf("function bindTransfer(){"));
+  assert.match(restore,/committed=true;\s*pinGpxActions\.hide\(\)/);
 });
 test("NEW project export contains no predecessor raw document records",()=>{
   const transfer=require("../application/project-transfer.js");
