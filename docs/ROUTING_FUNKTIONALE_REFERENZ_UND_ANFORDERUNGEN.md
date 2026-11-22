@@ -137,6 +137,24 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Wiedereinstieg:** Zuerst im Chat fachlich bewerten und mit Auftraggeber präzisieren. Erst nach ausdrücklicher Zustimmung einzelne Punkte auf BESCHLOSSEN setzen. v330 bleibt unverändert.
 
+### R-003 – Dialogsymmetrie, Provider-Zugang, entspannte Route und sinnvolle Alternativen (23.11.2026)
+
+**Status: EINGEREICHT / IN DISKUSSION. Keine Implementierungsfreigabe.**
+
+**Neue Aussagen des Auftraggebers im Folgechat:**
+
+1. Die unter R-002b/c für den Start-Dialog genannten Funktionen gelten **analog für den Ziel-Dialog**: dort Ausgangspunkt suchen/auswählen bzw. bei Bedarf an Adresse anlegen und Richtungs-/Korridorwünsche eingeben. Keine nur einseitige Funktionalität. Ob die beiden Oberflächen technisch denselben Controller nutzen, ist eine Architekturfrage; bestehendes v330-Layout bleibt bis zur Freigabe geschützt.
+2. Eine **Anmeldung/ID** für GraphHopper oder andere Routingnutzung ist **ausgeschlossen**. Daher Zweifel an GraphHopper und Konzentration auf OSRM/Valhalla; ausdrücklich Frage nach weiteren Optionen. Sachlich verifiziert: Der **gehostete kommerzielle GraphHopper-Directions-Dienst** verlangt Registrierung/API-Key; die freie Open-Source-Engine kann dagegen ohne GraphHopper-Konto selbst betrieben werden. Ebenso selbst betreibbar sind Valhalla, OSRM und openrouteservice; Selbsthosting ist jedoch kein automatisch verfügbarer öffentlicher Dienst und benötigt Infrastruktur. Noch offen, ob das Verbot nur Nutzerregistrierung, jegliche Entwickler-API-Schlüssel oder jede Infrastrukturregistrierung umfasst; keine gewählte Providerlösung.
+3. „Entspannte Route“ bedeutet **überwiegend Variante B**: vergleichbarer **großräumiger Verlauf** wie schnellste Route, geeignete Landstraßen/Autobahnmeidung, keine extremen Umwege. Frühere Versuche mit Valhalla-„autobahnfrei“ in der Vorgänger-App ergaben häufig sehr lange Strecken/krasse Umwege. Nicht lediglich eine starre harte Autobahnsperre wiederholen. Alle quantitativen Limits bislang offen.
+4. Überlegung, mehrere Routenalternativen auszuwerten. **Keine starre Anzahl von drei** und keine kaum unterscheidbaren oder absurden Umweg-Kandidaten anzeigen. Falls Alternativen, nur eine sinnvolle variable Anzahl mit **wesentlich unterschiedlichen** Verläufen. OSRM und Valhalla unterstützen technisch Alternativenanfragen; das ersetzt keine Qualitätsbewertung, keine Pflicht, mehrere anzuzeigen, und ist noch keine beschlossene UX.
+5. **Zentrales ungelöstes Problem:** „über Frankfurt“ bei Stuttgart–Hamburg ist gedanklich eher ein **Autobahnkorridor**. Die entspannte Route kann einen davon abweichenden, viel attraktiveren/kürzeren/direkteren Verlauf besitzen. Eine geometrisch erzwungene Passage durch Frankfurt kann dem Ziel widersprechen. Auftraggeber wünscht **ausdrücklich vorab gründliche fachliche Lösung**, hat selbst noch keine festgelegt.
+
+**Diskutierte, nicht beschlossene Lösungsansätze:** (A) Korridorwünsche identisch für beide Profile; (B) nur für schnellstes Profil; (C) weiche, für jedes Profil auf Qualität und Abweichung geprüfte Verlaufspräferenz; (D) zunächst substantielle großräumige Routenalternativen/Korridorfamilien ermitteln und Richtungsort als Präferenz für eine Familie statt als erzwungenen Ortsdurchgangspunkt interpretieren. Fachlicher Vorrang: Nutzerwünsche niemals stillschweigend ignorieren; echte Zwischenstopps bleiben zwingend. Eine Richtungsvorgabe muss möglicherweise zwischen zwingend/bevorzugt unterscheiden, dies ist **nicht** beschlossen. Kandidaten nach tatsächlicher Straßensegmentüberschneidung, Umweg, Dauer, Straßentypen und Eignung vergleichen; Schwellen noch offen. Valhalla-/OSRM-Alternative-API sind lediglich technische Kandidaten, kein Qualitätsversprechen.
+
+**Recherchierte Dokumentationsquellen:** https://www.graphhopper.com/terms/ ; https://github.com/graphhopper/graphhopper ; https://project-osrm.org/docs/v26.6.1/http ; https://valhalla.github.io/valhalla/api/route/api-reference/ ; https://giscience.github.io/openrouteservice/run-instance/index . Datenstände/Providerbedingungen vor Implementierung neu verifizieren.
+
+**Nächster Diskussionsschritt:** Gemeinsames fachliches Modell für Richtungswünsche in Kombination mit beiden Profilen und sinnvolle Alternativen, erst danach getrennte technische Evaluierung/Proof-of-Concept unter unveränderten v330-Schutzverträgen. Keine Routingprovider, neue Appversion oder Cache-/Datenänderung.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
