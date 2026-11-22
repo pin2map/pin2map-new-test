@@ -36,13 +36,16 @@ test("Kartentip preview retains camera; searched previews keep auto-fit",()=>{
 });
 
 test("Kartentip pin immediately enters the regular stored pin-info dataflow",()=>{
- const app=source("app.js");
+ const app=source("app.js"),service=source("application/object-creation-service.js"),
+   acceptance=source("ui/object-acceptance-controller.js");
  assert.match(app,/onPin:point=>addPin\(point\.lat,point\.lng,"","map"\)/);
- assert.match(app,/created=pinOps\.createPin\(state,/);
- assert.match(app,/layerId:PRIVATE_ID/);
+ assert.match(app,/showObjectPreview=entry=>objectAcceptance.accept\(entry\)/);
+ assert.match(service,/pinOperations.createPin\(project,/);
+ assert.match(service,/lat:entry.point.lat,lng:entry.point.lng,name,layerId/);
+ assert.match(app,/privateId:PRIVATE_ID/);
  assert.match(app,/pinInfoService\.setVisiblePins\(temporaryInfoPin\?\[\.\.\.visible,temporaryInfoPin\.point\]:visible\)/);
- assert.match(app,/save\(\);renderLayers\(\);renderMarkers\(\);renderGeometry\(\)/);
- assert.match(app,/void dbWrite\(\)\.catch/);
- assert.doesNotMatch(app.split("function showObjectPreview(entry){")[1].split("function addPin(lat,lng")[0],
-  /temporaryInfoPin=entry|platePanel\.show|temporaryLayerPicker\.show/);
+ assert.match(acceptance,/this.onSave\(\);\s*this.onRender\(\)/);
+ assert.match(acceptance,/void this.onPersist\(\)\.catch/);
+ assert.doesNotMatch(acceptance,/temporaryInfoPin=entry|platePanel\.show|temporaryLayerPicker\.show/);
 });
+

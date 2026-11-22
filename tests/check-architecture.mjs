@@ -42,6 +42,13 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
    filename+": UI must not know database or map engine");
 }
 const app=source("app.js");
+assert.match(app,/Pin2MapObjectCreationService/);
+assert.match(app,/Pin2MapObjectAcceptanceController/);
+assert.doesNotMatch(app,/created=pinOps\.createPin\(state|created=projectFeatures\.create(?:Area|River)\(state/,
+  "Object creation belongs to the application use case, not app.js");
+assert.doesNotMatch(app,/function showObjectPreview\(entry\)\{/,
+  "Object acceptance state/side effects belong to UI controller");
+
 assert.match(app,/Pin2MapGeometrySearchController/);
 assert.doesNotMatch(app,/\b(?:featureRun|featureController|areaHierarchyPoint|areaHierarchyCountry)\b/,
   "External geometry request ownership must never live in app.js");

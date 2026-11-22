@@ -17,21 +17,25 @@ test("new pin, area, lake and river all enter Privat as ordinary project records
  assert.deepEqual([state.pins.length,state.areas.length,state.rivers.length],[1,2,1]);
  assert.equal(state.layers[0].color,"#E64294");
 });
-test("every creation entry is connected to immediate save; old menus stay hidden",()=>{
- const app=read("app.js");
- for(const fragment of ["function showObjectPreview(entry){","pinOps.createPin(state,",
-   "projectFeatures.createArea(state,","projectFeatures.createRiver(state,",
-   "flashNewObject(","void dbWrite().catch(","save();renderLayers();renderMarkers();renderGeometry()",
-   'onPin:point=>addPin(point.lat,point.lng,"","map")',
-   'onAccept:(point,name)=>addPin(point.lat,point.lng,name,"gps")',
-   ])
-  assert.ok(app.includes(fragment),fragment);
+test("every creation entry is immediately saved; no former temporary confirmation",()=>{
+ const app=read("app.js"),service=read("application/object-creation-service.js");
+ const ui=read("ui/object-acceptance-controller.js");
+ for(const fragment of ['new window.Pin2MapObjectAcceptanceController',
+   'Pin2MapObjectCreationService','onPersist:()=>dbWrite()',
+   'onSave:()=>save()','onPin:point=>addPin(point.lat,point.lng,"","map")',
+   'onAccept:(point,name)=>addPin(point.lat,point.lng,name,"gps")'])
+   assert.ok(app.includes(fragment),fragment);
+ for(const fragment of ['pinOperations.createPin(project,',
+   'projectFeatures.createArea(project,','projectFeatures.createRiver(project,'])
+   assert.ok(service.includes(fragment),fragment);
+ for(const fragment of ['this.clearPrevious()','this.clearSelection()',
+   'this.onSave()','this.onRender()','this.onPersist().catch',
+   'this.onFlash("pins",created.id)'])
+   assert.ok(ui.includes(fragment),fragment);
+ assert.doesNotMatch(ui,/temporaryLayerPicker.show|platePanel.show|showTemporaryPin|showTemporaryRiver/);
  const geometry=read("ui/geometry-search-controller.js");
  for(const fragment of ['showObjectPreview({kind:"river",label:','showObjectPreview(result)'])
-  assert.ok(geometry.includes(fragment),fragment);
- const creation=app.split("function showObjectPreview(entry){")[1]
-  .split("function addPin(lat,lng")[0];
- assert.doesNotMatch(creation,/platePanel\.show|temporaryLayerPicker\.show|showTemporaryPin|showTemporaryRiver/);
+   assert.ok(geometry.includes(fragment),fragment);
 });
 test("new persisted object pulse expires after 10 seconds without touching project data",()=>{
  const app=read("app.js"),css=read("styles.css");

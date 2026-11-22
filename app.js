@@ -776,53 +776,28 @@
     if(entry.autoNamed)void manualPinLocality.resolve(entry);
     return true;
   }
-  // Every accepted new object becomes a real Privat object immediately.
-  // No temporary confirmation, preview marker or layer-choice step is used.
-  function showObjectPreview(entry){
-    if(!entry)return null;
-    // License-plate results are intentionally Object.freeze()d by the domain.
-    // Only the local per-pin naming state may carry savedId; never mutate a
-    // frozen source result. Ordinary map-pin entries retain their identity for
-    // the asynchronous reverse-name callback.
-    if(!Object.isExtensible(entry))entry={...entry};
-    clearObjectPreview();
-    const privateLayer=layerById(PRIVATE_ID);
-    if(!privateLayer)throw Error("Privat-Ebene fehlt");
-    uiState.clearSelection();geometryEditor?.close(false);renderPinPanel();
-    let created=null;
-    if(entry.kind==="point"){
-      const name=entry.referencePlace?
-        entry.label+" – "+entry.referencePlace+" (Ersatzort)":
-        entry.name||entry.label||"Neuer Pin";
-      created=pinOps.createPin(state,{
-        id:uid(),lat:entry.point.lat,lng:entry.point.lng,name,layerId:PRIVATE_ID
-      },{validatePosition:projectModel.position,cleanText});
-      entry.savedId=created.id;
-      if(entry.source==="gps")pendingNewGpsPinId=created.id;
-      manualPinLocality.setCurrent(entry);
-      flashNewObject("pins",created.id);
-      if(!entry.preserveViewport&&entry.source!=="search"&&entry.source!=="gps")
-        mapAdapter.setView({center:entry.point,zoom:Math.max(mapAdapter.getViewport().zoom,12)},{animate:false});
-    }else if(entry.kind==="river"){
-      created=projectFeatures.createRiver(state,{
-        id:uid(),name:entry.label,chains:entry.chains,createdAt:new Date().toISOString()
-      },PRIVATE_ID);
-      flashNewObject("rivers",created.id);
-      if(!entry.preserveViewport)mapAdapter.fitGeometry(created);
-    }else if(entry.geojson){
-      created=projectFeatures.createArea(state,{
-        id:uid(),name:entry.label,kind:entry.featureKind||"area",
-        geometry:entry.geojson,createdAt:new Date().toISOString()
-      },PRIVATE_ID);
-      flashNewObject(created.kind==="lake"?"lakes":"areas",created.id);
-      if(!entry.preserveViewport)mapAdapter.fitGeometry(created);
-    }
-    if(!created)return null;
-    save();renderLayers();renderMarkers();renderGeometry();
-    if(!privateLayer.visible)showNotice("Objekt in ausgeblendeter Ebene Privat gespeichert");
-    void dbWrite().catch(()=>showNotice("Objekt konnte nicht gespeichert werden"));
-    return created;
-  }
+  const objectCreation=window.Pin2MapObjectCreationService({
+    pinOperations:pinOps,projectFeatures,
+    validatePosition:projectModel.position,cleanText,newId:uid
+  });
+  const objectAcceptance=new window.Pin2MapObjectAcceptanceController({
+    service:objectCreation,getProject:()=>state,getLayer:layerById,privateId:PRIVATE_ID,
+    clearPrevious:()=>clearObjectPreview(),
+    clearSelection:()=>{uiState.clearSelection();geometryEditor?.close(false);renderPinPanel();},
+    onSetGpsPin:id=>{pendingNewGpsPinId=id;},
+    onCurrentPin:entry=>manualPinLocality.setCurrent(entry),
+    onFlash:(type,id)=>flashNewObject(type,id),
+    onMapPoint:point=>mapAdapter.setView({
+      center:point,zoom:Math.max(mapAdapter.getViewport().zoom,12)
+    },{animate:false}),
+    onMapGeometry:created=>mapAdapter.fitGeometry(created),
+    onSave:()=>save(),
+    onRender:()=>{renderLayers();renderMarkers();renderGeometry();},
+    onNotice:message=>showNotice(message),
+    onPersist:()=>dbWrite()
+  });
+  // Immediate adoption into Privat: never reintroduce a confirmation step.
+  const showObjectPreview=entry=>objectAcceptance.accept(entry);
   function addPin(lat,lng,name,source="search"){
     if(!Number.isFinite(lat)||Math.abs(lat)>90||
        !Number.isFinite(lng)||Math.abs(lng)>180)return null;
@@ -867,10 +842,7 @@
     if(temporaryInfoPin){temporaryInfoPin=null;renderMarkers();}
   }
   function createAreaObject(source,kind,nameOverride=null,layerId=PRIVATE_ID){
-    const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
-    const area=projectFeatures.createArea(state,{
-      id:uid(),name,kind,geometry:source.geojson,createdAt:new Date().toISOString()
-    },layerId);
+    const area=objectCreation.createArea(state,source,kind,layerId,nameOverride);
     flashNewObject(kind==="lake"?"lakes":"areas",area.id);
     save();renderLayers();renderGeometry();
     return area;
