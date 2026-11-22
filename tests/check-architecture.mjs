@@ -135,3 +135,14 @@ assert.match(favoriteController,/this\.favorites\.apply\(project,index\)/);
 assert.match(favoriteController,/this\.onFlushHistory\(\);[\s\S]*?this\.mapPort\.setView\(viewport,\{animate:false\}\);[\s\S]*?this\.onPersistViewport\(\)/);
 assert.ok(source("index.html").includes('src="./ui/map-favorites-controller.js"'));
 assert.ok(source("sw.js").includes('"./ui/map-favorites-controller.js"'));
+
+const presentation=source("ui/project-object-presentation.js");
+assert.match(app,/new window\.Pin2MapProjectObjectPresentation/);
+assert.match(app,/function renderGeometry\(\)\{objectPresentation\.renderGeometry\(\);\}/);
+assert.match(app,/function renderMarkers\(\)\{objectPresentation\.renderMarkers\(\);\}/);
+assert.doesNotMatch(app,/function renderMarkers\(\)\{\s*const regular=pinFilter\.visiblePins\(/,
+  "Visible-object selection belongs to the new presentation owner");
+assert.match(presentation,/this\.mapPort\.renderProjectGeometry\(/);
+assert.match(presentation,/this\.pinInfoService\.setVisiblePins\(/);
+assert.ok(source("index.html").includes('src="./ui/project-object-presentation.js"'));
+assert.ok(source("sw.js").includes('"./ui/project-object-presentation.js"'));

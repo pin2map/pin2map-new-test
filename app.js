@@ -519,28 +519,27 @@
       brightness:state.satelliteBrightness,roads:!!state.satelliteRoads
     });
   }
-  function renderGeometry(){
-    if(!mapAdapter?.renderProjectGeometry)return;
-    const visible=new Set(state.layers.filter(l=>l.visible).map(l=>l.id));
-    const isMatch=(type,id,layerId)=>
-      objectSearchController.view?.onlyHits
-        ?objectSearchController.view.ids.has(type+":"+id)
-        :visible.has(layerId)||!!objectSearchController.view?.ids.has(type+":"+id);
-    const layerColors=Object.fromEntries(state.layers.map(l=>[l.id,l.color]));
-    mapAdapter.renderProjectGeometry({
-      areas:(state.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
-      rivers:(state.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
-      layerColors,highlightIds:objectSearchController.view?.onlyHits?null:objectSearchController.view?.ids,
-      flashIds:activeFlashIds(),
-      onAreaLabel:(area,point)=>{
-        const hitType=area.kind==="lake"?"lakes":"areas";
-        if(!objectSearchController.view?.ids.has(hitType+":"+area.id)&&
-          featureOverlapZoom?.handleTap("area",area.id))return;
-        openGeometryEditor("area",area,point);
-      },
-      onRiverLine:(river,point)=>openGeometryEditor("river",river,point)
-    });
-  }
+  const objectPresentation=new window.Pin2MapProjectObjectPresentation({
+    getProject:()=>state,
+    getSearchView:()=>objectSearchController.view,
+    getPinFilter:project=>pinFilter.visiblePins(project.pins,project.layers,currentPinFilter),
+    getSelectedPinId:()=>uiState.selectedPinId,
+    getTemporaryInfoPin:()=>temporaryInfoPin,
+    getFlashIds:activeFlashIds,
+    mapPort:{
+      renderProjectGeometry:options=>mapAdapter?.renderProjectGeometry?.(options),
+      setTemporaryPinInfo:markup=>mapAdapter?.setTemporaryPinInfo?.(markup)
+    },
+    getMarkerView:()=>markerView,
+    pinInfoService,
+    getPinInfoMarkup:info=>window.Pin2MapPinInfoLabel.labelMarkup(info,{
+      getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
+    }),
+    onAreaLabel:(area,point)=>openGeometryEditor("area",area,point),
+    onRiverLine:(river,point)=>openGeometryEditor("river",river,point),
+    getAreaOverlapHandler:()=>featureOverlapZoom?.handleTap.bind(featureOverlapZoom)
+  });
+  function renderGeometry(){objectPresentation.renderGeometry();}
   function openGeometryEditor(type,item,position){
     if(!geometryEditor)return;
     closeAllMapMenus();
@@ -558,36 +557,8 @@
       save();renderGeometry();showNotice(type==="river"?"Fluss entfernt":"Fläche entfernt");
     }
   }
-  function renderMarkers(){
-    if(!markerView)return;
-    const regular=pinFilter.visiblePins(state.pins,state.layers,currentPinFilter);
-    const onlyHits=!!objectSearchController.view?.onlyHits;
-    const visible=onlyHits?[]:[...regular],seen=new Set(visible.map(p=>p.id));
-    if(objectSearchController.view){
-      // The canonical search matches have already been deduplicated by ID.
-      // Do not reveal older duplicate records or hidden-layer nonmatches.
-      for(const match of objectSearchController.view.matches){
-        if(match.type!=="pins"||seen.has(match.id))continue;
-        visible.push(match.object);seen.add(match.id);
-      }
-    }
-    pinInfoService.setVisiblePins(temporaryInfoPin?[...visible,temporaryInfoPin.point]:visible);
-    markerView.render({
-      pins:visible,
-      layers:state.layers,selectedPinId:uiState.selectedPinId,
-      labelsVisible:state.labelsVisible,flashIds:new Set([...activeFlashIds()].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5))),
-      highlightIds:onlyHits?null:
-        new Set([...(objectSearchController.view?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))
-    });
-    renderTemporaryPinInfo();
-  }
-  function renderTemporaryPinInfo(){
-    if(!temporaryInfoPin)return;
-    const info=pinInfoService.label(temporaryInfoPin.point);
-    mapAdapter?.setTemporaryPinInfo?.(info?window.Pin2MapPinInfoLabel.labelMarkup(info,{
-      getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
-    }):"");
-  }
+  function renderMarkers(){objectPresentation.renderMarkers();}
+  function renderTemporaryPinInfo(){objectPresentation.renderTemporaryPinInfo();}
   function deleteLayerOrPrivatePins(id) {
     const info=layerOps.deletionInfo(state,id,PRIVATE_ID);
     if(!info)return;
