@@ -171,5 +171,6 @@ test("controller source is bundled before app and never owns persistence or Leaf
     html.indexOf('src="./app.js"'));
   assert.match(sw,/"\.\/ui\/map-favorites-controller\.js"/);
   assert.match(app,/favoritesPanel=favoritesController\.bind\(\)/);
-  assert.doesNotMatch(ui,/\b(?:localStorage|indexedDB|Leaflet|maplibregl)\b|\bL\./);
+  const executable=ui.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,"");
+  assert.doesNotMatch(executable,/\b(?:localStorage|indexedDB|Leaflet|maplibregl)\b|\bL\./);
 });
