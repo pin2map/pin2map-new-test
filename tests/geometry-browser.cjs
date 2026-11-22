@@ -560,7 +560,11 @@ const viewports=[
    }
    // Project writes are debounced; the open editor proves in-memory
    // creation, but persistent storage must be awaited independently.
-   const savedArea=(await waitForStored(project=>project?.areas?.length>=1,"first area")).areas[0];
+   // Re-read the same named area and the explicitly selected color as one
+   // persisted snapshot; array nonemptiness alone permits an older write.
+   const savedArea=(await waitForStored(project=>
+     project?.areas?.some(a=>a.name==="Testfläche"&&a.color==="#AABBCC"),
+     "Testfläche with explicit color override")).areas.find(a=>a.name==="Testfläche");
    if(!savedArea){
      const diagnostic=await page.evaluate(async()=>{
        const db=await window.Pin2MapIndexedDBProjectStore.open();
