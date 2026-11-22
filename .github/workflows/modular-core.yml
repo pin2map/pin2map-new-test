@@ -62,6 +62,8 @@ jobs:
         run: node tests/browser-smoke.cjs
       - name: Verify geometry search, polygons, lakes and rivers in Chromium
         run: node tests/geometry-browser.cjs
+      - name: Verify actual project/GPX transfer integration and isolated downloads
+        run: node tests/project-transfer-browser.cjs
       - name: Verify real overlap tap zoom and precise pin choice on desktop iPhone and iPad
         run: node tests/pin-overlap-browser.cjs
       - name: Publish overlap zoom and fallback screenshots

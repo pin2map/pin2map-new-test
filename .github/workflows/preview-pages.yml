@@ -381,6 +381,11 @@ jobs:
         env:
           PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
         run: node tests/geometry-browser.cjs
+      - name: Verify published project transfer add replace and export in Chromium
+        working-directory: preview-source
+        env:
+          PIN2MAP_TEST_URL: ${{ steps.deployment.outputs.page_url }}preview/
+        run: node tests/project-transfer-browser.cjs
       - name: Confirm live autozoom disentangles pin hitboxes and allows exact-coordinate choice
         working-directory: preview-source
         env:
