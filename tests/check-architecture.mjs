@@ -156,3 +156,14 @@ assert.match(settingsTabsController,/this\.select\("General"\)/);
 assert.match(settingsTabsController,/this\.getElement\("settings"\+tab\+"Tab"\)/);
 assert.ok(source("index.html").includes('src="./ui/settings-tabs-controller.js"'));
 assert.ok(source("sw.js").includes('"./ui/settings-tabs-controller.js"'));
+
+const mapViewControls=source("ui/map-view-controls.js");
+assert.match(app,/new window\.Pin2MapMapViewControls/);
+assert.match(app,/mapViewControls\.bindMapButtons\(\)/);
+assert.match(app,/mapViewControls\.bindSettingsAndLayerActions\(\)/);
+assert.doesNotMatch(app,/function (?:applyHitboxDisplay|readHitboxDisplay|writeHitboxDisplay)\(/);
+assert.match(mapViewControls,/this\.getElement\("showPinHitboxes"\)\.checked=visible/);
+assert.match(mapViewControls,/this\.setGeocodeEnabled\(event\.target\.checked\);this\.onSave\(\)/);
+assert.match(mapViewControls,/this\.overlayCoordinator\.closeAll\(\);this\.layerView\.show\(\)/);
+assert.ok(source("index.html").includes('src="./ui/map-view-controls.js"'));
+assert.ok(source("sw.js").includes('"./ui/map-view-controls.js"'));

@@ -50,21 +50,6 @@
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker;
   let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
-  // Device-local presentation preference only: never include the debug hitbox
-  // overlay switch in syncable project data or alter the 52x56 tap geometry.
-  const HITBOX_DISPLAY_KEY="pin2map-show-yellow-pin-hitboxes-v1";
-  function applyHitboxDisplay(visible){
-    document.body.classList.toggle("pin-hitboxes-hidden",!visible);
-    $("showPinHitboxes").checked=visible;
-  }
-  function readHitboxDisplay(){
-    try{return localStorage.getItem(HITBOX_DISPLAY_KEY)!=="false";}
-    catch(_){return true;}
-  }
-  function writeHitboxDisplay(visible){
-    applyHitboxDisplay(visible);
-    try{localStorage.setItem(HITBOX_DISPLAY_KEY,String(visible));}catch(_){}
-  }
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
   const layerById = id => layerOps.find(state,id);
   const selectedPin = () => pinOps.findPin(state,uiState.selectedPinId);
@@ -799,6 +784,21 @@
     cancelSearch:()=>placeSearch.cancel()
   });
   const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
+  const mapViewControls=new window.Pin2MapMapViewControls({
+    getElement:$,document,
+    getLabelsVisible:()=>state.labelsVisible,
+    setLabelsVisible:visible=>{state.labelsVisible=visible;},
+    onSave:()=>save(),
+    onRenderMarkers:()=>renderMarkers(),
+    onUpdateLabelButton:()=>updateLabelButton(),
+    layerView,overlayCoordinator,
+    onToggleSettings:()=>overlayCoordinator.togglePanel("settingsPanel"),
+    getGeocodeEnabled:()=>state.allowGeocode,
+    setGeocodeEnabled:enabled=>{state.allowGeocode=enabled;},
+    readLocalPreference:key=>localStorage.getItem(key),
+    writeLocalPreference:(key,value)=>localStorage.setItem(key,value)
+  });
+
   function bind() {
     transferController.bind();
     pinGpxActions.bind();
@@ -824,12 +824,7 @@
     pinInfoMenu.bind();
     // Launcher capture and same-button toggle semantics live in the UI owner.
     overlayCoordinator.bindMapLaunchers();
-    $("labelsToggle").addEventListener("click",()=>{state.labelsVisible=!state.labelsVisible;save();renderMarkers();updateLabelButton();});
-    $("layersButton").addEventListener("click",()=>{
-      if(!$("layersPanel").classList.contains("hidden")){layerView.close();return;}
-      overlayCoordinator.closeAll();layerView.show();
-    });
-    $("settingsButton").addEventListener("click", () => overlayCoordinator.togglePanel("settingsPanel"));
+    mapViewControls.bindMapButtons();
     window.addEventListener("pageshow",()=>{
       $("refreshButton").disabled=false;
       $("refreshButton").removeAttribute("aria-busy");
@@ -842,14 +837,7 @@
     overlayCoordinator.bind();
     basemapMenu.bind();
     satelliteInspector.bind();
-    applyHitboxDisplay(readHitboxDisplay());
-    $("showPinHitboxes").addEventListener("change",event=>writeHitboxDisplay(event.target.checked));
-    $("allowGeocode").checked = state.allowGeocode;
-    $("allowGeocode").addEventListener("change", e => { state.allowGeocode = e.target.checked; save(); });
-    $("addLayer").addEventListener("click",()=>layerView.footerAction());
-    $("layersClose").addEventListener("click",()=>layerView.close());
-    $("layersCloseBottom").addEventListener("click",()=>layerView.footerCancel());
-    $("layersUnite").addEventListener("click",()=>layerView.beginMerge());
+    mapViewControls.bindSettingsAndLayerActions();
     const colorSettings=new window.Pin2MapColorSettingsView({
       document,getElement:$,palette,
       getProject:()=>state,onChange:()=>save()
