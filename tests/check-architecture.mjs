@@ -170,6 +170,10 @@ assert.ok(source("sw.js").includes('"./ui/map-view-controls.js"'));
 
 const mapInteraction=source("ui/map-interaction-controller.js");
 assert.match(app,/new window\.Pin2MapMapInteractionController/);
+assert.match(app,/new window\.Pin2MapPinSelectionController/);
+assert.doesNotMatch(app,/function handleMarkerTap\(id\)\{\s*if\(uiState\.moveMode/,
+ "Marker priority must stay in selection controller");
+assert.match(source("ui/pin-selection-controller.js"),/handleMarkerTap\(id\)/);
 assert.match(app,/mapInteraction\.bindPinMoveButtons\(\)/);
 assert.match(app,/mapInteraction\.bindMapClick\(\)/);
 assert.match(app,/mapInteraction\.bindLongPress\(\)/);
