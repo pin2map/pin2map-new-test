@@ -556,19 +556,16 @@
     if(!info.allowed){showNotice("Keine privaten Pins vorhanden");return;}
     bulkDeleteDialog.show(id,info);
   }
-  function confirmBulkDeletion(id){
-    const result=layerOps.deleteLayerOrPins(state,id,PRIVATE_ID);
-    if(!result)return;
-    if(uiState.selectedPinId&&result.removedPinIds.includes(uiState.selectedPinId))uiState.selectedPinId=null;
-    // Existing geometry must never become orphaned when its layer disappears.
-    // Retain it in Private rather than deleting unrelated spatial information.
-    if(!result.privateOnly){
-      for(const x of [...(state.areas||[]),...(state.rivers||[])])
-        if(x.layerId===id)x.layerId=PRIVATE_ID;
-    }
-    save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
-    showNotice(result.privateOnly?"Private Pins gelöscht":"Ebene und Pins gelöscht");
-  }
+  const layerDeletion=new window.Pin2MapLayerDeletionSession({
+    operations:layerOps,getProject:()=>state,privateId:PRIVATE_ID,
+    onRemovedPins:ids=>{
+      if(uiState.selectedPinId&&ids.includes(uiState.selectedPinId))uiState.selectedPinId=null;
+    },
+    onSave:()=>save(),
+    onRender:()=>{renderLayers();renderMarkers();renderGeometry();renderPinPanel();},
+    onNotice:message=>showNotice(message)
+  });
+  function confirmBulkDeletion(id){layerDeletion.confirm(id);}
   function renderLayers(){
     layerView.render({
       layers:state.layers,

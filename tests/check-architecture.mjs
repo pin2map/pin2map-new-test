@@ -102,6 +102,10 @@ assert.match(app,/Pin2MapPinOperations/,"App must use independent pin use cases"
 assert.match(app,/Pin2MapPinFilter/,"App must use composed pin visibility");
 assert.match(app,/Pin2MapFilterOperations/,"App must use filter operations");
 assert.match(app,/Pin2MapLayerOperations/,"App must use layer use cases");
+assert.match(app,/new window\.Pin2MapLayerDeletionSession/);
+assert.match(app,/function confirmBulkDeletion\(id\)\{layerDeletion\.confirm\(id\);\}/);
+assert.doesNotMatch(app,/function confirmBulkDeletion\(id\)\{\s*const result=layerOps/,
+  "Layer deletion transaction must remain in dedicated use case");
 assert.match(app,/Pin2MapLayerView/,"App must use layer presentation");
 assert.match(app,/pinEditorView\.render/,"Pin editor must render through its view");
 const html=source("index.html");
