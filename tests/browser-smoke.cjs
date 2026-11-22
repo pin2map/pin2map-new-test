@@ -487,14 +487,27 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinName").fill("  Reise-Testpin  ");
     await page.locator("#pinName").blur();
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin");
-    step("pin details: active external navigation, three inert routing actions and six footer controls");
+    step("pin details: external navigation, Start/Ziel UI toggles, inert waypoint and six footer controls");
     assert.equal(await page.locator("#pinNotes").count(),1);
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     assert.equal(await page.locator("#pinPanel .pin-navigation-buttons button").count(),5);
     assert.equal(await page.locator("#pinNavCopy").isEnabled(),true);
     assert.equal(await page.locator("#pinNavApple").isEnabled(),true);
-    for(const item of await page.locator("#pinPanel .pin-navigation-routing button").all())
-      assert.equal(await item.isDisabled(),true);
+    assert.equal(await page.locator("#pinRouteStart").isEnabled(),true);
+    assert.equal(await page.locator("#pinRouteTarget").isEnabled(),true);
+    assert.equal(await page.locator(".pin-nav-waypoint").isDisabled(),true,
+      "Only the waypoint remains unavailable pending routing specification");
+    await page.locator("#pinRouteStart").click();
+    assert.equal(await page.locator("#pinRoutingStartBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinRouteStart").getAttribute("aria-pressed"),"true");
+    await page.locator("#pinRouteTarget").click();
+    assert.equal(await page.locator("#pinRoutingStartBlock").isHidden(),true);
+    assert.equal(await page.locator("#pinRoutingTargetBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinRouteStart").getAttribute("aria-pressed"),"false");
+    await page.locator("#pinRouteTarget").click();
+    assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
+    assert.equal(await page.locator("#pinRouteTarget").getAttribute("aria-pressed"),"false");
     assert.equal(await page.locator("#deletePin").isVisible(),true);
     assert.equal(await page.locator("#cancelPin").count(),0);
     const footerIds=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
