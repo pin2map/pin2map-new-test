@@ -47,8 +47,7 @@
   let projectStore, state = defaults(), mapAdapter, markerView, moveView, moveGuide, panelPositioner, moveController;
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,mapViewHistory,favoritesPanel,historyRecordTimer=null;
-  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,temporaryMoveEntry=null,featureController=null,featureRun=0;
-  let areaHierarchyPoint=null,areaHierarchyCountry="";
+  let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker,temporaryMoveEntry=null;
   let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
   // Device-local presentation preference only: never include the debug hitbox
@@ -841,18 +840,23 @@
   }
   function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
-  function setGeometryBusy(message){
-    const element=$("geometrySearchBusy");
-    if(!element)return;
-    element.textContent=message||"Suche läuft …";
-    element.classList.toggle("hidden",!message);
-    if(message){
-      const outer=$("searchForm").getBoundingClientRect();
-      const app=$("app").getBoundingClientRect();
-      element.style.left=Math.max(8,outer.left-app.left)+"px";
-      element.style.top=Math.max(8,outer.bottom-app.top+7)+"px";
-    }
-  }
+  const geometrySearch=new window.Pin2MapGeometrySearchController({
+    getElement:$,getState:()=>state,getMap:()=>mapAdapter,
+    areaFinder,riverFinder,riverGeometry,plateSearch,
+    cancelPlace:()=>searchForm.cancel(),hideResults:()=>searchView.hide(),
+    showResults:(rows,options)=>searchView.show(rows,options),
+    message:text=>searchView.message(text),
+    showObjectPreview:entry=>showObjectPreview(entry),
+    clearObjectPreview:()=>clearObjectPreview(),
+    showNotice:message=>showNotice(message)
+  });
+  const cancelGeometrySearch=()=>geometrySearch.cancelGeometrySearch();
+  const findGeometry=(kind,query)=>geometrySearch.findGeometry(kind,query);
+  const chooseGeometryResult=result=>geometrySearch.chooseGeometryResult(result);
+  const findAreaAt=point=>geometrySearch.findAreaAt(point);
+  const findPlateCode=code=>geometrySearch.findPlateCode(code);
+  const showPlateSelection=result=>geometrySearch.showPlateSelection(result);
+  const choosePlateResult=entry=>geometrySearch.choosePlateResult(entry);
   function clearObjectPreview(){
     cancelTemporaryMove();
     temporaryLayerPicker?.close();
@@ -862,104 +866,6 @@
     mapAdapter?.clearTemporaryPlateArea?.();
     if(temporaryInfoPin){temporaryInfoPin=null;renderMarkers();}
   }
-  function cancelGeometrySearch(){
-    ++featureRun;
-    featureController?.abort();featureController=null;setGeometryBusy("");
-  }
-  async function findGeometry(kind,query){
-    if(!query.trim()){ $("searchInput").focus();return;}
-    cancelGeometrySearch();
-    searchForm.cancel();
-    if(!state.allowGeocode){
-      searchView.message("Bitte zuerst in den Einstellungen die Nominatim-Suche aktivieren.");
-      return;
-    }
-    const run=featureRun,controller=new AbortController();featureController=controller;
-    searchView.hide();
-    if(kind==="river")setGeometryBusy("Flusssuche läuft …");
-    try{
-      if(kind==="area"||kind==="lake"){
-        const results=await areaFinder.find(query,{kind,signal:controller.signal});
-        if(run!==featureRun)return;
-        if(!results.length){
-          searchView.message(kind==="lake"?"Kein passender kartierter See gefunden.":"Keine passende kartierte Fläche gefunden.");
-          return;
-        }
-        searchView.show(results.map(x=>({...x,__featureType:kind})));
-      }else{
-        const candidates=await riverFinder.find(query,{
-          center:mapAdapter.getViewport().center,signal:controller.signal,
-          onProgress:p=>{
-            if(run!==featureRun)return;
-            const text=p.phase==="alternative"?"Alternative Flussnamen werden geprüft …":
-              "Flusssuche läuft … "+(p.step||1)+"/"+(p.total||1);
-            setGeometryBusy(text);
-          }
-        });
-        if(run!==featureRun)return;
-        const relations=candidates.filter(c=>c.osmType==="relation"&&c.nameScore>=100);
-        const choices=relations.length?relations:candidates;
-        if(choices.length===1)await chooseGeometryResult({
-          __featureType:"river",candidate:choices[0],name:choices[0].tags?.name||query,
-          query
-        });
-        else searchView.show(choices.map(c=>({
-          __featureType:"river",candidate:c,name:c.tags?.name||query,query,
-          detail:[c.osmType==="relation"?"OSM-Relation":"OSM-Way",
-            c.tags?.waterway,c.display].filter(Boolean).join(" · ")
-        })));
-      }
-    }catch(error){
-      if(run!==featureRun||error?.name==="AbortError")return;
-      searchView.message("Suche fehlgeschlagen: "+(error?.message||"Netzwerkfehler"));
-    }finally{
-      if(run===featureRun){featureController=null;setGeometryBusy("");}
-    }
-  }
-  async function chooseGeometryResult(result){
-    searchView.hide();
-    const kind=result.__featureType;
-    if(kind==="areaHierarchy"){
-      if(!areaHierarchyPoint)return;
-      featureController?.abort(); // Stop delayed enrichment of the previous list.
-      const run=++featureRun,controller=new AbortController();featureController=controller;
-      try{
-        const choice=await areaFinder.findContaining(result,areaHierarchyPoint,{
-          countryCode:areaHierarchyCountry,signal:controller.signal
-        });
-        if(run!==featureRun)return;
-        if(!choice){searchView.message("Keine eindeutige Gebietsgrenze am Klickpunkt gefunden.");return;}
-        previewAreaObject(choice,"area",result.name,true);
-      }catch(error){
-        if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
-      }finally{if(run===featureRun)featureController=null;}
-      return;
-    }
-    if(kind==="area"||kind==="lake"){previewAreaObject(result,kind);return;}
-    if(kind==="river"){
-      const run=++featureRun,controller=new AbortController();featureController=controller;
-      setGeometryBusy("Flussverlauf wird geladen …");
-      try{
-        const source=await riverFinder.resolve(result.candidate,{
-          query:result.query||result.name,signal:controller.signal,
-          onProgress:p=>{if(run===featureRun)setGeometryBusy(
-            p.phase==="parent"?"Übergeordnete Flussrelation wird geprüft …":"Flussverlauf wird geladen …");}
-        });
-        if(run!==featureRun)return;
-        const resolved=riverGeometry.resolve(source.data,source.match);
-        showObjectPreview({kind:"river",label:resolved.name||result.name,
-          chains:resolved.chains});
-      }catch(error){
-        if(run===featureRun)searchView.message("Fluss konnte nicht geladen werden: "+error.message);
-      }finally{if(run===featureRun){featureController=null;setGeometryBusy("");}}
-    }
-  }
-  function previewAreaObject(source,kind,nameOverride=null,preserveViewport=false){
-    const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
-    return showObjectPreview({kind:"area",featureKind:kind,
-      label:name,geojson:source.geojson,preserveViewport,
-      anchorPoint:preserveViewport?areaHierarchyPoint:null});
-  }
   function createAreaObject(source,kind,nameOverride=null,layerId=PRIVATE_ID){
     const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
     const area=projectFeatures.createArea(state,{
@@ -968,76 +874,6 @@
     flashNewObject(kind==="lake"?"lakes":"areas",area.id);
     save();renderLayers();renderGeometry();
     return area;
-  }
-  async function findAreaAt(point){
-    clearObjectPreview();
-    cancelGeometrySearch();
-    searchForm.cancel();searchView.hide();
-    if(!state.allowGeocode){
-      searchView.message("Bitte zuerst in den Einstellungen die Nominatim-Suche aktivieren.");
-      return;
-    }
-    const run=featureRun,controller=new AbortController();featureController=controller;
-    try{
-      const showHierarchy=(rows,loading=false)=>searchView.show(rows.map(row=>({
-        ...row,__featureType:"areaHierarchy"
-      })),{loading});
-      const result=await areaFinder.hierarchyAt(point,{
-        signal:controller.signal,
-        onPartial:partial=>{
-          if(run!==featureRun)return;
-          areaHierarchyPoint=point;areaHierarchyCountry=partial.countryCode;
-          if(partial.rows.length)showHierarchy(partial.rows,true);
-        }
-      });
-      if(run!==featureRun)return;
-      areaHierarchyPoint=point;areaHierarchyCountry=result.countryCode;
-      if(result.extraUnavailable)showNotice("Zusätzliche Schutz- und Sondergebiete derzeit nicht erreichbar.");
-      if(!result.rows.length){
-        searchView.message("Keine Gebietshierarchie für diesen Kartenpunkt gefunden.");
-        return;
-      }
-      showHierarchy(result.rows);
-    }catch(error){
-      if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
-    }finally{if(run===featureRun)featureController=null;}
-  }
-  function findPlateCode(code){
-    const input=String(code||"").trim();
-    cancelGeometrySearch();searchForm.cancel();searchView.hide();
-    if(!input){$("searchInput").focus();return;}
-    const matches=plateSearch.find(input);
-    if(!matches.length){
-      searchView.message("Für „"+input+"“ ist noch kein überprüfter Kennzeichencode im lokalen Katalog hinterlegt.");
-      return;
-    }
-    searchView.show(matches.map(entry=>({...entry,__plateEntry:entry})));
-  }
-  function showPlateSelection(result){
-    searchView.hide();
-    showObjectPreview(result);
-  }
-  async function choosePlateResult(entry){
-    searchView.hide();cancelGeometrySearch();searchForm.cancel();
-    if(!state.allowGeocode){
-      searchView.message("Gebietsgrenzen benötigen die in Einstellungen aktivierte Nominatim-Suche.");
-      return;
-    }
-    const run=featureRun,controller=new AbortController();
-    featureController=controller;
-    setGeometryBusy("Kennzeichengebiet wird gesucht …");
-    try{
-      const resolved=await plateSearch.resolve(entry,{signal:controller.signal});
-      if(run!==featureRun)return;
-      if(resolved.kind==="choices"){
-        searchView.show(resolved.choices.map(choice=>({...choice,__plateChoice:choice})));
-      }else showPlateSelection(resolved);
-    }catch(error){
-      if(run===featureRun&&error?.name!=="AbortError")
-        searchView.message("Kennzeichengebiet: "+error.message);
-    }finally{
-      if(run===featureRun){featureController=null;setGeometryBusy("");}
-    }
   }
   const objectSearchController=new window.Pin2MapObjectSearchController({
     document,getElement:$,searchDomain:objectSearch,

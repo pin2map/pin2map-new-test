@@ -42,6 +42,14 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
    filename+": UI must not know database or map engine");
 }
 const app=source("app.js");
+assert.match(app,/Pin2MapGeometrySearchController/);
+assert.doesNotMatch(app,/\b(?:featureRun|featureController|areaHierarchyPoint|areaHierarchyCountry)\b/,
+  "External geometry request ownership must never live in app.js");
+for(const fn of ["findGeometry","chooseGeometryResult","findAreaAt","choosePlateResult"]){
+ assert.doesNotMatch(app,new RegExp("(?:(?:async )?function) "+fn+"\\s*\\("),
+   "Async geometry workflows must remain in their controller: "+fn);
+}
+
 assert.match(app,/Pin2MapObjectSearchController/);
 for(const functionName of ["resetObjectSearch","refreshObjectSearch","fitObjectSearchMatches","runObjectSearch","endObjectSearch"]){
  assert.doesNotMatch(app,new RegExp("function "+functionName+"\\s*\\("),

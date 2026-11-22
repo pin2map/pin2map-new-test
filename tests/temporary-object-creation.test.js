@@ -24,8 +24,11 @@ test("every creation entry is connected to immediate save; old menus stay hidden
    "flashNewObject(","void dbWrite().catch(","save();renderLayers();renderMarkers();renderGeometry()",
    'onPin:point=>addPin(point.lat,point.lng,"","map")',
    'onAccept:(point,name)=>addPin(point.lat,point.lng,name,"gps")',
-   'showObjectPreview({kind:"river",label:',"showObjectPreview(result)"])
+   ])
   assert.ok(app.includes(fragment),fragment);
+ const geometry=read("ui/geometry-search-controller.js");
+ for(const fragment of ['showObjectPreview({kind:"river",label:','showObjectPreview(result)'])
+  assert.ok(geometry.includes(fragment),fragment);
  const creation=app.split("function showObjectPreview(entry){")[1]
   .split("function addPin(lat,lng")[0];
  assert.doesNotMatch(creation,/platePanel\.show|temporaryLayerPicker\.show|showTemporaryPin|showTemporaryRiver/);
