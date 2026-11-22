@@ -24,10 +24,12 @@ test("Kartentip: area search is left and pin creation is right",()=>{
 
 test("Kartentip preview retains camera; searched previews keep auto-fit",()=>{
   const app=source("app.js"),adapter=source("map-adapter-leaflet.js");
+  const geometry=source("ui/geometry-search-controller.js");
   assert.match(app,/preserveViewport:source==="map"/);
-  assert.match(app,/previewAreaObject\(choice,"area",result.name,true\)/);
-  assert.match(app,/function previewAreaObject\(source,kind,nameOverride=null,preserveViewport=false\)/);
-  assert.match(app,/geojson:source.geojson,preserveViewport/);
+  assert.match(geometry,/previewAreaObject\(choice,"area",result.name,true\)/);
+  assert.match(geometry,/function previewAreaObject\(source,kind,nameOverride=null,preserveViewport=false\)/);
+  assert.match(geometry,/geojson:source.geojson,preserveViewport/);
+  assert.match(app,/getMap:\(\)=>mapAdapter/);
   assert.match(adapter,/if\(!entry.preserveViewport\)\s*this.map.setView\(/);
   assert.equal((adapter.match(/if\(!entry.preserveViewport\)this.map.fitBounds\(/g)||[]).length,2);
   assert.match(app,/onPin:point=>addPin\(point.lat,point.lng,"","map"\)/);
