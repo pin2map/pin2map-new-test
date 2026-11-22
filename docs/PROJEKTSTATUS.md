@@ -2879,3 +2879,19 @@ Auftrag: Der Objektfarbdialog erhält `Farbe wählen` und `Keine Farbe`, wobei `
 - [Pages/HTTPS und WebKit 45048436014](https://github.com/pin2map/pin2map-new-test/actions/runs/45048436014): `webkit-geometry-preflight`, `preview` und `webkit-geometry-postpublish` alle `success`. Live-Prüfung meldete `PASS: exact preview worker version and all updated assets served.` sowie vier erfolgreiche veröffentlichte Live-Chromium-Start-/Reload-Checks und anschließende Live-Funktionstests.
 
 **V326-Preview:** https://pin2map.github.io/pin2map-new-test/preview/ . Keine echte physische iPhone-/iPad-Abnahme behauptet, diese bleibt getrennt offen. **Routing-Ready noch nicht bestätigt:** Geometrieänderungs- und noch vorhandene UI-/Lifecycle-Ownership in `app.js` prüfen und anschließend eine ausdrückliche Schnittstellen-/Abhängigkeitsinventur mit Architektur-Gate vor Routingbeginn abschließen.
+
+
+### v327 – Geometrie-Fachmutation aus app.js ausgelagert; vollständige Gates bestanden (22.11.2026)
+
+**Geprüfter Funktions-/Test-Commit:** `00936dec0195e05f2ee4b247eea302e6c2c70d16`. Einziger gebündelter Code-/Testcommit, ohne nachfolgende Test-/Funktionskorrektur. Quell-PWA `pin2map-new-v327`; tatsächlich veröffentlichter isolierter Preview-Service-Worker `pin2map-preview-v327`.
+
+**Architekturschnitt:** `application/geometry-mutation-session.js` führt die zuvor in `app.js` unmittelbar ausgeführten `projectFeatures.change(state,...)` und `projectFeatures.remove(state,...)` aus und erhält Projekt, Uhr, Speichern, Rendern und Meldungen ausschließlich als injizierte Ports. Änderungszeitstempel, Rückgabeverhalten beim Update, keine Seiteneffekte bei erfolgloser Änderung/Löschung sowie die Texte `Fluss entfernt` und `Fläche entfernt` bleiben gleich. `app.js` enthält nur den injizierten Koordinator und zwei schmale Delegationen. Keinerlei Datenmigration, CSS-/UI- oder Routing-Funktionsänderung, `main`, `reference/*`, Nutzerprojekte und bestehende Tiles unangetastet. HTML und Service-Worker-Offline-CORE enthalten das neue Application-Modul vor `app.js`.
+
+**Modul-/Architektursicherung:** Fünf direkte `tests/geometry-mutation-session.test.js` decken exakte Operationsparameter, Zeitpunkt/Uhr, Save/Render-Reihenfolge, erfolglose Mutationen ohne Seiteneffekte, Typmeldungen und Offline-Einbindung ab. `tests/check-architecture.mjs` verbietet direkte `projectFeatures.change/remove`-Geometriemutationen in der Kompositionswurzel.
+
+**Vollständige Pflicht-Gates für exakt `00936dec` `completed/success`:**
+- [Node und Chromium 45049070731](https://github.com/pin2map/pin2map-new-test/actions/runs/45049070731): beide Jobs `success`, bestehende Browser-/Offline-/Objektregressionen enthalten.
+- [Architektur 45049070834](https://github.com/pin2map/pin2map-new-test/actions/runs/45049070834): `success`.
+- [Preview, HTTPS-Live-Assets/Worker und WebKit 45049070726](https://github.com/pin2map/pin2map-new-test/actions/runs/45049070726): Preflight, Pages-Deploy und WebKit-Postpublish sämtlich `success`. Deploy-Log meldet `PASS: exact preview worker version and all updated assets served.`, vier Live-Chromium-Kartenstarts inkl. Reload und anschließende volle Live-Browserregressionen.
+
+**Technisch ausgeliefert:** https://pin2map.github.io/pin2map-new-test/preview/ . Persönliche physische iPhone-/iPad-Safari-Prüfung separat offen. **Routing-Ready nicht pauschal als abgenommen behaupten:** Verbleibende globalen Browser-Lifecycle- und UI-Event-Bindings in `app.js` und Routing-Prioritätsgrenzen prüfen, bevor eine Routing-Architekturfreigabe ausgesprochen wird.
