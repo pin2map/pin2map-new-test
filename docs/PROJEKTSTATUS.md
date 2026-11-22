@@ -2913,3 +2913,19 @@ Auftrag: Der Objektfarbdialog erhält `Farbe wählen` und `Keine Farbe`, wobei `
 - [GitHub Pages, tatsächlich veröffentlichte HTTPS-Assets/Worker und WebKit 45049781804 – Versuch 2](https://github.com/pin2map/pin2map-new-test/actions/runs/45049781804), Preflight, `preview` und WebKit-Postpublish alle `success`; Lognachweise `PASS: exact preview worker version and all updated assets served.` und vier erfolgreiche Live-Start-/Reload-Checks, anschließend komplette Live-Browser-Interaktionen.
 
 **Preview:** https://pin2map.github.io/pin2map-new-test/preview/ . Physische iPhone-/iPad-Safari-Abnahme bleibt gesondert offen. Vor Routing-Ready noch die verbliebene Such-Clear-UI-Ereignisverantwortung und eine finale eindeutige Modul-/Interaktionsprioritäten-Inventur prüfen.
+
+
+### v329 – Suchfeld-Clear-Event dem bestehenden Suchtyp-UI-Controller zugeordnet; alle Gates bestanden (22.11.2026)
+
+**Maßgeblicher geprüfter Funktions-/Test-Commit:** `87e3cae196210675373931517c97fa7a9ea5751d`. Ursprünglicher atomarer App-/Test-Commit `780de3bfd2df54e00a2410507da97797a2081d91`, danach ausschließliche Korrektur der neu hinzugefügten Test-RegExp mit korrekt literalisierten Klammern (`87e3cae1`). Quell-PWA `pin2map-new-v329`; tatsächlich ausgelieferter isolierter Preview-Service-Worker `pin2map-preview-v329`.
+
+**Architektur:** Der letzte direkte DOM-UI-Click-Listener in `app.js` (Capture-Event des Suchfeld-Clear-Buttons im aktiven Objektsuchmodus) befindet sich jetzt im bereits vorhandenen `ui/search-type-menu.js` mit idempotentem `bindClearButton()`. Der vorhandene Suchmodus, sieben Auswahlarten, die Vorrangfolge `preventDefault` / `stopImmediatePropagation` / Objektsuche zurücksetzen / Suchmodus verlassen und Erstellungsoptionen wieder anzeigen / Clear-Status aktualisieren bleiben erhalten. Die normale Ortssuche wird ohne aktiven Objektsuchmodus nicht abgefangen. `app.js` injiziert ausschließlich `onClearStart` und `onClearFinish`; kein neues redundantes Modul. `index.html`, Datenmodell, bestehender CSS- und Routingumfang unverändert. `sw.js`-Release erhöht, derselbe UI-Owner ist bereits im Offline-CORE. `main`, `reference/*`, Nutzerdaten/IndexedDB/Tile-Caches unangetastet.
+
+**Tests/Diagnose:** `tests/search-type-menu-clear.test.js` sichert Ereignis-Capture, Idempotenz, Nichtabfangen der Ortssuche, exakte Ablaufeffekte und Offline-Komposition, `tests/check-architecture.mjs` verbietet einen erneuten direkten `searchClear`-Listener in `app.js`. Der erste Node-Lauf scheiterte einzig an falsch als RegExp-Gruppen geschriebenen Klammern in der neuen Quelltext-Portprüfung (713/714 grün); nach Logdiagnose ausschließlich diese Test-Syntax korrigiert, keine fachliche oder UI-Anpassung. Die vollständigen finalen Node-/Browser-/Architektur-/HTTPS-/WebKit-Gates für denselben korrigierten Stand erfolgreich.
+
+**Alle Gates für exakt `87e3cae1` `completed/success`:**
+- [Node + Chromium 45050882886](https://github.com/pin2map/pin2map-new-test/actions/runs/45050882886), beide Jobs erfolgreich mit vollständiger Browser- und Offline-Regression.
+- [Architektur 45050882861](https://github.com/pin2map/pin2map-new-test/actions/runs/45050882861), erfolgreich.
+- [GitHub Pages, HTTPS-/Service-Worker-Live-Version und WebKit 45050882948](https://github.com/pin2map/pin2map-new-test/actions/runs/45050882948), Preflight, tatsächliches Deploy inklusive `PASS: exact preview worker version and all updated assets served.`, vier veröffentlichte Live-Chromium-Starts/Reloads, komplette Preview-Funktionstests und WebKit-Postpublish sämtlich erfolgreich.
+
+**Preview:** https://pin2map.github.io/pin2map-new-test/preview/ . Reale physische iPhone-/iPad-Safari-Abnahme weiterhin separat offen. **Nächster Schritt:** Dokumentierte abschließende Routing-Ready-Architekturinventur (nicht Einführung der Routingfunktion), inklusive Event-Eigentümern, Map-Tap-/Verschiebeprioritäten, Routing-Providerneutralität und expliziter Schutztests.
