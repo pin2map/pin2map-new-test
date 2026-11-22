@@ -60,27 +60,11 @@ const {chromium}=require("playwright");
       const lake=lakeHierarchy.rows.find(x=>/borgwallsee/i.test(x.name));
       const lakePolygon=lake?await finder.findContaining(lake,lakePoint,{
         countryCode:lakeHierarchy.countryCode}):null;
-      // One bounded diagnostic probe of public alternative hosts after the
-      // established providers all fail. Not part of the acceptance contract.
-      const alternateProbes=hierarchy.extraUnavailable?await Promise.all([
-        "https://overpass.maprva.org/api/interpreter",
-        "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
-      ].map(async endpoint=>{
-        const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),13000);
-        try{
-          const query='[out:json][timeout:15];is_in(54.55,13.63)->.inside;area.inside["boundary"="national_park"];out tags;';
-          const response=await fetch(endpoint+"?"+new URLSearchParams({data:query}),{signal:controller.signal});
-          const body=response.ok?await response.json():null;
-          return {host:new URL(endpoint).hostname,status:response.status,
-            names:(body?.elements||[]).map(e=>e.tags?.name).filter(Boolean).slice(0,10)};
-        }catch(error){return {host:new URL(endpoint).hostname,error:String(error?.name||error)}}
-        finally{clearTimeout(timer)}
-      })):[];
       return {names:hierarchy.rows.map(x=>x.name),countryCode:hierarchy.countryCode,
         extraUnavailable:hierarchy.extraUnavailable,island,park,
         polygon:polygon?{id:polygon.osm_id,type:polygon.geojson?.type}:null,
         lakeNames:lakeHierarchy.rows.map(x=>x.name),
-        alternateProbes,lakeExtraUnavailable:lakeHierarchy.extraUnavailable,
+        lakeExtraUnavailable:lakeHierarchy.extraUnavailable,
         lake:lake?{name:lake.name,kind:lake.kind,osmId:lake.osmId}:null,
         lakePolygon:lakePolygon?{id:lakePolygon.osm_id,
           type:lakePolygon.geojson?.type}:null};
