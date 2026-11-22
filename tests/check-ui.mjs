@@ -125,11 +125,17 @@ check(map.includes("onMapClick(callback,") &&
   "map events keep relocation, inspection and coordinate-aware background actions");
 check(!/\bL\.(?:marker|polyline|divIcon)\(/.test(app),
   "application never creates raw Leaflet overlays");
+const historyUi=read("ui/map-view-history-controller.js");
 check(app.includes("mapAdapter.setBasemap(state.basemap,{") &&
   app.includes("esriRelief:!!state.esriRelief") &&
   app.includes("satelliteBrightness:state.satelliteBrightness") &&
   map.includes("setSatelliteAppearance(") &&
-  app.includes("mapAdapter.addZoomControls({") && app.includes("onUndo:()=>navigateMapHistory(\"undo\")") && app.includes("onRedo:()=>navigateMapHistory(\"redo\")"),
+  app.includes("addZoomControls:handlers=>mapAdapter.addZoomControls(handlers)") &&
+  app.includes("await mapHistoryController.initialize()") &&
+  historyUi.includes("this.mapPort.addZoomControls({") &&
+  historyUi.includes('onUndo:()=>this.navigate("undo")') &&
+  historyUi.includes('onRedo:()=>this.navigate("redo")') &&
+  historyUi.includes("this.mapPort.setView(view,{animate:false})"),
   "map selection and zoom controls use Leaflet adapter");
 check(html.includes('id="refreshButton"') &&
   app.includes('updateViaCache:"none"'),
