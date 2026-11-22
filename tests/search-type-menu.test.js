@@ -146,9 +146,13 @@ test("v303 shared icons have one registry and no independent result copies",()=>
 });
 test("v303 flash is capped at ten seconds",()=>{
  const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
+ const flash=fs.readFileSync(path.join(__dirname,"../ui/recent-object-flash.js"),"utf8");
  const css=fs.readFileSync(path.join(__dirname,"../styles.css"),"utf8");
- assert.ok(app.includes("deadline=Date.now()+10000"));
- assert.ok(app.includes("},10000);"));
+ assert.match(app,/new window\.Pin2MapRecentObjectFlash/);
+ assert.match(flash,/duration=10000/);
+ assert.match(flash,/deadline=this\.now\(\)\+this\.duration/);
+ assert.match(flash,/this\.schedule\(\(\)=>\{/);
+ assert.match(flash,/\},this\.duration\);/);
  assert.ok(css.includes("animation:p2m-temporary-pin-blink 1.3s ease-in-out 7 forwards"));
 });
 

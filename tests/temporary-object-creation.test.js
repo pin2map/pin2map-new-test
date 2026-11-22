@@ -39,9 +39,13 @@ test("every creation entry is immediately saved; no former temporary confirmatio
 });
 test("new persisted object pulse expires after 10 seconds without touching project data",()=>{
  const app=read("app.js"),css=read("styles.css");
- assert.match(app,/Date\.now\(\)\+10000/);
- assert.match(app,/setTimeout\(\(\)=>\{/);
- assert.match(app,/\},10000\);/);
+ const flash=read("ui/recent-object-flash.js");
+ assert.match(app,/new window\.Pin2MapRecentObjectFlash/);
+ assert.match(app,/schedule:\(callback,ms\)=>setTimeout\(callback,ms\)/);
+ assert.match(flash,/duration=10000/);
+ assert.match(flash,/if\(this\.entries\.get\(key\)!==deadline\)return/);
+ assert.match(flash,/this\.entries\.delete\(key\);/);
+ assert.match(flash,/this\.onExpire\(\);/);
  assert.match(css,/animation:p2m-temporary-pin-blink 1\.3s ease-in-out 7 forwards/);
  assert.match(css,/\.p2m-new-object-blink \.pin-marker-shape/);
  assert.match(css,/path\.p2m-new-object-blink-geometry/);
