@@ -42,6 +42,13 @@ for(const filename of modelFiles.filter(name=>name.startsWith("ui/"))){
    filename+": UI must not know database or map engine");
 }
 const app=source("app.js");
+assert.match(app,/new window\.Pin2MapTemporaryObjectMoveController/);
+assert.doesNotMatch(app,/\btemporaryMoveEntry\b|function (?:beginTemporaryMove|previewTemporaryMove|cancelTemporaryMove|confirmTemporaryMove)\s*\(/,
+  "Transient point relocation is owned by its UI controller, not app.js");
+const temporaryMove=source("ui/temporary-object-move-controller.js");
+assert.match(temporaryMove,/this.validatePosition\(point.lat,point.lng\)/);
+assert.match(temporaryMove,/this.cancel\(\);\s*entry.point=position/);
+
 assert.match(app,/Pin2MapObjectCreationService/);
 assert.match(app,/Pin2MapObjectAcceptanceController/);
 assert.doesNotMatch(app,/created=pinOps\.createPin\(state|created=projectFeatures\.create(?:Area|River)\(state/,
