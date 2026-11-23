@@ -503,3 +503,21 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 **Konsequenz:** Die zu erwartende geringe Nutzung ist bei Anfragevolumen und Fair-Use-Abwägung zu berücksichtigen. Sie bedeutet **keine automatische Befreiung** von Regeln eines öffentlichen Demo-Dienstes, Anfragelimits, Kennzeichnungspflichten, CORS oder eventuellen Betreiberhinweisen. Ob OSRM bzw. Valhalla im konkret beabsichtigten internen Einsatz regelkonform und stabil eingebunden werden kann, ist weiterhin dienstspezifisch zu prüfen. Keine neue Providerwahl und keine Routingintegration beschlossen.
 
 **Schutz und Stand:** Reiner Dokumentationsnachtrag zu R-020, keine App-, Workflow-, UI-, SW-, Cache-, IndexedDB- oder Versionsänderung; v330 bleibt unverändert. Kein Deploy-/Browser-Abnahmebeleg aus diesem Dokumentationsschritt abgeleitet.
+
+
+### R-022 – Browser-CORS und X-Client-Id der öffentlichen Routingdienste live verifiziert (23.11.2026)
+
+**Status: TECHNISCHER BROWSER-MACHBARKEITSTEST ERFOLGREICH; keine produktive Anbieter-, Nutzungs-/Last- oder Routing-UI-Freigabe.**
+
+**Nachweis:** Im isolierten Test-PR [#29](https://github.com/pin2map/pin2map-new-test/pull/29) nach gezielter Behebung des belegten Node-24-Testskriptfehlers und Entfernung eines sachfremden Git-Schreibschritts: [GitHub Actions Run 45182435433](https://github.com/pin2map/pin2map-new-test/actions/runs/45182435433) **completed/success** für den gesamten Job `browser-probe`; ausführliche [Messdaten in Issue #34](https://github.com/pin2map/pin2map-new-test/issues/34) und hochgeladenes Workflow-Artefakt. Geprüft wurde im echten Playwright-Chromium und Playwright-WebKit aus einer zuvor geöffneten **HTTPS-Seite unter `https://pin2map.github.io/pin2map-new-test/preview/`**, mit blockiertem Service Worker. Keine Änderung an der live PWA erforderlich.
+
+| Browser | Standard-OSRM | Standard-Valhalla | Valhalla mit `X-Client-Id: pin2map-internal-feasibility` |
+| --- | --- | --- | --- |
+| Chromium | HTTP 200, gültige Route, 777 ms | HTTP 200, gültige Route, 751 ms | HTTP 200, gültige Route, 284 ms |
+| WebKit | HTTP 200, gültige Route, 462 ms | HTTP 200, gültige Route, 423 ms | HTTP 200, gültige Route, 293 ms |
+
+Alle sechs Browser-`fetch`-Aufrufe endeten mit `response.type === 'cors'`, HTTP 200 und tatsächlichem OSRM-`routes[0]` oder Valhalla-`trip.summary`. Keine Konsolenfehler in diesen sechs Testfällen. **Der echte X-Client-Id-Header ist im Browser-Test durch die CORS-Kontrolle gelangt;** dies belegt die technische Möglichkeit für den getesteten Endpunkt und Zeitpunkt. Ein Browser-WebKit-Test ist keine reale iPhone-Safari-Geräteprüfung.
+
+**Ursachenklärung:** Die zunächst leeren Push-Run-Ergebnisse beruhten auf einer Connector-Funktion, die nur PR-bezogene Runs liefert. Ein isolierter PR gegen den geschützten Entwicklungsbranch ermöglichte echte Job-Logs. Der ursprüngliche Test verwendete CommonJS-`require` und Top-Level-`await` gemeinsam unter Node 24; nachgewiesener Abbruch `ERR_AMBIGUOUS_MODULE_SYNTAX`. Nach Einschluss der Laufzeitlogik in eine asynchrone Funktion liefen alle sechs Browserabfragen tatsächlich erfolgreich. Ein nachlaufender Versuch, innerhalb des Container-Jobs per Git in die Dokumentation zu pushen, scheiterte unabhängig davon mit `fatal: not in a git directory`; er wurde aus dem Test entfernt, weil Artefakt und Issue das Ergebnis bereits zuverlässig speichern. Der bereinigte gesamte Run ist grün. Der erfolgreich getestete Workflow wurde in den Feature-Branch übernommen, Commit `20f32a87e0b3040fc6c02f644b2dba35674dadc2`.
+
+**Grenzen:** Ein einzelner erfolgreicher Satz kleiner Stadtrouten beweist keine Last-/Langzeitverfügbarkeit, keinen produktiven Providervertrag, keine Weltabdeckung, keine Korridor- oder Sonderoptionen und keine realen Fahrzeiten. Die Betreiberbedingungen und Rate-Limits gelten auch bei kleinem internem Nutzerkreis (R-021). Fachstrategie R-020 (OSRM normal, Valhalla bei nachweislich unterstützten Sonderwünschen), Infrastrukturverbot von API-Schlüsseln und eigenem Server sowie ausstehende Straßenzeitklassen bleiben unverändert. **Keine Routingintegration oder PWA-Versionsänderung.**
