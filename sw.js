@@ -134,6 +134,7 @@ const CORE=[
   "./application/routing-service.js",
   "./adapters/routing/car-routing-provider.js",
   "./application/car-route-session.js",
+  "./application/route-guide-session.js",
   "./ui/car-route-map-view.js",
   "./ui/car-route-panel.js",
   "./app.js",
