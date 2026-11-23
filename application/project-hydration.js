@@ -15,6 +15,7 @@
     // must never overwrite or migrate stored pins, layers or favorites.
     if(!Array.isArray(state.areas))state.areas=[];
     if(!Array.isArray(state.rivers))state.rivers=[];
+    if(!Array.isArray(state.routeGuides))state.routeGuides=[];
     delete state.activeLayer;
     cleanupSearch(state);
     return state;
