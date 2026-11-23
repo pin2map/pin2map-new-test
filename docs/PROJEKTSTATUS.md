@@ -3100,3 +3100,10 @@ Direkt nachgewiesen in der erweiterten Version: `calculateTransitRoute` speicher
 **Technische / betriebliche Freigabe weiterhin OFFEN:** Festlegung auf die Hybridstrategie ist **noch keine Freigabe zum Einbau** in v330. Der öffentliche OSRM-Demo-Dienst lehnte Ausschlüsse nachweislich ab; Valhalla lieferte die gewünschten französischen Varianten (R-019). Keiner der öffentlichen Demo-Hosts ist damit ohne Nutzungsbedingungen-/CORS-/Kontingentprüfung produktiv zugelassen. Infrastrukturvertrag **kein API-Schlüssel, kein eigener Server** bleibt uneingeschränkt. Vollständige vierteilige Straßenklassen-Zuordnung für Zeitfaktoren und Korridor-/Routenart-Semantik sind weiter offen; keine technische Abweichung ohne Zustimmung des Nutzers.
 
 **Änderungsumfang:** Nur fachliche Dokumentation, keine JS-/UI-/Datenschema-/Service-Worker-Änderung; die PWA bleibt unverändert v330. Nach früherem Test `ced0333` waren Node/Architektur/Chromium/WebKit und ausgelieferte Preview grün, siehe R-019; dieser reine Dokumentationscommit behauptet keine neue Preview-Version.
+
+
+### Routing R-021 – Interner Nutzungsrahmen ausdrücklich bestätigt (23.11.2026)
+
+Der Auftraggeber stellt klar: **pin2map ist nicht für eine öffentliche Produktveröffentlichung bestimmt, sondern ausschließlich für einen kleinen internen Kreis.** Die Provider-/Fair-Use-Evaluierung muss diesen geringen beabsichtigten Nutzungsumfang berücksichtigen; sie darf daraus jedoch nicht automatisch eine Befreiung von Betreiberbedingungen, CORS, Anfragelimits oder Kennzeichnungspflichten ableiten. Die öffentlich erreichbare `/preview/`-Adresse ist nicht automatisch zugangsbeschränkt. Kein Auftrag zur Änderung von Hosting, Sichtbarkeit oder Authentifizierung. Maßgeblicher Routingfachvertrag: R-021 in `docs/ROUTING_FUNKTIONALE_REFERENZ_UND_ANFORDERUNGEN.md`.
+
+**Status:** reiner Dokumentationsnachtrag nach R-020; PWA v330 und sämtliche bisherigen Tests/Preview-/Service-Worker-Stände unverändert; keine neue Routing-Implementierung oder Freigabe. Für den nächsten technischen Schritt verbleiben Browser-CORS-, Header- und Nutzungsbedingungen-Prüfungen der zwei öffentlichen Anbieter als offene Untersuchungen.
