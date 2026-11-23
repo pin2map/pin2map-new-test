@@ -30,6 +30,7 @@ jobs:
           node <<'JS'
           const fs=require('node:fs');
           const {chromium,webkit}=require('playwright');
+          async function runProbe(){
           const origin='https://pin2map.github.io/pin2map-new-test/preview/';
           const osrm='https://router.project-osrm.org/route/v1/driving/9.1604151,48.7452823;9.1412686,48.7753859?overview=false&alternatives=false';
           const valReq={locations:[{lat:48.7452823,lon:9.1604151},{lat:48.7753859,lon:9.1412686}],costing:'auto',directions_type:'none',units:'kilometers'};
@@ -67,6 +68,8 @@ jobs:
           fs.writeFileSync('routing-browser-cors-results.json',JSON.stringify({origin,results:outcomes},null,2));
           console.log('R022_SUMMARY '+JSON.stringify(outcomes));
           if(outcomes.length!==6 || outcomes.some(x=>x.test==='preview-load'||x.fetchResolved!==true||x.status!==200||x.routeAvailable!==true))process.exitCode=1;
+          }
+          runProbe().catch(error=>{console.error('R022_FATAL '+error.stack);process.exitCode=1});
           JS
       - name: Save exact browser outcomes
         if: always()
