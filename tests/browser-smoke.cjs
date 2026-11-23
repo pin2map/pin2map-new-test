@@ -515,6 +515,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#carRoutePanel").isVisible(),true);
     await page.locator("#routeEnd").click();
     assert.equal(await page.locator("#carRoutePanel").isHidden(),true);
+    console.log("ROUTE END DIAG",await page.locator("#routePanelToggle").evaluate(el=>({className:el.className,display:getComputedStyle(el).display,hidden:el.hidden,outer:el.outerHTML.slice(0,350)})));
     assert.equal(await page.locator("#routePanelToggle").isHidden(),true);
     await page.locator("#map .pin-icon").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
