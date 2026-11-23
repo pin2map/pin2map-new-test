@@ -243,6 +243,10 @@
       const pin=selectedPin();if(!pin||!routeSession)return;
       routeSession.endpoint(kind,pin.id);
       pinDetails.setRouting(null);
+      if(routeSession.snapshot().ready){
+        uiState.clearSelection();
+        renderMarkers();
+      }
       renderPinPanel();
     },
     onLayout:focus=>{
