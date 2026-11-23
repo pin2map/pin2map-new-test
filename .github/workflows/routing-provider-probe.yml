@@ -584,3 +584,55 @@ jobs:
           console.log('R016_SUMMARY '+JSON.stringify({validated,failed,note:'OSRM name-based candidate versus Valhalla road_class on selected short snapped steps; different routing graphs, not definitive ground truth or full-route precision'}));
           if(validated<3)process.exitCode=1;
           JS
+
+      - name: R-017 direct single-call road classification API feasibility
+        shell: bash
+        run: |
+          node <<'JS'
+          const cases=[
+            ['STUTTGART-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]]
+          ];
+          const ua='pin2map-routing-api-feasibility/1.0 (https://github.com/pin2map/pin2map-new-test)';
+          const round=x=>Number(x.toFixed(1));
+          let verifiedBaselines=0;
+          async function call(url,method='GET',body){
+            const started=performance.now();
+            try{
+              const response=await fetch(url,{method,body,headers:{'User-Agent':ua,'Accept':'application/json',...(body?{'Content-Type':'application/json'}:{})},signal:AbortSignal.timeout(20000)});
+              const raw=await response.text();
+              let json;try{json=JSON.parse(raw)}catch{json={}};
+              return {status:response.status,latencyMs:round(performance.now()-started),bytes:Buffer.byteLength(raw),data:json,preview:raw.slice(0,240)};
+            }catch(e){return {status:null,latencyMs:round(performance.now()-started),error:e.message};}
+          }
+          for(const [name,a,b] of cases){
+            const osrmUrl='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?overview=full&steps=true&annotations=distance,duration,speed&alternatives=false';
+            const o=await call(osrmUrl);
+            const route=o.data?.routes?.[0],steps=route?.legs?.flatMap(l=>l.steps||[])||[];
+            const isUrban=steps.filter(s=>typeof s.is_urban==='boolean').length;
+            const classes=steps.flatMap(s=>(s.intersections||[]).flatMap(i=>i.classes||[]));
+            console.log('R017_OSRM_NATIVE '+JSON.stringify({case:name,status:o.status,latencyMs:o.latencyMs,geometryAvailable:typeof route?.geometry==='string',stepCount:steps.length,explicitRoadClassFields:steps.filter(s=>s.road_class!==undefined).length,explicitSurfaceFields:steps.filter(s=>s.surface!==undefined).length,explicitUrbanFields:isUrban,intersectionClassCount:classes.length,intersectionClassNames:[...new Set(classes)].slice(0,10),annotationSegments:route?.legs?.reduce((n,l)=>n+(l.annotation?.distance?.length||0),0),apiNotes:'annotations.speed is model speed not road classification or legal limit'}));
+            if(o.status===200&&route?.geometry)verifiedBaselines++;
+            const vReq={locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',directions_type:'instructions',units:'kilometers',filters:{action:'include',attributes:['edge.road_class','edge.speed','edge.surface']}};
+            const vu=new URL('https://valhalla1.openstreetmap.de/route');vu.searchParams.set('json',JSON.stringify(vReq));
+            const v=await call(vu.toString());
+            const trip=v.data?.trip,legs=trip?.legs||[];
+            const man=legs.flatMap(l=>l.maneuvers||[]);
+            const edgeFields=legs.reduce((n,l)=>n+(Array.isArray(l.edges)?l.edges.length:0),0);
+            console.log('R017_VALHALLA_ROUTE '+JSON.stringify({case:name,status:v.status,latencyMs:v.latencyMs,geometryAvailable:typeof legs[0]?.shape==='string',maneuverCount:man.length,edgeCountInRoute:edgeFields,roadClassManeuvers:man.filter(m=>m.road_class!==undefined).length,roadClassKeysInFirstManeuver:Object.keys(man[0]||{}).filter(k=>/class|surface|speed|urban/i.test(k)),topLevelKeys:Object.keys(v.data||{}),note:'filters in route request does not guarantee trace_attributes edge fields are returned'}));
+            if(v.status===200&&trip?.summary&&legs[0]?.shape)verifiedBaselines++;
+          }
+          const a=cases[0][1],b=cases[0][2];
+          const gh=new URL('https://graphhopper.com/api/1/route');
+          for(const p of [a,b])gh.searchParams.append('point',p.join(','));
+          for(const detail of ['road_class','road_environment','surface','time'])gh.searchParams.append('details',detail);
+          gh.searchParams.set('profile','car');gh.searchParams.set('points_encoded','false');
+          const g=await call(gh);
+          const path=g.data?.paths?.[0],details=path?.details||{};
+          console.log('R017_GRAPHHOPPER_PUBLIC '+JSON.stringify({status:g.status,latencyMs:g.latencyMs,returnedPath:!!path,detailKeys:Object.keys(details),missingKeyOrDenied:[401,403].includes(g.status),errorOrPreview:typeof g.data?.message==='string'?g.data.message.slice(0,160):g.preview||g.error||'',reference:'GraphHopper path details are documented in a SINGLE route response, but hosted endpoint may require user API key'}));
+          const orsUrl='https://api.openrouteservice.org/v2/directions/driving-car?start='+a[1]+','+a[0]+'&end='+b[1]+','+b[0]+'&extra_info=waytype,surface,waycategory';
+          const ors=await call(orsUrl);
+          console.log('R017_ORS_PUBLIC '+JSON.stringify({status:ors.status,latencyMs:ors.latencyMs,geometryAvailable:!!ors.data?.features?.[0]?.geometry,extrasAvailable:Object.keys(ors.data?.features?.[0]?.properties?.extras||{}),missingKeyOrDenied:[401,403].includes(ors.status),errorOrPreview:typeof ors.data?.error==='string'?ors.data.error.slice(0,160):ors.preview||ors.error||'',reference:'ORS extra_info available in directions response but hosted endpoint requires authentication'}));
+          console.log('R017_CONCLUSION '+JSON.stringify({verifiedBaselines,graphhopperRoadClassLiveVerified:!!details.road_class,orsWaytypeLiveVerified:!!ors.data?.features?.[0]?.properties?.extras?.waytype,providerStatus:'public authentication constraints distinguished from feature design',performanceComparisonValid:false}));
+          if(verifiedBaselines!==4)process.exitCode=1;
+          JS
