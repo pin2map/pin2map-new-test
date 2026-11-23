@@ -6,7 +6,7 @@ on:
       - '.github/workflows/routing-browser-cors-probe.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   browser-probe:
     runs-on: ubuntu-latest
@@ -72,3 +72,17 @@ jobs:
           name: routing-browser-cors-results
           path: routing-browser-cors-results.json
           if-no-files-found: warn
+      - name: Record machine-readable outcomes in docs for audit
+        if: always()
+        run: |
+          if test ! -s routing-browser-cors-results.json; then
+            echo "No test result to record"; exit 1
+          fi
+          mkdir -p docs
+          cp routing-browser-cors-results.json docs/R022_BROWSER_CORS_RESULTS.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/R022_BROWSER_CORS_RESULTS.json
+          git commit -m "docs(routing): record observed R-022 browser provider outcomes" || exit 0
+          git pull --rebase origin feature/leaflet-modular-core
+          git push origin HEAD:feature/leaflet-modular-core
