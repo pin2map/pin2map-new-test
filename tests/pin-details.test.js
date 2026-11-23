@@ -63,8 +63,9 @@ test("the full six-button footer, offline shell and safe iOS font contract exist
  const section=html.split('<section id="pinPanel"')[1].split("</section>")[0];
  assert.ok(section.includes('id="pinNotes"'));
  assert.ok(section.includes('class="pin-navigation-row"'));
- assert.equal((section.match(/ disabled/g)||[]).length,1,
-   "Only the waypoint placeholder remains disabled");
+ assert.equal((section.match(/ disabled/g)||[]).length,0,
+   "All three pin routing actions must be enabled");
+ assert.match(section,/id="pinRouteWaypoint"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinRouteStart"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinRouteTarget"[^>]*data-pin-icon="goal"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinGpxRoute"[^>]*aria-pressed="false"/);
