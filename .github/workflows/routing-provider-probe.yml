@@ -475,3 +475,66 @@ jobs:
           }
           if(failed)process.exitCode=1;
           JS
+
+      - name: R-015 OSRM-only motorway timing heuristic and three correction presets
+        shell: bash
+        run: |
+          node <<'JS'
+          const cases=[
+            ['STUTTGART-INNER-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['BERLIN-EXAMPLE-1-TO-2',[52.517037,13.388860],[52.529407,13.397634]],
+            ['BERLIN-EXAMPLE-2-TO-3',[52.529407,13.397634],[52.523219,13.428555]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['STUTTGART-HAMBURG',[48.7753859,9.1412686],[53.5501721,10.0013165]]
+          ];
+          const profiles={
+            'neutral':{motorway:1,nonMotorway:1},
+            'flott':{motorway:0.95,nonMotorway:1},
+            'kastenwagen':{motorway:1.30,nonMotorway:1}
+          };
+          const rnd=(n,d=2)=>Number(n.toFixed(d));
+          const request=async url=>{
+            const start=performance.now();
+            const response=await fetch(url,{headers:{'User-Agent':'pin2map-routing-feasibility-test/0.8 (https://github.com/pin2map/pin2map-new-test)','Accept':'application/json'},signal:AbortSignal.timeout(20000)});
+            const raw=await response.text();
+            if(!response.ok)throw Error('HTTP '+response.status+' '+raw.slice(0,160));
+            const data=JSON.parse(raw);
+            if(data.code!=='Ok'||!data.routes?.[0])throw Error('no route');
+            return {data,ms:rnd(performance.now()-start,1),bytes:Buffer.byteLength(raw)};
+          };
+          const highwayName=n=>/(?:^|[ /,])(A\\s?\\d{1,3})(?:$|[ /,])/i.test(n||'');
+          const clearlyOther=n=>/(?:^|[ /,])(B\\s?\\d{1,4})(?:$|[ /,])/i.test(n||'');
+          let failures=0;
+          for(const [label,a,b] of cases){
+            try{
+              const url='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?steps=true&annotations=distance,duration,speed&overview=full&geometries=polyline&alternatives=false';
+              const got=await request(url),route=got.data.routes[0],steps=route.legs.flatMap(x=>x.steps||[]);
+              let timeMotor=0,timeOther=0,timeUnknown=0,distMotor=0,distOther=0,distUnknown=0;
+              const names=[],interClasses={},roadNames={};
+              for(const step of steps){
+                const name=String(step.name||step.ref||''),classes=[...new Set((step.intersections||[]).flatMap(i=>i.classes||[]))];
+                for(const c of classes)interClasses[c]=(interClasses[c]||0)+1;
+                const type=highwayName(name)||classes.includes('motorway')?'motorway':clearlyOther(name)?'other':'unknown';
+                if(type==='motorway'){timeMotor+=step.duration;distMotor+=step.distance;}
+                else if(type==='other'){timeOther+=step.duration;distOther+=step.distance;}
+                else {timeUnknown+=step.duration;distUnknown+=step.distance;}
+                roadNames[name||'(unnamed)']=(roadNames[name||'(unnamed)']||0)+step.distance;
+                if(names.at(-1)!==name)names.push(name);
+              }
+              const sum=timeMotor+timeOther+timeUnknown,base=route.duration;
+              const gap=base-sum;
+              if(Math.abs(gap)>Math.max(5,base*0.025))throw Error('step duration mismatch '+rnd(gap)+'s');
+              const outputs={};
+              for(const [key,p] of Object.entries(profiles)){
+                const begin=performance.now();
+                const duration=timeMotor*p.motorway+(timeOther+timeUnknown)*p.nonMotorway+gap;
+                outputs[key]={minutes:rnd(duration/60),deltaMinutes:rnd((duration-base)/60),computeMicroseconds:rnd((performance.now()-begin)*1000,2)};
+              }
+              const result={case:label,provider:'OSRM only',networkMs:got.ms,bytes:got.bytes,routeKm:rnd(route.distance/1000),baseMin:rnd(base/60),stepCount:steps.length,stepTimeGapSeconds:rnd(gap),motorwayCandidateKm:rnd(distMotor/1000),motorwayCandidateMinutes:rnd(timeMotor/60),motorwayCandidateTimePct:rnd(timeMotor/base*100,1),motorwayCandidateDistancePct:rnd(distMotor/route.distance*100,1),explicitOtherKm:rnd(distOther/1000),unclassifiedKm:rnd(distUnknown/1000),unclassifiedTimePct:rnd(timeUnknown/base*100,1),intersectionClasses:interClasses,leadingRoads:Object.entries(roadNames).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([name,dist])=>({name,km:rnd(dist/1000)})),orderedRoadNames:names.slice(0,35),profiles:outputs,caveat:'regex A-road + motorway intersection class is an intentionally incomplete heuristic; no reliable urban/rural/surface or motorway speed limit; time gap unchanged; no route change'};
+              console.log('R015_OSRM_RESULT '+JSON.stringify(result));
+              if(label.includes('CITY')&&result.motorwayCandidateKm>0.1)console.log('R015_CITY_REVIEW_REQUIRED '+label);
+            }catch(error){failures++;console.error('R015_OSRM_FAILURE '+label+' '+error.message);}
+          }
+          console.log('R015_TEST_INFO '+JSON.stringify({failed:failures,numberOfCases:cases.length,requestCount:cases.length,noExtraProviderCalls:true,profileRequiresRouteChange:false,classificationStatus:'not proven sufficient'}));
+          if(failures)process.exitCode=1;
+          JS

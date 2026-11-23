@@ -354,6 +354,19 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Nächste Arbeit:** Erst die fachliche Trennung dieser vier Kriterien, das Verkehrsmittel direkt in der gemeinsamen Pin-Dialogmaske und den Bearbeitungseinstieg über den Routenlinien-Klick stabilisieren. Der zuvor vorgeschlagene isolierte **R-013 OSRM-Klassifizierungs-/Preset-Test bleibt offen** und wird nicht als erledigt ausgegeben. Keine Änderung an PWA v330 oder den übrigen Schutzverträgen.
 
+
+### R-015 – Isolierter OSRM-only-Test für Zeitprofil ohne Routenänderung (23.11.2026)
+
+**Status: TEST VOM NUTZER BEAUFTRAGT; noch keine Entscheidung zur produktiven OSRM-Nutzung oder zur Qualität der Erkennungsheuristik.**
+
+**Zusätzliche fachliche Festlegung für Auto:** Der Auftraggeber bestätigt ausdrücklich: Das persönliche Auto-Zeitprofil darf **nur die Fahrzeit der bereits ausgewählten Route verändern, niemals ihre Geometrie oder Wegwahl**. Was die fünf Eingabeachsen (Verkehrsmittel, Start/Ziel, Korridor, Wegwahlart und persönliches Profil) für Fahrrad, Fuß und ÖPNV bedeuten, bleibt gesonderter späterer Klärung vorbehalten. Nach Änderung allein des Auto-Zeitprofils ist keine neue Routinganfrage nötig. Nutzerpriorität: schnelle Anzeige einer näherungsweise passenden Route.
+
+**Testaufbau:** OSRM-Demo `route?steps=true&annotations=distance,duration,speed&overview=full`, jeweils genau ein HTTP-Aufruf auf Stuttgart Stadt, beide Berliner Kurzabschnitte, Stuttgart–Groß Lafferde und Stuttgart–Hamburg. Pro OSRM-Manöverabschnitt Straßenname/-referenz, `intersections[].classes`, Länge und Segmentdauer auslesen. Nur explizite Autobahnreferenzen nach Muster `A N` und tatsächlich gesetztes `motorway`-Intersection-Flag als **potenzielle** Autobahnklasse markieren; Bundesstraßen (B N) ausdrücklich separat erkennen; alle anderen Abschnitte als **unbekannt** behandeln. Das Muster ist absichtlich unvollständig; keine Behauptung einer verlässlichen Autobahn-/Schnellstraßen-Erkennung, kein frei erfundener Stadt-/Land-/Schotteranteil. Keine Verknüpfung mit Valhalla und keine zusätzlichen API-Requests. Prüfen, ob Summe der Step-Dauern und OSRM-Gesamtdauer übereinstimmen; etwaige Differenz unverändert lassen. Drei ausdrücklich nur illustrative Varianten auf **zeitliche** Kategorieanteile: Neutral 1,00; Flott Autobahn 0,95; Kastenwagen Autobahn 1,30, übrige/unbekannte Abschnitte unverändert. Die Routenführung ist für alle Presets identisch.
+
+**Achtung:** Manöverabschnitt kann unter Umständen mehrere reale Straßentypen umfassen; `step.name` enthält u.U. nur einen Straßennamen für einen längeren Abschnitt. Ein ausschließlich auf Namen basierender Matcher kann Abschnitte falsch zuordnen, insbesondere Autobahnanschlussstellen, internationale Bezeichnungen und unbenannte Motorways. Die Auswertung sollte Unsicherheiten ausdrücklich quantifizieren und erst dann eine bedingte Empfehlung ermöglichen. Keine Begrenzung der Geschwindigkeit oder echtes profilabhängiges Routing getestet.
+
+**Umfang:** Isolierter GitHub-Actions-Machbarkeitstest, keine Integration in PWA, kein App-/SW-Versionswechsel und keine Änderung an bestehenden gespeicherten Routen.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
