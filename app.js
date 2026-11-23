@@ -249,6 +249,10 @@
       }
       renderPinPanel();
     },
+    onWaypointAction:()=>{
+      const pin=selectedPin();if(!pin||!routeSession)return;
+      routeSession.waypoint(pin.id);renderPinPanel();
+    },
     onLayout:focus=>{
       updatePanelLayout();
       if(focus)requestAnimationFrame(keepSelectedAbovePanel);
@@ -859,10 +863,6 @@
     pinEditorActions.bind();
     pinDetails.bind();
     routePanel?.bind();
-    $("pinRouteWaypoint").addEventListener("click",()=>{
-      const pin=selectedPin();if(!pin||!routeSession)return;
-      routeSession.waypoint(pin.id);renderPinPanel();
-    });
     pinNavigation.bind();
     noteEditor.bind();
     window.Pin2MapObjectDialogCore.bindNoteLaunch({
