@@ -14,16 +14,16 @@ await page.goto(new URL('../route-lab/?smoke='+Date.now(),base).href,{waitUntil:
 assert.equal(await page.evaluate(()=>navigator.serviceWorker.controller),null,'Standalone route lab must not be controlled by preview PWA SW');
 assert.equal(await page.locator('header').innerText().then(x=>x.includes('Interner Routenvergleich')),true,'Must not accidentally show v330 map');
 
-await page.waitForFunction(()=>window.Pin2MapRouteComparisonTest?.caseCount===8,{timeout:18000});
-assert.equal(await page.locator('#case option').count(),8);
+await page.waitForFunction(()=>window.Pin2MapRouteComparisonTest?.caseCount===9,{timeout:18000});
+assert.equal(await page.locator('#case option').count(),9);
 assert.equal(await page.locator('#routes input[type=radio]').count(),5);
 assert.equal(await page.locator('#map.leaflet-container').count(),1);
 assert.deepEqual(errors,[]);
-await page.selectOption('#case',name==='Chromium'?'4':'6');
+await page.selectOption('#case','8');
 await page.locator('#go').click();
 await page.waitForFunction(()=>!document.getElementById('go').disabled,{timeout:90000});
 const loaded=await page.locator('#routes input[type=radio]:not([disabled])').count();
-assert.equal(loaded,5,'All five live route variants must load for a holiday region: '+name+' '+await page.locator('#status').innerText()+'; '+await page.locator('#routes').innerText());
+assert.equal(loaded,5,'All five live Rostock–Wolgast route variants must load: '+name+' '+await page.locator('#status').innerText()+'; '+await page.locator('#routes').innerText());
 await page.locator('#all').click();
 assert.equal(await page.locator('#map .leaflet-interactive').count()>=5,true,'All five route lines must display');
 await page.locator('#routes input[value="2"]').check();
