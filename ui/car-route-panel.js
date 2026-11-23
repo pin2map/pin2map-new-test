@@ -64,6 +64,10 @@
    title.textContent=snapshot.loading?"🚗 Route wird berechnet …":snapshot.legs.length?
      "🚗 "+fmtDistance(snapshot.distanceMeters)+" · ca. "+fmtTime(snapshot.durationSeconds):
      "🚗 Route nicht verfügbar";
+   this.el("routeAll").classList.toggle("is-active",snapshot.allVisibleActive);
+   this.el("routeAll").setAttribute("aria-pressed",String(Boolean(snapshot.allVisibleActive)));
+   this.el("routeFixed").disabled=!snapshot.allVisibleActive;
+   this.el("routeFixed").classList.toggle("is-active",snapshot.allVisibleActive);
    this.el("routeTolls").classList.toggle("is-active",snapshot.avoidTolls);
    this.el("routeTolls").setAttribute("aria-pressed",String(snapshot.avoidTolls));
    for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]"))
