@@ -37,3 +37,26 @@ jobs:
         env:
           PIN2MAP_MOCKUP_URL: http://127.0.0.1:8765/routing-ui-mockup.html
         run: node tests/routing-ui-mockup-browser.cjs
+      - name: Verify actually deployed standalone UI mockup over HTTPS
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, time, urllib.request
+          expected=hashlib.sha256(Path('routing-ui-mockup.html').read_bytes()).digest()
+          url='https://pin2map.github.io/pin2map-new-test/routing-ui-lab/index.html?verify=compact-v2'
+          for attempt in range(20):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url,headers={'Cache-Control':'no-cache'}), timeout=20) as response:
+                      data=response.read()
+                  assert hashlib.sha256(data).digest()==expected,'Published mockup differs from feature source'
+                  print('PASS: live HTTPS routing UI mockup has exact tested bytes')
+                  break
+              except Exception as error:
+                  print('Not yet published:', error, flush=True)
+                  if attempt==19: raise
+                  time.sleep(8)
+          PY
+      - name: Verify Chromium and WebKit interactions on published HTTPS mockup
+        env:
+          PIN2MAP_MOCKUP_URL: https://pin2map.github.io/pin2map-new-test/routing-ui-lab/index.html
+        run: node tests/routing-ui-mockup-browser.cjs
