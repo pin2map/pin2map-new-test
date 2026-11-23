@@ -57,7 +57,7 @@
   render(snapshot){
    this.snapshot=snapshot;const active=!!snapshot?.ready;
    this.el("carRoutePanel").classList.toggle("hidden",!active||!this.visible);
-   const toggle=this.el("routePanelToggle");toggle.classList.toggle("hidden",!active);
+   const toggle=this.el("routePanelToggle");this.el("routeToggleHolder").classList.toggle("hidden",!active);
    toggle.setAttribute("aria-pressed",String(active&&this.visible));
    if(!active){this.closeMenus();return;}
    const title=this.el("routeSummary");
