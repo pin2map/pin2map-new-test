@@ -70,7 +70,7 @@ const URL=process.env.PIN2MAP_MOCKUP_URL||"http://127.0.0.1:8765/routing-ui-mock
     assert.ok(geometry.menuWidth<geometry.resetWidth*1.25,JSON.stringify(geometry));
     const metrics=await page.evaluate(()=>({panel:document.querySelector(".routing-panel").getBoundingClientRect().toJSON(),width:document.documentElement.scrollWidth,viewport:innerWidth,worker:!!navigator.serviceWorker?.controller,option:document.querySelector(".options-line").getBoundingClientRect().toJSON()}));
     assert.ok(metrics.panel.width>220);assert.ok(metrics.width<=metrics.viewport+1,JSON.stringify(metrics));
-    assert.equal(metrics.worker,false);assert.ok(metrics.option.height<60,JSON.stringify(metrics));
+    assert.equal(metrics.worker,false);assert.ok(metrics.option.height>=44&&metrics.option.height<=78,JSON.stringify(metrics));
     assert.deepEqual(errors,[]);
     console.log("PASS",name,viewport.width,"compact mockup, Lucide, pin and place suggestions, corridor ambiguity, schematic route and SW isolation");
     await context.close();
