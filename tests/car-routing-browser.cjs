@@ -43,6 +43,14 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    // Each click is a real Leaflet marker interaction, never a direct call to a private controller.
    const markerAt=index=>page.locator(".leaflet-marker-icon.pin-icon").nth(index);
    await markerAt(0).click();
+   console.log("ROUTE SEED DIAGNOSTIC",await page.evaluate(()=>({
+    titles:[...document.querySelectorAll(".leaflet-marker-icon.pin-icon")].map(e=>e.getAttribute("title")),
+    labels:[...document.querySelectorAll(".address-label")].map(e=>e.textContent),
+    name:document.getElementById("pinName")?.value,
+    panelHidden:document.getElementById("pinPanel")?.classList.contains("hidden"),
+    scriptModules:[typeof window.Pin2MapCarRoutePanel,typeof window.Pin2MapRouteGuideSession]
+   })));
+   await page.locator("#pinPanel").waitFor({state:"visible",timeout:7000});
    assert.equal(await page.locator("#pinName").inputValue(),"Stuttgart");
    await page.locator("#pinRouteStart").click();
    await markerAt(1).click();
