@@ -176,3 +176,72 @@ jobs:
           }
           if(failed)process.exitCode=1;
           JS
+
+      - name: Benchmark OSRM and Valhalla request latency
+        shell: bash
+        run: |
+          node <<'JS'
+          // Public demo hosts: indicative network measurements only, not production SLA.
+          const tests=[
+            ['STUTTGART-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['BERLIN-CITY',[52.517037,13.388860],[52.529407,13.397634]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['STUTTGART-HAMBURG',[48.7753859,9.1412686],[53.5501721,10.0013165]]
+          ];
+          const fmt=n=>Math.round(n*10)/10;
+          const result=[],failures=[];
+          async function timed(service,name,a,b,mode){
+            const opts={headers:{'User-Agent':'pin2map-routing-feasibility-test/0.4 (https://github.com/pin2map/pin2map-new-test)',Accept:'application/json'},signal:AbortSignal.timeout(20000)};
+            let url;
+            if(service==='OSRM'){
+              url='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?alternatives=false&steps='+(mode==='detail'?'true':'false')+'&overview=false';
+              if(mode==='detail')url+='&annotations=distance,duration,speed';
+            }else{
+              const u=new URL('https://valhalla1.openstreetmap.de/route');
+              u.searchParams.set('json',JSON.stringify({locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',units:'kilometers',directions_type:mode==='detail'?'instructions':'none'}));
+              url=u.toString();
+            }
+            const started=performance.now();
+            const response=await fetch(url,opts);
+            const body=await response.text();
+            const ms=fmt(performance.now()-started);
+            if(!response.ok)throw Error(service+' HTTP '+response.status);
+            const json=JSON.parse(body);
+            if(service==='OSRM'?(json.code!=='Ok'||!json.routes?.length):!json.trip?.summary)throw Error(service+' invalid routing response');
+            return {ms,bytes:Buffer.byteLength(body)};
+          }
+          // Alternate order across samples to reduce warmed-connection/order bias.
+          for(const [name,a,b] of tests){
+            for(let repeat=0;repeat<4;repeat++){
+              const services=repeat%2===0?['OSRM','Valhalla']:['Valhalla','OSRM'];
+              for(const service of services){
+                try{
+                  const value=await timed(service,name,a,b,'basic');
+                  result.push({name,service,repeat,mode:'basic',...value});
+                  console.log('LATENCY_SAMPLE '+JSON.stringify(result.at(-1)));
+                }catch(e){failures.push({name,service,repeat,error:e.message});console.error('LATENCY_FAIL '+JSON.stringify(failures.at(-1)));}
+              }
+            }
+            // Detail responses on the short urban routes versus basic overhead.
+            if(name.includes('CITY')){
+              for(const service of ['OSRM','Valhalla']){
+                try{
+                  const value=await timed(service,name,a,b,'detail');
+                  result.push({name,service,repeat:0,mode:'detail',...value});
+                  console.log('LATENCY_SAMPLE '+JSON.stringify(result.at(-1)));
+                }catch(e){failures.push({name,service,mode:'detail',error:e.message});console.error('LATENCY_FAIL '+JSON.stringify(failures.at(-1)));}
+              }
+            }
+          }
+          const median=a=>{const v=[...a].sort((a,b)=>a-b);return(v[Math.floor((v.length-1)/2)]+v[Math.floor(v.length/2)])/2;};
+          for(const [name] of tests){
+            for(const service of ['OSRM','Valhalla']){
+              const rows=result.filter(x=>x.name===name&&x.service===service&&x.mode==='basic');
+              if(!rows.length)continue;
+              const ms=rows.map(x=>x.ms);
+              console.log('LATENCY_SUMMARY '+JSON.stringify({name,service,count:ms.length,medianMs:fmt(median(ms)),minMs:fmt(Math.min(...ms)),maxMs:fmt(Math.max(...ms)),meanMs:fmt(ms.reduce((a,b)=>a+b,0)/ms.length),responseBytesMedian:Math.round(median(rows.map(x=>x.bytes)))}));
+            }
+          }
+          console.log('LATENCY_TEST_INFO '+JSON.stringify({total:result.length,failures:failures.length,location:'GitHub Actions hosted runner, not Stuttgart or end-user browser',notes:'Small sample, public demo servers; compare results cautiously, additional trace calls not included in basic timing'}));
+          if(failures.length)process.exitCode=1;
+          JS
