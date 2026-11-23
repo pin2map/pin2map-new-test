@@ -129,7 +129,7 @@ test("pin relocate composite renders two colored pins and dashed neutral connect
 });
 
 
-test("framed pin editor contains inert routing and an independent URL popup",()=>{
+test("framed pin editor retains independent URL popup and active waypoint routing",()=>{
  const html=read("index.html"),css=read("styles.css");
  const section=html.match(/<section id="pinPanel"[\s\S]*?<\/section>/)?.[0]||"";
  assert.match(section,/id="deletePin"[^>]*data-pin-icon="map-pin-off"/);
@@ -137,7 +137,8 @@ test("framed pin editor contains inert routing and an independent URL popup",()=
  for(const title of ["Pin Name","Navi extern","pin2map Routing","Pin Notizen"])
    assert.ok(section.includes("<legend"+(title==="Pin Notizen"?" id=\"pinDetailTitle\"":"")+">"+title+"</legend>"),"Frame legend: "+title);
  const placeholder=section.match(/<div class="pin-navigation-row"[\s\S]*?<\/div>\s*<\/fieldset>\s*<\/div>/)?.[0]||"";
- assert.equal((placeholder.match(/ disabled/g)||[]).length,1);
+ assert.equal((placeholder.match(/ disabled/g)||[]).length,0);
+ assert.match(placeholder,/id="pinRouteWaypoint"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinRouteStart"[^>]*aria-pressed="false"/);
  assert.match(section,/id="pinRouteTarget"[^>]*data-pin-icon="goal"/);
  assert.ok(!section.includes('id="pinCreated"')&&!section.includes('id="pinUpdated"'));
