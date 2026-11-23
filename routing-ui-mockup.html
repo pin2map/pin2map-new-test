@@ -2,145 +2,111 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>pin2map – Routing-UI-Labor</title>
 <style>
 :root{font-family:Arial,Helvetica,sans-serif;color:#24394f;background:#dceacb;font-size:16px}
-*{box-sizing:border-box}body{margin:0;min-height:100dvh}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #327dda;outline-offset:2px}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #2679d8;outline-offset:2px}
 .map{min-height:100dvh;position:relative;overflow:hidden;background:#dceccc}
-.map:before{content:"";position:absolute;inset:-15%;background:linear-gradient(24deg,transparent 35%,#a7d8ed 35.5%,#a7d8ed 42%,transparent 42.5%),linear-gradient(-18deg,transparent 33%,#f3dfbb 33.5%,#f3dfbb 35%,transparent 35.5%),repeating-linear-gradient(75deg,transparent 0 55px,#c2dcaa 56px 58px,transparent 59px 90px),repeating-linear-gradient(-30deg,transparent 0 85px,#f9f4de 87px 91px,transparent 94px 150px);opacity:.85}
+.map:before{content:"";position:absolute;inset:-10%;background:linear-gradient(24deg,transparent 35%,#a7d8ed 35.5%,#a7d8ed 42%,transparent 42.5%),linear-gradient(-18deg,transparent 33%,#f3dfbb 33.5%,#f3dfbb 35%,transparent 35.5%),repeating-linear-gradient(75deg,transparent 0 55px,#c2dcaa 56px 58px,transparent 59px 90px),repeating-linear-gradient(-30deg,transparent 0 85px,#f9f4de 87px 91px,transparent 94px 150px);opacity:.85}
 .map-road{position:absolute;height:8px;border:2px solid #fff;background:#e4a5a7;transform-origin:left;border-radius:12px;opacity:.9}.road-a{width:115%;top:72%;left:-5%;transform:rotate(-21deg)}.road-b{width:85%;top:34%;left:24%;transform:rotate(68deg)}
 .map-place{position:absolute;bottom:6%;left:45%;color:#5f6663;font-size:24px;text-shadow:1px 1px white}
 .map-pin{position:absolute;bottom:9%;left:48%;background:#ef4f98;border:5px solid white;box-shadow:0 2px 8px #46566d6b;width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}
-.demo-line{position:absolute;z-index:1;top:0;left:0;width:100%;height:100dvh;pointer-events:none}.demo-line[hidden]{display:none}.demo-line path{stroke:#2065bd;stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px white);stroke-dasharray:14 8}
-.lab-bar{position:relative;z-index:3;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;background:#203a53eb;color:white;padding:10px 12px;font-size:13px}.lab-bar select{border-radius:9px;padding:7px;background:white;color:#22384f;border:0}.lab-bar small{opacity:.85}
-.pin-dialog{position:relative;z-index:2;width:min(780px,calc(100% - 20px));margin:14px auto 60px;background:#f7f8fa;border:2px solid #c7d2dd;border-radius:27px;padding:22px 22px 18px;box-shadow:0 11px 35px #263b5060}
-.pin-head{display:grid;grid-template-columns:84px 1fr;gap:18px;align-items:center}.pin-symbol{height:84px;width:84px;border-radius:50%;background:#b92137;border:2px solid #a11c30;color:white;display:grid;place-items:center}
-fieldset{margin:0;border:2px solid #c7d2de;border-radius:20px;min-width:0;padding:12px 15px 13px}legend{color:#6b7b8c;font-size:21px;font-weight:800;padding:0 9px}.name-field{padding:4px 10px 7px}.name{background:white;border-radius:12px;padding:10px 14px;font-size:29px;font-weight:750}
-.top-groups{display:grid;grid-template-columns:1fr 1.5fr;gap:13px;margin-top:13px}.button-set{display:flex;align-items:center;justify-content:space-around;gap:9px;padding:0 4px}.round{height:68px;width:68px;flex:none;display:grid;place-items:center;border-radius:50%;border:2px solid #becbd7;background:#fff;color:#254156;box-shadow:0 3px 9px #263b5026}.round.blue{background:#1764bf;color:white;border-color:#1764bf}.round.add{border:4px solid #efc528}.round.goal{border:4px solid #35a256}.round.active{box-shadow:0 0 0 4px #aac7ed,0 3px 9px #263b5026}
-.lucide{display:inline-block;width:25px;height:25px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;vertical-align:middle}.pin-symbol .lucide{width:43px;height:43px;stroke-width:1.9}.round .lucide{width:33px;height:33px}
-.routing-panel{border:2px solid #ff3949;border-radius:20px;margin-top:24px;background:#fff;padding:12px 14px 13px}
+.demo-line{position:absolute;z-index:1;top:0;left:0;width:100%;height:100dvh;pointer-events:none}.demo-line[hidden]{display:none}.demo-line path{stroke:#2065bd;stroke-width:7;fill:none;stroke-linecap:round;stroke-dasharray:14 8}
+.lab-bar{position:relative;z-index:3;display:flex;gap:9px;align-items:center;justify-content:center;flex-wrap:wrap;background:#203a53eb;color:#fff;padding:8px 10px;font-size:13px}.lab-bar select{border:0;border-radius:8px;background:white;color:#24394f;padding:6px;font-size:16px}.lab-bar small{opacity:.85}
+.pin-dialog{position:relative;z-index:2;width:min(710px,calc(100% - 12px));margin:12px auto 35px;background:#f7f8fa;border:2px solid #c7d2dd;border-radius:24px;padding:16px;box-shadow:0 10px 32px #263b5052}
+.pin-head{display:grid;grid-template-columns:65px minmax(0,1fr);align-items:center;gap:12px}.pin-symbol{height:65px;width:65px;border-radius:50%;background:#b92137;border:2px solid #a11c30;color:white;display:grid;place-items:center}
+fieldset{margin:0;border:2px solid #c7d2de;border-radius:18px;min-width:0;padding:8px 10px}legend{color:#6b7b8c;font-size:17px;font-weight:800;padding:0 6px}
+.name{background:white;border-radius:11px;padding:9px 11px;font-size:24px;font-weight:750;min-width:0;overflow-wrap:anywhere}.name-field{min-width:0;padding:2px 9px 7px}
+.route-header{display:grid;grid-template-columns:minmax(0,1fr) 23px minmax(0,1fr);gap:6px;align-items:center;padding:4px 0;min-width:0}
+.route-end{border:1px solid #c2d0dd;border-radius:10px;min-height:43px;padding:7px 4px;background:white;color:#25445f;font-size:14px;line-height:1.2;font-weight:700;overflow-wrap:anywhere;min-width:0}
+.route-end:active{background:#e4f0ff}.route-arrow{text-align:center;color:#687f97;font-size:19px}
+.top-groups{display:grid;grid-template-columns:1fr 1.45fr;gap:10px;margin-top:10px}
+.button-set{display:flex;align-items:center;justify-content:space-around;gap:6px}
+.round{height:55px;width:55px;flex:none;display:grid;place-items:center;border-radius:50%;border:2px solid #becbd7;background:white;color:#254156;box-shadow:0 2px 6px #263b5026}
+.round.blue{background:#1764bf;color:white;border-color:#1764bf}.round.add{border:4px solid #efc528}.round.goal{border:4px solid #35a256}.round.active{box-shadow:0 0 0 3px #aac7ed}
+.lucide{display:inline-block;width:24px;height:24px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;vertical-align:middle}
+.pin-symbol .lucide{width:37px;height:37px}.round .lucide{width:29px;height:29px}
+.reset-top{width:100%;min-height:48px;border:1px solid #bdcad7;background:#f0f4f8;border-radius:12px;font-weight:750;color:#38526d;font-size:15px}
+.routing-panel{border:2px solid #ff3949;border-radius:18px;margin-top:13px;background:#fff;padding:12px 14px 14px}
 .routing-panel.target{border-color:#2da25b}.routing-panel.edit{border-color:#327dbb}
-.routing-stack{display:grid;gap:11px}.modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
-.mode{padding:8px 4px;border:1px solid #cad5df;background:#f7f9fb;border-radius:11px;color:#60738a;font-size:13px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:7px;min-height:43px}
-.mode .lucide{width:22px;height:22px}.mode.selected{border-color:#1d65bf;background:#e5f0ff;color:#165aab;box-shadow:inset 0 0 0 1px #1d65bf}
-.compact-line{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:8px}
-.compact-line label,.compact-line .caption-text{font-size:15px;font-weight:700;color:#64758a;white-space:nowrap}
-.compact-line input,.compact-line select{width:100%;min-width:0;border:1px solid #bfccd9;border-radius:9px;padding:9px 10px;background:white;color:#24394f;font-size:15px;height:40px}
-.compact-line input::placeholder{color:#8b9aa9}
-.via-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
-.entry-wrap{position:relative;min-width:0}.entry-wrap input{width:100%}
-.autocomplete{z-index:20;position:absolute;left:0;right:0;top:calc(100% + 2px);border:1px solid #b5c4d3;border-radius:10px;background:white;box-shadow:0 8px 22px #10243b37;max-height:220px;overflow-y:auto}
-.autocomplete[hidden],[hidden]{display:none!important}
-.suggestion{display:block;width:100%;text-align:left;background:white;border:0;border-bottom:1px solid #edf0f4;padding:9px 10px;color:#2a4158;font-size:13px}
-.suggestion:last-child{border-bottom:0}.suggestion:hover,.suggestion:focus,.suggestion.highlighted{background:#eaf2ff}
-.suggestion strong{display:block;font-size:14px}.suggestion small{display:block;color:#718196;margin-top:3px;font-size:11px}
-.options-line{display:flex;align-items:center;gap:6px;min-width:0}
-.radio-frame{display:flex;align-items:center;border:1px solid #bccbd9;border-radius:10px;padding:5px 8px;gap:12px;min-height:42px;flex:1;justify-content:space-between}
-.choice{display:flex;align-items:center;gap:5px;font-size:14px;white-space:nowrap;color:#32465b;min-height:30px;cursor:pointer}
-.choice input{accent-color:#1764bf;width:16px;height:16px;flex:none;margin:0}.toll-choice{margin-left:auto}
-.actions{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
-.actions select{width:100%;min-width:0;border:1px solid #c1cedb;border-radius:9px;background:#fff;height:40px;padding:7px 8px;color:#294056;font-size:14px}
-.primary,.secondary{min-height:40px;border-radius:10px;padding:8px 13px;font-size:14px;font-weight:750;white-space:nowrap}
-.primary{background:#1966bf;border:1px solid #1966bf;color:white}.secondary{border:1px solid #b8c8d8;background:#f5f8fa;color:#36506b}
-.demo-message{font-size:12px;color:#60738b;padding:2px 3px;line-height:1.35}.demo-message:empty{display:none}
+.routing-stack{display:grid;gap:12px}
+.modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.mode{border:1px solid #cbd6e0;border-radius:10px;background:#f7f9fb;color:#60738a;display:flex;align-items:center;justify-content:center;gap:6px;min-height:56px;font-weight:750;font-size:14px}
+.mode .lucide{width:25px;height:25px}.mode.selected{border:2px solid #1d65bf;background:#e5f0ff;color:#165aab}
+.compact-line{display:grid;grid-template-columns:68px minmax(0,1fr);align-items:center;gap:9px;min-width:0}
+.compact-line label,.caption-text{font-size:14px;font-weight:750;color:#64758a;white-space:nowrap}
+.entry-wrap{position:relative;min-width:0}
+.compact-line input,.compact-line select{width:100%;min-width:0;height:44px;padding:7px 10px;border:1px solid #bfccd9;border-radius:10px;background:#fff;color:#24394f;font-size:16px}
+.compact-line input::placeholder{color:#8495a6}
+.via-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;min-width:0}
+.options-line{display:grid;grid-template-columns:minmax(0,1fr) 102px;gap:12px;align-items:center;min-width:0}
+.options-line select{width:100%;height:44px}
+.toll-button{border:1px solid #b7c6d4;border-radius:10px;background:#e8edf2;color:#475c70;font-weight:750;font-size:13px;min-height:44px;width:100%}
+.toll-button.on{background:#1b69c4;color:white;border-color:#1b69c4}
+.action-fields{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:10px;min-width:0}
+.action-fields select{font-size:16px}
+.primary{min-height:44px;border:1px solid #1966bf;border-radius:10px;background:#1966bf;color:white;font-weight:800;font-size:15px;width:100%}
+.demo-message{font-size:12px;color:#60738b;line-height:1.35}.demo-message:empty{display:none}
+.autocomplete{z-index:25;position:absolute;left:0;right:0;top:calc(100% + 3px);background:white;border:1px solid #afc0d0;border-radius:10px;max-height:min(220px,35dvh);overflow-y:auto;box-shadow:0 8px 22px #10243b37}
+[hidden]{display:none!important}
+.suggestion{display:block;width:100%;border:0;border-bottom:1px solid #edf0f4;padding:9px;text-align:left;background:white;color:#2a4158;font-size:14px}.suggestion strong{display:block}.suggestion small{display:block;color:#718196;font-size:11px;margin-top:3px}.suggestion:hover,.suggestion:focus{background:#eaf2ff}
+.waypoint-overlay{position:fixed;z-index:50;inset:0;background:#0b233b70;display:grid;place-items:center;padding:12px}
+.waypoint-card{width:min(440px,100%);max-height:calc(100dvh - 24px);overflow:auto;border-radius:18px;background:#f8fafc;border:2px solid #c2d0dd;padding:14px;box-shadow:0 12px 40px #172c4a66}
+.waypoint-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.waypoint-top strong{font-size:18px}.waypoint-close{min-width:44px;min-height:44px;border:1px solid #c0cfdb;border-radius:10px;background:white;font-weight:750}
+.waypoint-list{display:grid;gap:8px}.waypoint-row{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,38px);gap:5px;align-items:center;padding:6px;border:1px solid #d4dee8;border-radius:10px;background:white}
+.waypoint-name{min-width:0;overflow-wrap:anywhere;font-size:14px;font-weight:650}.waypoint-row button{height:38px;width:38px;border:1px solid #c4d1de;border-radius:8px;background:#f3f7fa;font-size:20px}.waypoint-row button:disabled{opacity:.3}
+.waypoint-add{display:grid;grid-template-columns:minmax(0,1fr) 94px;gap:9px;margin-top:12px}.waypoint-add select,.waypoint-add button{min-width:0;min-height:44px;border:1px solid #b9c8d6;border-radius:10px;padding:6px;background:white;font-size:16px}.waypoint-add button{background:#1b69c4;color:white;font-weight:700}
+.waypoint-help{margin-top:10px;font-size:12px;color:#657b90;line-height:1.4}
 @media(max-width:600px){
-.pin-dialog{width:calc(100% - 14px);padding:12px 10px 12px;margin:9px auto 30px;border-radius:22px}
-.pin-head{grid-template-columns:55px 1fr;gap:9px}.pin-symbol{width:55px;height:55px}.pin-symbol .lucide{width:31px;height:31px}
-.name{font-size:22px;padding:9px}.name-field legend,.top-groups legend{font-size:16px}.top-groups{grid-template-columns:1fr 1.4fr;gap:7px;margin-top:9px}.top-groups fieldset{padding:7px 3px}
-.round{width:45px;height:45px}.round .lucide{width:24px;height:24px}.button-set{gap:3px}
-.routing-panel{margin-top:15px;padding:9px;border-radius:16px}.routing-stack{gap:8px}
-.mode{font-size:11px;gap:3px;min-height:40px}.mode .lucide{width:19px;height:19px}
-.compact-line{grid-template-columns:74px minmax(0,1fr);gap:5px}.compact-line label,.compact-line .caption-text{font-size:12px}
-.compact-line input{font-size:13px;height:38px;padding:7px}.via-fields{gap:5px}
-.options-line{gap:5px}.radio-frame{gap:5px;padding:4px 5px}.choice{font-size:11px;gap:3px}.choice input{width:14px;height:14px}
-.actions{gap:5px}.actions select,.primary,.secondary{font-size:12px;height:38px;padding:6px}
-.map-place{font-size:18px}}
-@media(max-width:360px){.options-line{overflow-x:auto;padding-bottom:2px}.radio-frame{flex:none}.toll-choice{flex:none}.top-groups{grid-template-columns:1fr 1.4fr}.mode{font-size:10px}.mode .lucide{width:16px;height:16px}}
-
-/* R-033: common label column, larger touch surfaces, balanced nearly-square desktop shell */
-.pin-dialog{min-height:min(730px,calc(100dvh - 100px))}
-.routing-panel{padding:19px 17px 20px}
-.routing-stack{gap:17px}
-.modes{gap:10px}
-.mode{min-height:65px;padding:11px 6px;font-size:15px}
-.mode .lucide{width:27px;height:27px}
-.compact-line{grid-template-columns:100px minmax(0,1fr);gap:10px}
-.compact-line label,.compact-line .caption-text{font-size:16px}
-.compact-line input{height:47px;font-size:16px}
-.options-line{gap:18px;display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center}
-.radio-frame{min-height:47px;gap:7px;padding:6px 9px;justify-content:space-around;min-width:0}
-.choice{font-size:14px;gap:5px;min-height:34px}
-.toll-button{height:47px;width:112px;border:1px solid #b7c6d4;border-radius:11px;background:#edf1f5;color:#475c70;font-weight:750;font-size:13px;white-space:nowrap}
-.toll-button.on{background:#1b69c4;border-color:#1b69c4;color:white}
-.actions{grid-template-columns:minmax(118px,1fr) minmax(125px,1.25fr) minmax(125px,1.25fr);gap:12px}
-.actions select{height:47px;font-size:14px}
-.primary,.secondary{height:47px;font-size:15px;width:100%}
-.demo-message{min-height:0}
-@media(max-width:600px){
- .pin-dialog{min-height:0}
- .routing-panel{padding:13px 10px 15px}
- .routing-stack{gap:12px}
- .modes{gap:6px}
- .mode{min-height:55px;padding:7px 3px;font-size:12px;flex-direction:column;gap:2px}
- .mode .lucide{width:24px;height:24px}
- .compact-line{grid-template-columns:77px minmax(0,1fr);gap:6px}
- .compact-line label,.compact-line .caption-text{font-size:13px}
- .compact-line input{height:44px;font-size:14px}
- .options-line{gap:8px;grid-template-columns:minmax(0,1fr) 84px}
- .radio-frame{min-height:44px;gap:3px;padding:3px 4px}
- .choice{font-size:11px;gap:2px;min-height:34px}
- .choice input{width:13px;height:13px}
- .toll-button{height:44px;width:84px;font-size:11px;padding:0 3px}
- .actions{grid-template-columns:minmax(90px,1fr) minmax(81px,1fr) minmax(81px,1fr);gap:6px}
- .actions select,.primary,.secondary{height:44px;font-size:12px}
+ .lab-bar{gap:5px;padding:6px 7px;font-size:12px}
+ .pin-dialog{width:calc(100% - 10px);padding:10px;border-radius:20px;margin:8px auto 25px}
+ .pin-head{grid-template-columns:48px minmax(0,1fr);gap:8px}.pin-symbol{height:48px;width:48px}.pin-symbol .lucide{width:29px;height:29px}
+ .name{font-size:20px;padding:7px 9px}.name-field{padding:1px 7px 6px}.name-field legend,.top-groups legend{font-size:14px}
+ .route-header{grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:4px}
+ .route-end{font-size:13px;min-height:40px;padding:5px 3px}
+ .top-groups{grid-template-columns:1fr 1.4fr;gap:7px;margin-top:7px}.top-groups fieldset{padding:6px 4px}
+ .round{width:43px;height:43px}.round .lucide{width:24px;height:24px}.button-set{gap:3px}
+ .reset-top{min-height:42px;font-size:12px;padding:2px 4px}
+ .routing-panel{margin-top:10px;padding:10px 8px;border-radius:16px}.routing-stack{gap:10px}
+ .modes{gap:5px}.mode{min-height:52px;flex-direction:column;gap:2px;padding:5px 1px;font-size:12px}.mode .lucide{width:23px;height:23px}
+ .compact-line{grid-template-columns:42px minmax(0,1fr);gap:7px}
+ .compact-line label,.caption-text{font-size:13px}
+ .compact-line input,.compact-line select{font-size:16px;height:42px;padding:6px 8px}
+ .via-fields{gap:5px}
+ .options-line{grid-template-columns:minmax(0,1fr) 88px;gap:8px}
+ .options-line select,.toll-button{height:42px;min-height:42px;font-size:16px}
+ .toll-button{font-size:12px}
+ .action-fields{grid-template-columns:minmax(0,1fr) 78px;gap:7px}
+ .primary{min-height:42px;font-size:14px}
 }
-@media(max-width:360px){
- .options-line{overflow:visible;grid-template-columns:minmax(0,1fr) 79px}
- .radio-frame{flex:none;min-width:0}
- .toll-button{width:79px;font-size:10px}
- .choice{font-size:10px}
- .actions{grid-template-columns:minmax(81px,1fr) minmax(70px,1fr) minmax(70px,1fr)}
-}
-@media(max-width:600px){
- .compact-line{grid-template-columns:66px minmax(0,1fr)}
- .options-line{grid-template-columns:minmax(0,1fr) 76px;gap:5px}
- .toll-button{width:76px;font-size:10px}
- .radio-frame{gap:2px;padding:2px}
- .choice{font-size:10px;letter-spacing:-.25px;gap:1px}
- .choice input{width:12px;height:12px}
- .actions{grid-template-columns:minmax(0,.82fr) minmax(0,1fr) minmax(0,1fr)}
-}
-@media(max-width:360px){
- .options-line{overflow:visible;grid-template-columns:minmax(0,1fr) 72px}
- .toll-button{width:72px}
- .radio-frame{gap:1px}
- .choice{font-size:9px;letter-spacing:-.45px}
+@media(max-width:340px){
+ .mode{font-size:11px}
+ .top-groups{grid-template-columns:1fr 1.3fr}
+ .round{height:40px;width:40px}
+ .options-line{grid-template-columns:minmax(0,1fr) 80px;gap:5px}
+ .toll-button{font-size:11px}
 }
 </style></head>
-<body><div class="map"><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-place">Bremerhaven</div><div class="map-pin"></div><svg id="demoLine" class="demo-line" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true" hidden><path d="M 480 790 C 280 665 710 550 400 430 S 700 160 560 55"/></svg>
-<header class="lab-bar"><strong>pin2map · Routing UI-Labor</strong><label for="entry">Einstieg:</label><select id="entry"><option value="start">Pin als Start</option><option value="target">Pin als Ziel</option><option value="edit">Klick auf Routenlinie</option></select><small>Nur Prototyp · Beispieldaten</small></header>
+<body><div class="map"><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-place">Bremerhaven</div><div class="map-pin"></div><svg id="demoLine" class="demo-line" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true" hidden><path d="M480 790C280 665 710 550 400 430S700 160 560 55"/></svg>
+<header class="lab-bar"><strong>pin2map · Routing UI-Labor</strong><label for="entry">Einstieg:</label><select id="entry"><option value="start">Pin als Start</option><option value="target">Pin als Ziel</option><option value="edit">Klick auf Routenlinie</option><option value="free">Pin ohne Route</option><option value="roundtrip">Rundtour (Start = Ziel)</option></select><small>Nur Prototyp · Beispieldaten</small></header>
 <main class="pin-dialog">
-<div class="pin-head"><div class="pin-symbol" aria-hidden="true"><span data-icon="map-pin-off"></span></div><fieldset class="name-field"><legend>Pin Name</legend><div class="name" id="pinName">Bremerhaven</div></fieldset></div>
-<div class="top-groups"><fieldset><legend>Navi extern</legend><div class="button-set"><button class="round blue" type="button" title="Externe Navigation – Attrappe" aria-label="Externe Navigation"><span data-icon="map-pin"></span></button><button class="round" type="button" title="Apple Karten – Attrappe" aria-label="Apple Karten"><span data-icon="navigation"></span></button></div></fieldset>
-<fieldset><legend>pin2map Routing</legend><div class="button-set"><button class="round blue active" id="startButton" type="button" aria-label="Routing Start"><span data-icon="arrow-up-right"></span></button><button class="round add" type="button" title="Zwischenziel – Attrappe" aria-label="Zwischenziel"><span data-icon="plus"></span></button><button class="round goal" id="targetButton" type="button" aria-label="Routing Ziel"><span data-icon="goal"></span></button></div></fieldset></div>
-<section class="routing-panel" id="routingPanel" aria-label="Routing Bearbeitung">
-<div class="routing-stack">
+<div class="pin-head"><div class="pin-symbol" aria-hidden="true"><span data-icon="map-pin-off"></span></div>
+<fieldset class="name-field" id="nameField"><legend>Pin Name</legend><div class="name" id="pinName">Bremerhaven</div></fieldset>
+<fieldset class="name-field" id="routeField" hidden><legend>Route</legend><div class="route-header"><button type="button" class="route-end" id="routeStart" title="Start-Pin öffnen">Bremerhaven</button><span class="route-arrow" aria-hidden="true">→</span><button type="button" class="route-end" id="routeGoal" title="Ziel-Pin öffnen">Grenoble</button></div></fieldset></div>
+<div class="top-groups"><fieldset><legend>Navi extern</legend><button type="button" id="reset" class="reset-top">Zurücksetzen</button></fieldset>
+<fieldset><legend>pin2map Routing</legend><div class="button-set"><button class="round blue active" id="startButton" type="button" aria-label="Routing Start"><span data-icon="arrow-up-right"></span></button><button class="round add" id="plusButton" type="button" aria-label="Zwischenziele bearbeiten"><span data-icon="plus"></span></button><button class="round goal" id="targetButton" type="button" aria-label="Routing Ziel"><span data-icon="goal"></span></button></div></fieldset></div>
+<section class="routing-panel" id="routingPanel" aria-label="Routing Bearbeitung"><div class="routing-stack">
 <div class="modes" id="modes" role="group" aria-label="Verkehrsmittel">
 <button class="mode selected" data-mode="car" type="button" aria-pressed="true"><span data-icon="car"></span>Auto</button>
 <button class="mode" data-mode="bicycle" type="button" aria-pressed="false"><span data-icon="bike"></span>Rad</button>
 <button class="mode" data-mode="pedestrian" type="button" aria-pressed="false"><span data-icon="footprints"></span>Fuß</button>
-<button class="mode" data-mode="transit" type="button" aria-pressed="false"><span data-icon="tram-front"></span>ÖPNV</button>
-</div>
-<div class="compact-line" id="editStartRow" hidden><label for="editStart">Start:</label><div class="entry-wrap"><input id="editStart" value="Bremerhaven" aria-label="Start der vorhandenen Route" autocomplete="off"></div></div>
-<div class="compact-line" id="destinationRow"><label for="destination" id="destinationLabel">Ziel:</label><div class="entry-wrap"><input id="destination" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destinationList" placeholder="Pin, Ort oder Adresse" spellcheck="false"><div id="destinationList" class="autocomplete" role="listbox" hidden></div></div></div>
-<div class="compact-line"><label for="via1">Route über:</label><div class="via-fields"><div class="entry-wrap"><input id="via1" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="via1List" aria-label="Erster Richtungsort" placeholder="Ort oder Region"><div id="via1List" class="autocomplete" role="listbox" hidden></div></div><div class="entry-wrap"><input id="via2" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="via2List" aria-label="Zweiter Richtungsort" placeholder="Ort oder Region"><div id="via2List" class="autocomplete" role="listbox" hidden></div></div></div></div>
-<div class="compact-line" id="carOptions"><span class="caption-text">Routing:</span><div class="options-line"><div class="radio-frame" role="radiogroup" aria-label="Art der Autoroute">
-<label class="choice"><input type="radio" name="profile" value="fast" checked> Schnell</label>
-<label class="choice"><input type="radio" name="profile" value="country"> Landstraße</label>
-<label class="choice"><input type="radio" name="profile" value="scenic"> Interessant</label>
-</div><button id="tolls" class="toll-button" type="button" aria-pressed="false">Ohne Maut</button></div></div>
+<button class="mode" data-mode="transit" type="button" aria-pressed="false"><span data-icon="tram-front"></span>ÖPNV</button></div>
+<div class="compact-line" id="destinationRow"><label for="destination" id="destinationLabel">Ziel:</label><div class="entry-wrap"><input id="destination" type="text" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destinationList" placeholder="Pin, Ort oder Adresse" spellcheck="false"><div id="destinationList" class="autocomplete" role="listbox" hidden></div></div></div>
+<div class="compact-line"><label for="via1">über:</label><div class="via-fields"><div class="entry-wrap"><input id="via1" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="via1List" aria-label="Erster Richtungsort" placeholder="Ort oder Region"><div id="via1List" class="autocomplete" role="listbox" hidden></div></div><div class="entry-wrap"><input id="via2" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="via2List" aria-label="Zweiter Richtungsort" placeholder="Ort oder Region"><div id="via2List" class="autocomplete" role="listbox" hidden></div></div></div></div>
+<div class="compact-line" id="carOptions"><label for="routeStyle">Routing:</label><div class="options-line"><select id="routeStyle" aria-label="Art der Autoroute"><option value="fast">Schnell</option><option value="country">Landstraße</option><option value="scenic">Interessant</option></select><button id="tolls" class="toll-button" type="button" aria-pressed="false">Ohne Maut</button></div></div>
 <div id="otherOptions" hidden></div>
-<div class="compact-line profile-line"><label for="timeProfile">Profil:</label><div class="actions"><select id="timeProfile" aria-label="Persönliches Zeitprofil"><option value="standard">Standard-Profil</option><option value="slow">Gemächlich (Entwurf)</option><option value="quick">Zügig (Entwurf)</option></select><button class="secondary" id="reset" type="button">Zurücksetzen</button><button class="primary" id="calculate" type="button">Route</button></div></div>
+<div class="compact-line profile-line"><span class="caption-text" aria-hidden="true"></span><div class="action-fields"><select id="timeProfile" aria-label="Persönliches Zeitprofil"><option value="standard">Standard-Profil</option><option value="slow">Gemächlich (Entwurf)</option><option value="quick">Zügig (Entwurf)</option></select><button class="primary" id="calculate" type="button">Route</button></div></div>
 <div class="demo-message" id="result" role="status" aria-live="polite"></div>
-</div></section>
-</main></div>
+</div></section></main>
+<div class="waypoint-overlay" id="waypointOverlay" hidden><section class="waypoint-card" role="dialog" aria-modal="true" aria-labelledby="waypointTitle"><div class="waypoint-top"><strong id="waypointTitle">Zwischenziele</strong><button type="button" id="closeWaypoints" class="waypoint-close">Fertig</button></div><div id="waypointList" class="waypoint-list"></div><div class="waypoint-add"><select id="newWaypoint" aria-label="Pin als Zwischenziel auswählen"><option value="Celle">Celle</option><option value="Hamburg Speicherstadt">Hamburg Speicherstadt</option><option value="Lausanne">Lausanne</option><option value="Grenoble">Grenoble</option><option value="Bremerhaven">Bremerhaven</option></select><button id="addWaypoint" type="button">Hinzufügen</button></div><div class="waypoint-help" id="waypointHelp">Beispiel-Pins: Reihenfolge mit ↑/↓ verändern oder mit × löschen. Keine Daten werden gespeichert.</div></section></div>
 <script>
 
 (()=>{'use strict';
@@ -156,6 +122,7 @@ const paths={
 'plus':'<path d="M12 5v14M5 12h14"/>',
 'goal':'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 3v9l4 2"/>'
 };
+
 for(const el of document.querySelectorAll('[data-icon]'))el.innerHTML='<svg class="lucide" viewBox="0 0 24 24" aria-hidden="true">'+paths[el.dataset.icon]+'</svg>';
 const $=id=>document.getElementById(id),entry=$('entry'),panel=$('routingPanel'),destination=$('destination'),result=$('result');
 const samples=[
@@ -163,37 +130,65 @@ const samples=[
 {name:'Hamburg Speicherstadt',place:'Hamburg',detail:'Vorhandener Pin · Ebene Reiseziele',type:'pin'},
 {name:'Hamburger Hafen',place:'Hamburg',detail:'Vorhandener Pin · Ebene Reiseziele',type:'pin'},
 {name:'Hamm Westfalen',place:'Hamm',detail:'Vorhandener Pin · Ebene Privat',type:'pin'},
-{name:'Schloss Hämelschenburg',place:'Emmerthal',detail:'Vorhandener Pin · Ebene Orte',type:'pin'},
-{name:'Frankfurt Aussichtspunkt',place:'Frankfurt am Main',detail:'Vorhandener Pin · Ebene Orte',type:'pin'},
-{name:'Hamburg',place:'Hamburg, Deutschland',detail:'Ortsvorschlag (Beispieldaten)',type:'place'},
-{name:'Grenoble',place:'Frankreich',detail:'Ortsvorschlag (Beispieldaten)',type:'place'},
-{name:'Lausanne',place:'Schweiz',detail:'Ortsvorschlag (Beispieldaten)',type:'place'}
-];
+{name:'Frankfurt Aussichtspunkt',place:'Frankfurt am Main',detail:'Vorhandener Pin',type:'pin'},
+{name:'Hamburg',place:'Hamburg, Deutschland',detail:'Ortsvorschlag',type:'place'},
+{name:'Grenoble',place:'Frankreich',detail:'Ortsvorschlag',type:'place'},
+{name:'Lausanne',place:'Schweiz',detail:'Ortsvorschlag',type:'place'}];
 const corridors=[
 {name:'Frankfurt am Main',detail:'Hessen · Deutschland',type:'place'},
 {name:'Frankfurt (Oder)',detail:'Brandenburg · Deutschland',type:'place'},
 {name:'Lausanne',detail:'Waadt · Schweiz',type:'place'},
 {name:'Schweiz',detail:'Land · Europa',type:'region'},
-{name:'Hamburg',detail:'Stadt · Deutschland',type:'place'},
-{name:'Besançon',detail:'Frankreich',type:'place'}
-];
-const state={mode:'car',selections:{},context:'start',avoidTolls:false};
-function setAvoidTolls(pressed){state.avoidTolls=Boolean(pressed);$('tolls').setAttribute('aria-pressed',String(state.avoidTolls));$('tolls').classList.toggle('on',state.avoidTolls)}
-function closeLists(except){for(const id of ['destination','via1','via2'])if(id!==except){$(id+'List').hidden=true;$(id).setAttribute('aria-expanded','false');}}
+{name:'Hamburg',detail:'Stadt · Deutschland',type:'place'}];
+const state={mode:'car',context:'start',currentPin:'Bremerhaven',route:{start:'Bremerhaven',goal:'Grenoble',waypoints:['Lausanne']},selections:{},avoidTolls:false};
+function closeLists(except){for(const id of ['destination','via1','via2'])if(id!==except){$(id+'List').hidden=true;$(id).setAttribute('aria-expanded','false')}}
 function suggestions(id){const input=$(id),list=$(id+'List'),q=input.value.trim().toLocaleLowerCase('de');list.replaceChildren();if(!q){list.hidden=true;input.setAttribute('aria-expanded','false');return}
- const matches=(id==='destination'?samples:corridors).filter(x=>(x.name+' '+(x.place||'')+' '+x.detail).toLocaleLowerCase('de').includes(q)).slice(0,12);
- const choices=id==='destination'?[...matches,{name:'Neuen Pin anlegen …',detail:'„'+input.value.trim()+'“ · Adressprüfung und Bestätigung folgen',type:'new',value:input.value.trim()}]:matches;
- if(!choices.length){list.hidden=true;input.setAttribute('aria-expanded','false');return}
- for(const choice of choices){const b=document.createElement('button');b.type='button';b.className='suggestion';b.setAttribute('role','option');const strong=document.createElement('strong');strong.textContent=choice.name;const small=document.createElement('small');small.textContent=(choice.place?choice.place+' · ':'')+choice.detail;b.append(strong,small);b.addEventListener('pointerdown',event=>event.preventDefault());b.addEventListener('click',()=>{input.value=choice.value||choice.name;state.selections[id]=choice;list.hidden=true;input.setAttribute('aria-expanded','false');result.textContent=choice.type==='new'?'Neuen Pin angefragt (Demo): erst Adresse prüfen und bestätigen – noch keine Anlage.':choice.type==='pin'?'Vorhandener Beispiel-Pin gewählt.':'Orts-/Regionsvorschlag gewählt (Demo).';});list.append(b)}
- list.hidden=false;input.setAttribute('aria-expanded','true');
-}
+const matches=(id==='destination'?samples:corridors).filter(x=>(x.name+' '+(x.place||'')+' '+x.detail).toLocaleLowerCase('de').includes(q)).slice(0,12);
+const choices=id==='destination'?[...matches,{name:'Neuen Pin anlegen …',detail:'„'+input.value.trim()+'“ · nur Demo, nicht gespeichert',type:'new',value:input.value.trim()}]:matches;
+for(const choice of choices){const b=document.createElement('button');b.type='button';b.className='suggestion';b.setAttribute('role','option');const strong=document.createElement('strong');strong.textContent=choice.name;const small=document.createElement('small');small.textContent=(choice.place?choice.place+' · ':'')+choice.detail;b.append(strong,small);b.addEventListener('pointerdown',e=>e.preventDefault());b.addEventListener('click',()=>{input.value=choice.value||choice.name;state.selections[id]=choice;list.hidden=true;input.setAttribute('aria-expanded','false');result.textContent=choice.type==='new'?'Pin-Anlage nur vorgemerkt (Demo); keine Speicherung.':choice.type==='pin'?'Vorhandener Beispiel-Pin gewählt.':'Orts-/Regionsvorschlag gewählt (Demo).'});list.append(b)}
+list.hidden=!choices.length;input.setAttribute('aria-expanded',String(Boolean(choices.length)))}
 for(const id of ['destination','via1','via2']){const input=$(id);input.addEventListener('input',()=>{delete state.selections[id];closeLists(id);suggestions(id)});input.addEventListener('focus',()=>{closeLists(id);if(input.value.trim()&&!state.selections[id])suggestions(id)});input.addEventListener('keydown',event=>{const list=$(id+'List');if(event.key==='Escape'){list.hidden=true;input.setAttribute('aria-expanded','false')}else if(event.key==='ArrowDown'&&!list.hidden){event.preventDefault();list.querySelector('button')?.focus()}else if(event.key==='Enter'&&!list.hidden){event.preventDefault();list.querySelector('button')?.click()}})}
-document.addEventListener('pointerdown',event=>{if(!event.target.closest('.entry-wrap'))closeLists()});
-function setMode(mode){state.mode=mode;document.querySelectorAll('[data-mode]').forEach(b=>{const active=b.dataset.mode===mode;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active))});$('carOptions').hidden=mode!=='car';$('otherOptions').hidden=mode==='car';result.textContent=mode==='car'?'': 'Routingoptionen für '+({bicycle:'Rad',pedestrian:'Fuß',transit:'ÖPNV'}[mode])+' sind noch nicht festgelegt (Demo).'}
-function setEntry(context){state.context=context;entry.value=context;state.selections={};closeLists();$('pinName').textContent=context==='edit'?'Bremerhaven → Grenoble':'Bremerhaven';panel.className='routing-panel '+(context==='target'?'target':context==='edit'?'edit':'');$('startButton').classList.toggle('active',context==='start');$('targetButton').classList.toggle('active',context==='target');$('editStartRow').hidden=context!=='edit';$('editStart').value='Bremerhaven';$('destinationLabel').textContent=context==='target'?'Start:':'Ziel:';destination.value=context==='edit'?'Grenoble':'';destination.placeholder=context==='target'?'Startpin, Ort oder Adresse':'Pin, Ort oder Adresse';$('via1').value=context==='edit'?'Lausanne':'';$('via2').value='';$('timeProfile').value='standard';document.querySelector('[name="profile"][value="fast"]').checked=true;setAvoidTolls(false);setMode('car');$('demoLine').setAttribute('hidden','');result.textContent=''}
-entry.addEventListener('change',()=>setEntry(entry.value));$('startButton').addEventListener('click',()=>setEntry('start'));$('targetButton').addEventListener('click',()=>setEntry('target'));document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
-$('reset').addEventListener('click',()=>setEntry(state.context));$('tolls').addEventListener('click',()=>setAvoidTolls(!state.avoidTolls));
-$('calculate').addEventListener('click',()=>{closeLists();if(state.context==='edit'&&!$('editStart').value.trim()){result.textContent='Bitte Start eingeben.';$('editStart').focus();return}if(!destination.value.trim()){result.textContent='Bitte '+(state.context==='target'?'Start':'Ziel')+' eingeben oder auswählen.';destination.focus();return}if(state.mode!=='car'){result.textContent='Die '+state.mode+'-Route ist nur als UI vorgesehen.';return}if(document.querySelector('[name="profile"][value="scenic"]').checked&&state.avoidTolls){result.textContent='Interessant + Ohne Maut ist technisch noch nicht freigegeben.';return}const query=destination.value.trim();if(!state.selections.destination)result.textContent='Nur Demo: „'+query+'“ ist noch nicht als Pin oder Adresse bestätigt. Keine Route erstellt.';else{result.textContent='Demoroute eingezeichnet (schematisch, keine echte Berechnung). Keine Pins oder Daten verändert.';$('demoLine').removeAttribute('hidden')}});
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.entry-wrap'))closeLists()});
+function setAvoidTolls(pressed){state.avoidTolls=Boolean(pressed);$('tolls').setAttribute('aria-pressed',String(state.avoidTolls));$('tolls').classList.toggle('on',state.avoidTolls)}
+function setMode(mode){state.mode=mode;document.querySelectorAll('[data-mode]').forEach(b=>{const on=b.dataset.mode===mode;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});$('carOptions').hidden=mode!=='car';result.textContent=mode==='car'?'':'Optionen für '+mode+' werden später ergänzt (Demo).'}
+function setEntry(context,{preserveRoute=false}={}){state.context=context;entry.value=context;state.selections={};closeLists();$('waypointOverlay').hidden=true;
+if(!preserveRoute){state.route={start:context==='roundtrip'?'Bremerhaven':'Bremerhaven',goal:context==='roundtrip'?'Bremerhaven':'Grenoble',waypoints:context==='free'?[]:['Lausanne']}}
+state.currentPin=context==='target'?state.route.goal:context==='free'?'Celle':state.route.start;
+$('nameField').hidden=context==='edit';$('routeField').hidden=context!=='edit';
+$('routeStart').textContent=state.route.start;$('routeGoal').textContent=state.route.goal;
+$('pinName').textContent=state.currentPin;
+panel.className='routing-panel '+(context==='target'?'target':context==='edit'?'edit':'');
+$('startButton').classList.toggle('active',context==='start'||context==='roundtrip');
+$('targetButton').classList.toggle('active',context==='target'||context==='roundtrip');
+$('destinationRow').hidden=context==='edit';
+$('destinationLabel').textContent=context==='target'?'Start:':'Ziel:';
+destination.value='';
+$('via1').value=context==='edit'?'Lausanne':'';$('via2').value='';
+$('routeStyle').value='fast';$('timeProfile').value='standard';setAvoidTolls(false);setMode('car');$('demoLine').setAttribute('hidden','');result.textContent=''}
+function renderWaypoints(){const list=$('waypointList');list.replaceChildren();const items=state.route.waypoints;
+if(!items.length){const empty=document.createElement('div');empty.textContent='Noch keine Zwischenziele.';empty.className='demo-message';list.append(empty)}
+items.forEach((name,index)=>{const row=document.createElement('div');row.className='waypoint-row';const label=document.createElement('div');label.className='waypoint-name';label.textContent=(index+1)+'. '+name;row.append(label);
+for(const [text,title,action,disabled] of [['↑','Nach oben',()=>moveWaypoint(index,-1),index===0],['↓','Nach unten',()=>moveWaypoint(index,1),index===items.length-1],['×','Löschen',()=>{items.splice(index,1);renderWaypoints()},false]]){const button=document.createElement('button');button.type='button';button.textContent=text;button.title=title;button.setAttribute('aria-label',name+' '+title);button.disabled=disabled;button.addEventListener('click',action);row.append(button)}list.append(row)})}
+function moveWaypoint(i,delta){const j=i+delta;if(j<0||j>=state.route.waypoints.length)return;[state.route.waypoints[i],state.route.waypoints[j]]=[state.route.waypoints[j],state.route.waypoints[i]];renderWaypoints()}
+function openWaypoints(){if(state.context==='free'){if(!state.route.waypoints.includes(state.currentPin))state.route.waypoints.push(state.currentPin);result.textContent='Beispiel-Pin '+state.currentPin+' als Zwischenziel übernommen (nur Demo).';state.context='start';entry.value='start';$('pinName').textContent=state.currentPin}
+renderWaypoints();$('waypointOverlay').hidden=false;$('closeWaypoints').focus()}
+entry.addEventListener('change',()=>setEntry(entry.value));
+$('startButton').addEventListener('click',()=>setEntry('start',{preserveRoute:true}));
+$('targetButton').addEventListener('click',()=>setEntry('target',{preserveRoute:true}));
+$('routeStart').addEventListener('click',()=>setEntry('start',{preserveRoute:true}));
+$('routeGoal').addEventListener('click',()=>setEntry('target',{preserveRoute:true}));
+$('plusButton').addEventListener('click',openWaypoints);
+$('closeWaypoints').addEventListener('click',()=>{$('waypointOverlay').hidden=true;$('plusButton').focus()});
+$('waypointOverlay').addEventListener('click',e=>{if(e.target===$('waypointOverlay'))$('closeWaypoints').click()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('waypointOverlay').hidden)$('closeWaypoints').click()});
+$('addWaypoint').addEventListener('click',()=>{state.route.waypoints.push($('newWaypoint').value);renderWaypoints()});
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+$('reset').addEventListener('click',()=>setEntry(state.context));
+$('tolls').addEventListener('click',()=>setAvoidTolls(!state.avoidTolls));
+$('calculate').addEventListener('click',()=>{closeLists();if(state.mode!=='car'){result.textContent='Nur Autorouting als Entwurf vorgesehen.';return}if($('routeStyle').value==='scenic'&&state.avoidTolls){result.textContent='Interessant + Ohne Maut noch nicht freigegeben.';return}
+if(state.context!=='edit'&&!destination.value.trim()){result.textContent='Bitte '+(state.context==='target'?'Start':'Ziel')+' auswählen.';destination.focus();return}
+if(state.context!=='edit'&&!state.selections.destination){result.textContent='Nur Demo: Ort noch nicht als Pin oder Adresse ausgewählt.';return}
+result.textContent='Demoroute schematisch eingezeichnet. Keine echte Berechnung oder Speicherung.';$('demoLine').removeAttribute('hidden')});
 setEntry('start');
 })();
 </script></body></html>
