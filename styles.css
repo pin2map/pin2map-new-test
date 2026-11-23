@@ -3248,4 +3248,4 @@ body.object-search-mode #app #searchClear.search-clear span{
 }
 
 /* Route badges must never steal actual pin or map taps. */
-#map .p2m-route-role-holder{pointer-events:none!important}
+#map .p2m-route-role-holder{pointer-events:none}
