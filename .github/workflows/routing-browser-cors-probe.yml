@@ -4,6 +4,8 @@ on:
     branches: [feature/leaflet-modular-core]
     paths:
       - '.github/workflows/routing-browser-cors-probe.yml'
+  pull_request:
+    branches: [feature/leaflet-modular-core]
   workflow_dispatch:
 permissions:
   contents: write
