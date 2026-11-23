@@ -172,7 +172,7 @@ for(const [text,title,action,disabled] of [['↑','Nach oben',()=>moveWaypoint(i
 function moveWaypoint(i,delta){const j=i+delta;if(j<0||j>=state.route.waypoints.length)return;[state.route.waypoints[i],state.route.waypoints[j]]=[state.route.waypoints[j],state.route.waypoints[i]];renderWaypoints()}
 function openWaypoints(){if(state.context==='free'){if(!state.route.waypoints.includes(state.currentPin))state.route.waypoints.push(state.currentPin);result.textContent='Beispiel-Pin '+state.currentPin+' als Zwischenziel übernommen (nur Demo).';state.context='start';entry.value='start';$('pinName').textContent=state.currentPin}
 renderWaypoints();$('waypointOverlay').hidden=false;$('closeWaypoints').focus()}
-entry.addEventListener('change',()=>setEntry(entry.value));
+entry.addEventListener('change',()=>setEntry(entry.value,{preserveRoute:entry.value==='edit'&&(state.context==='roundtrip'||state.context==='start'||state.context==='target')}));
 $('startButton').addEventListener('click',()=>setEntry('start',{preserveRoute:true}));
 $('targetButton').addEventListener('click',()=>setEntry('target',{preserveRoute:true}));
 $('routeStart').addEventListener('click',()=>setEntry('start',{preserveRoute:true}));
