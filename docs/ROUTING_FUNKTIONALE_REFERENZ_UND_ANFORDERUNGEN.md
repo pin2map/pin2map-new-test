@@ -494,3 +494,12 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
+
+
+### R-021 – Verbindlicher Nutzungskontext: ausschließlich kleiner interner Kreis (23.11.2026)
+
+**Vom Auftraggeber ausdrücklich klargestellt:** pin2map NEW wird für einen **kleinen, internen Nutzerkreis** entwickelt und ist **nicht zur öffentlichen Veröffentlichung als Produkt oder zur allgemeinen Verbreitung vorgesehen**. Dieser beabsichtigte Nutzungskontext gilt bei allen weiteren technischen, betrieblichen und lizenzrechtlichen Bewertungen, insbesondere für die OSRM-/Valhalla-Anbieterprüfung. Eine öffentliche GitHub-Pages-Preview-URL ist davon zu unterscheiden: Sie kann technisch öffentlich erreichbar sein und stellt für sich genommen keine Zugangsbeschränkung dar. Der Auftraggeber hat hiermit keine Umstellung von Hosting, Authentifizierung oder Datenhaltung beauftragt.
+
+**Konsequenz:** Die zu erwartende geringe Nutzung ist bei Anfragevolumen und Fair-Use-Abwägung zu berücksichtigen. Sie bedeutet **keine automatische Befreiung** von Regeln eines öffentlichen Demo-Dienstes, Anfragelimits, Kennzeichnungspflichten, CORS oder eventuellen Betreiberhinweisen. Ob OSRM bzw. Valhalla im konkret beabsichtigten internen Einsatz regelkonform und stabil eingebunden werden kann, ist weiterhin dienstspezifisch zu prüfen. Keine neue Providerwahl und keine Routingintegration beschlossen.
+
+**Schutz und Stand:** Reiner Dokumentationsnachtrag zu R-020, keine App-, Workflow-, UI-, SW-, Cache-, IndexedDB- oder Versionsänderung; v330 bleibt unverändert. Kein Deploy-/Browser-Abnahmebeleg aus diesem Dokumentationsschritt abgeleitet.
