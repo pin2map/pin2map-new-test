@@ -45,6 +45,7 @@
   let gestures,pinOverlapZoom,featureOverlapZoom,favoritesPanel;
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker;
    let routeSession=null,routePanel=null,routeMapView=null;
+   let routeGuideSession=null;
    let renderRouteGuides=()=>{};
   let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
@@ -897,9 +898,16 @@
     routingCore.register("car",new window.Pin2MapCarRouting.CarRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
     const routePinById=id=>pinOps.findPin(state,id);
+    routeGuideSession=new window.Pin2MapRouteGuideSession.RouteGuideSession({
+      getGuides:()=>state.routeGuides,
+      setGuides:guides=>{state.routeGuides=guides;save();},
+      makeId:uid,onChange:()=>renderRouteGuides()
+    });
     routeMapView=new window.Pin2MapCarRouteMapView.CarRouteMapView({
       mapPort:mapAdapter,getPin:routePinById,
-      onLineClick:index=>routePanel?.focusLeg(index)
+      onLineClick:index=>routePanel?.focusLeg(index),
+      confirmRemove:message=>window.confirm(message),
+      onGuideRemoveRequest:id=>routeGuideSession.remove(id)
     });
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
@@ -933,15 +941,7 @@
         routePanel.syncPinButtons(selectedPin());},
       onError:showNotice
     });
-    function onRouteGuideClick(id){
-      const guide=(state.routeGuides||[]).find(x=>x.id===id);
-      if(!guide||!window.confirm("Diese Richtungsflagge entfernen?"))return;
-      state.routeGuides=state.routeGuides.filter(x=>x.id!==id);
-      save();renderRouteGuides();
-    }
-    renderRouteGuides=()=>{
-      routeMapView?.guides(Array.isArray(state.routeGuides)?state.routeGuides:[],onRouteGuideClick);
-    };
+    renderRouteGuides=()=>routeMapView?.guides(routeGuideSession.list());
     renderRouteGuides();
     geometryEditor=new window.Pin2MapGeometryEditor({
       document,icons:window.Pin2MapIcons,onUpdate:saveGeometry,
@@ -956,9 +956,7 @@
       onPin:point=>addPin(point.lat,point.lng,"","map"),
       onArea:point=>void findAreaAt(point),
       onGuide:point=>{
-        state.routeGuides=Array.isArray(state.routeGuides)?state.routeGuides:[];
-        state.routeGuides.push({id:uid(),lat:point.lat,lng:point.lng});
-        save();renderRouteGuides();
+        routeGuideSession.add(point);
         showNotice("Richtungsflagge gesetzt. Ihre weiche Streckenführung wird als nächstes ergänzt.");
       }
     });
