@@ -56,16 +56,27 @@ test("map-click priorities retain isolated owners for satellite, relocation, lon
  assert.match(app,/new window\.Pin2MapMapInteractionController/);
 });
 
-test("routing coordination stays provider-neutral and is intentionally inactive until separately specified",()=>{
+test("car routing is explicitly active but remains modular and other transport providers are not configured",()=>{
  const coordinator=read("application/routing-service.js");
- assert.ok(!html.includes('src="./application/routing-service.js"'),
-  "A reserved routing seam is not an active feature");
- assert.doesNotMatch(app,/Pin2MapRouting|calculateTransitRoute|calculateRoute/,
-  "Do not embed active routing or provider calculations in app.js");
+ for(const file of ["domain/active-car-route.js","application/routing-service.js",
+   "adapters/routing/car-routing-provider.js","application/car-route-session.js",
+   "ui/car-route-map-view.js","ui/car-route-panel.js"]){
+   assert.ok(html.includes('src="./'+file+'"'),file+" missing from HTML");
+   assert.ok(sw.includes('"./'+file+'"'),file+" missing from offline shell");
+ }
  for(const mode of ['CAR:"car"','PEDESTRIAN:"pedestrian"',
                     'BICYCLE:"bicycle"','TRANSIT:"transit"'])
   assert.ok(coordinator.includes(mode),mode);
  assert.match(coordinator,/return provider\.calculate\(request\)/);
  assert.doesNotMatch(coordinator,/\b(?:fetch|XMLHttpRequest|indexedDB|localStorage|document|Leaflet)\s*(?:\(|\.)/,
-  "Routing coordinator must not know provider transport, DB, DOM or renderer");
+  "Coordinator must remain transport, DOM and renderer neutral");
+ const app=read("app.js"),session=read("application/car-route-session.js"),
+   model=read("domain/active-car-route.js"),map=read("ui/car-route-map-view.js");
+ assert.match(app,/routingCore\.register\("car",new window\.Pin2MapCarRouting\.CarRoutingProvider/);
+ assert.doesNotMatch(app,/routingCore\.register\("(?:bicycle|pedestrian|transit)"/);
+ for(const [file,source] of [["model",model],["session",session],["map",map]]){
+  assert.doesNotMatch(source,/\b(?:window\.L|indexedDB|localStorage|document\.getElementById)\b/,file+" crosses an architectural port");
+ }
+ assert.match(session,/this\.calculate\(/);
+ assert.match(map,/this\.map\.createLine\(/);
 });
