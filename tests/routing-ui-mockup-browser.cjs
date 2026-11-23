@@ -21,6 +21,7 @@ const URL=process.env.PIN2MAP_MOCKUP_URL||"http://127.0.0.1:8765/routing-ui-mock
     assert.ok(await page.locator("#destinationList button").count()>3);
     assert.match(await page.locator("#destinationList").textContent(),/Bilser Str/);
     assert.match(await page.locator("#destinationList").textContent(),/Hamburg/);
+    assert.match(await page.locator("#destinationList").textContent(),/Neuen Pin anlegen/);
     await page.locator("#destinationList button").first().click();
     assert.equal(await page.locator("#destination").inputValue(),"Bilser Str. 49");
     await page.locator("#via1").fill("Frankfurt");
@@ -45,7 +46,28 @@ const URL=process.env.PIN2MAP_MOCKUP_URL||"http://127.0.0.1:8765/routing-ui-mock
     assert.equal(await page.locator("#carOptions").isVisible(),false);
     await page.locator('[data-mode="car"]').click();
     await page.locator('input[name="profile"][value="country"]').check();
-    await page.locator("#tolls").check();
+    const toll=page.locator("#tolls");
+    assert.equal(await toll.getAttribute("aria-pressed"),"false");
+    await toll.click();
+    assert.equal(await toll.getAttribute("aria-pressed"),"true");
+    assert.match(await toll.getAttribute("class"),/on/);
+    await toll.click();
+    assert.equal(await toll.getAttribute("aria-pressed"),"false");
+    await toll.click();
+    const shapes=await page.locator(".modes [data-icon]").evaluateAll(els=>els.map(x=>({name:x.dataset.icon,paths:x.querySelectorAll("path,circle,rect").length})));
+    assert.deepEqual(shapes.map(x=>x.name),["car","bike","footprints","tram-front"]);
+    assert.ok(shapes.every(x=>x.paths>=3));
+    const geometry=await page.evaluate(()=>{
+       const r=id=>document.getElementById(id).getBoundingClientRect();
+       const modes=[...document.querySelectorAll(".mode")].map(x=>x.getBoundingClientRect().height);
+       const destination=r("destination"),via=r("via1"),routing=document.querySelector("#carOptions .radio-frame").getBoundingClientRect(),profile=r("timeProfile"),reset=r("reset"),route=r("calculate"),noToll=r("tolls");
+       return {modes,minMode:Math.min(...modes),x:[destination.x,via.x,routing.x,profile.x],resetWidth:reset.width,routeWidth:route.width,tollHeight:noToll.height,menuWidth:profile.width,panelWidth:r("routingPanel").width,containerWidth:r("routingPanel").height};
+    });
+    assert.ok(geometry.minMode>=50,JSON.stringify(geometry));
+    assert.ok(geometry.tollHeight>=43,JSON.stringify(geometry));
+    assert.ok(geometry.x.every(x=>Math.abs(x-geometry.x[0])<=1),JSON.stringify(geometry));
+    assert.ok(Math.abs(geometry.resetWidth-geometry.routeWidth)<=2,JSON.stringify(geometry));
+    assert.ok(geometry.menuWidth<geometry.resetWidth*1.25,JSON.stringify(geometry));
     const metrics=await page.evaluate(()=>({panel:document.querySelector(".routing-panel").getBoundingClientRect().toJSON(),width:document.documentElement.scrollWidth,viewport:innerWidth,worker:!!navigator.serviceWorker?.controller,option:document.querySelector(".options-line").getBoundingClientRect().toJSON()}));
     assert.ok(metrics.panel.width>220);assert.ok(metrics.width<=metrics.viewport+1,JSON.stringify(metrics));
     assert.equal(metrics.worker,false);assert.ok(metrics.option.height<60,JSON.stringify(metrics));
