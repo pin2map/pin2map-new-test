@@ -40,7 +40,7 @@
    this.visible=Boolean(shown);this.closeMenus();
    const active=!!this.snapshot?.ready;
    this.el("carRoutePanel").classList.toggle("hidden",!active||!this.visible);
-   const button=this.el("routePanelToggle");button.classList.toggle("hidden",!active);
+   const button=this.el("routePanelToggle");this.el("routeToggleHolder").classList.toggle("hidden",!active);
    button.setAttribute("aria-pressed",String(active&&this.visible));
    button.setAttribute("aria-label",this.visible?"Routingdialog ausblenden":"Routingdialog einblenden");
    this.onHide?.(!this.visible);
