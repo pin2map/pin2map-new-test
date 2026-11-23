@@ -430,3 +430,48 @@ jobs:
           console.log('VEHICLE_PIPELINE_INFO '+JSON.stringify({success:samples.length,failed:failures.length,profileStatus:'illustrative only, not authorized product configuration',limitation:'No reliable turn delays, trace validation, actual traffic, full road-type mapping, or production SLA. Valhalla map_snap may need multiple public demo trace requests per long OSRM route; network and snap fidelity not guaranteed.'}));
           if(failures.length)process.exitCode=1;
           JS
+
+      - name: Probe single-request Valhalla recosting and native OSRM detail availability
+        shell: bash
+        run: |
+          node <<'JS'
+          const routes=[
+            ['STUTTGART-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['BERLIN-CITY',[52.517037,13.388860],[52.529407,13.397634]]
+          ];
+          const n=x=>Math.round(x*10)/10;
+          const fetchJson=async url=>{
+            const t=performance.now();
+            const res=await fetch(url,{headers:{'User-Agent':'pin2map-routing-feasibility-test/0.7 (https://github.com/pin2map/pin2map-new-test)','Accept':'application/json'},signal:AbortSignal.timeout(25000)});
+            const raw=await res.text();
+            if(!res.ok)throw Error('HTTP '+res.status+' '+raw.slice(0,180));
+            return {data:JSON.parse(raw),ms:n(performance.now()-t),bytes:Buffer.byteLength(raw)};
+          };
+          let failed=0;
+          for(const [name,a,b] of routes){
+            try{
+              for(const style of ['plain','recost']){
+                const u=new URL('https://valhalla1.openstreetmap.de/route');
+                const params={locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',units:'kilometers',directions_type:'none'};
+                if(style==='recost')params.recostings=[{costing:'auto',name:'speed90',top_speed:90},{costing:'auto',name:'speed60',top_speed:60}];
+                u.searchParams.set('json',JSON.stringify(params));
+                const d=await fetchJson(u),s=d.data.trip?.summary;
+                if(!s)throw Error('Valhalla summary missing');
+                console.log('ONE_CALL_VALHALLA '+JSON.stringify({name,style,latencyMs:d.ms,bytes:d.bytes,km:n(s.length),min:n(s.time/60),summaryTimeKeys:Object.fromEntries(Object.entries(s).filter(([k])=>k.startsWith('time')&&k!=='time'))}));
+              }
+            }catch(e){failed++;console.error('ONE_CALL_VALHALLA_FAIL '+name+' '+e.message);}
+            try{
+              const u='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?overview=full&steps=true&annotations=distance,duration,speed&geometries=polyline6&alternatives=false';
+              const d=await fetchJson(u),r=d.data.routes?.[0],legs=r?.legs||[];
+              if(!r)throw Error('OSRM route missing');
+              const steps=legs.flatMap(x=>x.steps||[]),i=steps.flatMap(x=>x.intersections||[]);
+              const isUrban=steps.filter(x=>x.is_urban!==undefined).length;
+              const primary=steps.find(x=>x.distance>100)||steps[0];
+              const ints=i[0]||{};
+              const topKeys=o=>Object.keys(o||{}).sort();
+              console.log('ONE_CALL_OSRM_FIELDS '+JSON.stringify({name,latencyMs:d.ms,bytes:d.bytes,km:n(r.distance/1000),min:n(r.duration/60),stepCount:steps.length,segmentCount:legs.reduce((a,x)=>a+(x.annotation?.distance?.length||0),0),roadTypeBearingStepKeys:topKeys(primary).filter(k=>/class|road|highway|surface|limit|speed|urban|name/i.test(k)),intersectionKeys:topKeys(ints),sampleStepName:primary?.name,urbanExplicitSteps:isUrban,legKeys:topKeys(legs[0])}));
+            }catch(e){failed++;console.error('ONE_CALL_OSRM_FAIL '+name+' '+e.message);}
+          }
+          if(failed)process.exitCode=1;
+          JS
