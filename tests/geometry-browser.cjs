@@ -722,13 +722,13 @@ const viewports=[
    await contextMenu.waitFor({state:"visible",timeout:5000});
    const labels=await contextMenu.locator("button").evaluateAll(buttons=>
      buttons.map(button=>button.getAttribute("aria-label")));
-   assert.deepEqual(labels,["Gebiet suchen","Pin setzen"]);
+   assert.deepEqual(labels,["Gebiet suchen","Pin setzen","Richtungsflagge setzen"]);
    assert.equal(await contextMenu.locator('button[aria-label="Gebiet suchen"] img[src$="region.svg"]').count(),1,
      "Map area action must reuse the central Gebiet icon");
    assert.equal(await contextMenu.locator("button span").count(),0);
    const chooserRect=await contextMenu.boundingBox();
-   assert.ok(chooserRect&&chooserRect.width<=120&&chooserRect.height<=60,
-     "Two icon actions must remain compact");
+   assert.ok(chooserRect&&chooserRect.width<=185&&chooserRect.height<=65,
+     "Three touch actions must remain compact");
    await clickMap();
    assert.equal(await contextMenu.isHidden(),true,
      "First outside click closes chooser without reopening it");
