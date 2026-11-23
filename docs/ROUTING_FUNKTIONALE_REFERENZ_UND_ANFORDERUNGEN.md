@@ -229,6 +229,23 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 **Schutzgrenze:** Nur isolierter GitHub-Actions-Test und Fach-/Statusdokumentation; PWA-Routing nicht aktiviert, keine Daten- oder Cacheänderungen. Provider-/Produktentscheidung weiterhin offen.
 
 
+
+### R-008 – Live-Untersuchung der Straßenfolgen und Modellgeschwindigkeiten (23.11.2026)
+
+**Status: TECHNISCH UNTERSUCHT; Providerentscheidung und produktives Fahrzeitmodell OFFEN.** Der Auftraggeber hat nach R-007 ausdrücklich die Analyse tatsächlicher Straßenabschnitte und modellierter Geschwindigkeiten beauftragt.
+
+**Ausführung:** Isolierter Testworkflow `.github/workflows/routing-provider-probe.yml` um getrennte Prüfungen von `steps` und `annotations=distance,duration,speed,datasources` bei OSRM sowie Valhalla-`maneuvers` und optional `trace_attributes` (edge speed, speed_limit, road_class) ergänzt. [Provider-Workflow 45126917402](https://github.com/pin2map/pin2map-new-test/actions/runs/45126917402) **success** für den Testcommit `c91fdd7516f48ac121e78334790315d2fdf73c84`. Dieselben bereits in R-007 validierten Koordinaten.
+
+**Stuttgart Bodelschwinghstr. 64 → Chamissostr. 21:** OSRM 6,87 km / 13,54 min, Valhalla 6,86 km / 16,20 min. OSRM `steps` zeigen Bodelschwinghstr., Heinestr., Karl-Kloß-Str., Schreiberstr., Schickhardtstr., Schwabstr., Reinsburgstr., Rotenwaldstr., Herderstr., Botnanger Str., Stirnbrandstr., Chamissostr. OSRM-Annotation: 443 feinere Abschnitte, rund 6,87 km, modellierter Durchschnitt über die Abschnittszeiten 32,8 km/h (Gesamtroutendauer kann zusätzliche Manöver-/Abbiegemehraufwände enthalten). Valhalla-Manöver beschreiben einen kürzeren Straßen-Narrativ; Manöverlängen können angrenzende Straßen umfassen und dürfen NICHT eins zu eins als Straßenkantenlängen interpretiert werden. Separater Valhalla-`trace_attributes`-Aufruf **erfolgreich**: 140 tatsächliche Straßenkanten, alle 140 mit Modelltempo, 135 mit positivem hinterlegtem Tempolimit. Beispiel Bodelschwinghstraße `speed=17`, `speed_limit=30`, residential; Heinestraße `speed=27`, `speed_limit=50`, tertiary. Ein Tempolimit ist nicht dasselbe wie Modellfahrtempo.
+
+**Stuttgart → Groß Lafferde:** OSRM 514,52 km / 309,19 min; Valhalla 518,31 km / 321,92 min. OSRM-Annotation: 7.634 Abschnitte, Modellgeschwindigkeitsquotient 100,1 km/h; ~444,06 km liegen im 90–119-km/h-Quotientenbereich. OSRM-Manövernamen erscheinen auf ~507 km als `(unnamed)`; daher daraus NICHT schließen, die gesamte Autobahnroute sei straßenlos oder identisch zu Valhalla. Valhalla-Manöver nennen unter anderem A 8, A 81, A 3, A 7, B 444; A-81- und A-7-Manöver ergeben rechnerische mittlere Geschwindigkeiten ungefähr 99–108 km/h. Individuelle Höchstgeschwindigkeiten (zum Beispiel 90 km/h Autobahn) wurden noch nicht getestet.
+
+**Berlin-Beispiel 1→2:** OSRM 1,89 km / 4,34 min und Valhalla 1,89 km / 4,45 min; beide benennen Friedrichstraße → Torstraße. OSRM-Abschnittsmodell ~30,1 km/h; Valhalla `trace_attributes`: 85 Kanten, für alle 85 Modelltempo und positives Tempolimit verfügbar. **Berlin 2→3:** OSRM 2,85 km / 6,18 min; Valhalla 2,95 km / 7,10 min; OSRM-Manöver nennen u.a. Torstr., Prenzlauer Allee, Prenzlauer Berg, Friedenstr.; Valhalla dagegen Otto-Braun-Str./B 2 und Am Friedrichshain neben Torstr. und Friedenstr. 113 Valhalla-Kanten, davon 110 mit positivem Tempolimit. Unterschiedliche Straßennamen sind ein Indiz für Streckenunterschiede; exakte Geometrieüberschneidung noch nicht quantitativ geprüft.
+
+**Interpretationsgrenzen und nächste Aufgabe:** OSRM-`annotation.speed` ist `distance/duration` des Routingmodells, **nicht** das gesetzliche Tempolimit; aus Valhalla-Maneuver-`length/time` abgeleitete Werte ebenfalls keine Tempolimits. Valhalla-`edge.speed` und `edge.speed_limit` sind getrennte Felder. Valhallas Geschwindigkeitsmodell beruht auf OSM-Tempolimits, Straßentyp-Defaults und weiteren Dichte-/Verkehrs-/Profilfaktoren (Quelle: https://valhalla.github.io/valhalla/concepts/speeds/). Ohne reale Referenzfahrten, aktuell verifizierte Limits und eigene Fahrzeugprofile keine Aussage, welcher Anbieter tatsächliche Fahrzeiten besser vorhersagt. Die Testprobe beweist keine freie produktive API-Nutzung, Korridorqualität, Mautregeln oder Fähren.
+
+**Bestandsschutz:** Nur unabhängiger GitHub-Actions-Test; kein aktiver Routingprovider in pin2map, kein PWA-Code-/Cache-/Persistenzschema geändert. v330 unverändert.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
