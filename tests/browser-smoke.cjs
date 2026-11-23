@@ -450,7 +450,8 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#mapActionChooser").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinPanel").isHidden(),true,
       "Long press must never create a pin before user chooses");
-    assert.equal(await page.locator("#mapActionChooser button").count(),2);
+    assert.equal(await page.locator("#mapActionChooser button").count(),3);
+    assert.equal(await page.locator('#mapActionChooser button[aria-label="Richtungsflagge setzen"]').count(),1);
     await page.locator('#mapActionChooser button[aria-label="Pin setzen"]').click();
     await page.locator(".pin-marker").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true,
@@ -487,7 +488,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#pinName").fill("  Reise-Testpin  ");
     await page.locator("#pinName").blur();
     assert.equal(await page.locator("#pinName").inputValue(),"Reise-Testpin");
-    step("pin details: external navigation, Start/Ziel UI toggles, inert waypoint and six footer controls");
+    step("pin details: start and target activate a fixed auto route panel and roundtrips are supported");
     assert.equal(await page.locator("#pinNotes").count(),1);
     assert.equal(await page.locator("#pinUrlBlock").isHidden(),true);
     assert.equal(await page.locator("#pinPanel .pin-navigation-buttons button").count(),5);
@@ -495,19 +496,28 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinNavApple").isEnabled(),true);
     assert.equal(await page.locator("#pinRouteStart").isEnabled(),true);
     assert.equal(await page.locator("#pinRouteTarget").isEnabled(),true);
-    assert.equal(await page.locator(".pin-nav-waypoint").isDisabled(),true,
-      "Only the waypoint remains unavailable pending routing specification");
+    assert.equal(await page.locator("#pinRouteWaypoint").isEnabled(),true);
     await page.locator("#pinRouteStart").click();
-    assert.equal(await page.locator("#pinRoutingStartBlock").isVisible(),true);
-    assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
     assert.equal(await page.locator("#pinRouteStart").getAttribute("aria-pressed"),"true");
-    await page.locator("#pinRouteTarget").click();
-    assert.equal(await page.locator("#pinRoutingStartBlock").isHidden(),true);
-    assert.equal(await page.locator("#pinRoutingTargetBlock").isVisible(),true);
-    assert.equal(await page.locator("#pinRouteStart").getAttribute("aria-pressed"),"false");
-    await page.locator("#pinRouteTarget").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
-    assert.equal(await page.locator("#pinRouteTarget").getAttribute("aria-pressed"),"false");
+    assert.equal(await page.locator("#pinRoutingStartBlock").isHidden(),true);
+    await page.locator("#pinRouteWaypoint").click();
+    assert.equal(await page.locator("#pinRouteWaypoint").getAttribute("aria-pressed"),"false",
+      "A start pin is not duplicated as a hard waypoint");
+    await page.locator("#pinRouteTarget").click();
+    assert.equal(await page.locator("#carRoutePanel").isVisible(),true);
+    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    assert.equal(await page.locator("#routePanelToggle").isVisible(),true);
+    await page.locator("#routeReverse").click();
+    await page.locator("#routePanelHide").click();
+    assert.equal(await page.locator("#carRoutePanel").isHidden(),true);
+    await page.locator("#routePanelToggle").click();
+    assert.equal(await page.locator("#carRoutePanel").isVisible(),true);
+    await page.locator("#routeEnd").click();
+    assert.equal(await page.locator("#carRoutePanel").isHidden(),true);
+    assert.equal(await page.locator("#routePanelToggle").isHidden(),true);
+    await page.locator("#map .pin-icon").first().click();
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#deletePin").isVisible(),true);
     assert.equal(await page.locator("#cancelPin").count(),0);
     const footerIds=["movePin","pinLayerTrigger","pinUrlButton","pinWikipedia","pinWeather","closePin"];
