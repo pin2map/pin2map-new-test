@@ -4,6 +4,15 @@ const {ActiveCarRoute}=require("../domain/active-car-route.js");
 const {CarRouteSession}=require("../application/car-route-session.js");
 const {routeUrl}=require("../application/apple-maps-links.js");
 
+test("Car route DOM/map modules expose actual constructors through the same APIs used by app.js",()=>{
+ const app=require("node:fs").readFileSync(require("node:path").join(__dirname,"..","app.js"),"utf8");
+ const map=require("../ui/car-route-map-view.js");
+ const panel=require("../ui/car-route-panel.js");
+ assert.equal(typeof map.CarRouteMapView,"function");
+ assert.equal(typeof panel.CarRoutePanel,"function");
+ assert.match(app,/new window\.Pin2MapCarRouteMapView\.CarRouteMapView\(/);
+ assert.match(app,/new window\.Pin2MapCarRoutePanel\.CarRoutePanel\(/);
+});
 test("Auto: start, goal and exactly visited pin waypoints; same pin roundtrip allowed",()=>{
  const plan=new ActiveCarRoute();
  plan.setEndpoint("start","a");assert.equal(plan.ready(),false);
