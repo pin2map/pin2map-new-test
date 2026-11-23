@@ -294,3 +294,92 @@ jobs:
           console.log('GEOMETRY_LATENCY_INFO '+JSON.stringify({successful:samples.length,failed:failures.length,note:'Both carry full drawable polyline; remaining payload shapes/hosting/network remain provider dependent'}));
           if(failures.length)process.exitCode=1;
           JS
+
+      - name: Full slow vehicle pipeline and per-road-category time trial
+        shell: bash
+        run: |
+          node <<'JS'
+          const routes=[
+            ['STUTTGART-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['BERLIN-CITY',[52.517037,13.388860],[52.529407,13.397634]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]]
+          ];
+          // Deliberately illustrative, NOT approved real vehicle or legal road profile.
+          const limits={motorway:90,rural:70,urban:35,unpaved:25};
+          const fmt=x=>Math.round(x*10)/10;
+          const UA='pin2map-routing-feasibility-test/0.6 (https://github.com/pin2map/pin2map-new-test)';
+          const fetchData=async(url,opt={})=>{
+            const response=await fetch(url,{...opt,headers:{'User-Agent':UA,Accept:'application/json',...(opt.headers||{})},signal:AbortSignal.timeout(35000)});
+            const text=await response.text();
+            if(!response.ok)throw Error('HTTP '+response.status+' '+text.slice(0,220));
+            return JSON.parse(text);
+          };
+          const classify=edge=>{
+            const c=String(edge.road_class||'').toLowerCase();
+            const use=String(edge.use||'').toLowerCase();
+            const surface=String(edge.surface||'').toLowerCase();
+            if(/unpaved|gravel|dirt|ground|compacted/.test(surface))return 'unpaved';
+            if(/motorway|trunk/.test(c)||use==='ramp')return 'motorway';
+            if(/residential|service|living_street/.test(c)||/residential|living_street/.test(use))return 'urban';
+            if(/primary|secondary|tertiary|unclassified/.test(c))return 'rural';
+            return 'urban';
+          };
+          const summarise=edges=>{
+            let metres=0,sec=0,unknown=0,counts={motorway:0,rural:0,urban:0,unpaved:0};
+            let capped=0,legal=0;
+            for(const e of edges){
+              const km=Number(e.length),model=Number(e.speed),posted=Number(e.speed_limit);
+              if(!(km>0&&model>0)){unknown++;continue;}
+              const type=classify(e);
+              let chosen=Math.min(model,limits[type]);
+              if(posted>0)chosen=Math.min(chosen,posted);
+              if(chosen<model)capped++;
+              if(posted>0)legal++;
+              const kmActual=km;metres+=kmActual;counts[type]+=kmActual;
+              sec+=3600*kmActual/chosen;
+            }
+            return {km:fmt(metres),minutes:fmt(sec/60),edgeCount:edges.length,validLimitEdges:legal,unknownEdges:unknown,cappedEdges:capped,classKm:Object.fromEntries(Object.entries(counts).map(([k,v])=>[k,fmt(v)])),note:'Naive sum of edge length/min(model, illustrative cap, posted limit); excludes turns, congestion and calibrations'};
+          };
+          const samples=[],failures=[];
+          for(const [name,a,b] of routes){
+            for(const provider of ['OSRM+VALHALLA_TRACE','VALHALLA_TOP_SPEED_90']){
+              try{
+                const begin=performance.now();
+                let routeKm,routeMin,shape,stage1Ms,shapeMatch,source;
+                if(provider==='OSRM+VALHALLA_TRACE'){
+                  const url='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?overview=full&geometries=polyline6&alternatives=false&steps=false';
+                  const d=await fetchData(url);
+                  if(d.code!=='Ok'||!d.routes?.[0]?.geometry)throw Error('OSRM has no polyline');
+                  routeKm=d.routes[0].distance/1000;routeMin=d.routes[0].duration/60;
+                  shape=d.routes[0].geometry;
+                  shapeMatch='map_snap';
+                  // OSRM is requesting polyline6; Valhalla also uses polyline6.
+                  source='OSRM polyline6 → Valhalla map_snap (might not preserve same route)';
+                }else{
+                  const u=new URL('https://valhalla1.openstreetmap.de/route');
+                  u.searchParams.set('json',JSON.stringify({locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',costing_options:{auto:{top_speed:90}},units:'kilometers',directions_type:'none'}));
+                  const d=await fetchData(u);
+                  if(!d.trip?.legs?.length)throw Error('Valhalla has no route shape');
+                  routeKm=d.trip.summary.length;routeMin=d.trip.summary.time/60;
+                  shape=d.trip.legs[0].shape;shapeMatch='edge_walk';source='Valhalla 90 km/h route edge_walk';
+                }
+                stage1Ms=fmt(performance.now()-begin);
+                const body={encoded_polyline:shape,shape_match:shapeMatch,costing:'auto',filters:{action:'include',attributes:['edge.length','edge.speed','edge.speed_limit','edge.road_class','edge.surface','edge.use']}};
+                const detail=await fetchData('https://valhalla1.openstreetmap.de/trace_attributes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                const edges=detail.edges||[];
+                if(!edges.length)throw Error('no trace edges');
+                const stat=summarise(edges);
+                const geometryDiscrepancy=fmt(Math.abs(stat.km-routeKm)/routeKm*100);
+                const totalMs=fmt(performance.now()-begin);
+                const result={name,provider,source,routeKm:fmt(routeKm),routeMin:fmt(routeMin),firstStageMs:stage1Ms,traceStageMs:fmt(totalMs-stage1Ms),totalMs,geometryDiscrepancyPct:geometryDiscrepancy,illustrativeVehicle:limits,estimate:stat};
+                console.log('VEHICLE_PIPELINE '+JSON.stringify(result));samples.push(result);
+                if(geometryDiscrepancy>6)console.log('VEHICLE_TRACE_MISMATCH '+JSON.stringify({name,provider,geometryDiscrepancyPct:geometryDiscrepancy,note:'Reject as faithful edge match; do not use to rank providers'}));
+              }catch(e){
+                console.error('VEHICLE_PIPELINE_FAIL '+JSON.stringify({name,provider,error:e.message}));
+                failures.push({name,provider,error:e.message});
+              }
+            }
+          }
+          console.log('VEHICLE_PIPELINE_INFO '+JSON.stringify({success:samples.length,failed:failures.length,profileStatus:'illustrative only, not authorized product configuration',limitation:'No reliable turn delays, trace validation, actual traffic, full road-type mapping, or production SLA. One public Valhalla trace request per route.'}));
+          if(failures.length)process.exitCode=1;
+          JS
