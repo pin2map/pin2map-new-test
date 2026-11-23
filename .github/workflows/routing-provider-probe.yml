@@ -502,8 +502,8 @@ jobs:
             if(data.code!=='Ok'||!data.routes?.[0])throw Error('no route');
             return {data,ms:rnd(performance.now()-start,1),bytes:Buffer.byteLength(raw)};
           };
-          const highwayName=n=>/(?:^|[ /,])(A\\s?\\d{1,3})(?:$|[ /,])/i.test(n||'');
-          const clearlyOther=n=>/(?:^|[ /,])(B\\s?\\d{1,4})(?:$|[ /,])/i.test(n||'');
+          const highwayName=n=>/(?:^|[ /,])(A\s?\d{1,3})(?:$|[ /,])/i.test(n||'');
+          const clearlyOther=n=>/(?:^|[ /,])(B\s?\d{1,4})(?:$|[ /,])/i.test(n||'');
           let failures=0;
           for(const [label,a,b] of cases){
             try{
@@ -535,6 +535,8 @@ jobs:
               if(label.includes('CITY')&&result.motorwayCandidateKm>0.1)console.log('R015_CITY_REVIEW_REQUIRED '+label);
             }catch(error){failures++;console.error('R015_OSRM_FAILURE '+label+' '+error.message);}
           }
+          const spot=cases.map(x=>x[0]);
+          if(!highwayName('A 7')||!highwayName('A81')||highwayName('B 444')||!clearlyOther('B 444'))throw Error('R015 REGEX SELF-TEST FAILED');
           console.log('R015_TEST_INFO '+JSON.stringify({failed:failures,numberOfCases:cases.length,requestCount:cases.length,noExtraProviderCalls:true,profileRequiresRouteChange:false,classificationStatus:'not proven sufficient'}));
           if(failures)process.exitCode=1;
           JS
