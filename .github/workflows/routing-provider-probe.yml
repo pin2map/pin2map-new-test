@@ -636,3 +636,54 @@ jobs:
           console.log('R017_CONCLUSION '+JSON.stringify({verifiedBaselines,graphhopperRoadClassLiveVerified:!!details.road_class,orsWaytypeLiveVerified:!!ors.data?.features?.[0]?.properties?.extras?.waytype,providerStatus:'public authentication constraints distinguished from feature design',performanceComparisonValid:false}));
           if(verifiedBaselines!==4)process.exitCode=1;
           JS
+
+      - name: R-019 live France highway and toll option availability
+        shell: bash
+        run: |
+          node <<'JS'
+          const cases=[
+            ['FR-STRASBOURG-LYON',[48.5734,7.7521],[45.7640,4.8357]],
+            ['FR-PARIS-REIMS',[48.8566,2.3522],[49.2583,4.0317]],
+            ['DE-STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]]
+          ];
+          const osrmModes=['default','exclude=motorway','exclude=toll'];
+          const valhallaModes=[
+            ['default',{}],
+            ['prefer_highways',{use_highways:1}],
+            ['avoid_highways',{use_highways:0}],
+            ['avoid_tolls',{use_tolls:0}],
+            ['exclude_highways',{exclude_highways:true}],
+            ['exclude_tolls',{exclude_tolls:true}]
+          ];
+          const round=x=>Math.round(x*10)/10;
+          const UA='pin2map-routing-exclusion-test/1.0 (https://github.com/pin2map/pin2map-new-test)';
+          async function call(url){
+            const t=performance.now();
+            try{
+              const resp=await fetch(url,{headers:{'User-Agent':UA,'Accept':'application/json'},signal:AbortSignal.timeout(30000)});
+              const raw=await resp.text();let body={};
+              try{body=JSON.parse(raw)}catch{}
+              return {http:resp.status,ms:round(performance.now()-t),body,message:(body.message||body.error||raw.slice(0,140))};
+            }catch(e){return {http:null,ms:round(performance.now()-t),message:e.message};}
+          }
+          let ok=0,blocked=0,errors=0;
+          for(const [name,a,b] of cases){
+            for(const mode of osrmModes){
+              const url='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?overview=false&steps=false&alternatives=false'+(mode==='default'?'':'&'+mode);
+              const r=await call(url),route=r.body?.routes?.[0];
+              const output={case:name,mode,http:r.http,ms:r.ms,code:r.body?.code||null,km:route?round(route.distance/1000):null,min:route?round(route.duration/60):null,error:route?null:String(r.message).slice(0,150)};
+              console.log('R019_OSRM '+JSON.stringify(output));
+              if(mode==='default'&&route)ok++;else if(!route)blocked++;
+            }
+            for(const [mode,opts] of valhallaModes){
+              const req={locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',costing_options:{auto:opts},units:'kilometers',directions_type:'none'};
+              const u=new URL('https://valhalla1.openstreetmap.de/route');u.searchParams.set('json',JSON.stringify(req));
+              const r=await call(u.toString()),summary=r.body?.trip?.summary,trip=r.body?.trip;
+              const out={case:name,mode,http:r.http,ms:r.ms,km:summary?round(summary.length):null,min:summary?round(summary.time/60):null,hasToll:summary?.has_toll??trip?.has_toll??null,hasHighway:summary?.has_highway??trip?.has_highway??null,error:summary?null:String(r.message).slice(0,150)};
+              console.log('R019_VALHALLA '+JSON.stringify(out));
+              if(summary)ok++;else {errors++;console.log('R019_VALHALLA_UNAVAILABLE '+JSON.stringify({case:name,mode,reason:out.error}));}
+            }
+          }
+          console.log('R019_TEST_INFO '+JSON.stringify({successfulRoutes:ok,osrmRejectedOrUnavailable:blocked,valhallaErrors:errors,notes:'No key/no own server; single samples, no geographic overlap proof, preference != hard exclusion, paid toll detection relies on OSM; demo policies not proven for production.'}));
+          if(ok<3)process.exitCode=1;
+          JS
