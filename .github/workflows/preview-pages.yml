@@ -102,13 +102,16 @@ jobs:
         run: |
           python3 preview-source/scripts/preview-bundle.py preview-source site-root/preview
 
-      - name: Publish only the explicitly isolated routing comparison page
+      - name: Publish standalone route comparison outside the Preview PWA worker scope
         run: |
-          # Not part of the PWA CORE or service-worker cache; cannot access project storage.
-          cp preview-source/routing-compare.html site-root/preview/routing-compare.html
-          cp preview-source/routing-compare.js site-root/preview/routing-compare.js
-          node --check site-root/preview/routing-compare.js
-          test -s site-root/preview/routing-compare.html
+          # Sibling to /preview/: installed Preview SW must not intercept or open the main app.
+          # The separate page has no service-worker registration and no project storage access.
+          mkdir -p site-root/route-lab
+          cp preview-source/routing-compare.html site-root/route-lab/index.html
+          cp preview-source/routing-compare.js site-root/route-lab/routing-compare.js
+          node --check site-root/route-lab/routing-compare.js
+          test -s site-root/route-lab/index.html
+          test ! -e site-root/preview/routing-compare.html
 
       - name: Assert Preview allowlist excludes historical experiments
         run: |
@@ -301,8 +304,6 @@ jobs:
               "ui/search-results.js": ("javascript", "results-footer"),
               "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
               "sw.js": ("javascript", expected_version),
-              "routing-compare.html": ("text/html", "Routenvergleich"),
-              "routing-compare.js": ("javascript", "Independent route comparison"),
           }
           # Compare both canonical and cache-busted entrypoints: GitHub Pages
           # must serve the same release even if clients have visited /preview/
@@ -342,6 +343,22 @@ jobs:
               if attempt == 12:
                   raise SystemExit("FAIL: published preview assets are missing or mismatched")
               time.sleep(10)
+          PY
+
+      - name: Verify delivered route lab outside installed Preview worker scope over HTTPS
+        run: |
+          python3 - <<'PY'
+          import urllib.request, hashlib
+          from pathlib import Path
+          base="https://pin2map.github.io/pin2map-new-test/route-lab/"
+          for file, source in (("index.html",Path("preview-source/routing-compare.html")),
+                               ("routing-compare.js",Path("preview-source/routing-compare.js"))):
+              req=urllib.request.Request(base+file+"?check=route-lab-v1",headers={"Cache-Control":"no-cache"})
+              with urllib.request.urlopen(req,timeout=20) as response:
+                  actual=response.read()
+                  assert response.status==200
+              assert hashlib.sha256(actual).digest()==hashlib.sha256(source.read_bytes()).digest(), "Mismatch: "+file
+              print("PASS live route lab",file)
           PY
 
       - name: Use runner Chrome for published-site regression
