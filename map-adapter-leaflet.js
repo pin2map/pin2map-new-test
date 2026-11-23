@@ -27,6 +27,10 @@
       if (!map || typeof map.getCenter !== "function") throw new TypeError("Leaflet map required");
       this.map = map;
     }
+    containsPoint(point){
+      const p=latLng(point);
+      return Number.isFinite(p.lat)&&Number.isFinite(p.lng)&&this.map.getBounds().contains([p.lat,p.lng]);
+    }
     getViewport() {
       const center=this.map.getCenter();
       return {center:{lat:center.lat,lng:center.lng},zoom:this.map.getZoom()};
