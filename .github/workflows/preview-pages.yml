@@ -301,6 +301,8 @@ jobs:
               "ui/search-results.js": ("javascript", "results-footer"),
               "ui/pwa-refresh.js": ("javascript", "const api=Object.freeze"),
               "sw.js": ("javascript", expected_version),
+              "routing-compare.html": ("text/html", "Routenvergleich"),
+              "routing-compare.js": ("javascript", "Independent route comparison"),
           }
           # Compare both canonical and cache-busted entrypoints: GitHub Pages
           # must serve the same release even if clients have visited /preview/
@@ -444,6 +446,10 @@ jobs:
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/geometry-layer-webkit-regression.cjs
+      - name: REQUIRED published routing comparison: four routes, overlay and evaluation in both browsers
+        env:
+          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
+        run: node tests/routing-compare-browser.cjs
       - name: REQUIRED published search chooser geometry in WebKit and Chromium
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
