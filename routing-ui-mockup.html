@@ -98,6 +98,21 @@ fieldset{margin:0;border:2px solid #c7d2de;border-radius:20px;min-width:0;paddin
  .choice{font-size:10px}
  .actions{grid-template-columns:minmax(81px,1fr) minmax(70px,1fr) minmax(70px,1fr)}
 }
+@media(max-width:600px){
+ .compact-line{grid-template-columns:66px minmax(0,1fr)}
+ .options-line{grid-template-columns:minmax(0,1fr) 76px;gap:5px}
+ .toll-button{width:76px;font-size:10px}
+ .radio-frame{gap:2px;padding:2px}
+ .choice{font-size:10px;letter-spacing:-.25px;gap:1px}
+ .choice input{width:12px;height:12px}
+ .actions{grid-template-columns:minmax(0,.82fr) minmax(0,1fr) minmax(0,1fr)}
+}
+@media(max-width:360px){
+ .options-line{overflow:visible;grid-template-columns:minmax(0,1fr) 72px}
+ .toll-button{width:72px}
+ .radio-frame{gap:1px}
+ .choice{font-size:9px;letter-spacing:-.45px}
+}
 </style></head>
 <body><div class="map"><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-place">Bremerhaven</div><div class="map-pin"></div><svg id="demoLine" class="demo-line" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true" hidden><path d="M 480 790 C 280 665 710 550 400 430 S 700 160 560 55"/></svg>
 <header class="lab-bar"><strong>pin2map · Routing UI-Labor</strong><label for="entry">Einstieg:</label><select id="entry"><option value="start">Pin als Start</option><option value="target">Pin als Ziel</option><option value="edit">Klick auf Routenlinie</option></select><small>Nur Prototyp · Beispieldaten</small></header>
