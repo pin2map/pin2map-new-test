@@ -897,11 +897,11 @@
     routingCore.register("car",new window.Pin2MapCarRouting.CarRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
     const routePinById=id=>pinOps.findPin(state,id);
-    routeMapView=new window.Pin2MapCarRouteMapView({
+    routeMapView=new window.Pin2MapCarRouteMapView.CarRouteMapView({
       mapPort:mapAdapter,getPin:routePinById,
       onLineClick:index=>routePanel?.focusLeg(index)
     });
-    routePanel=new window.Pin2MapCarRoutePanel({
+    routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onEnd:()=>{routeSession.clear();renderPinPanel();},
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
