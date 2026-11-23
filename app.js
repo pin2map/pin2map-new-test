@@ -905,8 +905,12 @@
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onEnd:()=>{routeSession.clear();renderPinPanel();},
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
-      onAll:()=>{const n=routeSession.addVisible(markerView.visiblePins().map(pin=>pin.id));
-        showNotice(n?n+" sichtbare Pins als Zwischenziele übernommen.":"Keine neuen sichtbaren Zwischenziele.");},
+      onAll:()=>{
+        const pins=markerView.visiblePins().filter(pin=>mapAdapter.containsPoint(pin));
+        const result=routeSession.toggleVisible(pins.map(pin=>pin.id));
+        showNotice(result.active?result.count+" sichtbare Pins als Zwischenziele übernommen.":
+          "ALL aus: direkte Route ohne Zwischenziele.");
+      },
       onOptions:opts=>{try{routeSession.options(opts);}catch(e){showNotice(String(e.message));}},
       onToggle:()=>{
         const current=routeSession.snapshot();
