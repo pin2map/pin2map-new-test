@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v330';
+const CACHE='pin2map-new-v331';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -12,6 +12,7 @@ const CORE=[
   "./assets/lake.svg",
   "./assets/river.svg",
   "./domain/project-model.js",
+  "./domain/active-car-route.js",
   "./domain/project-features.js",
   "./domain/area-geometry.js",
   "./domain/area-label-anchor.js",
@@ -40,6 +41,9 @@ const CORE=[
   "./application/layer-creation.js",
   "./application/pin-move-controller.js",
   "./application/map-click-coordinator.js",
+  "./application/routing-service.js",
+  "./application/car-route-session.js",
+  "./adapters/routing/car-routing-provider.js",
   "./domain/place-search.js",
   "./domain/license-plate-data-dach.js",
   "./domain/license-plate-data-europe.js",
@@ -95,6 +99,8 @@ const CORE=[
   "./ui/temporary-layer-picker.js",
   "./ui/gps-location.js",
   "./ui/map-action-chooser.js",
+  "./ui/car-route-map-view.js",
+  "./ui/car-route-panel.js",
   "./ui/geometry-editor.js",
   "./ui/ui-state.js",
   "./ui/pin-editor.js",
