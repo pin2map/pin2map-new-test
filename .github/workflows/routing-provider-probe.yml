@@ -77,3 +77,75 @@ jobs:
             await compare('BERLIN-OSRM-EXAMPLE-2-TO-3',berlin2,berlin3);
           }catch(error){console.error('BLOCKED '+error.message);process.exitCode=1;}
           JS
+
+      - name: Inspect named streets and routing model speeds (four comparison routes)
+        shell: bash
+        run: |
+          node <<'JS'
+          const UA='pin2map-routing-feasibility-test/0.2 (https://github.com/pin2map/pin2map-new-test)';
+          const cases=[
+            ['STUTTGART-INNER-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['STUTTGART-TO-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['BERLIN-OSRM-EXAMPLE-1-TO-2',[52.517037,13.388860],[52.529407,13.397634]],
+            ['BERLIN-OSRM-EXAMPLE-2-TO-3',[52.529407,13.397634],[52.523219,13.428555]]
+          ];
+          const rnd=(n,d=1)=>Number(Number(n).toFixed(d));
+          const speed=(m,t)=>t>0?m*3.6/t:0;
+          async function request(u,opt={}){
+            const r=await fetch(u,{...opt,headers:{'User-Agent':UA,Accept:'application/json',...(opt.headers||{})},signal:AbortSignal.timeout(25000)});
+            if(!r.ok)throw Error('HTTP '+r.status+' '+(await r.text()).slice(0,250));
+            return r.json();
+          }
+          function roads(items,valhalla=false){
+            const m=new Map(),ordered=[];
+            for(const s of items){
+              const name=String(valhalla?(s.street_names?.join('/')||'(unnamed)'):(s.name||'(unnamed)'));
+              const meters=valhalla?(s.length||0)*1000:(s.distance||0);
+              const seconds=valhalla?(s.time||0):(s.duration||0);
+              if(meters<5)continue;
+              if(ordered.at(-1)!==name)ordered.push(name);
+              const x=m.get(name)||{name,meters:0,seconds:0};
+              x.meters+=meters;x.seconds+=seconds;m.set(name,x);
+            }
+            return {ordered:ordered.slice(0,24),longest:[...m.values()].sort((a,b)=>b.meters-a.meters).slice(0,12).map(x=>({name:x.name,km:rnd(x.meters/1000,2),min:rnd(x.seconds/60,2),computedKmh:rnd(speed(x.meters,x.seconds))}))};
+          }
+          function speeds(annotation){
+            if(!annotation?.distance?.length||!annotation.duration)return {unavailable:true};
+            const buckets={'<20':0,'20-39':0,'40-59':0,'60-89':0,'90-119':0,'120+':0};
+            let metres=0,seconds=0;
+            annotation.distance.forEach((d,i)=>{
+              const t=annotation.duration[i];
+              if(!(d>0&&t>0))return;
+              const v=speed(d,t),key=v<20?'<20':v<40?'20-39':v<60?'40-59':v<90?'60-89':v<120?'90-119':'120+';
+              buckets[key]+=d;metres+=d;seconds+=t;
+            });
+            return {segments:annotation.distance.length,km:rnd(metres/1000,2),modelAverageKmh:rnd(speed(metres,seconds)),kmByModelSpeed:Object.fromEntries(Object.entries(buckets).map(([k,v])=>[k,rnd(v/1000,2)])),sources:annotation.datasource_names||[]};
+          }
+          let failures=0;
+          for(const [label,a,b] of cases){
+            try{
+              const u='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?alternatives=false&steps=true&annotations=distance,duration,speed,datasources&overview=false';
+              const d=await request(u);
+              if(d.code!=='Ok'||!d.routes?.length)throw Error('route unavailable');
+              const x=d.routes[0];
+              console.log('STREET_OSRM',label,JSON.stringify({km:rnd(x.distance/1000,2),minutes:rnd(x.duration/60,2),streets:roads(x.legs.flatMap(l=>l.steps||[])),speedModels:x.legs.map(l=>speeds(l.annotation)),caution:'annotation speeds are distance/duration model speeds, not legal speed limits; turns may affect maneuver durations'}));
+            }catch(e){failures++;console.error('STREET_FAIL_OSRM',label,e.message);}
+            try{
+              const u=new URL('https://valhalla1.openstreetmap.de/route');
+              u.searchParams.set('json',JSON.stringify({locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',alternates:0,units:'kilometers',directions_type:'instructions'}));
+              const d=await request(u);
+              if(!d.trip?.summary||!d.trip.legs?.length)throw Error('trip unavailable');
+              const trip=d.trip,legs=trip.legs;
+              console.log('STREET_VALHALLA',label,JSON.stringify({km:rnd(trip.summary.length,2),minutes:rnd(trip.summary.time/60,2),streets:roads(legs.flatMap(l=>l.maneuvers||[]),true),caution:'maneuver speeds are inferred from length/time and not legal speed limits'}));
+              if(label==='STUTTGART-INNER-CITY'||label.startsWith('BERLIN')){
+                try{
+                  const body={encoded_polyline:legs[0].shape,shape_match:'edge_walk',costing:'auto',filters:{action:'include',attributes:['edge.names','edge.length','edge.speed','edge.speed_limit','edge.road_class','edge.begin_shape_index','edge.end_shape_index','shape_attributes.speed_limit']}};
+                  const trace=await request('https://valhalla1.openstreetmap.de/trace_attributes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                  const edges=trace.edges||[];
+                  console.log('EDGE_VALHALLA',label,JSON.stringify({edgeCount:edges.length,modelSpeedCount:edges.filter(x=>typeof x.speed==='number').length,postedLimitCount:edges.filter(x=>typeof x.speed_limit==='number'&&x.speed_limit>0).length,first:edges.slice(0,12).map(x=>({name:x.names,km:x.length,speed:x.speed,speedLimit:x.speed_limit,roadClass:x.road_class}))}));
+                }catch(e){console.log('EDGE_VALHALLA_NOT_AVAILABLE',label,e.message.slice(0,250));}
+              }
+            }catch(e){failures++;console.error('STREET_FAIL_VALHALLA',label,e.message);}
+          }
+          if(failures){console.error('STREET_PROBE_FAILED',failures);process.exitCode=1;}
+          JS
