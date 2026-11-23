@@ -1,0 +1,30 @@
+name: Route Lab live browser comparison (isolated)
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - '.github/workflows/route-lab-live-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-route-lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/leaflet-modular-core
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install Chromium and WebKit
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install chromium webkit
+      - name: Run real published Schwarzwald and Jura profile comparison
+        env:
+          PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
+        run: node tests/routing-compare-browser.cjs
