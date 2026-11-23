@@ -213,6 +213,19 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Stadt–Land-Test:** Bodelschwinghstraße 64, Stuttgart (identischer exakt geokodierter Start wie R-006) → Hölderlinstraße 12, Groß Lafferde. Die Zieladresse wird via Nominatim mit Straßenname + Hausnummer validiert; ohne exakten Treffer darf keine Ersatzkoordinate als erfolgreiche Prüfung ausgegeben werden. Beide Provider erhalten identische Koordinaten. Ergebnisvergleich mit Distanz, berechneter Fahrzeit und angebotenen Alternativen, keine Behauptung realer Straßenfahrzeiten.
 
+
+**Live-Testnachweis für R-007 (23.11.2026):** GitHub Actions [Routing provider feasibility probe, Run 45089332357](https://github.com/pin2map/pin2map-new-test/actions/runs/45089332357), Commit `3a78e3649320b91d5bcc899b1d873b763a4f8f06`, Job `compare` **completed/success**. Exakte Nominatim-Adressauflösung für Stuttgart 48.7452823/9.1604151 und Groß Lafferde 52.2308763/10.2462993 bestätigt. Beide Provider wurden mit exakt gleichen Koordinaten abgefragt.
+
+| Test, jeweils erste zurückgelieferte Route | OSRM | Valhalla |
+| --- | --- | --- |
+| Stuttgart Bodelschwinghstr. 64 → Groß Lafferde Hölderlinstr. 12 | 514,5 km · 309,2 min | 518,3 km · 321,9 min |
+| Berlin 52.517037/13.388860 → 52.529407/13.397634 | 1,9 km · 4,3 min | 1,9 km · 4,4 min |
+| Berlin 52.529407/13.397634 → 52.523219/13.428555 | 2,8 km · 6,2 min | 2,9 km · 7,1 min |
+
+**Lieferung zusätzlicher Alternativen (keine Qualitätsfreigabe):** Stuttgart–Groß Lafferde OSRM 516,9 km/311,2 min, Valhalla 516,2 km/319,9 min und 548,8 km/340,4 min. Berlin 1→2 OSRM nur eine Route, Valhalla zusätzlich 2,7 km/6,6 min und 3,6 km/8,5 min. Berlin 2→3 OSRM zusätzlich 3,3 km/6,8 min; Valhalla zusätzlich 3,7 km/8,9 min und 4,3 km/10,6 min. **Wichtig:** Valhallas erste Route ist nicht immer die kürzeste oder schnellste von Valhalla selbst gelieferte; Ranking darf nicht ungeprüft übernommen werden.
+
+**Grenzen:** bislang nur Geokodierung sowie Distanz-/Zeitkennwerte; weder reale Straßensegmente und Geschwindigkeitsklassen noch Ampeln, Abbiegebeschränkungen, Verkehrs-/Staudaten oder reale Vergleichsfahrten verifiziert. Es gibt **noch keinen Beleg**, welcher Anbieter die realistischste Straßenfahrzeit liefert. Ein Testaufruf über freie Demo-Endpunkte ist kein nachgewiesenes produktives Nutzungskontingent. Keine Entscheidung für einen Provider.
+
 **Schutzgrenze:** Nur isolierter GitHub-Actions-Test und Fach-/Statusdokumentation; PWA-Routing nicht aktiviert, keine Daten- oder Cacheänderungen. Provider-/Produktentscheidung weiterhin offen.
 
 
