@@ -36,6 +36,20 @@ test("Auto: multi visible pins and fixed order; controls never create fictional 
  assert.equal(plan.removeWaypoint("c"),true);
  assert.deepEqual(plan.ids(),["a","b","z"]);
 });
+test("ALL toggles exactly the selected hard pins on and back off, without map or route-provider access",()=>{
+ const plan=new ActiveCarRoute();plan.setEndpoint("start","a");plan.setEndpoint("target","z");
+ const session=new CarRouteSession({plan,getPin:id=>({id,lat:50,lng:10}),
+  calculate:async()=>({geometry:{type:"LineString",coordinates:[[10,50],[11,51]]},distanceMeters:100,durationSeconds:50}),
+  onChange:()=>{},onError:()=>{}});
+ assert.deepEqual(session.toggleVisible(["a","b","c","z"]),{active:true,count:2});
+ assert.deepEqual(session.snapshot().waypointIds,["b","c"]);
+ assert.equal(session.snapshot().allVisibleActive,true);
+ assert.deepEqual(session.toggleVisible([]),{active:false,count:0});
+ assert.deepEqual(session.snapshot().waypointIds,[]);
+ assert.equal(session.snapshot().allVisibleActive,false);
+ session.clear();
+ assert.equal(session.snapshot().ready,false);
+});
 test("Auto: sequential legs keep original distance and time, route colors may vary",async()=>{
  const pin=id=>({id,lat:50,lng:10,name:id});
  const plan=new ActiveCarRoute();const published=[],calls=[];
