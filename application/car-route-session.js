@@ -8,14 +8,14 @@
   constructor({plan,calculate,getPin,onChange,onError}){
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
    Object.assign(this,{plan,calculate,getPin,onChange,onError});
-   this.generation=0;this.pending=null;this.legs=[];this.loading=false;
+   this.generation=0;this.pending=null;this.legs=[];this.loading=false;this.allVisibleActive=false;
   }
-  snapshot(){return {...this.plan.snapshot(),legs:this.legs.slice(),loading:this.loading,
+  snapshot(){return {...this.plan.snapshot(),allVisibleActive:this.allVisibleActive,legs:this.legs.slice(),loading:this.loading,
    distanceMeters:this.legs.reduce((s,l)=>s+l.distanceMeters,0),
    durationSeconds:this.legs.reduce((s,l)=>s+l.durationSeconds,0)};}
   publish(){this.onChange(this.snapshot());}
   cancel(){this.generation++;this.pending?.abort();this.pending=null;this.loading=false;}
-  clear(){this.cancel();this.plan.reset();this.legs=[];this.publish();}
+  clear(){this.cancel();this.plan.reset();this.legs=[];this.allVisibleActive=false;this.publish();}
   async recalculate(){
    this.cancel();this.legs=[];const ids=this.plan.ids();
    if(!ids.length){this.publish();return;}
@@ -42,9 +42,20 @@
    }
   }
   endpoint(kind,id){this.plan.setEndpoint(kind,id);void this.recalculate();}
-  waypoint(id){if(this.plan.addWaypoint(id))void this.recalculate();else this.publish();}
+  waypoint(id){if(this.plan.addWaypoint(id)){this.allVisibleActive=false;void this.recalculate();}else this.publish();}
   removeWaypoint(id){if(this.plan.removeWaypoint(id))void this.recalculate();}
   addVisible(ids){const n=this.plan.addVisible(ids);if(n)void this.recalculate();return n;}
+  toggleVisible(ids){
+   if(!this.plan.ready())return {active:false,count:0};
+   if(this.allVisibleActive){
+    this.allVisibleActive=false;this.plan.waypointIds=[];
+    void this.recalculate();return {active:false,count:0};
+   }
+   const n=this.plan.addVisible(ids);
+   if(!n){this.publish();return {active:false,count:0};}
+   this.allVisibleActive=true;void this.recalculate();
+   return {active:true,count:n};
+  }
   reverse(){if(!this.plan.ready())return;this.plan.reverse();void this.recalculate();}
   options(options){this.plan.setOptions(options);void this.recalculate();}
  }
