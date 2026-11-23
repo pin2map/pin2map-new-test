@@ -442,6 +442,40 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Bestand:** Rein fachliche Dokumentation, kein Code und keine neue PWA-Veröffentlichung; v330 unverändert.
 
+
+### R-019 – Live-Vergleich autobahn-/mautvermeidender Autorouten ohne API-Schlüssel (23.11.2026)
+
+**Status: Isolierter öffentlicher API-Funktionstest erfolgreich; keine Produktions-Provider- oder UI-Freigabe.** Auftraggeber bestätigt Prüfung der in R-018 offenen Frage. Gültige Infrastrukturgrenze: **kein API-Schlüssel, kein eigener Server**; persönliche Korrekturfaktoren dürfen Auto-Routengeometrie nicht verändern.
+
+**Verifizierter Teststand:** `.github/workflows/routing-provider-probe.yml` auf Commit `ced0333afd4fdb99f2ae47b84e8afb6f2500c18f`; [Provider-Live-Run 45148430592](https://github.com/pin2map/pin2map-new-test/actions/runs/45148430592), **success**. Je drei Routensets (Straßburg→Lyon, Paris→Reims, Stuttgart→Groß Lafferde) mit OSRM `default`, `exclude=motorway`, `exclude=toll` sowie Valhalla `default`, `use_highways=1`, `use_highways=0`, `use_tolls=0`, `exclude_highways=true`, `exclude_tolls=true`. Keine Schlüssel oder eigener Server. 27 Variantenaufrufe: OSRM 3 Standardrouten HTTP 200/`Ok`, **sechs Ausschlussanfragen HTTP 400 `InvalidValue` und `Exclude flag combination is not supported.`**; Valhalla 18/18 Varianten HTTP 200 mit Routen und `trip.summary.has_toll` und `trip.summary.has_highway`.
+
+| Teststrecke und Anbieter-Option | km | Minuten | Valhalla `has_toll` | `has_highway` |
+| --- | ---: | ---: | --- | --- |
+| Frankreich Straßburg–Lyon OSRM Standard | 489,5 | 309,6 | nicht angegeben | nicht angegeben |
+| Frankreich Straßburg–Lyon Valhalla Standard | 493,4 | 297,2 | true | true |
+| Frankreich Straßburg–Lyon Valhalla `use_highways=0` | 529,9 | 631,6 | false | false |
+| Frankreich Straßburg–Lyon Valhalla `exclude_highways=true` | 477,4 | 499,6 | false | false |
+| Frankreich Straßburg–Lyon Valhalla `use_tolls=0` | 478,1 | 450,8 | false | true |
+| Frankreich Straßburg–Lyon Valhalla `exclude_tolls=true` | 478,1 | 450,8 | false | true |
+| Frankreich Paris–Reims OSRM Standard | 144,1 | 101,4 | nicht angegeben | nicht angegeben |
+| Frankreich Paris–Reims Valhalla Standard | 144,0 | 111,4 | true | true |
+| Frankreich Paris–Reims Valhalla `use_highways=0` | 165,7 | 262,8 | false | false |
+| Frankreich Paris–Reims Valhalla `exclude_highways=true` | 162,6 | 211,4 | false | false |
+| Frankreich Paris–Reims Valhalla `use_tolls=0` | 165,2 | 178,1 | false | true |
+| Frankreich Paris–Reims Valhalla `exclude_tolls=true` | 165,2 | 178,1 | false | true |
+| Deutschland Stuttgart–Groß Lafferde OSRM Standard | 514,5 | 309,2 | nicht angegeben | nicht angegeben |
+| Deutschland Stuttgart–Groß Lafferde Valhalla Standard | 518,3 | 321,9 | false | true |
+| Deutschland Stuttgart–Groß Lafferde Valhalla `use_highways=0` | 633,1 | 717,1 | false | false |
+| Deutschland Stuttgart–Groß Lafferde Valhalla `exclude_highways=true` | 579,9 | 636,7 | false | false |
+| Deutschland Stuttgart–Groß Lafferde Valhalla `use_tolls=0` | 518,3 | 321,9 | false | true |
+| Deutschland Stuttgart–Groß Lafferde Valhalla `exclude_tolls=true` | 518,3 | 321,9 | false | true |
+
+**Weitere Live-Fakten:** `use_highways=1` gab jeweils denselben Verlauf/Entfernung/Fahrzeit wie Valhalla Standard. Antwortzeit der Einzelanfragen auf GitHub-Runner: OSRM Standard 300–450 ms, OSRM-Fehler 94–100 ms (**keine** Routenlatenzen); Valhalla Standard 308–473 ms, die variantenabhängigen Routenaufrufe 452–1252 ms. Keine p95/p99-, Browsertiming- oder Lastgarantie. Die französischen Autobahnen werden von der Routingengine unabhängig von unserer lokalen deutschen A-Namensheuristik erkannt; letztere beeinflusst lediglich nachträgliche persönliche Zeit-Korrekturfaktoren.
+
+**Fachinterpretation:** `use_highways=0` und `use_tolls=0` sind Kostenvorlieben, nicht Garantien. `exclude_highways=true`/`exclude_tolls=true` sind stärkere Ausschlüsse, können in anderen Fällen zu `NoRoute` führen. Der im Vergleich **kürzere** Ausschlussweg (z.B. Straßburg–Lyon 477,4 km vs. 529,9 km bei Präferenz 0) ist wegen unterschiedlicher Kostenfunktionen kein Fehlerbeweis; die Straßenlinien wurden in diesem Test nicht visuell verglichen. `has_toll=false` ist nur die OSM-basierte Modellkennzeichnung, **keine Garantie der tatsächlichen PKW-Mautfreiheit**, keine Euro-Betragsberechnung und keine selbstständige Ermittlung der rechtlich spezifischen Fahrzeugklasse. Für „gemütlich“ ist noch offen, wie die Routenart konkret in Kostenparameter übersetzt wird. Keine automatische Aktivierung von Valhalla in der PWA, solange öffentliche Nutzungsbedingungen und API-Eignung ungeklärt sind.
+
+**Qualitätsgates für den Testcommit `ced0333`:** [Architektur 45148430610](https://github.com/pin2map/pin2map-new-test/actions/runs/45148430610) **success**, [Node und Chromium 45148430646](https://github.com/pin2map/pin2map-new-test/actions/runs/45148430646) **success**, [HTTPS-Preview inklusive Service Worker und Chromium/WebKit vor/nach Auslieferung 45148430604](https://github.com/pin2map/pin2map-new-test/actions/runs/45148430604) **success in Run-Attempt 2**. Im ersten Attempt scheiterte `actions/deploy-pages@v4` **nach erfolgreich hochgeladenem Artifact** beim GitHub-Pages-Artefaktmetadatenabruf (`No artifacts named...`); Ursache war damit eine vorübergehende GitHub-API-/Pages-Artefaktauflösung, **kein Routing- oder PWA-Funktionsfehler**. Gezielt nur fehlgeschlagene Deploymentjobs erneut ausgeführt; WebKit postpublish und HTTPS-Live-Browser danach grün. Bereits vorhandene PWA **v330** unchanged; Routingweiterentwicklung nur isolierte Tests. Reale iOS-Geräteabnahme separat offen.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
