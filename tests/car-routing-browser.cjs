@@ -40,24 +40,27 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    });
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelectorAll(".leaflet-marker-icon.pin-icon").length===3,null,{timeout:20000});
-   // Each click is a real Leaflet marker interaction, never a direct call to a private controller.
+   // The established app deliberately zooms a colliding label group on
+   // the first tap; honor that user interaction instead of calling UI internals.
    const markerAt=index=>page.locator(".leaflet-marker-icon.pin-icon").nth(index);
-   await markerAt(0).click();
-   console.log("ROUTE SEED DIAGNOSTIC",await page.evaluate(()=>({
-    titles:[...document.querySelectorAll(".leaflet-marker-icon.pin-icon")].map(e=>e.getAttribute("title")),
-    labels:[...document.querySelectorAll(".address-label")].map(e=>e.textContent),
-    name:document.getElementById("pinName")?.value,
-    panelHidden:document.getElementById("pinPanel")?.classList.contains("hidden"),
-    scriptModules:[typeof window.Pin2MapCarRoutePanel,typeof window.Pin2MapRouteGuideSession]
-   })));
-   await page.locator("#pinPanel").waitFor({state:"visible",timeout:7000});
-   assert.equal(await page.locator("#pinName").inputValue(),"Stuttgart");
+   async function openPin(index,name){
+    for(let attempt=0;attempt<5;attempt++){
+     const menu=page.locator(".pin-overlap-chooser");
+     if(await menu.isVisible()){
+      const choice=menu.locator(".pin-overlap-choice").filter({hasText:name});
+      if(await choice.count())await choice.first().click();
+      else await markerAt(index).click();
+     }else await markerAt(index).click();
+     if(await page.locator("#pinPanel").isVisible()&&await page.locator("#pinName").inputValue()===name)return;
+     await page.waitForTimeout(120);
+    }
+    throw new Error("Cannot select expected "+name+" through real marker UX");
+   }
+   await openPin(0,"Stuttgart");
    await page.locator("#pinRouteStart").click();
-   await markerAt(1).click();
-   assert.equal(await page.locator("#pinName").inputValue(),"Ulm");
+   await openPin(1,"Ulm");
    await page.locator("#pinRouteWaypoint").click();
-   await markerAt(2).click();
-   assert.equal(await page.locator("#pinName").inputValue(),"München");
+   await openPin(2,"München");
    await page.locator("#pinRouteTarget").click();
    await page.locator("#carRoutePanel").waitFor({state:"visible",timeout:20000});
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2,null,{timeout:20000});
