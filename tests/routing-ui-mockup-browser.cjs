@@ -35,7 +35,10 @@ const URL=process.env.PIN2MAP_MOCKUP_URL||"http://127.0.0.1:8765/routing-ui-mock
     await page.locator("#entry").selectOption("target");
     assert.equal(await page.locator("#destinationLabel").textContent(),"Start:");
     await page.locator("#entry").selectOption("edit");
-    assert.equal(await page.locator("#destinationLabel").textContent(),"Start / Ziel:");
+    assert.equal(await page.locator("#destinationLabel").textContent(),"Ziel:");
+    assert.equal(await page.locator("#editStartRow").isVisible(),true);
+    assert.equal(await page.locator("#editStart").inputValue(),"Bremerhaven");
+    assert.equal(await page.locator("#destination").inputValue(),"Grenoble");
     await page.locator('[data-mode="bicycle"]').click();
     assert.equal(await page.locator("#carOptions").isVisible(),false);
     await page.locator('[data-mode="car"]').click();
