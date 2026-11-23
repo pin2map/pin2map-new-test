@@ -340,6 +340,55 @@ jobs:
             }
             return {km:fmt(metres),minutes:fmt(sec/60),edgeCount:edges.length,validLimitEdges:legal,unknownEdges:unknown,cappedEdges:capped,classKm:Object.fromEntries(Object.entries(counts).map(([k,v])=>[k,fmt(v)])),note:'Naive sum of edge length/min(model, illustrative cap, posted limit); excludes turns, congestion and calibrations'};
           };
+          // The public Valhalla map_snap endpoint rejects paths over 200 km.
+          // Split only the *analysis* geometry, never the underlying OSRM route.
+          const decode6=str=>{
+            const pts=[];let at=0,lat=0,lon=0;
+            while(at<str.length){
+              const read=()=>{let b=0,result=0,shift=0;do{if(at>=str.length)throw Error('invalid polyline');b=str.charCodeAt(at++)-63;result|=(b&31)<<shift;shift+=5;}while(b>=32);return result&1?~(result>>1):(result>>1);};
+              lat+=read();lon+=read();pts.push([lat/1e6,lon/1e6]);
+            }
+            return pts;
+          };
+          const encode6=pts=>{
+            let output='',lat=0,lon=0;
+            const add=n=>{let v=n<0?~(n<<1):(n<<1);while(v>=32){output+=String.fromCharCode((32|(v&31))+63);v>>=5;}output+=String.fromCharCode(v+63);};
+            for(const [a,b] of pts){const x=Math.round(a*1e6),y=Math.round(b*1e6);add(x-lat);add(y-lon);lat=x;lon=y;}
+            return output;
+          };
+          const segmentKm=(a,b)=>{
+            const r=Math.PI/180,p1=a[0]*r,p2=b[0]*r,dp=(b[0]-a[0])*r,dl=(b[1]-a[1])*r;
+            const h=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+            return 12742*Math.asin(Math.min(1,Math.sqrt(h)));
+          };
+          const splitPath=shape=>{
+            const pts=decode6(shape),parts=[];
+            let current=[pts[0]],km=0;
+            for(let i=1;i<pts.length;i++){
+              const add=segmentKm(pts[i-1],pts[i]);km+=add;current.push(pts[i]);
+              if(km>=100&&i<pts.length-1){
+                parts.push(current);current=[pts[i]];km=0;
+              }
+            }
+            if(current.length>1)parts.push(current);
+            return parts.map(part=>{
+              if(part.length<=750)return encode6(part);
+              // Each subsample includes both endpoints; report fidelity separately.
+              const stride=Math.ceil((part.length-1)/749),reduced=part.filter((_,i)=>i%stride===0||i===part.length-1);
+              return encode6(reduced);
+            });
+          };
+          const traceEdges=async(shape,shapeMatch)=>{
+            const parts=shapeMatch==='map_snap'&&decode6(shape).length>2?splitPath(shape):[shape];
+            const all=[];
+            for(const polyline of parts){
+              const body={encoded_polyline:polyline,shape_match:shapeMatch,costing:'auto',filters:{action:'include',attributes:['edge.length','edge.speed','edge.speed_limit','edge.road_class','edge.surface','edge.use']}};
+              const result=await fetchData('https://valhalla1.openstreetmap.de/trace_attributes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+              if(!result.edges?.length)throw Error('no trace edges for part');
+              all.push(...result.edges);
+            }
+            return {edges:all,traceRequests:parts.length};
+          };
           const samples=[],failures=[];
           for(const [name,a,b] of routes){
             for(const provider of ['OSRM+VALHALLA_TRACE','VALHALLA_TOP_SPEED_90']){
@@ -364,14 +413,12 @@ jobs:
                   shape=d.trip.legs[0].shape;shapeMatch='edge_walk';source='Valhalla 90 km/h route edge_walk';
                 }
                 stage1Ms=fmt(performance.now()-begin);
-                const body={encoded_polyline:shape,shape_match:shapeMatch,costing:'auto',filters:{action:'include',attributes:['edge.length','edge.speed','edge.speed_limit','edge.road_class','edge.surface','edge.use']}};
-                const detail=await fetchData('https://valhalla1.openstreetmap.de/trace_attributes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-                const edges=detail.edges||[];
-                if(!edges.length)throw Error('no trace edges');
+                const detail=await traceEdges(shape,shapeMatch);
+                const edges=detail.edges;
                 const stat=summarise(edges);
                 const geometryDiscrepancy=fmt(Math.abs(stat.km-routeKm)/routeKm*100);
                 const totalMs=fmt(performance.now()-begin);
-                const result={name,provider,source,routeKm:fmt(routeKm),routeMin:fmt(routeMin),firstStageMs:stage1Ms,traceStageMs:fmt(totalMs-stage1Ms),totalMs,geometryDiscrepancyPct:geometryDiscrepancy,illustrativeVehicle:limits,estimate:stat};
+                const result={name,provider,source,routeKm:fmt(routeKm),routeMin:fmt(routeMin),firstStageMs:stage1Ms,traceRequests:detail.traceRequests,traceStageMs:fmt(totalMs-stage1Ms),totalMs,geometryDiscrepancyPct:geometryDiscrepancy,illustrativeVehicle:limits,estimate:stat};
                 console.log('VEHICLE_PIPELINE '+JSON.stringify(result));samples.push(result);
                 if(geometryDiscrepancy>6)console.log('VEHICLE_TRACE_MISMATCH '+JSON.stringify({name,provider,geometryDiscrepancyPct:geometryDiscrepancy,note:'Reject as faithful edge match; do not use to rank providers'}));
               }catch(e){
@@ -380,6 +427,6 @@ jobs:
               }
             }
           }
-          console.log('VEHICLE_PIPELINE_INFO '+JSON.stringify({success:samples.length,failed:failures.length,profileStatus:'illustrative only, not authorized product configuration',limitation:'No reliable turn delays, trace validation, actual traffic, full road-type mapping, or production SLA. One public Valhalla trace request per route.'}));
+          console.log('VEHICLE_PIPELINE_INFO '+JSON.stringify({success:samples.length,failed:failures.length,profileStatus:'illustrative only, not authorized product configuration',limitation:'No reliable turn delays, trace validation, actual traffic, full road-type mapping, or production SLA. Valhalla map_snap may need multiple public demo trace requests per long OSRM route; network and snap fidelity not guaranteed.'}));
           if(failures.length)process.exitCode=1;
           JS
