@@ -486,6 +486,41 @@
     createLine(positions,options={}) {
       return window.L.polyline(positions.map(p=>{const v=latLng(p);return [v.lat,v.lng];}),options).addTo(this.map);
     }
+    onRouteLine(line,callback){
+      if(!line||typeof callback!=="function")throw new TypeError("Route line callback required");
+      const handler=event=>{if(event.originalEvent)window.L.DomEvent.stop(event.originalEvent);
+        callback({lat:event.latlng.lat,lng:event.latlng.lng});};
+      line.on("click",handler);return ()=>line.off("click",handler);
+    }
+    showRouteRoles(roles){
+      for(const marker of this.routeRoleLayers||[])this.map.removeLayer(marker);
+      this.routeRoleLayers=[];
+      for(const role of roles||[]){
+        const p=latLng(role),kind=role.kind;
+        if(!["start","target","waypoint"].includes(kind)||!Number.isFinite(p.lat)||!Number.isFinite(p.lng))continue;
+        const tint=kind==="start"?"#ed3434":kind==="target"?"#289d54":"#efc63e";
+        const symbol=kind==="start"?"S":kind==="target"?"Z":"●";
+        const shift=kind==="start"?"-9px":kind==="target"?"9px":"0px";
+        const html='<div class="p2m-route-role" style="--role-color:'+tint+';--role-shift:'+shift+'">'+symbol+'</div>';
+        const marker=window.L.marker([p.lat,p.lng],{interactive:false,keyboard:false,zIndexOffset:900,
+          icon:window.L.divIcon({className:"p2m-route-role-holder",html,iconSize:[30,32],iconAnchor:[15,36]})}).addTo(this.map);
+        this.routeRoleLayers.push(marker);
+      }
+    }
+    showRouteGuides(guides,onClick){
+      for(const marker of this.routeGuideLayers||[])this.map.removeLayer(marker);
+      this.routeGuideLayers=[];
+      for(const guide of guides||[]){
+        const p=latLng(guide);
+        if(!Number.isFinite(p.lat)||!Number.isFinite(p.lng)||Math.abs(p.lat)>90||Math.abs(p.lng)>180)continue;
+        const symbol='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#153958" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V2.8a.8.8 0 0 1 .8-.8h8.6a2 2 0 0 1 1.6.8L22 9l-5 6a2 2 0 0 1-1.6.8H6"/></svg>';
+        const marker=window.L.marker([p.lat,p.lng],{
+          icon:window.L.divIcon({className:"p2m-route-guide-holder",html:symbol,
+            iconSize:[32,32],iconAnchor:[7,30]})}).addTo(this.map);
+        marker.on("click",e=>{if(e.originalEvent)window.L.DomEvent.stop(e.originalEvent);onClick?.(guide.id);});
+        this.routeGuideLayers.push(marker);
+      }
+    }
     setLinePositions(line,positions) {
       line.setLatLngs(positions.map(p=>{const v=latLng(p);return [v.lat,v.lng];}));
     }
