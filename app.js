@@ -44,6 +44,7 @@
   const uiState = new window.Pin2MapUIState();
   let gestures,pinOverlapZoom,featureOverlapZoom,favoritesPanel;
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker;
+   let routeSession=null,routePanel=null,routeMapView=null;
   let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -237,6 +238,12 @@
       link.href=url;link.target="_blank";link.rel="noopener noreferrer";
       link.style.display="none";document.body.appendChild(link);link.click();link.remove();
     },
+    onRouteAction:kind=>{
+      const pin=selectedPin();if(!pin||!routeSession)return;
+      routeSession.endpoint(kind,pin.id);
+      pinDetails.setRouting(null);
+      renderPinPanel();
+    },
     onLayout:focus=>{
       updatePanelLayout();
       if(focus)requestAnimationFrame(keepSelectedAbovePanel);
@@ -369,7 +376,8 @@
       setTileLayer();
       mapAdapter.setView({center:{lat:state.viewport.lat,lng:state.viewport.lng},
         zoom:state.viewport.zoom},{animate:false});
-      renderLayers();renderMarkers();renderGeometry();renderPinPanel();updateLabelButton();
+      routeSession?.clear();
+      renderLayers();renderMarkers();renderGeometry();renderPinPanel();renderRouteGuides();updateLabelButton();
       favoritesController.sync();
     },
     onNotice:message=>showNotice(message),
@@ -615,7 +623,7 @@
     closeLayerPicker:()=>pinLayerPicker.setOpen(false),
     onLayout:()=>updatePanelLayout()
   });
-  function renderPinPanel(){pinSelection.render();}
+  function renderPinPanel(){pinSelection.render();routePanel?.syncPinButtons(selectedPin());}
   function selectPin(id){pinSelection.select(id);}
   function handleMarkerTap(id){pinSelection.handleMarkerTap(id);}
   function updateModeUI() {
@@ -845,6 +853,11 @@
 
     pinEditorActions.bind();
     pinDetails.bind();
+    routePanel?.bind();
+    $("pinRouteWaypoint").addEventListener("click",()=>{
+      const pin=selectedPin();if(!pin||!routeSession)return;
+      routeSession.waypoint(pin.id);renderPinPanel();
+    });
     pinNavigation.bind();
     noteEditor.bind();
     window.Pin2MapObjectDialogCore.bindNoteLaunch({
@@ -875,6 +888,52 @@
     window.Pin2MapLayerPalette.repairPrivate(state);
     projectFeatures.ensure(state);
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
+    const routingCore=new window.Pin2MapRouting.RoutingService();
+    routingCore.register("car",new window.Pin2MapCarRouting.CarRoutingProvider({fetchImpl:window.fetch.bind(window)}));
+    const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
+    const routePinById=id=>pinOps.findPin(state,id);
+    routeMapView=new window.Pin2MapCarRouteMapView({
+      mapPort:mapAdapter,getPin:routePinById,
+      onLineClick:index=>routePanel?.focusLeg(index)
+    });
+    routePanel=new window.Pin2MapCarRoutePanel({
+      document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
+      onEnd:()=>{routeSession.clear();renderPinPanel();},
+      onReverse:()=>{routeSession.reverse();renderPinPanel();},
+      onAll:()=>{const n=routeSession.addVisible(markerView.visiblePins().map(pin=>pin.id));
+        showNotice(n?n+" sichtbare Pins als Zwischenziele übernommen.":"Keine neuen sichtbaren Zwischenziele.");},
+      onOptions:opts=>{try{routeSession.options(opts);}catch(e){showNotice(String(e.message));}},
+      onToggle:()=>{
+        const current=routeSession.snapshot();
+        try{routeSession.options({avoidTolls:!current.avoidTolls});}
+        catch(e){showNotice(String(e.message));}
+      },
+      onApple:()=>{
+        const route=routeSession.snapshot();
+        const start=routePinById(route.startId),target=routePinById(route.targetId);
+        if(!start||!target)return;
+        if(route.waypointIds.length)showNotice("Apple Karten übernimmt hier nur Start und Ziel, keine Zwischenziele.");
+        window.open(window.Pin2MapAppleMapsLinks.routeUrl(start,target),"_blank","noopener,noreferrer");
+      },
+      onHide:()=>{},onShowNotice:showNotice
+    });
+    routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
+      plan:activePlan,getPin:routePinById,
+      calculate:request=>routingCore.calculate({mode:"car",...request}),
+      onChange:snapshot=>{routeMapView.render(snapshot);routePanel.render(snapshot);
+        routePanel.syncPinButtons(selectedPin());},
+      onError:showNotice
+    });
+    function onRouteGuideClick(id){
+      const guide=(state.routeGuides||[]).find(x=>x.id===id);
+      if(!guide||!window.confirm("Diese Richtungsflagge entfernen?"))return;
+      state.routeGuides=state.routeGuides.filter(x=>x.id!==id);
+      save();renderRouteGuides();
+    }
+    function renderRouteGuides(){
+      routeMapView?.guides(Array.isArray(state.routeGuides)?state.routeGuides:[],onRouteGuideClick);
+    }
+    renderRouteGuides();
     geometryEditor=new window.Pin2MapGeometryEditor({
       document,icons:window.Pin2MapIcons,onUpdate:saveGeometry,
       onDelete:deleteGeometry,onWikipedia:name=>{
@@ -886,7 +945,13 @@
     mapActionChooser=new window.Pin2MapMapActionChooser({
       document,getElement:$,icons:window.Pin2MapIcons,
       onPin:point=>addPin(point.lat,point.lng,"","map"),
-      onArea:point=>void findAreaAt(point)
+      onArea:point=>void findAreaAt(point),
+      onGuide:point=>{
+        state.routeGuides=Array.isArray(state.routeGuides)?state.routeGuides:[];
+        state.routeGuides.push({id:uid(),lat:point.lat,lng:point.lng});
+        save();renderRouteGuides();
+        showNotice("Richtungsflagge gesetzt. Ihre weiche Streckenführung wird als nächstes ergänzt.");
+      }
     });
     mapActionChooser.bind();
     gpsLocation=new window.Pin2MapGpsLocationController({
