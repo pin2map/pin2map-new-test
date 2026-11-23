@@ -513,7 +513,7 @@
       for(const guide of guides||[]){
         const p=latLng(guide);
         if(!Number.isFinite(p.lat)||!Number.isFinite(p.lng)||Math.abs(p.lat)>90||Math.abs(p.lng)>180)continue;
-        const symbol='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#153958" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V2.8a.8.8 0 0 1 .8-.8h8.6a2 2 0 0 1 1.6.8L22 9l-5 6a2 2 0 0 1-1.6.8H6"/></svg>';
+        const symbol=window.Pin2MapIcons.svg("flag-triangle-right",document).outerHTML;
         const marker=window.L.marker([p.lat,p.lng],{
           icon:window.L.divIcon({className:"p2m-route-guide-holder",html:symbol,
             iconSize:[32,32],iconAnchor:[7,30]})}).addTo(this.map);
