@@ -23,7 +23,7 @@ await page.selectOption('#case',name==='Chromium'?'4':'6');
 await page.locator('#go').click();
 await page.waitForFunction(()=>!document.getElementById('go').disabled,{timeout:90000});
 const loaded=await page.locator('#routes input[type=radio]:not([disabled])').count();
-assert.equal(loaded,5,'All five live route variants must load for a holiday region');
+assert.equal(loaded,5,'All five live route variants must load for a holiday region: '+name+' '+await page.locator('#status').innerText()+'; '+await page.locator('#routes').innerText());
 await page.locator('#all').click();
 assert.equal(await page.locator('#map .leaflet-interactive').count()>=5,true,'All five route lines must display');
 await page.locator('#routes input[value="2"]').check();
