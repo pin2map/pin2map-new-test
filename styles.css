@@ -3246,3 +3246,6 @@ body.object-search-mode #app #searchClear.search-clear span{
  #app .car-route-round .p2m-lucide{width:16px;height:16px}
  #app .car-route-secondary-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px}
 }
+
+/* Route badges must never steal actual pin or map taps. */
+#map .p2m-route-role-holder{pointer-events:none!important}
