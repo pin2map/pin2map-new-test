@@ -1,0 +1,51 @@
+name: Route Lab Jura endpoint connectivity probe
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - '.github/workflows/route-lab-jura-endpoint-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  jura-auto-snap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Probe real Valhalla auto paths with varied grounded endpoint areas
+        run: |
+          node <<'JS'
+          const places={
+            lonsTown:[46.6744,5.555],
+            lonsStation:[46.66854,5.55045],
+            saintTown:[46.3878,5.865],
+            saintStation:[46.3899539,5.8603471]
+          };
+          const pairs=[
+            ['lonsTown','saintTown'],
+            ['lonsStation','saintTown'],
+            ['lonsTown','saintStation'],
+            ['lonsStation','saintStation']
+          ];
+          const pause=t=>new Promise(r=>setTimeout(r,t));
+          (async()=>{
+            let success=0;
+            for(const [from,to] of pairs){
+              const p={locations:[places[from],places[to]].map(([lat,lon])=>({lat,lon})),costing:'auto',costing_options:{auto:{}},directions_type:'none',units:'kilometers'};
+              const uri='https://valhalla1.openstreetmap.de/route?json='+encodeURIComponent(JSON.stringify(p));
+              try{
+                const r=await fetch(uri,{headers:{'X-Client-Id':'pin2map-internal-route-lab-probe'},signal:AbortSignal.timeout(16000)});
+                const d=await r.json();
+                const hasRoute=!!d.trip?.legs?.[0]?.shape;
+                if(hasRoute)success++;
+                console.log('JURA_AUTO '+JSON.stringify({from,to,status:r.status,hasRoute,km:d.trip?.summary?.length,minutes:d.trip?.summary?.time&&d.trip.summary.time/60,error:d.error||d.status_message||null}));
+              }catch(e){console.log('JURA_AUTO '+JSON.stringify({from,to,error:String(e)}))}
+              await pause(1400);
+            }
+            if(!success)process.exitCode=1;
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
