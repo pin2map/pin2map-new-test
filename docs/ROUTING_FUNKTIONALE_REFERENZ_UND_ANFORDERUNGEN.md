@@ -388,6 +388,11 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 **Grüne Gates des maßgeblichen Teststands:** [Architektur 45141883271](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883271), [Node/Chromium 45141883221](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883221), [live veröffentlichte HTTPS-Preview mit Service Worker, Chromium und WebKit vor/nach Veröffentlichung 45141883353](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883353) – alle **completed/success**. Bestandsschutz PWA v330, keine Routingfunktion aktiviert.
 
 
+
+### R-016 – Stichprobenprüfung Autobahn- und Schnellstraßen-Heuristik (23.11.2026)
+
+**Status: TEST BEAUFTRAGT, technische Ergebnisse noch auszuwerten, keine Freigabe für PWA-Integration.** Die in R-015 durch Straßennamen wie `A 7` erkannte Autobahn-Streckenklasse wird stichprobenartig auf tatsächliche Straßenklassentags überprüft. Die Testprobe nimmt ohne zusätzliche Anfragen in der produktiven OSRM-Kette die vorhandenen `steps`/Einzelgeometrien und validiert **nur im isolierten Evaluationsworkflow** ausgewählte maximal 90 km lange Steps bei Valhalla `trace_attributes` mit `map_snap`. Valhalla-`motorway` und `trunk` werden separat erfasst. Stichproben: Stuttgart Stadt, Berlin Stadt, Stuttgart–Groß Lafferde, Straßburg-Zentrumkoordinate nach Lyon-Zentrumkoordinate. Deutsche `A N`-/`B N`-Namensmuster mit kontrollierten Regressionseingaben; sonst **unknown**. Keine künstliche Stadt-/Land-/Schotter-Klassifizierung. Straßenname `A N` ist nicht global tragfähig; `trunk` bedeutet nicht überall Schnellstraße. Zuordnung per fremdem Snap ist keine unabhängige amtliche Straßen- oder Fahrzeitmessung. **R-014/015 bestätigt:** Persönliches Auto-Zeitprofil beeinflusst allein die Fahrzeit, nie den Straßenverlauf. Andere Routingarten bleiben zur späteren Klärung offen.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.

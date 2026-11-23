@@ -540,3 +540,47 @@ jobs:
           console.log('R015_TEST_INFO '+JSON.stringify({failed:failures,numberOfCases:cases.length,requestCount:cases.length,noExtraProviderCalls:true,profileRequiresRouteChange:false,classificationStatus:'not proven sufficient'}));
           if(failures)process.exitCode=1;
           JS
+
+      - name: R-016 benchmark motorway name recognition against independent road classes
+        shell: bash
+        run: |
+          node <<'JS'
+          const sites=[
+            ['STUTTGART-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['BERLIN-CITY',[52.517037,13.388860],[52.529407,13.397634]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['STRASBOURG-LYON-CENTERS',[48.5734,7.7521],[45.764,4.8357]]
+          ];
+          const r=x=>Math.round(x*100)/100, ua='pin2map-routing-evaluation/0.9 (https://github.com/pin2map/pin2map-new-test)';
+          const kind=n=>/(?:^|[ /,;])A\s?\d{1,3}(?:$|[ /,;])/i.test(n)?'A-number':/(?:^|[ /,;])B\s?\d{1,4}(?:$|[ /,;])/i.test(n)?'B-number':'unknown';
+          for(const [n,k] of [['A 7','A-number'],['A81','A-number'],['B 444','B-number'],['B 4; B 75','B-number'],['Heinestraße','unknown'],['','unknown']])if(kind(n)!==k)throw Error('rule test '+n);
+          async function get(url,options={}){
+            const q=await fetch(url,{...options,headers:{'User-Agent':ua,'Accept':'application/json',...(options.headers||{})},signal:AbortSignal.timeout(20000)});
+            const body=await q.text();if(!q.ok)throw Error('HTTP '+q.status+' '+body.slice(0,140));return JSON.parse(body);
+          }
+          let validated=0,failed=0;
+          for(const [name,a,b] of sites){
+            try{
+              const url='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?steps=true&overview=false&geometries=polyline6&alternatives=false';
+              const q=await get(url),route=q.routes?.[0];if(!route)throw Error('no OSRM route');
+              const all=route.legs.flatMap(l=>l.steps||[]).filter(s=>s.distance>30).map(s=>({step:s,label:s.name||s.ref||'',category:kind(s.name||s.ref||'')}));
+              const categories=['A-number','B-number','unknown'],chosen=categories.flatMap(k=>all.filter(s=>s.category===k&&s.step.distance<90000).sort((x,y)=>y.step.distance-x.step.distance).slice(0,3));
+              const out={name,routeKm:r(route.distance/1000),routeMinutes:r(route.duration/60),roadNameKm:Object.fromEntries(categories.map(k=>[k,r(all.filter(s=>s.category===k).reduce((sum,x)=>sum+x.step.distance,0)/1000)])),valid:[],failed:[]};
+              for(const x of chosen){
+                try{
+                  const body={encoded_polyline:x.step.geometry,shape_match:'map_snap',costing:'auto',filters:{action:'include',attributes:['edge.length','edge.road_class','edge.names']}};
+                  const z=await get('https://valhalla1.openstreetmap.de/trace_attributes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                  if(!z.edges?.length)throw Error('no trace edges');
+                  const sum=(cls)=>z.edges.filter(e=>!cls||e.road_class===cls).reduce((s,e)=>s+(Number(e.length)||0),0);
+                  const km=sum(null),delta=Math.abs(km-x.step.distance/1000)/(x.step.distance/1000);
+                  if(delta>0.15)throw Error('snap length mismatch '+r(delta*100)+'%');
+                  out.valid.push({road:x.label||'(unnamed)',nameCategory:x.category,stepKm:r(x.step.distance/1000),matchedKm:r(km),motorwayKm:r(sum('motorway')),trunkKm:r(sum('trunk')),matchDiscrepancyPct:r(delta*100)});
+                  validated++;
+                }catch(e){out.failed.push({road:x.label||'(unnamed)',nameCategory:x.category,reason:e.message});failed++;}
+              }
+              console.log('R016_COMPARISON '+JSON.stringify(out));
+            }catch(e){console.error('R016_CASE_FAIL '+name+' '+e.message);failed++;}
+          }
+          console.log('R016_SUMMARY '+JSON.stringify({validated,failed,note:'OSRM name-based candidate versus Valhalla road_class on selected short snapped steps; different routing graphs, not definitive ground truth or full-route precision'}));
+          if(validated<3)process.exitCode=1;
+          JS
