@@ -113,6 +113,13 @@ jobs:
           test -s site-root/route-lab/index.html
           test ! -e site-root/preview/routing-compare.html
 
+      - name: Publish standalone Routing UI mockup outside PWA worker scope
+        run: |
+          mkdir -p site-root/routing-ui-lab
+          cp preview-source/routing-ui-mockup.html site-root/routing-ui-lab/index.html
+          test -s site-root/routing-ui-lab/index.html
+          test ! -e site-root/preview/routing-ui-mockup.html
+
       - name: Assert Preview allowlist excludes historical experiments
         run: |
           python3 - <<'PY'
@@ -361,6 +368,25 @@ jobs:
               print("PASS live route lab",file)
           PY
 
+      - name: Verify published standalone UI mockup bytes over HTTPS
+        run: |
+          python3 - <<'PY'
+          import hashlib, time, urllib.request
+          from pathlib import Path
+          expected=hashlib.sha256(Path("preview-source/routing-ui-mockup.html").read_bytes()).digest()
+          url="https://pin2map.github.io/pin2map-new-test/routing-ui-lab/index.html?verification=ui-lab-1"
+          for attempt in range(12):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url,headers={"Cache-Control":"no-cache"}),timeout=20) as response:
+                      actual=response.read()
+                  assert hashlib.sha256(actual).digest()==expected,"mockup HTML differs from committed source"
+                  print("PASS live HTTPS routing UI mockup byte-identical to source")
+                  break
+              except Exception:
+                  if attempt==11: raise
+                  time.sleep(10)
+          PY
+
       - name: Use runner Chrome for published-site regression
         working-directory: preview-source
         run: |
@@ -467,6 +493,10 @@ jobs:
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/routing-compare-browser.cjs
+      - name: REQUIRED published Routing UI mockup Chromium and WebKit UX regression
+        env:
+          PIN2MAP_MOCKUP_URL: https://pin2map.github.io/pin2map-new-test/routing-ui-lab/index.html
+        run: node tests/routing-ui-mockup-browser.cjs
       - name: REQUIRED published search chooser geometry in WebKit and Chromium
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
