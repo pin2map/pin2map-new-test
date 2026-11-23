@@ -3,11 +3,11 @@
  * project mutation, persistence and navigation are injected by app.js. */
 (function(root){
  class PinDetails{
-  constructor({getElement,document:doc,onNote,onUrl,onWikipedia,onLayout,onRouteAction=null}){
+  constructor({getElement,document:doc,onNote,onUrl,onWikipedia,onLayout,onRouteAction=null,onWaypointAction=null}){
    if([getElement,onNote,onUrl,onWikipedia,onLayout].some(v=>typeof v!=="function")||!doc)
     throw new TypeError("Pin detail ports required");
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
-   this.onWikipedia=onWikipedia;this.onLayout=onLayout;this.onRouteAction=onRouteAction;
+   this.onWikipedia=onWikipedia;this.onLayout=onLayout;this.onRouteAction=onRouteAction;this.onWaypointAction=onWaypointAction;
    this.pinId=null;this.mode="notes";this.urlSnapshot="";this.weatherMode=false;
    this.routingMode=null;
    // The URL overlay is viewport-positioned. Keep it out of the pin
@@ -122,7 +122,8 @@
     this.closeTransient();if(this.onRouteAction){this.setRouting(null);this.onRouteAction("target");}
      else this.setRouting(this.routingMode==="target"?null:"target");
    });
-   // Waypoint and GPX transport controls remain future-only.
+   if(this.onWaypointAction)this.el("pinRouteWaypoint").addEventListener("click",()=>{this.closeTransient();this.onWaypointAction();});
+   // GPX transport controls remain future-only.
   }
  }
  root.Pin2MapPinDetails=PinDetails;
