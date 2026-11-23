@@ -155,6 +155,18 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Nächster Diskussionsschritt:** Gemeinsames fachliches Modell für Richtungswünsche in Kombination mit beiden Profilen und sinnvolle Alternativen, erst danach getrennte technische Evaluierung/Proof-of-Concept unter unveränderten v330-Schutzverträgen. Keine Routingprovider, neue Appversion oder Cache-/Datenänderung.
 
+### R-004 – Richtungsorte gelten für alle Routen; keine starre Zahl von Routenvorschlägen (23.11.2026)
+
+**Status: EINGEREICHT / IN DISKUSSION; keine Implementierungsfreigabe.**
+
+**Wortnahe neue Anforderung des Auftraggebers:** „Wenn ich einen oder zwei Ort angebe, an denen ich vorbeikommen will, gilt das für alle Routentypen. Wenn ich keinen Ort angebe, dann darf pin2map die aus seiner Sicht beste Route angeben.“ Weiterhin ausdrücklich offen ist die Anzahl der sichtbaren Vorschläge: „Zwei schnelle und zwei entspannte? Oder eine schnelle, eine entspannte und eine Kombination?“
+
+**Fachliche Eingrenzung:** Eine eingegebene Richtungsort-Vorgabe darf **nicht nur für die schnellste Route** gelten, während die entspannte Route sie stillschweigend ignoriert. Die Vorgabe gilt für alle zur Auswahl gestellten Routen/Profile; genaue Geltung bei den weiteren Verkehrsmitteln und die geografische Toleranz beim Vorbeifahren sind später modespezifisch zu klären. Richtungsorte bleiben von zwingend anzufahrenden Pin-Zwischenstopps unterschieden. Ohne Richtungsort gibt es keine erzwungene Verlaufsbindung; die beste Route hängt von der noch festzulegenden Qualitätsbewertung/Profildefinition ab.
+
+**Diskutierte Empfehlung – ausdrücklich noch NICHT beschlossen:** Intern bei Bedarf mehrere Kandidaten für schnell und entspannt berechnen, nach gemeinsamem Korridorvertrag, Fahrtzeit, Umweg, Straßenklassen, Straßenabschnittsüberdeckung und erkennbarem Zusatznutzen filtern. Sichtbar nur qualitativ unterscheidbare Vorschläge; **keine starre Anzahl** (ggf. nur eine, häufig zwei, weitere nur bei substantiellem Mehrwert). Als Ausgangsfall die beste schnelle und, falls relevant anders, die beste entspannte Route. Keine künstliche dritte Kategorie „Kombination“, weil ein sinnvolles entspanntes Profil selbst Autobahnabschnitte zulassen kann; zusätzliche Verlaufsvarianten bei echter Relevanz. Ungeeignete Kandidaten nicht als Alternativen auffüllen. Eine manuell gewünschte Richtung darf nicht ohne sichtbare Erklärung fallen gelassen werden. Geografische Toleranz, Qualitätsmetriken/Schwellenwerte, UI und Berechnungsstrategie noch offen; Anbieterunterstützung allein garantiert nicht die geforderte Auswahlqualität.
+
+**Technikstatus:** rein fachliche Diskussion; v330, Service Worker, Routenberechnung und alle persistenten Projektdaten unverändert.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
