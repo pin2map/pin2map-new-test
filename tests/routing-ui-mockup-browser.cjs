@@ -3,78 +3,100 @@ const {chromium,webkit}=require("playwright");
 const assert=require("node:assert/strict");
 const URL=process.env.PIN2MAP_MOCKUP_URL||"http://127.0.0.1:8765/routing-ui-mockup.html";
 (async()=>{
- for(const [name,engine] of [["Chromium",chromium],["WebKit",webkit]]){
-  const browser=await engine.launch({headless:true});
-  try{
-   for(const viewport of [{width:1120,height:900},{width:390,height:844}]){
-    const context=await browser.newContext({viewport});
-    const page=await context.newPage();const errors=[];page.on("pageerror",e=>errors.push(e.message));
-    await page.goto(URL,{waitUntil:"domcontentloaded"});
-    assert.equal(await page.locator("#destinationLabel").textContent(),"Ziel:");
-    assert.equal(await page.locator("#destination").inputValue(),"");
-    assert.equal(await page.locator("#carOptions").isVisible(),true);
-    assert.equal(await page.locator(".modes .lucide").count(),4);
-    assert.equal(await page.locator(".section-title").count(),0);
-    assert.equal(await page.locator("#timeFactor").count(),0);
-    assert.equal(await page.locator("#heading").count(),0);
-    await page.locator("#destination").fill("ham");
-    assert.ok(await page.locator("#destinationList button").count()>3);
-    assert.match(await page.locator("#destinationList").textContent(),/Bilser Str/);
-    assert.match(await page.locator("#destinationList").textContent(),/Hamburg/);
-    assert.match(await page.locator("#destinationList").textContent(),/Neuen Pin anlegen/);
-    await page.locator("#destinationList button").first().click();
-    assert.equal(await page.locator("#destination").inputValue(),"Bilser Str. 49");
-    await page.locator("#via1").fill("Frankfurt");
-    assert.ok(await page.locator("#via1List button").count()>=2);
-    await page.locator("#via1List button").last().click();
-    assert.equal(await page.locator("#via1").inputValue(),"Frankfurt (Oder)");
-    assert.equal(await page.locator("#demoLine").getAttribute("hidden"),"");
-    await page.locator("#calculate").click();
-    assert.match(await page.locator("#result").textContent(),/Demoroute eingezeichnet/);
-    assert.equal(await page.locator("#demoLine").getAttribute("hidden"),null);
-    assert.equal(await page.locator("#demoLine").isVisible(),true);
-    await page.locator("#reset").click();
-    assert.equal(await page.locator("#destination").inputValue(),"");
-    await page.locator("#entry").selectOption("target");
-    assert.equal(await page.locator("#destinationLabel").textContent(),"Start:");
-    await page.locator("#entry").selectOption("edit");
-    assert.equal(await page.locator("#destinationLabel").textContent(),"Ziel:");
-    assert.equal(await page.locator("#editStartRow").isVisible(),true);
-    assert.equal(await page.locator("#editStart").inputValue(),"Bremerhaven");
-    assert.equal(await page.locator("#destination").inputValue(),"Grenoble");
-    await page.locator('[data-mode="bicycle"]').click();
-    assert.equal(await page.locator("#carOptions").isVisible(),false);
-    await page.locator('[data-mode="car"]').click();
-    await page.locator('input[name="profile"][value="country"]').check();
-    const toll=page.locator("#tolls");
-    assert.equal(await toll.getAttribute("aria-pressed"),"false");
-    await toll.click();
-    assert.equal(await toll.getAttribute("aria-pressed"),"true");
-    assert.match(await toll.getAttribute("class"),/on/);
-    await toll.click();
-    assert.equal(await toll.getAttribute("aria-pressed"),"false");
-    await toll.click();
-    const shapes=await page.locator(".modes [data-icon]").evaluateAll(els=>els.map(x=>({name:x.dataset.icon,paths:x.querySelectorAll("path,circle,rect").length})));
-    assert.deepEqual(shapes.map(x=>x.name),["car","bike","footprints","tram-front"]);
-    assert.ok(shapes.every(x=>x.paths>=3));
-    const geometry=await page.evaluate(()=>{
-       const r=id=>document.getElementById(id).getBoundingClientRect();
-       const modes=[...document.querySelectorAll(".mode")].map(x=>x.getBoundingClientRect().height);
-       const destination=r("destination"),via=r("via1"),routing=document.querySelector("#carOptions .radio-frame").getBoundingClientRect(),profile=r("timeProfile"),reset=r("reset"),route=r("calculate"),noToll=r("tolls");
-       return {modes,minMode:Math.min(...modes),x:[destination.x,via.x,routing.x,profile.x],resetWidth:reset.width,routeWidth:route.width,tollHeight:noToll.height,menuWidth:profile.width,panelWidth:r("routingPanel").width,containerWidth:r("routingPanel").height};
-    });
-    assert.ok(geometry.minMode>=50,JSON.stringify(geometry));
-    assert.ok(geometry.tollHeight>=43,JSON.stringify(geometry));
-    assert.ok(geometry.x.every(x=>Math.abs(x-geometry.x[0])<=1),JSON.stringify(geometry));
-    assert.ok(Math.abs(geometry.resetWidth-geometry.routeWidth)<=2,JSON.stringify(geometry));
-    assert.ok(geometry.menuWidth<geometry.resetWidth*1.25,JSON.stringify(geometry));
-    const metrics=await page.evaluate(()=>({panel:document.querySelector(".routing-panel").getBoundingClientRect().toJSON(),width:document.documentElement.scrollWidth,viewport:innerWidth,worker:!!navigator.serviceWorker?.controller,option:document.querySelector(".options-line").getBoundingClientRect().toJSON()}));
-    assert.ok(metrics.panel.width>220);assert.ok(metrics.width<=metrics.viewport+1,JSON.stringify(metrics));
-    assert.equal(metrics.worker,false);assert.ok(metrics.option.height>=44&&metrics.option.height<=78,JSON.stringify(metrics));
-    assert.deepEqual(errors,[]);
-    console.log("PASS",name,viewport.width,"compact mockup, Lucide, pin and place suggestions, corridor ambiguity, schematic route and SW isolation");
-    await context.close();
-   }
-  }finally{await browser.close()}
- }
-})().catch(e=>{console.error(e);process.exitCode=1});
+for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
+const browser=await engine.launch({headless:true});
+try{
+for(const viewport of [{width:1120,height:900},{width:390,height:844},{width:320,height:700}]){
+const ctx=await browser.newContext({viewport,isMobile:viewport.width<500,hasTouch:viewport.width<500});
+const page=await ctx.newPage();const errors=[];page.on("pageerror",e=>errors.push(e.message));
+await page.goto(URL,{waitUntil:"domcontentloaded"});
+const box=id=>page.locator("#"+id).boundingBox();
+async function assertLayout(where){
+const m=await page.evaluate(()=>{
+const r=x=>document.getElementById(x).getBoundingClientRect();
+const doc=document.documentElement;
+const elements=["destination","via1","routeStyle","timeProfile"];
+const inputs=[...document.querySelectorAll("input,select")];
+const overflow=[...document.querySelectorAll(".pin-dialog,.routing-panel,.compact-line,.options-line,.via-fields,.action-fields")].filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>({cls:e.className,scroll:e.scrollWidth,client:e.clientWidth}));
+return{docWidth:doc.scrollWidth,viewport:innerWidth,overflow,x:elements.map(x=>r(x).x),font:inputs.map(x=>({id:x.id,size:parseFloat(getComputedStyle(x).fontSize)})),modes:[...document.querySelectorAll(".mode")].map(x=>x.getBoundingClientRect().height),route:r("calculate").height,panel:r("routingPanel").height,dialog:r("pinName").height};
+});
+assert.ok(m.docWidth<=m.viewport+1,where+JSON.stringify(m));
+assert.deepEqual(m.overflow,[],where+JSON.stringify(m));
+assert.ok(m.x.every(x=>Math.abs(x-m.x[0])<=1),where+JSON.stringify(m));
+assert.ok(m.font.every(x=>x.size>=16),where+JSON.stringify(m));
+assert.ok(Math.min(...m.modes)>=48,where+JSON.stringify(m));
+assert.ok(m.route>=42,where+JSON.stringify(m));
+return m;
+}
+assert.equal(await page.locator("#destinationLabel").textContent(),"Ziel:");
+assert.equal(await page.locator("#routeField").isVisible(),false);
+assert.equal(await page.locator("#reset").isVisible(),true);
+assert.equal(await page.locator("#carOptions select").count(),1);
+assert.equal(await page.locator("#destinationRow").isVisible(),true);
+assert.equal(await page.locator("#tolls").getAttribute("aria-pressed"),"false");
+assert.deepEqual(await page.locator(".modes [data-icon]").evaluateAll(a=>a.map(e=>e.dataset.icon)),["car","bike","footprints","tram-front"]);
+await assertLayout("start");
+const initialScale=await page.evaluate(()=>({scale:visualViewport?.scale||1,width:document.documentElement.clientWidth}));
+await page.locator("#destination").focus();
+const afterScale=await page.evaluate(()=>({scale:visualViewport?.scale||1,width:document.documentElement.clientWidth,font:parseFloat(getComputedStyle(document.querySelector("#destination")).fontSize)}));
+assert.equal(afterScale.scale,initialScale.scale);
+assert.equal(afterScale.width,initialScale.width);
+assert.ok(afterScale.font>=16);
+await page.locator("#destination").fill("ham");
+assert.match(await page.locator("#destinationList").textContent(),/Bilser Str. 49/);
+assert.match(await page.locator("#destinationList").textContent(),/Neuen Pin anlegen/);
+await page.locator("#destinationList button").first().click();
+await page.locator("#via1").fill("Frankfurt");
+assert.ok(await page.locator("#via1List button").count()>=2);
+await page.locator("#via1List button").last().click();
+await page.locator("#routeStyle").selectOption("country");
+await page.locator("#tolls").click();
+assert.equal(await page.locator("#tolls").getAttribute("aria-pressed"),"true");
+await page.locator("#calculate").click();
+assert.equal(await page.locator("#demoLine").getAttribute("hidden"),null);
+assert.equal(await page.locator("#demoLine").isVisible(),true);
+await page.locator("#reset").click();
+assert.equal(await page.locator("#tolls").getAttribute("aria-pressed"),"false");
+assert.equal(await page.locator("#routeStyle").inputValue(),"fast");
+await page.locator("#entry").selectOption("edit");
+assert.equal(await page.locator("#destinationRow").isVisible(),false);
+assert.equal(await page.locator("#routeField").isVisible(),true);
+assert.equal(await page.locator("#routeStart").textContent(),"Bremerhaven");
+assert.equal(await page.locator("#routeGoal").textContent(),"Grenoble");
+assert.equal(await page.locator("#editStartRow").count(),0);
+await assertLayout("edit");
+await page.locator("#plusButton").click();
+assert.equal(await page.locator("#waypointOverlay").isVisible(),true);
+assert.match(await page.locator("#waypointList").textContent(),/Lausanne/);
+await page.locator("#newWaypoint").selectOption("Celle");
+await page.locator("#addWaypoint").click();
+assert.match(await page.locator("#waypointList").textContent(),/Celle/);
+await page.getByRole("button",{name:"Celle Nach oben"}).click();
+assert.match(await page.locator(".waypoint-row").first().textContent(),/Celle/);
+await page.getByRole("button",{name:"Lausanne Löschen"}).click();
+assert.equal(await page.locator(".waypoint-row").count(),1);
+await page.locator("#closeWaypoints").click();
+await page.locator("#routeGoal").click();
+assert.equal(await page.locator("#entry").inputValue(),"target");
+assert.equal(await page.locator("#pinName").textContent(),"Grenoble");
+assert.equal(await page.locator("#destinationLabel").textContent(),"Start:");
+await page.locator("#entry").selectOption("free");
+await page.locator("#plusButton").click();
+assert.match(await page.locator("#waypointList").textContent(),/Celle/);
+await page.locator("#closeWaypoints").click();
+await page.locator("#entry").selectOption("roundtrip");
+await page.locator("#entry").selectOption("edit");
+assert.equal(await page.locator("#routeStart").textContent(),"Bremerhaven");
+assert.equal(await page.locator("#routeGoal").textContent(),"Grenoble");
+await page.locator("#entry").selectOption("roundtrip");
+await page.locator("#plusButton").click();
+assert.equal(await page.locator("#waypointOverlay").isVisible(),true);
+await page.locator("#closeWaypoints").click();
+assert.deepEqual(errors,[],engineName+JSON.stringify(errors));
+assert.equal(await page.evaluate(()=>Boolean(navigator.serviceWorker?.controller)),false);
+console.log("PASS",engineName,viewport.width,"compact touch, input no zoom, route header, waypoint editor, roundtrip");
+await ctx.close();
+}
+}finally{await browser.close()}
+}
+})().catch(err=>{console.error(err);process.exitCode=1});
