@@ -202,6 +202,20 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Dokumentationsstatus:** Diese Ergänzung konkretisiert den geplanten Anbietervergleich, ändert nicht die noch offene OSRM-/Valhalla-Auswahl und aktiviert kein Routing. v330, bestehende Preview und Nutzerdaten unverändert.
 
+
+### R-007 – Erweiterung des isolierten Live-Anbietervergleichs (23.11.2026)
+
+**Status: EINGEREICHT; konkrete Testausführung vom Auftraggeber beauftragt, keine Freigabe zur Routingintegration in die PWA.**
+
+**Originalwunsch:** „ja, nimm die Berliner Beispielpunkte mit in den Test auf. Und ich finde, wir sollten auch einen Test Stadt-Land hinzufügen. Ich schlage dafür vor: Stuttgart Bodelschwinghstr. 64 nach Groß Lafferde Hölderlinstr. 12.“
+
+**Prüfumfang:** Der bestehende separate Testworkflow `.github/workflows/routing-provider-probe.yml` wird um zwei Berliner OSRM-Dokumentations-Beispielstrecken erweitert: Koordinaten (Breite/Länge) 52.517037/13.388860 → 52.529407/13.397634 und 52.529407/13.397634 → 52.523219/13.428555. Die Punkte sind dokumentierte API-Beispiele, keine Benchmarks für Fahrzeitqualität.
+
+**Stadt–Land-Test:** Bodelschwinghstraße 64, Stuttgart (identischer exakt geokodierter Start wie R-006) → Hölderlinstraße 12, Groß Lafferde. Die Zieladresse wird via Nominatim mit Straßenname + Hausnummer validiert; ohne exakten Treffer darf keine Ersatzkoordinate als erfolgreiche Prüfung ausgegeben werden. Beide Provider erhalten identische Koordinaten. Ergebnisvergleich mit Distanz, berechneter Fahrzeit und angebotenen Alternativen, keine Behauptung realer Straßenfahrzeiten.
+
+**Schutzgrenze:** Nur isolierter GitHub-Actions-Test und Fach-/Statusdokumentation; PWA-Routing nicht aktiviert, keine Daten- oder Cacheänderungen. Provider-/Produktentscheidung weiterhin offen.
+
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.

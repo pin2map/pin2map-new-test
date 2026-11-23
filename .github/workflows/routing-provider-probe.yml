@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Live comparison with verified city addresses
+      - name: Live comparison city, Berlin examples, and city-to-rural address
         shell: bash
         run: |
           node <<'JS'
@@ -65,5 +65,15 @@ jobs:
             const match=city.find(x=>x.type==='administrative'||x.type==='city');
             if(!match)throw Error('Hamburg center not verified');
             await compare('STUTTGART-TO-HAMBURG-CITY-CENTER (not exact destination)',target,{lat:Number(match.lat),lon:Number(match.lon)});
+            await new Promise(r=>setTimeout(r,1200));
+            const rural=await geocodeExact('Hölderlinstraße 12, Groß Lafferde, Deutschland','Hölderlinstraße','12');
+            await compare('STUTTGART-TO-GROSS-LAFFERDE',start,rural);
+            // Three OSRM API documentation coordinates in Berlin. Separate legs ensure
+            // both engines receive identical two-point requests, not inferred routes.
+            const berlin1={lat:52.517037,lon:13.388860};
+            const berlin2={lat:52.529407,lon:13.397634};
+            const berlin3={lat:52.523219,lon:13.428555};
+            await compare('BERLIN-OSRM-EXAMPLE-1-TO-2',berlin1,berlin2);
+            await compare('BERLIN-OSRM-EXAMPLE-2-TO-3',berlin2,berlin3);
           }catch(error){console.error('BLOCKED '+error.message);process.exitCode=1;}
           JS
