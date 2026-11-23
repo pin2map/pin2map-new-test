@@ -60,6 +60,16 @@
           throw Error("Ungültige Flussgeometrie.");
       }
     }
+    if(project.routeGuides!==undefined){
+      if(!Array.isArray(project.routeGuides)||project.routeGuides.length>10000)
+        throw Error("Ungültige Richtungsflaggen.");
+      const seen=new Set();
+      for(const guide of project.routeGuides){
+        if(!isObj(guide)||!string(guide.id)||seen.has(guide.id))
+          throw Error("Ungültige oder doppelte Richtungsflagge.");
+        seen.add(guide.id);point(guide.lat,guide.lng);
+      }
+    }
     if(project.favorites!==undefined&&!Array.isArray(project.favorites))
       throw Error("Ungültige Favoriten.");
     return project;
