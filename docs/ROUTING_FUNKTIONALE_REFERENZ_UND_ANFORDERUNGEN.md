@@ -367,6 +367,27 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Umfang:** Isolierter GitHub-Actions-Machbarkeitstest, keine Integration in PWA, kein App-/SW-Versionswechsel und keine Änderung an bestehenden gespeicherten Routen.
 
+**Ergebnis / Nachweise R-015:** Erster Testcommit `79a2d10175dc069e95788ded3f5313e6ef60c8de`: Providerworkflow zwar technisch erfolgreich, aber Datenbefund fachlich ungültig: die Test-Regex war doppelt maskiert und lieferte bei nachweislich enthaltenen Namen wie `A 5` und `A 7` fälschlich null Autobahnkilometer. Anhand der Live-Logs Ursache geprüft, **vor der gezielten Korrektur keine Ergebnisfreigabe**, danach nur Regex-Escaping korrigiert und A-7/A81/B-444-Prüfmuster ergänzt. Maßgeblicher Testcommit `031dce91d067952f68258429cad95f5429c9d266`; [Routing-Run 45141883329](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883329), **completed/success**, fünf Einzelanfragen, keine Zusatzproviderabfragen, 5/5 erfolgreich, im Test keine Dauerabweichung zwischen Summe der OSRM-`steps.duration` und `route.duration`.
+
+| Route | OSRM km / Minuten | Kandidat Autobahn km / Fahrzeitanteil | Neutral min | Flott (0,95 Autobahn) min | Kastenwagen (1,30 Autobahn) min |
+| --- | --- | --- | --- | --- | --- |
+| Stuttgart innerstädtisch | 6,87 / 13,54 | 0 / 0 % | 13,54 | 13,54 | 13,54 |
+| Berlin Beispiel 1→2 | 1,89 / 4,34 | 0 / 0 % | 4,34 | 4,34 | 4,34 |
+| Berlin Beispiel 2→3 | 2,85 / 6,18 | 0 / 0 % | 6,18 | 6,18 | 6,18 |
+| Stuttgart–Groß Lafferde | 514,52 / 309,19 | 483,33 / 89,9 % | 309,19 | 295,28 | 392,62 |
+| Stuttgart–Hamburg Stadtzentrum | 668,18 / 404,05 | 642,58 / 91,3 % | 404,05 | 385,60 | 514,74 |
+
+**Wichtige Trennung:** Autobahn-**Streckenanteil** in Stuttgart–Groß Lafferde 93,9 %, aber **Fahrzeitanteil** 89,9 %; in Stuttgart–Hamburg 96,2 % bzw. 91,3 %. Korrekturfaktoren wirken auf Fahrtzeitanteile. Stadtstrecken änderten sich ausschließlich deshalb nicht, weil bei diesem Test **nur der Autobahnfaktor** variierte; Stadt-/Land-/Schotterfaktoren sind noch nicht als echte Straßenklassifikation nachgewiesen.
+
+**Identifikations- und Zeitkosten:** Die automatische `intersections[].classes`-Auswertung lieferte in diesen fünf OSRM-Demo-Antworten *kein einziges Motorway-Klassenflag*; erfasste Autobahnen beruhten vollständig auf deutschen `step.name`-/`step.ref`-Mustern wie `A 5`, `A 7`, `A 81`, `A 49`. Bundesstraßen mit `B N` wurden gesondert, andere Straßen als unbekannt belassen. Nicht klassifizierte Strecken: Stuttgart 6,87 km, Berlin 1,89/2,85 km, Groß Lafferde 12,92 km, Hamburg 22,64 km. **Nicht alle unbekannten Segmente sind tatsächlich Stadtstraßen**, und Bundesstraßen können inner- oder außerorts liegen. Die Klassifikation ist nur ein Deutschland-/Namensheuristik-Versuch, noch **nicht** technisch verlässlich für grenzüberschreitende Autobahnen, unbenannte Rampen, Schnellstraßen, innerörtliche Hauptstraßen und unbefestigte Wege. Einige Autobahnmanöver umfassen längere Teilabschnitte; der anhand von Namen zugeordnete Zeitanteil ist eine Näherung, keine geprüfte Kantenklassifikation.
+
+**Antwortzeit:** Einmalige vollständige OSRM-Anfrage inkl. Geometrie/Steps/Annotationen 149–498 ms (Stuttgart 489 ms, Berlin 150/149 ms, Groß Lafferde 446 ms, Hamburg 315 ms), keine statistisch abgesicherte Latenz. JavaScript-Presetberechnungen im Test wenige Mikrosekunden; **keine** zusätzlichen HTTP-Requests, keine Änderung der Route. Null/andere Faktoren sowie pro Region und Verkehrsmittel differenzierte Korrekturen wurden nicht getestet. Datenmenge Fernstrecke mit allen Annotationen rund 289–354 KB, möglicherweise für spätere Optimierung reduzierbar.
+
+**Fachliches Zwischenurteil:** Die präzise Trennung **Wegwahl** vs. **persönliche Zeitkorrektur** lässt sich technisch sehr schnell umsetzen. Für Autobahnanteile deutscher Fernrouten liefert die namenbasierte Erkennung eine *plausible* erste Schätzung; ihre Korrektheit gegenüber OSM-Straßentypen ist **noch nicht extern verifiziert**. Vier belastbar getrennte Korrekturfaktoren sind damit **nicht** bewiesen. Die nächsten Prüfungen sollen die deutschen Schnellstraßen/Rampen, internationale Bezeichnungen und die eindeutige Zuordnung von innerorts/außerorts und unbefestigten Wegen untersuchen. Für neue PWA-Implementierung gesonderte Freigabe und Produktivnutzungsprüfung des öffentlichen OSRM-Dienstes nötig.
+
+**Grüne Gates des maßgeblichen Teststands:** [Architektur 45141883271](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883271), [Node/Chromium 45141883221](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883221), [live veröffentlichte HTTPS-Preview mit Service Worker, Chromium und WebKit vor/nach Veröffentlichung 45141883353](https://github.com/pin2map/pin2map-new-test/actions/runs/45141883353) – alle **completed/success**. Bestandsschutz PWA v330, keine Routingfunktion aktiviert.
+
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
