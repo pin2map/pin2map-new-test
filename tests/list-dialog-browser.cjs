@@ -14,7 +14,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
    const errors=[];
    try{
     const page=await context.newPage();
-    page.on("pageerror",error=>errors.push(error.message));
+    page.on("pageerror",error=>{errors.push(error.message);console.error("DIAG PAGEERROR",error.stack||error.message);});
+    page.on("console",msg=>{if(msg.type()==="error")console.error("DIAG CONSOLE",msg.text());});
     await page.goto(base,{waitUntil:"domcontentloaded",timeout:35000});
     await page.waitForSelector("#map.leaflet-container",{timeout:20000});
     await page.waitForFunction(()=>!!document.querySelector(".pin-zoom-buttons"),null,{timeout:20000});
