@@ -13,7 +13,8 @@
   if(mode==="satellite")return "https://maps.apple.com/?ll="+coords+"&t=k";
   throw new RangeError("Unknown Apple Maps action");
  }
- const api=Object.freeze({pair,url});
+ function routeUrl(from,to){return "https://maps.apple.com/?saddr="+encodeURIComponent(pair(from))+"&daddr="+encodeURIComponent(pair(to))+"&dirflg=d";}
+ const api=Object.freeze({pair,url,routeUrl});
  root.Pin2MapAppleMapsLinks=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
