@@ -4,9 +4,9 @@
  */
 (function(root){
   class MapActionChooser{
-    constructor({document:doc,getElement,icons,onPin,onArea}){
+    constructor({document:doc,getElement,icons,onPin,onArea,onGuide=null}){
       this.doc=doc;this.el=getElement;this.icons=icons;
-      this.onPin=onPin;this.onArea=onArea;
+      this.onPin=onPin;this.onArea=onArea;this.onGuide=onGuide;
       this.objectIcons=root.Pin2MapObjectTypeIcons||
        (typeof require==="function"?require("./object-type-icons.js"):null);
       this.box=this.el("mapActionChooser");
@@ -20,6 +20,7 @@
         ["area","Gebiet suchen",()=>this.onArea(this.point)],
         ["map-pin-plus-inside","Pin setzen",()=>this.onPin(this.point)]
       ];
+      if(typeof this.onGuide==="function")rows.push(["flag-triangle-right","Richtungsflagge setzen",()=>this.onGuide(this.point)]);
       for(const [icon,label,action] of rows){
         const button=this.doc.createElement("button");
         button.type="button";button.title=label;button.setAttribute("aria-label",label);
