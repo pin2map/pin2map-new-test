@@ -158,7 +158,7 @@ async function metrics(page){
     const nameRect=await page.locator("#pinPanel .pin-editor-head").boundingBox();
     assert.ok(navRect.y-nameRect.y-nameRect.height>=10,"Navigation must breathe above");
     assert.equal(m.routingCount,5,"Two external and three routing controls must be visible");
-    assert.equal(m.routingDisabled,true,"Waypoint remains future-only");
+    assert.equal(m.routingDisabled,false,"All three routing controls are now available");
     assert.equal(await page.locator("#pinRouteStart").isEnabled(),true);
     assert.equal(await page.locator("#pinRouteTarget").isEnabled(),true);
     assert.equal(await page.locator("#pinNavCopy").isEnabled(),true);
@@ -167,7 +167,7 @@ async function metrics(page){
     assert.ok(m.footer.y>m.details.y,"Footer must follow detail");
     assert.ok(Math.abs(m.noteHeight-145)<=1,JSON.stringify(m));
     assert.ok(Math.abs(m.delete.width-viewport.button)<=1&&Math.abs(m.delete.height-viewport.button)<=1,"Delete must match footer action diameter");
-    for(const [index,b] of m.routingButtons.entries())assert.ok(b.disabled===(index===3)&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size and activation "+JSON.stringify(b));
+    for(const [index,b] of m.routingButtons.entries())assert.ok(b.disabled===false&&Math.abs(b.width-viewport.button)<=1&&Math.abs(b.height-viewport.button)<=1,"Routing button size and activation "+JSON.stringify(b));
     assert.ok(m.markerCount>=2,"Other pins remain rendered while dialog is open");
     const sectors=await page.locator(".pin-status-segments").evaluateAll(nodes=>
       nodes.map(n=>["note","url","gpx"].map(t=>
