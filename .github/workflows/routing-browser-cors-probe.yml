@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  issues: write
 jobs:
   browser-probe:
     runs-on: ubuntu-latest
@@ -72,6 +73,27 @@ jobs:
           name: routing-browser-cors-results
           path: routing-browser-cors-results.json
           if-no-files-found: warn
+      - name: Publish R-022 result as searchable GitHub issue
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const file = 'routing-browser-cors-results.json';
+            const exists = fs.existsSync(file);
+            const data = exists ? JSON.parse(fs.readFileSync(file,'utf8')) : { results: [], error:'No browser result file generated; see Actions job log' };
+            const good = data.results?.length === 6 && data.results.every(x => x.fetchResolved === true && x.status === 200 && x.routeAvailable === true);
+            const title = 'R-022 Browser CORS result: ' + (good?'PASS':'FAIL') + ' (' + context.sha.substring(0,8) + ')';
+            const body = [
+              'Isolated browser probe, no PWA code change.',
+              'Workflow: ' + context.serverUrl + '/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId,
+              'Commit: ' + context.sha,
+              'All six cases passing: ' + good,
+              '\\`\\`\\`json',
+              JSON.stringify(data,null,2),
+              '\\`\\`\\`'
+            ].join('\\n');
+            await github.rest.issues.create({owner:context.repo.owner,repo:context.repo.repo,title,body,labels:[]});
       - name: Record machine-readable outcomes in docs for audit
         if: always()
         run: |
