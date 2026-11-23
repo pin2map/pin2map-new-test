@@ -454,7 +454,7 @@ jobs:
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/geometry-layer-webkit-regression.cjs
-      - name: REQUIRED published routing comparison: four routes, overlay and evaluation in both browsers
+      - name: 'REQUIRED published routing comparison: four routes, overlay and evaluation in both browsers'
         env:
           PIN2MAP_TEST_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/routing-compare-browser.cjs
