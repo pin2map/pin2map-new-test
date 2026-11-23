@@ -185,6 +185,23 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Stand:** Nur Dokumentation; v330, Service Worker, IndexedDB, Caches, aktive Routingprovider und Preview unverändert.
 
+### R-006 – Innerstädtische Pflicht-Teststrecke für Routing-Anbietervergleich (23.11.2026)
+
+**Status: EINGEREICHT; ausdrücklich gewünschte Ergänzung des technischen Machbarkeitsprüfplans. Keine Freigabe zur Änderung der PWA.**
+
+**Originalwortlaut des Auftraggebers:** „Beim anbieter-Vergleich dürfen wir nicht nur Fernstrecken testen, sondern müssen unbedingt auch innerstädtische Strecken testen. Mein Vorschlag: Von Stuttgart, Bodelschwingshtr. 64 nach Stuttgart chamissostr. 21.“
+
+**Konkreter Pflicht-Testfall, Adressschreibweise überprüft (keine stillschweigende Änderung des Nutzerwortlauts):**
+- Start: **Bodelschwinghstraße 64, 70597 Stuttgart, Deutschland**. Diese Schreibweise und Hausnummer sind aus dem Stuttgarter Straßenverzeichnis bzw. Hausnummernverzeichnissen belegt; Nutzerwortlaut enthält „Bodelschwingshtr.“.
+- Ziel: **Chamissostraße 21, 70193 Stuttgart, Deutschland**; Straßenname/Hausnummer über Straßen- und Hausnummernverzeichnis plausibilisiert.
+- Vor einem Routingvergleich müssen beide Adressen **geokodiert und die konkreten Zielkoordinaten / Straßennetz-Snaps geprüft werden**; reine Namensgleichheit oder automatisch eingesetzte Zentren genügen nicht.
+
+**Vorgeschlagene gezielte Vergleichskriterien:** Identische geokodierte Start-/Zielkoordinaten für OSRM und Valhalla; Distanz, Fahrzeit, tatsächlich gefahrene Straßenfolge, Einbahnstraßen, Abbiegebeschränkungen, Tempo-30-/Wohnstraßen, Höhenlage/Steigungen und ortstypische Signal-/Kreuzungsverzögerungen soweit datenmäßig vorhanden; Sensitivität auf eingestellte Fahrzeugspeed-Grenzen, entspannte/schnelle Route und zulässige Vermeidungen, Fehler und nicht geroutete Verbindungen. Dieselbe Route ohne Verkehrs-/Echtzeitdaten nicht als reale Ankunftszeit versprechen. Prüfung zusätzlicher städtischer Fälle (sehr kurze Strecke und verkehrsreicher Innenstadtabschnitt) gesondert zu bestimmen; keine erfundenen Ergebnisse.
+
+**Nachweise für Schreibweise:** Städtisches Straßenverzeichnis https://www.domino1.stuttgart.de/web/komunis/komunissde.nsf/49ec24bbdf344054c1257ca900367f10/c258a21879700ad4c125896b00284d93/%24FILE/c8w01_.PDF ; https://cleanwhale.de/gebaeude/stuttgart/bodelschwinghstrasse (Hausnummer 64); https://cleanwhale.de/gebaeude/stuttgart/chamissostrasse (Hausnummer 21). Vor praktischer Routentest-Ausführung Eingabekoordinaten kontrollieren.
+
+**Dokumentationsstatus:** Diese Ergänzung konkretisiert den geplanten Anbietervergleich, ändert nicht die noch offene OSRM-/Valhalla-Auswahl und aktiviert kein Routing. v330, bestehende Preview und Nutzerdaten unverändert.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
