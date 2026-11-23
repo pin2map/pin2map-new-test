@@ -57,6 +57,11 @@ jobs:
         env:
           PIN2MAP_TEST_URL: http://127.0.0.1:8765/
         run: node tests/search-chooser-webkit-browser.cjs
+      - name: REQUIRED isolated Routing UI mockup in local Chromium and WebKit
+        env:
+          PIN2MAP_MOCKUP_URL: http://127.0.0.1:8765/routing-ui-mockup.html
+        run: node tests/routing-ui-mockup-browser.cjs
+
       - name: Preserve pre-publication screenshots
         if: always()
         uses: actions/upload-artifact@v4
