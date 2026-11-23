@@ -83,6 +83,7 @@ assert.equal(await page.locator("#destinationLabel").textContent(),"Start:");
 await page.locator("#entry").selectOption("free");
 await page.locator("#plusButton").click();
 assert.match(await page.locator("#waypointList").textContent(),/Celle/);
+assert.equal(await page.locator("#destination").inputValue(),"Grenoble");
 await page.locator("#closeWaypoints").click();
 await page.locator("#entry").selectOption("roundtrip");
 await page.locator("#entry").selectOption("edit");
