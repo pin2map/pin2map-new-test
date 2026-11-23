@@ -63,7 +63,7 @@ jobs:
           }
           fs.writeFileSync('routing-browser-cors-results.json',JSON.stringify({origin,results:outcomes},null,2));
           console.log('R022_SUMMARY '+JSON.stringify(outcomes));
-          if(outcomes.some(x=>x.test==='preview-load'))process.exitCode=1;
+          if(outcomes.length!==6 || outcomes.some(x=>x.test==='preview-load'||x.fetchResolved!==true||x.status!==200||x.routeAvailable!==true))process.exitCode=1;
           JS
       - name: Save exact browser outcomes
         if: always()
