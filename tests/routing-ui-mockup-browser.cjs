@@ -27,8 +27,10 @@ const URL=process.env.PIN2MAP_MOCKUP_URL||"http://127.0.0.1:8765/routing-ui-mock
     assert.ok(await page.locator("#via1List button").count()>=2);
     await page.locator("#via1List button").last().click();
     assert.equal(await page.locator("#via1").inputValue(),"Frankfurt (Oder)");
+    assert.equal(await page.locator("#demoLine").getAttribute("hidden"),"");
     await page.locator("#calculate").click();
     assert.match(await page.locator("#result").textContent(),/Demoroute eingezeichnet/);
+    assert.equal(await page.locator("#demoLine").getAttribute("hidden"),null);
     assert.equal(await page.locator("#demoLine").isVisible(),true);
     await page.locator("#reset").click();
     assert.equal(await page.locator("#destination").inputValue(),"");
