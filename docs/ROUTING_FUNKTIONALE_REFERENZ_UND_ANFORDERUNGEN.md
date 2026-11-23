@@ -167,6 +167,24 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Technikstatus:** rein fachliche Diskussion; v330, Service Worker, Routenberechnung und alle persistenten Projektdaten unverändert.
 
+### R-005 – Eine sichtbare Autoroute; sämtliche Vorgaben direkt im Start-/Ziel-Dialog und über Routenlinie änderbar (23.11.2026)
+
+**Status: EINGEREICHT / IN DISKUSSION. Klare neue Präferenz des Auftraggebers zur radikalen UI-Vereinfachung; noch keine ausdrückliche Implementierungsfreigabe.** Diese neuere Präferenz ist bei der Diskussion der sichtbaren Routenanzahl vorrangig vor R-003/R-004 zu prüfen, ohne ältere Aussagen stillschweigend zu löschen.
+
+**Neue Nutzeräußerung, wortnah und ohne zusätzliche Produktfestlegung:**
+- „eine identische Route ist keine eigene Route, da das Geschwindigkeitsprofil ja für beide Routenarten gilt“: gleiche Geometrie darf nicht als zweite schnell/entspannt-Alternative erscheinen; dieselben Fahrzeug-Geschwindigkeitseinstellungen gelten für beide.
+- Autobahn- und Mautvermeidung sollen **als Optionen direkt im Start- oder Ziel-Dialog** festgelegt werden.
+- Der Start- bzw. Ziel-Dialog soll **auch nach einer ersten Routenberechnung erneut geöffnet** werden können, um beispielsweise andere Korridororte festzulegen.
+- „Es gibt immer nur eine angezeigte Route“: pin2map ist kein Navigationsgerät, sondern soll **möglichst realistisch** die Straßenfahrdauer A→B abschätzen. Unterschiedliche Fragestellungen gibt der Nutzer als **vier Gruppen von Vorgaben** ein: (a) Start/Ziel, (b) maximal zwei Korridor-/Richtungsorte, (c) Routingart schnell/entspannt, (d) Einschränkungen keine Autobahn/keine Maut. Daraus wird **genau eine Linie** mit Fahrdauer in der Karte angezeigt.
+- Die sichtbare Routenlinie soll **anklickbar** sein, ähnlich der bestehenden Flussauswahl, und eine **reduzierte Start-/Ziel-Bearbeitungsansicht** öffnen, in der sich diese Vorgaben schnell ändern lassen, wenn die Route nicht überzeugt.
+- **Intern** darf das System weiterhin mehrere Kandidaten berechnen, qualitativ vergleichen und **die beste zur gewählten Vorgabenkombination** wählen. Keine Mehrfachpräsentation nur um ihrer selbst willen.
+
+**Fachlicher Zweck:** Berechnete Fahrdauer und nachvollziehbare Streckenwahl haben Vorrang vor Navi-artiger Alternativenauswahl. Eine schnelle und eine entspannte Einstellung sind unterschiedliche *Anfrageprofile*, nicht gleichzeitig auszugebende Ergebnislisten. Die im allgemeinen Routing-Einstellungsbereich vorgesehenen Straßentyp-Geschwindigkeiten gelten für beide; individuelle Vorgaben gelten für die betreffende Planung. R-004 (Richtungsorte gelten für alle jeweils gewählten Routingprofile) bleibt kompatibel; Richtungsvorgaben dürfen nicht stillschweigend ignoriert werden.
+
+**Diskutierte technische/UX-Empfehlungen, ausdrücklich NICHT beschlossen:** gemeinsamer Routenplanungszustand für Start-, Ziel- und Linien-Bearbeitung; neue Berechnung bei Parameteränderungen, veraltete Antworten ignorieren, bisherige Route bis zu erfolgreichem Austausch erhalten; exakte Geometrie der selektierbaren Linie und Pointerprioritäten gegenüber Pins/Flüssen testen. Nach Streckenauswahl getrennte Bewertung der zulässigen Fahrzeit nach hinterlegten Straßen-Geschwindigkeiten, Streckenlimits und unbekannten Verzögerungen. Nutzerziel „so realistisch wie möglich“ kann ohne Echtzeitverkehr keine garantierte Ankunftszeit bedeuten. Harte vs. weiche Vermeidung, fehlerhafte/unmögliche Korridore, die Auswahl-/Bestätigungsmechanik nach Änderung, Fahrzeitmodell, mehrere Zwischenziele und tatsächliches Layout weiter zu spezifizieren. Bestehende R-002-Pin-Zwischenstopps, Reihenfolge/Optimierung und Fähren bleiben offen erhalten, nicht durch UI-Vereinfachung gestrichen.
+
+**Stand:** Nur Dokumentation; v330, Service Worker, IndexedDB, Caches, aktive Routingprovider und Preview unverändert.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
