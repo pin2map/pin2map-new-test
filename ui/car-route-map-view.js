@@ -5,10 +5,10 @@
 (function(root){
  const COLORS=["#ff3930","#1987f5","#27a855","#fa9b22","#8754bf","#26a0a1"];
  class CarRouteMapView {
-  constructor({mapPort,getPin,onLineClick}){
+  constructor({mapPort,getPin,onLineClick,onGuideRemoveRequest=null,confirmRemove=null}){
    if(!mapPort||typeof getPin!=="function"||typeof onLineClick!=="function")
     throw new TypeError("Route map ports required");
-   this.map=mapPort;this.getPin=getPin;this.onLineClick=onLineClick;this.handles=[];
+   this.map=mapPort;this.getPin=getPin;this.onLineClick=onLineClick;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
   }
   clear(){for(const handle of this.handles)this.map.removeOverlay(handle);this.handles=[];this.map.showRouteRoles([]);}
   render(snapshot){
@@ -28,7 +28,13 @@
     this.map.onRouteLine(line,()=>this.onLineClick(index));this.handles.push(line);
    });
   }
-  guides(points,onClick){this.map.showRouteGuides(points,onClick);}
+  guides(points){
+   this.map.showRouteGuides(points,id=>{
+    if(typeof this.onGuideRemoveRequest!=="function")return;
+    if(typeof this.confirmRemove==="function"&&!this.confirmRemove("Diese Richtungsflagge entfernen?"))return;
+    this.onGuideRemoveRequest(id);
+   });
+  }
  }
  const api=Object.freeze({CarRouteMapView,COLORS});
  root.Pin2MapCarRouteMapView=api;
