@@ -1,0 +1,74 @@
+name: Routing browser CORS feasibility (isolated)
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - '.github/workflows/routing-browser-cors-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install browser-matched Playwright
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install chromium webkit
+      - name: Test real Preview-origin fetch and preflight in Chromium and WebKit
+        run: |
+          node <<'JS'
+          const fs=require('node:fs');
+          const {chromium,webkit}=require('playwright');
+          const origin='https://pin2map.github.io/pin2map-new-test/preview/';
+          const osrm='https://router.project-osrm.org/route/v1/driving/9.1604151,48.7452823;9.1412686,48.7753859?overview=false&alternatives=false';
+          const valReq={locations:[{lat:48.7452823,lon:9.1604151},{lat:48.7753859,lon:9.1412686}],costing:'auto',directions_type:'none',units:'kilometers'};
+          const valhalla='https://valhalla1.openstreetmap.de/route?json='+encodeURIComponent(JSON.stringify(valReq));
+          const outcomes=[];
+          const pause=t=>new Promise(r=>setTimeout(r,t));
+          for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
+            const browser=await engine.launch({headless:true,args:name==='chromium'?['--no-sandbox']:[]});
+            const context=await browser.newContext({serviceWorkers:'block'});
+            const page=await context.newPage();
+            const errors=[];
+            page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text().slice(0,250))});
+            try{
+              await page.goto(origin,{waitUntil:'domcontentloaded',timeout:30000});
+              if(new URL(page.url()).origin!=='https://pin2map.github.io')throw Error('Unexpected origin: '+page.url());
+              for(const [id,url,header] of [['OSRM-standard',osrm,false],['Valhalla-standard',valhalla,false],['Valhalla-X-Client-Id',valhalla,true]]){
+                await pause(1400); // respect provider demo limits
+                const result=await page.evaluate(async ({url,header})=>{
+                  const started=performance.now();
+                  try{
+                    const opts={method:'GET',mode:'cors',cache:'no-store',signal:AbortSignal.timeout(18000)};
+                    if(header)opts.headers={'X-Client-Id':'pin2map-internal-feasibility'};
+                    const response=await fetch(url,opts);
+                    const raw=await response.text();
+                    let data={};try{data=JSON.parse(raw)}catch{}
+                    return {fetchResolved:true,status:response.status,ok:response.ok,type:response.type,ms:Math.round(performance.now()-started),routeAvailable:!!(data.routes?.[0]||data.trip?.summary),message:String(data.message||data.error||'').slice(0,180),responseBytes:raw.length};
+                  }catch(e){return {fetchResolved:false,error:String(e?.name||'Error')+': '+String(e?.message||e),ms:Math.round(performance.now()-started)}}
+                },{url,header});
+                outcomes.push({browser:name,test:id,...result,consoleErrors:errors.splice(0,5)});
+                console.log('R022_BROWSER '+JSON.stringify(outcomes[outcomes.length-1]));
+              }
+            }catch(e){outcomes.push({browser:name,test:'preview-load',error:String(e.message)});console.error('R022_BROWSER_ERROR '+name+' '+e.message)}
+            await browser.close();
+          }
+          fs.writeFileSync('routing-browser-cors-results.json',JSON.stringify({origin,results:outcomes},null,2));
+          console.log('R022_SUMMARY '+JSON.stringify(outcomes));
+          if(outcomes.some(x=>x.test==='preview-load'))process.exitCode=1;
+          JS
+      - name: Save exact browser outcomes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: routing-browser-cors-results
+          path: routing-browser-cors-results.json
+          if-no-files-found: warn
