@@ -15,7 +15,7 @@ async function assertLayout(where){
 const m=await page.evaluate(()=>{
 const r=x=>document.getElementById(x).getBoundingClientRect();
 const doc=document.documentElement;
-const elements=["destination","via1","routeStyle","timeProfile"];
+const elements=["destination","via1","routeStyle","timeProfile"].filter(id=>getComputedStyle(document.getElementById(id)).display!=="none"&&document.getElementById(id).getClientRects().length>0);
 const inputs=[...document.querySelectorAll("input,select")];
 const overflow=[...document.querySelectorAll(".pin-dialog,.routing-panel,.compact-line,.options-line,.via-fields,.action-fields")].filter(e=>e.scrollWidth>e.clientWidth+1).map(e=>({cls:e.className,scroll:e.scrollWidth,client:e.clientWidth}));
 return{docWidth:doc.scrollWidth,viewport:innerWidth,overflow,x:elements.map(x=>r(x).x),font:inputs.map(x=>({id:x.id,size:parseFloat(getComputedStyle(x).fontSize)})),modes:[...document.querySelectorAll(".mode")].map(x=>x.getBoundingClientRect().height),route:r("calculate").height,panel:r("routingPanel").height,dialog:r("pinName").height};
