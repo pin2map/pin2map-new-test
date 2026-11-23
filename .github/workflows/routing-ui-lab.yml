@@ -1,0 +1,39 @@
+name: Standalone routing UI lab browser gate
+on:
+  push:
+    branches: [feature/leaflet-modular-core]
+    paths:
+      - routing-ui-mockup.html
+      - tests/routing-ui-mockup-browser.cjs
+      - .github/workflows/routing-ui-lab.yml
+  pull_request:
+    branches: [feature/leaflet-modular-core]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  routing-ui-browser:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install pinned Playwright
+        run: npm install --no-save --no-audit --no-fund playwright@1.56.1
+      - name: Run isolated HTML server
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/route-ui.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/routing-ui-mockup.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/route-ui.log
+          exit 1
+      - name: Check real Chromium and WebKit UI interactions
+        env:
+          PIN2MAP_MOCKUP_URL: http://127.0.0.1:8765/routing-ui-mockup.html
+        run: node tests/routing-ui-mockup-browser.cjs
