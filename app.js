@@ -45,6 +45,7 @@
   let gestures,pinOverlapZoom,featureOverlapZoom,favoritesPanel;
   let mapActionChooser,geometryEditor,searchTypeMenu,gpsLocation,platePanel,temporaryLayerPicker;
    let routeSession=null,routePanel=null,routeMapView=null;
+   let renderRouteGuides=()=>{};
   let pendingNewGpsPinId=null,temporaryInfoPin=null;
   const favorites=window.Pin2MapMapFavorites;
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "pin-" + Date.now() + "-" + Math.random().toString(36).slice(2));
@@ -930,9 +931,9 @@
       state.routeGuides=state.routeGuides.filter(x=>x.id!==id);
       save();renderRouteGuides();
     }
-    function renderRouteGuides(){
+    renderRouteGuides=()=>{
       routeMapView?.guides(Array.isArray(state.routeGuides)?state.routeGuides:[],onRouteGuideClick);
-    }
+    };
     renderRouteGuides();
     geometryEditor=new window.Pin2MapGeometryEditor({
       document,icons:window.Pin2MapIcons,onUpdate:saveGeometry,
