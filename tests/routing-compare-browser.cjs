@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 for(const [name,engine] of [['Chromium',chromium],['WebKit',webkit]]){
 const browser=await engine.launch({headless:true,args:name==='Chromium'?['--no-sandbox']:[]});
 try{const page=await browser.newPage({viewport:{width:name==='Chromium'?1200:390,height:820},acceptDownloads:true,serviceWorkers:'allow'});
-const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const errors=[];const providerRequests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('valhalla1.openstreetmap.de/route?'))providerRequests.push(decodeURIComponent(r.url()))});
 // Regression: start from installed PWA context, where old /preview/ compare navigation
 // could silently serve the normal app via the SW's navigation fallback.
 await page.goto(base,{waitUntil:'domcontentloaded',timeout:30000});
@@ -19,10 +19,13 @@ assert.equal(await page.locator('#case option').count(),12);
 assert.equal(await page.locator('#routes input[type=radio]').count(),7);
 assert.equal(await page.locator('#map.leaflet-container').count(),1);
 assert.deepEqual(errors,[]);
-await page.selectOption('#case',name==='Chromium'?'9':'10');
+await page.selectOption('#case',name==='Chromium'?'11':'10');
 await page.locator('#go').click();
 await page.waitForFunction(()=>!document.getElementById('go').disabled,{timeout:90000});
 const loaded=await page.locator('#routes input[type=radio]:not([disabled])').count();
+assert.ok(providerRequests.some(x=>x.includes('"use_tolls":0')),'Valhalla soft toll avoidance request must be real');
+assert.ok(providerRequests.some(x=>x.includes('"exclude_tolls":true')),'Valhalla strict toll exclusion request must be real');
+console.log('GRENOBLE_CASE '+name+' '+(await page.locator('#case').inputValue())+' '+await page.locator('#status').innerText());
 assert.ok(loaded>=5,'Expected core live route profiles for Stuttgart-Grenoble: '+name+' '+await page.locator('#status').innerText()+'; '+await page.locator('#routes').innerText());
 assert.ok(await page.locator('#routes').innerText().then(t=>t.includes('Maut möglichst vermeiden')),'Toll control must be displayed');
 await page.locator('#all').click();
