@@ -3189,7 +3189,7 @@ body.object-search-mode #app #searchClear.search-clear span{
 #app .car-route-round.is-active,#app .car-route-round[aria-pressed="true"]{
  background:#167cf0;color:#fff;border-color:#0f71db}
 #app .car-route-round:disabled{opacity:.46;cursor:not-allowed}
-#app .car-route-all{background:#ffe084;color:#1d2430}
+#app .car-route-all{background:#e7e9ed;color:#1d2430}\n#app .car-route-round.car-route-all.is-active{background:#ffe082;color:#1d2430;border-color:#dfbc21}
 #app .car-route-secondary{height:40px;width:44px;border:1px solid #c4cbd3;
  background:#e7e9ed;color:#26313f;border-radius:10px;display:grid;place-items:center}
 #app .car-route-secondary .p2m-lucide{width:20px;height:20px}
