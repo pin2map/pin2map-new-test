@@ -245,3 +245,52 @@ jobs:
           console.log('LATENCY_TEST_INFO '+JSON.stringify({total:result.length,failures:failures.length,location:'GitHub Actions hosted runner, not Stuttgart or end-user browser',notes:'Small sample, public demo servers; compare results cautiously, additional trace calls not included in basic timing'}));
           if(failures.length)process.exitCode=1;
           JS
+
+      - name: Benchmark drawable route geometry delivery
+        shell: bash
+        run: |
+          node <<'JS'
+          const routes=[
+            ['STUTTGART-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['BERLIN-CITY',[52.517037,13.388860],[52.529407,13.397634]],
+            ['STUTTGART-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['STUTTGART-HAMBURG',[48.7753859,9.1412686],[53.5501721,10.0013165]]
+          ];
+          const samples=[],failures=[];
+          const round=n=>Math.round(n*10)/10;
+          for(const [name,a,b] of routes){
+            for(let i=0;i<3;i++){
+              for(const service of (i%2===0?['Valhalla','OSRM']:['OSRM','Valhalla'])){
+                try{
+                  let url;
+                  if(service==='OSRM'){
+                    url='https://router.project-osrm.org/route/v1/driving/'+a[1]+','+a[0]+';'+b[1]+','+b[0]+'?alternatives=false&steps=false&overview=full&geometries=polyline';
+                  }else{
+                    const u=new URL('https://valhalla1.openstreetmap.de/route');
+                    u.searchParams.set('json',JSON.stringify({locations:[{lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}],costing:'auto',directions_type:'none',units:'kilometers'}));
+                    url=u.toString();
+                  }
+                  const start=performance.now();
+                  const response=await fetch(url,{headers:{'User-Agent':'pin2map-routing-feasibility-test/0.5 (https://github.com/pin2map/pin2map-new-test)',Accept:'application/json'},signal:AbortSignal.timeout(20000)});
+                  const raw=await response.text(),ms=round(performance.now()-start);
+                  if(!response.ok)throw Error('HTTP '+response.status);
+                  const json=JSON.parse(raw);
+                  const geometry=service==='OSRM'?json.routes?.[0]?.geometry:json.trip?.legs?.[0]?.shape;
+                  if(typeof geometry!=='string'||geometry.length<5)throw Error('missing drawable geometry');
+                  const result={name,service,repeat:i,ms,bytes:Buffer.byteLength(raw),geometryChars:geometry.length};
+                  samples.push(result);console.log('GEOMETRY_LATENCY_SAMPLE '+JSON.stringify(result));
+                }catch(e){failures.push({name,service,error:e.message});console.error('GEOMETRY_LATENCY_FAIL '+JSON.stringify(failures.at(-1)));}
+              }
+            }
+          }
+          for(const [name] of routes){
+            for(const service of ['OSRM','Valhalla']){
+              const values=samples.filter(x=>x.name===name&&x.service===service).sort((a,b)=>a.ms-b.ms);
+              if(!values.length)continue;
+              const m=values[Math.floor(values.length/2)];
+              console.log('GEOMETRY_LATENCY_SUMMARY '+JSON.stringify({name,service,count:values.length,medianMs:m.ms,medianBytes:m.bytes,medianGeometryChars:m.geometryChars,minMs:values[0].ms,maxMs:values.at(-1).ms}));
+            }
+          }
+          console.log('GEOMETRY_LATENCY_INFO '+JSON.stringify({successful:samples.length,failed:failures.length,note:'Both carry full drawable polyline; remaining payload shapes/hosting/network remain provider dependent'}));
+          if(failures.length)process.exitCode=1;
+          JS
