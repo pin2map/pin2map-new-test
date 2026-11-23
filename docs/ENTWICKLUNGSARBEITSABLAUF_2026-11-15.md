@@ -40,6 +40,14 @@ Bei v190 schlug **ein Code-Mode-Ausführungsschritt** wegen `Code Mode exceeded 
 - **Reine Dokumentation**: keine künstliche App-/Cache-Versionserhöhung, keine unbeauftragten PWA-Dateiänderungen oder Preview-Neuveröffentlichung; automatisch ausgelöste Node-/Architekturprüfungen nur als zusätzliche Information kennzeichnen.
 - Nach Chatwechsel auf aktuellem Feature-Branch `AGENTS.md`, `docs/PROJEKTSTATUS.md` und diesen Ablauf lesen. Auftrag wird weiterhin im aktuellen Arbeitsgang so weit wie möglich vollständig ausgeführt; technische Hindernisse konkret benennen, nicht als stillschweigend erledigt ausgeben.
 
+## 5a. Verpflichtende Störfallbehandlung GitHub/Actions/Pages (Ergänzung 23.11.2026)
+
+Nutzerbeschluss: **Nicht bei einem GitHub-Fehler aufhören und nicht darauf warten, dass der Auftraggeber zu weiterer Fehlersuche auffordert.** Der Assistent trägt die Verantwortung, mit verfügbaren Mitteln eigenständig nach einer Lösung zu suchen und bei Erfolg den ursprünglichen Auftrag bis zu sämtlichen Abschlussgates fortzusetzen. `AGENTS.md` enthält den vollumfänglichen Vertrag.
+
+**Operativer Ablauf:** (a) Fehler und betroffene Operation nachweisen; (b) Ursachen und Grenzen klassifizieren; (c) kontrollierte Wiederholungen und technisch andere, zulässige Zugriffspfade im selben Auftrag einsetzen; (d) bei Actions-/Pages-Fehlern gezielt Runs, Job-Logs, tatsächliche Artefakte und HTTPS-Response prüfen; (e) nach erfolgreicher Wiederherstellung selbstständig implementieren/testen/deployen/verifizieren; (f) erst wenn die verfügbaren Zugriffsmöglichkeiten nachvollziehbar ausgeschöpft sind, präzisen Blocker und offene Arbeit dokumentieren. Keine Endlosschleife identischer Aufrufe, kein erzwungener Branchüberschreibzugriff und kein ungefragtes Ändern von Sicherheits-/Qualitätsanforderungen.
+
+Insbesondere bedeutet ein `fetch_commit_workflow_runs`-Ergebnis ohne PR-Runs **nicht**, dass keine Push-Runs existieren: die Connector-Funktion ist auf PR-ausgelöste Läufe beschränkt. Dann eigenständig alternative Run-Ermittlung suchen, statt leere Ergebnisse als Deployment-Ausfall zu deuten. Ein bestätigter Commit ist niemals ein Live-Auslieferungsnachweis. Wenn ein externer Berechtigungs- oder Infrastrukturausfall trotz verfügbarer Alternativen nicht lösbar ist, keine fiktive Fertigmeldung abgeben; der offene Task bleibt im Projektstatus für den Wiedereinstieg.
+
 ## 6. Mindestabschlussbericht
 
 - **Implementiert:** kurz die tatsächlichen Änderungen und Versionskennung.
