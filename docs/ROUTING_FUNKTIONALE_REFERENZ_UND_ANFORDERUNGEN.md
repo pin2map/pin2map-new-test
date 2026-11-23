@@ -264,6 +264,21 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 **Testentwurf:** Im isolierten Workflow dieselben vier Stadtrouten/Fernstrecken mit je vier Wiederholungen und abwechselnder Anbieter-Reihenfolge anfragen, Antwortzeit für HTTP plus JSON-Transfer, Übertragungsgröße, Median/Minimum/Maximum/Mittelwert und Fehler aufzeichnen. Weitere kleine Abfragen mit Abbiege-/Segmentdetails separat messen, damit Basisrouting nicht mit aufwändigen Folgeabfragen verwechselt wird. Die öffentlichen Demo-Hosts sind keine verbindliche Produktionsinfrastruktur, und die GitHub-Runner-Netzwerkstrecke ist nicht dieselbe wie ein Nutzergerät in Deutschland. Entscheidung noch offen; keine erfundenen SLA- oder Nutzungszusagen.
 
 
+
+**Messnachtrag R-010 (Live 23.11.2026):** [Erster Latenztest 45128692822](https://github.com/pin2map/pin2map-new-test/actions/runs/45128692822), Commit `23632a7fdce9d21869c3c66185a223d471f277be`, erfolgreich. Vier Wiederholungen je Anbieter/Strecke, alternierte Reihenfolge, Messpunkt: vollständiger HTTP-Body. **Median OSRM / Valhalla in Millisekunden:** Stuttgart Stadt 111,9/882,2; Berlin Stadt 110,2/938,6; Stuttgart–Groß Lafferde 115,2/997,4; Stuttgart–Hamburg 115,1/868,3. Acht zusätzliche Detailabfragen ebenfalls erfolgreich. Die OSRM-Basisabfrage hatte bei Fernstrecken nur etwa 600 B ohne Routengeometrie; Valhalla lieferte etwa 37–44 KB. Deshalb für eine fairere Aussage ein zweiter Test mit **vollständig übertragener zeichnbarer Polyline bei beiden Providern**.
+
+**Geometrie-Nachtest:** [Workflow 45128854004](https://github.com/pin2map/pin2map-new-test/actions/runs/45128854004), Commit `2535a7d4d537f198b94f12d5978d795fb5147d6c`, Providerjob **completed/success**. Je drei Anfragen pro Strecke und Anbieter, 24/24 erfolgreich, abwechselnde Reihenfolge. Beide Antworttypen enthalten vollständig zeichnbare Routengeometrie (nicht unbedingt gleiches JSON-/Polylineformat).
+
+| Strecke | OSRM Median ms / B | Valhalla Median ms / B |
+| --- | --- | --- |
+| Stuttgart innerstädtisch | 100,8 / 1.679 | 891,1 / 2.462 |
+| Berlin innerstädtisch | 99,2 / 938 | 885,1 / 1.196 |
+| Stuttgart–Groß Lafferde | 201,6 / 27.064 | 975,8 / 37.223 |
+| Stuttgart–Hamburg | 200,2 / 33.592 | 965,6 / 44.478 |
+
+**Befund und Grenzen:** Auf den konkret getesteten öffentlichen Demo-Hosts war OSRM unter diesen Zugriffsbedingungen rund fünf- bis neunmal schneller. Die Ursachen (Serverkapazität, Hosting, Netzweg, Cache, Profilaufwand, Antwortstruktur) sind nicht isoliert, die Messung läuft auf einem GitHub-Runner und nicht auf einem Endnutzergerät in Deutschland. Die Stichprobe ist klein, keine verlässliche p95/p99-Latenz oder Produktions-SLA. Valhalla-`trace_attributes` zum Gewinn von Kantenlimits ist eine **zusätzliche** Anfrage und in diesen Basis-/Geometriezeiten **nicht enthalten**. Weiterer Vergleich soll daher die Gesamtdauer der realen pin2map-Pipeline inklusive Zwischenstopps, Kandidatenwahl, Geschwindigkeits-/Abschnittsdaten und Browser-Rendering prüfen. Nutzerpriorität kurze Wartezeit, ggf. höher als geringfügige Zeitprognoseverbesserung, ist als Auswahlkriterium festgehalten; Anbieterentscheidung bleibt **OFFEN**. Die zuvor beobachtete größere Profilflexibilität von Valhalla vs. statisches OSRM-Demoprofil bleibt ebenfalls relevanter Trade-off.
+
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
