@@ -102,6 +102,14 @@ jobs:
         run: |
           python3 preview-source/scripts/preview-bundle.py preview-source site-root/preview
 
+      - name: Publish only the explicitly isolated routing comparison page
+        run: |
+          # Not part of the PWA CORE or service-worker cache; cannot access project storage.
+          cp preview-source/routing-compare.html site-root/preview/routing-compare.html
+          cp preview-source/routing-compare.js site-root/preview/routing-compare.js
+          node --check site-root/preview/routing-compare.js
+          test -s site-root/preview/routing-compare.html
+
       - name: Assert Preview allowlist excludes historical experiments
         run: |
           python3 - <<'PY'
