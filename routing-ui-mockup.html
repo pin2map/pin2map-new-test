@@ -53,6 +53,51 @@ fieldset{margin:0;border:2px solid #c7d2de;border-radius:20px;min-width:0;paddin
 .actions{gap:5px}.actions select,.primary,.secondary{font-size:12px;height:38px;padding:6px}
 .map-place{font-size:18px}}
 @media(max-width:360px){.options-line{overflow-x:auto;padding-bottom:2px}.radio-frame{flex:none}.toll-choice{flex:none}.top-groups{grid-template-columns:1fr 1.4fr}.mode{font-size:10px}.mode .lucide{width:16px;height:16px}}
+
+/* R-033: common label column, larger touch surfaces, balanced nearly-square desktop shell */
+.pin-dialog{min-height:min(730px,calc(100dvh - 100px))}
+.routing-panel{padding:19px 17px 20px}
+.routing-stack{gap:17px}
+.modes{gap:10px}
+.mode{min-height:65px;padding:11px 6px;font-size:15px}
+.mode .lucide{width:27px;height:27px}
+.compact-line{grid-template-columns:100px minmax(0,1fr);gap:10px}
+.compact-line label,.compact-line .caption-text{font-size:16px}
+.compact-line input{height:47px;font-size:16px}
+.options-line{gap:18px;display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center}
+.radio-frame{min-height:47px;gap:7px;padding:6px 9px;justify-content:space-around;min-width:0}
+.choice{font-size:14px;gap:5px;min-height:34px}
+.toll-button{height:47px;width:112px;border:1px solid #b7c6d4;border-radius:11px;background:#edf1f5;color:#475c70;font-weight:750;font-size:13px;white-space:nowrap}
+.toll-button.on{background:#1b69c4;border-color:#1b69c4;color:white}
+.actions{grid-template-columns:minmax(118px,1fr) minmax(125px,1.25fr) minmax(125px,1.25fr);gap:12px}
+.actions select{height:47px;font-size:14px}
+.primary,.secondary{height:47px;font-size:15px;width:100%}
+.demo-message{min-height:0}
+@media(max-width:600px){
+ .pin-dialog{min-height:0}
+ .routing-panel{padding:13px 10px 15px}
+ .routing-stack{gap:12px}
+ .modes{gap:6px}
+ .mode{min-height:55px;padding:7px 3px;font-size:12px;flex-direction:column;gap:2px}
+ .mode .lucide{width:24px;height:24px}
+ .compact-line{grid-template-columns:77px minmax(0,1fr);gap:6px}
+ .compact-line label,.compact-line .caption-text{font-size:13px}
+ .compact-line input{height:44px;font-size:14px}
+ .options-line{gap:8px;grid-template-columns:minmax(0,1fr) 84px}
+ .radio-frame{min-height:44px;gap:3px;padding:3px 4px}
+ .choice{font-size:11px;gap:2px;min-height:34px}
+ .choice input{width:13px;height:13px}
+ .toll-button{height:44px;width:84px;font-size:11px;padding:0 3px}
+ .actions{grid-template-columns:minmax(90px,1fr) minmax(81px,1fr) minmax(81px,1fr);gap:6px}
+ .actions select,.primary,.secondary{height:44px;font-size:12px}
+}
+@media(max-width:360px){
+ .options-line{overflow:visible;grid-template-columns:minmax(0,1fr) 79px}
+ .radio-frame{flex:none;min-width:0}
+ .toll-button{width:79px;font-size:10px}
+ .choice{font-size:10px}
+ .actions{grid-template-columns:minmax(81px,1fr) minmax(70px,1fr) minmax(70px,1fr)}
+}
 </style></head>
 <body><div class="map"><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-place">Bremerhaven</div><div class="map-pin"></div><svg id="demoLine" class="demo-line" viewBox="0 0 1000 900" preserveAspectRatio="none" aria-hidden="true" hidden><path d="M 480 790 C 280 665 710 550 400 430 S 700 160 560 55"/></svg>
 <header class="lab-bar"><strong>pin2map · Routing UI-Labor</strong><label for="entry">Einstieg:</label><select id="entry"><option value="start">Pin als Start</option><option value="target">Pin als Ziel</option><option value="edit">Klick auf Routenlinie</option></select><small>Nur Prototyp · Beispieldaten</small></header>
@@ -63,21 +108,21 @@ fieldset{margin:0;border:2px solid #c7d2de;border-radius:20px;min-width:0;paddin
 <section class="routing-panel" id="routingPanel" aria-label="Routing Bearbeitung">
 <div class="routing-stack">
 <div class="modes" id="modes" role="group" aria-label="Verkehrsmittel">
-<button class="mode selected" data-mode="car" type="button" aria-pressed="true"><span data-icon="car-front"></span>Auto</button>
+<button class="mode selected" data-mode="car" type="button" aria-pressed="true"><span data-icon="car"></span>Auto</button>
 <button class="mode" data-mode="bicycle" type="button" aria-pressed="false"><span data-icon="bike"></span>Rad</button>
 <button class="mode" data-mode="pedestrian" type="button" aria-pressed="false"><span data-icon="footprints"></span>Fuß</button>
-<button class="mode" data-mode="transit" type="button" aria-pressed="false"><span data-icon="train-front"></span>ÖPNV</button>
+<button class="mode" data-mode="transit" type="button" aria-pressed="false"><span data-icon="tram-front"></span>ÖPNV</button>
 </div>
 <div class="compact-line" id="editStartRow" hidden><label for="editStart">Start:</label><div class="entry-wrap"><input id="editStart" value="Bremerhaven" aria-label="Start der vorhandenen Route" autocomplete="off"></div></div>
 <div class="compact-line" id="destinationRow"><label for="destination" id="destinationLabel">Ziel:</label><div class="entry-wrap"><input id="destination" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destinationList" placeholder="Pin, Ort oder Adresse" spellcheck="false"><div id="destinationList" class="autocomplete" role="listbox" hidden></div></div></div>
 <div class="compact-line"><label for="via1">Route über:</label><div class="via-fields"><div class="entry-wrap"><input id="via1" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="via1List" aria-label="Erster Richtungsort" placeholder="Ort oder Region"><div id="via1List" class="autocomplete" role="listbox" hidden></div></div><div class="entry-wrap"><input id="via2" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="via2List" aria-label="Zweiter Richtungsort" placeholder="Ort oder Region"><div id="via2List" class="autocomplete" role="listbox" hidden></div></div></div></div>
-<div class="options-line" id="carOptions"><div class="radio-frame" role="radiogroup" aria-label="Art der Autoroute">
+<div class="compact-line" id="carOptions"><span class="caption-text">Routing:</span><div class="options-line"><div class="radio-frame" role="radiogroup" aria-label="Art der Autoroute">
 <label class="choice"><input type="radio" name="profile" value="fast" checked> Schnell</label>
 <label class="choice"><input type="radio" name="profile" value="country"> Landstraße</label>
 <label class="choice"><input type="radio" name="profile" value="scenic"> Interessant</label>
-</div><label class="choice toll-choice"><input type="checkbox" id="tolls"> Ohne Maut</label></div>
+</div><button id="tolls" class="toll-button" type="button" aria-pressed="false">Ohne Maut</button></div></div>
 <div id="otherOptions" hidden></div>
-<div class="actions"><select id="timeProfile" aria-label="Persönliches Zeitprofil"><option value="standard">Standard-Profil</option><option value="slow">Gemächlich (Entwurf)</option><option value="quick">Zügig (Entwurf)</option></select><button class="secondary" id="reset" type="button">Zurücksetzen</button><button class="primary" id="calculate" type="button">Route</button></div>
+<div class="compact-line profile-line"><label for="timeProfile">Profil:</label><div class="actions"><select id="timeProfile" aria-label="Persönliches Zeitprofil"><option value="standard">Standard-Profil</option><option value="slow">Gemächlich (Entwurf)</option><option value="quick">Zügig (Entwurf)</option></select><button class="secondary" id="reset" type="button">Zurücksetzen</button><button class="primary" id="calculate" type="button">Route</button></div></div>
 <div class="demo-message" id="result" role="status" aria-live="polite"></div>
 </div></section>
 </main></div>
@@ -85,10 +130,10 @@ fieldset{margin:0;border:2px solid #c7d2de;border-radius:20px;min-width:0;paddin
 
 (()=>{'use strict';
 const paths={
-'car-front':'<path d="m5 17-1 4v-3.2a2 2 0 0 1-2-2V11l2-5a2 2 0 0 1 2-1h12a2 2 0 0 1 2 1l2 5v4.8a2 2 0 0 1-2 2V21l-1-4"/><path d="M2 11h20M6 14h.01M18 14h.01M5 6l1.5-3h11L19 6"/>',
+'car':'<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
 'bike':'<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="m15 6-3 1 4 10M5.5 17.5 10 9l3.5 0M8 5h3l-1 4"/>',
 'footprints':'<path d="M4 16v-2.4a3.1 3.1 0 0 1 6.2 0V19a2.5 2.5 0 1 1-5 0zM13.8 10.5V5.7a3.1 3.1 0 1 1 6.2 0V10a2.5 2.5 0 1 1-5 0z"/><path d="M7 8V6M17 16v2"/>',
-'train-front':'<rect x="5" y="2" width="14" height="16" rx="5"/><path d="M5 10h14M8 22l3-4M16 22l-3-4M8 6h.01M16 6h.01M9 14h.01M15 14h.01"/>',
+'tram-front':'<rect x="4" y="3" width="16" height="14" rx="2"/><path d="M4 11h16M8 21l2-4M16 21l-2-4M8 7h.01M16 7h.01M8 14h.01M16 14h.01M8 3V2h8v1"/>',
 'map-pin-off':'<path d="M9.6 9.6a3 3 0 0 0 4.8 4.8"/><path d="M10 3.2a8 8 0 0 1 10 7.8c0 4.4-8 11-8 11s-2.4-2-4.6-4.6M4 12a8 8 0 0 1 3-6.2M2 2l20 20"/>',
 'map-pin':'<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
 'navigation':'<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
@@ -117,7 +162,8 @@ const corridors=[
 {name:'Hamburg',detail:'Stadt · Deutschland',type:'place'},
 {name:'Besançon',detail:'Frankreich',type:'place'}
 ];
-const state={mode:'car',selections:{},context:'start'};
+const state={mode:'car',selections:{},context:'start',avoidTolls:false};
+function setAvoidTolls(pressed){state.avoidTolls=Boolean(pressed);$('tolls').setAttribute('aria-pressed',String(state.avoidTolls));$('tolls').classList.toggle('on',state.avoidTolls)}
 function closeLists(except){for(const id of ['destination','via1','via2'])if(id!==except){$(id+'List').hidden=true;$(id).setAttribute('aria-expanded','false');}}
 function suggestions(id){const input=$(id),list=$(id+'List'),q=input.value.trim().toLocaleLowerCase('de');list.replaceChildren();if(!q){list.hidden=true;input.setAttribute('aria-expanded','false');return}
  const matches=(id==='destination'?samples:corridors).filter(x=>(x.name+' '+(x.place||'')+' '+x.detail).toLocaleLowerCase('de').includes(q)).slice(0,12);
@@ -129,10 +175,10 @@ function suggestions(id){const input=$(id),list=$(id+'List'),q=input.value.trim(
 for(const id of ['destination','via1','via2']){const input=$(id);input.addEventListener('input',()=>{delete state.selections[id];closeLists(id);suggestions(id)});input.addEventListener('focus',()=>{closeLists(id);if(input.value.trim()&&!state.selections[id])suggestions(id)});input.addEventListener('keydown',event=>{const list=$(id+'List');if(event.key==='Escape'){list.hidden=true;input.setAttribute('aria-expanded','false')}else if(event.key==='ArrowDown'&&!list.hidden){event.preventDefault();list.querySelector('button')?.focus()}else if(event.key==='Enter'&&!list.hidden){event.preventDefault();list.querySelector('button')?.click()}})}
 document.addEventListener('pointerdown',event=>{if(!event.target.closest('.entry-wrap'))closeLists()});
 function setMode(mode){state.mode=mode;document.querySelectorAll('[data-mode]').forEach(b=>{const active=b.dataset.mode===mode;b.classList.toggle('selected',active);b.setAttribute('aria-pressed',String(active))});$('carOptions').hidden=mode!=='car';$('otherOptions').hidden=mode==='car';result.textContent=mode==='car'?'': 'Routingoptionen für '+({bicycle:'Rad',pedestrian:'Fuß',transit:'ÖPNV'}[mode])+' sind noch nicht festgelegt (Demo).'}
-function setEntry(context){state.context=context;entry.value=context;state.selections={};closeLists();$('pinName').textContent=context==='edit'?'Bremerhaven → Grenoble':'Bremerhaven';panel.className='routing-panel '+(context==='target'?'target':context==='edit'?'edit':'');$('startButton').classList.toggle('active',context==='start');$('targetButton').classList.toggle('active',context==='target');$('editStartRow').hidden=context!=='edit';$('editStart').value='Bremerhaven';$('destinationLabel').textContent=context==='target'?'Start:':'Ziel:';destination.value=context==='edit'?'Grenoble':'';destination.placeholder=context==='target'?'Startpin, Ort oder Adresse':'Pin, Ort oder Adresse';$('via1').value=context==='edit'?'Lausanne':'';$('via2').value='';$('timeProfile').value='standard';document.querySelector('[name="profile"][value="fast"]').checked=true;$('tolls').checked=false;setMode('car');$('demoLine').setAttribute('hidden','');result.textContent=''}
+function setEntry(context){state.context=context;entry.value=context;state.selections={};closeLists();$('pinName').textContent=context==='edit'?'Bremerhaven → Grenoble':'Bremerhaven';panel.className='routing-panel '+(context==='target'?'target':context==='edit'?'edit':'');$('startButton').classList.toggle('active',context==='start');$('targetButton').classList.toggle('active',context==='target');$('editStartRow').hidden=context!=='edit';$('editStart').value='Bremerhaven';$('destinationLabel').textContent=context==='target'?'Start:':'Ziel:';destination.value=context==='edit'?'Grenoble':'';destination.placeholder=context==='target'?'Startpin, Ort oder Adresse':'Pin, Ort oder Adresse';$('via1').value=context==='edit'?'Lausanne':'';$('via2').value='';$('timeProfile').value='standard';document.querySelector('[name="profile"][value="fast"]').checked=true;setAvoidTolls(false);setMode('car');$('demoLine').setAttribute('hidden','');result.textContent=''}
 entry.addEventListener('change',()=>setEntry(entry.value));$('startButton').addEventListener('click',()=>setEntry('start'));$('targetButton').addEventListener('click',()=>setEntry('target'));document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
-$('reset').addEventListener('click',()=>setEntry(state.context));
-$('calculate').addEventListener('click',()=>{closeLists();if(state.context==='edit'&&!$('editStart').value.trim()){result.textContent='Bitte Start eingeben.';$('editStart').focus();return}if(!destination.value.trim()){result.textContent='Bitte '+(state.context==='target'?'Start':'Ziel')+' eingeben oder auswählen.';destination.focus();return}if(state.mode!=='car'){result.textContent='Die '+state.mode+'-Route ist nur als UI vorgesehen.';return}if(document.querySelector('[name="profile"][value="scenic"]').checked&&$('tolls').checked){result.textContent='Interessant + Ohne Maut ist technisch noch nicht freigegeben.';return}const query=destination.value.trim();if(!state.selections.destination)result.textContent='Nur Demo: „'+query+'“ ist noch nicht als Pin oder Adresse bestätigt. Keine Route erstellt.';else{result.textContent='Demoroute eingezeichnet (schematisch, keine echte Berechnung). Keine Pins oder Daten verändert.';$('demoLine').removeAttribute('hidden')}});
+$('reset').addEventListener('click',()=>setEntry(state.context));$('tolls').addEventListener('click',()=>setAvoidTolls(!state.avoidTolls));
+$('calculate').addEventListener('click',()=>{closeLists();if(state.context==='edit'&&!$('editStart').value.trim()){result.textContent='Bitte Start eingeben.';$('editStart').focus();return}if(!destination.value.trim()){result.textContent='Bitte '+(state.context==='target'?'Start':'Ziel')+' eingeben oder auswählen.';destination.focus();return}if(state.mode!=='car'){result.textContent='Die '+state.mode+'-Route ist nur als UI vorgesehen.';return}if(document.querySelector('[name="profile"][value="scenic"]').checked&&state.avoidTolls){result.textContent='Interessant + Ohne Maut ist technisch noch nicht freigegeben.';return}const query=destination.value.trim();if(!state.selections.destination)result.textContent='Nur Demo: „'+query+'“ ist noch nicht als Pin oder Adresse bestätigt. Keine Route erstellt.';else{result.textContent='Demoroute eingezeichnet (schematisch, keine echte Berechnung). Keine Pins oder Daten verändert.';$('demoLine').removeAttribute('hidden')}});
 setEntry('start');
 })();
 </script></body></html>
