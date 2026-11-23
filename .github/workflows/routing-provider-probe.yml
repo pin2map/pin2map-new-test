@@ -149,3 +149,30 @@ jobs:
           }
           if(failures){console.error('STREET_PROBE_FAILED',failures);process.exitCode=1;}
           JS
+
+      - name: Test slow-vehicle speed cap without changing PWA
+        shell: bash
+        run: |
+          node <<'JS'
+          const cases=[
+            ['STUTTGART-INNER-CITY',[48.7452823,9.1604151],[48.7753859,9.1412686]],
+            ['STUTTGART-TO-GROSS-LAFFERDE',[48.7452823,9.1604151],[52.2308763,10.2462993]],
+            ['BERLIN-EXAMPLE-1-TO-2',[52.517037,13.388860],[52.529407,13.397634]]
+          ];
+          const round=x=>Math.round(x*100)/100;
+          let failed=0;
+          for(const [name,from,to] of cases){
+            try{
+              for(const cap of [140,90]){
+                const query=new URL('https://valhalla1.openstreetmap.de/route');
+                query.searchParams.set('json',JSON.stringify({locations:[{lat:from[0],lon:from[1]},{lat:to[0],lon:to[1]}],costing:'auto',costing_options:{auto:{top_speed:cap}},units:'kilometers',directions_type:'none'}));
+                const response=await fetch(query,{headers:{'User-Agent':'pin2map-routing-feasibility-test/0.3 (https://github.com/pin2map/pin2map-new-test)','Accept':'application/json'},signal:AbortSignal.timeout(25000)});
+                if(!response.ok)throw Error('Valhalla HTTP '+response.status+' cap '+cap+': '+(await response.text()).slice(0,180));
+                const data=await response.json();
+                if(!data.trip?.summary)throw Error('Valhalla response missing trip cap '+cap);
+                console.log('SPEED_CAP_VALHALLA '+name+' '+JSON.stringify({topSpeedKmh:cap,distanceKm:round(data.trip.summary.length),minutes:round(data.trip.summary.time/60)}));
+              }
+            }catch(error){console.error('SPEED_CAP_FAIL '+name+' '+error.message);failed++;}
+          }
+          if(failed)process.exitCode=1;
+          JS

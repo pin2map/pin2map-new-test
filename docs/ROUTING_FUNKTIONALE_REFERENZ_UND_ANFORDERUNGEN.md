@@ -246,6 +246,15 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Bestandsschutz:** Nur unabhängiger GitHub-Actions-Test; kein aktiver Routingprovider in pin2map, kein PWA-Code-/Cache-/Persistenzschema geändert. v330 unverändert.
 
+### R-009 – Freie Ortsnamen für Start/Ziel, Test langsamer Fahrzeugprofile (23.11.2026)
+
+**Status: EINGEREICHT.** Der Auftraggeber ergänzt ausdrücklich: Der Start-Dialog darf im Zielfeld nicht nur eine vollständige Adresse wie „Hamburg bilser str. 49“, sondern auch nur einen Ortsnamen wie **„Leipzig“** akzeptieren. Im Ziel-Dialog gilt **genau das Entsprechende für den Start**. Bestehende Pin-Treffer aus allen Ebenen und freie Adresssuche nach R-002/R-003 bleiben bestehen. Ortsangaben dürfen nicht künstlich auf Straße/Hausnummer eingeschränkt werden.
+
+**Offene Ausgestaltung, noch keine beschlossene Automatik:** Ein Ort ist geografisch ein Gebiet und muss für Routing auf einen konkret geeigneten Straßenanschlusspunkt projiziert werden. Bei mehrdeutigen Ortsnamen darf kein unbemerkter falscher Ort gewählt werden; Auswahl, angezeigte Ortslage, Existenzprüfung und automatische Pin-Erzeugung bei frei geokodierten Orten benötigen eine eigene fachliche Freigabe. Keine stillschweigende Gleichsetzung von Ortsmittelpunkt, Rathaus und Fahrtziel.
+
+**Technischer Testauftrag vom Auftraggeber bestätigt:** Die bestehende isolierte Anbieter-Machbarkeitsprüfung wird um einen Vergleich des Valhalla-`auto.top_speed` (vorläufig 140 gegenüber 90 km/h, nur Testparameter) für Stadt und Fernstrecke erweitert. Die übrigen vier Straßenklassen-Höchstgeschwindigkeiten sind noch kein freigegebenes konkretes Profil. Ein `top_speed`-Grenzwert allein erfüllt ausdrücklich **nicht** die Anforderung nach getrennten Maximalgeschwindigkeiten für Autobahn/Landstraße/Schotterstraße/innerorts. OSRM-Standarddemo bietet keine frei pro Anfrage veränderbaren Straßenklassenprofile; Anpassung erfordert eigene Profil-/Datenverarbeitung oder zusätzliche Fahrzeitberechnung. Quellen: https://valhalla.github.io/valhalla/api/route/api-reference/ und https://project-osrm.org/docs/v26.4.0/profiles. Kein produktiver Anbieter ausgewählt, keine PWA-Implementierung, v330 bleibt unverändert.
+
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
