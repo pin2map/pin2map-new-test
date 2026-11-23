@@ -336,6 +336,24 @@ Die folgende Struktur ist **nur die Agenda**, keine geforderte oder freigegebene
 
 **Technischer Stand:** ausschließlich Anforderungs-/Diskussionsdokumentation, keine neue Routing-API, kein Produktivcode, PWA v330 unverändert.
 
+
+### R-014 – Einheitliche Routingmaske: Wegwahl und persönliche Zeitkorrektur klar trennen (23.11.2026)
+
+**Status: EINGEREICHT / IN DISKUSSION; keine Implementierungsfreigabe.** Der Auftraggeber möchte vor dem nächsten isolierten R-013-Machbarkeitstest das gemeinsame Bedienmodell für alle vier Routingarten präzisieren. Folgende Fachstruktur ist vom Nutzer beschrieben, aber noch nicht zur produktiven Implementierung freigegeben:
+
+1. **Start und Ziel** (wie in R-009 auch freie Ortsnamen, nicht nur vollständige Adressen; symmetrisch in Start- und Ziel-Pin-Dialog).
+2. **Optionaler Richtungskorridor** („über Würzburg“); wie bisher keine zwingende Fahrt durch das Ortszentrum und keine Umwandlung eines Korridorortes in einen obligatorischen Pin-Zwischenstopp.
+3. **Gewünschte Art der Route** (z. B. „schnell“ oder „gemütlich/entspannt“; Definition und Umsetzbarkeit pro Verkehrsmittel separat). Diese Wahl beeinflusst die **Streckenführung**.
+4. **Persönlicher Korrekturfaktor / individuelles Zeitprofil**, bei Auto z. B. drei bearbeitbare Presets mit relativen Faktoren nach Straßenart aus R-013. Die zeitliche Korrektur wirkt auf die geschätzte Dauer einer *bereits ausgewählten Route* und **darf für sich allein keine neue Routenführung auslösen**. Dieser Grundsatz der Trennung gilt in geeigneter Form auch für Fahrrad/Fuß/ÖPNV; dortige spezifische Faktoren und Präzisionsanforderungen sind noch nicht festgelegt.
+
+**Zusätzlich in den Dialog integriert:** Verkehrsmittel bzw. Routingmodus Auto/Fahrrad/Fußgänger/ÖPNV **bereits bei Beginn der Routenplanung im Pin-Dialog auswählen**, statt erst später in einen separaten Routingdialog der Vorgänger-App zu wechseln. Eine einheitliche gemeinsame Maske/Komponente für Start- und Ziel-Dialog ist angestrebt. Andere bereits erfasste Routenangaben (verpflichtende Pin-Zwischenstopps, Sortierung/Optimierung, Autobahn-/Mautvermeidung bei Auto, Fähren, Besonderheiten des ÖPNV) bleiben sachlich erhalten; ihre genaue Unterbringung ist noch offen. „Schnell/gemütlich“ ist eine Wegwahl-Option, **nicht** das persönliche Fahrzeitpreset, und Verkehrsmittelwahl ist wiederum eine davon getrennte Entscheidung.
+
+**Nachträgliches Bearbeiten:** Bei einer bestehenden Route auf die **Routenlinie klicken**, analog zur Interaktion mit einem Fluss, und den gemeinsamen Routingdialog mit vorausgefüllten Daten öffnen (ggf. kompakte Form entsprechend R-005). Änderung nur des individuellen Zeitprofils soll die **Fahrzeit derselben Route lokal aktualisieren** können, ohne neuen Server-Routingaufruf (soweit Modell und Routingmodus dies erlauben). Änderungen von Start/Ziel, Korridor, Routeart oder Verkehrsmittel bedingen grundsätzlich eine erneute Streckensuche. Es ist weiterhin nur **eine sichtbare Route** vorgesehen. Vorhandene Pin-/Fluss-Interaktionen dürfen durch einen Linienklick nicht gestört werden.
+
+**Wichtige Konsistenzbedingungen:** Für alle Routingarten ist die Trennung von *Wegwahl* und *Zeitkorrektur* eine UX-/Datenmodellvorgabe, nicht die Behauptung, ein einziges Fahrzeitverfahren reiche für ÖPNV und Fuß-/Fahrradrouting. Insbesondere ÖPNV-Verbindungs-/Etappenwahl, Fahrplanbindung und individuelle Änderungen können andere Einschränkungen erfordern. Unverändert bleibt die offene Frage zur Schaltfläche „Route berechnen“ gegenüber sofortigen Updates; keine stillschweigende Festlegung. Zu diskutieren ist auch, welche Korrekturfaktoren z. B. für ÖPNV überhaupt sinnvoll sind.
+
+**Nächste Arbeit:** Erst die fachliche Trennung dieser vier Kriterien, das Verkehrsmittel direkt in der gemeinsamen Pin-Dialogmaske und den Bearbeitungseinstieg über den Routenlinien-Klick stabilisieren. Der zuvor vorgeschlagene isolierte **R-013 OSRM-Klassifizierungs-/Preset-Test bleibt offen** und wird nicht als erledigt ausgegeben. Keine Änderung an PWA v330 oder den übrigen Schutzverträgen.
+
 ## 7. Beschlossene Routing-Fachentscheidungen aus der neuen Anforderungsrunde
 
 **Noch keine.** Die Modularchitektur- und v330-UI-Verträge aus Abschnitt 3 gelten unabhängig davon weiter. Keine technische Routing-Implementierung vor dieser Diskussion.
