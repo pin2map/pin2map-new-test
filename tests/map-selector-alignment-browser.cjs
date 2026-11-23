@@ -23,7 +23,10 @@ const sizes=[{name:"desktop",width:1366,height:768},
    const page=await context.newPage();
    try{
     await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
-    await page.waitForFunction(()=>!!document.querySelector("#basemapButton svg")&&
+    // Icons render before the application installs its click handlers.
+    // The app sets this only after bind() and all initialization is complete.
+    await page.waitForFunction(()=>document.documentElement.dataset.pin2mapReady==="true"&&
+      !!document.querySelector("#basemapButton svg")&&
       !!document.querySelector("#refreshButton svg"),null,{timeout:20000});
     const metrics=async()=>page.evaluate(()=>{
       const button=document.querySelector("#basemapButton");
