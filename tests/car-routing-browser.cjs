@@ -99,6 +99,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    // Soft flag is not a pin. It exists independently of the now-ended route.
    // The first background tap closes an already open pin/overlay menu by design.
    // A subsequent real map-surface tap opens the independent action chooser.
+   // Pin gesture handling intentionally suppresses background taps for 600ms.
+   await page.waitForTimeout(700);
    const mapSurface=page.locator("#map");
    const chooser=page.locator("#mapActionChooser");
    await mapSurface.click({position:{x:100,y:120}});
@@ -107,6 +109,12 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.locator('#mapActionChooser button[aria-label="Richtungsflagge setzen"]').click();
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1);
    assert.equal(await page.locator("#map .pin-icon").count(),3);
+   // Saving is debounced; prove the guide reached IndexedDB before reload.
+   await page.waitForFunction(async()=>{
+     const store=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await store.loadProject())?.routeGuides?.length===1;}
+     finally{store.close();}
+   },null,{timeout:10000});
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1,null,{timeout:20000});
    assert.deepEqual(errors,[],"Browser script errors");
