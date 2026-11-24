@@ -275,6 +275,9 @@ async function metrics(page){
     const baselineRegion=await page.locator("#pinPanel .pin-detail-region").boundingBox();
     const baselineFooter=await page.locator("#pinPanel .pin-actions").boundingBox();
     await page.locator("#pinRouteStart").click();
+    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    await saved.tap({force:true});
+    await page.locator("#pinPanel").waitFor({state:"visible"});
     assert.equal(await page.locator("#pinRouteStart").getAttribute("aria-pressed"),"true");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinRoutingStartBlock").isHidden(),true);
