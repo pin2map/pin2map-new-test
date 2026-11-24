@@ -906,7 +906,7 @@
       scheduleFrame:callback=>requestAnimationFrame(callback),
       getLayout:()=>({
         map:$("map").getBoundingClientRect(),
-        obstacles:[...document.querySelectorAll(".topbar,#app > button,#routePanelToggle,#carRoutePanel,.car-route-popover,#map .leaflet-control,#searchResults,#basemapMenu,#pinInfoMenu")]
+        obstacles:[...document.querySelectorAll(".topbar,#app > button,#routePanelToggle,#carRoutePanel,#map .leaflet-control")]
           .filter(element=>element.getClientRects().length&&getComputedStyle(element).visibility==="visible")
           .map(element=>element.getBoundingClientRect())
       }),

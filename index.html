@@ -199,17 +199,17 @@
     </div>
     <div class="car-route-row car-route-secondary-row">
       <fieldset class="car-route-group car-route-waypoints"><legend>Zwischenziele</legend><div class="car-route-modes">
-        <button id="routeWaypoints" class="car-route-round" type="button" data-pin-icon="graph-path" aria-label="Zwischenziele" aria-controls="routeWaypointMenu" aria-expanded="false"></button>
+        <button id="routeWaypoints" class="car-route-round p2m-icon-control" type="button" aria-label="Zwischenziele" aria-controls="routeWaypointMenu" aria-expanded="false"><span data-pin-icon="graph-star" aria-hidden="true"></span></button>
         <div class="car-route-popover hidden" id="routeWaypointMenu" role="group" aria-label="Zwischenziele">
           <button id="routeAll" type="button" aria-pressed="false"><span data-pin-icon="graph-path" aria-hidden="true"></span>Alle Pins aktivieren</button>
           <button id="routeFixed" type="button" aria-pressed="true"><span data-pin-icon="graph-star" aria-hidden="true"></span>Reihenfolge wie erstellt</button>
-          <button id="routeOptimize" type="button" aria-pressed="false" disabled><span data-pin-icon="graph-star" aria-hidden="true"></span>Reihenfolge optimieren</button>
+          <button id="routeOptimize" type="button" aria-pressed="false" disabled><span data-pin-icon="graph-ring" aria-hidden="true"></span>Reihenfolge optimieren</button>
         </div>
       </div></fieldset>
       <fieldset class="car-route-group car-route-options"><legend>Routing Optionen</legend><div class="car-route-modes">
         <button id="routeSettings" class="car-route-round p2m-icon-control" type="button" aria-label="Routencharakter wählen" aria-controls="routeProfileMenu" aria-expanded="false"><span class="car-route-motorway" aria-hidden="true"></span></button>
         <button id="routeTolls" class="car-route-round" type="button" data-pin-icon="circle-euro" aria-pressed="false" aria-label="Ohne Maut ein- oder ausschalten"></button>
-        <button id="routeTimes" class="car-route-round" type="button" data-pin-icon="list-clock" aria-label="Zeitprofil auswählen" aria-controls="routeTimesMenu" aria-expanded="false"></button>
+        <button id="routeTimes" class="car-route-round p2m-icon-control" type="button" aria-label="Zeitprofil auswählen" aria-controls="routeTimesMenu" aria-expanded="false"><span data-pin-icon="circle-slash-2" aria-hidden="true"></span></button>
         <div class="car-route-popover hidden" id="routeProfileMenu" role="group" aria-label="Autorouting-Stil">
           <button type="button" data-car-profile="fast"><span class="car-route-motorway" aria-hidden="true"></span>Autobahn bevorzugt</button>
           <button type="button" data-car-profile="country"><span data-pin-icon="road" aria-hidden="true"></span>Landstraße zügig</button>

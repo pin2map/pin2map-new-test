@@ -15,9 +15,9 @@
   bind(){
    this.el("routeEnd").addEventListener("click",()=>{if(this.confirmEnd())this.onEnd();});
    this.el("routeReverse").addEventListener("click",()=>this.onReverse());
-   this.el("routeAll").addEventListener("click",()=>{this.onAll();this.closeMenus();});
-   this.el("routeFixed").addEventListener("click",()=>{this.onOrder("fixed");this.closeMenus();});
-   this.el("routeOptimize").addEventListener("click",()=>{this.onOrder("optimal");this.closeMenus();});
+   this.el("routeAll").addEventListener("click",()=>this.chooseWaypoints("all"));
+   this.el("routeFixed").addEventListener("click",()=>this.chooseWaypoints("fixed"));
+   this.el("routeOptimize").addEventListener("click",()=>this.chooseWaypoints("optimal"));
    this.el("routeApple").addEventListener("click",()=>this.onApple());
    this.el("routePanelHide").addEventListener("click",()=>this.setVisible(false));
    this.el("routePanelToggle").addEventListener("click",()=>this.setVisible(!this.visible));
@@ -44,6 +44,25 @@
    }
    this.icons.decorate?.(this.doc);
   }
+  chooseWaypoints(choice){
+   this.preferAll=choice==="all";
+   if(this.preferAll)this.onAll();
+   else this.onOrder(choice);
+   this.showWaypointChoice();
+   this.closeMenus();
+  }
+  showChoice(triggerId,item,label){
+   const trigger=this.el(triggerId);
+   const name=label+": "+item.textContent.trim();
+   if(trigger.getAttribute("aria-label")===name)return;
+   trigger.replaceChildren(item.firstElementChild.cloneNode(true));
+   trigger.setAttribute("aria-label",name);
+  }
+  showWaypointChoice(){
+   const id=this.preferAll&&this.snapshot.allVisibleActive?"routeAll":
+    this.snapshot.order==="optimal"?"routeOptimize":"routeFixed";
+   this.showChoice("routeWaypoints",this.el(id),"Zwischenziele");
+  }
   toggleSubmenu(which){
    const opening=this.el(which).classList.contains("hidden");
    for(const [trigger,id] of menus){
@@ -51,15 +70,12 @@
     this.el(id).classList.toggle("hidden",!open);
     this.el(trigger).setAttribute("aria-expanded",String(open));
    }
-   this.onLayoutChange?.();
   }
   closeMenus(){
-   const wasOpen=menus.some(([,id])=>!this.el(id).classList.contains("hidden"));
    for(const [trigger,id] of menus){
     this.el(id).classList.add("hidden");
     this.el(trigger).setAttribute("aria-expanded","false");
    }
-   if(wasOpen)this.onLayoutChange?.();
   }
   setVisible(shown){
    this.visible=Boolean(shown);this.closeMenus();
@@ -97,19 +113,18 @@
     b.classList.toggle("is-active",snapshot.order===order);
     b.setAttribute("aria-pressed",String(snapshot.order===order));
    }
-   for(const b of this.el("routeTimesMenu").querySelectorAll("[data-time-profile]"))
-    b.setAttribute("aria-pressed",String(b.dataset.timeProfile===snapshot.timeProfile));
+   this.showWaypointChoice();
+   for(const b of this.el("routeTimesMenu").querySelectorAll("[data-time-profile]")){
+    const active=b.dataset.timeProfile===snapshot.timeProfile;
+    b.setAttribute("aria-pressed",String(active));
+    if(active)this.showChoice("routeTimes",b,"Zeitprofil auswählen");
+   }
    this.el("routeTolls").classList.toggle("is-active",snapshot.avoidTolls);
    this.el("routeTolls").setAttribute("aria-pressed",String(snapshot.avoidTolls));
    for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]")){
     const active=b.dataset.carProfile===snapshot.profile;
     b.setAttribute("aria-pressed",String(active));
-    if(active&&this.shownRouteProfile!==snapshot.profile){
-     const trigger=this.el("routeSettings");
-     trigger.replaceChildren(b.firstElementChild.cloneNode(true));
-     trigger.setAttribute("aria-label","Routencharakter wählen: "+b.textContent.trim());
-     this.shownRouteProfile=snapshot.profile;
-    }
+    if(active)this.showChoice("routeSettings",b,"Routencharakter wählen");
    }
    const legs=this.el("routeLegs");legs.replaceChildren();
    snapshot.legs.forEach((leg,index)=>{

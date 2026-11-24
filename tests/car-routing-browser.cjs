@@ -116,7 +116,9 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      const obstacles=[...document.querySelectorAll(".topbar,#carRoutePanel,#routePanelToggle,#app > button,#map .leaflet-control")]
       .filter(el=>el.getClientRects().length).map(el=>el.getBoundingClientRect());
      const lines=[...document.querySelectorAll('#map path[stroke="#ff3930"],#map path[stroke="#1987f5"]')];
-     return lines.length===2&&lines.every(line=>{
+     const boxes=lines.map(line=>line.getBoundingClientRect());
+     const centerX=(Math.min(...boxes.map(box=>box.left))+Math.max(...boxes.map(box=>box.right)))/2;
+     return lines.length===2&&Math.abs(centerX-innerWidth/2)<=2&&lines.every(line=>{
       const box=line.getBoundingClientRect();
       return box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight&&
        obstacles.every(rect=>box.right<=rect.left||box.left>=rect.right||box.bottom<=rect.top||box.top>=rect.bottom);
@@ -138,8 +140,15 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.locator("#map .p2m-route-time").count(),2);
    assert.equal(await page.locator("#map .p2m-route-time").last().textContent(),"1");
    const beforeTimeProfile=routeRequests.length;
+   const pathPositions=()=>page.locator('#map path[stroke="#ff3930"],#map path[stroke="#1987f5"]')
+    .evaluateAll(lines=>lines.map(line=>{const {x,y,width,height}=line.getBoundingClientRect();return [x,y,width,height];}));
+   const beforeMenu=await pathPositions();
+   assert.equal(await page.locator('#routeTimes [data-pin-icon="circle-slash-2"]').count(),1);
    await page.locator("#routeTimes").click();
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   assert.deepEqual(await pathPositions(),beforeMenu,"Transient time menu does not refit the route");
    await page.locator('[data-time-profile="quick"]').click();
+   assert.equal(await page.locator('#routeTimes [data-pin-icon="gauge"]').count(),1);
    assert.match(await page.locator("#routeSummary").textContent(),/57 min/);
    assert.equal(await page.locator("#map .p2m-route-time").count(),1);
    assert.equal(routeRequests.length,beforeTimeProfile,"Time profile sends no routing request");
@@ -226,6 +235,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await setRole("pinRouteTarget");
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3,null,{timeout:20000});
    assert.equal(await rolePins("roundtrip").count(),1);
+   await page.locator("#routeWaypoints").click();
+   await page.locator("#routeOptimize").click();
+   assert.equal(await page.locator('#routeWaypoints [data-pin-icon="graph-ring"]').count(),1);
+   await page.locator("#routeWaypoints").click();
+   await page.locator("#routeFixed").click();
+   assert.equal(await page.locator('#routeWaypoints [data-pin-icon="graph-star"]').count(),1);
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
    assert.equal(await rolePins("start").count()+await rolePins("target").count(),0);
    assert.equal(await rolePins("roundtrip").locator('path[fill="#ed3434"]').count(),1);
    assert.equal(await rolePins("roundtrip").locator('path[fill="#289d54"]').count(),1);

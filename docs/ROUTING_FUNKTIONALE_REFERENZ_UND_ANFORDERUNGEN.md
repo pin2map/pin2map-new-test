@@ -713,3 +713,9 @@ Die drei Geräte-Einstellungen für Fahrzeiten übernehmen die Versuchswerte 1,0
 Autozoom priorisiert die gesamte berechnete Route. Die Kartenansicht berücksichtigt die aktuell sichtbaren Bedienelemente und passt sich beim Ein- und Ausblenden des Routingdialogs an. Die normale Autozoom-Funktion für Pins steht bei fehlender Route zur Verfügung.
 
 Die Zwischenziel-Funktionen bleiben erhalten und sind über einen gemeinsamen Button erreichbar. „Routing Optionen“ zeigt Symbole für Routen- und Zeitprofile. Der Routenprofil-Button zeigt das aktive Profil. Die beiden Button-Zeilen nutzen einheitliche runde Bedienelemente. Das Beenden der Route erfordert eine Bestätigung. Minimieren erhält die aktive Route. Die in v336 eingerichteten Providerparameter und Fahrzeitfaktoren gelten weiter.
+
+### R-039 – Auswahlzustand und Routen-Autozoom (24.11.2026)
+
+„Reihenfolge optimieren“ erhält `graph-ring`. Zwischenziel- und Zeitprofil-Button zeigen die gewählte Option. Autozoom zentriert die Route mit Rücksicht auf die freie Fläche und den ein- oder ausgeblendeten Routingdialog. Vorübergehende Menüs verändern die Kartenansicht nicht.
+
+**Offene Konzeptfrage des Auftraggebers:** Eine Richtungsflagge soll eine weiche, maßstabsabhängige Korridorpräferenz ausdrücken. Bei kleinerem Maßstab gilt die Umgebung großzügiger, bei größerem enger. Eine Flagge ist kein Stopp und erzwingt keinen Durchlauf am gesetzten Punkt. Gewünschtes Beispiel ist eine Route nahe Würzburg statt über Frankfurt bei sonst unveränderten Vorgaben. Ein möglicher Ansatz ist der Vergleich geeigneter Streckenalternativen mit einer zoomabhängigen Toleranz für den Abstand zwischen Flagge und Route. Die Produktintegration bleibt einer gesonderten Entscheidung vorbehalten.

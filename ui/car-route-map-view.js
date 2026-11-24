@@ -17,7 +17,16 @@
     (j<i||!contains(rect,other))));
   }
   const score=rect=>Math.min((rect.right-rect.left-32)/width,(rect.bottom-rect.top-32)/height);
-  return candidates.reduce((best,rect)=>!best||score(rect)>score(best)?rect:best,null);
+  // Keep the route centered on the map's vertical axis when there is room.
+  // Leaflet centers its bounds vertically inside the chosen free rectangle.
+  const center=(left+right)/2;
+  const centered=candidates.flatMap(rect=>{
+   const halfWidth=Math.min(center-rect.left,rect.right-center);
+   return halfWidth>16?[{...rect,left:center-halfWidth,right:center+halfWidth}]:[];
+  });
+  const compare=(a,b)=>score(a)-score(b)||
+   Math.abs((b.top+b.bottom-top-bottom)/2)-Math.abs((a.top+a.bottom-top-bottom)/2);
+  return (centered.length?centered:candidates).reduce((best,rect)=>!best||compare(rect,best)>0?rect:best,null);
  }
  class CarRouteMapView {
   constructor({mapPort,onLineClick,onGuideRemoveRequest=null,confirmRemove=null,getLayout=null,scheduleFrame=null}){

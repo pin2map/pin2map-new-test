@@ -134,3 +134,10 @@ test("route fit selects a continuous map area clear of visible controls",()=>{
  assert.deepEqual(open,{left:0,top:57,right:390,bottom:536});
  assert.deepEqual(closed,{left:0,top:57,right:390,bottom:844});
 });
+
+test("route fit keeps a centered corridor when fixed controls occupy one side",()=>{
+ const {freeRouteRect}=require("../ui/car-route-map-view.js");
+ const map={left:0,top:0,right:400,bottom:600};
+ const control={left:0,top:0,right:60,bottom:600};
+ assert.deepEqual(freeRouteRect(map,[control],100,200),{left:60,top:0,right:340,bottom:600});
+});
