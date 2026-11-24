@@ -11,7 +11,7 @@
           entry.label+" – "+entry.referencePlace+" (Ersatzort)":
           entry.name||entry.label||"Neuer Pin";
         return pinOperations.createPin(project,{
-          id:newId(),lat:entry.point.lat,lng:entry.point.lng,name,layerId
+          id:newId(),lat:entry.point.lat,lng:entry.point.lng,name,layerId,...(entry.address?{address:entry.address}:{})
         },{validatePosition,cleanText});
       }
       if(entry.kind==="river"){

@@ -76,6 +76,25 @@
       direct&&direct.length<=120)return direct;
     return "";
   }
+  function fullAddress(result){
+    const raw=detail(result);
+    if(raw)return raw.slice(0,1000);
+    const address=result?.address||{};
+    const street=address.road||address.pedestrian||address.residential||address.street||address.footway;
+    const line=[street,address.house_number].filter(Boolean).join(" ");
+    return [...new Set([line,address.neighbourhood,address.quarter,address.suburb,address.city_district,address.borough,
+      address.city||address.town||address.village||
+      address.hamlet||address.municipality,address.postcode,address.county,address.state,address.country]
+      .map(value=>String(value||"").trim()).filter(Boolean))].join(", ").slice(0,1000);
+  }
+  function pinLocalityName(result,options){
+    const place=nearbyLocalityName(result,options);
+    const address=result?.address||{};
+    const city=address.city||address.town;
+    const district=String(address.suburb||address.city_district||address.borough||address.quarter||address.neighbourhood||"").trim();
+    if(!place||place!==city||!district||place.toLocaleLowerCase()===district.toLocaleLowerCase())return place;
+    return (district.toLocaleLowerCase().startsWith(place.toLocaleLowerCase()+" ")?district:place+" "+district).slice(0,120);
+  }
   function kind(result){
     const type=String(result?.addresstype||result?.type||"").toLowerCase();
     const category=String(result?.class||result?.category||"").toLowerCase();
@@ -120,7 +139,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({title,detail,pinName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

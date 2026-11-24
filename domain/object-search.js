@@ -44,6 +44,7 @@
    const display=value=>{const d=dateKey(value);return d?[d,d.slice(8,10)+"."+d.slice(5,7)+"."+d.slice(0,4)]:[];};
    const fields=[object.name,object.createdAt,object.updatedAt,
     ...display(object.createdAt),...display(object.updatedAt)];
+   if(type==="pins"&&kind!=="texts")fields.push(object.address);
    if(texts)fields.push(object.note,object.url,gpx.filename,object.gpxFilename,object.gpxName);
    if(needle&&!fields.some(v=>text(v).includes(needle)))continue;
    // Leaflet marker ownership is keyed by ID: count each displayed marker once.
@@ -85,6 +86,7 @@
       day?day.slice(8,10)+"."+day.slice(5,7)+"."+day.slice(0,4):""];
     // All-object modes explicitly distinguish name-only from name + note.
     // Other category filters retain their existing optional URL text match.
+    if(type==="pins"&&kind!=="all-name"&&kind!=="texts")fields.push(object.address);
     if(kind!=="all-name")fields.push(object.note);
     if(kind!=="all"&&kind!=="all-name")fields.push(object.url);
     if(needle&&!fields.some(v=>text(v).includes(needle)))continue;

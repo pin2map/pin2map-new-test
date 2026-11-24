@@ -87,10 +87,10 @@
     });
   }
   class PinMarkerView{
-    constructor({mapAdapter,onSelect,attachGesture,cleanText,defaultColor,getRouteSnapshot=()=>null,getInfoLabel=()=>null,formatInfo=()=>"",onInfoClick=()=>{}}){
+    constructor({mapAdapter,onSelect,onLabelSelect=onSelect,attachGesture,cleanText,defaultColor,getRouteSnapshot=()=>null,getInfoLabel=()=>null,formatInfo=()=>"",onInfoClick=()=>{}}){
       if(!mapAdapter||typeof onSelect!=="function"||typeof attachGesture!=="function")
         throw new TypeError("Pin marker adapter and callbacks required");
-      this.map=mapAdapter;this.onSelect=onSelect;this.attachGesture=attachGesture;
+      this.map=mapAdapter;this.onSelect=onSelect;this.onLabelSelect=onLabelSelect;this.attachGesture=attachGesture;
       this.cleanText=cleanText;this.defaultColor=defaultColor;this.markers=new Map();
       this.getRouteSnapshot=getRouteSnapshot;this.getInfoLabel=getInfoLabel;this.formatInfo=formatInfo;this.onInfoClick=onInfoClick;
       this.relocationSourceId=null;
@@ -110,7 +110,7 @@
         if(!icon)return [];
         const rects=[rectangle(icon)];
         const label=marker.getTooltip?.()?.getElement?.();
-        if(label)rects.push(rectangle(label));
+        if(label&&label.style?.visibility!=="hidden")rects.push(rectangle(label));
         return [{type:"pin",id:pin.id,name:pin.name,kind:"pin",
           position:{lat:pin.lat,lng:pin.lng},rects}];
       });
@@ -144,7 +144,7 @@
         this.map.setMarkerPosition(marker,{lat:pin.lat,lng:pin.lng});
         this.map.setMarkerPriority?.(marker,highlightIds?.has(pin.id)?1500:0);
         this.map.setMarkerAppearance(marker,look);
-        this.map.setMarkerLabel(marker,label);
+        this.map.setMarkerLabel(marker,label,()=>this.onLabelSelect(pin.id));
         this.map.setMarkerInfo?.(marker,this.formatInfo(this.getInfoLabel(pin)),()=>this.onInfoClick(pin.id));
         this.map.getMarkerElement?.(marker)?.classList.toggle("pin-relocation-source",pin.id===this.relocationSourceId);
         this.map.getMarkerElement?.(marker)?.classList.toggle("p2m-new-object-blink",!!flashIds?.has(pin.id));

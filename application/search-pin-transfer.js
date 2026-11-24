@@ -4,11 +4,11 @@
  * Provider/network, UI rendering and project persistence remain elsewhere. */
 (function(root){
   class SearchPinTransfer{
-    constructor({searchView,titleOf,addPin,mapPort,onLayout,isPrivateLayerVisible,onRenderMarkers}){
+    constructor({searchView,titleOf,addPin,addressOf=null,mapPort,onLayout,isPrivateLayerVisible,onRenderMarkers}){
       if(!searchView||[titleOf,addPin,onLayout,isPrivateLayerVisible,onRenderMarkers].some(fn=>typeof fn!=="function")||
         !mapPort||typeof mapPort.getViewport!=="function"||typeof mapPort.setView!=="function")
         throw new TypeError("Search pin transfer ports required");
-      this.searchView=searchView;this.titleOf=titleOf;this.addPin=addPin;this.mapPort=mapPort;
+      this.addressOf=addressOf;this.searchView=searchView;this.titleOf=titleOf;this.addPin=addPin;this.mapPort=mapPort;
       this.onLayout=onLayout;this.isPrivateLayerVisible=isPrivateLayerVisible;
       this.onRenderMarkers=onRenderMarkers;
     }
@@ -19,7 +19,8 @@
         return null;
       }
       this.searchView.hide();
-      const pin=this.addPin(lat,lng,this.titleOf(result));
+      const name=this.titleOf(result);
+      const pin=this.addressOf?this.addPin(lat,lng,name,this.addressOf(result)):this.addPin(lat,lng,name);
       if(pin){
         this.mapPort.setView({
           center:{lat,lng},

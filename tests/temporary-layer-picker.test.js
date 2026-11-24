@@ -10,7 +10,7 @@ test("Privat is immediately selected for new records, not via the obsolete layer
  const controller=read("ui/object-acceptance-controller.js");
  assert.match(app,/privateId:PRIVATE_ID/);
  assert.match(controller,/this.service.create\(this.getProject\(\),entry,this.privateId\)/);
- assert.match(service,/layerId\s*\}/);
+ assert.match(service,/name,layerId(?:[,\s]|\})/);
  assert.doesNotMatch(controller,/temporaryLayerPicker\.show|platePanel\.show|onAccept:/);
 });
 test("Privat has an editable color but retains its fixed name and protected identity",()=>{

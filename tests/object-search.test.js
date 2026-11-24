@@ -251,3 +251,18 @@ test("five visible sal matches survive the v300 display-only toggle",()=>{
   assert.deepEqual(result.map(m=>m.id),["p1","p2","p3","a1","a2"]);
  }
 });
+
+test("a saved house address is searchable without changing the name and is discarded on move",()=>{
+ const {searchExpanded}=require("../domain/object-search.js");
+ const operations=require("../application/pin-operations.js");
+ const model=require("../domain/project-model.js");
+ const state=model.defaultProject();
+ const pin=operations.createPin(state,{id:"bochum",lat:51.48,lng:7.21,name:"Bergstraße 123",
+  address:"Bergstraße 123, 44787 Bochum, Deutschland"},{validatePosition:model.position,cleanText:model.cleanText});
+ assert.equal(searchExpanded(state,{query:"Bochum",kind:"pins"})[0].object.name,"Bergstraße 123");
+ assert.deepEqual(searchExpanded(state,{query:"Bochum",kind:"all-name"}),[]);
+ operations.movePin(state,pin.id,{lat:53.07,lng:8.8},{validatePosition:model.position});
+ assert.equal(pin.address,undefined);
+ assert.equal(pin.name,"Bergstraße 123");
+ assert.deepEqual(searchExpanded(state,{query:"Bochum",kind:"pins"}),[]);
+});

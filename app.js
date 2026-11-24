@@ -353,8 +353,8 @@
     onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
   });
   const searchPinTransfer = new window.Pin2MapSearchPinTransfer({
-    searchView,titleOf:result=>placeDomain.pinName(result),
-    addPin:(lat,lng,name)=>addPin(lat,lng,name),mapPort:{
+    searchView,titleOf:result=>placeDomain.pinName(result),addressOf:placeDomain.fullAddress,
+    addPin:(lat,lng,name,address)=>addPin(lat,lng,name,"search",address),mapPort:{
       getViewport:()=>mapAdapter.getViewport(),
       setView:(view,options)=>mapAdapter.setView(view,options)
     },
@@ -639,19 +639,22 @@
     document.body.classList.toggle("pin-relocation-picking",picking);
     mapAdapter.getContainer().style.cursor = picking ? "crosshair" : "";
   }
-  const manualPinLocality=new window.Pin2MapManualPinLocality({
-    geocoder,pickName:placeDomain.nearbyLocalityName,
-    detailZoom:placeDomain.reversePlaceZoom,
-    allowed:()=>state.allowGeocode,
-    onName:entry=>{
-      if(!entry.savedId)return;
-      const pin=pinOps.findPin(state,entry.savedId);
-      if(!pin||pin.name!=="Neuer Pin")return;
-      pinOps.renamePin(state,pin.id,entry.name,{cleanText});
-      save();renderMarkers();
-      void dbWrite().catch(()=>showNotice("Pinname konnte nicht gespeichert werden"));
-    }
-  });
+  const lookupPinAddress=window.Pin2MapManualPinLocality.savedAddressLookup({geocoder,allowed:()=>state.allowGeocode});
+  const addressRequests=new WeakMap();
+  function enrichPinAddress(pin,entry=null){
+    if(!pin||pin.address||!state.allowGeocode)return;
+    const project=state,point={lat:pin.lat,lng:pin.lng},request={};
+    addressRequests.set(pin,request);
+    const current=()=>state===project&&pinOps.findPin(project,pin.id)===pin&&
+      pin.lat===point.lat&&pin.lng===point.lng&&addressRequests.get(pin)===request;
+    void lookupPinAddress(point,current,result=>{
+      const address=placeDomain.fullAddress(result);
+      if(address)pin.address=address;
+      const name=entry?.autoNamed&&pin.name==="Neuer Pin"&&placeDomain.pinLocalityName(result,{mapZoom:entry.mapZoom,point});
+      if(name)pinOps.renamePin(project,pin.id,name,{cleanText});
+      if(address||name){save();renderMarkers();}
+    });
+  }
   // Reuse the same preview/guide as the saved-pin workflow; only the
   // transient target state belongs to this dedicated controller.
   const temporaryMove=new window.Pin2MapTemporaryObjectMoveController({
@@ -659,12 +662,10 @@
     getPreview:()=>moveView,getGuide:()=>moveGuide,
     closeLayerPicker:()=>temporaryLayerPicker?.close(),
     closePlatePanel:()=>platePanel?.close(),
-    invalidateLocality:()=>manualPinLocality.invalidate(),
     updateModeUI:()=>updateModeUI(),
     validatePosition:projectModel.position,
     getZoom:()=>mapAdapter.getViewport().zoom,
-    accept:entry=>showObjectPreview(entry),
-    resolveName:entry=>manualPinLocality.resolve(entry)
+    accept:entry=>showObjectPreview(entry)
   });
   const objectCreation=window.Pin2MapObjectCreationService({
     pinOperations:pinOps,projectFeatures,
@@ -675,7 +676,7 @@
     clearPrevious:()=>clearObjectPreview(),
     clearSelection:()=>{uiState.clearSelection();geometryEditor?.close(false);renderPinPanel();},
     onSetGpsPin:id=>{pendingNewGpsPinId=id;},
-    onCurrentPin:entry=>manualPinLocality.setCurrent(entry),
+    onCurrentPin:entry=>enrichPinAddress(pinOps.findPin(state,entry.savedId),entry),
     onFlash:(type,id)=>flashNewObject(type,id),
     onMapPoint:point=>mapAdapter.setView({
       center:point,zoom:Math.max(mapAdapter.getViewport().zoom,12)
@@ -691,10 +692,9 @@
   const pinEntry=new window.Pin2MapPinEntryCoordinator({
     closeMapMenus:()=>closeAllMapMenus(),
     getMapZoom:()=>mapAdapter.getViewport().zoom,
-    accept:entry=>showObjectPreview(entry),
-    resolveAutoName:entry=>manualPinLocality.resolve(entry)
+    accept:entry=>showObjectPreview(entry)
   });
-  function addPin(lat,lng,name,source="search"){return pinEntry.create(lat,lng,name,source);}
+  function addPin(lat,lng,name,source="search",address=""){return pinEntry.create(lat,lng,name,source,address);}
   function commitPin(lat,lng,name){return pinSession.add(lat,lng,name);}
 
   const geometrySearch=new window.Pin2MapGeometrySearchController({
@@ -717,7 +717,6 @@
   function clearObjectPreview(){
     temporaryMove.cancel();
     temporaryLayerPicker?.close();
-    manualPinLocality.invalidate();
     platePanel?.close();
     gpsLocation?.close();
     mapAdapter?.clearTemporaryPlateArea?.();
@@ -923,6 +922,7 @@
     };
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
+      onLegSelect:index=>routeMapView.fit(index),
       onEnd:()=>{routeSession.clear();routeGuideSession.clear();renderPinPanel();},
       confirmEnd:()=>window.confirm("Routing wirklich beenden?"),
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
@@ -1057,6 +1057,7 @@
         getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
       }),
       onInfoClick:id=>selectPin(id),
+      onLabelSelect:id=>{if(!uiState.moveMode)selectPin(id);},
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;handleMarkerTap(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
     })
@@ -1126,7 +1127,7 @@
         if(committed)uiState.clearSelection();
         updateModeUI();renderMarkers();renderPinPanel();
       },
-      onCommitted:()=>{save();renderMarkers();showNotice("Position gespeichert");}
+      onCommitted:pin=>{save();renderMarkers();enrichPinAddress(pin);showNotice("Position gespeichert");}
     });
     await mapHistoryController.initialize();
     favoritesPanel=favoritesController.bind();

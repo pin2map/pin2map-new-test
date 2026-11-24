@@ -203,7 +203,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
 .pin-panel .muted{margin:7px 0;font-size:11px}
 .pin-panel .pin-actions button:not(#pinWikipedia){font-size:12px!important;padding:8px!important}
 /* Vorgänger-Namenslabels: permanente Leaflet-Tooltips, rechts am Pin.
-   Leaflet owns their position; no generic marker/collision CSS overrides. */
+   The map adapter keeps the clickable label outside pin silhouettes. */
 #map .leaflet-tooltip.address-label{
   background:rgba(255,255,255,.94);
   border:1px solid #777;
@@ -212,7 +212,7 @@ html,body,#app{width:100%;max-width:100%;overflow-x:hidden}
   font-weight:600;
   padding:3px 6px;
   white-space:nowrap;
-  pointer-events:none;
+  pointer-events:auto;cursor:pointer;
 }
 /* Complete the Leaflet tooltip nose with the label's own thin dark outline. */
 #map .leaflet-tooltip-right.address-label::before{border-right-color:#777}
@@ -3194,7 +3194,7 @@ body.object-search-mode #app #searchClear.search-clear span{
 #app .car-route-apple .car-route-round{margin:auto}
 #app .car-route-legs{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0;
  scrollbar-width:thin;padding:4px 3px;font-size:12px;font-weight:600}
-#app .car-route-leg{display:flex;align-items:flex-start;gap:8px;padding:5px 2px;
+#app .car-route-leg{display:flex;width:100%;text-align:left;background:transparent;color:inherit;border-radius:0;align-items:flex-start;gap:8px;padding:5px 2px;
  border-bottom:1px solid #e8edf2;line-height:1.4;overflow-wrap:anywhere}
 #app .car-route-dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px;margin-top:3px}
 #app .car-route-selected-leg{background:#e1f0ff}

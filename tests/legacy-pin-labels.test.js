@@ -24,9 +24,9 @@ test("legacy pin labels are safe, right-anchored permanent Leaflet tooltips",()=
   assert.equal(tooltip.content.textContent,'<img src=x onerror=alert(1)>');
   assert.equal(options.permanent,true);
   assert.equal(options.direction,"right");
-  assert.deepEqual(Array.from(options.offset),[28,-18]);
+  assert.deepEqual(Array.from(options.offset),[14,-18]);
   assert.equal(options.className,"address-label");
-  assert.equal(options.interactive,false);
+  assert.equal(options.interactive,true);
   adapter.setMarkerLabel(marker,"New name");
   assert.equal(updates,1);
   assert.equal(tooltip.content.textContent,"New name");
@@ -43,7 +43,7 @@ test("legacy label CSS matches predecessor without adding important overrides",(
   for(const declaration of [
     "background:rgba(255,255,255,.94)","border:1px solid #777",
     "border-radius:5px","color:#111","font-weight:600",
-    "padding:3px 6px","white-space:nowrap","pointer-events:none"
+    "padding:3px 6px","white-space:nowrap","pointer-events:auto"
   ])assert.ok(rule.includes(declaration),declaration);
   assert.ok(!rule.includes("!important"));
 });

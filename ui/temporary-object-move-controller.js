@@ -4,7 +4,7 @@
 (function(root){
  class TemporaryObjectMoveController{
   constructor({getMoveMode,getPreview,getGuide,closeLayerPicker,closePlatePanel,
-    invalidateLocality,updateModeUI,validatePosition,getZoom,accept,resolveName}){
+    invalidateLocality=()=>{},updateModeUI,validatePosition,getZoom,accept,resolveName=()=>{}}){
    Object.assign(this,{getMoveMode,getPreview,getGuide,closeLayerPicker,
      closePlatePanel,invalidateLocality,updateModeUI,validatePosition,getZoom,
      accept,resolveName});

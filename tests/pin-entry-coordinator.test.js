@@ -55,7 +55,7 @@ test("ports are explicit and module remains outside browser/map/storage",()=>{
  const app=read("app.js"),mod=read("application/pin-entry-coordinator.js");
  const html=read("index.html"),sw=read("sw.js");
  assert.match(app,/new window\.Pin2MapPinEntryCoordinator/);
- assert.match(app,/function addPin\(lat,lng,name,source="search"\)\{return pinEntry\.create\(lat,lng,name,source\);\}/);
+ assert.match(app,/function addPin\(lat,lng,name,source="search",address=""\)\{return pinEntry\.create\(lat,lng,name,source,address\);\}/);
  assert.ok(html.indexOf('src="./application/pin-entry-coordinator.js"')<
   html.indexOf('src="./app.js"'));
  assert.match(sw,/".\/application\/pin-entry-coordinator\.js"/);

@@ -173,20 +173,36 @@ test("fallback keeps original name when provider has no settlement",async()=>{
  service.setCurrent(entry);await service.resolve(entry);
  assert.equal(entry.label,"Neuer Pin");
 });
-test("app passes manual unnamed pin to naming service with cleanup on save",()=>{
+test("saved pins keep separate address and safe locality naming ports",()=>{
  const app=fs.readFileSync(path.resolve(__dirname,"../app.js"),"utf8");
  assert.match(app,/allowed:\(\)=>state\.allowGeocode/);
- assert.match(app,/detailZoom:placeDomain\.reversePlaceZoom/);
- const entryOwner=fs.readFileSync(path.resolve(__dirname,"../application/pin-entry-coordinator.js"),"utf8");
  assert.match(app,/getMapZoom:\(\)=>mapAdapter\.getViewport\(\)\.zoom/);
- assert.match(entryOwner,/const mapZoom=this\.getMapZoom\(\)/);
- const temporaryMove=fs.readFileSync(path.resolve(__dirname,"../ui/temporary-object-move-controller.js"),"utf8");
- assert.match(temporaryMove,/if\(entry\.autoNamed\)void this\.resolveName\(entry\)/);
- assert.match(app,/resolveName:entry=>manualPinLocality\.resolve\(entry\)/);
- assert.match(app,/resolveAutoName:entry=>manualPinLocality\.resolve\(entry\)/);
- assert.match(entryOwner,/if\(saved&&entry\.autoNamed\)void this\.resolveAutoName\(entry\)/);
- assert.match(app,/manualPinLocality\.setCurrent\(entry\)/);
- assert.match(app,/function clearObjectPreview\(\)\{[\s\S]*?manualPinLocality\.invalidate\(\)/);
- assert.match(app,/pinOps\.renamePin\(state,pin\.id,entry\.name,\{cleanText\}\)/);
- assert.match(app,/const name=entry\.referencePlace\?/);
+ assert.match(app,/onCurrentPin:entry=>enrichPinAddress/);
+ assert.match(app,/pin\.lat===point\.lat&&pin\.lng===point\.lng/);
+ assert.match(app,/placeDomain\.fullAddress\(result\)/);
+ assert.match(app,/entry\?\.autoNamed&&pin\.name==="Neuer Pin"/);
+ assert.match(app,/pinOps\.renamePin\(project,pin\.id,name,\{cleanText\}\)/);
+});
+
+test("full addresses retain city and postal code, while map names include the suburb",()=>{
+ const result={address:{road:"Bergstraße",house_number:"123",city:"Bochum",postcode:"44787",country:"Deutschland"}};
+ assert.equal(domain.pinName(result),"Bergstraße 123");
+ assert.equal(domain.fullAddress(result),"Bergstraße 123, Bochum, 44787, Deutschland");
+ assert.equal(domain.pinLocalityName({address:{city:"Bremen",suburb:"Neustadt",road:"Hafenstraße"}},{mapZoom:17}),"Bremen Neustadt");
+});
+
+test("saved address lookup skips stale or disabled requests and requests full detail",async()=>{
+ const calls=[];
+ let allowed=false,current=true;
+ const lookup=ManualPinLocality.savedAddressLookup({allowed:()=>allowed,delay:async()=>{},
+  geocoder:{reverse:async(point,options)=>{calls.push([point,options]);return {name:"Bochum"};}}});
+ const point={lat:51.48,lng:7.21};
+ const apply=result=>calls.push(result.name);
+ await lookup(point,()=>current,apply);
+ allowed=true;
+ current=false;
+ await lookup(point,()=>current,apply);
+ current=true;
+ await lookup(point,()=>current,apply);
+ assert.deepEqual(calls,[[point,{zoom:18}],"Bochum"]);
 });

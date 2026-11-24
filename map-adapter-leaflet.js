@@ -26,6 +26,8 @@
     constructor(map) {
       if (!map || typeof map.getCenter !== "function") throw new TypeError("Leaflet map required");
       this.map = map;
+      this.pinLabels=new Set();
+      this.map.on?.("move zoom resize",()=>this.schedulePinLabels());
     }
     containsPoint(point){
       const p=latLng(point);
@@ -441,19 +443,59 @@
     }
     // Presentational Leaflet tooltip port. Keep provider-specific anchoring
     // and safe DOM content creation out of the UI and application layers.
-    setMarkerLabel(marker,text) {
+    setMarkerLabel(marker,text,onClick){
       const name=String(text||"");
       if(!name){
+        this.pinLabels.delete(marker);
         if(marker.getTooltip())marker.unbindTooltip();
+        this.schedulePinLabels();
         return;
       }
       const content=document.createElement("span");
-      content.textContent=name; // Never interpret user-entered names as HTML.
+      content.textContent=name;
       if(marker.getTooltip())marker.setTooltipContent(content);
-      else marker.bindTooltip(content,{
-        permanent:true,direction:"right",offset:[28,-18],
-        className:"address-label",interactive:false
+      else{
+        marker.bindTooltip(content,{
+          permanent:true,direction:"right",offset:[14,-18],
+          className:"address-label",interactive:true,bubblingMouseEvents:false
+        });
+        marker.getTooltip()?.on?.("click",event=>{
+          if(event.originalEvent)window.L.DomEvent.stop(event.originalEvent);
+          onClick?.();
+        });
+      }
+      this.pinLabels.add(marker);
+      this.schedulePinLabels();
+    }
+    schedulePinLabels(){
+      if(this.pinLabelFrame||typeof requestAnimationFrame!=="function")return;
+      this.pinLabelFrame=requestAnimationFrame(()=>{
+        this.pinLabelFrame=null;
+        this.layoutPinLabels();
       });
+    }
+    layoutPinLabels(){
+      if(!this.pinLabels.size)return;
+      const bounds=this.map.getContainer().getBoundingClientRect();
+      const occupied=[...this.map.getContainer().querySelectorAll(".pin-marker-shape,.p2m-route-guide-pin")]
+        .map(pin=>pin.getBoundingClientRect()).filter(rect=>rect.width&&rect.height);
+      const fits=rect=>rect.left>=bounds.left+3&&rect.right<=bounds.right-3&&
+        rect.top>=bounds.top+3&&rect.bottom<=bounds.bottom-3&&
+        !occupied.some(box=>rect.left-5<box.right&&rect.right+5>box.left&&
+          rect.top-5<box.bottom&&rect.bottom+5>box.top);
+      for(const marker of this.pinLabels){
+        const tooltip=marker.getTooltip(),element=tooltip?.getElement();
+        if(!element)continue;
+        let placed=false;
+        for(const [direction,offset] of [["right",[14,-18]],["left",[-14,-18]],["top",[0,-43]],["bottom",[0,5]]]){
+          tooltip.options.direction=direction;
+          tooltip.options.offset=offset;
+          tooltip.update();
+          const rect=element.getBoundingClientRect();
+          if(fits(rect)){occupied.push(rect);placed=true;break;}
+        }
+        element.style.visibility=placed?"":"hidden";
+      }
     }
     // Per-pin information lives in a separate map overlay ABOVE the name tooltip.
     // Handles and Leaflet divIcon details never escape this adapter.
@@ -488,6 +530,7 @@
     }
     removeOverlay(overlay) {
       if(!overlay)return;
+      if(this.pinLabels.delete(overlay))this.schedulePinLabels();
       this.setMarkerInfo(overlay,"");
       this.map.removeLayer(overlay);
     }

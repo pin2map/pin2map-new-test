@@ -733,3 +733,11 @@ Eine Variante muss mehr Flaggenkorridore erreichen und bereits erreichte Korrido
 Das bestätigte Beenden der Route entfernt sämtliche Richtungsflaggen aus Karte und Projektspeicher. Abbruch der Bestätigung erhält beides.
 
 Anbieterkennzeichnungen für Fähren teilen jede betroffene Route in getrennte Straßen- und Fähr-Etappen. Straßenlinien enden am Abfahrtshafen und beginnen am Ankunftshafen neu. Die Fährgeometrie wird gestrichelt gezeichnet. Ihre eigene Dauer stammt aus der Providerantwort und wird als Schätzung angezeigt. Fahrzeitprofile wirken auf Straßen-Etappen. Auf der Fähre gibt es keine Straßen-Zeitmarken. Nach jeder Ankunft beginnt die Zählung der halben und ganzen Fahrstunden wieder bei null. Weitere Fähren wiederholen dieselbe Trennung. Pflicht-Zwischenziele bleiben erhalten.
+
+### R-042 – Etappenzoom und Adresssuche für Pins (24.11.2026)
+
+Ein Druck auf eine Straßen- oder Fähr-Etappe in der Routingliste passt deren Geometrie in die freie Kartenfläche ein. Autozoom bleibt der Einstieg zur gesamten Route.
+
+Pinnamen und die intern gespeicherte verfügbare Adresse sind getrennte Felder. Die Adresssuche übernimmt den vollständigen Treffer und zeigt bei Hausadressen weiterhin Straße und Hausnummer als Name an. Kartentipps können bei aktivierter Ortsauflösung Hauptort und benannten Stadtteil kombinieren. Bei einer Positionsänderung wird die bisherige Adresse verworfen und die neue Adresse bei freigegebener Ortsauflösung ermittelt. Gespeicherte Namen bleiben beim Verschieben erhalten. Die normale Pinsuche durchsucht auch die Adresse. „Nur Namen“ bleibt auf Namenssuche beschränkt. Historische Pins behalten ihre bisherigen Daten bis zu einer neuen Adressermittlung.
+
+Kartenlabels rücken näher an den Pin heran. Bei Kollisionen wechselt das Label die Seite. Fehlt Platz, wird es für diesen Ausschnitt ausgeblendet. Sichtbare Labels liegen über der Karte, decken keine Pins ab und öffnen den zugehörigen Pin.

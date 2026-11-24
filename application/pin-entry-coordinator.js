@@ -4,12 +4,12 @@
  * storage, and the map-interaction owner's event dispatch. */
 (function(root){
   class PinEntryCoordinator{
-    constructor({closeMapMenus,getMapZoom,accept,resolveAutoName}={}){
+    constructor({closeMapMenus,getMapZoom,accept,resolveAutoName=()=>{}}={}){
       for(const fn of [closeMapMenus,getMapZoom,accept,resolveAutoName])
         if(typeof fn!=="function")throw new TypeError("Pin entry ports required");
       Object.assign(this,{closeMapMenus,getMapZoom,accept,resolveAutoName});
     }
-    create(lat,lng,name,source="search"){
+    create(lat,lng,name,source="search",address=""){
       if(!Number.isFinite(lat)||Math.abs(lat)>90||
          !Number.isFinite(lng)||Math.abs(lng)>180)return null;
       this.closeMapMenus();
@@ -18,6 +18,7 @@
       const entry={kind:"point",point:{lat,lng},mapZoom,
         autoNamed:source==="map"&&!name,
         label:name||"Neuer Pin",name:name||"",source,
+        ...(address?{address}:{}),
         preserveViewport:source==="map"};
       const saved=this.accept(entry);
       if(saved&&entry.autoNamed)void this.resolveAutoName(entry);

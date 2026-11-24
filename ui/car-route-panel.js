@@ -7,9 +7,9 @@
  const fmtDistance=m=>m<1000?Math.round(m)+" m":Math.round(m/1000)+" km";
  const fmtTime=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return (h?h+" h ":"")+ (m%60)+" min";};
  class CarRoutePanel {
-  constructor({document:doc,getElement,icons,getPin,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
+  constructor({document:doc,getElement,icons,getPin,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
    if(!doc||!getElement||!icons)throw new TypeError("Route panel UI dependencies required");
-   Object.assign(this,{doc,el:getElement,icons,getPin,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
+   Object.assign(this,{doc,el:getElement,icons,getPin,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
    this.snapshot=null;this.visible=true;
   }
   bind(){
@@ -128,7 +128,12 @@
    }
    const legs=this.el("routeLegs");legs.replaceChildren();
    snapshot.legs.forEach((leg,index)=>{
-    const row=this.doc.createElement("div");row.className="car-route-leg";row.dataset.leg=String(index);
+    const row=this.doc.createElement("button");row.type="button";
+    row.className="car-route-leg";row.dataset.leg=String(index);
+    row.addEventListener("click",()=>{
+     this.selectLeg(index);
+     this.onLegSelect?.(index);
+    });
     const dot=this.doc.createElement("span");dot.className="car-route-dot";dot.style.background=["#ff3930","#1987f5","#27a855","#fa9b22","#8754bf"][index%5];
     const from=this.getPin(leg.fromId),to=this.getPin(leg.toId);
     const origin=leg.fromId?(from?.name||"Pin"):(leg.ferry?"Abfahrtshafen":"Ankunftshafen");
@@ -142,7 +147,13 @@
    if(!snapshot.legs.length&&!snapshot.loading)legs.textContent="Keine Strecke verfügbar. Start und Ziel prüfen.";
   }
   focusLeg(index){
-   this.setVisible(true);const row=this.el("routeLegs").querySelector('[data-leg="'+index+'"]');
+   if(!this.visible)this.setVisible(true);
+   this.selectLeg(index);
+  }
+  selectLeg(index){
+   const list=this.el("routeLegs");
+   for(const item of list.querySelectorAll(".car-route-selected-leg"))item.classList.remove("car-route-selected-leg");
+   const row=list.querySelector('[data-leg="'+index+'"]');
    row?.scrollIntoView?.({block:"nearest"});row?.classList.add("car-route-selected-leg");
   }
  }

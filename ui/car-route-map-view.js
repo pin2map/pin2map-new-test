@@ -65,16 +65,18 @@
    this.fitScheduled=true;
    this.scheduleFrame(()=>{this.fitScheduled=false;this.fit();});
   }
-  fit(){
-   if(!this.coordinates.length||!this.getLayout)return false;
+  fit(index=null){
+   const coordinates=index===null?this.coordinates:
+    this.geometries[index]?.coordinates?.map(([lng,lat])=>({lat,lng}))||[];
+   if(!coordinates.length||!this.getLayout)return false;
    const {map,obstacles}=this.getLayout();
    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-   for(const position of this.coordinates){
+   for(const position of coordinates){
     const {x,y}=this.map.projectAtZoom(position,0);
     minX=Math.min(x,minX);minY=Math.min(y,minY);maxX=Math.max(x,maxX);maxY=Math.max(y,maxY);
    }
    const rect=freeRouteRect(map,obstacles,Math.max(maxX-minX,1e-6),Math.max(maxY-minY,1e-6));
-   if(rect)this.map.fitBounds(this.coordinates,{
+   if(rect)this.map.fitBounds(coordinates,{
     paddingTopLeft:[rect.left-map.left+16,rect.top-map.top+16],
     paddingBottomRight:[map.right-rect.right+16,map.bottom-rect.bottom+16],
     maxZoom:16,animate:false

@@ -26,15 +26,17 @@
    const pin=findPin(project,id);
    if(!pin)return null;
    const next=validatePosition(position.lat,position.lng);
+   if(pin.lat!==next.lat||pin.lng!==next.lng)delete pin.address;
    pin.lat=next.lat;pin.lng=next.lng;
    pin.updatedAt=new Date().toISOString();
    return pin;
  }
- function createPin(project,{id,lat,lng,name="",layerId="private"},{validatePosition,cleanText}){
+ function createPin(project,{id,lat,lng,name="",address="",layerId="private"},{validatePosition,cleanText}){
    if(!id||project.pins.some(p=>p.id===id))throw new Error("Duplicate or empty pin ID");
    if(!layerExists(project,layerId))throw new Error("Pin layer does not exist");
    const point=validatePosition(lat,lng);
    const pin={id,lat:point.lat,lng:point.lng,name:cleanText(name),layerId,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),note:"",url:""};
+   if(typeof address==="string"&&address.trim())pin.address=address.trim().slice(0,1000);
    project.pins.push(pin);
    return pin;
  }

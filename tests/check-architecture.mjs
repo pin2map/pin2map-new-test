@@ -58,7 +58,7 @@ assert.match(app,/function deleteGeometry\(type,id\)\{geometryMutations\.remove\
 assert.doesNotMatch(app,/projectFeatures\.(?:change|remove)\(state,type,id/,
   "Geometry data mutation belongs to the application session");
 assert.match(app,/new window\.Pin2MapPinEntryCoordinator/);
-assert.match(app,/function addPin\(lat,lng,name,source="search"\)\{return pinEntry\.create\(lat,lng,name,source\);\}/);
+assert.match(app,/function addPin\(lat,lng,name,source="search",address=""\)\{return pinEntry\.create\(lat,lng,name,source,address\);\}/);
 assert.doesNotMatch(app,/function addPin\(lat,lng,name,source="search"\)\{\s*if\(!Number\.isFinite/,
   "Pin request input validation belongs to the pin entry use case");
 assert.doesNotMatch(app,/created=pinOps\.createPin\(state|created=projectFeatures\.create(?:Area|River)\(state/,

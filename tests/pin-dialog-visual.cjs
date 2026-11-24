@@ -99,7 +99,7 @@ async function metrics(page){
     // Quick save deliberately closes editors; open the newly persisted pin.
     const saved=page.locator(".leaflet-marker-icon.pin-icon:not(.p2m-temporary-pin)").last();
     await saved.waitFor({state:"visible",timeout:15000});
-    await saved.tap({force:true});
+    await page.locator("#map .address-label").getByText("Neuer Pin",{exact:true}).tap();
     try{
       await page.locator("#pinPanel").waitFor({state:"visible",timeout:15000});
     }catch(error){
@@ -193,8 +193,17 @@ async function metrics(page){
       pointer:getComputedStyle(el).pointerEvents,
       nose:getComputedStyle(el,"::before").borderRightColor
     }));
-    assert.equal(labelHit.pointer,"none","Name labels cannot swallow pin taps");
+    assert.equal(labelHit.pointer,"auto","Name labels are clickable when visible");
     assert.equal(labelHit.nose,"rgb(119, 119, 119)");
+    assert.equal(await page.evaluate(()=>{
+     const pins=[...document.querySelectorAll("#map .pin-marker-shape")].map(el=>el.getBoundingClientRect());
+     const labels=[...document.querySelectorAll("#map .address-label")]
+      .filter(el=>getComputedStyle(el).visibility==="visible");
+     return labels.every(el=>{
+      const rect=el.getBoundingClientRect();
+      return pins.every(pin=>rect.right<=pin.left||rect.left>=pin.right||rect.bottom<=pin.top||rect.top>=pin.bottom);
+     });
+    }),true,"Visible label rectangles never cover a pin");
 
     assert.ok(m.visibleLabels>=1,"Pin name labels remain displayed with open dialog");
     assert.ok(m.noteFont>=16&&m.nameFont>=16,"Touch inputs must prevent iOS zoom: "+JSON.stringify(m));

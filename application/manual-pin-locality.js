@@ -61,6 +61,23 @@
       return true;
     }
   }
+  // Independent saved-pin work survives dialog changes. Each job checks its
+  // original project, pin and coordinates before sending and applying data.
+  ManualPinLocality.savedAddressLookup=({geocoder,allowed,now=()=>Date.now(),
+    delay=ms=>new Promise(done=>setTimeout(done,ms))})=>{
+    let queue=Promise.resolve(),last=-Infinity;
+    return (point,current,apply)=>{
+      queue=queue.then(async()=>{
+        const remaining=1300-(now()-last);
+        if(remaining>0)await delay(remaining);
+        if(!allowed()||!current())return;
+        last=now();
+        const response=await geocoder.reverse(point,{zoom:18});
+        if(allowed()&&current())apply(response);
+      }).catch(()=>{});
+      return queue;
+    };
+  };
   root.Pin2MapManualPinLocality=ManualPinLocality;
   if(typeof module!=="undefined"&&module.exports)module.exports=ManualPinLocality;
 })(typeof window!=="undefined"?window:globalThis);

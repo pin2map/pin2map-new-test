@@ -146,6 +146,21 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     });
    }
    await assertRouteFits();
+   const firstRoad=page.locator('#map path[stroke="#ff3930"]');
+   const roadBox=()=>firstRoad.evaluate(line=>{
+    const rect=line.getBoundingClientRect();return {center:(rect.left+rect.right)/2,width:rect.width};
+   });
+   const whole=await roadBox();
+   await page.locator("#routeLegs button").first().click();
+   assert.equal(await page.locator("#routeLegs button.car-route-selected-leg").count(),1);
+   const stage=await roadBox();
+   assert.ok(Math.abs(stage.center-viewport.width/2)<=2&&stage.width>=whole.width-1&&
+    (Math.abs(stage.center-whole.center)>2||stage.width>whole.width+2),
+    "Stage fit centers the selected geometry even when Leaflet uses the same integer zoom");
+   await page.locator("#routePanelHide").click();
+   await page.getByRole("button",{name:"Alle sichtbaren Pins anzeigen"}).click();
+   await page.locator("#routePanelToggle").click();
+   await assertRouteFits();
    await assertRolePins();
    assert.equal(routeRequests.length,2,"Real provider adapter must request each hard pin leg");
    assert.match(await page.locator("#routeSummary").textContent(),/48 km/);
