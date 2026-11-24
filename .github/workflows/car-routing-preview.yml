@@ -47,25 +47,65 @@ jobs:
         env:
           PIN2MAP_ROUTING_URL: http://127.0.0.1:8765/
         run: node tests/car-routing-browser.cjs
-      - name: REQUIRED verify deployed Preview assets and service worker byte-exact over HTTPS
+      - name: REQUIRED verify deployed Preview assets and isolated service worker byte-exact over HTTPS
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib, time, urllib.request
-          assets=['index.html','app.js','styles.css','sw.js',
-             'domain/active-car-route.js','application/routing-service.js',
-             'adapters/routing/car-routing-provider.js','application/car-route-session.js',
-             'application/route-guide-session.js','ui/car-route-map-view.js','ui/car-route-panel.js']
-          assert 'pin2map-new-v331' in Path('sw.js').read_text()
+          import hashlib, re, time, urllib.request
+
+          source_sw=Path('sw.js').read_text(encoding='utf-8')
+          version=re.search(r"const CACHE='pin2map-new-v(\d+)'",source_sw)
+          assert version, 'Cannot determine expected source worker release'
+          release='pin2map-preview-v'+version.group(1)
           origin='https://pin2map.github.io/pin2map-new-test/preview/'
-          expected={p:hashlib.sha256(Path(p).read_bytes()).digest() for p in assets}
+          assets=['app.js','styles.css','domain/active-car-route.js',
+             'application/routing-service.js','adapters/routing/car-routing-provider.js',
+             'application/car-route-session.js','application/route-guide-session.js',
+             'ui/car-route-map-view.js','ui/car-route-panel.js']
+          expected={p:Path(p).read_bytes() for p in assets}
+
+          # Pages publishes an ISOLATED Preview app rather than a raw source copy.
+          # Recreate the exact release-keyed HTML and worker transformations
+          # defined in preview-pages.yml; never compare to unisolated source bytes.
+          cdn='https://unpkg.com/leaflet@1.9.4/dist/'
+          html=Path('index.html').read_text(encoding='utf-8')
+          for name in ('leaflet.css','leaflet.js'):
+              html=html.replace(cdn+name,'./vendor/leaflet/'+name)
+          old_title='<title>pin2map NEW · Testversion</title>'
+          assert old_title in html
+          html=html.replace(old_title,'<title>pin2map NEW · Entwicklungsvorschau</title>')
+          html=re.sub(
+              r'((?:src|href)="\./(?:vendor/leaflet/|domain/|application/|adapters/|ui/|map-adapter-leaflet\.js|app\.js|styles\.css)[^"?]*)(?=")',
+              lambda match:match.group(1)+'?__p2m_release='+release,html)
+          html=html.replace('</head>','<meta name="pin2map-preview-version" content="'+release+'">\n</head>')
+          expected['index.html']=html.encode('utf-8')
+
+          sw=source_sw
+          for name in ('leaflet.css','leaflet.js'):
+              sw=sw.replace(cdn+name,'./vendor/leaflet/'+name)
+          sw=sw.replace('pin2map-new-v','pin2map-preview-v')
+          sw=sw.replace("name.startsWith('pin2map-new-')","name.startsWith('pin2map-preview-')")
+          sw=sw.replace('pin2map-viewed-osm-tiles-v1','pin2map-preview-viewed-osm-tiles-v1')
+          sw=sw.replace('pin2map-viewed-osm-tile-metadata-v1','pin2map-preview-viewed-osm-tile-metadata-v1')
+          assert "const CACHE='"+release+"'" in sw
+          expected['sw.js']=sw.encode('utf-8')
+
           for attempt in range(30):
               try:
-                  for path,digest in expected.items():
-                      req=urllib.request.Request(origin+path+'?routing-v331-check=1',headers={'Cache-Control':'no-cache'})
-                      with urllib.request.urlopen(req,timeout=25) as res: raw=res.read()
-                      assert hashlib.sha256(raw).digest()==digest, f'Live asset differs: {path}'
-                  print('PASS live HTTPS preview and SW v331 byte-identical to reviewed routing branch')
+                  for path,source in expected.items():
+                      req=urllib.request.Request(origin+path+'?routing-'+release+'-check=1',
+                                                 headers={'Cache-Control':'no-cache'})
+                      with urllib.request.urlopen(req,timeout=25) as res:
+                          live=res.read()
+                          assert res.status==200, f'HTTP {res.status}: {path}'
+                      assert hashlib.sha256(live).digest()==hashlib.sha256(source).digest(), \
+                          f'Live transformed asset differs: {path}'
+                  req=urllib.request.Request(origin+'?routing-'+release+'-check=1',
+                                             headers={'Cache-Control':'no-cache'})
+                  with urllib.request.urlopen(req,timeout=25) as res:
+                      assert res.read()==expected['index.html'], 'Preview / differs from index.html'
+                  print('PASS byte-exact HTTPS Preview '+release+
+                        ' (release-keyed index, routing modules, CSS, isolated SW)')
                   break
               except Exception as error:
                   print('Preview publication not finished:',error,flush=True)
