@@ -1,0 +1,1 @@
+Isolated CI marker. Application and test bytes are identical to feature commit 8380de8fa25e6dae316c4211ce3f1ad0ad4567a5.
