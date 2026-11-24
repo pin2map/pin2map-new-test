@@ -110,11 +110,19 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1);
    assert.equal(await page.locator("#map .pin-icon").count(),3);
    // Saving is debounced; prove the guide reached IndexedDB before reload.
-   await page.waitForFunction(async()=>{
-     const store=await window.Pin2MapIndexedDBProjectStore.open();
-     try{return (await store.loadProject())?.routeGuides?.length===1;}
-     finally{store.close();}
-   },null,{timeout:10000});
+   // Playwright waitForFunction polls synchronously; an async predicate itself
+   // is truthy before its IndexedDB promise resolves. Poll from Node instead.
+   let guideCommitted=false;
+   for(let attempt=0;attempt<60;attempt++){
+     const count=await page.evaluate(async()=>{
+       const store=await window.Pin2MapIndexedDBProjectStore.open();
+       try{return (await store.loadProject())?.routeGuides?.length??0;}
+       finally{store.close();}
+     });
+     if(count===1){guideCommitted=true;break;}
+     await page.waitForTimeout(100);
+   }
+   assert.ok(guideCommitted,"Direction flag must commit to IndexedDB before reload");
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1,null,{timeout:20000});
    assert.deepEqual(errors,[],"Browser script errors");
