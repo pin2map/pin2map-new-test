@@ -82,3 +82,12 @@ test("Apple route URL sends valid start/target, no hidden waypoint loss",()=>{
  assert.equal(q.searchParams.get("daddr"),"48.800000,9.200000");
  assert.equal(q.searchParams.get("dirflg"),"d");
 });
+
+test("Pin route buttons toggle each role independently including roundtrip and ALL",()=>{
+ const plan=new ActiveCarRoute(),session=new CarRouteSession({plan,getPin:id=>({id,lat:50,lng:10}),calculate:async()=>({distanceMeters:1,durationSeconds:1}),onChange:()=>{},onError:err=>assert.fail(err)});
+ session.endpoint("start","a");session.endpoint("start","a");assert.equal(plan.startId,null);
+ session.endpoint("start","a");session.endpoint("target","a");session.endpoint("target","a");assert.equal(plan.startId,"a");assert.equal(plan.targetId,null);
+ session.waypoint("b");session.waypoint("c");session.waypoint("b");assert.deepEqual(plan.waypointIds,["c"]);
+ session.endpoint("target","z");session.toggleVisible(["b"]);assert.equal(session.snapshot().allVisibleActive,true);session.waypoint("b");assert.equal(session.snapshot().allVisibleActive,false);
+ session.endpoint("start","a");assert.equal(plan.startId,null);assert.equal(plan.targetId,"z");assert.equal(session.snapshot().ready,false);assert.deepEqual(session.snapshot().legs,[]);session.clear();
+});

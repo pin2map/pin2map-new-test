@@ -629,7 +629,7 @@ body.pin-relocation-picking #map .leaflet-interactive{
 /* Shared blue-open-state contract for ALL internal Pin-dialog views.
    Explicit ARIA state beats mouse hover, sticky iOS :active and the red
    default delete trigger; the confirmation's destructive action stays red. */
-#pinPanel button:is([aria-expanded="true"],[aria-pressed="true"],.is-active):not(#pinNotesExpand),
+#pinPanel button:is([aria-expanded="true"],[aria-pressed="true"],.is-active):not(#pinNotesExpand,#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint),
 #pinPanel #deletePin.p2m-icon-control[aria-expanded="true"]{
   background:#1764bf!important;color:#fff!important;border-color:#1764bf!important;
   --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;--p2m-button-border:#1764bf;
@@ -3219,9 +3219,9 @@ body.object-search-mode #app #searchClear.search-clear span{
 #map .p2m-route-guide-holder{background:transparent;border:0}
 #map .p2m-route-guide-holder .p2m-lucide{width:27px;height:27px;background:#fff8d6;
  border:2px solid #edb92b;border-radius:5px}
-#pinPanel .pin-nav-waypoint.is-active{--p2m-button-bg:#ffe18c;--p2m-button-ink:#0d233a}
-#pinPanel .pin-nav-start.is-active{--p2m-button-bg:#ed3434;--p2m-button-ink:#fff}
-#pinPanel .pin-nav-target.is-active{--p2m-button-bg:#2dad5e;--p2m-button-ink:#fff}
+#pinPanel .pin-nav-waypoint.p2m-icon-control.is-active{--p2m-button-bg:#edc636;--p2m-button-ink:#0d233a}
+#pinPanel .pin-nav-start.p2m-icon-control.is-active{--p2m-button-bg:#ee4545;--p2m-button-ink:#fff}
+#pinPanel .pin-nav-target.p2m-icon-control.is-active{--p2m-button-bg:#36a356;--p2m-button-ink:#fff}
 @media(max-width:600px){
  #app .car-route-panel{width:calc(100vw - 22px);height:290px;padding:10px 11px;
  bottom:calc(env(safe-area-inset-bottom,0px) + 69px);gap:8px}

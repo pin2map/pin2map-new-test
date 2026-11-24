@@ -41,9 +41,9 @@
     if(generation===this.generation){this.loading=false;this.pending=null;this.publish();}
    }
   }
-  endpoint(kind,id){this.plan.setEndpoint(kind,id);void this.recalculate();}
-  waypoint(id){if(this.plan.addWaypoint(id)){this.allVisibleActive=false;void this.recalculate();}else this.publish();}
-  removeWaypoint(id){if(this.plan.removeWaypoint(id))void this.recalculate();}
+  endpoint(kind,id){this.plan.toggleEndpoint(kind,id);this.allVisibleActive=false;void this.recalculate();}
+  waypoint(id){if(this.plan.removeWaypoint(id)||this.plan.addWaypoint(id)){this.allVisibleActive=false;void this.recalculate();}else this.publish();}
+  removeWaypoint(id){if(this.plan.removeWaypoint(id)){this.allVisibleActive=false;void this.recalculate();}}
   addVisible(ids){const n=this.plan.addVisible(ids);if(n)void this.recalculate();return n;}
   toggleVisible(ids){
    if(!this.plan.ready())return {active:false,count:0};

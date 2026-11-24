@@ -72,10 +72,29 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     assert.equal(await rolePins("target").locator('[data-route-icon="goal"][stroke="#fff"]').count(),1);
     assert.equal(await rolePins("waypoint").locator('text[fill="#fff"]').textContent(),"1");
    }
+   async function assertButton(id,active,color,ink){
+    const button=page.locator("#"+id);
+    assert.equal(await button.getAttribute("aria-pressed"),String(active));
+    const style=await button.evaluate(el=>{const s=getComputedStyle(el);return {bg:s.backgroundColor,border:s.borderTopColor,ink:s.color};});
+    assert.equal(style.border,color,id+" border");
+    assert.equal(style.bg,active?color:"rgb(245, 246, 248)",id+" background");
+    if(active)assert.equal(style.ink,ink,id+" icon");
+   }
    await openPin(0,"Stuttgart");
+   await assertButton("pinRouteStart",false,"rgb(238, 69, 69)");
+   await page.locator("#pinRouteStart").click();
+   await assertButton("pinRouteStart",true,"rgb(238, 69, 69)","rgb(255, 255, 255)");
+   await page.locator("#pinRouteStart").click();
+   await assertButton("pinRouteStart",false,"rgb(238, 69, 69)");
+   assert.equal(await rolePins("start").count(),0);
    await page.locator("#pinRouteStart").click();
    assert.equal(await rolePins("start").count(),1,"Start role appears before target selection");
    await openPin(1,"Ulm");
+   await page.locator("#pinRouteWaypoint").click();
+   await assertButton("pinRouteWaypoint",true,"rgb(237, 198, 54)","rgb(13, 35, 58)");
+   await page.locator("#pinRouteWaypoint").click();
+   await assertButton("pinRouteWaypoint",false,"rgb(237, 198, 54)");
+   assert.equal(await rolePins("waypoint").count(),0);
    await page.locator("#pinRouteWaypoint").click();
    await openPin(2,"München");
    await page.locator("#pinRouteTarget").click();
@@ -153,6 +172,14 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await rolePins("roundtrip").count(),1);
    await page.locator("#routeEnd").click();
    assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
+   // Target alone toggles without closing the pin dialog or creating a route.
+   await openPin(2,"München");
+   await page.locator("#pinRouteTarget").click();
+   await assertButton("pinRouteTarget",true,"rgb(54, 163, 86)","rgb(255, 255, 255)");
+   await page.locator("#pinRouteTarget").click();
+   await assertButton("pinRouteTarget",false,"rgb(54, 163, 86)");
+   assert.equal(await rolePins("target").count(),0);
+   await page.locator("#closePin").click();
    // Soft flag is not a pin. It exists independently of the now-ended route.
    // The first background tap closes an already open pin/overlay menu by design.
    // A subsequent real map-surface tap opens the independent action chooser.

@@ -11,6 +11,11 @@
    this.waypointIds=this.waypointIds.filter(value=>value!==id);
    return this.snapshot();
   }
+  toggleEndpoint(kind,id){
+   if(!["start","target"].includes(kind)||!validId(id))throw new TypeError("Invalid route endpoint");
+   if(this[kind+"Id"]===id){this[kind+"Id"]=null;return this.snapshot();}
+   return this.setEndpoint(kind,id);
+  }
   addWaypoint(id){
    if(!validId(id))throw new TypeError("Invalid waypoint");
    if(id===this.startId||id===this.targetId||this.waypointIds.includes(id))return false;
