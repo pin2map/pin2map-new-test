@@ -56,14 +56,32 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     }
     throw new Error("Cannot select expected "+name+" through real marker UX");
    }
+   const normalPins=await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML));
+   const rolePins=kind=>page.locator('#map .pin-icon .pin-marker[data-route-role="'+kind+'"]');
+   async function assertRolePins(){
+    assert.equal(await page.locator("#map .p2m-route-role-holder").count(),0,"No extra routing markers");
+    assert.equal(await page.locator("#map .pin-icon").count(),3,"Only original pin marker handles");
+    for(const [kind,color] of [["start","#ed3434"],["target","#289d54"],["waypoint","#efc63e"]]){
+     assert.equal(await rolePins(kind).count(),1);
+     assert.equal(await rolePins(kind).locator(".pin-status-segments").count(),0);
+     assert.equal(await rolePins(kind).locator(".pin-marker-shape > path").first().getAttribute("fill"),color);
+     const bounds=await rolePins(kind).locator(".pin-marker-shape").boundingBox();
+     assert.ok(bounds&&Math.abs(bounds.width-30)<1&&Math.abs(bounds.height-40)<1,JSON.stringify(bounds));
+    }
+    assert.equal(await rolePins("start").locator('[data-route-icon="arrow-up-right"][stroke="#fff"]').count(),1);
+    assert.equal(await rolePins("target").locator('[data-route-icon="goal"][stroke="#fff"]').count(),1);
+    assert.equal(await rolePins("waypoint").locator('text[fill="#fff"]').textContent(),"1");
+   }
    await openPin(0,"Stuttgart");
    await page.locator("#pinRouteStart").click();
+   assert.equal(await rolePins("start").count(),1,"Start role appears before target selection");
    await openPin(1,"Ulm");
    await page.locator("#pinRouteWaypoint").click();
    await openPin(2,"München");
    await page.locator("#pinRouteTarget").click();
    await page.locator("#carRoutePanel").waitFor({state:"visible",timeout:20000});
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2,null,{timeout:20000});
+   await assertRolePins();
    assert.equal(routeRequests.length,2,"Real provider adapter must request each hard pin leg");
    assert.match(await page.locator("#routeSummary").textContent(),/48 km/);
    assert.match(await page.locator("#routeSummary").textContent(),/1 h/);
@@ -87,6 +105,9 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.locator("#routeReverse").click();
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2,null,{timeout:12000});
    assert.match(await page.locator("#routeLegs").textContent(),/München → Ulm/);
+   await assertRolePins();
+   assert.equal(await markerAt(2).locator('[data-route-role="start"]').count(),1);
+   assert.equal(await markerAt(0).locator('[data-route-role="target"]').count(),1);
    await page.locator("#routeSettings").click();
    assert.equal(await page.locator("#routeProfileMenu").isVisible(),true);
    // An open popup must not obscure its own toggle, including on iPhone WebKit.
@@ -103,6 +124,35 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.locator("#routeEnd").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),false);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
+   assert.equal(await page.locator("#map .pin-icon [data-route-role]").count(),0);
+   assert.equal(await page.locator("#map .pin-icon .pin-status-segments").count(),3);
+   assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
+   // A roundtrip uses one real endpoint pin plus two numbered waypoints.
+   await openPin(0,"Stuttgart");
+   await page.locator("#pinRouteStart").click();
+   await openPin(1,"Ulm");
+   await page.locator("#pinRouteWaypoint").click();
+   await openPin(2,"München");
+   await page.locator("#pinRouteWaypoint").click();
+   await openPin(0,"Stuttgart");
+   await page.locator("#pinRouteTarget").click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3,null,{timeout:20000});
+   assert.equal(await rolePins("roundtrip").count(),1);
+   assert.equal(await rolePins("start").count()+await rolePins("target").count(),0);
+   assert.equal(await rolePins("roundtrip").locator('path[fill="#ed3434"]').count(),1);
+   assert.equal(await rolePins("roundtrip").locator('path[fill="#289d54"]').count(),1);
+   assert.equal(await rolePins("roundtrip").locator('[data-route-icon="flag"][stroke="#fff"]').count(),1);
+   assert.equal(await page.locator("#map .p2m-route-role-holder").count(),0);
+   assert.equal(await page.locator("#map .pin-icon").count(),3);
+   assert.equal(await markerAt(1).locator('[data-route-role="waypoint"] text').textContent(),"1");
+   assert.equal(await markerAt(2).locator('[data-route-role="waypoint"] text').textContent(),"2");
+   await page.locator("#routeReverse").click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3,null,{timeout:20000});
+   assert.equal(await markerAt(1).locator('[data-route-role="waypoint"] text').textContent(),"2");
+   assert.equal(await markerAt(2).locator('[data-route-role="waypoint"] text').textContent(),"1");
+   assert.equal(await rolePins("roundtrip").count(),1);
+   await page.locator("#routeEnd").click();
+   assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
    // Soft flag is not a pin. It exists independently of the now-ended route.
    // The first background tap closes an already open pin/overlay menu by design.
    // A subsequent real map-surface tap opens the independent action chooser.

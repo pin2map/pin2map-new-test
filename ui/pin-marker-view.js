@@ -15,7 +15,39 @@
     const hasGpx=Boolean(pin.gpxAttachment?.chains?.length||pin.gpxKey||pin.gpxTrackId||pin.gpxFileId||pin.gpxRef);
     return {note:hasText(pin.note),url:hasText(pin.url),gpx:hasGpx};
   }
-  function appearance({pin,color,selected}){
+  const PIN_PATH="M15 38C10 30 2 21 2 15a13 13 0 0 1 26 0c0 6-8 15-13 23Z";
+  const ROUTE_COLORS=Object.freeze({start:"#ed3434",target:"#289d54",waypoint:"#efc63e"});
+  // A projection of the active plan, never stored on a pin or its layer.
+  function routeRoles(snapshot){
+    const roles=new Map();
+    if(!snapshot)return roles;
+    (snapshot.waypointIds||[]).forEach((id,index)=>roles.set(id,{kind:"waypoint",number:index+1}));
+    if(snapshot.startId)roles.set(snapshot.startId,{kind:"start"});
+    if(snapshot.targetId)roles.set(snapshot.targetId,{kind:snapshot.targetId===snapshot.startId?"roundtrip":"target"});
+    return roles;
+  }
+  function routeIcon(name){
+    const shapes=root.Pin2MapIcons?.SHAPES||
+      (typeof require==="function"?require("./lucide-icons.js").SHAPES:null);
+    const nodes=shapes[name].map(([tag,attrs])=>"<"+tag+
+      Object.entries(attrs).map(([key,value])=>' '+key+'="'+escapeHtml(value)+'"').join("")+"/>").join("");
+    return '<g class="pin-route-symbol" data-route-icon="'+name+'" transform="translate(5 4) scale(.833333)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+nodes+'</g>';
+  }
+  function routeAppearance({pin,selected,routeRole}){
+    const {kind,number}=routeRole;
+    const split=kind==="roundtrip";
+    const color=split?ROUTE_COLORS.target:ROUTE_COLORS[kind];
+    const body=split
+      ? '<path d="'+PIN_PATH+'" fill="'+color+'"/><path d="M15 38C10 30 2 21 2 15a13 13 0 0 1 13-13Z" fill="'+ROUTE_COLORS.start+'"/><path d="'+PIN_PATH+'" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
+      : '<path d="'+PIN_PATH+'" fill="'+color+'" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>';
+    const digits=String(number);
+    const symbol=kind==="waypoint"
+      ? '<text class="pin-route-symbol" x="15" y="14" dy=".35em" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-weight="700" font-size="'+Math.min(16,28/digits.length)+'">'+digits+'</text>'
+      : routeIcon(split?"flag":kind==="start"?"arrow-up-right":"goal");
+    return {html:'<div class="pin-marker'+(selected?' selected':'')+'" data-route-role="'+kind+'"><svg class="pin-marker-shape" viewBox="0 0 30 40" aria-hidden="true">'+body+symbol+'</svg></div>',title:pin.name||"Pin"};
+  }
+  function appearance({pin,color,selected,routeRole=null}){
+    if(routeRole)return routeAppearance({pin,selected,routeRole});
     const flags=statusFlags(pin);
     const safeColor=/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(color)?color:"#3676c4";
     // Three 120-degree sectors: top-left note, top-right URL, bottom GPX.
@@ -27,7 +59,7 @@
     const gpxColor=flags.gpx?"#8f989f":"#e8edf2";
     const html='<div class="pin-marker'+(selected?' selected':'')+'" style="color:'+safeColor+'">'
       +'<svg class="pin-marker-shape" viewBox="0 0 30 40" aria-hidden="true">'
-      +'<path d="M15 38C10 30 2 21 2 15a13 13 0 0 1 26 0c0 6-8 15-13 23Z" fill="currentColor" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
+      +'<path d="'+PIN_PATH+'" fill="currentColor" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>'
       +'<g class="pin-status-segments">'
       +'<path class="pin-sector-note" d="M15 14 8.1 18A8 8 0 0 1 15 6Z" fill="'+noteColor+'"/>'
       +'<path class="pin-sector-url" d="M15 14 15 6A8 8 0 0 1 21.9 18Z" fill="'+urlColor+'"/>'
@@ -40,21 +72,22 @@
   // Legacy contract: permanently visible pin-name tooltip on the right,
   // without label collision suppression or special selected-label exception.
   // All Leaflet placement and content-node details stay in the map adapter.
-  function layout(pins,{selectedPinId=null,labelsVisible=true,cleanText,colorsByLayer,defaultColor}){
+  function layout(pins,{selectedPinId=null,labelsVisible=true,cleanText,colorsByLayer,defaultColor,routeSnapshot=null}){
+    const roles=routeRoles(routeSnapshot);
     return pins.map(pin=>{
       const selected=pin.id===selectedPinId;
       const label=labelsVisible?cleanText(pin.name):"";
       const color=colorsByLayer[pin.layerId]||defaultColor;
-      return {pin,appearance:appearance({pin,color,selected}),selected,label,side:"right"};
+      return {pin,appearance:appearance({pin,color,selected,routeRole:roles.get(pin.id)}),selected,label,side:"right"};
     });
   }
   class PinMarkerView{
-    constructor({mapAdapter,onSelect,attachGesture,cleanText,defaultColor,getInfoLabel=()=>null,formatInfo=()=>"",onInfoClick=()=>{}}){
+    constructor({mapAdapter,onSelect,attachGesture,cleanText,defaultColor,getRouteSnapshot=()=>null,getInfoLabel=()=>null,formatInfo=()=>"",onInfoClick=()=>{}}){
       if(!mapAdapter||typeof onSelect!=="function"||typeof attachGesture!=="function")
         throw new TypeError("Pin marker adapter and callbacks required");
       this.map=mapAdapter;this.onSelect=onSelect;this.attachGesture=attachGesture;
       this.cleanText=cleanText;this.defaultColor=defaultColor;this.markers=new Map();
-      this.getInfoLabel=getInfoLabel;this.formatInfo=formatInfo;this.onInfoClick=onInfoClick;
+      this.getRouteSnapshot=getRouteSnapshot;this.getInfoLabel=getInfoLabel;this.formatInfo=formatInfo;this.onInfoClick=onInfoClick;
       this.relocationSourceId=null;
       this.visiblePinList=[];
     }
@@ -87,7 +120,7 @@
       const colorsByLayer=Object.fromEntries(layers.map(l=>[l.id,l.color]));
       const placements=layout(pins,{
         selectedPinId,labelsVisible,
-        cleanText:this.cleanText,colorsByLayer,defaultColor:this.defaultColor
+        cleanText:this.cleanText,colorsByLayer,defaultColor:this.defaultColor,routeSnapshot:this.getRouteSnapshot()
       });
       this.visiblePinList=placements.map(({pin})=>({
         id:pin.id,lat:pin.lat,lng:pin.lng,name:pin.name,layerId:pin.layerId,
@@ -122,7 +155,7 @@
       this.visiblePinList=[];
     }
   }
-  const api=Object.freeze({escapeHtml,statusFlags,appearance,layout,PinMarkerView});
+  const api=Object.freeze({escapeHtml,statusFlags,routeRoles,appearance,layout,PinMarkerView});
   root.Pin2MapPinMarkerView=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

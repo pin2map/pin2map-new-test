@@ -13,6 +13,7 @@
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
     // Official Lucide icon geometry for the modular route controls.
+    "flag": [["path",{"d":"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"}]],
     "flag-triangle-right": [["path",{"d":"M6 22V2.8a.8.8 0 0 1 1.17-.71l11.38 5.69a.8.8 0 0 1 0 1.44L6 15.5"}]],
     "settings-2": [["path",{"d":"M14 17H5"}],["path",{"d":"M19 7h-9"}],["circle",{"cx":"17","cy":"17","r":"3"}],["circle",{"cx":"7","cy":"7","r":"3"}]],
     "circle-euro": [["path",{"d":"M15 9.4a4 4 0 1 0 0 5.2"}],["path",{"d":"M7 12h5"}],["circle",{"cx":"12","cy":"12","r":"10"}]],

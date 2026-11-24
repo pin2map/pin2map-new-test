@@ -496,21 +496,6 @@
         callback({lat:event.latlng.lat,lng:event.latlng.lng});};
       line.on("click",handler);return ()=>line.off("click",handler);
     }
-    showRouteRoles(roles){
-      for(const marker of this.routeRoleLayers||[])this.map.removeLayer(marker);
-      this.routeRoleLayers=[];
-      for(const role of roles||[]){
-        const p=latLng(role),kind=role.kind;
-        if(!["start","target","waypoint"].includes(kind)||!Number.isFinite(p.lat)||!Number.isFinite(p.lng))continue;
-        const tint=kind==="start"?"#ed3434":kind==="target"?"#289d54":"#efc63e";
-        const symbol=kind==="start"?"S":kind==="target"?"Z":"●";
-        const shift=kind==="start"?"-9px":kind==="target"?"9px":"0px";
-        const html='<div class="p2m-route-role" style="--role-color:'+tint+';--role-shift:'+shift+'">'+symbol+'</div>';
-        const marker=window.L.marker([p.lat,p.lng],{interactive:false,keyboard:false,zIndexOffset:900,
-          icon:window.L.divIcon({className:"p2m-route-role-holder",html,iconSize:[30,32],iconAnchor:[15,36]})}).addTo(this.map);
-        this.routeRoleLayers.push(marker);
-      }
-    }
     showRouteGuides(guides,onClick){
       for(const marker of this.routeGuideLayers||[])this.map.removeLayer(marker);
       this.routeGuideLayers=[];

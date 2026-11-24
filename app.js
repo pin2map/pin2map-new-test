@@ -904,7 +904,7 @@
       makeId:uid,onChange:()=>renderRouteGuides()
     });
     routeMapView=new window.Pin2MapCarRouteMapView.CarRouteMapView({
-      mapPort:mapAdapter,getPin:routePinById,
+      mapPort:mapAdapter,
       onLineClick:index=>routePanel?.focusLeg(index),
       confirmRemove:message=>window.confirm(message),
       onGuideRemoveRequest:id=>routeGuideSession.remove(id)
@@ -937,7 +937,7 @@
     routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
       plan:activePlan,getPin:routePinById,
       calculate:request=>routingCore.calculate({mode:"car",...request}),
-      onChange:snapshot=>{routeMapView.render(snapshot);routePanel.render(snapshot);
+      onChange:snapshot=>{routeMapView.render(snapshot);renderMarkers();routePanel.render(snapshot);
         routePanel.syncPinButtons(selectedPin());},
       onError:showNotice
     });
@@ -1029,6 +1029,7 @@
       }),()=>gestures.isSuppressed());
     markerView=new window.Pin2MapPinMarkerView.PinMarkerView({
       mapAdapter,cleanText,defaultColor:COLORS[0],
+      getRouteSnapshot:()=>routeSession?.snapshot(),
       getInfoLabel:pin=>pinInfoService.label(pin),
       formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info,{
         getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML

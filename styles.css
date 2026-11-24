@@ -3216,11 +3216,7 @@ body.object-search-mode #app #searchClear.search-clear span{
  box-shadow:0 3px 10px #112b3d4d}
 #app .car-route-panel-toggle[aria-pressed="true"]{background:#137ce9;color:#fff}
 #app .car-route-panel-toggle .p2m-lucide{width:26px;height:26px}
-#map .p2m-route-role-holder,#map .p2m-route-guide-holder{background:transparent;border:0}
-#map .p2m-route-role{width:27px;height:30px;transform:translateX(var(--role-shift,0px));
- display:grid;place-items:center;border-radius:15px 15px 15px 3px;rotate:-32deg;
- border:2px solid #fff;background:var(--role-color,#ed3434);color:#182b38;
- font-weight:850;font-size:15px;box-shadow:0 2px 5px #172e4a77}
+#map .p2m-route-guide-holder{background:transparent;border:0}
 #map .p2m-route-guide-holder .p2m-lucide{width:27px;height:27px;background:#fff8d6;
  border:2px solid #edb92b;border-radius:5px}
 #pinPanel .pin-nav-waypoint.is-active{--p2m-button-bg:#ffe18c;--p2m-button-ink:#0d233a}
@@ -3247,5 +3243,5 @@ body.object-search-mode #app #searchClear.search-clear span{
  #app .car-route-secondary-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px}
 }
 
-/* Route badges must never steal actual pin or map taps. */
-#map .p2m-route-role-holder{pointer-events:none}
+/* Route symbols are part of the existing pin; keep its original hit target. */
+.pin-route-symbol{pointer-events:none}

@@ -5,21 +5,16 @@
 (function(root){
  const COLORS=["#ff3930","#1987f5","#27a855","#fa9b22","#8754bf","#26a0a1"];
  class CarRouteMapView {
-  constructor({mapPort,getPin,onLineClick,onGuideRemoveRequest=null,confirmRemove=null}){
-   if(!mapPort||typeof getPin!=="function"||typeof onLineClick!=="function")
+  constructor({mapPort,onLineClick,onGuideRemoveRequest=null,confirmRemove=null}){
+   if(!mapPort||typeof onLineClick!=="function")
     throw new TypeError("Route map ports required");
-   this.map=mapPort;this.getPin=getPin;this.onLineClick=onLineClick;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
+   this.map=mapPort;this.onLineClick=onLineClick;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
   }
-  clear(){for(const handle of this.handles)this.map.removeOverlay(handle);this.handles=[];this.map.showRouteRoles([]);}
+  clear(){for(const handle of this.handles)this.map.removeOverlay(handle);this.handles=[];}
   render(snapshot){
    this.clear();
    if(!snapshot)return;
-   const roleOf=(id,kind)=>{const pin=this.getPin(id);return pin?{id,kind,lat:pin.lat,lng:pin.lng}:null;};
-   const roles=[];
-   if(snapshot.startId){const r=roleOf(snapshot.startId,"start");if(r)roles.push(r);}
-   snapshot.waypointIds.forEach(id=>{const r=roleOf(id,"waypoint");if(r)roles.push(r);});
-   if(snapshot.targetId){const r=roleOf(snapshot.targetId,"target");if(r)roles.push(r);}
-   this.map.showRouteRoles(roles);
+   // Route roles are rendered by PinMarkerView on the existing pin handles.
    snapshot.legs.forEach((leg,index)=>{
     const positions=leg.geometry?.coordinates?.map(([lng,lat])=>({lat,lng}));
     if(!positions||positions.length<2)return;
