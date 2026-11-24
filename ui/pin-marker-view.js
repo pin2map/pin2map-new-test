@@ -26,12 +26,17 @@
     if(snapshot.targetId)roles.set(snapshot.targetId,{kind:snapshot.targetId===snapshot.startId?"roundtrip":"target"});
     return roles;
   }
-  function routeIcon(name){
+  function routeIcon(name,stroke="#fff"){
     const shapes=root.Pin2MapIcons?.SHAPES||
       (typeof require==="function"?require("./lucide-icons.js").SHAPES:null);
     const nodes=shapes[name].map(([tag,attrs])=>"<"+tag+
       Object.entries(attrs).map(([key,value])=>' '+key+'="'+escapeHtml(value)+'"').join("")+"/>").join("");
-    return '<g class="pin-route-symbol" data-route-icon="'+name+'" transform="translate(5 4) scale(.833333)" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+nodes+'</g>';
+    return '<g class="pin-route-symbol" data-route-icon="'+name+'" transform="translate(5 4) scale(.833333)" fill="none" stroke="'+stroke+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+nodes+'</g>';
+  }
+  function guideAppearance(){
+    return '<svg class="p2m-route-guide-pin" viewBox="0 0 30 40" aria-hidden="true">'+
+      '<path d="'+PIN_PATH+'" fill="#fff8d6" stroke="#edb92b" stroke-width="2.4" stroke-linejoin="round"/>'+
+      routeIcon("flag-triangle-right","currentColor")+'</svg>';
   }
   function routeAppearance({pin,selected,routeRole}){
     const {kind,number}=routeRole;
@@ -155,7 +160,7 @@
       this.visiblePinList=[];
     }
   }
-  const api=Object.freeze({escapeHtml,statusFlags,routeRoles,appearance,layout,PinMarkerView});
+  const api=Object.freeze({escapeHtml,statusFlags,routeRoles,appearance,guideAppearance,layout,PinMarkerView});
   root.Pin2MapPinMarkerView=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

@@ -8,6 +8,8 @@ on:
       - styles.css
       - sw.js
       - domain/active-car-route.js
+      - domain/route-guide-corridor.js
+      - ui/pin-marker-view.js
       - application/car-route-session.js
       - application/route-guide-session.js
       - adapters/routing/car-routing-provider.js
@@ -58,7 +60,8 @@ jobs:
           assert version, 'Cannot determine expected source worker release'
           release='pin2map-preview-v'+version.group(1)
           origin='https://pin2map.github.io/pin2map-new-test/preview/'
-          assets=['app.js','styles.css','domain/active-car-route.js',
+          assets=['app.js','styles.css','domain/active-car-route.js','domain/route-guide-corridor.js',
+             'map-adapter-leaflet.js','ui/pin-marker-view.js',
              'application/routing-service.js','adapters/routing/car-routing-provider.js',
              'application/car-route-session.js','application/route-guide-session.js',
              'ui/car-route-map-view.js','ui/car-route-panel.js']

@@ -58,7 +58,7 @@ test("map-click priorities retain isolated owners for satellite, relocation, lon
 
 test("car routing is explicitly active but remains modular and other transport providers are not configured",()=>{
  const coordinator=read("application/routing-service.js");
- for(const file of ["domain/active-car-route.js","application/routing-service.js",
+ for(const file of ["domain/active-car-route.js","domain/route-guide-corridor.js","application/routing-service.js",
    "adapters/routing/car-routing-provider.js","application/car-route-session.js","application/route-guide-session.js",
    "ui/car-route-map-view.js","ui/car-route-panel.js"]){
    assert.ok(html.includes('src="./'+file+'"'),file+" missing from HTML");

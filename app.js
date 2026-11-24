@@ -899,7 +899,10 @@
     routeGuideSession=new window.Pin2MapRouteGuideSession.RouteGuideSession({
       getGuides:()=>state.routeGuides,
       setGuides:guides=>{state.routeGuides=guides;save();},
-      makeId:uid,onChange:()=>renderRouteGuides()
+      makeId:uid,onChange:()=>{
+        renderRouteGuides();
+        if(routeSession?.plan.ready())void routeSession.recalculate();
+      }
     });
     routeMapView=new window.Pin2MapCarRouteMapView.CarRouteMapView({
       mapPort:mapAdapter,
@@ -952,7 +955,9 @@
       onLayoutChange:()=>routeMapView.scheduleFit(),onShowNotice:showNotice
     });
     routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
-      plan:activePlan,getPin:routePinById,
+      plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
+      onGuideWarning:count=>showNotice(count===1?"Eine Richtungsflagge konnte nicht sinnvoll berücksichtigt werden.":
+        count+" Richtungsflaggen konnten nicht sinnvoll berücksichtigt werden."),
       calculate:request=>routingCore.calculate({mode:"car",...request}),
       onChange:snapshot=>{routeMapView.render(snapshot);renderMarkers();routePanel.render(snapshot);
         routePanel.syncPinButtons(selectedPin());},
@@ -973,8 +978,8 @@
       onPin:point=>addPin(point.lat,point.lng,"","map"),
       onArea:point=>void findAreaAt(point),
       onGuide:point=>{
-        routeGuideSession.add(point);
-        showNotice("Richtungsflagge gesetzt. Ihre weiche Streckenführung wird als nächstes ergänzt.");
+        routeGuideSession.add({...point,radiusMeters:mapAdapter.metersForPixels(point,40)});
+        showNotice("Richtungsflagge gesetzt.");
       }
     });
     mapActionChooser.bind();

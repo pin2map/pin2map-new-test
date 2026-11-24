@@ -141,3 +141,67 @@ test("route fit keeps a centered corridor when fixed controls occupy one side",(
  const control={left:0,top:0,right:60,bottom:600};
  assert.deepEqual(freeRouteRect(map,[control],100,200),{left:60,top:0,right:340,bottom:600});
 });
+
+test("direction flags can select an acceptable corridor without adding an itinerary leg",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");
+ const pins={a:{lat:48,lng:9},z:{lat:49,lng:10}};
+ const flag={lat:48.5,lng:9.8,radiusMeters:6000};
+ const coords=[[9,48],[10,49]];
+ const route=(coordinates,durationSeconds,distanceMeters)=>({
+  geometry:{type:"LineString",coordinates},durationSeconds,distanceMeters
+ });
+ const baseline=route(coords,5400,140000);
+ const calls=[];
+ const session=new CarRouteSession({plan,getPin:id=>pins[id],getGuides:()=>[flag],
+  calculate:async request=>{
+   calls.push(request);
+   if(!request.shapePoints)return baseline;
+   const shape=request.shapePoints[0];
+   return route([coords[0],[shape.lng,shape.lat],coords[1]],6000,150000);
+  },onChange:()=>{},onError:assert.fail,onGuideWarning:assert.fail});
+ await session.recalculate();
+ assert.equal(calls.length,3);
+ assert.deepEqual(calls.map(call=>call.waypoints),Array(3).fill([pins.a,pins.z]));
+ assert.ok(calls.slice(1).every(call=>call.shapePoints[0].lng!==flag.lng));
+ const result=session.snapshot();
+ assert.deepEqual(result.ids,["a","z"]);
+ assert.equal(result.legs.length,1);
+ assert.equal(result.legs[0].durationSeconds,6000);
+});
+
+test("wide flags need no reroute and a flag that requires too much detour preserves the baseline",()=>{
+ const {assignGuides,candidates,selectLeg}=require("../domain/route-guide-corridor.js");
+ const route=(coordinates,durationSeconds)=>({geometry:{coordinates},durationSeconds,distanceMeters:100000});
+ const baseline=route([[9,48],[10,48]],3600);
+ const flag={lat:48.10,lng:9.5,radiusMeters:15000};
+ assert.deepEqual(candidates(assignGuides([baseline],[flag])[0]),[]);
+ flag.radiusMeters=4000;
+ const assigned=assignGuides([baseline],[flag])[0];
+ assert.equal(candidates(assigned).length,2);
+ const nearby=route([[9,48],[9.5,48.09],[10,48]],3800);
+ const excessive=route(nearby.geometry.coordinates,20000);
+ assert.equal(selectLeg(baseline,[excessive],assigned),baseline);
+ assert.equal(selectLeg(baseline,[excessive,nearby],assigned),nearby);
+});
+
+test("removing a flag or an older route calculation cannot replace the current baseline",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");
+ let flags=[{lat:48.5,lng:9.8,radiusMeters:6000}],finishProbe,beginProbe;
+ const pending=new Promise(resolve=>{finishProbe=resolve;});
+ const begun=new Promise(resolve=>{beginProbe=resolve;});
+ const pins={a:{lat:48,lng:9},z:{lat:49,lng:10}};
+ const geometry={coordinates:[[9,48],[10,49]]};
+ const baseline={geometry,durationSeconds:5400,distanceMeters:140000};
+ const session=new CarRouteSession({plan,getPin:id=>pins[id],getGuides:()=>flags,
+  calculate:request=>{if(!request.shapePoints)return Promise.resolve(baseline);beginProbe();return pending;},
+  onChange:()=>{},onError:assert.fail});
+ const old=session.recalculate();
+ await begun;
+ flags=[];
+ await session.recalculate();
+ finishProbe({...baseline,durationSeconds:6000,geometry:{coordinates:[[9,48],[9.8,48.5],[10,49]]}});
+ await old;
+ assert.equal(session.snapshot().legs[0].geometry,geometry);
+});

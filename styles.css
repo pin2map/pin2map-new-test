@@ -3244,8 +3244,7 @@ body.pin-open #app #routeToggleHolder{display:none}
 }
 #app .car-route-panel-toggle .p2m-lucide{width:26px;height:26px}
 #map .p2m-route-guide-holder{background:transparent;border:0}
-#map .p2m-route-guide-holder .p2m-lucide{width:27px;height:27px;background:#fff8d6;
- border:2px solid #edb92b;border-radius:5px}
+#map .p2m-route-guide-pin{display:block;width:30px;height:40px;color:#17253c}
 #pinPanel :is(.pin-nav-start,.pin-nav-target,.pin-nav-waypoint).p2m-icon-control.is-active{
  --p2m-button-bg:var(--p2m-button-border);--p2m-button-ink:#fff
 }

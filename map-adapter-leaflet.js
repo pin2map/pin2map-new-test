@@ -51,6 +51,11 @@
       const size=this.map.getSize();
       return {x:size.x,y:size.y};
     }
+    metersForPixels(position,pixels){
+      const start=latLng(position),screen=this.map.latLngToContainerPoint(start);
+      const end=this.map.containerPointToLatLng([screen.x+pixels,screen.y]);
+      return this.map.distance(start,end);
+    }
     project(position) {
       const p=this.map.latLngToContainerPoint(latLng(position));
       return {x:p.x,y:p.y};
@@ -509,10 +514,11 @@
       for(const guide of guides||[]){
         const p=latLng(guide);
         if(!Number.isFinite(p.lat)||!Number.isFinite(p.lng)||Math.abs(p.lat)>90||Math.abs(p.lng)>180)continue;
-        const symbol=window.Pin2MapIcons.svg("flag-triangle-right",document).outerHTML;
+        const symbol=window.Pin2MapPinMarkerView.guideAppearance();
         const marker=window.L.marker([p.lat,p.lng],{
+          title:"Richtungsflagge",alt:"Richtungsflagge",
           icon:window.L.divIcon({className:"p2m-route-guide-holder",html:symbol,
-            iconSize:[32,32],iconAnchor:[7,30]})}).addTo(this.map);
+            iconSize:[30,40],iconAnchor:[15,38]})}).addTo(this.map);
         marker.on("click",e=>{if(e.originalEvent)window.L.DomEvent.stop(e.originalEvent);onClick?.(guide.id);});
         this.routeGuideLayers.push(marker);
       }

@@ -6,10 +6,12 @@
 (function(root){
  const {TIME_FACTORS,validTimeFactor,timeMarkers}=root.Pin2MapActiveCarRoute||
   (typeof module!=="undefined"?require("../domain/active-car-route.js"):{});
+ const {assignGuides,candidates,selectLeg}=root.Pin2MapRouteGuideCorridor||
+  (typeof module!=="undefined"?require("../domain/route-guide-corridor.js"):{});
  class CarRouteSession {
-  constructor({plan,calculate,getPin,onChange,onError,timeFactors={}}){
+  constructor({plan,calculate,getPin,onChange,onError,getGuides=()=>[],onGuideWarning=()=>{},timeFactors={}}){
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
-   Object.assign(this,{plan,calculate,getPin,onChange,onError});
+   Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,onGuideWarning});
    this.generation=0;this.pending=null;this.legs=[];this.loading=false;this.allVisibleActive=false;
    this.factors={...TIME_FACTORS};this.timeProfile="standard";
    for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(timeFactors[key]))this.factors[key]=timeFactors[key];
@@ -43,15 +45,32 @@
    }
    const generation=this.generation,controller=new AbortController();this.pending=controller;this.loading=true;this.publish();
    const completed=[];
+   const guides=this.getGuides();
+   const requestFor=i=>({waypoints:[points[i],points[i+1]],
+    profile:this.plan.profile,avoidTolls:this.plan.avoidTolls,signal:controller.signal});
    try{
     for(let i=0;i<points.length-1;i++){
-     const result=await this.calculate({waypoints:[points[i],points[i+1]],
-      profile:this.plan.profile,avoidTolls:this.plan.avoidTolls,signal:controller.signal});
+     const result=await this.calculate(requestFor(i));
      if(generation!==this.generation)return;
      completed.push({...result,fromId:ids[i],toId:ids[i+1]});
     }
     if(generation!==this.generation)return;
+    const assigned=assignGuides(completed,guides);
+    for(let i=0;i<completed.length;i++){
+     if(ids[i]===ids[i+1])continue;
+     const alternatives=[];
+     for(const shapePoints of candidates(assigned[i])){
+      try{alternatives.push(await this.calculate({...requestFor(i),shapePoints}));}
+      catch{/* An optional corridor probe can fail while the baseline remains usable. */}
+      if(generation!==this.generation)return;
+     }
+     if(alternatives.length)completed[i]={...completed[i],...selectLeg(completed[i],alternatives,assigned[i])};
+    }
     this.legs=completed;
+    if(guides.length){
+     const missed=assignGuides(completed,guides).flat().filter(guide=>guide.meters>guide.radius).length;
+     if(missed)this.onGuideWarning(missed);
+    }
    }catch(error){
     if(generation!==this.generation)return;
     if(!controller.signal.aborted)this.onError("Autoroute konnte nicht berechnet werden: "+String(error?.message||error));

@@ -78,3 +78,15 @@ test("No-highways profile requests Valhalla exclusion and retains the separate t
  assert.equal(request.costing,"auto");
  assert.deepEqual(request.costing_options.auto,{exclude_highways:true,exclude_tolls:true});
 });
+
+test("corridor shape points are distinct from stop indices for OSRM and through locations for Valhalla",async()=>{
+ const {calls,prov}=client();
+ const shapePoints=[{lat:48.02,lng:9.06}];
+ await prov.calculate({waypoints:points,shapePoints});
+ const osrmUrl=new URL(calls[0].url);
+ assert.match(osrmUrl.pathname,/9,48;9.06,48.02;9.1,48.1$/);
+ assert.equal(osrmUrl.searchParams.get("waypoints"),"0;2");
+ await prov.calculate({waypoints:points,shapePoints,profile:PROFILES.COUNTRY});
+ const payload=JSON.parse(new URL(calls[1].url).searchParams.get("json"));
+ assert.deepEqual(payload.locations,[{lat:48,lon:9},{lat:48.02,lon:9.06,type:"through"},{lat:48.1,lon:9.1}]);
+});

@@ -73,17 +73,21 @@
    this.osrmBase=osrmBase;
    this.valhallaBase=valhallaBase;
   }
-  async calculate({waypoints,profile=PROFILES.FAST,avoidTolls=false,signal}={}){
+  async calculate({waypoints,shapePoints=[],profile=PROFILES.FAST,avoidTolls=false,signal}={}){
    if(!allowed.includes(profile))throw new RangeError("Unknown car profile");
    if(!Array.isArray(waypoints)||waypoints.length<2||waypoints.length>25)
     throw new RangeError("Routing requires 2–25 ordered waypoints");
+   if(!Array.isArray(shapePoints)||(shapePoints.length&&(waypoints.length!==2||shapePoints.length>23)))
+    throw new RangeError("Shaping points require one hard route leg");
    const points=waypoints.map(point);
+   if(shapePoints.length)points.splice(1,0,...shapePoints.map(point));
    if(typeof avoidTolls!=="boolean")throw new TypeError("avoidTolls must be boolean");
    if(profile===PROFILES.SCENIC&&avoidTolls)
     throw new RangeError("Toll exclusion with motorcycle-derived scenic profile is not yet validated");
    if(profile===PROFILES.FAST&&!avoidTolls){
     const coordText=points.map(p=>p.lng+","+p.lat).join(";");
-    const url=this.osrmBase+coordText+"?overview=full&geometries=geojson&alternatives=false&steps=true";
+    const url=this.osrmBase+coordText+"?overview=full&geometries=geojson&alternatives=false&steps=true"+
+     (shapePoints.length?"&waypoints=0;"+(points.length-1):"");
     const data=await jsonOrThrow(this.fetchImpl,url,{mode:"cors",signal});
     const route=data?.routes?.[0];
     if(!route||route.geometry?.type!=="LineString")
@@ -98,7 +102,8 @@
     profile===PROFILES.COUNTRY?{use_highways:0.35}:
     profile===PROFILES.NO_HIGHWAYS?{exclude_highways:true}:{};
    if(avoidTolls)options.exclude_tolls=true;
-   const payload={locations:points.map(p=>({lat:p.lat,lon:p.lng})),
+   const payload={locations:points.map((p,i)=>({lat:p.lat,lon:p.lng,
+    ...(shapePoints.length&&i>0&&i<points.length-1?{type:"through"}:{})})),
     costing,costing_options:{[costing]:options},directions_type:"maneuvers",units:"kilometers"};
    const url=this.valhallaBase+encodeURIComponent(JSON.stringify(payload));
    const data=await jsonOrThrow(this.fetchImpl,url,{

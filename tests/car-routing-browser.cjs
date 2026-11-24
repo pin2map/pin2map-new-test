@@ -15,11 +15,12 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    const ctx=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,serviceWorkers:"block"});
    const page=await ctx.newPage(),errors=[];page.on("pageerror",e=>errors.push(e.stack||e.message));
    const base=URL_BASE.endsWith("/")?URL_BASE:URL_BASE+"/";
-   const routeRequests=[];
+   const routeRequests=[],shapeRequests=[];
    await page.route(/router\.project-osrm\.org\/route\/v1\/driving\//,async route=>{
     const url=new URL(route.request().url());
     const coords=decodeURIComponent(url.pathname.split("/driving/").at(-1)).split(";").map(s=>s.split(",").map(Number));
     routeRequests.push(coords);
+    if(coords.length>2)shapeRequests.push({coords,stops:url.searchParams.get("waypoints")});
     const body={code:"Ok",routes:[{distance:24000,duration:1800,
       geometry:{type:"LineString",coordinates:coords}}]};
     await route.fulfill({status:200,contentType:"application/json",headers:{"Access-Control-Allow-Origin":"*"},body:JSON.stringify(body)});
@@ -309,19 +310,43 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    // Saving is debounced; prove the guide reached IndexedDB before reload.
    // Playwright waitForFunction polls synchronously; an async predicate itself
    // is truthy before its IndexedDB promise resolves. Poll from Node instead.
-   let guideCommitted=false;
+   let savedGuide;
    for(let attempt=0;attempt<60;attempt++){
-     const count=await page.evaluate(async()=>{
+     const stored=await page.evaluate(async()=>{
        const store=await window.Pin2MapIndexedDBProjectStore.open();
-       try{return (await store.loadProject())?.routeGuides?.length??0;}
+       try{return (await store.loadProject())?.routeGuides?.[0];}
        finally{store.close();}
      });
-     if(count===1){guideCommitted=true;break;}
+     if(stored){savedGuide=stored;break;}
      await page.waitForTimeout(100);
    }
-   assert.ok(guideCommitted,"Direction flag must commit to IndexedDB before reload");
+   assert.ok(savedGuide?.radiusMeters>=350&&savedGuide.radiusMeters<=80000,"Direction flag persists its placement radius");
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1,null,{timeout:20000});
+   assert.equal(await page.locator('.p2m-route-guide-pin > path[fill="#fff8d6"][stroke="#edb92b"]').count(),1);
+   assert.equal(await page.locator('.p2m-route-guide-pin [data-route-icon="flag-triangle-right"]').count(),1);
+   // Set a repeatable geographic corridor for the browser transport fixture.
+   await page.evaluate(async()=>{
+    const store=await window.Pin2MapIndexedDBProjectStore.open();
+    try{
+     const project=await store.loadProject();
+     project.viewport={lat:48.5,lng:10.3,zoom:6};
+     Object.assign(project.routeGuides[0],{lat:48.90,lng:10.30,radiusMeters:8000});
+     await store.saveProject(project);
+    }finally{store.close();}
+   });
+   await page.reload({waitUntil:"domcontentloaded"});
+   await page.locator(".leaflet-marker-icon.pin-icon").nth(2).waitFor({state:"attached"});
+   await openPin(0,"Stuttgart");
+   await setRole("pinRouteStart");
+   await openPin(2,"München");
+   await setRole("pinRouteTarget");
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(shapeRequests.length,2);
+   assert.ok(shapeRequests.every(({coords,stops})=>coords.length===3&&stops==="0;2"&&
+    (coords[1][0]!==10.30||coords[1][1]!==48.90)));
+   assert.equal(await rolePins("waypoint").count(),0);
+   assert.match(await page.locator("#routeLegs").textContent(),/Stuttgart → München/);
    assert.deepEqual(errors,[],"Browser script errors");
    console.log("PASS routing real UI",engineName,viewport.width,"hard legs, fixed toolbar, reverse, collapse, soft guide persistence");
    await ctx.close();
