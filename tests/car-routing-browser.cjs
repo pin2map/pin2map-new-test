@@ -116,6 +116,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      finally{store.close();}
    },null,{timeout:10000});
    await page.reload({waitUntil:"domcontentloaded"});
+   await page.waitForSelector(".pin-zoom-buttons");
+   console.log("GUIDE RELOAD DIAGNOSTIC",JSON.stringify(await page.evaluate(async()=>{const st=await window.Pin2MapIndexedDBProjectStore.open();try{const p=await st.loadProject();return {guides:p.routeGuides,viewport:p.viewport,holders:document.querySelectorAll(".p2m-route-guide-holder").length,markerPane:document.querySelector(".leaflet-marker-pane")?.children.length,load:document.readyState}}finally{st.close()}})));
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1,null,{timeout:20000});
    assert.deepEqual(errors,[],"Browser script errors");
    console.log("PASS routing real UI",engineName,viewport.width,"hard legs, fixed toolbar, reverse, collapse, soft guide persistence");
