@@ -89,6 +89,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.match(await page.locator("#routeLegs").textContent(),/München → Ulm/);
    await page.locator("#routeSettings").click();
    assert.equal(await page.locator("#routeProfileMenu").isVisible(),true);
+   // An open popup must not obscure its own toggle, including on iPhone WebKit.
+   const menus=await page.evaluate(()=>{
+     const button=document.getElementById("routeSettings").getBoundingClientRect();
+     const menu=document.getElementById("routeProfileMenu").getBoundingClientRect();
+     return{buttonTop:button.top,menuBottom:menu.bottom};
+   });
+   assert.ok(menus.menuBottom<=menus.buttonTop,JSON.stringify(menus));
    await page.locator("#routeSettings").click();
    await page.locator("#routeTolls").click();
    assert.equal(await page.locator("#routeTolls").getAttribute("aria-pressed"),"true");
