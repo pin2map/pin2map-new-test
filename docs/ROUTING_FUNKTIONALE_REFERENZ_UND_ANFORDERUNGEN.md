@@ -750,7 +750,7 @@ Von geeigneten Varianten gewinnt die mit dem kleinsten geschätzten Anstieg, dan
 
 ### R-044 – Fahrrad-Fallback, stärkere Richtungsflaggen und Fuß-Routing (24.11.2026)
 
-R-043 wird für mehrspurige Abschnitte angepasst. Eine zusätzliche Spur je Richtung ist bei einer ansonsten geeigneten Straße zulässig, wenn die angebotenen Varianten sie nicht vermeiden können. Die geringste mehrspurige Distanz hat Vorrang vor Steigung und Radweganteil. Die Prüfung auf große Straßen, Rampen, Stufen und fehlende Straßenattribute bleibt bestehen.
+R-043 wird für mehrspurige Abschnitte angepasst. Mehrspurige Abschnitte auf ansonsten geeigneten Straßen sind zulässig, wenn die angebotenen Varianten sie nicht vermeiden können. Die geringste mehrspurige Distanz hat Vorrang vor Steigung und Radweganteil. Die Prüfung auf große Straßen, Rampen, Stufen und fehlende Straßenattribute bleibt bestehen.
 
 Richtungsflaggen können auch längere Umwege und Varianten auslösen, die sich der Flagge deutlich nähern, ohne ihren Radius zu erreichen. Bereits erreichte Flaggen bleiben berücksichtigt. Die Etappen und Haltepunkte ergeben sich weiterhin aus den Routing-Pins. Fahrradvarianten mit mehr mehrspurigen Abschnitten werden dabei nicht durch eine Flagge aufgewertet.
 
