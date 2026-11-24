@@ -281,6 +281,11 @@ jobs:
           name: p2m-preview-${{ github.run_id }}-${{ github.run_attempt }}
           path: site-root
 
+      # The deploy action lists artifacts through the Actions Results service.
+      # Upload can succeed before the new artifact is visible to that lookup.
+      - name: Allow Pages artifact metadata to propagate
+        run: sleep 20
+
       - id: deployment
         uses: actions/deploy-pages@v4
         with:
