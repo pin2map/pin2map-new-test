@@ -6,7 +6,13 @@
     return String(result?.name||String(result?.display_name||"").split(",")[0]||"").trim();
   }
   function detail(result){return String(result?.display_name||"").trim();}
-  function pinName(result){
+  function pinName(result,query){
+    const category=result?.category||result?.class;
+    const namedPlace=String(result?.name||"").trim();
+    // Nominatim labels named businesses and facilities by category, even
+    // when their address includes a house number.
+    if(query&&namedPlace&&category&&!["place","boundary","highway","building"].includes(category))
+      return query.trim()||namedPlace;
     const address=result?.address||{};
     const road=String(address.road||address.pedestrian||address.residential||
       address.footway||address.path||address.street||"").trim();

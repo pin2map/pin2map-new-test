@@ -103,8 +103,7 @@
    const toggle=this.el("routePanelToggle");this.el("routeToggleHolder").classList.toggle("hidden",!active);
    toggle.setAttribute("aria-pressed",String(active&&this.visible));
    if(!active){this.closeMenus();return;}
-   const bike=snapshot.mode==="bicycle";
-   const icon=bike?"bike":"car";
+   const icon={car:"car",bicycle:"bike",pedestrian:"footprints"}[snapshot.mode]||"car";
    if(this.el("routeModeIcon").dataset.pinIcon!==icon)this.icons.mount(this.el("routeModeIcon"),icon);
    if(this.el("routePanelToggle").dataset.pinIcon!==icon)this.icons.mount(this.el("routePanelToggle"),icon);
    for(const button of this.doc.querySelectorAll("[data-route-mode]")){
@@ -112,11 +111,11 @@
     button.classList.toggle("is-active",active);
     button.setAttribute("aria-pressed",String(active));
    }
-   for(const id of ["routeSettings","routeTolls","routeTimes","routeApple"])this.el(id).disabled=bike;
+   for(const id of ["routeSettings","routeTolls","routeTimes","routeApple"])this.el(id).disabled=snapshot.mode!=="car";
    const title=this.el("routeSummary");
    title.textContent=snapshot.loading?"Route wird berechnet …":snapshot.legs.length?
      ""+fmtDistance(snapshot.distanceMeters)+" · ca. "+fmtTime(snapshot.durationSeconds):
-     bike?"Keine geprüfte Fahrradroute verfügbar":"Route nicht verfügbar";
+     snapshot.mode==="bicycle"?"Keine geprüfte Fahrradroute verfügbar":"Route nicht verfügbar";
    this.el("routeAll").classList.toggle("is-active",snapshot.allVisibleActive);
    this.el("routeAll").setAttribute("aria-pressed",String(Boolean(snapshot.allVisibleActive)));
    for(const [id,order] of [["routeFixed","fixed"],["routeOptimize","optimal"]]){

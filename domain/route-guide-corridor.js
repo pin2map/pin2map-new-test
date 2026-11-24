@@ -57,24 +57,25 @@
  function preferred(a,b){
   if(a.mode==="bicycle"&&b.mode==="bicycle"){
    const rank=(x,y)=>(x??Infinity)-(y??Infinity);
-   const difference=rank(a.ascentMeters,b.ascentMeters)||rank(a.maxGrade,b.maxGrade)||b.cycleShare-a.cycleShare;
+   const difference=rank(a.multiLaneMeters,b.multiLaneMeters)||rank(a.ascentMeters,b.ascentMeters)||rank(a.maxGrade,b.maxGrade)||b.cycleShare-a.cycleShare;
    if(difference)return difference<0;
   }
   return a.durationSeconds<b.durationSeconds;
  }
  function selectLeg(baseline,alternatives,guides){
-  let best=baseline, count=guides.filter(guide=>guide.meters<=guide.radius).length;
-  const originalCount=count;
+  let best=baseline;
+  const penalty=meters=>meters.reduce((sum,meters,index)=>sum+Math.max(0,meters-guides[index].radius),0);
+  const initial=penalty(guides.map(guide=>guide.meters));
+  let bestPenalty=initial;
   for(const option of alternatives){
-   if(option.durationSeconds>baseline.durationSeconds*1.35+600||
-      option.distanceMeters>baseline.distanceMeters*1.35+10000)continue;
-   let hits=0,lost=false;
-   for(const guide of guides){
-    if(locate(option.geometry,guide.flag).meters<=guide.radius)hits++;
-    else if(guide.meters<=guide.radius)lost=true;
-   }
-   if(!lost&&(hits>count||(hits===count&&hits>originalCount&&preferred(option,best)))){
-    best=option;count=hits;
+   if(option.durationSeconds>baseline.durationSeconds*2+600||
+      option.distanceMeters>baseline.distanceMeters*2+10000)continue;
+   if((option.multiLaneMeters||0)>(baseline.multiLaneMeters||0))continue;
+   const misses=guides.map(guide=>locate(option.geometry,guide.flag).meters);
+   if(misses.some((meters,index)=>guides[index].meters<=guides[index].radius&&meters>guides[index].radius))continue;
+   const remaining=penalty(misses);
+   if(remaining<bestPenalty||(remaining===bestPenalty&&remaining<initial&&preferred(option,best))){
+    best=option;bestPenalty=remaining;
    }
   }
   return best;

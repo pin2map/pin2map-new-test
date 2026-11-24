@@ -410,6 +410,16 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(cycleRequests.every(request=>request.costing==="bicycle"));
    assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
    assert.equal(await rolePins("waypoint").count(),0);
+   cycleRequests.length=0;
+   await page.getByRole("button",{name:"Zu Fuß",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(await page.getByRole("button",{name:"Zu Fuß",exact:true}).getAttribute("aria-pressed"),"true");
+   assert.equal(await page.locator("#routeModeIcon").getAttribute("data-pin-icon"),"footprints");
+   assert.equal(await page.locator("#routeTimes").isDisabled(),true);
+   assert.equal(cycleRequests.length,3);
+   assert.ok(cycleRequests.every(request=>request.costing==="pedestrian"));
+   assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
+   assert.equal(await rolePins("waypoint").count(),0);
    await page.getByRole("button",{name:"Auto",exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
 

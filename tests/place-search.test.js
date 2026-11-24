@@ -177,3 +177,11 @@ test("pin name prefers full street and house number, not standalone house number
   assert.equal(domain.pinName({name:"Hamburg",address:{city:"Hamburg"}}),"Hamburg");
   assert.equal(domain.pinName({name:"Bilser Str.",address:{road:"Bilser Str."}}),"Bilser Str.");
 });
+
+test("named place pins preserve the submitted wording and keep the provider address",()=>{
+ const result={category:"amenity",name:"Zentralgarage",display_name:"Zentralgarage, Hauptstraße, Stuttgart",
+  address:{road:"Hauptstraße",house_number:"23",city:"Stuttgart"}};
+ assert.equal(domain.pinName(result,"Zentralgarage Stuttgart"),"Zentralgarage Stuttgart");
+ assert.match(domain.fullAddress(result),/Stuttgart/);
+ assert.equal(domain.pinName({...result,category:"place",name:"23"},"Stuttgart Hauptstraße 23"),"Hauptstraße 23");
+});

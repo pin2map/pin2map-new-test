@@ -70,7 +70,7 @@
       });
       if(revision!==this.revision)return;
       switch(result.kind){
-        case "results":this.onResults(result.results);break;
+        case "results":this.onResults(result.results,query);break;
         case "disabled":this.onMessage("Ortssuche im Test noch nicht aktiviert. Bitte in ⚙ Einstellungen nach Prüfung der Nominatim-Richtlinie aktivieren.");break;
         case "throttled":this.onMessage("Bitte kurz warten und die Suche erneut starten.");break;
         case "error":this.onMessage("Ortssuche derzeit nicht verfügbar. Bitte Verbindung prüfen und erneut suchen.");break;

@@ -30,7 +30,7 @@
    this.publish();
   }
   setMode(mode){
-   if(!["car","bicycle"].includes(mode)||mode===this.mode)return;
+   if(!["car","bicycle","pedestrian"].includes(mode)||mode===this.mode)return;
    this.mode=mode;void this.recalculate();
   }
   setOrder(order){
@@ -77,7 +77,7 @@
     }
    }catch(error){
     if(generation!==this.generation)return;
-    if(!controller.signal.aborted)this.onError((this.mode==="bicycle"?"Fahrradroute":"Autoroute")+" konnte nicht berechnet werden: "+String(error?.message||error));
+    if(!controller.signal.aborted)this.onError(({car:"Autoroute",bicycle:"Fahrradroute",pedestrian:"Fußroute"}[this.mode])+" konnte nicht berechnet werden: "+String(error?.message||error));
    }finally{
     if(generation===this.generation){this.loading=false;this.pending=null;this.publish();}
    }

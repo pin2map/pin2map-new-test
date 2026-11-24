@@ -56,7 +56,7 @@ test("map-click priorities retain isolated owners for satellite, relocation, lon
  assert.match(app,/new window\.Pin2MapMapInteractionController/);
 });
 
-test("car and bicycle routing are active through modular providers",()=>{
+test("car, bicycle and pedestrian routing are active through modular providers",()=>{
  const coordinator=read("application/routing-service.js");
  for(const file of ["domain/active-car-route.js","domain/route-guide-corridor.js","application/routing-service.js",
    "adapters/routing/car-routing-provider.js","adapters/routing/bicycle-routing-provider.js","application/car-route-session.js","application/route-guide-session.js",
@@ -73,7 +73,8 @@ test("car and bicycle routing are active through modular providers",()=>{
  const app=read("app.js"),session=read("application/car-route-session.js"),
    model=read("domain/active-car-route.js"),map=read("ui/car-route-map-view.js");
  assert.match(app,/routingCore\.register\("car",new window\.Pin2MapCarRouting\.CarRoutingProvider/);
- assert.doesNotMatch(app,/routingCore\.register\("(?:pedestrian|transit)"/);
+ assert.match(app,/routingCore\.register\("pedestrian",new window\.Pin2MapBicycleRouting\.PedestrianRoutingProvider/);
+ assert.doesNotMatch(app,/routingCore\.register\("transit"/);
  for(const [file,source] of [["model",model],["session",session],["map",map]]){
   assert.doesNotMatch(source,/\b(?:window\.L|indexedDB|localStorage|document\.getElementById)\b/,file+" crosses an architectural port");
  }

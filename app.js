@@ -353,7 +353,7 @@
     onNotice:message=>showNotice(message),onRender:()=>renderLayers(),onSave:()=>save()
   });
   const searchPinTransfer = new window.Pin2MapSearchPinTransfer({
-    searchView,titleOf:result=>placeDomain.pinName(result),addressOf:placeDomain.fullAddress,
+    searchView,titleOf:placeDomain.pinName,addressOf:placeDomain.fullAddress,
     addPin:(lat,lng,name,address)=>addPin(lat,lng,name,"search",address),mapPort:{
       getViewport:()=>mapAdapter.getViewport(),
       setView:(view,options)=>mapAdapter.setView(view,options)
@@ -756,7 +756,7 @@
   }
   const searchMessage = msg => searchView.message(msg);
   const choosePlace = result => searchPinTransfer.choose(result);
-  const renderResults = list => searchPinTransfer.present(list);
+  const renderResults = (list,query) => searchPinTransfer.present(list,query);
 
   const searchForm = new window.Pin2MapSearchFormController({
     getElement:$,
@@ -894,6 +894,7 @@
     const routingCore=new window.Pin2MapRouting.RoutingService();
     routingCore.register("car",new window.Pin2MapCarRouting.CarRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     routingCore.register("bicycle",new window.Pin2MapBicycleRouting.BicycleRoutingProvider({fetchImpl:window.fetch.bind(window)}));
+    routingCore.register("pedestrian",new window.Pin2MapBicycleRouting.PedestrianRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
     const routePinById=id=>pinOps.findPin(state,id);
     routeGuideSession=new window.Pin2MapRouteGuideSession.RouteGuideSession({

@@ -12,14 +12,14 @@
       this.onLayout=onLayout;this.isPrivateLayerVisible=isPrivateLayerVisible;
       this.onRenderMarkers=onRenderMarkers;
     }
-    choose(result){
+    choose(result,query=result?.searchQuery){
       const lat=Number(result?.lat),lng=Number(result?.lon);
       if(!Number.isFinite(lat)||!Number.isFinite(lng)){
         this.searchView.message("Ort konnte nicht übernommen werden");
         return null;
       }
       this.searchView.hide();
-      const name=this.titleOf(result);
+      const name=this.titleOf(result,query);
       const pin=this.addressOf?this.addPin(lat,lng,name,this.addressOf(result)):this.addPin(lat,lng,name);
       if(pin){
         this.mapPort.setView({
@@ -31,13 +31,13 @@
       }
       return pin||null;
     }
-    present(results){
+    present(results,query){
       if(!results.length){
         this.searchView.message("Kein Ort gefunden");
         return;
       }
-      if(results.length===1){this.choose(results[0]);return;}
-      this.searchView.show(results);
+      if(results.length===1){this.choose(results[0],query);return;}
+      this.searchView.show(query?results.map(result=>({...result,searchQuery:query})):results);
     }
   }
   root.Pin2MapSearchPinTransfer=SearchPinTransfer;

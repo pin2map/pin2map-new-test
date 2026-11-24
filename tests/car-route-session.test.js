@@ -228,3 +228,14 @@ test("ferries form their own stages and restart the driving clock after each cro
  session.setTimeProfile("slow");
  assert.deepEqual(session.snapshot().legs.map(leg=>leg.durationSeconds),[4680,900,4680,900,4680]);
 });
+
+test("a longer route that approaches a distant direction flag can win outside its radius",()=>{
+ const {assignGuides,selectLeg}=require("../domain/route-guide-corridor.js");
+ const baseline={mode:"bicycle",multiLaneMeters:0,geometry:{coordinates:[[9,48],[10,48]]},
+  durationSeconds:3600,distanceMeters:80000};
+ const closer={...baseline,geometry:{coordinates:[[9,48],[9.5,48.22],[10,48]]},
+  durationSeconds:5600,distanceMeters:120000};
+ const guides=assignGuides([baseline],[{lat:48.30,lng:9.5,radiusMeters:4000}])[0];
+ assert.equal(selectLeg(baseline,[closer],guides),closer);
+ assert.equal(selectLeg(baseline,[{...closer,multiLaneMeters:300}],guides),baseline);
+});

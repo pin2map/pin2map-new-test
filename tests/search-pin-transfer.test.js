@@ -75,11 +75,24 @@ test("script, app composition, offline shell and Leaflet boundary",()=>{
   const app=read("app.js"),html=read("index.html"),sw=read("sw.js");
   assert.match(app,/new window\.Pin2MapSearchPinTransfer/);
   assert.match(app,/searchPinTransfer\.choose\(result\)/);
-  assert.match(app,/searchPinTransfer\.present\(list\)/);
-  assert.match(app,/searchView,titleOf:result=>placeDomain\.pinName\(result\)/);
+  assert.match(app,/searchPinTransfer\.present\(list,query\)/);
+  assert.match(app,/searchView,titleOf:placeDomain\.pinName/);
   assert.doesNotMatch(app,/function choosePlace\(r\)/);
   assert.ok(html.indexOf("./application/search-pin-transfer.js")>html.indexOf("./application/place-search-service.js"));
   assert.ok(html.indexOf("./application/search-pin-transfer.js")<html.indexOf("./app.js"));
   assert.match(sw,/"\.\/application\/search-pin-transfer\.js"/);
   assert.match(sw,/const CACHE='pin2map-new-v\d+'/);
+});
+
+test("the submitted place name survives both automatic and manual search transfer",()=>{
+  const query="Zentralgarage Stuttgart";
+  const hit={lat:48.77,lon:9.18,name:"Zentralgarage",category:"amenity",
+    address:{road:"Hauptstraße",house_number:"23",city:"Stuttgart"}};
+  for(const multiple of [false,true]){
+    const x=fixture({nameOf:require("../domain/place-search.js").pinName});
+    x.transfer.present(multiple?[hit,{...hit,lon:9.19}]:[hit],query);
+    if(multiple)x.transfer.choose(x.events[0][1][0]);
+    assert.deepEqual(x.events.find(event=>event[0]==="add"),["add",48.77,9.18,query]);
+    assert.equal(hit.searchQuery,undefined);
+  }
 });

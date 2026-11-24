@@ -747,3 +747,13 @@ Kartenlabels rücken näher an den Pin heran. Bei Kollisionen wechselt das Label
 Fahrrad ist im gemeinsamen Routing-Dialog auswählbar und berechnet dieselben Pflicht-Etappen neu. Valhalla Bicycle bevorzugt Radwege und kleine Straßen und fordert flache Routen an. Die App prüft die Netzattribute jeder angebotenen Variante vor der Anzeige. Große Straßen, Rampen, Stufen und nach den Netzattributen mehrspurige Straßen sind ausgeschlossen. Bei Straßen ist eine Fahrspur je Richtung zulässig. Separat erfasste Wege gelten eigenständig. Fehlen prüfbare Straßenattribute oder gibt es keine geeignete Variante, zeigt die App den entsprechenden Hinweis und übernimmt keine ungeprüfte Geometrie.
 
 Von geeigneten Varianten gewinnt die mit dem kleinsten geschätzten Anstieg, danach die mit der geringeren maximalen Steigung und bei Gleichstand die mit mehr eigenständigem Radweg. Höhen- und Straßenattribute stammen aus den verfügbaren Kartendaten. Richtungsflaggen bleiben weiche Korridore. Auch dafür geprüfte Durchfahrtvarianten müssen dieselben Fahrradkriterien erfüllen. Auto-Profile, Maut, Auto-Zeitkorrektur und die Auto-Übergabe an Apple Karten stehen im Fahrradmodus nicht zur Verfügung.
+
+### R-044 – Fahrrad-Fallback, stärkere Richtungsflaggen und Fuß-Routing (24.11.2026)
+
+R-043 wird für mehrspurige Abschnitte angepasst. Eine zusätzliche Spur je Richtung ist bei einer ansonsten geeigneten Straße zulässig, wenn die angebotenen Varianten sie nicht vermeiden können. Die geringste mehrspurige Distanz hat Vorrang vor Steigung und Radweganteil. Die Prüfung auf große Straßen, Rampen, Stufen und fehlende Straßenattribute bleibt bestehen.
+
+Richtungsflaggen können auch längere Umwege und Varianten auslösen, die sich der Flagge deutlich nähern, ohne ihren Radius zu erreichen. Bereits erreichte Flaggen bleiben berücksichtigt. Die Etappen und Haltepunkte ergeben sich weiterhin aus den Routing-Pins. Fahrradvarianten mit mehr mehrspurigen Abschnitten werden dabei nicht durch eine Flagge aufgewertet.
+
+Der gemeinsame Routing-Dialog erlaubt den Modus „Zu Fuß“. Valhalla Pedestrian bevorzugt Fußwege und Gehsteige. Bei angebotenen Alternativen wird Fußwegzeit für die Auswahl niedriger gewichtet, sodass auch ein kurzer Umweg über Fußwege gewählt werden kann. Angezeigt wird die ungekürzte Dauer. Richtungsflaggen gelten auch für Fußrouten. Für Fahrrad und Fuß gibt es vorerst keine eigenen Optionen.
+
+Bei namengebundenen Suchtreffern wie „Zentralgarage Stuttgart“ übernimmt ein neu gesetzter Pin den Suchtext als Namen und speichert daneben die gefundene Adresse. Adresssuchen behalten Straße und Hausnummer als Pin-Namen.
