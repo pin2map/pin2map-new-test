@@ -14,8 +14,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    const mobile=viewport.width<500;
    const ctx=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,serviceWorkers:"block"});
    const page=await ctx.newPage(),errors=[];page.on("pageerror",e=>errors.push(e.stack||e.message));
-   page.on("console",m=>{if(m.text().startsWith("IDB_PUT_ROUTE"))console.log("WRITE TRACE",m.text());});
-   await page.addInitScript(()=>{const orig=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(value,key){if(key==="appState")console.log("IDB_PUT_ROUTE",JSON.stringify({count:value?.routeGuides?.length,keys:Object.keys(value||{}).length,stack:new Error().stack?.split("\\n").slice(1,4)}));return orig.call(this,value,key)}});
+   page.on("console",m=>{if(m.text().startsWith("IDB_PUT_ROUTE")||m.text().startsWith("IDB_GET_ROUTE"))console.log("WRITE TRACE",m.text());});
+   await page.addInitScript(()=>{const orig=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(value,key){if(key==="appState")console.log("IDB_PUT_ROUTE",JSON.stringify({count:value?.routeGuides?.length,keys:Object.keys(value||{}).length,stack:new Error().stack?.split("\\n").slice(1,4)}));return orig.call(this,value,key)};const get=IDBObjectStore.prototype.get;IDBObjectStore.prototype.get=function(key){const req=get.call(this,key);if(key==="appState")req.addEventListener("success",()=>console.log("IDB_GET_ROUTE",JSON.stringify({count:req.result?.routeGuides?.length,db:this.transaction.db.name})));return req}});
    const base=URL_BASE.endsWith("/")?URL_BASE:URL_BASE+"/";
    const routeRequests=[];
    await page.route(/router\.project-osrm\.org\/route\/v1\/driving\//,async route=>{
@@ -117,6 +117,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      try{return (await store.loadProject())?.routeGuides?.length===1;}
      finally{store.close();}
    },null,{timeout:10000});
+   console.log("PRE RELOAD DB",JSON.stringify(await page.evaluate(async()=>{const st=await window.Pin2MapIndexedDBProjectStore.open();try{return {name:st.db.name,version:st.db.version,guides:(await st.loadProject())?.routeGuides}}finally{st.close()}})));
    await page.reload({waitUntil:"domcontentloaded"});
    await page.waitForSelector(".pin-zoom-buttons");
    console.log("GUIDE RELOAD DIAGNOSTIC",JSON.stringify(await page.evaluate(async()=>{const st=await window.Pin2MapIndexedDBProjectStore.open();try{const p=await st.loadProject();return {guides:p.routeGuides,viewport:p.viewport,holders:document.querySelectorAll(".p2m-route-guide-holder").length,markerPane:document.querySelector(".leaflet-marker-pane")?.children.length,load:document.readyState}}finally{st.close()}})));
