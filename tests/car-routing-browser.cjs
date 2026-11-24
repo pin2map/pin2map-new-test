@@ -101,8 +101,12 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    // A subsequent real map-surface tap opens the independent action chooser.
    const mapSurface=page.locator("#map");
    const chooser=page.locator("#mapActionChooser");
+   const diagnose=()=>page.evaluate(()=>{const map=document.querySelector("#map"),r=map.getBoundingClientRect(),target=document.elementFromPoint(r.left+100,r.top+120);return {target:target?.outerHTML?.slice(0,350),mapRect:{x:r.x,y:r.y,width:r.width,height:r.height},pinPanel:document.querySelector("#pinPanel")?.className,chooser:document.querySelector("#mapActionChooser")?.className,top:target?.closest(".leaflet-control,.leaflet-marker-icon,.leaflet-popup,.leaflet-tooltip,.leaflet-interactive,button")?.className}});
+   console.log("DIAGNOSTIC BEFORE",JSON.stringify(await diagnose()));
    await mapSurface.click({position:{x:100,y:120}});
+   console.log("DIAGNOSTIC FIRST",JSON.stringify(await diagnose()));
    if(!(await chooser.isVisible()))await mapSurface.click({position:{x:100,y:120}});
+   console.log("DIAGNOSTIC SECOND",JSON.stringify(await diagnose()));
    await chooser.waitFor({state:"visible",timeout:3000});
    await page.locator('#mapActionChooser button[aria-label="Richtungsflagge setzen"]').click();
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1);
