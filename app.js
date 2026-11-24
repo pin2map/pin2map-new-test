@@ -923,7 +923,7 @@
     };
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
-      onEnd:()=>{routeSession.clear();renderPinPanel();},
+      onEnd:()=>{routeSession.clear();routeGuideSession.clear();renderPinPanel();},
       confirmEnd:()=>window.confirm("Routing wirklich beenden?"),
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
       onOrder:order=>routeSession.setOrder(order),

@@ -51,7 +51,10 @@
     const positions=leg.geometry?.coordinates?.map(([lng,lat])=>({lat,lng}));
     if(!positions||positions.length<2)return;
     const color=COLORS[index%COLORS.length];
-    const line=this.map.createLine(positions,{color,weight:5,opacity:.93,bubblingMouseEvents:false});
+    const line=this.map.createLine(positions,{
+     color,weight:5,opacity:.93,bubblingMouseEvents:false,
+     ...(leg.ferry?{dashArray:"8 8",className:"p2m-ferry-leg"}:{})
+    });
     this.map.onRouteLine(line,()=>this.onLineClick(index));this.handles.push(line);
    });
    for(const marker of snapshot.timeMarkers||[])this.handles.push(this.map.createRouteTimeMarker(marker));

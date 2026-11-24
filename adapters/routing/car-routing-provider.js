@@ -92,7 +92,8 @@
     const route=data?.routes?.[0];
     if(!route||route.geometry?.type!=="LineString")
      throw new Error("OSRM returned no usable route");
-    return normalized("osrm",profile,route.geometry.coordinates,route.distance,route.duration,{avoidTolls:false,timeSections:route.legs?.flatMap(leg=>(leg.steps||[]).map(step=>({coordinates:step.geometry?.coordinates,seconds:step.duration})))});
+    return normalized("osrm",profile,route.geometry.coordinates,route.distance,route.duration,{avoidTolls:false,timeSections:route.legs?.flatMap(leg=>(leg.steps||[]).map(step=>({coordinates:step.geometry?.coordinates,seconds:step.duration,
+      distanceMeters:step.distance,ferry:step.mode==="ferry",ferryName:step.mode==="ferry"?step.name:undefined})))});
    }
    // The selected soft country-road profile is a tentative parameter (0.35)
    // derived from the user's route-lab comparisons, not a universal guarantee.
@@ -115,7 +116,16 @@
    for(const leg of data.trip.legs){
     const each=decodePolyline6(leg.shape);
     coords.push(...(coords.length?each.slice(1):each));
-    for(const step of leg.maneuvers||[])timeSections.push({coordinates:each.slice(step.begin_shape_index,step.end_shape_index+1),seconds:step.time});
+    // Maneuver types 28 and 29 mark boarding and returning to the road.
+    let ferry=false,ferryName;
+    for(const step of leg.maneuvers||[]){
+     if(step.type===28){ferry=true;ferryName=step.street_names?.[0];}
+     else if(step.type===29){ferry=false;ferryName=undefined;}
+     timeSections.push({
+      coordinates:each.slice(step.begin_shape_index,step.end_shape_index+1),
+      seconds:step.time,distanceMeters:step.length*1000,ferry,ferryName
+     });
+    }
    }
    return normalized("valhalla",profile,coords,
     data.trip.summary.length*1000,data.trip.summary.time,{

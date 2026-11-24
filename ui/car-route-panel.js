@@ -131,7 +131,12 @@
     const row=this.doc.createElement("div");row.className="car-route-leg";row.dataset.leg=String(index);
     const dot=this.doc.createElement("span");dot.className="car-route-dot";dot.style.background=["#ff3930","#1987f5","#27a855","#fa9b22","#8754bf"][index%5];
     const from=this.getPin(leg.fromId),to=this.getPin(leg.toId);
-    const label=this.doc.createElement("span");label.textContent=(index+1)+". "+(from?.name||"Pin")+" → "+(to?.name||"Pin")+" · "+fmtDistance(leg.distanceMeters)+" · "+fmtTime(leg.durationSeconds);
+    const origin=leg.fromId?(from?.name||"Pin"):(leg.ferry?"Abfahrtshafen":"Ankunftshafen");
+    const destination=leg.toId?(to?.name||"Pin"):(leg.ferry?"Ankunftshafen":"Abfahrtshafen");
+    const crossing=leg.ferry?"Fähre"+(leg.ferryName?" "+leg.ferryName:"")+" · ":"";
+    const label=this.doc.createElement("span");
+    label.textContent=(index+1)+". "+crossing+origin+" → "+destination+" · "+
+     fmtDistance(leg.distanceMeters)+" · "+(leg.ferry?"ca. ":"")+fmtTime(leg.durationSeconds);
     row.append(dot,label);legs.append(row);
    });
    if(!snapshot.legs.length&&!snapshot.loading)legs.textContent="Keine Strecke verfügbar. Start und Ziel prüfen.";

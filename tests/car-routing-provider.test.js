@@ -90,3 +90,20 @@ test("corridor shape points are distinct from stop indices for OSRM and through 
  const payload=JSON.parse(new URL(calls[1].url).searchParams.get("json"));
  assert.deepEqual(payload.locations,[{lat:48,lon:9},{lat:48.02,lon:9.06,type:"through"},{lat:48.1,lon:9.1}]);
 });
+
+test("OSRM ferry mode and Valhalla ferry-enter and exit produce separate timing sections",async()=>{
+ const coords=[[9,48],[9.01,48],[9.02,48],[9.03,48],[9.04,48]];
+ const steps=coords.slice(1).map((_,i)=>({distance:450,duration:120,
+  mode:i===1||i===2?"ferry":"driving",name:"Testfähre",geometry:{coordinates:coords.slice(i,i+2)}}));
+ const maneuvers=[3,28,8,29].map((type,i)=>({type,begin_shape_index:i,end_shape_index:i+1,time:120,length:.45,
+  street_names:["Testfähre"]}));
+ const data={routes:[{geometry:{type:"LineString",coordinates:coords},distance:1800,duration:480,legs:[{steps}]}],
+  trip:{summary:{length:1.8,time:480},legs:[{shape:encode(coords),maneuvers}]}};
+ const provider=new CarRoutingProvider({fetchImpl:async()=>({ok:true,json:async()=>data})});
+ for(const profile of [PROFILES.FAST,PROFILES.COUNTRY]){
+  const {timeSections}=await provider.calculate({waypoints:points,profile});
+  assert.deepEqual(timeSections.map(section=>section.ferry),[false,true,true,false]);
+  assert.equal(timeSections[1].ferryName,"Testfähre");
+  assert.equal(timeSections[1].distanceMeters,450);
+ }
+});

@@ -4,7 +4,7 @@
  * and a distinct color. Soft guide flags are deliberately NOT hard waypoints.
  */
 (function(root){
- const {TIME_FACTORS,validTimeFactor,timeMarkers}=root.Pin2MapActiveCarRoute||
+ const {TIME_FACTORS,validTimeFactor,timeMarkers,splitFerryLegs}=root.Pin2MapActiveCarRoute||
   (typeof module!=="undefined"?require("../domain/active-car-route.js"):{});
  const {assignGuides,candidates,selectLeg}=root.Pin2MapRouteGuideCorridor||
   (typeof module!=="undefined"?require("../domain/route-guide-corridor.js"):{});
@@ -18,7 +18,7 @@
   }
   snapshot(){
    const factor=this.factors[this.timeProfile];
-   const legs=this.legs.map(leg=>({...leg,durationSeconds:leg.durationSeconds*factor}));
+   const legs=this.legs.map(leg=>({...leg,durationSeconds:leg.durationSeconds*(leg.ferry?1:factor)}));
    return {...this.plan.snapshot(),allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
     timeProfile:this.timeProfile,timeMarkers:timeMarkers(legs),
     distanceMeters:legs.reduce((s,l)=>s+l.distanceMeters,0),
@@ -66,7 +66,7 @@
      }
      if(alternatives.length)completed[i]={...completed[i],...selectLeg(completed[i],alternatives,assigned[i])};
     }
-    this.legs=completed;
+    this.legs=splitFerryLegs(completed);
     if(guides.length){
      const missed=assignGuides(completed,guides).flat().filter(guide=>guide.meters>guide.radius).length;
      if(missed)this.onGuideWarning(missed);

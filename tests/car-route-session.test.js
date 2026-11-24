@@ -205,3 +205,26 @@ test("removing a flag or an older route calculation cannot replace the current b
  await old;
  assert.equal(session.snapshot().legs[0].geometry,geometry);
 });
+
+test("ferries form their own stages and restart the driving clock after each crossing",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");
+ const stages=[false,true,false,true,false];
+ const coords=Array.from({length:6},(_,i)=>[9+i/10,48]);
+ const sessions=[];
+ const session=new CarRouteSession({plan,getPin:id=>({id,lat:48,lng:id==="a"?9:9.5}),
+  calculate:async()=>({geometry:{type:"LineString",coordinates:coords},distanceMeters:50000,
+   durationSeconds:12600,timeSections:stages.map((ferry,i)=>({ferry,seconds:ferry?900:3600,
+    distanceMeters:10000,coordinates:coords.slice(i,i+2)}))}),
+  onChange:snapshot=>sessions.push(snapshot),onError:assert.fail});
+ await session.recalculate();
+ const {legs,timeMarkers}=sessions.at(-1);
+ assert.deepEqual(legs.map(leg=>leg.ferry),stages);
+ assert.deepEqual(legs.map(leg=>leg.durationSeconds),[3600,900,3600,900,3600]);
+ assert.deepEqual(timeMarkers.map(marker=>marker.hour),[null,1,null,1,null,1]);
+ assert.equal(legs[0].fromId,"a");
+ assert.equal(legs[4].toId,"z");
+ assert.deepEqual(legs.map(leg=>leg.geometry.coordinates),stages.map((_,i)=>coords.slice(i,i+2)));
+ session.setTimeProfile("slow");
+ assert.deepEqual(session.snapshot().legs.map(leg=>leg.durationSeconds),[4680,900,4680,900,4680]);
+});

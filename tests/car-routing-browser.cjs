@@ -16,13 +16,25 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    const page=await ctx.newPage(),errors=[];page.on("pageerror",e=>errors.push(e.stack||e.message));
    const base=URL_BASE.endsWith("/")?URL_BASE:URL_BASE+"/";
    const routeRequests=[],shapeRequests=[];
+   let ferryFixture=false;
    await page.route(/router\.project-osrm\.org\/route\/v1\/driving\//,async route=>{
     const url=new URL(route.request().url());
     const coords=decodeURIComponent(url.pathname.split("/driving/").at(-1)).split(";").map(s=>s.split(",").map(Number));
     routeRequests.push(coords);
     if(coords.length>2)shapeRequests.push({coords,stops:url.searchParams.get("waypoints")});
-    const body={code:"Ok",routes:[{distance:24000,duration:1800,
-      geometry:{type:"LineString",coordinates:coords}}]};
+    const response={distance:24000,duration:1800,geometry:{type:"LineString",coordinates:coords}};
+    if(ferryFixture){
+     const [from,to]=coords;
+     const at=fraction=>from.map((coord,i)=>coord+(to[i]-coord)*fraction);
+     const path=[from,at(.35),at(.65),to];
+     response.duration=9000;
+     response.geometry.coordinates=path;
+     response.legs=[{steps:["driving","ferry","driving"].map((mode,i)=>({
+      mode,name:mode==="ferry"?"Testfähre":"",duration:mode==="ferry"?1800:3600,distance:8000,
+      geometry:{type:"LineString",coordinates:path.slice(i,i+2)}
+     }))}];
+    }
+    const body={code:"Ok",routes:[response]};
     await route.fulfill({status:200,contentType:"application/json",headers:{"Access-Control-Allow-Origin":"*"},body:JSON.stringify(body)});
    });
    await page.goto(base,{waitUntil:"domcontentloaded"});
@@ -347,6 +359,35 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     (coords[1][0]!==10.30||coords[1][1]!==48.90)));
    assert.equal(await rolePins("waypoint").count(),0);
    assert.match(await page.locator("#routeLegs").textContent(),/Stuttgart → München/);
+   page.once("dialog",dialog=>dialog.dismiss());
+   await page.locator("#routeEnd").click();
+   assert.equal(await page.locator(".p2m-route-guide-holder").count(),1);
+   page.once("dialog",dialog=>dialog.accept());
+   await page.locator("#routeEnd").click();
+   assert.equal(await page.locator(".p2m-route-guide-holder").count(),0);
+   await page.waitForFunction(()=>!document.querySelector("#carRoutePanel").getClientRects().length);
+   let savedEmpty=false;
+   for(let attempt=0;attempt<60&&!savedEmpty;attempt++){
+    savedEmpty=await page.evaluate(async()=>{
+     const store=await window.Pin2MapIndexedDBProjectStore.open();
+     try{return (await store.loadProject())?.routeGuides?.length===0;}
+     finally{store.close();}
+    });
+    if(!savedEmpty)await page.waitForTimeout(100);
+   }
+   assert.ok(savedEmpty,"Ending route removes flags from storage");
+   ferryFixture=true;
+   await openPin(0,"Stuttgart");
+   await setRole("pinRouteStart");
+   await openPin(2,"München");
+   await setRole("pinRouteTarget");
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
+   const ferryRows=await page.locator("#routeLegs .car-route-leg").allTextContents();
+   assert.match(ferryRows[0],/Stuttgart → Abfahrtshafen/);
+   assert.match(ferryRows[1],/Fähre Testfähre.*Abfahrtshafen → Ankunftshafen.*30 min/);
+   assert.match(ferryRows[2],/Ankunftshafen → München/);
+   assert.equal(await page.locator('#map path.p2m-ferry-leg[stroke-dasharray="8 8"]').count(),1);
+   assert.deepEqual((await page.locator("#map .p2m-route-time").allTextContents()).filter(Boolean),["1","1"]);
    assert.deepEqual(errors,[],"Browser script errors");
    console.log("PASS routing real UI",engineName,viewport.width,"hard legs, fixed toolbar, reverse, collapse, soft guide persistence");
    await ctx.close();

@@ -22,6 +22,10 @@
     throw new Error("Nonunique direction flag ID");
    this.setGuides([...current,flag]);this.onChange();return flag;
   }
+  clear(){
+   if(!this.list().length)return;
+   this.setGuides([]);this.onChange();
+  }
   remove(id){
    const current=this.list(),next=current.filter(flag=>flag.id!==id);
    if(next.length===current.length)return false;

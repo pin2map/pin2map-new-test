@@ -33,10 +33,39 @@
   }
   return order;
  }
+ function splitFerryLegs(legs){
+  return legs.flatMap(leg=>{
+   const sections=(leg.timeSections||[]).filter(section=>section.coordinates?.length>=2&&
+    Number.isFinite(section.seconds)&&section.seconds>=0&&
+    Number.isFinite(section.distanceMeters)&&section.distanceMeters>=0);
+   if(!sections.some(section=>section.ferry))return [leg];
+   const groups=[];
+   for(const section of sections){
+    const ferry=Boolean(section.ferry);
+    let group=groups.at(-1);
+    if(!group||group.ferry!==ferry){
+     group={ferry,ferryName:section.ferryName,seconds:0,distance:0,coordinates:[],sections:[]};
+     groups.push(group);
+    }
+    const last=group.coordinates.at(-1), first=section.coordinates[0];
+    const start=last&&last[0]===first[0]&&last[1]===first[1]?1:0;
+    for(let i=start;i<section.coordinates.length;i++)group.coordinates.push(section.coordinates[i]);
+    group.seconds+=section.seconds;group.distance+=section.distanceMeters;
+    group.sections.push(section);
+   }
+   return groups.map((group,index)=>({
+    ...leg,ferry:group.ferry,ferryName:group.ferryName,
+    fromId:index===0?leg.fromId:null,toId:index===groups.length-1?leg.toId:null,
+    distanceMeters:group.distance,durationSeconds:group.seconds,timeSections:group.sections,
+    geometry:{type:"LineString",coordinates:group.coordinates}
+   }));
+  });
+ }
  function timeMarkers(legs){
   const marks=[];
   let elapsed=0,next=1800;
   for(const leg of legs){
+   if(leg.ferry){elapsed=0;next=1800;continue;}
    const sections=(leg.timeSections||[]).filter(s=>s.seconds>0&&s.coordinates?.length>=2);
    const seconds=sections.reduce((sum,s)=>sum+s.seconds,0);
    const pieces=seconds>0?sections:[{seconds:leg.durationSeconds,coordinates:leg.geometry?.coordinates}];
@@ -107,7 +136,7 @@
   snapshot(){return {startId:this.startId,targetId:this.targetId,waypointIds:[...this.orderedWaypoints()],
    profile:this.profile,avoidTolls:this.avoidTolls,order:this.order,ready:this.ready(),ids:this.ids()};}
  }
- const api=Object.freeze({ActiveCarRoute,coord,TIME_FACTORS,validTimeFactor,timeMarkers});
+ const api=Object.freeze({ActiveCarRoute,coord,TIME_FACTORS,validTimeFactor,timeMarkers,splitFerryLegs});
  root.Pin2MapActiveCarRoute=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

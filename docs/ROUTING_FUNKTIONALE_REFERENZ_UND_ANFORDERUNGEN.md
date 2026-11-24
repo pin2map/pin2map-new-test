@@ -727,3 +727,9 @@ Die Flagge speichert den geografischen Radius von 40 Bildschirmpixeln beim Setze
 Start, Ziel und alle Pflicht-Zwischenziele werden zuerst mit dem gewählten Profil berechnet. Jede Flagge wird der geografisch nächsten Etappe zugeordnet. Berührt die Strecke ihren Korridor bereits, ist dafür keine alternative Abfrage nötig. Andernfalls können pro betroffener Etappe bis zu zwei alternative Strecken anhand benachbarter Durchfahrtspunkte geprüft werden. Die Flaggenkoordinate selbst wird dabei nicht als Stopp oder Pflicht-Zwischenziel angefragt. OSRM markiert ausschließlich die Etappenendpunkte als Wegpunkte. Valhalla erhält optionale Durchfahrtspunkte als `through`.
 
 Eine Variante muss mehr Flaggenkorridore erreichen und bereits erreichte Korridore erhalten. Als erste technische Umweggrenzen gelten 35 Prozent zusätzlich zur ursprünglichen Etappe, mit einem Puffer von 10 Minuten und 10 km. Etappenfolge, Routenprofil und Pflicht-Zwischenziele bleiben erhalten. Bei fehlender geeigneter Alternative gilt die verfügbare Route weiter und die App weist auf unberücksichtigte Flaggen hin. Setzen und Entfernen stößt bei vollständigem Start/Ziel eine neue Berechnung an.
+
+### R-041 – Fähr-Etappen und Richtungsflaggen beim Beenden (24.11.2026)
+
+Das bestätigte Beenden der Route entfernt sämtliche Richtungsflaggen aus Karte und Projektspeicher. Abbruch der Bestätigung erhält beides.
+
+Anbieterkennzeichnungen für Fähren teilen jede betroffene Route in getrennte Straßen- und Fähr-Etappen. Straßenlinien enden am Abfahrtshafen und beginnen am Ankunftshafen neu. Die Fährgeometrie wird gestrichelt gezeichnet. Ihre eigene Dauer stammt aus der Providerantwort und wird als Schätzung angezeigt. Fahrzeitprofile wirken auf Straßen-Etappen. Auf der Fähre gibt es keine Straßen-Zeitmarken. Nach jeder Ankunft beginnt die Zählung der halben und ganzen Fahrstunden wieder bei null. Weitere Fähren wiederholen dieselbe Trennung. Pflicht-Zwischenziele bleiben erhalten.
