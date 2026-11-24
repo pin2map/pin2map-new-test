@@ -89,6 +89,10 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.match(await page.locator("#routeLegs").textContent(),/München → Ulm/);
    await page.locator("#routeSettings").click();
    assert.equal(await page.locator("#routeProfileMenu").isVisible(),true);
+   console.log("PROFILE GEOMETRY",engineName,viewport.width,JSON.stringify(await page.evaluate(()=>{
+     const ids=["routeSettings","routeProfileMenu","carRoutePanel"];
+     return Object.fromEntries(ids.map(id=>{const el=document.getElementById(id),r=el.getBoundingClientRect();return [id,{x:r.x,y:r.y,w:r.width,h:r.height,css:getComputedStyle(el).position,point:document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.id}]}));
+   })));
    await page.locator("#routeSettings").click();
    await page.locator("#routeTolls").click();
    assert.equal(await page.locator("#routeTolls").getAttribute("aria-pressed"),"true");
