@@ -97,8 +97,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.locator("#carRoutePanel").isVisible(),false);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
    // Soft flag is not a pin. It exists independently of the now-ended route.
-   await page.locator("#map").click({position:{x:100,y:120}});
-   await page.locator("#mapActionChooser").waitFor({state:"visible"});
+   // The first background tap closes an already open pin/overlay menu by design.
+   // A subsequent real map-surface tap opens the independent action chooser.
+   const mapSurface=page.locator("#map");
+   const chooser=page.locator("#mapActionChooser");
+   await mapSurface.click({position:{x:100,y:120}});
+   if(!(await chooser.isVisible()))await mapSurface.click({position:{x:100,y:120}});
+   await chooser.waitFor({state:"visible",timeout:3000});
    await page.locator('#mapActionChooser button[aria-label="Richtungsflagge setzen"]').click();
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1);
    assert.equal(await page.locator("#map .pin-icon").count(),3);
