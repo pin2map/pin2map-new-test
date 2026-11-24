@@ -836,8 +836,16 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags");
     assert.equal(await labelToggle.getAttribute("aria-pressed"),"true");
     const tooltip=page.locator(".leaflet-tooltip.address-label");
-    assert.ok(await tooltip.count()>0,"Visible named pins show permanent right-hand tooltips");
-    assert.equal(await tooltip.first().evaluate(el=>el.classList.contains("leaflet-tooltip-right")),true);
+    assert.ok(await tooltip.count()>0,"Named pins still have permanent tooltips");
+    await page.waitForFunction(()=>{
+      const pins=[...document.querySelectorAll("#map .pin-marker-shape")].map(el=>el.getBoundingClientRect());
+      return [...document.querySelectorAll("#map .address-label")].every(el=>{
+        if(getComputedStyle(el).visibility==="hidden")return true;
+        const box=el.getBoundingClientRect();
+        return pins.every(pin=>box.right<=pin.left||box.left>=pin.right||
+          box.bottom<=pin.top||box.top>=pin.bottom);
+      });
+    },null,{timeout:2000});
     await labelToggle.click();
     await page.waitForFunction(()=>document.querySelectorAll(".leaflet-tooltip.address-label").length===0,
       null,{timeout:2000});
