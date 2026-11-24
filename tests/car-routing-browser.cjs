@@ -75,7 +75,10 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    async function assertButton(id,active,color,ink){
     const button=page.locator("#"+id);
     assert.equal(await button.getAttribute("aria-pressed"),String(active));
-    const style=await button.evaluate(el=>{const s=getComputedStyle(el);return {bg:s.backgroundColor,border:s.borderTopColor,ink:s.color};});
+    const style=await button.evaluate(el=>{
+     const s=getComputedStyle(el);
+     return {bg:s.backgroundColor,border:s.borderTopColor,ink:getComputedStyle(el.querySelector("svg")).stroke};
+    });
     assert.equal(style.border,color,id+" border");
     assert.equal(style.bg,active?color:"rgb(245, 246, 248)",id+" background");
     if(active)assert.equal(style.ink,ink,id+" icon");
@@ -170,6 +173,29 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await markerAt(1).locator('[data-route-role="waypoint"] text').textContent(),"2");
    assert.equal(await markerAt(2).locator('[data-route-role="waypoint"] text').textContent(),"1");
    assert.equal(await rolePins("roundtrip").count(),1);
+   // The route panel can cover the endpoint. Collapse it through its own control.
+   await page.locator("#routePanelHide").click();
+   await openPin(0,"Stuttgart");
+   await assertButton("pinRouteStart",true,"rgb(238, 69, 69)","rgb(255, 255, 255)");
+   await assertButton("pinRouteTarget",true,"rgb(54, 163, 86)","rgb(255, 255, 255)");
+   await page.locator("#pinRouteStart").click();
+   await assertButton("pinRouteStart",false,"rgb(238, 69, 69)");
+   await assertButton("pinRouteTarget",true,"rgb(54, 163, 86)","rgb(255, 255, 255)");
+   assert.equal(await rolePins("target").count(),1);
+   assert.equal(await rolePins("waypoint").count(),2);
+   assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
+   await page.locator("#pinRouteStart").click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
+   await openPin(0,"Stuttgart");
+   await page.locator("#pinRouteTarget").click();
+   await assertButton("pinRouteTarget",false,"rgb(54, 163, 86)");
+   await assertButton("pinRouteStart",true,"rgb(238, 69, 69)","rgb(255, 255, 255)");
+   assert.equal(await rolePins("start").count(),1);
+   assert.equal(await rolePins("waypoint").count(),2);
+   assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
+   await page.locator("#pinRouteTarget").click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
+   await page.locator("#routePanelToggle").click();
    await page.locator("#routeEnd").click();
    assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
    // Target alone toggles without closing the pin dialog or creating a route.

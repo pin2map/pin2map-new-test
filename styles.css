@@ -366,9 +366,9 @@ button.p2m-icon-control{
 }
 /* Hover is a mouse capability, not a sticky post-tap state on touch. */
 @media(hover:hover) and (pointer:fine){
-  button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied)){background:#f5f8fa!important}
+  button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied)):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)){background:#f5f8fa!important}
 }
-button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active,.is-copied)){background:#e9eff4!important}
+button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active,.is-copied)):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)){background:#e9eff4!important}
 button.p2m-icon-control:focus-visible{outline:3px solid #8bb8ec;outline-offset:2px}
 button.p2m-icon-control:disabled{opacity:.45;cursor:not-allowed}
 button:not(.p2m-icon-control):not(.result):not(.inline-button){
@@ -626,10 +626,10 @@ body.pin-relocation-picking #map .leaflet-interactive{
   box-shadow:var(--p2m-button-shadow);
 }
 /* Pin OK hover is owned by the common dialog-button rule below. */
-/* Shared blue-open-state contract for ALL internal Pin-dialog views.
+/* Shared blue-open-state contract for internal Pin-dialog views.
    Explicit ARIA state beats mouse hover, sticky iOS :active and the red
    default delete trigger; the confirmation's destructive action stays red. */
-#pinPanel button:is([aria-expanded="true"],[aria-pressed="true"],.is-active):not(#pinNotesExpand,#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint),
+#pinPanel button:is([aria-expanded="true"],[aria-pressed="true"],.is-active):not(#pinNotesExpand):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)),
 #pinPanel #deletePin.p2m-icon-control[aria-expanded="true"]{
   background:#1764bf!important;color:#fff!important;border-color:#1764bf!important;
   --p2m-button-bg:#1764bf;--p2m-button-ink:#fff;--p2m-button-border:#1764bf;
@@ -747,7 +747,7 @@ body.pin-note-editor-open{overflow:hidden}
 @media(hover:hover) and (pointer:fine){
   #pinPanel button:is(#deletePin,#movePin,#closePin,#pinLayerTrigger,#pinUrlButton,#pinWikipedia,#pinWeather,#showPinLayer,#pinNotesExpand):not(:disabled):not([aria-expanded="true"],[aria-pressed="true"],.is-active):hover,
   #pinPanel .pin-navigation-row .pin-nav-add:hover,
-  #pinPanel .pin-navigation-row button:not(:disabled):hover,
+  #pinPanel .pin-navigation-row button:not(:disabled):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)):hover,
   #pinUrlBlock .pin-url-actions button:not(:disabled):hover,
   .pin-note-editor .pin-note-editor-actions button:not(:disabled):hover{
     --p2m-button-bg:#52606d;--p2m-button-ink:#fff;
@@ -3219,9 +3219,10 @@ body.object-search-mode #app #searchClear.search-clear span{
 #map .p2m-route-guide-holder{background:transparent;border:0}
 #map .p2m-route-guide-holder .p2m-lucide{width:27px;height:27px;background:#fff8d6;
  border:2px solid #edb92b;border-radius:5px}
-#pinPanel .pin-nav-waypoint.p2m-icon-control.is-active{--p2m-button-bg:#edc636;--p2m-button-ink:#0d233a}
-#pinPanel .pin-nav-start.p2m-icon-control.is-active{--p2m-button-bg:#ee4545;--p2m-button-ink:#fff}
-#pinPanel .pin-nav-target.p2m-icon-control.is-active{--p2m-button-bg:#36a356;--p2m-button-ink:#fff}
+#pinPanel :is(.pin-nav-start,.pin-nav-target,.pin-nav-waypoint).p2m-icon-control.is-active{
+ --p2m-button-bg:var(--p2m-button-border);--p2m-button-ink:#fff
+}
+#pinPanel .pin-nav-waypoint.p2m-icon-control.is-active{--p2m-button-ink:#0d233a}
 @media(max-width:600px){
  #app .car-route-panel{width:calc(100vw - 22px);height:290px;padding:10px 11px;
  bottom:calc(env(safe-area-inset-bottom,0px) + 69px);gap:8px}
