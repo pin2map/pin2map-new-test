@@ -498,10 +498,16 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinRouteTarget").isEnabled(),true);
     assert.equal(await page.locator("#pinRouteWaypoint").isEnabled(),true);
     await page.locator("#pinRouteStart").click();
+    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    await page.locator("#map .pin-icon").first().click();
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinRouteStart").getAttribute("aria-pressed"),"true");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinRoutingStartBlock").isHidden(),true);
     await page.locator("#pinRouteWaypoint").click();
+    assert.equal(await page.locator("#pinPanel").isHidden(),true);
+    await page.locator("#map .pin-icon").first().click();
+    await page.locator("#pinPanel").waitFor({state:"visible",timeout});
     assert.equal(await page.locator("#pinRouteWaypoint").getAttribute("aria-pressed"),"false",
       "A start pin is not duplicated as a hard waypoint");
     await page.locator("#pinRouteTarget").click();

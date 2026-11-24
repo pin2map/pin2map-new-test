@@ -1,7 +1,7 @@
 "use strict";
 const {test}=require("node:test"),assert=require("node:assert/strict");
 const Settings=require("../ui/settings-tabs-controller.js");
-const tabNames=["General","Interface","Services","Colors"];
+const tabNames=["General","Interface","Services","Colors","Routing"];
 function fixture({version="pin2map-preview-v319",estimated={usage:123456},worker=true}={}){
   const elements=new Map(),calls=[],pending=[];
   function element(id){

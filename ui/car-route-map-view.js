@@ -22,6 +22,7 @@
     const line=this.map.createLine(positions,{color,weight:5,opacity:.93,bubblingMouseEvents:false});
     this.map.onRouteLine(line,()=>this.onLineClick(index));this.handles.push(line);
    });
+   for(const marker of snapshot.timeMarkers||[])this.handles.push(this.map.createRouteTimeMarker(marker));
   }
   guides(points){
    this.map.showRouteGuides(points,id=>{

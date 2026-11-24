@@ -699,3 +699,11 @@ Alle sechs Browser-`fetch`-Aufrufe endeten mit `response.type === 'cors'`, HTTP 
 ### R-036 – Routing-Schaltflächen als Ein-/Aus-Schalter (24.11.2026)
 
 **BESCHLOSSEN:** Nutzer bestätigt R-035 als gut umgesetzt und beauftragt echte Ein-/Aus-Schalter für Start, Ziel und Zwischenziel im Pin-Dialog. Erneutes Antippen entfernt nur die jeweilige Rolle; Rundtourrollen bleiben unabhängig. Aktive Fläche entspricht exakt der inaktiven Randfarbe: Start #ee4545, Ziel #36a356, Zwischenziel #edc636; Start-/Ziel-Symbole weiß, Zwischenziel dunkel. Bestehende Rollenprojektion R-035, Dialoggeometrie, Provider und Daten unverändert. Manuelles Ändern der Zwischenziele beendet ALL-Markierung. Unvollständige Route ohne Linien, verbleibende Rollen erhalten. Technische Freigabe erst nach allen Gates.
+
+### R-037 – Konsistente Routingsteuerung, Reihenfolge und Fahrzeiten (24.11.2026)
+
+Der Pin-Dialog schließt bei jeder Routingaktion. Der Routing-Schalter steht rechts unter der Kartenart und zeigt den Dialogzustand rot oder blau. Der Routendialog teilt die Unterkante der Zoomsteuerung. Der Titel nutzt das Lucide-Symbol des aktiven Verkehrsmittels. Die Mautvermeidung wird durch einen roten diagonalen Strich gekennzeichnet.
+
+FIX verwendet die chronologische Zwischenziel-Reihenfolge. OPT schätzt lokal anhand der Luftlinienentfernungen eine günstigere Reihenfolge mit festen Endpunkten. Das gewählte Routingprofil berechnet den Straßenverlauf für diese Reihenfolge. Das vierte Profil „Keine Autobahnen“ sendet Valhalla Auto mit `exclude_highways=true`. Das gesondert gekennzeichnete Motorradprofil verwendet die Parameter aus R-030.
+
+Die drei Geräte-Einstellungen für Fahrzeiten übernehmen die Versuchswerte 1,00, 1,30 und 0,95 aus R-015 als Gesamtzeitfaktoren. Im damaligen Versuch galten die beiden abweichenden Faktoren für den Autobahnanteil. Die Auswahl korrigiert lokal die Zeiten der bestehenden Linien ohne Anbieteranfrage. Die Positionen der halbstündlichen und nummerierten stündlichen Marken richten sich nach den Zeitabschnitten des Anbieters. Fehlen diese, wird die Zeit proportional zur Länge der Etappe verteilt.

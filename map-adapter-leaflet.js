@@ -490,6 +490,12 @@
     createLine(positions,options={}) {
       return window.L.polyline(positions.map(p=>{const v=latLng(p);return [v.lat,v.lng];}),options).addTo(this.map);
     }
+    createRouteTimeMarker({lat,lng,hour}){
+      const size=hour?16:5;
+      const icon=window.L.divIcon({className:"p2m-route-time",html:hour?String(hour):"",
+        iconSize:[size,size],iconAnchor:[size/2,size/2]});
+      return window.L.marker([lat,lng],{icon,interactive:false,keyboard:false,zIndexOffset:300}).addTo(this.map);
+    }
     onRouteLine(line,callback){
       if(!line||typeof callback!=="function")throw new TypeError("Route line callback required");
       const handler=event=>{if(event.originalEvent)window.L.DomEvent.stop(event.originalEvent);

@@ -366,9 +366,9 @@ button.p2m-icon-control{
 }
 /* Hover is a mouse capability, not a sticky post-tap state on touch. */
 @media(hover:hover) and (pointer:fine){
-  button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied)):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)){background:#f5f8fa!important}
+  button.p2m-icon-control:not(#searchButton):hover:not(:where(.list-toggle-active,.is-copied,#routePanelToggle)):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)){background:#f5f8fa!important}
 }
-button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active,.is-copied)):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)){background:#e9eff4!important}
+button.p2m-icon-control:not(#searchButton):active:not(:where(.list-toggle-active,.is-copied,#routePanelToggle)):not(:where(#pinRouteStart,#pinRouteTarget,#pinRouteWaypoint)){background:#e9eff4!important}
 button.p2m-icon-control:focus-visible{outline:3px solid #8bb8ec;outline-offset:2px}
 button.p2m-icon-control:disabled{opacity:.45;cursor:not-allowed}
 button:not(.p2m-icon-control):not(.result):not(.inline-button){
@@ -3162,7 +3162,7 @@ body.object-search-mode #app #searchClear.search-clear span{
  */
 #app .car-route-panel{
  position:fixed;z-index:1350;box-sizing:border-box;
- left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 71px);
+ left:50%;bottom:var(--p2m-bottom-control-baseline);
  transform:translateX(-50%);
  width:min(455px,calc(100vw - 24px));height:300px;max-height:calc(100dvh - 105px);
  padding:11px 13px 12px;border:1px solid #cad4df;border-radius:14px;
@@ -3203,18 +3203,38 @@ body.object-search-mode #app #searchClear.search-clear span{
  border-bottom:1px solid #e8edf2;line-height:1.4;overflow-wrap:anywhere}
 #app .car-route-dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px;margin-top:3px}
 #app .car-route-selected-leg{background:#e1f0ff}
-#app .car-route-popover{position:absolute;z-index:2;top:0;right:56px;width:190px;
+#app .car-route-options .car-route-modes{position:relative}
+#app .car-route-popover{position:absolute;z-index:2;bottom:calc(100% + 3px);right:0;width:190px;
  background:white;border:1px solid #b9c9dc;border-radius:10px;box-shadow:0 5px 20px #12345055;
  padding:6px;display:grid;gap:5px}
 #app .car-route-popover.hidden{display:none}
 #app .car-route-popover button{border:1px solid #cbd6df;background:#f5f8fb;
  border-radius:8px;min-height:37px;padding:5px 9px;text-align:left;font-size:13px;color:#243b53}
 #app .car-route-popover button[aria-pressed="true"]{background:#dbeaff;color:#0e56ab}
-#app .car-route-panel-toggle{position:fixed;z-index:1400;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);
- left:50%;transform:translateX(-50%);width:48px;height:48px;border-radius:50%;
- display:grid;place-items:center;border:2px solid #0d75e8;background:#e9f3ff;color:#095bb4;
- box-shadow:0 3px 10px #112b3d4d}
-#app .car-route-panel-toggle[aria-pressed="true"]{background:#137ce9;color:#fff}
+#app #routePanelToggle.car-route-panel-toggle.p2m-icon-control{
+ position:fixed;z-index:1190;right:var(--p2m-top-corner-inset,12px);
+ top:calc(35dvh + var(--p2m-map-circle-size) / 2 + 8px);
+ --p2m-button-size:var(--p2m-map-circle-size);
+ --p2m-button-bg:#c92f39;--p2m-button-border:#c92f39;--p2m-button-ink:#fff
+}
+#app #routePanelToggle.car-route-panel-toggle.p2m-icon-control[aria-pressed="true"]{
+ --p2m-button-bg:#1764bf;--p2m-button-border:#1764bf
+}
+body.pin-open #app #routeToggleHolder{display:none}
+@media(max-width:630px){#app #routePanelToggle.car-route-panel-toggle.p2m-icon-control{right:10px}}
+#app .car-route-heading{display:flex;align-items:center;gap:6px;min-width:0}
+#app #routeTolls.car-route-round{position:relative;background:#fff;color:#26313f;border-color:#c5c9d0}
+#app #routeTolls[aria-pressed="true"]::after{
+ content:"";position:absolute;width:86%;height:2px;background:#cf2634;
+ transform:rotate(-45deg);pointer-events:none
+}
+#app #settingsRoutingContent label{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#app #settingsRoutingContent input{width:5em;margin:0}
+#map .p2m-route-time{
+ display:grid;place-items:center;box-sizing:border-box;border-radius:50%;
+ background:#f8fbff;border:1px solid #1764ab;color:#1764ab;font-size:10px;font-weight:700;
+ pointer-events:none
+}
 #app .car-route-panel-toggle .p2m-lucide{width:26px;height:26px}
 #map .p2m-route-guide-holder{background:transparent;border:0}
 #map .p2m-route-guide-holder .p2m-lucide{width:27px;height:27px;background:#fff8d6;
@@ -3225,7 +3245,7 @@ body.object-search-mode #app #searchClear.search-clear span{
 #pinPanel .pin-nav-waypoint.p2m-icon-control.is-active{--p2m-button-ink:#0d233a}
 @media(max-width:600px){
  #app .car-route-panel{width:calc(100vw - 22px);height:290px;padding:10px 11px;
- bottom:calc(env(safe-area-inset-bottom,0px) + 69px);gap:8px}
+ gap:8px}
  #app .car-route-primary{grid-template-columns:minmax(0,1fr) 39px 69px;gap:6px}
  #app .car-route-secondary-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 42px;gap:5px}
  #app .car-route-group{padding:5px 3px 7px;min-height:55px}
@@ -3236,7 +3256,6 @@ body.object-search-mode #app #searchClear.search-clear span{
  #app .car-route-secondary{height:38px;width:39px}
  #app .car-route-end{height:38px;width:69px;font-size:12px}
  #app .car-route-legs{font-size:11px}
- #app .car-route-popover{top:0;right:46px}
 }
 @media(max-width:350px){
  #app .car-route-round{width:27px;height:27px;flex-basis:27px;font-size:9px}

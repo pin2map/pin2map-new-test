@@ -4,20 +4,38 @@
  * and a distinct color. Soft guide flags are deliberately NOT hard waypoints.
  */
 (function(root){
+ const {TIME_FACTORS,validTimeFactor,timeMarkers}=root.Pin2MapActiveCarRoute||
+  (typeof module!=="undefined"?require("../domain/active-car-route.js"):{});
  class CarRouteSession {
-  constructor({plan,calculate,getPin,onChange,onError}){
+  constructor({plan,calculate,getPin,onChange,onError,timeFactors={}}){
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
    Object.assign(this,{plan,calculate,getPin,onChange,onError});
    this.generation=0;this.pending=null;this.legs=[];this.loading=false;this.allVisibleActive=false;
+   this.factors={...TIME_FACTORS};this.timeProfile="standard";
+   for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(timeFactors[key]))this.factors[key]=timeFactors[key];
   }
-  snapshot(){return {...this.plan.snapshot(),allVisibleActive:this.allVisibleActive,legs:this.legs.slice(),loading:this.loading,
-   distanceMeters:this.legs.reduce((s,l)=>s+l.distanceMeters,0),
-   durationSeconds:this.legs.reduce((s,l)=>s+l.durationSeconds,0)};}
+  snapshot(){
+   const factor=this.factors[this.timeProfile];
+   const legs=this.legs.map(leg=>({...leg,durationSeconds:leg.durationSeconds*factor}));
+   return {...this.plan.snapshot(),allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
+    timeProfile:this.timeProfile,timeMarkers:timeMarkers(legs),
+    distanceMeters:legs.reduce((s,l)=>s+l.distanceMeters,0),
+    durationSeconds:legs.reduce((s,l)=>s+l.durationSeconds,0)};
+  }
+  setTimeProfile(profile){if(Object.hasOwn(TIME_FACTORS,profile)){this.timeProfile=profile;this.publish();}}
+  setTimeFactors(factors){
+   for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(factors[key]))this.factors[key]=factors[key];
+   this.publish();
+  }
+  setOrder(order){
+   if(!["fixed","optimal"].includes(order)||this.plan.order===order)return;
+   this.plan.order=order;void this.recalculate();
+  }
   publish(){this.onChange(this.snapshot());}
   cancel(){this.generation++;this.pending?.abort();this.pending=null;this.loading=false;}
   clear(){this.cancel();this.plan.reset();this.legs=[];this.allVisibleActive=false;this.publish();}
   async recalculate(){
-   this.cancel();this.legs=[];const ids=this.plan.ids();
+   this.cancel();this.legs=[];this.plan.updateOrder(this.getPin);const ids=this.plan.ids();
    if(!ids.length){this.publish();return;}
    const points=ids.map(this.getPin);
    if(points.some(p=>!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lng))){

@@ -6,7 +6,7 @@
  * Public demo hosts are externally operated, without availability guarantees.
  */
 (function(root){
- const PROFILES=Object.freeze({FAST:"fast",COUNTRY:"country",SCENIC:"scenic"});
+ const PROFILES=Object.freeze({FAST:"fast",COUNTRY:"country",SCENIC:"scenic",NO_HIGHWAYS:"no-highways"});
  const allowed=Object.freeze(Object.values(PROFILES));
  const URLS=Object.freeze({
   osrm:"https://router.project-osrm.org/route/v1/driving/",
@@ -83,36 +83,38 @@
     throw new RangeError("Toll exclusion with motorcycle-derived scenic profile is not yet validated");
    if(profile===PROFILES.FAST&&!avoidTolls){
     const coordText=points.map(p=>p.lng+","+p.lat).join(";");
-    const url=this.osrmBase+coordText+"?overview=full&geometries=geojson&alternatives=false";
+    const url=this.osrmBase+coordText+"?overview=full&geometries=geojson&alternatives=false&steps=true";
     const data=await jsonOrThrow(this.fetchImpl,url,{mode:"cors",signal});
     const route=data?.routes?.[0];
     if(!route||route.geometry?.type!=="LineString")
      throw new Error("OSRM returned no usable route");
-    return normalized("osrm",profile,route.geometry.coordinates,route.distance,route.duration,{avoidTolls:false});
+    return normalized("osrm",profile,route.geometry.coordinates,route.distance,route.duration,{avoidTolls:false,timeSections:route.legs?.flatMap(leg=>(leg.steps||[]).map(step=>({coordinates:step.geometry?.coordinates,seconds:step.duration})))});
    }
    // The selected soft country-road profile is a tentative parameter (0.35)
    // derived from the user's route-lab comparisons, not a universal guarantee.
    const costing=profile===PROFILES.SCENIC?"motorcycle":"auto";
    const options=profile===PROFILES.SCENIC?
     {use_curvature:0.85,use_trails:0,use_highways:0.5}:
-    profile===PROFILES.COUNTRY?{use_highways:0.35}:{};
+    profile===PROFILES.COUNTRY?{use_highways:0.35}:
+    profile===PROFILES.NO_HIGHWAYS?{exclude_highways:true}:{};
    if(avoidTolls)options.exclude_tolls=true;
    const payload={locations:points.map(p=>({lat:p.lat,lon:p.lng})),
-    costing,costing_options:{[costing]:options},directions_type:"none",units:"kilometers"};
+    costing,costing_options:{[costing]:options},directions_type:"maneuvers",units:"kilometers"};
    const url=this.valhallaBase+encodeURIComponent(JSON.stringify(payload));
    const data=await jsonOrThrow(this.fetchImpl,url,{
     mode:"cors",signal,headers:{"X-Client-Id":"pin2map-new-car-routing"}
    });
    if(!data?.trip?.legs?.length||!data?.trip?.summary)
     throw new Error("Valhalla returned no usable route");
-   const coords=[];
+   const coords=[],timeSections=[];
    for(const leg of data.trip.legs){
     const each=decodePolyline6(leg.shape);
     coords.push(...(coords.length?each.slice(1):each));
+    for(const step of leg.maneuvers||[])timeSections.push({coordinates:each.slice(step.begin_shape_index,step.end_shape_index+1),seconds:step.time});
    }
    return normalized("valhalla",profile,coords,
     data.trip.summary.length*1000,data.trip.summary.time,{
-     avoidTolls,tollAvoidance:avoidTolls?"exclude-requested":"not-requested",
+     timeSections,avoidTolls,tollAvoidance:avoidTolls?"exclude-requested":"not-requested",
      motorcycleModel:profile===PROFILES.SCENIC,
      reportedToll:data.trip.summary.has_toll??null
     });

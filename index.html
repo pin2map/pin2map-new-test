@@ -184,7 +184,7 @@
   <div id="mapActionChooser" class="map-action-chooser hidden" role="dialog" aria-label="Kartenaktion auswählen"></div>
   <section id="carRoutePanel" class="car-route-panel hidden" aria-label="Autorouting" role="region">
     <div class="car-route-head">
-      <strong id="routeSummary">🚗 Route</strong>
+      <span class="car-route-heading"><span data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary">Route</strong></span>
       <button id="routePanelHide" type="button" aria-label="Routingdialog ausblenden">×</button>
     </div>
     <div class="car-route-row car-route-primary">
@@ -200,25 +200,26 @@
     <div class="car-route-row car-route-secondary-row">
       <fieldset class="car-route-group"><legend>Multi Pin Routing</legend><div class="car-route-modes">
         <button id="routeAll" class="car-route-round car-route-all" type="button" aria-pressed="false" title="Sichtbare noch nicht verwendete Pins hinzufügen">ALL</button>
-        <button id="routeFixed" class="car-route-round is-active" type="button" title="Reihenfolge fest">FIX</button>
-        <button id="routeOptimize" class="car-route-round" type="button" title="Optimierung wird später ergänzt" disabled>OPT</button>
+        <button id="routeFixed" class="car-route-round is-active" type="button" aria-pressed="true" title="Chronologische Reihenfolge">FIX</button>
+        <button id="routeOptimize" class="car-route-round" type="button" aria-pressed="false" title="Reihenfolge optimieren" disabled>OPT</button>
       </div></fieldset>
-      <fieldset class="car-route-group"><legend>Optionen</legend><div class="car-route-modes">
+      <fieldset class="car-route-group car-route-options"><legend>Optionen</legend><div class="car-route-modes">
         <button id="routeSettings" class="car-route-round" type="button" data-pin-icon="settings-2" aria-label="Routencharakter wählen"></button>
         <button id="routeTolls" class="car-route-round" type="button" data-pin-icon="circle-euro" aria-pressed="false" aria-label="Ohne Maut ein- oder ausschalten"></button>
         <button id="routeTimes" class="car-route-round" type="button" data-pin-icon="list-clock" aria-label="Zeitprofil auswählen"></button>
+        <div class="car-route-popover hidden" id="routeProfileMenu" role="group" aria-label="Autorouting-Stil">
+          <button type="button" data-car-profile="fast">Schnell</button>
+          <button type="button" data-car-profile="country">Landstraße zügig</button>
+          <button type="button" data-car-profile="scenic">Interessante Strecke (Motorradprofil)</button>
+          <button type="button" data-car-profile="no-highways">Keine Autobahnen</button>
+        </div>
+        <div class="car-route-popover hidden" id="routeTimesMenu" role="group" aria-label="Persönliche Zeitprofile">
+          <button type="button" data-time-profile="standard">Standard-Profil</button>
+          <button type="button" data-time-profile="slow">Gemächlich</button>
+          <button type="button" data-time-profile="quick">Zügig</button>
+        </div>
       </div></fieldset>
       <fieldset class="car-route-group car-route-apple"><legend>Apple</legend><button id="routeApple" class="car-route-round" data-pin-icon="apple-brand" type="button" title="In Apple Karten öffnen" aria-label="In Apple Karten öffnen"></button></fieldset>
-    </div>
-    <div class="car-route-popover hidden" id="routeProfileMenu" role="group" aria-label="Autorouting-Stil">
-      <button type="button" data-car-profile="fast">Schnell</button>
-      <button type="button" data-car-profile="country">Landstraße zügig</button>
-      <button type="button" data-car-profile="scenic">Interessante Strecke</button>
-    </div>
-    <div class="car-route-popover hidden" id="routeTimesMenu" role="group" aria-label="Persönliche Zeitprofile">
-      <button type="button" data-time-profile="standard">Standard-Profil</button>
-      <button type="button" data-time-profile="slow">Gemächlich</button>
-      <button type="button" data-time-profile="quick">Zügig</button>
     </div>
     <div id="routeLegs" class="car-route-legs" aria-live="polite"></div>
   </section>
@@ -325,14 +326,21 @@
   </aside>
   <aside id="settingsPanel" class="panel settings-panel hidden" aria-label="Einstellungen">
 <div class="panel-head"><h2>Eigenschaften</h2><button class="close" data-pin-icon="x" data-close="settingsPanel" aria-label="Schließen">×</button></div>
-<div class="settings-tabs" role="tablist" aria-label="Eigenschaften"><button type="button" id="settingsGeneralTab" role="tab" aria-selected="true" aria-controls="settingsGeneralContent">Allgemein</button><button type="button" id="settingsInterfaceTab" role="tab" aria-selected="false" aria-controls="settingsInterfaceContent">Oberfläche</button><button type="button" id="settingsServicesTab" role="tab" aria-selected="false" aria-controls="settingsServicesContent">Services</button><button type="button" id="settingsColorsTab" role="tab" aria-selected="false" aria-controls="settingsColorsContent">Farben</button></div>
+<div class="settings-tabs" role="tablist" aria-label="Eigenschaften"><button type="button" id="settingsGeneralTab" role="tab" aria-selected="true" aria-controls="settingsGeneralContent">Allgemein</button><button type="button" id="settingsInterfaceTab" role="tab" aria-selected="false" aria-controls="settingsInterfaceContent">Oberfläche</button><button type="button" id="settingsServicesTab" role="tab" aria-selected="false" aria-controls="settingsServicesContent">Services</button><button type="button" id="settingsColorsTab" role="tab" aria-selected="false" aria-controls="settingsColorsContent">Farben</button><button type="button" id="settingsRoutingTab" role="tab" aria-selected="false" aria-controls="settingsRoutingContent">Routing</button></div>
 <div id="settingsGeneralContent" role="tabpanel">
 <p class="settings-product-name"><strong>pin2map NEW</strong> <span id="settingsProductVersion">Version wird ermittelt …</span></p>
 <section class="settings-storage"><h3>Speicherbedarf</h3><p>Zwischengespeicherte Daten: <strong id="settingsStorageUsage">Wird ermittelt …</strong></p><p class="muted small">Näherungswert des Browsers. Wenn keine separate Cachegröße verfügbar ist, wird der gesamte lokal belegte Speicher einschließlich Projektdaten ausgewiesen.</p></section>
 <hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></div>
 <div id="settingsInterfaceContent" role="tabpanel" class="hidden"><label class="checkbox-line" for="showPinHitboxes"><input id="showPinHitboxes" type="checkbox" checked> Gelbe Trefferflächen um Pins anzeigen</label><p class="muted small">Nur die gelbe Test-Markierung wird ein- oder ausgeblendet. Die tatsächliche Tippfläche und der Autozoom bleiben unverändert. Diese Anzeige-Einstellung gilt nur auf diesem Gerät.</p></div>
 <div id="settingsServicesContent" role="tabpanel" class="hidden"><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Externe Orts- und Flächensuche (Nominatim / Overpass) für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Bei Kartentip-Flächensuche werden die angeklickten Koordinaten zusätzlich an einen Overpass-Dienst gesendet (bei verfügbaren Regionen vorzugsweise dresel.systems für Europa/Nordamerika, sonst globale Anbieter wie maps.mail.ru), um einschließende Schutz-, Insel- und Sondergebiete zu finden. Beide externen APIs sind keine uneingeschränkten Produktionsdienste. Keine automatischen Suchen; die Anfragen werden in diesem Browser gedrosselt. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a> · <a href="https://ovp.dresel.systems/" target="_blank" rel="noopener">Overpass (dresel.systems)</a> / <a href="https://overpass.private.coffee/" target="_blank" rel="noopener">Private.coffee</a> / <a href="https://maps.mail.ru/osm/tools/overpass/" target="_blank" rel="noopener">VK Maps Overpass</a></p><p class="small attribution" id="settingsPinInfoSources"><strong>Pin-Informationen:</strong> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> liefert aktuelle Wetterprognosen und Höhe. <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a> liefert langjährige Monatsmittel von Temperaturen und Niederschlag (durchschnittlicher Monats- und Jahresniederschlag in mm). <a href="https://sunrise-sunset.org/" target="_blank" rel="noopener">Sunrise-Sunset.org</a> liefert Sonnenaufgang und -untergang jeweils am <strong>15. des ausgewählten Monats</strong>. Bei „Heute“ werden aktuelle Tageswerte verwendet. Daten werden nur für Pins sichtbarer Ebenen im gewählten Modus abgerufen.</p></div>
-<div id="settingsColorsContent" role="tabpanel" class="hidden"><section class="color-settings-section"><h3>Standard-Farben</h3><p>Diese Farben werden für Ebenen verwendet und stehen zum Einfärben von Flächen, Seen und Flüssen zur Verfügung.</p><div id="standardColorGrid" class="settings-color-grid"></div></section><section class="color-settings-section"><h3>Signal-Farben</h3><div id="signalColorGrid" class="settings-color-grid settings-signal-grid"></div></section></div></aside>
+<div id="settingsColorsContent" role="tabpanel" class="hidden"><section class="color-settings-section"><h3>Standard-Farben</h3><p>Diese Farben werden für Ebenen verwendet und stehen zum Einfärben von Flächen, Seen und Flüssen zur Verfügung.</p><div id="standardColorGrid" class="settings-color-grid"></div></section><section class="color-settings-section"><h3>Signal-Farben</h3><div id="signalColorGrid" class="settings-color-grid settings-signal-grid"></div></section></div>
+<div id="settingsRoutingContent" role="tabpanel" class="hidden">
+  <section><h3>Fahrzeiten</h3>
+    <label>Standard-Profil <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="standard" value="1.00"></label>
+    <label>Gemächlich <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="slow" value="1.30"></label>
+    <label>Zügig <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="quick" value="0.95"></label>
+  </section>
+</div></aside>
   <section id="pinPanel" class="pin-panel hidden" aria-label="Pin-Dialog">
     <div class="pin-editor-head">
       <button id="deletePin" type="button" class="danger" data-pin-icon="map-pin-off" title="Pin entfernen" aria-label="Pin entfernen" aria-haspopup="dialog" aria-controls="deleteDialog" aria-expanded="false"></button>

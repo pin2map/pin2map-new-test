@@ -12,7 +12,7 @@
         throw new TypeError("Settings tabs ports required");
       Object.assign(this,{getElement,renderColors,versionOf,parseVersion,getWorkerController,
         getMessageChannel,fetchWorker,estimateStorage,locale});
-      this.tabs=["General","Interface","Services","Colors"];
+      this.tabs=["General","Interface","Services","Colors","Routing"];
       this.handlers=[];this.bound=false;
     }
     async updateStorage(){

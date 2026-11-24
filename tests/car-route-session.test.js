@@ -91,3 +91,34 @@ test("Pin route buttons toggle each role independently including roundtrip and A
  session.endpoint("target","z");session.toggleVisible(["b"]);assert.equal(session.snapshot().allVisibleActive,true);session.waypoint("b");assert.equal(session.snapshot().allVisibleActive,false);
  session.endpoint("start","a");assert.equal(plan.startId,null);assert.equal(plan.targetId,"z");assert.equal(session.snapshot().ready,false);assert.deepEqual(session.snapshot().legs,[]);session.clear();
 });
+
+test("OPT changes the visit sequence and FIX restores insertion order with fixed endpoints",()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");
+ plan.addVisible(["c","b"]);
+ const longitudes={a:0,b:1,c:2,z:3};
+ const session=new CarRouteSession({plan,getPin:id=>({id,lat:0,lng:longitudes[id]}),
+  calculate:async()=>({distanceMeters:1,durationSeconds:1}),onChange:()=>{},onError:assert.fail});
+ session.setOrder("optimal");
+ assert.deepEqual(session.snapshot().ids,["a","b","c","z"]);
+ session.setOrder("fixed");
+ assert.deepEqual(session.snapshot().ids,["a","c","b","z"]);
+});
+
+test("elapsed marks use section durations and a changed time profile does not recalculate the route",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");
+ const geometry={type:"LineString",coordinates:[[0,0],[1,0],[3,0]]};
+ let calls=0;
+ const session=new CarRouteSession({plan,getPin:id=>({id,lat:0,lng:0}),
+  calculate:async()=>{calls++;return {geometry,distanceMeters:1000,durationSeconds:3600,
+   timeSections:[{coordinates:[[0,0],[1,0]],seconds:1800},{coordinates:[[1,0],[3,0]],seconds:1800}]};},
+  onChange:()=>{},onError:assert.fail});
+ await session.recalculate();
+ assert.deepEqual(session.snapshot().timeMarkers,[{lat:0,lng:1,hour:null},{lat:0,lng:3,hour:1}]);
+ session.setTimeProfile("quick");
+ assert.equal(session.snapshot().durationSeconds,3420);
+ assert.equal(session.snapshot().timeMarkers.length,1);
+ assert.equal(session.snapshot().legs[0].geometry,geometry);
+ assert.equal(calls,1);
+});

@@ -70,3 +70,11 @@ test("polyline6 decoder rejects truncation and round trips coordinates",()=>{
  assert.throws(()=>decodePolyline6(""),/Missing/);
  assert.throws(()=>decodePolyline6("?"),/Invalid/);
 });
+
+test("No-highways profile requests Valhalla exclusion and retains the separate toll option",async()=>{
+ const {calls,prov}=client();
+ await prov.calculate({waypoints:points,profile:PROFILES.NO_HIGHWAYS,avoidTolls:true});
+ const request=JSON.parse(decodeURIComponent(calls[0].url.split("?json=")[1]));
+ assert.equal(request.costing,"auto");
+ assert.deepEqual(request.costing_options.auto,{exclude_highways:true,exclude_tolls:true});
+});

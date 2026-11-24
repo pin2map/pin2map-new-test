@@ -6,17 +6,17 @@
  const fmtDistance=m=>m<1000?Math.round(m)+" m":Math.round(m/1000)+" km";
  const fmtTime=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return (h?h+" h ":"")+ (m%60)+" min";};
  class CarRoutePanel {
-  constructor({document:doc,getElement,icons,getPin,onEnd,onReverse,onAll,onOptions,onApple,onToggle,onHide,onShowNotice}){
+  constructor({document:doc,getElement,icons,getPin,onEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onHide,onShowNotice}){
    if(!doc||!getElement||!icons)throw new TypeError("Route panel UI dependencies required");
-   Object.assign(this,{doc,el:getElement,icons,getPin,onEnd,onReverse,onAll,onOptions,onApple,onToggle,onHide,onShowNotice});
+   Object.assign(this,{doc,el:getElement,icons,getPin,onEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onHide,onShowNotice});
    this.snapshot=null;this.visible=true;
   }
   bind(){
    this.el("routeEnd").addEventListener("click",()=>this.onEnd());
    this.el("routeReverse").addEventListener("click",()=>this.onReverse());
    this.el("routeAll").addEventListener("click",()=>this.onAll());
-   this.el("routeFixed").addEventListener("click",()=>this.onShowNotice("FIX: Reihenfolge der Zwischenziele bleibt unverändert."));
-   this.el("routeOptimize").addEventListener("click",()=>this.onShowNotice("OPT: Optimierung wird als eigenes Inkrement ergänzt."));
+   this.el("routeFixed").addEventListener("click",()=>this.onOrder("fixed"));
+   this.el("routeOptimize").addEventListener("click",()=>this.onOrder("optimal"));
    this.el("routeApple").addEventListener("click",()=>this.onApple());
    this.el("routePanelHide").addEventListener("click",()=>this.setVisible(false));
    this.el("routePanelToggle").addEventListener("click",()=>this.setVisible(!this.visible));
@@ -27,8 +27,20 @@
    for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]"))
     b.addEventListener("click",()=>{this.onOptions({profile:b.dataset.carProfile});this.closeMenus();});
    for(const b of this.el("routeTimesMenu").querySelectorAll("[data-time-profile]"))
-    b.addEventListener("click",()=>{this.onShowNotice("Zeitprofil „"+b.textContent+"“ ist noch kein freigegebener Berechnungsfaktor.");this.closeMenus();});
+    b.addEventListener("click",()=>{this.onTimeProfile(b.dataset.timeProfile);this.closeMenus();});
    this.doc.addEventListener("keydown",e=>{if(e.key==="Escape")this.closeMenus();});
+   const fields=[...this.doc.querySelectorAll("[data-route-time-factor]")];
+   const stored=this.readTimeFactors();
+   for(const field of fields){
+    const factor=stored[field.dataset.routeTimeFactor];
+    if(Number.isFinite(factor)&&factor>=0.1&&factor<=5)field.value=String(factor);
+    field.addEventListener("change",()=>{
+     if(!field.value||!field.validity.valid){field.value=field.defaultValue;return;}
+     field.defaultValue=field.value;
+     this.writeTimeFactors(Object.fromEntries(fields.map(input=>[input.dataset.routeTimeFactor,input.valueAsNumber])));
+    });
+    field.defaultValue=field.value;
+   }
    this.icons.decorate?.(this.doc);
   }
   toggleSubmenu(which){
@@ -61,13 +73,19 @@
    toggle.setAttribute("aria-pressed",String(active&&this.visible));
    if(!active){this.closeMenus();return;}
    const title=this.el("routeSummary");
-   title.textContent=snapshot.loading?"🚗 Route wird berechnet …":snapshot.legs.length?
-     "🚗 "+fmtDistance(snapshot.distanceMeters)+" · ca. "+fmtTime(snapshot.durationSeconds):
-     "🚗 Route nicht verfügbar";
+   title.textContent=snapshot.loading?"Route wird berechnet …":snapshot.legs.length?
+     ""+fmtDistance(snapshot.distanceMeters)+" · ca. "+fmtTime(snapshot.durationSeconds):
+     "Route nicht verfügbar";
    this.el("routeAll").classList.toggle("is-active",snapshot.allVisibleActive);
    this.el("routeAll").setAttribute("aria-pressed",String(Boolean(snapshot.allVisibleActive)));
-   this.el("routeFixed").disabled=!snapshot.allVisibleActive;
-   this.el("routeFixed").classList.toggle("is-active",snapshot.allVisibleActive);
+   for(const [id,order] of [["routeFixed","fixed"],["routeOptimize","optimal"]]){
+    const b=this.el(id);
+    b.disabled=snapshot.waypointIds.length<2;
+    b.classList.toggle("is-active",snapshot.order===order);
+    b.setAttribute("aria-pressed",String(snapshot.order===order));
+   }
+   for(const b of this.el("routeTimesMenu").querySelectorAll("[data-time-profile]"))
+    b.setAttribute("aria-pressed",String(b.dataset.timeProfile===snapshot.timeProfile));
    this.el("routeTolls").classList.toggle("is-active",snapshot.avoidTolls);
    this.el("routeTolls").setAttribute("aria-pressed",String(snapshot.avoidTolls));
    for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]"))

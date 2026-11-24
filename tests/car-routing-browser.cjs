@@ -83,30 +83,46 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     assert.equal(style.bg,active?color:"rgb(245, 246, 248)",id+" background");
     if(active)assert.equal(style.ink,ink,id+" icon");
    }
+   async function setRole(id){
+    await page.locator("#"+id).click();
+    assert.equal(await page.locator("#pinPanel").isHidden(),true,id+" closes Pin dialog");
+   }
    await openPin(0,"Stuttgart");
    await assertButton("pinRouteStart",false,"rgb(238, 69, 69)");
-   await page.locator("#pinRouteStart").click();
+   await setRole("pinRouteStart");
+   await openPin(0,"Stuttgart");
    await assertButton("pinRouteStart",true,"rgb(238, 69, 69)","rgb(255, 255, 255)");
-   await page.locator("#pinRouteStart").click();
+   await setRole("pinRouteStart");
+   await openPin(0,"Stuttgart");
    await assertButton("pinRouteStart",false,"rgb(238, 69, 69)");
    assert.equal(await rolePins("start").count(),0);
-   await page.locator("#pinRouteStart").click();
+   await setRole("pinRouteStart");
    assert.equal(await rolePins("start").count(),1,"Start role appears before target selection");
    await openPin(1,"Ulm");
-   await page.locator("#pinRouteWaypoint").click();
+   await setRole("pinRouteWaypoint");
+   await openPin(1,"Ulm");
    await assertButton("pinRouteWaypoint",true,"rgb(237, 198, 54)","rgb(13, 35, 58)");
-   await page.locator("#pinRouteWaypoint").click();
+   await setRole("pinRouteWaypoint");
+   await openPin(1,"Ulm");
    await assertButton("pinRouteWaypoint",false,"rgb(237, 198, 54)");
    assert.equal(await rolePins("waypoint").count(),0);
-   await page.locator("#pinRouteWaypoint").click();
+   await setRole("pinRouteWaypoint");
    await openPin(2,"München");
-   await page.locator("#pinRouteTarget").click();
+   await setRole("pinRouteTarget");
    await page.locator("#carRoutePanel").waitFor({state:"visible",timeout:20000});
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2,null,{timeout:20000});
    await assertRolePins();
    assert.equal(routeRequests.length,2,"Real provider adapter must request each hard pin leg");
    assert.match(await page.locator("#routeSummary").textContent(),/48 km/);
    assert.match(await page.locator("#routeSummary").textContent(),/1 h/);
+   assert.equal(await page.locator("#map .p2m-route-time").count(),2);
+   assert.equal(await page.locator("#map .p2m-route-time").last().textContent(),"1");
+   const beforeTimeProfile=routeRequests.length;
+   await page.locator("#routeTimes").click();
+   await page.locator('[data-time-profile="quick"]').click();
+   assert.match(await page.locator("#routeSummary").textContent(),/57 min/);
+   assert.equal(await page.locator("#map .p2m-route-time").count(),1);
+   assert.equal(routeRequests.length,beforeTimeProfile,"Time profile sends no routing request");
    assert.match(await page.locator("#routeLegs").textContent(),/Stuttgart → Ulm/);
    assert.match(await page.locator("#routeLegs").textContent(),/Ulm → München/);
    const routeLines=await page.locator("#map path.leaflet-interactive").evaluateAll(
@@ -119,9 +135,20 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(panel.position,"fixed");
    assert.ok(panel.x>=0&&panel.x+panel.w<=panel.vw+1&&panel.y>=0&&panel.y+panel.h<=panel.vh+1,JSON.stringify(panel));
    assert.ok(Math.abs(panel.h-(mobile?290:300))<=2,JSON.stringify(panel));
+   const controls=await page.evaluate(()=>{
+    const box=id=>document.querySelector(id).getBoundingClientRect();
+    return {routeBottom:box("#carRoutePanel").bottom,zoomBottom:box(".pin-zoom-buttons").bottom,
+     toggleTop:box("#routePanelToggle").top,basemapBottom:box("#basemapButton").bottom,
+     toggleRight:box("#routePanelToggle").right,basemapRight:box("#basemapButton").right};
+   });
+   assert.ok(Math.abs(controls.routeBottom-controls.zoomBottom)<2,JSON.stringify(controls));
+   assert.ok(controls.toggleTop>controls.basemapBottom&&Math.abs(controls.toggleRight-controls.basemapRight)<2);
+   const toggleBg=()=>page.locator("#routePanelToggle").evaluate(el=>getComputedStyle(el).backgroundColor);
+   assert.equal(await toggleBg(),"rgb(23, 100, 191)");
    await page.locator("#routePanelHide").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),false);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),true);
+   assert.equal(await toggleBg(),"rgb(201, 47, 57)");
    await page.locator("#routePanelToggle").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),true);
    await page.locator("#routeReverse").click();
@@ -142,6 +169,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.locator("#routeSettings").click();
    await page.locator("#routeTolls").click();
    assert.equal(await page.locator("#routeTolls").getAttribute("aria-pressed"),"true");
+   assert.equal(await page.locator("#routeTolls").evaluate(el=>getComputedStyle(el,"::after").backgroundColor),"rgb(207, 38, 52)");
    await page.locator("#routeTolls").click();
    await page.locator("#routeEnd").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),false);
@@ -151,13 +179,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
    // A roundtrip uses one real endpoint pin plus two numbered waypoints.
    await openPin(0,"Stuttgart");
-   await page.locator("#pinRouteStart").click();
+   await setRole("pinRouteStart");
    await openPin(1,"Ulm");
-   await page.locator("#pinRouteWaypoint").click();
+   await setRole("pinRouteWaypoint");
    await openPin(2,"München");
-   await page.locator("#pinRouteWaypoint").click();
+   await setRole("pinRouteWaypoint");
    await openPin(0,"Stuttgart");
-   await page.locator("#pinRouteTarget").click();
+   await setRole("pinRouteTarget");
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3,null,{timeout:20000});
    assert.equal(await rolePins("roundtrip").count(),1);
    assert.equal(await rolePins("start").count()+await rolePins("target").count(),0);
@@ -178,31 +206,35 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await openPin(0,"Stuttgart");
    await assertButton("pinRouteStart",true,"rgb(238, 69, 69)","rgb(255, 255, 255)");
    await assertButton("pinRouteTarget",true,"rgb(54, 163, 86)","rgb(255, 255, 255)");
-   await page.locator("#pinRouteStart").click();
+   await setRole("pinRouteStart");
+   await openPin(0,"Stuttgart");
    await assertButton("pinRouteStart",false,"rgb(238, 69, 69)");
    await assertButton("pinRouteTarget",true,"rgb(54, 163, 86)","rgb(255, 255, 255)");
    assert.equal(await rolePins("target").count(),1);
    assert.equal(await rolePins("waypoint").count(),2);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
-   await page.locator("#pinRouteStart").click();
+   await setRole("pinRouteStart");
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
    await openPin(0,"Stuttgart");
-   await page.locator("#pinRouteTarget").click();
+   await setRole("pinRouteTarget");
+   await openPin(0,"Stuttgart");
    await assertButton("pinRouteTarget",false,"rgb(54, 163, 86)");
    await assertButton("pinRouteStart",true,"rgb(238, 69, 69)","rgb(255, 255, 255)");
    assert.equal(await rolePins("start").count(),1);
    assert.equal(await rolePins("waypoint").count(),2);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
-   await page.locator("#pinRouteTarget").click();
+   await setRole("pinRouteTarget");
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
    await page.locator("#routePanelToggle").click();
    await page.locator("#routeEnd").click();
    assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
-   // Target alone toggles without closing the pin dialog or creating a route.
+   // Target alone toggles and closes the pin dialog before any route exists.
    await openPin(2,"München");
-   await page.locator("#pinRouteTarget").click();
+   await setRole("pinRouteTarget");
+   await openPin(2,"München");
    await assertButton("pinRouteTarget",true,"rgb(54, 163, 86)","rgb(255, 255, 255)");
-   await page.locator("#pinRouteTarget").click();
+   await setRole("pinRouteTarget");
+   await openPin(2,"München");
    await assertButton("pinRouteTarget",false,"rgb(54, 163, 86)");
    assert.equal(await rolePins("target").count(),0);
    await page.locator("#closePin").click();

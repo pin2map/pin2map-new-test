@@ -243,16 +243,13 @@
     onRouteAction:kind=>{
       const pin=selectedPin();if(!pin||!routeSession)return;
       routeSession.endpoint(kind,pin.id);
-      pinDetails.setRouting(null);
-      if(routeSession.snapshot().ready){
-        uiState.clearSelection();
-        renderMarkers();
-      }
+      uiState.clearSelection();
+      renderMarkers();
       renderPinPanel();
     },
     onWaypointAction:()=>{
       const pin=selectedPin();if(!pin||!routeSession)return;
-      routeSession.waypoint(pin.id);renderPinPanel();
+      routeSession.waypoint(pin.id);uiState.clearSelection();renderMarkers();renderPinPanel();
     },
     onLayout:focus=>{
       updatePanelLayout();
@@ -909,10 +906,21 @@
       confirmRemove:message=>window.confirm(message),
       onGuideRemoveRequest:id=>routeGuideSession.remove(id)
     });
+    const routeTimeKey="pin2map-route-time-factors:"+location.pathname;
+    const readRouteTimeFactors=()=>{
+      try{return JSON.parse(localStorage.getItem(routeTimeKey))||{};}catch{return {};}
+    };
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onEnd:()=>{routeSession.clear();renderPinPanel();},
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
+      onOrder:order=>routeSession.setOrder(order),
+      onTimeProfile:profile=>routeSession.setTimeProfile(profile),
+      readTimeFactors:readRouteTimeFactors,
+      writeTimeFactors:factors=>{
+        routeSession.setTimeFactors(factors);
+        try{localStorage.setItem(routeTimeKey,JSON.stringify(factors));}catch{}
+      },
       onAll:()=>{
         const pins=markerView.visiblePins().filter(pin=>mapAdapter.containsPoint(pin));
         const result=routeSession.toggleVisible(pins.map(pin=>pin.id));
@@ -939,7 +947,7 @@
       calculate:request=>routingCore.calculate({mode:"car",...request}),
       onChange:snapshot=>{routeMapView.render(snapshot);renderMarkers();routePanel.render(snapshot);
         routePanel.syncPinButtons(selectedPin());},
-      onError:showNotice
+      onError:showNotice,timeFactors:readRouteTimeFactors()
     });
     renderRouteGuides=()=>routeMapView?.guides(routeGuideSession.list());
     renderRouteGuides();
