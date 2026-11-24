@@ -7,13 +7,15 @@
  const fmtDistance=m=>m<1000?Math.round(m)+" m":Math.round(m/1000)+" km";
  const fmtTime=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return (h?h+" h ":"")+ (m%60)+" min";};
  class CarRoutePanel {
-  constructor({document:doc,getElement,icons,getPin,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
+  constructor({document:doc,getElement,icons,getPin,onMode,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
    if(!doc||!getElement||!icons)throw new TypeError("Route panel UI dependencies required");
-   Object.assign(this,{doc,el:getElement,icons,getPin,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
+   Object.assign(this,{doc,el:getElement,icons,getPin,onMode,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
    this.snapshot=null;this.visible=true;
   }
   bind(){
    this.el("routeEnd").addEventListener("click",()=>{if(this.confirmEnd())this.onEnd();});
+   for(const button of this.doc.querySelectorAll("[data-route-mode]"))
+    button.addEventListener("click",()=>{this.closeMenus();this.onMode(button.dataset.routeMode);});
    this.el("routeReverse").addEventListener("click",()=>this.onReverse());
    this.el("routeAll").addEventListener("click",()=>this.chooseWaypoints("all"));
    this.el("routeFixed").addEventListener("click",()=>this.chooseWaypoints("fixed"));
@@ -101,10 +103,20 @@
    const toggle=this.el("routePanelToggle");this.el("routeToggleHolder").classList.toggle("hidden",!active);
    toggle.setAttribute("aria-pressed",String(active&&this.visible));
    if(!active){this.closeMenus();return;}
+   const bike=snapshot.mode==="bicycle";
+   const icon=bike?"bike":"car";
+   if(this.el("routeModeIcon").dataset.pinIcon!==icon)this.icons.mount(this.el("routeModeIcon"),icon);
+   if(this.el("routePanelToggle").dataset.pinIcon!==icon)this.icons.mount(this.el("routePanelToggle"),icon);
+   for(const button of this.doc.querySelectorAll("[data-route-mode]")){
+    const active=button.dataset.routeMode===snapshot.mode;
+    button.classList.toggle("is-active",active);
+    button.setAttribute("aria-pressed",String(active));
+   }
+   for(const id of ["routeSettings","routeTolls","routeTimes","routeApple"])this.el(id).disabled=bike;
    const title=this.el("routeSummary");
    title.textContent=snapshot.loading?"Route wird berechnet …":snapshot.legs.length?
      ""+fmtDistance(snapshot.distanceMeters)+" · ca. "+fmtTime(snapshot.durationSeconds):
-     "Route nicht verfügbar";
+     bike?"Keine geprüfte Fahrradroute verfügbar":"Route nicht verfügbar";
    this.el("routeAll").classList.toggle("is-active",snapshot.allVisibleActive);
    this.el("routeAll").setAttribute("aria-pressed",String(Boolean(snapshot.allVisibleActive)));
    for(const [id,order] of [["routeFixed","fixed"],["routeOptimize","optimal"]]){

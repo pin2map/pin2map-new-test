@@ -110,10 +110,14 @@
    const data=await jsonOrThrow(this.fetchImpl,url,{
     mode:"cors",signal,headers:{"X-Client-Id":"pin2map-new-car-routing"}
    });
-   if(!data?.trip?.legs?.length||!data?.trip?.summary)
+   return valhallaTrip(data?.trip,{profile,avoidTolls,mode:"car"});
+  }
+ }
+ function valhallaTrip(trip,{profile,avoidTolls=false,mode}){
+   if(!trip?.legs?.length||!trip?.summary)
     throw new Error("Valhalla returned no usable route");
    const coords=[],timeSections=[];
-   for(const leg of data.trip.legs){
+   for(const leg of trip.legs){
     const each=decodePolyline6(leg.shape);
     coords.push(...(coords.length?each.slice(1):each));
     // Maneuver types 28 and 29 mark boarding and returning to the road.
@@ -127,15 +131,14 @@
      });
     }
    }
-   return normalized("valhalla",profile,coords,
-    data.trip.summary.length*1000,data.trip.summary.time,{
+   return {...normalized("valhalla",profile,coords,
+    trip.summary.length*1000,trip.summary.time,{
      timeSections,avoidTolls,tollAvoidance:avoidTolls?"exclude-requested":"not-requested",
      motorcycleModel:profile===PROFILES.SCENIC,
-     reportedToll:data.trip.summary.has_toll??null
-    });
-  }
+     reportedToll:trip.summary.has_toll??null
+    }),mode};
  }
- const api=Object.freeze({PROFILES,CarRoutingProvider,decodePolyline6});
+ const api=Object.freeze({PROFILES,CarRoutingProvider,decodePolyline6,valhallaTrip,jsonOrThrow});
  root.Pin2MapCarRouting=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

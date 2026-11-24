@@ -165,6 +165,7 @@
 <script defer src="./domain/route-guide-corridor.js"></script>
 <script defer src="./application/routing-service.js"></script>
 <script defer src="./adapters/routing/car-routing-provider.js"></script>
+<script defer src="./adapters/routing/bicycle-routing-provider.js"></script>
 <script defer src="./application/car-route-session.js"></script>
 <script defer src="./application/route-guide-session.js"></script>
 <script defer src="./ui/car-route-map-view.js"></script>
@@ -185,13 +186,13 @@
   <div id="mapActionChooser" class="map-action-chooser hidden" role="dialog" aria-label="Kartenaktion auswählen"></div>
   <section id="carRoutePanel" class="car-route-panel hidden" aria-label="Autorouting" role="region">
     <div class="car-route-head">
-      <span class="car-route-heading"><span data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary">Route</strong></span>
+      <span class="car-route-heading"><span id="routeModeIcon" data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary">Route</strong></span>
       <button id="routePanelHide" class="car-route-round" type="button" data-pin-icon="minimize-2" aria-label="Routingdialog ausblenden"></button>
     </div>
     <div class="car-route-row car-route-primary">
       <fieldset class="car-route-group car-route-transport"><legend>Routing</legend><div class="car-route-modes">
-        <button class="car-route-round is-active" type="button" data-pin-icon="car" aria-label="Auto" aria-pressed="true"></button>
-        <button class="car-route-round" type="button" data-pin-icon="bike" title="Fahrrad – später" aria-label="Fahrrad – später" disabled></button>
+        <button class="car-route-round is-active" type="button" data-pin-icon="car" data-route-mode="car" aria-label="Auto" aria-pressed="true"></button>
+        <button class="car-route-round" type="button" data-pin-icon="bike" data-route-mode="bicycle" aria-label="Fahrrad" aria-pressed="false"></button>
         <button class="car-route-round" type="button" data-pin-icon="footprints" title="Fuß – später" aria-label="Fuß – später" disabled></button>
         <button class="car-route-round" type="button" data-pin-icon="tram-front" title="ÖPNV – später" aria-label="ÖPNV – später" disabled></button>
       <button id="routeReverse" class="car-route-round" type="button" data-pin-icon="arrow-left-right" title="Fahrtrichtung umkehren" aria-label="Fahrtrichtung umkehren"></button>

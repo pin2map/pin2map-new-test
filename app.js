@@ -893,6 +893,7 @@
     mapAdapter=window.Pin2MapLeafletAdapter.mount("map",{center:{lat:state.viewport.lat,lng:state.viewport.lng},zoom:state.viewport.zoom});
     const routingCore=new window.Pin2MapRouting.RoutingService();
     routingCore.register("car",new window.Pin2MapCarRouting.CarRoutingProvider({fetchImpl:window.fetch.bind(window)}));
+    routingCore.register("bicycle",new window.Pin2MapBicycleRouting.BicycleRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
     const routePinById=id=>pinOps.findPin(state,id);
     routeGuideSession=new window.Pin2MapRouteGuideSession.RouteGuideSession({
@@ -923,6 +924,7 @@
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onLegSelect:index=>routeMapView.fit(index),
+      onMode:mode=>routeSession.setMode(mode),
       onEnd:()=>{routeSession.clear();routeGuideSession.clear();renderPinPanel();},
       confirmEnd:()=>window.confirm("Routing wirklich beenden?"),
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
@@ -958,7 +960,7 @@
       plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
       onGuideWarning:count=>showNotice(count===1?"Eine Richtungsflagge konnte nicht sinnvoll berücksichtigt werden.":
         count+" Richtungsflaggen konnten nicht sinnvoll berücksichtigt werden."),
-      calculate:request=>routingCore.calculate({mode:"car",...request}),
+      calculate:request=>routingCore.calculate(request),
       onChange:snapshot=>{routeMapView.render(snapshot);renderMarkers();routePanel.render(snapshot);
         routePanel.syncPinButtons(selectedPin());},
       onError:showNotice,timeFactors:readRouteTimeFactors()

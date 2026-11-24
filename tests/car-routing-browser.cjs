@@ -378,6 +378,41 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     (coords[1][0]!==10.30||coords[1][1]!==48.90)));
    assert.equal(await rolePins("waypoint").count(),0);
    assert.match(await page.locator("#routeLegs").textContent(),/Stuttgart → München/);
+   const cycleRequests=[];
+   const encode=locations=>{
+    let lat=0,lng=0,shape="";
+    const part=delta=>{
+     let value=delta<0?-2*delta-1:2*delta;
+     while(value>=32){shape+=String.fromCharCode((value%32)+95);value=Math.floor(value/32);}
+     shape+=String.fromCharCode(value+63);
+    };
+    for(const point of locations){
+     const y=Math.round(point.lat*1e6),x=Math.round(point.lon*1e6);
+     part(y-lat);part(x-lng);lat=y;lng=x;
+    }
+    return shape;
+   };
+   await page.route(/valhalla1\.openstreetmap\.de\/(?:route|trace_attributes)$/,async entry=>{
+    const payload=entry.request().postDataJSON();
+    const isRoute=new URL(entry.request().url()).pathname==="/route";
+    if(isRoute)cycleRequests.push(payload);
+    const body=isRoute?{trip:{summary:{length:24,time:2400},legs:[{
+     shape:encode(payload.locations),maneuvers:[]
+    }]}}:{edges:[{use:"cycleway",length:24,weighted_grade:0,max_upward_grade:0}]};
+    await entry.fulfill({json:body,headers:{"Access-Control-Allow-Origin":"*"}});
+   });
+   await page.getByRole("button",{name:"Fahrrad",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(await page.getByRole("button",{name:"Fahrrad",exact:true}).getAttribute("aria-pressed"),"true");
+   assert.equal(await page.locator("#routeModeIcon").getAttribute("data-pin-icon"),"bike");
+   assert.equal(await page.locator("#routeTolls").isDisabled(),true);
+   assert.equal(cycleRequests.length,3);
+   assert.ok(cycleRequests.every(request=>request.costing==="bicycle"));
+   assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
+   assert.equal(await rolePins("waypoint").count(),0);
+   await page.getByRole("button",{name:"Auto",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+
    page.once("dialog",dialog=>dialog.dismiss());
    await page.locator("#routeEnd").click();
    assert.equal(await page.locator(".p2m-route-guide-holder").count(),1);

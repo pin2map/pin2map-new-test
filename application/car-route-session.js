@@ -12,14 +12,14 @@
   constructor({plan,calculate,getPin,onChange,onError,getGuides=()=>[],onGuideWarning=()=>{},timeFactors={}}){
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
    Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,onGuideWarning});
-   this.generation=0;this.pending=null;this.legs=[];this.loading=false;this.allVisibleActive=false;
+   this.mode="car";this.generation=0;this.pending=null;this.legs=[];this.loading=false;this.allVisibleActive=false;
    this.factors={...TIME_FACTORS};this.timeProfile="standard";
    for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(timeFactors[key]))this.factors[key]=timeFactors[key];
   }
   snapshot(){
-   const factor=this.factors[this.timeProfile];
+   const factor=this.mode==="car"?this.factors[this.timeProfile]:1;
    const legs=this.legs.map(leg=>({...leg,durationSeconds:leg.durationSeconds*(leg.ferry?1:factor)}));
-   return {...this.plan.snapshot(),allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
+   return {...this.plan.snapshot(),mode:this.mode,allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
     timeProfile:this.timeProfile,timeMarkers:timeMarkers(legs),
     distanceMeters:legs.reduce((s,l)=>s+l.distanceMeters,0),
     durationSeconds:legs.reduce((s,l)=>s+l.durationSeconds,0)};
@@ -28,6 +28,10 @@
   setTimeFactors(factors){
    for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(factors[key]))this.factors[key]=factors[key];
    this.publish();
+  }
+  setMode(mode){
+   if(!["car","bicycle"].includes(mode)||mode===this.mode)return;
+   this.mode=mode;void this.recalculate();
   }
   setOrder(order){
    if(!["fixed","optimal"].includes(order)||this.plan.order===order)return;
@@ -46,7 +50,7 @@
    const generation=this.generation,controller=new AbortController();this.pending=controller;this.loading=true;this.publish();
    const completed=[];
    const guides=this.getGuides();
-   const requestFor=i=>({waypoints:[points[i],points[i+1]],
+   const requestFor=i=>({mode:this.mode,waypoints:[points[i],points[i+1]],
     profile:this.plan.profile,avoidTolls:this.plan.avoidTolls,signal:controller.signal});
    try{
     for(let i=0;i<points.length-1;i++){
@@ -73,7 +77,7 @@
     }
    }catch(error){
     if(generation!==this.generation)return;
-    if(!controller.signal.aborted)this.onError("Autoroute konnte nicht berechnet werden: "+String(error?.message||error));
+    if(!controller.signal.aborted)this.onError((this.mode==="bicycle"?"Fahrradroute":"Autoroute")+" konnte nicht berechnet werden: "+String(error?.message||error));
    }finally{
     if(generation===this.generation){this.loading=false;this.pending=null;this.publish();}
    }

@@ -13,6 +13,7 @@ on:
       - application/car-route-session.js
       - application/route-guide-session.js
       - adapters/routing/car-routing-provider.js
+      - adapters/routing/bicycle-routing-provider.js
       - ui/car-route-panel.js
       - ui/car-route-map-view.js
       - map-adapter-leaflet.js
@@ -62,7 +63,7 @@ jobs:
           origin='https://pin2map.github.io/pin2map-new-test/preview/'
           assets=['app.js','styles.css','domain/active-car-route.js','domain/route-guide-corridor.js',
              'map-adapter-leaflet.js','ui/pin-marker-view.js',
-             'application/routing-service.js','adapters/routing/car-routing-provider.js',
+             'application/routing-service.js','adapters/routing/car-routing-provider.js','adapters/routing/bicycle-routing-provider.js',
              'application/car-route-session.js','application/route-guide-session.js',
              'ui/car-route-map-view.js','ui/car-route-panel.js']
           expected={p:Path(p).read_bytes() for p in assets}

@@ -54,6 +54,14 @@
   })));
  }
 
+ function preferred(a,b){
+  if(a.mode==="bicycle"&&b.mode==="bicycle"){
+   const rank=(x,y)=>(x??Infinity)-(y??Infinity);
+   const difference=rank(a.ascentMeters,b.ascentMeters)||rank(a.maxGrade,b.maxGrade)||b.cycleShare-a.cycleShare;
+   if(difference)return difference<0;
+  }
+  return a.durationSeconds<b.durationSeconds;
+ }
  function selectLeg(baseline,alternatives,guides){
   let best=baseline, count=guides.filter(guide=>guide.meters<=guide.radius).length;
   const originalCount=count;
@@ -65,7 +73,7 @@
     if(locate(option.geometry,guide.flag).meters<=guide.radius)hits++;
     else if(guide.meters<=guide.radius)lost=true;
    }
-   if(!lost&&(hits>count||(hits===count&&hits>originalCount&&option.durationSeconds<best.durationSeconds))){
+   if(!lost&&(hits>count||(hits===count&&hits>originalCount&&preferred(option,best)))){
     best=option;count=hits;
    }
   }
