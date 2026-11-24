@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-24 (Entwicklung **v335 technisch veröffentlicht und verifiziert. Routingrollen am Pin sind Ein-/Aus-Schalter (R-036). 743/743 Node-Tests sowie Architektur-, Chromium-, WebKit-, HTTPS-Live- und Service-Worker-Gates erfolgreich. Persönliche Geräteabnahme offen.**). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-24 (Entwicklung **v336 technisch veröffentlicht und verifiziert. Routingsteuerung, FIX/OPT, viertes Autoroutingprofil und Fahrzeiten mit Zeitmarken (R-037). 746/746 Node-Tests sowie Architektur-, Chromium-, WebKit-, HTTPS-Live- und Service-Worker-Gates erfolgreich. Persönliche Geräteabnahme offen.**). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -3350,3 +3350,13 @@ Start, Ziel und Zwischenziel lassen sich am jeweiligen Pin einzeln an- und aussc
 - [Live-Preview](https://pin2map.github.io/pin2map-new-test/preview/): `pin2map-preview-v335`, aktiver Service Worker und Neuladen zusätzlich in Cloud-WebKit bestätigt. Vollständige Actions-Logdownloads waren im Cloud-Proxy weiterhin gesperrt. Diagnose und Freigabenachweis stützen sich auf lokale Reproduktion, GitHub-Job- und Schrittstatus, Check-Annotationen und die Live-Prüfung.
 
 **Abnahme:** Reale iPhone-/iPad-Geräteprüfung offen. `main` blieb bei `19bb1aa`. Dieser Status-Commit dokumentiert den geprüften Release-Stand.
+
+### v336 – Routingsteuerung, Reihenfolge und Fahrzeiten (R-037, 24.11.2026)
+
+**Release:** [6fb646a](https://github.com/pin2map/pin2map-new-test/commit/6fb646a27ac79114286c722dfca692a02e2d85b3) enthält [231bc14](https://github.com/pin2map/pin2map-new-test/commit/231bc1477ffd1893f4a623a81e03405f7b2ae9bb) und die Aktualisierung des bestehenden Pin-Dialog-Geometrietests für das ausdrücklich geänderte Schließverhalten.
+
+- Jeder Pin-Routingschalter schließt den Pin-Dialog. Der rote oder blaue Routingschalter sitzt unter der Kartenart. Der Dialog nutzt die Unterkante der Zoomsteuerung und das Lucide-Autosymbol. Aktive Mautvermeidung ist rot durchgestrichen.
+- FIX stellt die chronologische Folge wieder her. OPT approximiert eine kürzere Besuchsfolge auf Basis der Luftlinienentfernung mit festen Endpunkten. Valhalla Auto mit `exclude_highways=true` ergänzt den getrennt bezeichneten Motorradmodus. Beide Konfigurationen lieferten im Live-Stichprobentest unterschiedliche Strecken und der Autobahnausschluss meldete `has_highway=false`.
+- Eigenschaften → Routing → Fahrzeiten bietet editierbare Gesamtzeitfaktoren 1,00, 1,30 und 0,95. Der historische R-015-Versuch wendete die abweichenden Faktoren nur auf den Autobahnanteil an. Profilwechsel korrigieren die Dauer und Zeitmarken der vorhandenen Route ohne Neuberechnung beim Anbieter. Halb- und Vollstundenmarken folgen den Zeitabschnitten des Anbieters, ersatzweise der proportionalen Länge innerhalb der Etappe.
+
+**Nachweise:** 746 Node-Tests plus Architektur sind grün. [Integration und Chromium](https://github.com/pin2map/pin2map-new-test/actions/runs/45384874965), [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/45384874984), [WebKit-Geometrie](https://github.com/pin2map/pin2map-new-test/actions/runs/45384897987), [Routing lokal und live in Chromium/WebKit](https://github.com/pin2map/pin2map-new-test/actions/runs/45384898123) und [Pages inklusive Browser-Nachprüfung](https://github.com/pin2map/pin2map-new-test/actions/runs/45384875166) sind erfolgreich. [Live-Preview](https://pin2map.github.io/pin2map-new-test/preview/) liefert `pin2map-preview-v336`. Cloud-WebKit bestätigte aktiven Preview-Service-Worker und Neuladen. Persönliche Geräteabnahme offen.
