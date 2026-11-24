@@ -14,6 +14,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    const mobile=viewport.width<500;
    const ctx=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,serviceWorkers:"block"});
    const page=await ctx.newPage(),errors=[];page.on("pageerror",e=>errors.push(e.stack||e.message));
+   page.on("console",m=>{if(m.text().startsWith("IDB_PUT_ROUTE"))console.log("WRITE TRACE",m.text());});
+   await page.addInitScript(()=>{const orig=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(value,key){if(key==="appState")console.log("IDB_PUT_ROUTE",JSON.stringify({count:value?.routeGuides?.length,keys:Object.keys(value||{}).length,stack:new Error().stack?.split("\\n").slice(1,4)}));return orig.call(this,value,key)}});
    const base=URL_BASE.endsWith("/")?URL_BASE:URL_BASE+"/";
    const routeRequests=[];
    await page.route(/router\.project-osrm\.org\/route\/v1\/driving\//,async route=>{
