@@ -1,6 +1,6 @@
 # pin2map NEW – zentraler Projektstatus
 
-**Stand:** 2026-11-24 (Entwicklung **v334 technisch veröffentlicht und vollständig verifiziert; Routingrollen direkt auf vorhandenen Pins statt separater Überlagerungen (R-035); 742/742 Node-Tests sowie Architektur-, Chromium-, WebKit-, HTTPS-Live- und Service-Worker-Gates erfolgreich; reale v334-Geräteabnahme offen**, stabile main durch diesen Auftrag unverändert). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
+**Stand:** 2026-11-24 (Entwicklung **v335 technisch veröffentlicht und verifiziert. Routingrollen am Pin sind Ein-/Aus-Schalter (R-036). 743/743 Node-Tests sowie Architektur-, Chromium-, WebKit-, HTTPS-Live- und Service-Worker-Gates erfolgreich. Persönliche Geräteabnahme offen.**). · **Pflege:** bei jedem größeren Arbeitsschritt und bei jeder Änderung der nächsten Priorität.
 **Statusart:** GitHub-verifizierter Feature-Branch- und Preview-Stand; technisch veröffentlicht bedeutet nicht automatisch persönliche Geräteabnahme und keine Freigabe für `main`.
 
 > **Einstieg nach Chatwechsel:** Diese Datei zuerst lesen, dann `AGENTS.md`, `docs/PROJEKTWEGWEISER.md` und die unten für die Aufgabe genannten Fachdokumente. Den Branch und die zuletzt geänderten Quelldateien in GitHub erneut prüfen. Nicht nur diese Statuszusammenfassung als Beleg verwenden. Ein einfaches **„ok“** bedeutet: eigenständig mit dem nächsten sinnvollen Schritt weitermachen.
@@ -3333,3 +3333,20 @@ Maßgebliche Details R-026 in `docs/ROUTING_FUNKTIONALE_REFERENZ_UND_ANFORDERUNG
 **Ergänzung Arbeitsablauf:** GitHub-Connector-`fetch` erlaubt die dokumentierte REST-GET-Abfrage `https://api.github.com/repos/pin2map/pin2map-new-test/actions/runs?head_sha=<Commit-SHA>` für tatsächliche Push-Runs. In diesem Auftrag direkt erfolgreich genutzt, keine diagnostischen PRs erforderlich. Die veraltete Einschränkung anderer Connector-Aktionen auf PR-Runs ist damit kein Hindernis für die Push-Run-Ermittlung.
 
 **Freigabestand:** v334 technisch vollständig überprüft und unter https://pin2map.github.io/pin2map-new-test/preview/ veröffentlicht. Reale iPhone-/iPad-Geräteabnahme der neuen Darstellungsregeln offen; keine Freigabe für main. Main, reference/*, Datenschema und gespeicherte Pins wurden nicht verändert. Nächste Aufgabe nach der Nutzerprüfung: nächster gezielt benannter Routing-/Usability-Punkt. Sonstige offene Routing-Fachfunktionen (weiche Richtungswünsche, OPT, Zeitprofile, weitere Verkehrsarten) unverändert offen; kein vorgezogener Umbau.
+
+
+### v335 – Routingrollen im Pin-Dialog ein- und ausschalten (R-036, 24.11.2026)
+
+Start, Ziel und Zwischenziel lassen sich am jeweiligen Pin einzeln an- und ausschalten. Bei einer Rundtour bleiben Start und Ziel unabhängig. Fehlt ein Endpunkt, verschwinden die Routenlinien, während die übrigen Rollen erhalten bleiben. Der aktive Hintergrund nutzt dieselbe Farbvariable wie der inaktive Rand: Start rot (#ee4545), Ziel grün (#36a356), Zwischenziel gelb (#edc636). Die Start- und Ziel-Symbole sind aktiv weiß. Die R-035-Pin-Darstellung aus v334 und das Datenmodell für gespeicherte Pins bleiben erhalten.
+
+**Release-Stand:** [65aa517219c7ac137501a439ab4e2ac7c1af31ee](https://github.com/pin2map/pin2map-new-test/commit/65aa517219c7ac137501a439ab4e2ac7c1af31ee), einschließlich der Korrektur [35cd4a5](https://github.com/pin2map/pin2map-new-test/commit/35cd4a55dc1191f626f829c913eb03240065263f). Der Desktop-Browsertest reproduzierte die graue Überlagerung beim Hover; zwei Node-Tests zeigten die Abweichung am gemeinsamen Selektor für blaue Dialogsteuerungen. Die drei Rollen-Schalter sind aus den allgemeinen Hover-, Druck- und Blau-Regeln ausgeklammert. Der Browser-Vertrag prüft die tatsächlich gerenderte SVG-Strichfarbe, beide Rundtour-Schalter und das wiederhergestellte reguläre Pin-Markup.
+
+**Verifizierte Gates für den Release-Stand:**
+
+- [Modular Core](https://github.com/pin2map/pin2map-new-test/actions/runs/45375956020): 743 Node-Tests und Chromium-Regression einschließlich Offline-Neuladen. Der erste Chromium-Lauf scheiterte im Geometrieschritt. Der erneute Lauf desselben Commits und die lokale Geometrieprüfung auf Desktop und iPhone-Viewport bestanden.
+- [Architektur](https://github.com/pin2map/pin2map-new-test/actions/runs/45375956116) und [WebKit-Geometrie](https://github.com/pin2map/pin2map-new-test/actions/runs/45375968985): erfolgreich.
+- [Routing-Browser- und HTTPS-Gate](https://github.com/pin2map/pin2map-new-test/actions/runs/45375968651): Chromium und WebKit bei 390×844 und 1280×800, lokal und auf der veröffentlichten Preview. Kontrollierte OSRM-Antworten prüfen das Verhalten der Anwendung. Release-HTML, CSS, Routingmodule und isolierter Service Worker sind über HTTPS bytegenau bestätigt.
+- [Pages-Veröffentlichung](https://github.com/pin2map/pin2map-new-test/actions/runs/45375955945): WebKit-Vorabprüfung, Deploy mit HTTPS- und Chromium-Prüfungen sowie WebKit-/Chromium-Nachprüfung erfolgreich. Zwei frühere Deploy-Versuche meldeten das gerade hochgeladene Paket als fehlend. Die GitHub-API listete beide Pakete später unter den erwarteten Namen. Der erfolgreiche Lauf gibt der Paketregistrierung vor dem Deploy 20 Sekunden Zeit.
+- [Live-Preview](https://pin2map.github.io/pin2map-new-test/preview/): `pin2map-preview-v335`, aktiver Service Worker und Neuladen zusätzlich in Cloud-WebKit bestätigt. Vollständige Actions-Logdownloads waren im Cloud-Proxy weiterhin gesperrt. Diagnose und Freigabenachweis stützen sich auf lokale Reproduktion, GitHub-Job- und Schrittstatus, Check-Annotationen und die Live-Prüfung.
+
+**Abnahme:** Reale iPhone-/iPad-Geräteprüfung offen. `main` blieb bei `19bb1aa`. Dieser Status-Commit dokumentiert den geprüften Release-Stand.
