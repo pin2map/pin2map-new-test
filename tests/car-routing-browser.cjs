@@ -110,6 +110,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    console.log("DIAGNOSTIC SECOND",JSON.stringify(await diagnose()));
    await chooser.waitFor({state:"visible",timeout:3000});
    await page.locator('#mapActionChooser button[aria-label="Richtungsflagge setzen"]').click();
+   console.log("DIAGNOSTIC FLAG",JSON.stringify(await page.evaluate(()=>({flagCount:document.querySelectorAll(".p2m-route-guide-holder").length,notice:document.querySelector("#notice")?.textContent,html:document.querySelector("#map .leaflet-marker-pane")?.innerHTML.slice(-400)}))),"PAGE ERRORS",JSON.stringify(errors));
    await page.waitForFunction(()=>document.querySelectorAll("#map .p2m-route-guide-holder").length===1);
    assert.equal(await page.locator("#map .pin-icon").count(),3);
    await page.reload({waitUntil:"domcontentloaded"});
