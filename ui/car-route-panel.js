@@ -3,24 +3,25 @@
  * storage, map and external Apple actions arrive as injected callbacks.
  */
 (function(root){
+ const menus=[["routeSettings","routeProfileMenu"],["routeTimes","routeTimesMenu"],["routeWaypoints","routeWaypointMenu"]];
  const fmtDistance=m=>m<1000?Math.round(m)+" m":Math.round(m/1000)+" km";
  const fmtTime=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return (h?h+" h ":"")+ (m%60)+" min";};
  class CarRoutePanel {
-  constructor({document:doc,getElement,icons,getPin,onEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onHide,onShowNotice}){
+  constructor({document:doc,getElement,icons,getPin,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
    if(!doc||!getElement||!icons)throw new TypeError("Route panel UI dependencies required");
-   Object.assign(this,{doc,el:getElement,icons,getPin,onEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onHide,onShowNotice});
+   Object.assign(this,{doc,el:getElement,icons,getPin,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
    this.snapshot=null;this.visible=true;
   }
   bind(){
-   this.el("routeEnd").addEventListener("click",()=>this.onEnd());
+   this.el("routeEnd").addEventListener("click",()=>{if(this.confirmEnd())this.onEnd();});
    this.el("routeReverse").addEventListener("click",()=>this.onReverse());
-   this.el("routeAll").addEventListener("click",()=>this.onAll());
-   this.el("routeFixed").addEventListener("click",()=>this.onOrder("fixed"));
-   this.el("routeOptimize").addEventListener("click",()=>this.onOrder("optimal"));
+   this.el("routeAll").addEventListener("click",()=>{this.onAll();this.closeMenus();});
+   this.el("routeFixed").addEventListener("click",()=>{this.onOrder("fixed");this.closeMenus();});
+   this.el("routeOptimize").addEventListener("click",()=>{this.onOrder("optimal");this.closeMenus();});
    this.el("routeApple").addEventListener("click",()=>this.onApple());
    this.el("routePanelHide").addEventListener("click",()=>this.setVisible(false));
    this.el("routePanelToggle").addEventListener("click",()=>this.setVisible(!this.visible));
-   for(const [id,name]of [["routeSettings","profiles"],["routeTimes","times"]]){
+   for(const [id,name] of menus){
     this.el(id).addEventListener("click",()=>this.toggleSubmenu(name));
    }
    this.el("routeTolls").addEventListener("click",()=>this.onToggle("tolls"));
@@ -44,10 +45,22 @@
    this.icons.decorate?.(this.doc);
   }
   toggleSubmenu(which){
-   for(const [id,name]of [["routeProfileMenu","profiles"],["routeTimesMenu","times"]])
-    this.el(id).classList.toggle("hidden",which!==name||!this.el(id).classList.contains("hidden"));
+   const opening=this.el(which).classList.contains("hidden");
+   for(const [trigger,id] of menus){
+    const open=opening&&id===which;
+    this.el(id).classList.toggle("hidden",!open);
+    this.el(trigger).setAttribute("aria-expanded",String(open));
+   }
+   this.onLayoutChange?.();
   }
-  closeMenus(){for(const id of ["routeProfileMenu","routeTimesMenu"])this.el(id).classList.add("hidden");}
+  closeMenus(){
+   const wasOpen=menus.some(([,id])=>!this.el(id).classList.contains("hidden"));
+   for(const [trigger,id] of menus){
+    this.el(id).classList.add("hidden");
+    this.el(trigger).setAttribute("aria-expanded","false");
+   }
+   if(wasOpen)this.onLayoutChange?.();
+  }
   setVisible(shown){
    this.visible=Boolean(shown);this.closeMenus();
    const active=!!this.snapshot?.ready;
@@ -55,7 +68,7 @@
    const button=this.el("routePanelToggle");this.el("routeToggleHolder").classList.toggle("hidden",!active);
    button.setAttribute("aria-pressed",String(active&&this.visible));
    button.setAttribute("aria-label",this.visible?"Routingdialog ausblenden":"Routingdialog einblenden");
-   this.onHide?.(!this.visible);
+   this.onLayoutChange?.();
   }
   syncPinButtons(pin){
    if(!pin)return;
@@ -88,8 +101,16 @@
     b.setAttribute("aria-pressed",String(b.dataset.timeProfile===snapshot.timeProfile));
    this.el("routeTolls").classList.toggle("is-active",snapshot.avoidTolls);
    this.el("routeTolls").setAttribute("aria-pressed",String(snapshot.avoidTolls));
-   for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]"))
-    b.setAttribute("aria-pressed",String(b.dataset.carProfile===snapshot.profile));
+   for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]")){
+    const active=b.dataset.carProfile===snapshot.profile;
+    b.setAttribute("aria-pressed",String(active));
+    if(active&&this.shownRouteProfile!==snapshot.profile){
+     const trigger=this.el("routeSettings");
+     trigger.replaceChildren(b.firstElementChild.cloneNode(true));
+     trigger.setAttribute("aria-label","Routencharakter wählen: "+b.textContent.trim());
+     this.shownRouteProfile=snapshot.profile;
+    }
+   }
    const legs=this.el("routeLegs");legs.replaceChildren();
    snapshot.legs.forEach((leg,index)=>{
     const row=this.doc.createElement("div");row.className="car-route-leg";row.dataset.leg=String(index);

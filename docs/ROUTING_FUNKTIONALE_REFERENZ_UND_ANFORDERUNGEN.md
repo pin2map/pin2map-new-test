@@ -707,3 +707,9 @@ Der Pin-Dialog schließt bei jeder Routingaktion. Der Routing-Schalter steht rec
 FIX verwendet die chronologische Zwischenziel-Reihenfolge. OPT schätzt lokal anhand der Luftlinienentfernungen eine günstigere Reihenfolge mit festen Endpunkten. Das gewählte Routingprofil berechnet den Straßenverlauf für diese Reihenfolge. Das vierte Profil „Keine Autobahnen“ sendet Valhalla Auto mit `exclude_highways=true`. Das gesondert gekennzeichnete Motorradprofil verwendet die Parameter aus R-030.
 
 Die drei Geräte-Einstellungen für Fahrzeiten übernehmen die Versuchswerte 1,00, 1,30 und 0,95 aus R-015 als Gesamtzeitfaktoren. Im damaligen Versuch galten die beiden abweichenden Faktoren für den Autobahnanteil. Die Auswahl korrigiert lokal die Zeiten der bestehenden Linien ohne Anbieteranfrage. Die Positionen der halbstündlichen und nummerierten stündlichen Marken richten sich nach den Zeitabschnitten des Anbieters. Fehlen diese, wird die Zeit proportional zur Länge der Etappe verteilt.
+
+### R-038 – Routen-Autozoom und kompakte Routingsteuerung (24.11.2026)
+
+Autozoom priorisiert die gesamte berechnete Route. Die Kartenansicht berücksichtigt die aktuell sichtbaren Bedienelemente und passt sich beim Ein- und Ausblenden des Routingdialogs an. Die normale Autozoom-Funktion für Pins steht bei fehlender Route zur Verfügung.
+
+Die Zwischenziel-Funktionen bleiben erhalten und sind über einen gemeinsamen Button erreichbar. „Routing Optionen“ zeigt Symbole für Routen- und Zeitprofile. Der Routenprofil-Button zeigt das aktive Profil. Die beiden Button-Zeilen nutzen einheitliche runde Bedienelemente. Das Beenden der Route erfordert eine Bestätigung. Minimieren erhält die aktive Route. Die in v336 eingerichteten Providerparameter und Fahrzeitfaktoren gelten weiter.

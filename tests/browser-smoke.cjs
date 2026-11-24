@@ -519,6 +519,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#carRoutePanel").isHidden(),true);
     await page.locator("#routePanelToggle").click();
     assert.equal(await page.locator("#carRoutePanel").isVisible(),true);
+    page.once("dialog",dialog=>dialog.accept());
     await page.locator("#routeEnd").click();
     assert.equal(await page.locator("#carRoutePanel").isHidden(),true);
     assert.equal(await page.locator("#routePanelToggle").isHidden(),true);

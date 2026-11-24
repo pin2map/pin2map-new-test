@@ -185,38 +185,41 @@
   <section id="carRoutePanel" class="car-route-panel hidden" aria-label="Autorouting" role="region">
     <div class="car-route-head">
       <span class="car-route-heading"><span data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary">Route</strong></span>
-      <button id="routePanelHide" type="button" aria-label="Routingdialog ausblenden">×</button>
+      <button id="routePanelHide" class="car-route-round" type="button" data-pin-icon="minimize-2" aria-label="Routingdialog ausblenden"></button>
     </div>
     <div class="car-route-row car-route-primary">
-      <fieldset class="car-route-group"><legend>Routing für</legend><div class="car-route-modes">
+      <fieldset class="car-route-group car-route-transport"><legend>Routing für</legend><div class="car-route-modes">
         <button class="car-route-round is-active" type="button" data-pin-icon="car" aria-label="Auto" aria-pressed="true"></button>
         <button class="car-route-round" type="button" data-pin-icon="bike" title="Fahrrad – später" aria-label="Fahrrad – später" disabled></button>
         <button class="car-route-round" type="button" data-pin-icon="footprints" title="Fuß – später" aria-label="Fuß – später" disabled></button>
         <button class="car-route-round" type="button" data-pin-icon="tram-front" title="ÖPNV – später" aria-label="ÖPNV – später" disabled></button>
+      <button id="routeReverse" class="car-route-round" type="button" data-pin-icon="arrow-left-right" title="Fahrtrichtung umkehren" aria-label="Fahrtrichtung umkehren"></button>
+      <button id="routeEnd" class="car-route-round car-route-end" type="button" data-pin-icon="route-off" aria-label="Routing beenden"></button>
       </div></fieldset>
-      <button id="routeReverse" class="car-route-secondary" type="button" data-pin-icon="arrow-left-right" title="Fahrtrichtung umkehren" aria-label="Fahrtrichtung umkehren"></button>
-      <button id="routeEnd" class="car-route-end" type="button">Beenden</button>
     </div>
     <div class="car-route-row car-route-secondary-row">
-      <fieldset class="car-route-group"><legend>Multi Pin Routing</legend><div class="car-route-modes">
-        <button id="routeAll" class="car-route-round car-route-all" type="button" aria-pressed="false" title="Sichtbare noch nicht verwendete Pins hinzufügen">ALL</button>
-        <button id="routeFixed" class="car-route-round is-active" type="button" aria-pressed="true" title="Chronologische Reihenfolge">FIX</button>
-        <button id="routeOptimize" class="car-route-round" type="button" aria-pressed="false" title="Reihenfolge optimieren" disabled>OPT</button>
+      <fieldset class="car-route-group car-route-waypoints"><legend>Zwischenziele</legend><div class="car-route-modes">
+        <button id="routeWaypoints" class="car-route-round" type="button" data-pin-icon="graph-path" aria-label="Zwischenziele" aria-controls="routeWaypointMenu" aria-expanded="false"></button>
+        <div class="car-route-popover hidden" id="routeWaypointMenu" role="group" aria-label="Zwischenziele">
+          <button id="routeAll" type="button" aria-pressed="false"><span data-pin-icon="graph-path" aria-hidden="true"></span>Alle Pins aktivieren</button>
+          <button id="routeFixed" type="button" aria-pressed="true"><span data-pin-icon="graph-star" aria-hidden="true"></span>Reihenfolge wie erstellt</button>
+          <button id="routeOptimize" type="button" aria-pressed="false" disabled><span data-pin-icon="graph-star" aria-hidden="true"></span>Reihenfolge optimieren</button>
+        </div>
       </div></fieldset>
-      <fieldset class="car-route-group car-route-options"><legend>Optionen</legend><div class="car-route-modes">
-        <button id="routeSettings" class="car-route-round" type="button" data-pin-icon="settings-2" aria-label="Routencharakter wählen"></button>
+      <fieldset class="car-route-group car-route-options"><legend>Routing Optionen</legend><div class="car-route-modes">
+        <button id="routeSettings" class="car-route-round p2m-icon-control" type="button" aria-label="Routencharakter wählen" aria-controls="routeProfileMenu" aria-expanded="false"><span class="car-route-motorway" aria-hidden="true"></span></button>
         <button id="routeTolls" class="car-route-round" type="button" data-pin-icon="circle-euro" aria-pressed="false" aria-label="Ohne Maut ein- oder ausschalten"></button>
-        <button id="routeTimes" class="car-route-round" type="button" data-pin-icon="list-clock" aria-label="Zeitprofil auswählen"></button>
+        <button id="routeTimes" class="car-route-round" type="button" data-pin-icon="list-clock" aria-label="Zeitprofil auswählen" aria-controls="routeTimesMenu" aria-expanded="false"></button>
         <div class="car-route-popover hidden" id="routeProfileMenu" role="group" aria-label="Autorouting-Stil">
-          <button type="button" data-car-profile="fast">Schnell</button>
-          <button type="button" data-car-profile="country">Landstraße zügig</button>
-          <button type="button" data-car-profile="scenic">Interessante Strecke (Motorradprofil)</button>
-          <button type="button" data-car-profile="no-highways">Keine Autobahnen</button>
+          <button type="button" data-car-profile="fast"><span class="car-route-motorway" aria-hidden="true"></span>Autobahn bevorzugt</button>
+          <button type="button" data-car-profile="country"><span data-pin-icon="road" aria-hidden="true"></span>Landstraße zügig</button>
+          <button type="button" data-car-profile="no-highways"><span class="car-route-motorway car-route-motorway-off" aria-hidden="true"></span>Keine Autobahnen</button>
+          <button type="button" data-car-profile="scenic"><span data-pin-icon="motorbike" aria-hidden="true"></span>Motorrad</button>
         </div>
         <div class="car-route-popover hidden" id="routeTimesMenu" role="group" aria-label="Persönliche Zeitprofile">
-          <button type="button" data-time-profile="standard">Standard-Profil</button>
-          <button type="button" data-time-profile="slow">Gemächlich</button>
-          <button type="button" data-time-profile="quick">Zügig</button>
+          <button type="button" data-time-profile="standard"><span data-pin-icon="circle-slash-2" aria-hidden="true"></span>Standard</button>
+          <button type="button" data-time-profile="quick"><span data-pin-icon="gauge" aria-hidden="true"></span>Zügig</button>
+          <button type="button" data-time-profile="slow"><span data-pin-icon="van" aria-hidden="true"></span>Transporter</button>
         </div>
       </div></fieldset>
       <fieldset class="car-route-group car-route-apple"><legend>Apple</legend><button id="routeApple" class="car-route-round" data-pin-icon="apple-brand" type="button" title="In Apple Karten öffnen" aria-label="In Apple Karten öffnen"></button></fieldset>
@@ -336,8 +339,8 @@
 <div id="settingsColorsContent" role="tabpanel" class="hidden"><section class="color-settings-section"><h3>Standard-Farben</h3><p>Diese Farben werden für Ebenen verwendet und stehen zum Einfärben von Flächen, Seen und Flüssen zur Verfügung.</p><div id="standardColorGrid" class="settings-color-grid"></div></section><section class="color-settings-section"><h3>Signal-Farben</h3><div id="signalColorGrid" class="settings-color-grid settings-signal-grid"></div></section></div>
 <div id="settingsRoutingContent" role="tabpanel" class="hidden">
   <section><h3>Fahrzeiten</h3>
-    <label>Standard-Profil <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="standard" value="1.00"></label>
-    <label>Gemächlich <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="slow" value="1.30"></label>
+    <label>Standard <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="standard" value="1.00"></label>
+    <label>Transporter <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="slow" value="1.30"></label>
     <label>Zügig <input type="number" inputmode="decimal" min="0.1" max="5" step="0.01" data-route-time-factor="quick" value="0.95"></label>
   </section>
 </div></aside>

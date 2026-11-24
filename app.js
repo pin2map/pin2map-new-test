@@ -597,6 +597,7 @@
   const keepSelectedAbovePanel = ()=>mapOverlayLayout.keepVisibleAtOpen();
   function fitAllPins(){
     flushHistoryRecord();
+    if(routeMapView?.fit())return;
     if(objectSearchController.view){
       fitObjectSearchMatches(objectSearchController.view.matches);
       return;
@@ -902,6 +903,13 @@
     });
     routeMapView=new window.Pin2MapCarRouteMapView.CarRouteMapView({
       mapPort:mapAdapter,
+      scheduleFrame:callback=>requestAnimationFrame(callback),
+      getLayout:()=>({
+        map:$("map").getBoundingClientRect(),
+        obstacles:[...document.querySelectorAll(".topbar,#app > button,#routePanelToggle,#carRoutePanel,.car-route-popover,#map .leaflet-control,#searchResults,#basemapMenu,#pinInfoMenu")]
+          .filter(element=>element.getClientRects().length&&getComputedStyle(element).visibility==="visible")
+          .map(element=>element.getBoundingClientRect())
+      }),
       onLineClick:index=>routePanel?.focusLeg(index),
       confirmRemove:message=>window.confirm(message),
       onGuideRemoveRequest:id=>routeGuideSession.remove(id)
@@ -913,6 +921,7 @@
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onEnd:()=>{routeSession.clear();renderPinPanel();},
+      confirmEnd:()=>window.confirm("Routing wirklich beenden?"),
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
       onOrder:order=>routeSession.setOrder(order),
       onTimeProfile:profile=>routeSession.setTimeProfile(profile),
@@ -925,7 +934,7 @@
         const pins=markerView.visiblePins().filter(pin=>mapAdapter.containsPoint(pin));
         const result=routeSession.toggleVisible(pins.map(pin=>pin.id));
         showNotice(result.active?result.count+" sichtbare Pins als Zwischenziele übernommen.":
-          "ALL aus: direkte Route ohne Zwischenziele.");
+          "Direkte Route ohne Zwischenziele.");
       },
       onOptions:opts=>{try{routeSession.options(opts);}catch(e){showNotice(String(e.message));}},
       onToggle:()=>{
@@ -940,7 +949,7 @@
         if(route.waypointIds.length)showNotice("Apple Karten übernimmt hier nur Start und Ziel, keine Zwischenziele.");
         window.open(window.Pin2MapAppleMapsLinks.routeUrl(start,target),"_blank","noopener,noreferrer");
       },
-      onHide:()=>{},onShowNotice:showNotice
+      onLayoutChange:()=>routeMapView.scheduleFit(),onShowNotice:showNotice
     });
     routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
       plan:activePlan,getPin:routePinById,

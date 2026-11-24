@@ -111,6 +111,26 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await setRole("pinRouteTarget");
    await page.locator("#carRoutePanel").waitFor({state:"visible",timeout:20000});
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2,null,{timeout:20000});
+   async function assertRouteFits(){
+    await page.waitForFunction(()=>{
+     const obstacles=[...document.querySelectorAll(".topbar,#carRoutePanel,#routePanelToggle,#app > button,#map .leaflet-control")]
+      .filter(el=>el.getClientRects().length).map(el=>el.getBoundingClientRect());
+     const lines=[...document.querySelectorAll('#map path[stroke="#ff3930"],#map path[stroke="#1987f5"]')];
+     return lines.length===2&&lines.every(line=>{
+      const box=line.getBoundingClientRect();
+      return box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight&&
+       obstacles.every(rect=>box.right<=rect.left||box.left>=rect.right||box.bottom<=rect.top||box.top>=rect.bottom);
+     });
+    },null,{timeout:5000}).catch(async error=>{
+     console.error("Route fit diagnostic",await page.evaluate(()=>[...document.querySelectorAll(
+      '.topbar,#carRoutePanel,#routePanelToggle,#app > button,#map .leaflet-control,#map path[stroke="#ff3930"],#map path[stroke="#1987f5"]'
+     )].filter(el=>el.getClientRects().length).map(el=>{
+      const {left,top,right,bottom}=el.getBoundingClientRect();return [el.id||el.getAttribute("class"),left,top,right,bottom];
+     })));
+     throw error;
+    });
+   }
+   await assertRouteFits();
    await assertRolePins();
    assert.equal(routeRequests.length,2,"Real provider adapter must request each hard pin leg");
    assert.match(await page.locator("#routeSummary").textContent(),/48 km/);
@@ -145,12 +165,26 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(controls.toggleTop>controls.basemapBottom&&Math.abs(controls.toggleRight-controls.basemapRight)<2);
    const toggleBg=()=>page.locator("#routePanelToggle").evaluate(el=>getComputedStyle(el).backgroundColor);
    assert.equal(await toggleBg(),"rgb(23, 100, 191)");
+   const sizes=await page.locator("#carRoutePanel .car-route-round").evaluateAll(buttons=>
+    buttons.map(button=>{const box=button.getBoundingClientRect();return [box.width,box.height];}));
+   assert.ok(sizes.every(([w,h])=>w===h&&w===sizes[0][0]),JSON.stringify(sizes));
+   await page.locator("#routeWaypoints").click();
+   assert.deepEqual(await page.locator("#routeWaypointMenu button").allTextContents(),
+    ["Alle Pins aktivieren","Reihenfolge wie erstellt","Reihenfolge optimieren"]);
+   await page.keyboard.press("Escape");
+   assert.equal(await page.locator("#routeWaypointMenu").isHidden(),true);
+   const legsBeforeCancel=await page.locator("#routeLegs .car-route-leg").count();
+   page.once("dialog",dialog=>dialog.dismiss());
+   await page.locator("#routeEnd").click();
+   assert.equal(await page.locator("#routeLegs .car-route-leg").count(),legsBeforeCancel);
    await page.locator("#routePanelHide").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),false);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),true);
    assert.equal(await toggleBg(),"rgb(201, 47, 57)");
+   await assertRouteFits();
    await page.locator("#routePanelToggle").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),true);
+   await assertRouteFits();
    await page.locator("#routeReverse").click();
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2,null,{timeout:12000});
    assert.match(await page.locator("#routeLegs").textContent(),/München → Ulm/);
@@ -159,6 +193,9 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await markerAt(0).locator('[data-route-role="target"]').count(),1);
    await page.locator("#routeSettings").click();
    assert.equal(await page.locator("#routeProfileMenu").isVisible(),true);
+   assert.deepEqual(await page.locator("#routeProfileMenu button").allTextContents(),
+    ["Autobahn bevorzugt","Landstraße zügig","Keine Autobahnen","Motorrad"]);
+   assert.equal(await page.locator("#routeSettings .car-route-motorway").count(),1);
    // An open popup must not obscure its own toggle, including on iPhone WebKit.
    const menus=await page.evaluate(()=>{
      const button=document.getElementById("routeSettings").getBoundingClientRect();
@@ -171,6 +208,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.locator("#routeTolls").getAttribute("aria-pressed"),"true");
    assert.equal(await page.locator("#routeTolls").evaluate(el=>getComputedStyle(el,"::after").backgroundColor),"rgb(207, 38, 52)");
    await page.locator("#routeTolls").click();
+   page.once("dialog",dialog=>dialog.accept());
    await page.locator("#routeEnd").click();
    assert.equal(await page.locator("#carRoutePanel").isVisible(),false);
    assert.equal(await page.locator("#routePanelToggle").isVisible(),false);
@@ -226,6 +264,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await setRole("pinRouteTarget");
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
    await page.locator("#routePanelToggle").click();
+   page.once("dialog",dialog=>dialog.accept());
    await page.locator("#routeEnd").click();
    assert.deepEqual(await page.locator("#map .pin-icon .pin-marker").evaluateAll(nodes=>nodes.map(n=>n.innerHTML)),normalPins);
    // Target alone toggles and closes the pin dialog before any route exists.

@@ -122,3 +122,15 @@ test("elapsed marks use section durations and a changed time profile does not re
  assert.equal(session.snapshot().legs[0].geometry,geometry);
  assert.equal(calls,1);
 });
+
+test("route fit selects a continuous map area clear of visible controls",()=>{
+ const {freeRouteRect}=require("../ui/car-route-map-view.js");
+ // DOMRect edge properties can be inherited rather than enumerable.
+ const map=Object.create({left:0,top:0,right:390,bottom:844});
+ const search={left:60,top:0,right:330,bottom:57};
+ const panel={left:11,top:536,right:379,bottom:826};
+ const open=freeRouteRect(map,[search,panel],100,200);
+ const closed=freeRouteRect(map,[search],100,200);
+ assert.deepEqual(open,{left:0,top:57,right:390,bottom:536});
+ assert.deepEqual(closed,{left:0,top:57,right:390,bottom:844});
+});

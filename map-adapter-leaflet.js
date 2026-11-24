@@ -71,6 +71,7 @@
       const center=latLng(viewport.center);
       this.map.setView([center.lat,center.lng],viewport.zoom,options);
     }
+    onViewportResize(callback){this.map.on("resize",callback);}
     fitBounds(bounds,options={}) {
       const pairs=bounds.map(pair=>[latLng(pair).lat,latLng(pair).lng]);
       this.map.fitBounds(pairs,options);
