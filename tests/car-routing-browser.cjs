@@ -78,12 +78,14 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      assert.equal(await rolePins(kind).count(),1);
      assert.equal(await rolePins(kind).locator(".pin-status-segments").count(),0);
      assert.equal(await rolePins(kind).locator(".pin-marker-shape > path").first().getAttribute("fill"),color);
-     const shape=rolePins(kind).locator(".pin-marker-shape");
-     // Leaflet can briefly hide marker SVGs while the layer settles after
-     // fitting an itinerary stage and immediately restoring the full route.
-     await shape.waitFor({state:"visible",timeout:5000});
-     const bounds=await shape.boundingBox();
-     assert.ok(bounds&&Math.abs(bounds.width-30)<1&&Math.abs(bounds.height-40)<1,JSON.stringify(bounds));
+     // Measure visibility and dimensions in one frame. A deferred Leaflet fit
+     // can hide the marker between separate visibility and bounding-box calls.
+     await page.waitForFunction(role=>{
+      const shape=document.querySelector('.pin-marker[data-route-role="'+role+'"] .pin-marker-shape');
+      if(!shape||getComputedStyle(shape).visibility!=="visible")return false;
+      const {width,height}=shape.getBoundingClientRect();
+      return Math.abs(width-30)<1&&Math.abs(height-40)<1;
+     },kind,{timeout:5000});
     }
     assert.equal(await rolePins("start").locator('[data-route-icon="arrow-up-right"][stroke="#fff"]').count(),1);
     assert.equal(await rolePins("target").locator('[data-route-icon="goal"][stroke="#fff"]').count(),1);
