@@ -204,18 +204,18 @@
       <button id="routeEnd" class="car-route-round car-route-end" type="button" data-pin-icon="route-off" aria-label="Routing beenden"></button>
       </div></fieldset>
       <div class="transit-time-fields">
-        <input id="transitDate" type="date" aria-label="Reisedatum">
-        <input id="transitClock" type="time" aria-label="Uhrzeit">
+        <label class="transit-field"><span id="transitDateLabel" aria-hidden="true"></span><input id="transitDate" type="date" aria-label="Reisedatum"></label>
+        <label class="transit-field"><span id="transitClockLabel" aria-hidden="true"></span><input id="transitClock" type="time" aria-label="Uhrzeit"></label>
       </div>
     </div>
     <div class="transit-controls">
-      <select id="transitWhen" aria-label="Zeitvorgabe"><option value="depart">Abfahrt ab</option><option value="arrive">Ankunft bis</option></select>
+      <label class="transit-field transit-select"><select id="transitWhen" aria-label="Zeitvorgabe"><option value="depart">Abfahrt ab</option><option value="arrive">Ankunft bis</option></select><span data-pin-icon="chevrons-up-down" aria-hidden="true"></span></label>
       <details id="transitPicker"><summary id="transitSelected">Verbindungen</summary><div id="transitAlternatives"></div></details>
       <button id="transitDb" class="car-route-round" type="button" aria-label="Bei der Bahn suchen">DB</button>
     </div>
-    <details class="transit-options"><summary>Optionen</summary><label>Verkehrsmittel <select id="transitVehicle">
+    <details class="transit-options"><summary>Optionen</summary><label>Verkehrsmittel <span class="transit-field transit-select"><select id="transitVehicle">
       <option value="all">Alle</option><option value="rail">Bahn</option><option value="bus">Bus</option>
-    </select></label></details>
+    </select><span data-pin-icon="chevrons-up-down" aria-hidden="true"></span></span></label></details>
     <p id="transitRisk" role="status"></p>
     <div class="car-route-row car-route-secondary-row">
       <fieldset class="car-route-group car-route-waypoints"><legend>Zwischenziele</legend><div class="car-route-modes">

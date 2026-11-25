@@ -529,6 +529,16 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      }finally{store.close();}
     },{id,after});
    }
+   const measureTransitControls=()=>page.locator("#carRoutePanel").evaluate(panel=>{
+    const rect=node=>node.getBoundingClientRect();
+    const bounds=rect(panel);
+    const list=[...panel.querySelectorAll(".car-route-transport .car-route-round")].filter(node=>node.getClientRects().length);
+    const buttons=list.map(rect).sort((a,b)=>a.left-b.left);
+    const fields=[...panel.querySelectorAll(".transit-time-fields .transit-field")].map(rect);
+    return {box:[bounds.x,bounds.y,bounds.width,bounds.height],gaps:buttons.slice(1).map((b,i)=>b.left-buttons[i].right),
+     dates:fields.map(b=>[b.x,b.y,b.right,b.height]),body:panel.scrollHeight,view:panel.clientHeight};
+   });
+   const carLayout=await measureTransitControls();
    const transitCalls=[];
    await page.route("https://api.transitous.org/api/v6/plan?**",async entry=>{
     const params=new URL(entry.request().url()).searchParams;
@@ -551,12 +561,22 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),false);
    assert.equal(await page.locator("#transitDate").isVisible(),true);
    assert.equal(await page.locator("#routeEnd").isVisible(),true);
+   const railLayout=await measureTransitControls();
+   assert.deepEqual(railLayout.box,carLayout.box,"identical dialog position and dimensions");
+   assert.ok(railLayout.gaps.every(gap=>gap>=carLayout.gaps[0]-.6),JSON.stringify([railLayout.gaps,carLayout.gaps]));
+   assert.ok(railLayout.dates[0][1]===railLayout.dates[1][1]&&railLayout.dates[0][2]<railLayout.dates[1][0]);
    await page.locator("#transitWhen").selectOption("arrive");
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
    await page.locator("#transitSelected").click();
    await page.locator("#transitAlternatives button").filter({has:page.locator(".transit-red")}).first().click();
-   await page.getByText(/Kritischer Umstieg in B/).waitFor();
+   await page.getByText(/Kritischer Umstieg in B.*5 min zwischen Ankunft und Abfahrt/).waitFor();
+   assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="transferTimeFactor"&&value==="2")));
+   assert.ok((await measureTransitControls()).body>(await measureTransitControls()).view);
+   await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
+   assert.ok(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop)>0);
+   assert.equal(await page.locator(".transit-leg-icon").count(),2);
+   assert.equal(await page.locator(".transit-leg-number").first().textContent(),"1");
    assert.match(await page.locator("#routeLegs").textContent(),/Gleis 2/);
    await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),true);

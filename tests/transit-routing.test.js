@@ -12,8 +12,11 @@ test("critical rail transfer stays red, tight tram transfer uses its own reserve
  const query={arriveBy:true,time:instant};
  const rail=journey([leg(0,"LONG_DISTANCE",-75,-35),leg(1,"WALK",-35,-33),leg(2,"LONG_DISTANCE",-30,0)]);
  assert.equal(assess(rail,query).quality,"red");
- assert.equal(assess(rail,query).critical.slack,3);
- const tram=journey([leg(0,"TRAM",-35,-20),leg(1,"SUBWAY",-15,0)]);
+ assert.equal(assess(rail,query).critical.available,5);
+ assert.equal(assess(rail,query).critical.reportedWalk,2);
+ assert.ok(assess(rail,query).critical.slack<0);
+ const platform={stopId:"station:one",track:"1"};
+ const tram=journey([leg(0,"TRAM",-35,-20,{to:platform}),leg(1,"SUBWAY",-15,0,{from:platform})]);
  assert.equal(assess(tram,query).quality,"green");
  assert.equal(assess({...tram,end:minutes(60)},query).quality,"yellow");
  assert.equal(assess({...tram,end:minutes(61)},query).quality,"red");
@@ -71,4 +74,48 @@ test("MOTIS adapter normalizes ferry and detailed leg data and preserves DB loca
  const hash=new URLSearchParams(new URL(dbUrl({name:"A",lat:48,lng:9},{name:"B",lat:49,lng:10},
   "2026-11-25T15:10",true)).hash.slice(1));
  assert.equal(hash.get("hd"),"2026-11-25T15:10:00");assert.equal(hash.get("hza"),"A");
+});
+
+test("Stuttgart station is calibrated to 20 minutes and a two-minute platform change is critical",()=>{
+ const query={arriveBy:true,time:instant};
+ const platform={stopId:"track8",name:"Stuttgart Hauptbahnhof",track:"8"};
+ const u=leg(0,"SUBWAY",-60,-40,{to:{name:"Hauptbahnhof (A.-Klett-Platz)"}});
+ const walk=leg(1,"WALK",-40,-36,{distanceMeters:245});
+ const train=leg(2,"LONG_DISTANCE",-34,0,{from:platform});
+ const risk=assess(journey([u,walk,train]),query).critical;
+ assert.deepEqual([risk.available,risk.reportedWalk,risk.walkMinutes,risk.slack],[6,4,20,-14]);
+ const tram=journey([leg(0,"TRAM",-30,-20,{to:platform}),
+  leg(1,"TRAM",-18,0,{from:{...platform,track:"4"}})]);
+ assert.equal(assess(tram,query).quality,"red");
+});
+test("when transfers are tight the search adds buffered itineraries and retains the original",async()=>{
+ const route=journey([leg(0,"LONG_DISTANCE",-60,-42),leg(1,"LONG_DISTANCE",-40,0)]);
+ const safer=journey([leg(0,"LONG_DISTANCE",-80,-70),leg(1,"LONG_DISTANCE",-40,0)]);
+ const input=[];
+ const search=new Search({calculate:async request=>{
+  input.push(request.query.moreTransferTime);return [request.query.moreTransferTime?safer:route];
+ }});
+ const result=await search.search({waypoints:[{},{}],guides:[],query:{time:minutes(-90),arriveBy:false},
+  signal:new AbortController().signal});
+ assert.deepEqual(input,[false,true]);
+ assert.equal(result.journeys.length,2);
+ assert.equal(result.journeys[result.selected].start,safer.start);
+ assert.ok(result.journeys.some(item=>item.quality==="red"));
+});
+test("normalizer preserves public service number and removes added transfer time from the walking baseline",async()=>{
+ const format=time=>new Date(time).toISOString();
+ const provider=new Provider({fetchImpl:async url=>{
+  const params=new URL(url).searchParams;
+  assert.equal(params.get("transferTimeFactor"),"2");
+  assert.equal(params.get("additionalTransferTime"),"5");
+  const walk={mode:"WALK",startTime:format(instant),endTime:format(minutes(13)),duration:780};
+  const train={mode:"LONG_DISTANCE",startTime:format(minutes(15)),endTime:format(minutes(38)),
+   category:{shortName:"ICE"},tripShortName:"9590",routeShortName:"82",headsign:"Paris Est",agencyName:"DB"};
+  return {ok:true,json:async()=>({itineraries:[{startTime:walk.startTime,endTime:train.endTime,legs:[walk,train]}]})};
+ }});
+ const [result]=await provider.calculate({waypoints:[{lat:48,lng:9},{lat:49,lng:10}],
+  query:{time:instant,arriveBy:false,moreTransferTime:true}});
+ assert.equal(result.legs[0].walkBaselineMinutes,4);
+ assert.equal(result.legs[1].line,"ICE 9590");
+ assert.equal(result.legs[1].operator,"DB");
 });

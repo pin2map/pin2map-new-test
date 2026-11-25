@@ -148,6 +148,16 @@ jobs:
               });
               if(!outcome.count)throw new Error('Transitous returned no usable connection');
               console.log('PASS Transitous through the published browser adapter',JSON.stringify(outcome));
+              const detail=await page.evaluate(async()=>{
+                const signal=AbortSignal.timeout(35000);
+                const provider=new window.Pin2MapTransitRoutingProvider({fetchImpl:window.fetch.bind(window)});
+                const waypoints=[{lat:48.8401,lng:2.3797},{lat:48.8657,lng:2.3345}];
+                const query={time:Date.parse("2026-11-26T05:14:00Z"),arriveBy:false,vehicle:"all",moreTransferTime:true};
+                const routes=await provider.calculate({waypoints,query,signal});
+                return {count:routes.length,modes:[...new Set(routes.flatMap(journey=>
+                  journey.legs.filter(leg=>leg.mode!=="WALK").map(leg=>leg.mode+" "+(leg.line||"ohne Linienangabe"))))]};
+              }).catch(error=>({status:error.message}));
+              console.log('Paris Bercy to Pyramides with increased transfer time',JSON.stringify(detail));
             }finally{await browser.close();}
           })().catch(error=>{console.error(error);process.exitCode=1;});
           JS

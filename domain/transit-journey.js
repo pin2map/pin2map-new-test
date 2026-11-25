@@ -6,15 +6,35 @@
   ["TRAM","SUBWAY","METRO"].includes(mode)?3:8;
  const formatter=new Intl.DateTimeFormat("sv-SE",{year:"numeric",month:"2-digit",day:"2-digit"});
  const day=time=>formatter.format(new Date(time));
+ const paddedTransfer={factor:2,additional:5};
+ const localRail=mode=>["TRAM","SUBWAY","METRO"].includes(mode);
+ const longRail=mode=>["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"].includes(mode);
+ function realisticWalk(previous,next,legs){
+  const origin=previous.to,destination=next.from;
+  const matchingPlace=origin?.stopId&&origin.stopId===destination?.stopId;
+  const matchingPlatform=matchingPlace&&origin.track&&origin.track===destination.track;
+  const reported=legs.reduce((sum,leg)=>sum+(leg.walkBaselineMinutes??leg.durationSeconds/60),0);
+  const distance=legs.reduce((sum,leg)=>sum+leg.distanceMeters,0);
+  const samePlatform=matchingPlatform&&reported===0;
+  const stuttgart=localRail(previous.mode)&&longRail(next.mode)&&(
+   /klett.platz/i.test(origin?.name||"")||
+   (Math.abs(origin?.lat-48.784)<.006&&Math.abs(origin?.lon-9.183)<.010&&
+    Math.abs(destination?.lat-48.784)<.006&&Math.abs(destination?.lon-9.183)<.010));
+  const minimum=stuttgart?20:longRail(next.mode)?12:samePlatform?2:5;
+  return {reported,minutes:Math.ceil(Math.max(minimum,reported*paddedTransfer.factor,distance/54))};
+ }
  function assess(journey,query){
   const transfers=[];
   let previous;
   for(const leg of journey.legs){
    if(walking(leg.mode))continue;
    if(previous&&!leg.stayOnBoard&&(!leg.tripId||leg.tripId!==previous.tripId)){
-    const slack=(leg.start-previous.end)/60000-journey.legs.slice(previous.index+1,leg.index)
-     .reduce((sum,walk)=>sum+walk.durationSeconds/60,0);
-    transfers.push({leg,slack,critical:slack<reserve(previous.mode)});
+    const available=(leg.start-previous.end)/60000;
+    const walk=realisticWalk(previous,leg,journey.legs.slice(previous.index+1,leg.index).filter(item=>walking(item.mode)));
+    const slack=available-walk.minutes;
+    const safetyReserve=reserve(previous.mode);
+    transfers.push({leg,slack,available,walkMinutes:walk.minutes,reportedWalk:walk.reported,
+     reserve:safetyReserve,critical:slack<safetyReserve});
    }
    previous=leg;
   }
@@ -34,7 +54,7 @@
    soid:place(from),zoid:place(to),sot:"ADR",zot:"ADR",hd:local+":00",hza:arriveBy?"A":"D",ar:"false",s:"true",d:"false"});
   return "https://www.bahn.de/buchung/fahrplan/suche#"+params;
  }
- const api={assess,walking,dbUrl};
+ const api={assess,walking,dbUrl,paddedTransfer};
  root.Pin2MapTransitJourney=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

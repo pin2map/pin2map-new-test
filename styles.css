@@ -3282,18 +3282,31 @@ body.pin-open #app #routeToggleHolder{display:none}
 #settingsPanel #settingsResetData{margin-top:6px}
 
 #app :is(.transit-time-fields,.transit-controls,.transit-options),#app #transitRisk{display:none}
-#app .transit-route-active{height:auto;overflow:auto;overscroll-behavior:contain}
-#app .transit-route-active .car-route-primary{grid-template-columns:auto minmax(0,1fr);align-items:end;position:relative}
-#app .transit-route-active .transit-time-fields{display:grid;gap:3px}
+#app .transit-route-active{overflow:auto;overscroll-behavior:contain;scrollbar-width:none}
+#app .transit-route-active::-webkit-scrollbar{display:none}
+#app .transit-route-active>*{flex-shrink:0}
+#app .transit-route-active .car-route-primary{grid-template-columns:calc(50% + 7px) minmax(0,1fr);align-items:center;position:relative}
+#app .transit-route-active .transit-time-fields{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(0,1fr);gap:4px}
 #app .transit-route-active .transit-controls{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:5px;align-items:start}
 #app .transit-route-active .transit-options{display:block}
 #app .transit-route-active #transitRisk:not(:empty){display:block;margin:0;color:#962831;font-size:12px}
 #app .transit-route-active .car-route-secondary-row,
 #app .transit-route-active:not(.transit-mode-picker) [data-route-mode]:not([data-route-mode="transit"]){display:none}
 #app .transit-route-active .car-route-legs{overflow:visible;flex:none}
-#app .transit-route-active .car-route-group{padding-inline:5px}
-#app .transit-route-active .car-route-modes{justify-content:start}
-#app .transit-route-active input,#app .transit-route-active select{width:100%;min-width:0;font-size:13px;margin:0}
+#app .transit-route-active .transit-field{
+ display:flex;align-items:center;min-width:0;min-height:var(--route-control-size);padding:0 6px;
+ position:relative;box-sizing:border-box;white-space:nowrap;background:#fff;color:#1d2834;
+ border:1px solid #c4cbd3;border-radius:8px;font:inherit;font-size:clamp(11px,3vw,13px)
+}
+#app .transit-time-fields .transit-field{justify-content:center;font-variant-numeric:tabular-nums}
+#app .transit-field:focus-within{outline:2px solid #1764bf;outline-offset:-2px}
+#app .transit-field input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+#app .transit-select{display:inline-flex;padding:0}
+#app .transit-field select{appearance:none;background:transparent;color:inherit;font:inherit;border:0;
+ width:100%;min-width:0;min-height:var(--route-control-size);padding:0 21px 0 6px;margin:0;cursor:pointer}
+#app .transit-select>span{position:absolute;right:5px;pointer-events:none}
+#app .transit-select .p2m-lucide{height:12px;width:12px}
+@media(max-width:360px){#app .transit-time-fields .transit-field{padding-inline:2px;font-size:10px}}
 #app .transit-mode-picker .car-route-transport{position:absolute;inset:0 auto 0 0;z-index:3;background:#fff}
 #app .transit-mode-picker [data-route-mode="transit"]{order:-1}
 #app #transitPicker{min-width:0;border-radius:8px;border:1px solid #c7d0db;background:#fff}
@@ -3304,5 +3317,18 @@ body.pin-open #app #routeToggleHolder{display:none}
 #app .transit-choice{display:inline-flex;align-items:center;gap:4px}
 #app .transit-choice svg{width:15px;height:15px;flex:none}
 #app .transit-green{color:#157447} #app .transit-yellow{color:#946300} #app .transit-red{color:#ba2432}
-#app .transit-leg strong,#app .transit-leg span>span{display:block}
+#app .transit-route-active .transit-leg{
+ display:grid;grid-template-columns:1.75em minmax(4.9em,max-content) 1.25em minmax(0,1fr);
+ grid-template-areas:"number depart icon title" ". duration . origin" ". arrive arrow target";
+ gap:3px 7px;padding:7px 2px;align-items:start
+}
+#app .transit-leg-number{grid-area:number;border:1px solid var(--leg-color);color:var(--leg-color);
+ border-radius:50%;width:1.65em;height:1.65em;display:grid;place-items:center;line-height:1;font-weight:750}
+#app .transit-leg-walk .transit-leg-number{border-color:transparent;color:#68727d}
+#app .transit-leg-depart{grid-area:depart} #app .transit-leg-arrive{grid-area:arrive}
+#app .transit-leg-duration{grid-area:duration;color:#657080}
+#app .transit-leg-icon{grid-area:icon;color:var(--leg-color)}
+#app .transit-leg-arrow{grid-area:arrow;color:#657080}
+#app .transit-leg svg{width:1.2em;height:1.2em}
+#app .transit-leg-title{grid-area:title} #app .transit-leg-from{grid-area:origin} #app .transit-leg-to{grid-area:target}
 #app #transitDb{color:#b8182d;font-weight:750}

@@ -13,11 +13,11 @@
  class TransitRouteSearch{
   constructor({calculate,stopNear}){Object.assign(this,{calculate,stopNear});}
   async search({waypoints,guides,query,signal}){
-   const search=(arriveBy,time,via)=>this.calculate({waypoints,query:{...query,arriveBy,time},via,signal});
-   const window=async via=>{
-    const primary=await search(query.arriveBy,query.time,via);
+   const search=(arriveBy,time,via,moreTransferTime)=>this.calculate({waypoints,query:{...query,arriveBy,time,moreTransferTime},via,signal});
+   const window=async (via,moreTransferTime=false)=>{
+    const primary=await search(query.arriveBy,query.time,via,moreTransferTime);
     if(!query.arriveBy)return primary;
-    try{return [...primary,...await search(true,query.time+hour,via)];}
+    try{return [...primary,...await search(true,query.time+hour,via,moreTransferTime)];}
     catch(error){if(signal.aborted||!primary.length)throw error;return primary;}
    };
    const direct=await window([]);
@@ -32,8 +32,14 @@
      }
     }catch(error){if(signal.aborted)throw error;}
    }
+   let longerTransfers=[];
+   const initial=[...direct,...guided];
+   if(initial.some(item=>assess(item,query).critical)){
+    try{longerTransfers=await window([],true);}
+    catch(error){if(signal.aborted)throw error;}
+   }
    const seen=new Set();
-   const result=[...direct,...guided].filter(item=>{
+   const result=[...initial,...longerTransfers].filter(item=>{
     const key=identity(item);
     if(seen.has(key))return false;
     seen.add(key);return true;

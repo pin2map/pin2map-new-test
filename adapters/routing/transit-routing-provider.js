@@ -4,6 +4,20 @@
   (typeof module!=="undefined"?require("./car-routing-provider.js"):{});
  const {distance:groundDistanceMeters}=root.Pin2MapActiveCarRoute||
   (typeof module!=="undefined"?require("../../domain/active-car-route.js"):{});
+ const {walking,paddedTransfer}=root.Pin2MapTransitJourney||
+  (typeof module!=="undefined"?require("../../domain/transit-journey.js"):{});
+ function serviceName(leg){
+  const line=leg.routeShortName||leg.routeLongName;
+  const trip=leg.tripShortName;
+  const label=leg.displayName;
+  if(label&&(!line||label.includes(line))&&(!trip||label.includes(trip)))return label;
+  if(line&&trip&&!line.includes(trip)){
+   const category=leg.category?.shortName||leg.category?.name;
+   const train=["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"].includes(leg.mode);
+   if(train&&category)return trip.startsWith(category)?trip:category+" "+trip;
+  }
+  return line||label||trip||null;
+ }
  const location=point=>point.stopId||point.lat+","+point.lng;
  const coordinate=place=>[place?.lon,place?.lat];
  function geometry(leg){
@@ -14,7 +28,7 @@
    return {type:"LineString",coordinates};
   }catch{return null;}
  }
- function normalize(itinerary){
+ function normalize(itinerary,padded){
   if(!itinerary?.legs?.length)return null;
   const legs=itinerary.legs.map((leg,index)=>{
    const start=Date.parse(leg.startTime),end=Date.parse(leg.endTime);
@@ -24,8 +38,10 @@
     Number.isFinite(leg.distance)&&leg.distance>0?leg.distance:null;
    return {index,mode:leg.mode,geometry:shape,start,end,durationSeconds:(end-start)/1000,
     distanceMeters:distance??0,measured:distance!==null,tripId:leg.tripId,stayOnBoard:leg.interlineWithPreviousLeg,
+    walkBaselineMinutes:walking(leg.mode)&&padded&&Number.isFinite(leg.duration)?
+      Math.max(0,(leg.duration/60-paddedTransfer.additional)/paddedTransfer.factor):undefined,
     cancelled:leg.cancelled,from:leg.from,to:leg.to,ferry:leg.mode==="FERRY",
-    line:leg.routeShortName||leg.displayName||leg.routeLongName,headsign:leg.headsign};
+    line:serviceName(leg),headsign:leg.headsign||leg.tripTo?.name,operator:leg.agencyName};
   });
   if(legs.some(leg=>!Number.isFinite(leg.start)||!Number.isFinite(leg.end)||leg.end<leg.start||leg.cancelled))return null;
   const start=Date.parse(itinerary.startTime),end=Date.parse(itinerary.endTime);
@@ -45,9 +61,10 @@
     time:new Date(query.time).toISOString(),arriveBy:String(query.arriveBy),searchWindow:3600,
     numItineraries:5,maxItineraries:12,detailedLegs:true,detailedTransfers:true,directModes:"",
     transitModes:({all:"RAIL,BUS,COACH,TRAM,FERRY,FUNICULAR,AERIAL_LIFT",rail:"RAIL",bus:"BUS,COACH"})[query.vehicle||"all"],
+    ...(query.moreTransferTime?{transferTimeFactor:paddedTransfer.factor,additionalTransferTime:paddedTransfer.additional}:{}),
     ...(via.length?{via:via.join(",")}:{})},signal);
    if(!Array.isArray(data.itineraries))throw new Error("Ungültige Fahrplanauskunft");
-   return data.itineraries.map(normalize).filter(Boolean);
+   return data.itineraries.map(item=>normalize(item,query.moreTransferTime)).filter(Boolean);
   }
   async stopNear(flag,signal){
    const radius=Math.max(1000,Math.min(25000,flag.radiusMeters||5000));

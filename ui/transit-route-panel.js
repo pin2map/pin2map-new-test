@@ -12,6 +12,16 @@
   const minutes=Math.round(seconds/60),hours=Math.floor(minutes/60);
   return (hours?hours+" h ":"")+minutes%60+" min";
  }
+ const displayDate=new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+ const transport={
+  WALK:["footprints","Fußweg"],FOOT:["footprints","Fußweg"],
+  TRAM:["tram-front","Straßenbahn"],SUBWAY:["tram-front","U-Bahn"],METRO:["tram-front","Métro"],
+  BUS:["bus","Bus"],COACH:["bus","Fernbus"],FERRY:["ship","Fähre"],
+  HIGHSPEED_RAIL:["train-high-speed","Fernzug"],LONG_DISTANCE:["train-high-speed","Fernzug"],
+  NIGHT_RAIL:["train-front","Nachtzug"],SUBURBAN:["train-front","S-Bahn"],
+  REGIONAL_RAIL:["train-front","Regionalzug"],REGIONAL_FAST_RAIL:["train-front","Regionalzug"],
+  RAIL:["train-front","Zug"],FUNICULAR:["train-front","Standseilbahn"],AERIAL_LIFT:["cable-car","Seilbahn"]
+ };
  const quality={green:"Günstig",yellow:"Verspätete Ankunft",red:"Kritisch oder außerhalb des Zeitfensters"};
  class TransitRoutePanel{
   constructor({document:doc,getElement,icons,getPin,onQuery,onSelect,onLegSelect,open,colors}){
@@ -51,6 +61,8 @@
    const selected=journeys[snapshot.selectedVariant];
    this.el("transitDate").value=date.format(query.time);
    this.el("transitClock").value=clock.format(query.time);
+   this.el("transitDateLabel").textContent=displayDate.format(query.time);
+   this.el("transitClockLabel").textContent=clock.format(query.time);
    this.el("transitWhen").value=query.arriveBy?"arrive":"depart";
    this.el("transitVehicle").value=query.vehicle;
    const status=snapshot.loading?"Verbindungen werden gesucht …":snapshot.failed?"Fahrplanauskunft nicht erreichbar":
@@ -72,8 +84,15 @@
    this.el("transitPicker").classList.toggle("transit-picker-empty",!journeys.length);
    if(!journeys.length)this.el("transitPicker").open=false;
    const note=[];
-   if(selected?.critical)note.push("Kritischer Umstieg in "+(selected.critical.leg.from?.name||"der Haltestelle")+
-    " · "+Math.round(selected.critical.slack)+" min Puffer");
+   if(selected?.critical){
+    const {leg,available,walkMinutes,reportedWalk,slack,reserve}=selected.critical;
+    const planned=reportedWalk>0?" (Fahrplanauskunft: "+Math.round(reportedWalk)+" min)":"";
+    const remaining=slack<0?Math.ceil(-slack)+" min fehlen bereits für den Umstiegsweg":
+     Math.floor(slack)+" min Reserve übrig, empfohlen sind "+reserve+" min";
+    note.push("Kritischer Umstieg in "+(leg.from?.name||"der Haltestelle")+" – "+
+     Math.floor(available)+" min zwischen Ankunft und Abfahrt, etwa "+walkMinutes+
+     " min für Weg und Einstieg"+planned+". "+remaining+".");
+   }
    if(selected?.late)note.push(query.arriveBy?"Ankunft außerhalb des Zeitfensters von ±60 Minuten":"Ankunft an einem anderen Tag");
    if(recovery)note.push(recovery.unknown?"Folgeanschluss nicht ermittelt":
     "Bei verpasstem Anschluss mögliche Ankunft "+time(recovery.end,query.time)+(recovery.late?" · nach Zielzeit":""));
@@ -82,15 +101,25 @@
    list.replaceChildren(...snapshot.legs.map((leg,index)=>{
     const button=this.doc.createElement("button");button.type="button";
     button.className="car-route-leg transit-leg";button.dataset.leg=String(index);
-    const dot=this.doc.createElement("span");dot.className="car-route-dot";dot.style.background=this.colors[index%this.colors.length];
-    const body=this.doc.createElement("span");
-    const title=this.doc.createElement("strong");
-    title.textContent=[walking(leg.mode)?"Fußweg":leg.ferry?"Fähre":leg.line||leg.mode,
-     leg.headsign?"Richtung "+leg.headsign:"",duration(leg.durationSeconds)].filter(Boolean).join(" · ");
-    const stop=place=>[place?.name,place?.track?"Gleis "+place.track:""].filter(Boolean).join(" · ");
-    const times=this.doc.createElement("span");
-    times.textContent=time(leg.start,selected.start)+" "+stop(leg.from)+" → "+time(leg.end,selected.start)+" "+stop(leg.to);
-    body.append(title,times);button.append(dot,body);
+    button.style.setProperty("--leg-color",this.colors[index%this.colors.length]);
+    if(walking(leg.mode))button.classList.add("transit-leg-walk");
+    const [icon,kind]=transport[leg.mode]||["route","Verkehrsmittel nicht angegeben"];
+    const station=place=>[
+     ({START:"Start",END:"Ziel"})[place?.name]||place?.name||"Haltestelle nicht angegeben",
+     place?.track?"Gleis "+place.track:""].filter(Boolean).join(" · ");
+    const text=(slot,value,tag="span")=>{
+     const item=this.doc.createElement(tag);item.className=slot;item.textContent=value;return item;
+    };
+    const glyph=this.icons.svg(icon,this.doc);glyph.classList.add("transit-leg-icon");
+    const destination=this.icons.svg("arrow-right",this.doc);destination.classList.add("transit-leg-arrow");
+    const line=walking(leg.mode)?kind:leg.line?kind+" "+leg.line:
+     [kind,leg.operator,"Linie nicht angegeben"].filter(Boolean).join(" · ");
+    const title=line+(leg.headsign?" · Ri. "+leg.headsign:"");
+    button.append(text("transit-leg-number",index+1),
+     text("transit-leg-depart",time(leg.start,selected.start),"strong"),glyph,
+     text("transit-leg-title",title,"strong"),text("transit-leg-duration",duration(leg.durationSeconds)),
+     text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(leg.end,selected.start),"strong"),
+     destination,text("transit-leg-to",station(leg.to)));
     button.disabled=!leg.geometry;
     button.addEventListener("click",()=>this.onLegSelect(index));return button;
    }));
