@@ -2,7 +2,7 @@
 const {test}=require("node:test"),assert=require("node:assert/strict");
 const Settings=require("../ui/settings-tabs-controller.js");
 const tabNames=["General","Interface","Services","Colors","Routing"];
-function fixture({version="pin2map-preview-v319",estimated={usage:123456},worker=true}={}){
+function fixture({version="pin2map-preview-v319",rows=[{label:"Pins",bytes:2048,entries:2}],confirmed=true,worker=true}={}){
   const elements=new Map(),calls=[],pending=[];
   function element(id){
     if(!elements.has(id)){
@@ -11,6 +11,7 @@ function fixture({version="pin2map-preview-v319",estimated={usage:123456},worker
       elements.set(id,{id,classes,listeners,tabIndex:0,
         classList:{toggle:(name,enabled)=>{enabled?classes.add(name):classes.delete(name);},
           contains:name=>classes.has(name)},
+        replaceChildren:(...children)=>{elements.get(id).children=children;},
         setAttribute:(name,value)=>calls.push(["attribute",id,name,value]),
         addEventListener:(type,handler)=>listeners.set(type,handler),
         removeEventListener:(type,handler)=>{if(listeners.get(type)===handler)listeners.delete(type);}
@@ -26,16 +27,20 @@ function fixture({version="pin2map-preview-v319",estimated={usage:123456},worker
     getWorkerController:()=>worker?{active:true}:undefined,
     getMessageChannel:()=>function MessageChannel(){},
     fetchWorker:async(url,options)=>{calls.push(["fetch",url,options]);return {ok:true,text:async()=>version};},
-    estimateStorage:async()=>{calls.push(["storage"]);return estimated;}
+    document:{createElement:tag=>({tag,append(...children){this.children=children;}})},
+    inspectStorage:async()=>{calls.push(["storage"]);if(rows===null)throw new Error("offline");return rows;},
+    resetStorage:async()=>{calls.push(["reset"]);},
+    confirmReset:()=>confirmed,
+    reload:()=>calls.push(["reload"])
   });
   return {x,element,calls,pending};
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 test("bind initializes general tab, ARIA attributes, keyboard order and async storage values",async()=>{
-  const f=fixture({version:"pin2map-preview-v319",estimated:{usage:2048}});
+  const f=fixture({version:"pin2map-preview-v319"});
   f.x.bind();f.x.bind();await settle();
   assert.equal(f.element("settingsProductVersion").textContent,"v319");
-  assert.equal(f.element("settingsStorageUsage").textContent,"ca. 2 KB (gesamter lokaler Speicher)");
+  assert.deepEqual(f.element("settingsStorageDetails").children[0].children.map(node=>node.textContent),["Pins","2 KiB · 2"]);
   for(const name of tabNames){
     assert.equal(f.element("settings"+name+"Tab").tabIndex,name==="General"?0:-1);
     assert.equal(f.element("settings"+name+"Content").classList.contains("hidden"),name!=="General");
@@ -59,19 +64,19 @@ test("switching settings tabs renders colors only on Colors and reopens General"
   assert.ok(f.calls.some(x=>x[0]==="version"));
 });
 test("version fallback fetch uses no-store and worker response is preferred",async()=>{
-  const f=fixture({worker:false,version:"pin2map-new-v319",estimated:{usageDetails:{caches:1048576},usage:3000000}});
+  const f=fixture({worker:false,version:"pin2map-new-v319",rows:[{label:"Kacheln",bytes:1048576,entries:2,unknown:1}]});
   f.x.bind();await settle();
   assert.equal(f.element("settingsProductVersion").textContent,"v319");
-  assert.equal(f.element("settingsStorageUsage").textContent,"ca. 1 MB");
+  assert.match(f.element("settingsStorageDetails").children[0].children[1].textContent,/1 MiB .*1 ohne messbare Größe/);
   assert.deepEqual(f.calls.filter(x=>x[0]==="fetch").map(x=>x[2]),[{cache:"no-store"}]);
   assert.match(f.calls.find(x=>x[0]==="fetch")[1],/^\.\/sw\.js\?version=\d+$/);
   assert.ok(f.calls.some(x=>x[0]==="parse"));
 });
 test("unavailable version or storage reports not available without interfering with other tabs",async()=>{
-  const f=fixture({worker:false,version:"unmatched",estimated:null});
+  const f=fixture({worker:false,version:"unmatched",rows:null});
   f.x.bind();await settle();
   assert.equal(f.element("settingsProductVersion").textContent,"nicht verfügbar");
-  assert.equal(f.element("settingsStorageUsage").textContent,"nicht verfügbar");
+  assert.equal(f.element("settingsStorageUsage").textContent,"Details derzeit nicht verfügbar.");
   f.element("settingsServicesTab").listeners.get("click")();
   assert.equal(f.element("settingsServicesContent").classList.contains("hidden"),false);
 });
@@ -89,4 +94,13 @@ test("offline shell and boot order include isolated settings tabs controller",()
   assert.ok(html.indexOf('src="./ui/settings-tabs-controller.js"')<html.indexOf('src="./app.js"'));
   assert.match(app,/settingsTabs\.bind\(\)/);
   assert.match(sw,/"\.\/ui\/settings-tabs-controller\.js"/);
+});
+
+test("only a confirmed reset clears storage and then relaunches the app",async()=>{
+  const declined=fixture({confirmed:false});declined.x.bind();await settle();
+  await declined.element("settingsResetData").listeners.get("click")();
+  assert.equal(declined.calls.some(call=>call[0]==="reset"),false);
+  const accepted=fixture();accepted.x.bind();await settle();
+  await accepted.element("settingsResetData").listeners.get("click")();
+  assert.deepEqual(accepted.calls.slice(-2),[["reset"],["reload"]]);
 });

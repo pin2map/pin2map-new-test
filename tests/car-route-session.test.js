@@ -293,3 +293,24 @@ test("alternatives retain hard stops and selection changes the displayed itinera
  assert.equal(snapshot.durationSeconds,140);
  assert.equal(snapshot.ascentMeters,20);
 });
+
+test("active-travel cache reuses matching legs and invalidates a moved pin's coordinates",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");plan.addWaypoint("w");
+ const pins={a:{lat:48,lng:9},w:{lat:48,lng:9.5},z:{lat:48,lng:10}};
+ const requests=[];
+ const session=new CarRouteSession({plan,getPin:id=>pins[id],onChange:()=>{},onError:assert.fail,
+  calculate:async({waypoints})=>{
+   const coordinates=waypoints.map(({lng,lat})=>[lng,lat]);
+   requests.push(coordinates);
+   return {geometry:{coordinates},distanceMeters:1000,durationSeconds:60};
+  }});
+ session.mode="bicycle";
+ await session.recalculate();
+ await session.recalculate();
+ assert.equal(requests.length,2);
+ pins.z={lat:49,lng:10};
+ await session.pinMoved("z");
+ assert.equal(requests.length,3);
+ assert.deepEqual(requests.at(-1),[[9.5,48],[10,49]]);
+});

@@ -5,14 +5,14 @@
 (function(root){
  const profileMenus={car:"routeProfileMenu",bicycle:"routeBikeMenu",pedestrian:"routeWalkMenu"};
  const fixedMenus={routeTimes:"routeTimesMenu",routeWaypoints:"routeWaypointMenu"};
- const menuIds=[...Object.values(profileMenus),...Object.values(fixedMenus),"routeCharacterMenu"];
+ const menuIds=[...Object.values(profileMenus),...Object.values(fixedMenus),"routeVariants"];
  const fmtDistance=m=>m<1000?Math.round(m)+" m":Math.round(m/1000)+" km";
  const variantDistance=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1});
  const fmtTime=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return (h?h+" h ":"")+ (m%60)+" min";};
  class CarRoutePanel {
-  constructor({document:doc,getElement,icons,getPin,onMode,onActiveProfile,onCharacter,onVariantSelect,variantColors,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
+  constructor({document:doc,getElement,icons,getPin,onMode,onActiveProfile,onVariantSelect,variantColors,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
    if(!doc||!getElement||!icons)throw new TypeError("Route panel UI dependencies required");
-   Object.assign(this,{doc,el:getElement,icons,getPin,onMode,onActiveProfile,onCharacter,onVariantSelect,variantColors,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
+   Object.assign(this,{doc,el:getElement,icons,getPin,onMode,onActiveProfile,onVariantSelect,variantColors,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
    this.snapshot=null;this.visible=true;
   }
   bind(){
@@ -31,13 +31,11 @@
    this.el("routeSettings").addEventListener("click",()=>
     this.toggleSubmenu("routeSettings",profileMenus[this.snapshot.mode]));
    this.el("routeTolls").addEventListener("click",()=>{
-    if(this.snapshot.mode==="bicycle")this.toggleSubmenu("routeTolls","routeCharacterMenu");
+    if(this.snapshot.mode!=="car")this.toggleSubmenu("routeTolls","routeVariants");
     else this.onToggle("tolls");
    });
    for(const button of this.doc.querySelectorAll("[data-active-profile]"))
     button.addEventListener("click",()=>{this.closeMenus();this.onActiveProfile(button.dataset.activeProfile);});
-   for(const button of this.doc.querySelectorAll("[data-route-character]"))
-    button.addEventListener("click",()=>{this.closeMenus();this.onCharacter(button.dataset.routeCharacter);});
    for(const b of this.el("routeProfileMenu").querySelectorAll("[data-car-profile]"))
     b.addEventListener("click",()=>{this.onOptions({profile:b.dataset.carProfile});this.closeMenus();});
    for(const b of this.el("routeTimesMenu").querySelectorAll("[data-time-profile]"))
@@ -130,21 +128,19 @@
    const menu=profileMenus[snapshot.mode],settings=this.el("routeSettings"),tolls=this.el("routeTolls");
    settings.setAttribute("aria-controls",menu);
    const bicycle=snapshot.mode==="bicycle",car=snapshot.mode==="car";
-   tolls.disabled=!car&&!bicycle;
-   const tollIcon=bicycle?"sliders-horizontal":"circle-euro";
+   tolls.disabled=!car&&snapshot.variants.length<2;
+   const tollIcon=car?"circle-euro":"route";
    if(tolls.dataset.pinIcon!==tollIcon)this.icons.mount(tolls,tollIcon);
-   if(bicycle){
+   if(!car){
     tolls.removeAttribute("aria-pressed");
-    tolls.setAttribute("aria-controls","routeCharacterMenu");
-    tolls.setAttribute("aria-expanded",String(!this.el("routeCharacterMenu").classList.contains("hidden")));
-    tolls.setAttribute("aria-label","Streckencharakter");
+    tolls.setAttribute("aria-controls","routeVariants");
+    tolls.setAttribute("aria-expanded",String(!this.el("routeVariants").classList.contains("hidden")));
+    tolls.setAttribute("aria-label","Routenalternativen auswählen");
    }else{
     tolls.removeAttribute("aria-expanded");tolls.removeAttribute("aria-controls");
     tolls.setAttribute("aria-pressed",String(car&&snapshot.avoidTolls));
     tolls.setAttribute("aria-label","Ohne Maut ein- oder ausschalten");
    }
-   for(const button of this.el("routeCharacterMenu").querySelectorAll("[data-route-character]"))
-    button.setAttribute("aria-pressed",String(snapshot.character===button.dataset.routeCharacter));
    for(const button of this.el(menu).querySelectorAll("button")){
     const active=car?button.dataset.carProfile===snapshot.profile:button.dataset.activeProfile===snapshot.activeProfile;
     button.setAttribute("aria-pressed",String(active));
@@ -193,12 +189,12 @@
   }
   renderVariants(snapshot){
    const list=this.el("routeVariants");
-   list.classList.toggle("hidden",!snapshot.variants.length);
+   if(snapshot.mode!=="car"&&!snapshot.variants.length){list.classList.add("hidden");this.el("routeTolls").setAttribute("aria-expanded","false");}
    list.replaceChildren(...snapshot.variants.map((variant,index)=>{
     const button=this.doc.createElement("button");button.type="button";
     button.className="car-route-variant-choice";
     button.setAttribute("aria-pressed",String(index===snapshot.selectedVariant));
-    button.addEventListener("click",()=>this.onVariantSelect(index));
+    button.addEventListener("click",()=>{this.closeMenus();this.onVariantSelect(index);this.el("routeTolls").focus();});
     const dot=this.doc.createElement("span");dot.className="car-route-dot";
     dot.style.background=this.variantColors[index];dot.setAttribute("aria-hidden","true");
     const distance=variant.distanceMeters<1000?fmtDistance(variant.distanceMeters):

@@ -30,10 +30,10 @@
   return (centered.length?centered:candidates).reduce((best,rect)=>!best||compare(rect,best)>0?rect:best,null);
  }
  class CarRouteMapView {
-  constructor({mapPort,onLineClick,onVariantSelect=null,onGuideRemoveRequest=null,confirmRemove=null,getLayout=null,scheduleFrame=null}){
+  constructor({mapPort,onLineClick,onGuideRemoveRequest=null,confirmRemove=null,getLayout=null,scheduleFrame=null}){
    if(!mapPort||typeof onLineClick!=="function")
     throw new TypeError("Route map ports required");
-   this.map=mapPort;this.onLineClick=onLineClick;this.onVariantSelect=onVariantSelect;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
+   this.map=mapPort;this.onLineClick=onLineClick;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
    this.getLayout=getLayout;this.scheduleFrame=scheduleFrame;this.coordinates=[];this.geometries=[];
    this.map.onViewportResize?.(()=>this.scheduleFit());
   }
@@ -42,7 +42,7 @@
    this.clear();
    this.geometries=snapshot?.legs.map(leg=>leg.geometry)||[];
    const variants=snapshot?.variants||[];
-   const geometries=variants.length?variants.flatMap(variant=>variant.geometries):this.geometries;
+   const geometries=this.geometries;
    const previous=this.fitGeometries||[];
    const changed=geometries.length!==previous.length||geometries.some((geometry,i)=>geometry!==previous[i]);
    if(changed){
@@ -66,16 +66,6 @@
     draw(leg.geometry,{color:variants.length?VARIANT_COLORS[chosen]:COLORS[index%COLORS.length],
      weight:variants.length?7:5,opacity:.93,ferry:leg.ferry,variant:variants.length?chosen:undefined},
     ()=>this.onLineClick(index));
-   });
-   const visible=new Set(this.geometries);
-   variants.forEach((variant,index)=>{
-    if(index===chosen)return;
-    variant.geometries.forEach((geometry,leg)=>{
-     if(visible.has(geometry))return;
-     visible.add(geometry);
-     draw(geometry,{color:VARIANT_COLORS[index],weight:4,opacity:.76,
-      ferry:variant.ferries[leg],variant:index},()=>this.onVariantSelect?.(index));
-    });
    });
    for(const marker of snapshot.timeMarkers||[])this.handles.push(this.map.createRouteTimeMarker(marker));
    if(changed)this.scheduleFit();

@@ -416,24 +416,27 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.getByRole("button",{name:"Fahrrad",exact:true}).getAttribute("aria-pressed"),"true");
    assert.equal(await page.locator("#routeModeIcon").getAttribute("data-pin-icon"),"bike");
    assert.equal(await page.locator("#routeTolls").isDisabled(),false);
-   assert.equal(await page.locator("#routeTolls").getAttribute("data-pin-icon"),"sliders-horizontal");
+   assert.equal(await page.locator("#routeTolls").getAttribute("data-pin-icon"),"route");
    assert.equal(cycleRequests.length,3);
    assert.ok(cycleRequests.every(request=>request.costing==="bicycle"));
    assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
    const variants=page.locator("#routeVariants button");
    assert.ok(await variants.count()>=2);
    assert.match(await variants.first().textContent(),/48 Hm/);
-   await page.locator("#map path.p2m-route-variant-1").first().dispatchEvent("click");
+   assert.equal(await variants.first().isVisible(),false);
+   await page.locator("#map path.p2m-route-variant-0").waitFor();
+   assert.equal(await page.locator("#map path.p2m-route-variant-1").count(),0);
+   await page.locator("#routeTolls").click();
+   await variants.nth(1).click();
+   await page.locator("#map path.p2m-route-variant-1").waitFor();
+   assert.equal(await page.locator("#map path.p2m-route-variant-0").count(),0);
    assert.equal(await variants.nth(1).getAttribute("aria-pressed"),"true");
+   assert.equal(cycleRequests.length,3,"alternative selection uses already returned routes");
    await page.locator("#routeSettings").click();
    await page.getByRole("button",{name:"Gravel",exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
    assert.equal(cycleRequests.at(-1).costing_options.bicycle.bicycle_type,"Cross");
    assert.equal(await page.locator("#routeSettings .route-icon-yellow").count(),1);
-   await page.locator("#routeTolls").click();
-   await page.getByRole("button",{name:"Steigungen vermeiden",exact:true}).click();
-   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
-   assert.equal(cycleRequests.at(-1).costing_options.bicycle.use_hills,0);
 
    assert.equal(await rolePins("waypoint").count(),0);
    cycleRequests.length=0;
@@ -446,6 +449,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(cycleRequests.every(request=>request.costing==="pedestrian"));
    assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
    assert.ok(await variants.count()>=2);
+   assert.equal(await page.locator("#routeTolls").getAttribute("data-pin-icon"),"route");
+   await page.locator("#routeTolls").click();
    await variants.nth(1).click();
    assert.equal(await variants.nth(1).getAttribute("aria-pressed"),"true");
    await page.locator("#routeSettings").click();
@@ -453,8 +458,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
    assert.equal(cycleRequests.at(-1).costing_options.pedestrian.type,"wheelchair");
    assert.equal(await page.locator('#routeSettings [data-pin-icon="accessibility"]').count(),1);
-   activeFailure=true;
+   const previousRequests=cycleRequests.length;
    await page.getByRole("button",{name:"Fahrrad",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(cycleRequests.length,previousRequests,"returning to a profile reuses cached route requests");
+   activeFailure=true;
+   await page.locator("#routeSettings").click();
+   await page.getByRole("button",{name:"Rennrad",exact:true}).click();
    const warning=page.locator("#routeSummary.car-route-unavailable");
    await warning.waitFor();
    assert.match(await warning.textContent(),/Keine Fahrradroute/);
@@ -519,6 +529,26 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      }finally{store.close();}
     },{id,after});
    }
+   // Exercise the actual settings reset in the test-only browser project.
+   await page.evaluate(()=>{
+    localStorage.setItem("foreign-test-key","keep");
+    localStorage.setItem("pin2map-route-time-factors:"+location.pathname,"{}");
+   });
+   await page.locator("#settingsButton").click();
+   const storageDetails=page.locator("#settingsStorageDetails");
+   await storageDetails.getByText("Pins und Anhänge",{exact:true}).waitFor();
+   assert.match(await storageDetails.getByText("Pins und Anhänge",{exact:true}).locator("..").textContent(),/· 3/);
+   const reset=page.locator("#settingsResetData");
+   page.once("dialog",dialog=>dialog.dismiss());
+   await reset.click();
+   assert.equal(await page.locator("#map .pin-icon").count(),3);
+   page.once("dialog",dialog=>dialog.accept());
+   await Promise.all([page.waitForEvent("framenavigated"),reset.click()]);
+   await page.locator(".pin-zoom-buttons").waitFor();
+   assert.equal(await page.locator("#map .pin-icon").count(),0);
+   const remaining=await page.evaluate(()=>[localStorage.getItem("foreign-test-key"),
+    localStorage.getItem("pin2map-route-time-factors:"+location.pathname)]);
+   assert.deepEqual(remaining,["keep",null]);
    assert.deepEqual(errors,[],"Browser script errors");
    console.log("PASS routing real UI",engineName,viewport.width,"hard legs, fixed toolbar, reverse, collapse, soft guide persistence");
    await ctx.close();

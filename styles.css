@@ -3272,11 +3272,11 @@ body.pin-open #app #routeToggleHolder{display:none}
 @media(prefers-reduced-motion:reduce){
  #app #routeSummary.car-route-unavailable{animation:none}
 }
-#app .car-route-variants{display:flex;flex-wrap:wrap;gap:4px;min-height:0;overflow-y:auto;scrollbar-width:thin}
-#app .car-route-variants.hidden{display:none}
-#app .car-route-variant-choice{
- display:flex;align-items:center;gap:6px;text-align:left;min-height:28px;padding:3px 6px;
- border:1px solid #cbd6df;border-radius:7px;background:#fff;color:#243b53;font-size:12px
-}
-#app .car-route-variant-choice[aria-pressed="true"]{background:#e1f0ff;border-color:#8fb8e5}
-#app .car-route-variant-choice .car-route-dot{width:9px;height:9px;flex-basis:9px;margin:0}
+#app #routeVariants{width:min(260px,calc(100vw - 44px))}
+#app #routeVariants button{white-space:normal}
+#app #routeVariants .car-route-dot{margin:0}
+#settingsPanel .settings-storage-details{display:grid;gap:5px;margin:8px 0;font-size:13px}
+#settingsPanel .settings-storage-details>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:12px}
+#settingsPanel .settings-storage-details dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+#settingsPanel #settingsStorageUsage:empty{display:none}
+#settingsPanel #settingsResetData{margin-top:6px}

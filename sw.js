@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v344';
+const CACHE='pin2map-new-v345';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -78,6 +78,7 @@ const CORE=[
   "./ui/pin-delete-dialog.js",
   "./ui/pin-layer-picker.js",
   "./adapters/storage/indexeddb-project-store.js",
+  "./adapters/storage/app-storage.js",
   "./ui/shell.js",
   "./ui/map-overlay-coordinator.js",
   "./ui/basemap-menu.js",
@@ -221,6 +222,18 @@ async function rememberViewedTile(request,response){
     }));
 }
 
+let tileGeneration=0,tileReset=null;
+const tileWrites=new Set();
+function resetViewedTiles(){
+  if(!tileReset){
+    tileGeneration++;
+    tileReset=Promise.allSettled(tileWrites)
+      .then(()=>Promise.all([caches.delete(TILE_CACHE),caches.delete(TILE_META_CACHE)]))
+      .finally(()=>{tileReset=null;});
+  }
+  return tileReset;
+}
+
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE);
@@ -257,6 +270,11 @@ self.addEventListener('activate',event=>{
 self.addEventListener('message',event=>{
   if(event.data?.type==='GET_VERSION'){
     event.ports?.[0]?.postMessage({version:CACHE});
+  }else if(event.data?.type==='RESET_VIEWED_TILES'){
+    event.waitUntil(resetViewedTiles().then(
+      ()=>event.ports?.[0]?.postMessage({ok:true}),
+      ()=>event.ports?.[0]?.postMessage({ok:false})
+    ));
   }else if(event.data?.type==='SKIP_WAITING'){
     self.skipWaiting();
   }
@@ -283,15 +301,18 @@ self.addEventListener('fetch',event=>{
   // use the browser's normal HTTP cache/revalidation (ETag/Last-Modified).
   // No cache-busting headers or proactive downloads are sent to OSM.
   if(isOsmTile(url)){
+    const generation=tileGeneration;
     event.respondWith((async()=>{
       const entry=await previouslyViewedTile(request);
       if(entry?.fresh)return entry.response;
       try{
         const response=await fetch(request); // default HTTP cache and conditional validation.
-        if(response.ok||response.type==='opaque'){
-          try{await rememberViewedTile(request,response);}catch(e){
+        if((response.ok||response.type==='opaque')&&generation===tileGeneration&&!tileReset){
+          const write=rememberViewedTile(request,response);
+          tileWrites.add(write);
+          try{await write;}catch(e){
             // Quota errors must not block normal live map display.
-          }
+          }finally{tileWrites.delete(write);}
         }
         return response;
       }catch(error){

@@ -5,15 +5,14 @@
  const {valhallaTrip,jsonOrThrow}=root.Pin2MapCarRouting||
   (typeof module!=="undefined"?require("./car-routing-provider.js"):{});
  const BICYCLES=Object.freeze({everyday:"Hybrid",gravel:"Cross",mountain:"Mountain",road:"Road"});
- const CHARACTERS=Object.freeze({balanced:{},cycleways:{use_roads:0},flat:{use_hills:0}});
  const FOOT_PROFILES=Object.freeze({
   normal:{},shortest:{shortest:true},stroll:{walkway_factor:.55,walking_speed:4.2},
   hike:{max_hiking_difficulty:3,walkway_factor:.65,walking_speed:4},
   accessible:{type:"wheelchair",use_hills:0}
  });
- function costingOptions(mode,profile,character){
+ function costingOptions(mode,profile){
   if(mode==="bicycle")return {
-   bicycle_type:BICYCLES[profile]||BICYCLES.everyday,...CHARACTERS[character]
+   bicycle_type:BICYCLES[profile]||BICYCLES.everyday
   };
   return {walkway_factor:.75,sidewalk_factor:.9,...FOOT_PROFILES[profile]};
  }
@@ -58,11 +57,11 @@
     return null;
    }
   }
-  async calculate({waypoints,shapePoints=[],activeProfile,character,signal}={}){
+  async calculate({waypoints,shapePoints=[],activeProfile,signal}={}){
    const mode=this.mode,bicycle=mode==="bicycle";
    const profile=activeProfile||(bicycle?"everyday":"normal");
    const points=[waypoints[0],...shapePoints,waypoints[1]];
-   const options={costing:mode,costing_options:{[mode]:costingOptions(mode,profile,character)}};
+   const options={costing:mode,costing_options:{[mode]:costingOptions(mode,profile)}};
    const data=await this.request("route",{
     locations:points.map((p,i)=>({lat:p.lat,lon:p.lng,...(i&&i<points.length-1?{type:"through"}:{})})),
     ...options,directions_type:"maneuvers",units:"kilometers",alternates:shapePoints.length?0:2

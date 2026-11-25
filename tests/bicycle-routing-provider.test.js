@@ -7,11 +7,9 @@ const trip={summary:{length:1.2,time:240},legs:[{shape:"???_pR",maneuvers:[]}]};
 const alternate={summary:{length:1.4,time:260},legs:[{shape:"???a_pR",maneuvers:[]}]};
 const response=body=>({ok:true,json:async()=>body});
 
-test("all four bike types and the three characters map to Valhalla costing",()=>{
+test("all four bike types map to Valhalla costing",()=>{
  for(const [profile,type] of Object.entries({everyday:"Hybrid",gravel:"Cross",mountain:"Mountain",road:"Road"}))
-  assert.deepEqual(costingOptions("bicycle",profile,"balanced"),{bicycle_type:type});
- assert.equal(costingOptions("bicycle","gravel","cycleways").use_roads,0);
- assert.equal(costingOptions("bicycle","road","flat").use_hills,0);
+  assert.deepEqual(costingOptions("bicycle",profile),{bicycle_type:type});
 });
 
 test("returns distinct bike alternatives even on major multilane roads and with incomplete elevation",async()=>{
@@ -23,7 +21,7 @@ test("returns distinct bike alternatives even on major multilane roads and with 
   if(body.encoded_polyline===alternate.legs[0].shape)throw new Error("Height unavailable");
   return response({edges:[{use:"road",road_class:"primary",lane_count:4,length:1,weighted_grade:4,mean_elevation:220}]});
  }});
- const route=await provider.calculate({waypoints,activeProfile:"gravel",character:"flat"});
+ const route=await provider.calculate({waypoints,activeProfile:"gravel"});
  assert.equal(route.mode,"bicycle");
  assert.equal(route.profile,"gravel");
  assert.equal(route.ascentMeters,40);
@@ -31,7 +29,7 @@ test("returns distinct bike alternatives even on major multilane roads and with 
  assert.equal(route.alternatives[0].distanceMeters,1400);
  assert.equal(route.alternatives[0].ascentMeters,null);
  assert.equal(calls[0][1].alternates,2);
- assert.deepEqual(calls[0][1].costing_options.bicycle,{bicycle_type:"Cross",use_hills:0});
+ assert.deepEqual(calls[0][1].costing_options.bicycle,{bicycle_type:"Cross"});
  await provider.calculate({waypoints,shapePoints:[{lat:.001,lng:.005}]});
  const guided=calls.findLast(([path])=>path==="/route")[1];
  assert.equal(guided.locations[1].type,"through");

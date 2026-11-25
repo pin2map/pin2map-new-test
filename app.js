@@ -451,6 +451,17 @@
     cancelFrame:id=>cancelAnimationFrame(id)
   });
   const showNotice = message => uiShell.showNotice(message);
+  const appStorage=new window.Pin2MapAppStorage({
+    scope:window.Pin2MapIndexedDBProjectStore.cacheScope,pathname:location.pathname,
+    getStorage:()=>window.localStorage,caches:window.caches,getStore:()=>projectStore,
+    worker:async()=>{
+      const expected=new URL("./sw.js",location.href).href;
+      const registration=await navigator.serviceWorker?.getRegistration();
+      return registration?.active?.scriptURL===expected?registration.active:null;
+    },
+    MessageChannel:window.MessageChannel,BroadcastChannel:window.BroadcastChannel,
+    onPeerReset:()=>location.reload()
+  });
   const persistence = new window.Pin2MapProjectPersistence({
     getProject:()=>state,getStore:()=>projectStore,onError:message=>showNotice(message)
   });
@@ -505,13 +516,12 @@
     onPersistViewport:()=>persistViewport(),
     onBeforeOpen:()=>{overlayCoordinator.closeAll();pinInfoMenu.close();pinOverlapZoom.close();},
     getSearch:()=>{
-      try{return localStorage.getItem("pin2map-favorites-search-v1")||"";}
+      try{return appStorage.readPreference("pin2map-favorites-search-v1")||"";}
       catch(_){return "";}
     },
     onSearchChange:value=>{
       try{
-        if(value)localStorage.setItem("pin2map-favorites-search-v1",value);
-        else localStorage.removeItem("pin2map-favorites-search-v1");
+        appStorage.writePreference("pin2map-favorites-search-v1",value||null);
       }catch(_){}
     }
   });
@@ -804,8 +814,8 @@
     onToggleSettings:()=>overlayCoordinator.togglePanel("settingsPanel"),
     getGeocodeEnabled:()=>state.allowGeocode,
     setGeocodeEnabled:enabled=>{state.allowGeocode=enabled;},
-    readLocalPreference:key=>localStorage.getItem(key),
-    writeLocalPreference:(key,value)=>localStorage.setItem(key,value)
+    readLocalPreference:key=>appStorage.readPreference(key),
+    writeLocalPreference:(key,value)=>appStorage.writePreference(key,value)
   });
 
   const appLifecycle=new window.Pin2MapAppLifecycleController({
@@ -854,7 +864,9 @@
       getWorkerController:()=>navigator.serviceWorker?.controller,
       getMessageChannel:()=>window.MessageChannel,
       fetchWorker:(url,options)=>fetch(url,options),
-      estimateStorage:()=>navigator.storage?.estimate?.()
+      document,inspectStorage:()=>appStorage.inspect(),
+      resetStorage:()=>appStorage.reset(),
+      confirmReset:message=>window.confirm(message),reload:()=>location.reload()
     });
     settingsTabs.bind();
 
@@ -915,20 +927,17 @@
           .map(element=>element.getBoundingClientRect())
       }),
       onLineClick:index=>routePanel?.focusLeg(index),
-      onVariantSelect:index=>routeSession.selectVariant(index),
       confirmRemove:message=>window.confirm(message),
       onGuideRemoveRequest:id=>routeGuideSession.remove(id)
     });
-    const routeTimeKey="pin2map-route-time-factors:"+location.pathname;
     const readRouteTimeFactors=()=>{
-      try{return JSON.parse(localStorage.getItem(routeTimeKey))||{};}catch{return {};}
+      try{return JSON.parse(appStorage.readTimeFactors())||{};}catch{return {};}
     };
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onLegSelect:index=>routeMapView.fit(index),
       onMode:mode=>routeSession.setMode(mode),
       onActiveProfile:profile=>routeSession.setActiveProfile(profile),
-      onCharacter:character=>routeSession.setCharacter(character),
       onVariantSelect:index=>routeSession.selectVariant(index),
       variantColors:window.Pin2MapCarRouteMapView.VARIANT_COLORS,
       onEnd:()=>{routeSession.clear();routeGuideSession.clear();renderPinPanel();},
@@ -939,7 +948,7 @@
       readTimeFactors:readRouteTimeFactors,
       writeTimeFactors:factors=>{
         routeSession.setTimeFactors(factors);
-        try{localStorage.setItem(routeTimeKey,JSON.stringify(factors));}catch{}
+        try{appStorage.writeTimeFactors(JSON.stringify(factors));}catch{}
       },
       onAll:()=>{
         const pins=markerView.visiblePins().filter(pin=>mapAdapter.containsPoint(pin));

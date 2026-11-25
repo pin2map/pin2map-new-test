@@ -27,7 +27,7 @@ test("opening either object editor always closes competing object dialogs first"
  assert.match(app,/closeAdditionalMenus:\(\)=>\{[\s\S]*?geometryEditor\?\.close\(false\)/);
  assert.match(app,/onResetPinSelection:\(\)=>\{[\s\S]*?uiState\.clearSelection\(\);renderMarkers\(\);renderPinPanel\(\)/);
 });
-test("properties tabs maintain version and storage estimates without modifying project data",()=>{
+test("properties tabs maintain version and scoped storage inventory and an explicit local data reset",()=>{
  const html=read("index.html"),app=read("app.js");
  for(const id of ["General","Interface","Services","Colors"]){
   assert.ok(html.includes('id="settings'+id+'Tab"'));
@@ -37,10 +37,11 @@ test("properties tabs maintain version and storage estimates without modifying p
  assert.match(html,/id="settingsProductVersion"/);
  assert.match(html,/id="settingsInterfaceContent"[\s\S]*?id="showPinHitboxes"/);
  assert.match(html,/id="settingsServicesContent"[\s\S]*?id="allowGeocode"/);
- assert.match(app,/estimateStorage:\(\)=>navigator\.storage\?\.estimate\?\.\(\)/);
+ assert.match(app,/inspectStorage:\(\)=>appStorage\.inspect\(\)/);
  assert.match(app,/new window\.Pin2MapSettingsTabsController/);
  const tabs=read("ui/settings-tabs-controller.js");
- assert.match(tabs,/this\.estimateStorage\(\)/);
- assert.match(tabs,/usageDetails\?\.caches/);
+ assert.match(tabs,/this\.inspectStorage\(\)/);
+ assert.match(tabs,/this\.confirmReset\(/);
+ assert.match(html,/id="settingsResetData"/);
  assert.match(tabs,/this\.getElement\("settings"\+tab\+"Content"\)\.classList\.toggle\("hidden",!selected\)/);
 });

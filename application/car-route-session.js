@@ -40,7 +40,7 @@
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
    Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,onGuideWarning});
    this.mode="car";this.generation=0;this.pending=null;this.variants=[];this.selectedVariant=0;this.failed=false;this.loading=false;this.allVisibleActive=false;
-   this.activeProfiles={bicycle:"everyday",pedestrian:"normal"};this.character="balanced";
+   this.activeProfiles={bicycle:"everyday",pedestrian:"normal"};this.routeCache=new Map();
    this.factors={...TIME_FACTORS};this.timeProfile="standard";
    for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(timeFactors[key]))this.factors[key]=timeFactors[key];
   }
@@ -48,11 +48,10 @@
    const factor=this.mode==="car"?this.factors[this.timeProfile]:1;
    const selected=this.variants[this.selectedVariant];
    const legs=(selected?.legs||[]).map(leg=>({...leg,durationSeconds:leg.durationSeconds*(leg.ferry?1:factor)}));
-   const variants=this.variants.length>1?this.variants.map(({legs,...totals})=>({
-    ...totals,geometries:legs.map(leg=>leg.geometry),ferries:legs.map(leg=>Boolean(leg.ferry))
-   })):[];
+   const variants=this.variants.length>1?this.variants.map(({ascentMeters,distanceMeters,durationSeconds})=>
+    ({ascentMeters,distanceMeters,durationSeconds})):[];
    return {...this.plan.snapshot(),mode:this.mode,activeProfile:this.activeProfiles[this.mode],
-    character:this.character,ascentMeters:selected?.ascentMeters??null,variants,selectedVariant:this.selectedVariant,failed:this.failed,allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
+    ascentMeters:selected?.ascentMeters??null,variants,selectedVariant:this.selectedVariant,failed:this.failed,allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
     timeProfile:this.timeProfile,timeMarkers:timeMarkers(legs),
     distanceMeters:legs.reduce((s,l)=>s+l.distanceMeters,0),
     durationSeconds:legs.reduce((s,l)=>s+l.durationSeconds,0)};
@@ -70,9 +69,23 @@
    if(!ACTIVE_PROFILES[this.mode]?.includes(profile)||profile===this.activeProfiles[this.mode])return;
    this.activeProfiles[this.mode]=profile;void this.recalculate();
   }
-  setCharacter(character){
-   if(this.mode!=="bicycle"||!["balanced","cycleways","flat"].includes(character)||character===this.character)return;
-   this.character=character;void this.recalculate();
+  async calculateLeg(request){
+   if(request.mode==="car")return this.calculate(request);
+   const coords=points=>points.map(({lat,lng})=>[lat,lng]);
+   const key=JSON.stringify([request.mode,request.activeProfile,coords(request.waypoints),
+    coords(request.shapePoints||[])]);
+   const cached=this.routeCache.get(key);
+   this.routeCache.delete(key);
+   if(cached&&cached.expires>Date.now()){
+    this.routeCache.set(key,cached);
+    return cached.route;
+   }
+   const route=await this.calculate(request);
+   if(!request.signal.aborted){
+    this.routeCache.set(key,{route,expires:Date.now()+15*60*1000});
+    if(this.routeCache.size>40)this.routeCache.delete(this.routeCache.keys().next().value);
+   }
+   return route;
   }
   selectVariant(index){
    if(!Number.isInteger(index)||!this.variants[index]||index===this.selectedVariant)return;
@@ -99,10 +112,10 @@
    const completed=[],choices=[];
    const guides=this.getGuides();
    const requestFor=i=>({mode:this.mode,waypoints:[points[i],points[i+1]],
-    profile:this.plan.profile,activeProfile:this.activeProfiles[this.mode],character:this.character,avoidTolls:this.plan.avoidTolls,signal:controller.signal});
+    profile:this.plan.profile,activeProfile:this.activeProfiles[this.mode],avoidTolls:this.plan.avoidTolls,signal:controller.signal});
    try{
     for(let i=0;i<points.length-1;i++){
-     const result=await this.calculate(requestFor(i));
+     const result=await this.calculateLeg(requestFor(i));
      if(generation!==this.generation)return;
      const {alternatives=[],...primary}=result;
      const label=route=>({...route,fromId:ids[i],toId:ids[i+1]});
@@ -116,7 +129,7 @@
      const alternatives=choices[i].slice(1);
      for(const shapePoints of candidates(assigned[i])){
       try{
-       const probe=await this.calculate({...requestFor(i),shapePoints});
+       const probe=await this.calculateLeg({...requestFor(i),shapePoints});
        alternatives.push({...probe,fromId:ids[i],toId:ids[i+1]});
       }
       catch{/* An optional corridor probe can fail while the baseline remains usable. */}

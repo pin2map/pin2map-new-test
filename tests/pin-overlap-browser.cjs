@@ -369,7 +369,7 @@ async function zoom(page){
         assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
         assert.equal(await page.locator("#favoritesPanel .favorite-open").count(),0);
         assert.equal(await clear.isEnabled(),true);
-        assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),"ÜBERS");
+        assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1:"+new URL("./",location.href).pathname)),"ÜBERS");
         await search.fill("auss");
         assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),0);
         assert.match(await page.locator("#favoritesPanel .favorites-empty").textContent(),/Keine passenden/);
@@ -538,7 +538,7 @@ async function zoom(page){
           "Favoritenfilter bleibt auch nach einem Neustart bestehen");
         assert.equal(await page.locator("#favoritesPanel .favorite-row").count(),1);
         await clear.click();
-        assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1")),null);
+        assert.equal(await page.evaluate(()=>localStorage.getItem("pin2map-favorites-search-v1:"+new URL("./",location.href).pathname)),null);
         assert.equal(await search.inputValue(),"");
         const saved=await page.evaluate(async()=>{
           const store=await window.Pin2MapIndexedDBProjectStore.open();

@@ -108,6 +108,7 @@
 <script defer src="./ui/pin-delete-dialog.js"></script>
 <script defer src="./ui/pin-layer-picker.js"></script>
 <script defer src="./adapters/storage/indexeddb-project-store.js"></script>
+<script defer src="./adapters/storage/app-storage.js"></script>
 <script defer src="./ui/shell.js"></script>
 <script defer src="./ui/map-overlay-coordinator.js"></script>
 <script defer src="./ui/basemap-menu.js"></script>
@@ -224,12 +225,7 @@
           <button type="button" data-active-profile="mountain"><span data-pin-icon="bike" class="route-icon-red" aria-hidden="true"></span>Mountainbike</button>
           <button type="button" data-active-profile="road"><span data-pin-icon="bike" class="route-icon-black" aria-hidden="true"></span>Rennrad</button>
         </div>
-        <div class="car-route-popover hidden" id="routeCharacterMenu" role="group" aria-label="Streckencharakter">
-          <strong>Streckencharakter</strong>
-          <button type="button" data-route-character="balanced"><span data-pin-icon="equal-approximately" aria-hidden="true"></span>Ausgewogen</button>
-          <button type="button" data-route-character="cycleways"><span data-pin-icon="stretch-vertical" aria-hidden="true"></span>Radwege bevorzugen</button>
-          <button type="button" data-route-character="flat"><span data-pin-icon="mountain-off" aria-hidden="true"></span>Steigungen vermeiden</button>
-        </div>
+        <div class="car-route-popover hidden" id="routeVariants" role="group" aria-label="Routenalternativen"></div>
         <div class="car-route-popover hidden" id="routeWalkMenu" role="group" aria-label="Fußprofil">
           <button type="button" data-active-profile="normal"><span data-pin-icon="walk" class="route-icon-black" aria-hidden="true"></span>Normal zu Fuß</button>
           <button type="button" data-active-profile="shortest"><span data-pin-icon="walk" class="route-icon-red" aria-hidden="true"></span>Kürzeste Strecke</button>
@@ -245,7 +241,6 @@
       </div></fieldset>
       <fieldset class="car-route-group car-route-apple"><legend>Apple</legend><button id="routeApple" class="car-route-round" data-pin-icon="apple-brand" type="button" title="In Apple Karten öffnen" aria-label="In Apple Karten öffnen"></button></fieldset>
     </div>
-    <div id="routeVariants" class="car-route-variants hidden" role="group" aria-label="Routenalternativen"></div>
     <div id="routeLegs" class="car-route-legs" aria-live="polite"></div>
   </section>
   <div id="routeToggleHolder" class="hidden"><button id="routePanelToggle" class="car-route-panel-toggle" type="button" data-pin-icon="car" aria-label="Routingdialog einblenden" aria-pressed="false"></button></div>
@@ -354,7 +349,13 @@
 <div class="settings-tabs" role="tablist" aria-label="Eigenschaften"><button type="button" id="settingsGeneralTab" role="tab" aria-selected="true" aria-controls="settingsGeneralContent">Allgemein</button><button type="button" id="settingsInterfaceTab" role="tab" aria-selected="false" aria-controls="settingsInterfaceContent">Oberfläche</button><button type="button" id="settingsServicesTab" role="tab" aria-selected="false" aria-controls="settingsServicesContent">Services</button><button type="button" id="settingsColorsTab" role="tab" aria-selected="false" aria-controls="settingsColorsContent">Farben</button><button type="button" id="settingsRoutingTab" role="tab" aria-selected="false" aria-controls="settingsRoutingContent">Routing</button></div>
 <div id="settingsGeneralContent" role="tabpanel">
 <p class="settings-product-name"><strong>pin2map NEW</strong> <span id="settingsProductVersion">Version wird ermittelt …</span></p>
-<section class="settings-storage"><h3>Speicherbedarf</h3><p>Zwischengespeicherte Daten: <strong id="settingsStorageUsage">Wird ermittelt …</strong></p><p class="muted small">Näherungswert des Browsers. Wenn keine separate Cachegröße verfügbar ist, wird der gesamte lokal belegte Speicher einschließlich Projektdaten ausgewiesen.</p></section>
+<section class="settings-storage"><h3>Speicherbedarf</h3>
+<p id="settingsStorageUsage" class="muted small" role="status"></p>
+<dl id="settingsStorageDetails" class="settings-storage-details"></dl>
+<p class="muted small">Größe der gespeicherten Inhalte. Datenbank-Overhead und der HTTP-Cache des Browsers sind hier nicht messbar. Bei Kacheln, deren Größe der Browser verbirgt, wird die Anzahl angegeben.</p>
+<button id="settingsResetData" type="button" class="danger">Lokale pin2map-Daten löschen</button>
+<p class="muted small">Löscht Projekt, Einstellungen und besuchte Kartenkacheln dieser App. Die Dateien für den PWA-Start bleiben erhalten.</p>
+</section>
 <hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></div>
 <div id="settingsInterfaceContent" role="tabpanel" class="hidden"><label class="checkbox-line" for="showPinHitboxes"><input id="showPinHitboxes" type="checkbox" checked> Gelbe Trefferflächen um Pins anzeigen</label><p class="muted small">Nur die gelbe Test-Markierung wird ein- oder ausgeblendet. Die tatsächliche Tippfläche und der Autozoom bleiben unverändert. Diese Anzeige-Einstellung gilt nur auf diesem Gerät.</p></div>
 <div id="settingsServicesContent" role="tabpanel" class="hidden"><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Externe Orts- und Flächensuche (Nominatim / Overpass) für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Bei Kartentip-Flächensuche werden die angeklickten Koordinaten zusätzlich an einen Overpass-Dienst gesendet (bei verfügbaren Regionen vorzugsweise dresel.systems für Europa/Nordamerika, sonst globale Anbieter wie maps.mail.ru), um einschließende Schutz-, Insel- und Sondergebiete zu finden. Beide externen APIs sind keine uneingeschränkten Produktionsdienste. Keine automatischen Suchen; die Anfragen werden in diesem Browser gedrosselt. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a> · <a href="https://ovp.dresel.systems/" target="_blank" rel="noopener">Overpass (dresel.systems)</a> / <a href="https://overpass.private.coffee/" target="_blank" rel="noopener">Private.coffee</a> / <a href="https://maps.mail.ru/osm/tools/overpass/" target="_blank" rel="noopener">VK Maps Overpass</a></p><p class="small attribution" id="settingsPinInfoSources"><strong>Pin-Informationen:</strong> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> liefert aktuelle Wetterprognosen und Höhe. <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a> liefert langjährige Monatsmittel von Temperaturen und Niederschlag (durchschnittlicher Monats- und Jahresniederschlag in mm). <a href="https://sunrise-sunset.org/" target="_blank" rel="noopener">Sunrise-Sunset.org</a> liefert Sonnenaufgang und -untergang jeweils am <strong>15. des ausgewählten Monats</strong>. Bei „Heute“ werden aktuelle Tageswerte verwendet. Daten werden nur für Pins sichtbarer Ebenen im gewählten Modus abgerufen.</p></div>
