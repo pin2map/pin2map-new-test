@@ -455,9 +455,11 @@
     scope:window.Pin2MapIndexedDBProjectStore.cacheScope,pathname:location.pathname,
     getStorage:()=>window.localStorage,caches:window.caches,getStore:()=>projectStore,
     worker:async()=>{
-      const expected=new URL("./sw.js",location.href).href;
       const registration=await navigator.serviceWorker?.getRegistration();
-      return registration?.active?.scriptURL===expected?registration.active:null;
+      const expected=new URL("./sw.js",location.href);
+      if(!registration?.active||registration.scope!==new URL("./",location.href).href)return null;
+      const script=new URL(registration.active.scriptURL);
+      return script.origin===expected.origin&&script.pathname===expected.pathname?registration.active:null;
     },
     MessageChannel:window.MessageChannel,BroadcastChannel:window.BroadcastChannel,
     onPeerReset:()=>location.reload()
