@@ -1,57 +1,38 @@
 "use strict";
-/* Valhalla supplies alternatives. We validate their matched network edges
- * before ranking bicycle and pedestrian routes. */
+/* Valhalla costing determines access and ranks active-travel alternatives.
+ * Elevation enrichment is optional and never decides route availability. */
 (function(root){
  const {valhallaTrip,jsonOrThrow}=root.Pin2MapCarRouting||
   (typeof module!=="undefined"?require("./car-routing-provider.js"):{});
- const smallRoads=new Set(["tertiary","unclassified","residential","service_other"]);
- const separatePaths=new Set(["cycleway","path","footway","pedestrian","bridleway","track","steps",
-  "sidewalk","pedestrian_crossing","ferry"]);
- const fields=["use","road_class","lane_count","traversability","cycle_lane","length",
-  "weighted_grade","mean_elevation","max_upward_grade","max_downward_grade"];
- const walkingPaths=new Set(["footway","pedestrian","path","sidewalk","pedestrian_crossing","steps"]);
- function edgeStats(edges,mode="bicycle"){
-  if(!Array.isArray(edges)||!edges.length)return null;
-  let ascent=0,steepness=0,total=0,cycleDistance=0,walkingDistance=0,multiLaneDistance=0,previousHeight,knownGrade=0;
-  for(const edge of edges){
-   const {use,road_class:roadClass,lane_count:lanes,traversability}=edge;
-   const path=separatePaths.has(use);
-   const length=Number(edge.length);
-   if(!use||!Number.isFinite(length)||length<0)return null;
-   if(mode==="bicycle"){
-    if(use==="steps"||(!path&&(!smallRoads.has(roadClass)||use==="ramp"||
-     !Number.isInteger(lanes)||lanes<1)))return null;
-    if(!path&&lanes>(traversability==="both"?2:1))multiLaneDistance+=length;
+ const BICYCLES=Object.freeze({everyday:"Hybrid",gravel:"Cross",mountain:"Mountain",road:"Road"});
+ const CHARACTERS=Object.freeze({balanced:{},cycleways:{use_roads:0},flat:{use_hills:0}});
+ const FOOT_PROFILES=Object.freeze({
+  normal:{},shortest:{shortest:true},stroll:{walkway_factor:.55,walking_speed:4.2},
+  hike:{max_hiking_difficulty:3,walkway_factor:.65,walking_speed:4},
+  accessible:{type:"wheelchair",use_hills:0}
+ });
+ function costingOptions(mode,profile,character){
+  if(mode==="bicycle")return {
+   bicycle_type:BICYCLES[profile]||BICYCLES.everyday,...CHARACTERS[character]
+  };
+  return {walkway_factor:.75,sidewalk_factor:.9,...FOOT_PROFILES[profile]};
+ }
+ function ascentMeters(edges){
+  let ascent=0,previousHeight,known=false;
+  for(const edge of edges||[]){
+   if(edge.use==="ferry"){previousHeight=undefined;continue;}
+   const height=edge.mean_elevation;
+   const hasHeight=Number.isFinite(height)&&height>-1000;
+   if(hasHeight&&Number.isFinite(edge.weighted_grade)&&Number.isFinite(edge.length)){
+    ascent+=Math.max(0,edge.weighted_grade)*edge.length*10;
+    known=true;
+   }else if(hasHeight&&previousHeight!==undefined){
+    ascent+=Math.max(0,height-previousHeight);
+    known=true;
    }
-   if(walkingPaths.has(use))walkingDistance+=length;
-   total+=length;
-   if(use==="cycleway"||edge.cycle_lane==="separated")cycleDistance+=length;
-   if(use==="ferry"){previousHeight=undefined;continue;}
-   const elevation=edge.mean_elevation;
-   const hasElevation=Number.isFinite(elevation)&&elevation>-1000;
-   if(Number.isFinite(edge.weighted_grade)){
-    ascent+=Math.max(0,edge.weighted_grade)*length*10;
-    knownGrade+=length;
-   }else if(hasElevation&&previousHeight!==undefined){
-    ascent+=Math.max(0,elevation-previousHeight);
-    knownGrade+=length;
-   }
-   previousHeight=hasElevation?elevation:undefined;
-   steepness=Math.max(steepness,edge.max_upward_grade||0,Math.abs(edge.max_downward_grade||0));
+   previousHeight=hasHeight?height:undefined;
   }
-  if(!total)return null;
-  return {ascentMeters:knownGrade?ascent:null,maxGrade:knownGrade?steepness:null,cycleShare:cycleDistance/total,walkingDistanceMeters:walkingDistance*1000,multiLaneMeters:multiLaneDistance*1000};
- }
- const score=value=>Number.isFinite(value)?value:Infinity;
- function compareBicycleRoutes(a,b){
-  return (a.multiLaneMeters||0)-(b.multiLaneMeters||0)||score(a.ascentMeters)-score(b.ascentMeters)||score(a.maxGrade)-score(b.maxGrade)||
-   b.cycleShare-a.cycleShare||a.durationSeconds-b.durationSeconds;
- }
- // Time spent on footpaths is discounted by a quarter in the comparison.
- // This favors dedicated paths without overriding a large detour.
- function compareWalkingRoutes(a,b){
-  const cost=route=>route.durationSeconds*(1-.25*Math.min(1,route.walkingDistanceMeters/route.distanceMeters));
-  return cost(a)-cost(b)||a.durationSeconds-b.durationSeconds;
+  return known?ascent:null;
  }
  class ValhallaActiveTravelProvider{
   constructor({fetchImpl,base="https://valhalla1.openstreetmap.de/",mode}){
@@ -63,40 +44,46 @@
     body:JSON.stringify(data)
    });
   }
-  async calculate({waypoints,shapePoints=[],signal}={}){
-   const mode=this.mode;
-   const bicycle=mode==="bicycle";
-   const points=[waypoints[0],...shapePoints,waypoints[1]];
-   const request={locations:points.map((p,i)=>({lat:p.lat,lon:p.lng,...(i&&i<points.length-1?{type:"through"}:{})})),
-    costing:mode,costing_options:{[mode]:bicycle?{bicycle_type:"Hybrid",use_roads:0,use_hills:0}:
-     {walkway_factor:.75,sidewalk_factor:.9,alley_factor:1.05}},
-    directions_type:"maneuvers",units:"kilometers",alternates:shapePoints.length?0:2};
-   const data=await this.request("route",request,signal);
-   const accepted=[];
-   let verificationFailed=false;
-   for(const trip of [data?.trip,...(data?.alternates||[]).map(option=>option.trip)].filter(Boolean)){
-    try{
-     const route=valhallaTrip(trip,{mode,profile:bicycle?"cycle":"walk"});
-     const edges=[];
-     for(const leg of trip.legs){
-      const result=await this.request("trace_attributes",{
-       encoded_polyline:leg.shape,shape_match:"edge_walk",costing:mode,
-       filters:{action:"include",attributes:fields.map(field=>"edge."+field)}
-      },signal);
-      if(!Array.isArray(result.edges)||!result.edges.length)throw new Error("Keine prüfbaren Straßenattribute");
-      edges.push(...result.edges);
-     }
-     const stats=edgeStats(edges,mode);
-     if(stats)accepted.push({...route,...stats});
-    }catch(error){
-     if(signal?.aborted)throw error;
-     verificationFailed=true;
-    }
+  async estimateAscent(trip,options,signal){
+   try{
+    const timeout=AbortSignal.timeout?.(5500);
+    const pending=signal&&timeout&&AbortSignal.any?AbortSignal.any([signal,timeout]):signal||timeout;
+    const traces=await Promise.all(trip.legs.map(leg=>this.request("trace_attributes",{
+     encoded_polyline:leg.shape,shape_match:"edge_walk",...options,
+     filters:{action:"include",attributes:["edge.use","edge.length","edge.weighted_grade","edge.mean_elevation"]}
+    },pending)));
+    return ascentMeters(traces.flatMap(trace=>trace.edges||[]));
+   }catch(error){
+    if(signal?.aborted)throw error;
+    return null;
    }
-   if(!accepted.length)throw new Error(verificationFailed?
-    "Route konnte nicht vollständig anhand der Wegdaten geprüft werden.":
-    bicycle?"Keine geprüfte Fahrradroute ohne große Straßen gefunden.":"Keine geprüfte Fußroute gefunden.");
-   return accepted.sort(bicycle?compareBicycleRoutes:compareWalkingRoutes)[0];
+  }
+  async calculate({waypoints,shapePoints=[],activeProfile,character,signal}={}){
+   const mode=this.mode,bicycle=mode==="bicycle";
+   const profile=activeProfile||(bicycle?"everyday":"normal");
+   const points=[waypoints[0],...shapePoints,waypoints[1]];
+   const options={costing:mode,costing_options:{[mode]:costingOptions(mode,profile,character)}};
+   const data=await this.request("route",{
+    locations:points.map((p,i)=>({lat:p.lat,lon:p.lng,...(i&&i<points.length-1?{type:"through"}:{})})),
+    ...options,directions_type:"maneuvers",units:"kilometers",alternates:shapePoints.length?0:2
+   },signal);
+   const best=valhallaTrip(data?.trip,{mode,profile});
+   const candidates=[{route:best,trip:data.trip}];
+   const seen=new Set([JSON.stringify(best.geometry.coordinates)]);
+   for(const entry of data?.alternates||[]){
+    let route;
+    try{route=valhallaTrip(entry.trip,{mode,profile});}
+    catch{continue;}
+    const key=JSON.stringify(route.geometry.coordinates);
+    if(seen.has(key))continue;
+    seen.add(key);
+    candidates.push({route,trip:entry.trip});
+    if(candidates.length===3)break;
+   }
+   const [primary,...alternatives]=await Promise.all(candidates.map(async({route,trip})=>({
+    ...route,ascentMeters:bicycle?await this.estimateAscent(trip,options,signal):null
+   })));
+   return {...primary,alternatives};
   }
  }
  class BicycleRoutingProvider extends ValhallaActiveTravelProvider{
@@ -105,7 +92,7 @@
  class PedestrianRoutingProvider extends ValhallaActiveTravelProvider{
   constructor(options){super({...options,mode:"pedestrian"});}
  }
- const api=Object.freeze({BicycleRoutingProvider,PedestrianRoutingProvider,edgeStats,compareBicycleRoutes});
+ const api=Object.freeze({BicycleRoutingProvider,PedestrianRoutingProvider,ascentMeters,costingOptions});
  root.Pin2MapBicycleRouting=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

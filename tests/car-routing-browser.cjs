@@ -27,10 +27,10 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      const [from,to]=coords;
      const at=fraction=>from.map((coord,i)=>coord+(to[i]-coord)*fraction);
      const path=[from,at(.35),at(.65),to];
-     response.duration=9000;
+     response.duration=12600;
      response.geometry.coordinates=path;
      response.legs=[{steps:["driving","ferry","driving"].map((mode,i)=>({
-      mode,name:mode==="ferry"?"Testfähre":"",duration:mode==="ferry"?1800:3600,distance:8000,
+      mode,name:mode==="ferry"?"Testfähre":"",duration:mode==="ferry"?5400:3600,distance:8000,
       geometry:{type:"LineString",coordinates:path.slice(i,i+2)}
      }))}];
     }
@@ -118,9 +118,11 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await openPin(1,"Ulm");
    await setRole("pinRouteWaypoint");
    await openPin(1,"Ulm");
+   assert.equal(await page.locator("#pinRouteWaypoint").getAttribute("data-pin-icon"),"minus");
    await assertButton("pinRouteWaypoint",true,"rgb(237, 198, 54)","rgb(13, 35, 58)");
    await setRole("pinRouteWaypoint");
    await openPin(1,"Ulm");
+   assert.equal(await page.locator("#pinRouteWaypoint").getAttribute("data-pin-icon"),"plus");
    await assertButton("pinRouteWaypoint",false,"rgb(237, 198, 54)");
    assert.equal(await rolePins("waypoint").count(),0);
    await setRole("pinRouteWaypoint");
@@ -392,23 +394,45 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     }
     return shape;
    };
+   let activeFailure=false;
    await page.route(/valhalla1\.openstreetmap\.de\/(?:route|trace_attributes)$/,async entry=>{
     const payload=entry.request().postDataJSON();
     const isRoute=new URL(entry.request().url()).pathname==="/route";
     if(isRoute)cycleRequests.push(payload);
-    const body=isRoute?{trip:{summary:{length:24,time:2400},legs:[{
-     shape:encode(payload.locations),maneuvers:[]
-    }]}}:{edges:[{use:"cycleway",length:24,weighted_grade:0,max_upward_grade:0}]};
+    if(isRoute&&activeFailure)return entry.fulfill({status:400,json:{error:"No route"},
+     headers:{"Access-Control-Allow-Origin":"*"}});
+    const trip=(locations,length,time)=>({summary:{length,time},legs:[{shape:encode(locations),maneuvers:[]}]});
+    const [first,last]=[payload.locations?.[0],payload.locations?.at(-1)];
+    const alternate=isRoute&&payload.alternates&&{trip:trip([first,
+     {lat:(first.lat+last.lat)/2-.18,lon:(first.lon+last.lon)/2},last],28,2600)};
+    const body=isRoute?{trip:trip(payload.locations,24,2400),alternates:alternate?[alternate]:[]}:
+     {edges:[{use:"road",road_class:"primary",lane_count:4,length:24,mean_elevation:300,weighted_grade:.2}]};
     await entry.fulfill({json:body,headers:{"Access-Control-Allow-Origin":"*"}});
    });
    await page.getByRole("button",{name:"Fahrrad",exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
    assert.equal(await page.getByRole("button",{name:"Fahrrad",exact:true}).getAttribute("aria-pressed"),"true");
    assert.equal(await page.locator("#routeModeIcon").getAttribute("data-pin-icon"),"bike");
-   assert.equal(await page.locator("#routeTolls").isDisabled(),true);
+   assert.equal(await page.locator("#routeTolls").isDisabled(),false);
+   assert.equal(await page.locator("#routeTolls").getAttribute("data-pin-icon"),"sliders-horizontal");
    assert.equal(cycleRequests.length,3);
    assert.ok(cycleRequests.every(request=>request.costing==="bicycle"));
    assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
+   const variants=page.locator("#routeVariants button");
+   assert.ok(await variants.count()>=2);
+   assert.match(await variants.first().textContent(),/48 Hm/);
+   await page.locator("#map path.p2m-route-variant-1").first().dispatchEvent("click");
+   assert.equal(await variants.nth(1).getAttribute("aria-pressed"),"true");
+   await page.locator("#routeSettings").click();
+   await page.getByRole("button",{name:"Gravel",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(cycleRequests.at(-1).costing_options.bicycle.bicycle_type,"Cross");
+   assert.equal(await page.locator("#routeSettings .route-icon-yellow").count(),1);
+   await page.locator("#routeTolls").click();
+   await page.getByRole("button",{name:"Steigungen vermeiden",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(cycleRequests.at(-1).costing_options.bicycle.use_hills,0);
+
    assert.equal(await rolePins("waypoint").count(),0);
    cycleRequests.length=0;
    await page.getByRole("button",{name:"Zu Fuß",exact:true}).click();
@@ -419,9 +443,26 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(cycleRequests.length,3);
    assert.ok(cycleRequests.every(request=>request.costing==="pedestrian"));
    assert.ok(cycleRequests.slice(1).every(request=>request.locations[1].type==="through"));
+   assert.ok(await variants.count()>=2);
+   await variants.nth(1).click();
+   assert.equal(await variants.nth(1).getAttribute("aria-pressed"),"true");
+   await page.locator("#routeSettings").click();
+   await page.getByRole("button",{name:"Barrierearm",exact:true}).click();
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(cycleRequests.at(-1).costing_options.pedestrian.type,"wheelchair");
+   assert.equal(await page.locator('#routeSettings [data-pin-icon="accessibility"]').count(),1);
+   activeFailure=true;
+   await page.getByRole("button",{name:"Fahrrad",exact:true}).click();
+   const warning=page.locator("#routeSummary.car-route-unavailable");
+   await warning.waitFor();
+   assert.match(await warning.textContent(),/Keine Fahrradroute/);
+   assert.equal(await warning.evaluate(node=>getComputedStyle(node).animationIterationCount),"infinite");
+   activeFailure=false;
+
    assert.equal(await rolePins("waypoint").count(),0);
    await page.getByRole("button",{name:"Auto",exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===1);
+   assert.equal(await warning.count(),0);
 
    page.once("dialog",dialog=>dialog.dismiss());
    await page.locator("#routeEnd").click();
@@ -448,10 +489,34 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===3);
    const ferryRows=await page.locator("#routeLegs .car-route-leg").allTextContents();
    assert.match(ferryRows[0],/Stuttgart → Abfahrtshafen/);
-   assert.match(ferryRows[1],/Fähre Testfähre.*Abfahrtshafen → Ankunftshafen.*30 min/);
+   assert.match(ferryRows[1],/Fähre Testfähre.*Abfahrtshafen → Ankunftshafen.*1 h 30 min/);
    assert.match(ferryRows[2],/Ankunftshafen → München/);
    assert.equal(await page.locator('#map path.p2m-ferry-leg[stroke-dasharray="8 8"]').count(),1);
-   assert.deepEqual((await page.locator("#map .p2m-route-time").allTextContents()).filter(Boolean),["1","1"]);
+   const markers=await page.locator("#map .p2m-route-time").allTextContents();
+   assert.deepEqual(markers,["","1","","1","","","1"]);
+   ferryFixture=false;
+   await openPin(1,"Ulm");
+   await setRole("pinRouteWaypoint");
+   await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2);
+   for(const [index,name,id] of [[1,"Ulm","p-w"],[0,"Stuttgart","p-s"],[2,"München","p-t"]]){
+    await openPin(index,name);
+    await page.locator("#movePin").click();
+    const previous=routeRequests.length;
+    await page.locator("#map").click({position:{x:viewport.width*.33,y:140+index*42}});
+    await page.locator("#confirmMove").click();
+    await page.waitForFunction(()=>document.querySelectorAll("#routeLegs .car-route-leg").length===2);
+    assert.equal(routeRequests.length,previous+2,name+" move requests both new route legs");
+    const oldCoords=[[9.1829,48.7758],[9.9916,48.3984],[11.5755,48.1372]][index];
+    const after=routeRequests.slice(-2).flat();
+    assert.ok(after.every(([lng,lat])=>Math.abs(lng-oldCoords[0])>.000002||Math.abs(lat-oldCoords[1])>.000002));
+    await page.waitForFunction(async({id,after})=>{
+     const store=await window.Pin2MapIndexedDBProjectStore.open();
+     try{
+      const pin=(await store.loadProject()).pins.find(pin=>pin.id===id);
+      return after.some(([lng,lat])=>Math.abs(lng-pin.lng)<.000002&&Math.abs(lat-pin.lat)<.000002);
+     }finally{store.close();}
+    },{id,after});
+   }
    assert.deepEqual(errors,[],"Browser script errors");
    console.log("PASS routing real UI",engineName,viewport.width,"hard legs, fixed toolbar, reverse, collapse, soft guide persistence");
    await ctx.close();

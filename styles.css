@@ -3260,3 +3260,23 @@ body.pin-open #app #routeToggleHolder{display:none}
 
 /* Route symbols are part of the existing pin; keep its original hit target. */
 .pin-route-symbol{pointer-events:none}
+
+#app .car-route-panel .route-icon-green{color:#16805c}
+#app .car-route-panel .route-icon-yellow{color:#967000}
+#app .car-route-panel .route-icon-red{color:#bd2634}
+#app .car-route-panel .route-icon-black{color:#15181c}
+#app .car-route-panel .route-icon-orange{color:#b9530b}
+#app #routeTolls[aria-expanded="true"]{--p2m-button-bg:#dbeaff}
+#app #routeSummary.car-route-unavailable{color:#b51b29;animation:p2m-route-alert 1.35s ease-in-out infinite}
+@keyframes p2m-route-alert{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){
+ #app #routeSummary.car-route-unavailable{animation:none}
+}
+#app .car-route-variants{display:flex;flex-wrap:wrap;gap:4px;min-height:0;overflow-y:auto;scrollbar-width:thin}
+#app .car-route-variants.hidden{display:none}
+#app .car-route-variant-choice{
+ display:flex;align-items:center;gap:6px;text-align:left;min-height:28px;padding:3px 6px;
+ border:1px solid #cbd6df;border-radius:7px;background:#fff;color:#243b53;font-size:12px
+}
+#app .car-route-variant-choice[aria-pressed="true"]{background:#e1f0ff;border-color:#8fb8e5}
+#app .car-route-variant-choice .car-route-dot{width:9px;height:9px;flex-basis:9px;margin:0}

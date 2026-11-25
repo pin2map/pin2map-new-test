@@ -915,6 +915,7 @@
           .map(element=>element.getBoundingClientRect())
       }),
       onLineClick:index=>routePanel?.focusLeg(index),
+      onVariantSelect:index=>routeSession.selectVariant(index),
       confirmRemove:message=>window.confirm(message),
       onGuideRemoveRequest:id=>routeGuideSession.remove(id)
     });
@@ -926,6 +927,10 @@
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onLegSelect:index=>routeMapView.fit(index),
       onMode:mode=>routeSession.setMode(mode),
+      onActiveProfile:profile=>routeSession.setActiveProfile(profile),
+      onCharacter:character=>routeSession.setCharacter(character),
+      onVariantSelect:index=>routeSession.selectVariant(index),
+      variantColors:window.Pin2MapCarRouteMapView.VARIANT_COLORS,
       onEnd:()=>{routeSession.clear();routeGuideSession.clear();renderPinPanel();},
       confirmEnd:()=>window.confirm("Routing wirklich beenden?"),
       onReverse:()=>{routeSession.reverse();renderPinPanel();},
@@ -1130,7 +1135,10 @@
         if(committed)uiState.clearSelection();
         updateModeUI();renderMarkers();renderPinPanel();
       },
-      onCommitted:pin=>{save();renderMarkers();enrichPinAddress(pin);showNotice("Position gespeichert");}
+      onCommitted:pin=>{
+        save();renderMarkers();enrichPinAddress(pin);showNotice("Position gespeichert");
+        routeSession.pinMoved(pin.id);
+      }
     });
     await mapHistoryController.initialize();
     favoritesPanel=favoritesController.bind();

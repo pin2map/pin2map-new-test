@@ -12,6 +12,32 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    /* Walk glyph from Tabler Icons (https://tabler.io/icons/icon/walk).
+     * Copyright (c) 2020-2026 Paweł Kuna. MIT License.
+     * Permission is hereby granted, free of charge, to any person obtaining a copy
+     * of this software and associated documentation files (the "Software"), to deal
+     * in the Software without restriction, including without limitation the rights
+     * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+     * copies of the Software, and to permit persons to whom the Software is
+     * furnished to do so, subject to the following conditions:
+     * The above copyright notice and this permission notice shall be included in all
+     * copies or substantial portions of the Software.
+     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+     * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+     * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+     * SOFTWARE.
+     */
+    "walk": [["path",{"d":"M12 4a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"}],["path",{"d":"M7 21l3 -4"}],["path",{"d":"M16 21l-2 -4l-3 -3l1 -6"}],["path",{"d":"M6 12l2 -3l4 -1l3 3l3 1"}]],
+    "park": [["path",{"d":"M12 18h10"}],["path",{"d":"M13.248 9.998A4.5 4.5 0 0 0 11.75 8.6V8a1 1 0 0 0-7.5 0 4.9 4.9 0 0 0 2.25 9H8"}],["path",{"d":"m15 14-2 6"}],["path",{"d":"m19 14 2 6"}],["path",{"d":"M21 14h-8"}],["path",{"d":"M8 20v-5.922a2 2 0 0 0-.586-1.414L6.5 11.75"}],["path",{"d":"M9.205 12.795 8 14"}],["circle",{"cx":"19","cy":"6","r":"2"}]],
+    "hiking-stick": [["path",{"d":"M13.5 10.5 2 22"}],["path",{"d":"M16.352 11.648a1.205 1.205 0 01-1.704 0l-2.296-2.296a1.205 1.205 0 010-1.704l.72-.72a2 2 0 011.022-.546l.599-.12a2 2 0 001.569-1.57l.12-.598a2 2 0 01.546-1.022l.72-.72a1.205 1.205 0 011.704 0l2.296 2.296a1.205 1.205 0 010 1.704l-6.02 6.02a1 1 0 103 3l.201-.201A7.4 7.4 0 0021 9.93V7"}],["path",{"d":"m6 21-3-3"}]],
+    "accessibility": [["circle",{"cx":"16","cy":"4","r":"1"}],["path",{"d":"m18 19 1-7-6 1"}],["path",{"d":"m5 8 3-3 5.5 3-2.36 3.5"}],["path",{"d":"M4.24 14.5a5 5 0 0 0 6.88 6"}],["path",{"d":"M13.76 17.5a5 5 0 0 0-6.88-6"}]],
+    "sliders-horizontal": [["path",{"d":"M10 5H3"}],["path",{"d":"M12 19H3"}],["path",{"d":"M14 3v4"}],["path",{"d":"M16 17v4"}],["path",{"d":"M21 12h-9"}],["path",{"d":"M21 19h-5"}],["path",{"d":"M21 5h-7"}],["path",{"d":"M8 10v4"}],["path",{"d":"M8 12H3"}]],
+    "equal-approximately": [["path",{"d":"M5 15a6.5 6.5 0 0 1 7 0 6.5 6.5 0 0 0 7 0"}],["path",{"d":"M5 9a6.5 6.5 0 0 1 7 0 6.5 6.5 0 0 0 7 0"}]],
+    "stretch-vertical": [["rect",{"width":"6","height":"20","x":"4","y":"2","rx":"2"}],["rect",{"width":"6","height":"20","x":"14","y":"2","rx":"2"}]],
+    "mountain-off": [["path",{"d":"m8 3 4 8 5-5 5 15H2L8 3z"}],["path",{"d":"m3 3 18 18"}]],
     // Official Lucide icon geometry for the modular route controls.
     "gauge": [["path",{"d":"m12 14 4-4"}],["path",{"d":"M3.34 19a10 10 0 1 1 17.32 0"}]],
     "graph-path": [["path",{"d":"m10.628 11.163 3.744 2.674"}],["path",{"d":"m16.895 13.21 2.21-4.42"}],["path",{"d":"m5.163 15.372 2.674-3.744"}],["circle",{"cx":"16","cy":"15","r":"2"}],["circle",{"cx":"20","cy":"7","r":"2"}],["circle",{"cx":"4","cy":"17","r":"2"}],["circle",{"cx":"9","cy":"10","r":"2"}]],

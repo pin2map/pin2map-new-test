@@ -4,6 +4,7 @@
  */
 (function(root){
  const COLORS=["#ff3930","#1987f5","#27a855","#fa9b22","#8754bf","#26a0a1"];
+ const VARIANT_COLORS=Object.freeze(["#b42c73","#1462c0","#16805c"]);
  const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
  const contains=(a,b)=>a.left<=b.left&&a.right>=b.right&&a.top<=b.top&&a.bottom>=b.bottom;
  function freeRouteRect({left,top,right,bottom},obstacles,width,height){
@@ -29,33 +30,52 @@
   return (centered.length?centered:candidates).reduce((best,rect)=>!best||compare(rect,best)>0?rect:best,null);
  }
  class CarRouteMapView {
-  constructor({mapPort,onLineClick,onGuideRemoveRequest=null,confirmRemove=null,getLayout=null,scheduleFrame=null}){
+  constructor({mapPort,onLineClick,onVariantSelect=null,onGuideRemoveRequest=null,confirmRemove=null,getLayout=null,scheduleFrame=null}){
    if(!mapPort||typeof onLineClick!=="function")
     throw new TypeError("Route map ports required");
-   this.map=mapPort;this.onLineClick=onLineClick;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
+   this.map=mapPort;this.onLineClick=onLineClick;this.onVariantSelect=onVariantSelect;this.onGuideRemoveRequest=onGuideRemoveRequest;this.confirmRemove=confirmRemove;this.handles=[];
    this.getLayout=getLayout;this.scheduleFrame=scheduleFrame;this.coordinates=[];this.geometries=[];
    this.map.onViewportResize?.(()=>this.scheduleFit());
   }
   clear(){for(const handle of this.handles)this.map.removeOverlay(handle);this.handles=[];}
   render(snapshot){
    this.clear();
-   const geometries=snapshot?.legs.map(leg=>leg.geometry)||[];
-   const changed=geometries.length!==this.geometries.length||geometries.some((geometry,i)=>geometry!==this.geometries[i]);
+   this.geometries=snapshot?.legs.map(leg=>leg.geometry)||[];
+   const variants=snapshot?.variants||[];
+   const geometries=variants.length?variants.flatMap(variant=>variant.geometries):this.geometries;
+   const previous=this.fitGeometries||[];
+   const changed=geometries.length!==previous.length||geometries.some((geometry,i)=>geometry!==previous[i]);
    if(changed){
-    this.geometries=geometries;
+    this.fitGeometries=geometries;
     this.coordinates=geometries.flatMap(geometry=>geometry?.coordinates?.map(([lng,lat])=>({lat,lng}))||[]);
    }
    if(!snapshot)return;
-   // Route roles are rendered by PinMarkerView on the existing pin handles.
-   snapshot.legs.forEach((leg,index)=>{
-    const positions=leg.geometry?.coordinates?.map(([lng,lat])=>({lat,lng}));
+   const draw=(geometry,{color,weight,opacity,ferry,variant},onClick)=>{
+    const positions=geometry?.coordinates?.map(([lng,lat])=>({lat,lng}));
     if(!positions||positions.length<2)return;
-    const color=COLORS[index%COLORS.length];
+    const classNames=[ferry&&"p2m-ferry-leg",variant!==undefined&&"p2m-route-variant",
+     variant!==undefined&&"p2m-route-variant-"+variant].filter(Boolean).join(" ");
     const line=this.map.createLine(positions,{
-     color,weight:5,opacity:.93,bubblingMouseEvents:false,
-     ...(leg.ferry?{dashArray:"8 8",className:"p2m-ferry-leg"}:{})
+     color,weight,opacity,bubblingMouseEvents:false,className:classNames,
+     ...(ferry?{dashArray:"8 8"}:{})
     });
-    this.map.onRouteLine(line,()=>this.onLineClick(index));this.handles.push(line);
+    this.map.onRouteLine(line,onClick);this.handles.push(line);
+   };
+   const chosen=snapshot.selectedVariant;
+   snapshot.legs.forEach((leg,index)=>{
+    draw(leg.geometry,{color:variants.length?VARIANT_COLORS[chosen]:COLORS[index%COLORS.length],
+     weight:variants.length?7:5,opacity:.93,ferry:leg.ferry,variant:variants.length?chosen:undefined},
+    ()=>this.onLineClick(index));
+   });
+   const visible=new Set(this.geometries);
+   variants.forEach((variant,index)=>{
+    if(index===chosen)return;
+    variant.geometries.forEach((geometry,leg)=>{
+     if(visible.has(geometry))return;
+     visible.add(geometry);
+     draw(geometry,{color:VARIANT_COLORS[index],weight:4,opacity:.76,
+      ferry:variant.ferries[leg],variant:index},()=>this.onVariantSelect?.(index));
+    });
    });
    for(const marker of snapshot.timeMarkers||[])this.handles.push(this.map.createRouteTimeMarker(marker));
    if(changed)this.scheduleFit();
@@ -91,7 +111,7 @@
    });
   }
  }
- const api=Object.freeze({CarRouteMapView,COLORS,freeRouteRect});
+ const api=Object.freeze({CarRouteMapView,COLORS,VARIANT_COLORS,freeRouteRect});
  root.Pin2MapCarRouteMapView=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

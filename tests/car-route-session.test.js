@@ -237,5 +237,59 @@ test("a longer route that approaches a distant direction flag can win outside it
   durationSeconds:5600,distanceMeters:120000};
  const guides=assignGuides([baseline],[{lat:48.30,lng:9.5,radiusMeters:4000}])[0];
  assert.equal(selectLeg(baseline,[closer],guides),closer);
- assert.equal(selectLeg(baseline,[{...closer,multiLaneMeters:300}],guides),baseline);
+ assert.equal(selectLeg(baseline,[{...closer,multiLaneMeters:300}],guides).geometry,closer.geometry);
+});
+
+test("ferry with its own time marks resets the road clock on either side",()=>{
+ const {timeMarkers}=require("../domain/active-car-route.js");
+ const leg=(from,to,durationSeconds,ferry=false)=>({
+  geometry:{coordinates:[[from,48],[to,48]]},durationSeconds,ferry
+ });
+ const marks=timeMarkers([leg(0,1,2400),leg(1,4,5400,true),leg(4,5,1800)]);
+ assert.deepEqual(marks.map(mark=>mark.hour),[null,null,1,null,null]);
+ assert.deepEqual(marks.map(mark=>mark.lng),[.75,2,3,4,5]);
+});
+
+test("moving any route pin recalculates with current coordinates and preserves route roles",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");plan.addWaypoint("w");
+ const pins={a:{lat:48,lng:9},w:{lat:48,lng:9.5},z:{lat:48,lng:10},other:{lat:48,lng:11}};
+ const requests=[];
+ const session=new CarRouteSession({plan,getPin:id=>pins[id],onChange:()=>{},onError:assert.fail,
+  calculate:async({waypoints})=>{
+   const coordinates=waypoints.map(({lng,lat})=>[lng,lat]);requests.push(coordinates);
+   return {geometry:{coordinates},distanceMeters:1000,durationSeconds:60};
+  }});
+ await session.recalculate();
+ for(const id of ["w","a","z"]){
+  pins[id]={...pins[id],lat:49};
+  await session.pinMoved(id);
+  assert.equal(session.snapshot().legs.length,2);
+  assert.deepEqual(session.snapshot().ids,["a","w","z"]);
+  assert.deepEqual(requests.slice(-2),[["a","w"],["w","z"]].map(ids=>ids.map(id=>[pins[id].lng,pins[id].lat])));
+ }
+ await session.pinMoved("other");
+ assert.equal(requests.length,8);
+});
+
+test("alternatives retain hard stops and selection changes the displayed itinerary",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","z");plan.addWaypoint("w");
+ const pins={a:{lat:48,lng:9},w:{lat:48,lng:9.5},z:{lat:48,lng:10}};
+ const session=new CarRouteSession({plan,getPin:id=>pins[id],onChange:()=>{},onError:assert.fail,
+  calculate:async({mode,waypoints})=>{
+   const points=waypoints.map(({lng,lat})=>[lng,lat]);
+   const primary={mode,geometry:{coordinates:points},distanceMeters:1000,durationSeconds:60,ascentMeters:5};
+   return {...primary,alternatives:[{...primary,geometry:{coordinates:[points[0],[9.25,49],points[1]]},ascentMeters:15,
+    durationSeconds:80}]};
+  }});
+ session.mode="bicycle";
+ await session.recalculate();
+ assert.equal(session.snapshot().variants.length,3);
+ assert.equal(session.snapshot().variants[1].ascentMeters,20);
+ session.selectVariant(1);
+ const snapshot=session.snapshot();
+ assert.deepEqual(snapshot.legs.map(({fromId,toId})=>[fromId,toId]),[["a","w"],["w","z"]]);
+ assert.equal(snapshot.durationSeconds,140);
+ assert.equal(snapshot.ascentMeters,20);
 });

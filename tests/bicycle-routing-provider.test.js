@@ -1,77 +1,64 @@
 "use strict";
 const test=require("node:test"),assert=require("node:assert/strict");
-const {BicycleRoutingProvider,PedestrianRoutingProvider,edgeStats}=require("../adapters/routing/bicycle-routing-provider.js");
-const points=[{lat:0,lng:0},{lat:0,lng:.01}];
+const {BicycleRoutingProvider,PedestrianRoutingProvider,ascentMeters,costingOptions}=
+ require("../adapters/routing/bicycle-routing-provider.js");
+const waypoints=[{lat:0,lng:0},{lat:0,lng:.01}];
 const trip={summary:{length:1.2,time:240},legs:[{shape:"???_pR",maneuvers:[]}]};
-const road={use:"road",road_class:"residential",lane_count:2,traversability:"both",length:1,
- weighted_grade:4,max_upward_grade:7,max_downward_grade:0};
+const alternate={summary:{length:1.4,time:260},legs:[{shape:"???a_pR",maneuvers:[]}]};
+const response=body=>({ok:true,json:async()=>body});
 
-test("rejects major roads, ramps and unknown road lanes, but measures additional lanes",()=>{
- for(const edge of [
-  {...road,road_class:"primary"},
-  {...road,use:"ramp"},
-  {...road,lane_count:undefined},
-  {...road,road_class:"unknown"}
- ])assert.equal(edgeStats([edge]),null);
- assert.equal(edgeStats([road]).ascentMeters,40);
- assert.equal(edgeStats([{...road,lane_count:3}]).multiLaneMeters,1000);
- assert.equal(edgeStats([{...road,traversability:"forward"}]).multiLaneMeters,1000);
- assert.equal(edgeStats([{...road,use:"cycleway",lane_count:undefined,road_class:"primary"}]).cycleShare,1);
+test("all four bike types and the three characters map to Valhalla costing",()=>{
+ for(const [profile,type] of Object.entries({everyday:"Hybrid",gravel:"Cross",mountain:"Mountain",road:"Road"}))
+  assert.deepEqual(costingOptions("bicycle",profile,"balanced"),{bicycle_type:type});
+ assert.equal(costingOptions("bicycle","gravel","cycleways").use_roads,0);
+ assert.equal(costingOptions("bicycle","road","flat").use_hills,0);
 });
 
-test("uses the least climbing eligible alternative and keeps guide points as through locations",async()=>{
+test("returns distinct bike alternatives even on major multilane roads and with incomplete elevation",async()=>{
  const calls=[];
- const traces=[[{...road,road_class:"primary"}],[road],[{...road,use:"cycleway",weighted_grade:1}],[road]];
  const provider=new BicycleRoutingProvider({fetchImpl:async(url,opts)=>{
-  const path=new URL(url).pathname,payload=JSON.parse(opts.body);
-  calls.push([path,payload]);
-  return {ok:true,json:async()=>path==="/route"?{trip,alternates:payload.alternates?
-   [{trip},{trip}]:[]}:{edges:traces.shift()}};
+  const path=new URL(url).pathname,body=JSON.parse(opts.body);
+  calls.push([path,body]);
+  if(path==="/route")return response({trip,alternates:[{trip},{trip:alternate}]});
+  if(body.encoded_polyline===alternate.legs[0].shape)throw new Error("Height unavailable");
+  return response({edges:[{use:"road",road_class:"primary",lane_count:4,length:1,weighted_grade:4,mean_elevation:220}]});
  }});
- const route=await provider.calculate({waypoints:points});
+ const route=await provider.calculate({waypoints,activeProfile:"gravel",character:"flat"});
  assert.equal(route.mode,"bicycle");
- assert.equal(route.ascentMeters,10);
- assert.equal(route.cycleShare,1);
+ assert.equal(route.profile,"gravel");
+ assert.equal(route.ascentMeters,40);
+ assert.equal(route.alternatives.length,1);
+ assert.equal(route.alternatives[0].distanceMeters,1400);
+ assert.equal(route.alternatives[0].ascentMeters,null);
  assert.equal(calls[0][1].alternates,2);
- assert.equal(calls[0][1].costing_options.bicycle.use_roads,0);
- assert.equal(calls[0][1].costing_options.bicycle.use_hills,0);
- await provider.calculate({waypoints:points,shapePoints:[{lat:.001,lng:.005}]});
+ assert.deepEqual(calls[0][1].costing_options.bicycle,{bicycle_type:"Cross",use_hills:0});
+ await provider.calculate({waypoints,shapePoints:[{lat:.001,lng:.005}]});
  const guided=calls.findLast(([path])=>path==="/route")[1];
  assert.equal(guided.locations[1].type,"through");
  assert.equal(guided.alternates,0);
 });
 
-test("uses verified multilane segments only when avoiding them is unavailable",async()=>{
- const provider=new BicycleRoutingProvider({fetchImpl:async url=>({ok:true,json:async()=>
-  new URL(url).pathname==="/route"?{trip}:{edges:[{...road,lane_count:4}]}})});
- assert.equal((await provider.calculate({waypoints:points})).multiLaneMeters,1000);
- const traces=[[{...road,lane_count:4,weighted_grade:0}],[road]];
- const alternatives=new BicycleRoutingProvider({fetchImpl:async url=>({ok:true,json:async()=>
-  new URL(url).pathname==="/route"?{trip,alternates:[{trip}]}:{edges:traces.shift()}})});
- assert.equal((await alternatives.calculate({waypoints:points})).multiLaneMeters,0);
+test("missing elevation stays unknown and ferry elevation is not added",()=>{
+ assert.equal(ascentMeters([{use:"road",length:2,weighted_grade:0}]),null);
+ assert.equal(ascentMeters([{use:"footway",mean_elevation:12},{use:"ferry",mean_elevation:34},
+  {use:"road",mean_elevation:65},{use:"road",mean_elevation:67}]),2);
 });
 
-test("refuses unverified bicycle routes",async()=>{
- const unverified=new BicycleRoutingProvider({fetchImpl:async url=>({ok:true,json:async()=>
-  new URL(url).pathname==="/route"?{trip}:{} })});
- await assert.rejects(()=>unverified.calculate({waypoints:points}),/nicht vollständig/);
-});
-
-test("walking prefers a modest detour on footpaths and uses soft guide points",async()=>{
- const footTrip={...trip,summary:{length:1.3,time:275}};
+test("walking options use Valhalla profiles and retain routing alternatives and guides",async()=>{
+ assert.equal(costingOptions("pedestrian","shortest").shortest,true);
+ assert.ok(costingOptions("pedestrian","stroll").walkway_factor<costingOptions("pedestrian","normal").walkway_factor);
+ assert.equal(costingOptions("pedestrian","hike").max_hiking_difficulty,3);
+ assert.equal(costingOptions("pedestrian","accessible").type,"wheelchair");
  const requests=[];
- const traces=[[road],[{use:"footway",length:1.3}],[{use:"steps",length:1.3}]];
  const provider=new PedestrianRoutingProvider({fetchImpl:async(url,options)=>{
-  const body=JSON.parse(options.body);
-  requests.push(body);
-  return {ok:true,json:async()=>new URL(url).pathname==="/route"?
-   {trip,alternates:body.alternates?[{trip:footTrip}]:[]}:{edges:traces.shift()}};
+  const body=JSON.parse(options.body);requests.push(body);
+  assert.equal(new URL(url).pathname,"/route");
+  return response(body.alternates?{trip,alternates:[{trip:alternate}]}:{trip});
  }});
- const selected=await provider.calculate({waypoints:points});
+ const selected=await provider.calculate({waypoints,activeProfile:"accessible"});
  assert.equal(selected.mode,"pedestrian");
- assert.equal(selected.durationSeconds,275);
- assert.equal(requests[0].costing,"pedestrian");
- assert.ok(requests[0].costing_options.pedestrian.walkway_factor<1);
- await provider.calculate({waypoints:points,shapePoints:[{lat:.001,lng:.005}]});
- assert.equal(requests[3].locations[1].type,"through");
+ assert.equal(selected.alternatives.length,1);
+ assert.equal(requests[0].costing_options.pedestrian.type,"wheelchair");
+ await provider.calculate({waypoints,shapePoints:[{lat:.001,lng:.005}]});
+ assert.equal(requests[1].locations[1].type,"through");
 });

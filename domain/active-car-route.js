@@ -65,7 +65,7 @@
   const marks=[];
   let elapsed=0,next=1800;
   for(const leg of legs){
-   if(leg.ferry){elapsed=0;next=1800;continue;}
+   if(leg.ferry){elapsed=0;next=1800;}
    const sections=(leg.timeSections||[]).filter(s=>s.seconds>0&&s.coordinates?.length>=2);
    const seconds=sections.reduce((sum,s)=>sum+s.seconds,0);
    const pieces=seconds>0?sections:[{seconds:leg.durationSeconds,coordinates:leg.geometry?.coordinates}];
@@ -90,6 +90,7 @@
     }
     elapsed+=duration;
    }
+   if(leg.ferry){elapsed=0;next=1800;}
   }
   return marks;
  }

@@ -757,3 +757,13 @@ Richtungsflaggen können auch längere Umwege und Varianten auslösen, die sich 
 Der gemeinsame Routing-Dialog erlaubt den Modus „Zu Fuß“. Valhalla Pedestrian bevorzugt Fußwege und Gehsteige. Bei angebotenen Alternativen wird Fußwegzeit für die Auswahl niedriger gewichtet, sodass auch ein kurzer Umweg über Fußwege gewählt werden kann. Angezeigt wird die ungekürzte Dauer. Richtungsflaggen gelten auch für Fußrouten. Für Fahrrad und Fuß gibt es vorerst keine eigenen Optionen.
 
 Bei namengebundenen Suchtreffern wie „Zentralgarage Stuttgart“ übernimmt ein neu gesetzter Pin den Suchtext als Namen und speichert daneben die gefundene Adresse. Adresssuchen behalten Straße und Hausnummer als Pin-Namen.
+
+### R-045 – Fähr-Zeitmarken, verschiebbare Routen-Pins und Valhalla-Varianten (25.11.2026)
+
+Fähretappen zeigen eigene halbe und ganze Stunden ab dem Abfahrtshafen. Die Zählung der Landroute beginnt ab dem Ankunftshafen wieder bei null. Das bestätigte Verschieben eines Start-, Ziel- oder Zwischenziel-Pins berechnet die aktive Route automatisch neu. Der Zwischenziel-Button zeigt beim Hinzufügen „+“ und beim Entfernen „−“.
+
+Valhalla ist der Anbieter für Fahrrad und Fuß. Die in R-043 und R-044 eingeführten zusätzlichen Fahrradausschlüsse entfallen. Zugänglichkeit und Wegepräferenzen folgen Valhalla. Fahrradtypen sind Alltag (Hybrid), Gravel (Cross), Mountainbike und Rennrad (Road). Der Streckencharakter bietet Ausgewogen, Radwege bevorzugen und Steigungen vermeiden. Die Fußprofile nutzen Valhalla-Kostenparameter für Normal zu Fuß, Kürzeste Strecke, Spaziergang, Wandern und Barrierearm (Rollstuhlprofil).
+
+Wenn Valhalla oder die Berechnung mit Richtungsflaggen unterschiedliche Varianten liefert, erscheinen bis zu drei vollständige Routen. Pflichtpins sind in allen Varianten enthalten. Karte und Variantenliste verwenden übereinstimmende Farben. Auswahl ist über die Karte oder die Liste möglich. Dauer und Distanz werden pro Variante angezeigt. Geschätzte Höhenmeter für Radstrecken ergänzen den Vergleich, sofern verfügbar. Richtungsflaggen bleiben weiche Vorgaben für die bevorzugte Route. Die Startauswahl bevorzugt passende Korridore ohne zusätzliche Haltepunkte.
+
+Eine fehlgeschlagene Berechnung färbt die Kopfzeile des Routing-Dialogs rot und lässt sie blinken. Bei aktivierter Systemeinstellung für reduzierte Bewegung bleibt sie statisch rot. Erfolgreiche Neuberechnung, Wechsel der Verkehrsart oder Ende des Routings setzt die Anzeige zurück.

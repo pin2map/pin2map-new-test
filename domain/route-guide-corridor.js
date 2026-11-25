@@ -54,14 +54,6 @@
   })));
  }
 
- function preferred(a,b){
-  if(a.mode==="bicycle"&&b.mode==="bicycle"){
-   const rank=(x,y)=>(x??Infinity)-(y??Infinity);
-   const difference=rank(a.multiLaneMeters,b.multiLaneMeters)||rank(a.ascentMeters,b.ascentMeters)||rank(a.maxGrade,b.maxGrade)||b.cycleShare-a.cycleShare;
-   if(difference)return difference<0;
-  }
-  return a.durationSeconds<b.durationSeconds;
- }
  function selectLeg(baseline,alternatives,guides){
   let best=baseline;
   const penalty=meters=>meters.reduce((sum,meters,index)=>sum+Math.max(0,meters-guides[index].radius),0);
@@ -70,11 +62,10 @@
   for(const option of alternatives){
    if(option.durationSeconds>baseline.durationSeconds*2+600||
       option.distanceMeters>baseline.distanceMeters*2+10000)continue;
-   if((option.multiLaneMeters||0)>(baseline.multiLaneMeters||0))continue;
    const misses=guides.map(guide=>locate(option.geometry,guide.flag).meters);
    if(misses.some((meters,index)=>guides[index].meters<=guides[index].radius&&meters>guides[index].radius))continue;
    const remaining=penalty(misses);
-   if(remaining<bestPenalty||(remaining===bestPenalty&&remaining<initial&&preferred(option,best))){
+   if(remaining<bestPenalty||(remaining===bestPenalty&&remaining<initial&&option.durationSeconds<best.durationSeconds)){
     best=option;bestPenalty=remaining;
    }
   }
