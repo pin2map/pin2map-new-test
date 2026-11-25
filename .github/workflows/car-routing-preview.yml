@@ -17,6 +17,10 @@ on:
       - ui/car-route-panel.js
       - ui/car-route-map-view.js
       - map-adapter-leaflet.js
+      - domain/transit-journey.js
+      - application/transit-route-search.js
+      - adapters/routing/transit-routing-provider.js
+      - ui/transit-route-panel.js
       - tests/car-routing-browser.cjs
       - .github/workflows/car-routing-preview.yml
   pull_request:
@@ -65,7 +69,8 @@ jobs:
              'map-adapter-leaflet.js','ui/pin-marker-view.js',
              'application/routing-service.js','adapters/routing/car-routing-provider.js','adapters/routing/bicycle-routing-provider.js',
              'application/car-route-session.js','application/route-guide-session.js',
-             'ui/car-route-map-view.js','ui/car-route-panel.js']
+             'ui/car-route-map-view.js','ui/car-route-panel.js','domain/transit-journey.js',
+             'application/transit-route-search.js','adapters/routing/transit-routing-provider.js','ui/transit-route-panel.js']
           expected={p:Path(p).read_bytes() for p in assets}
 
           # Pages publishes an ISOLATED Preview app rather than a raw source copy.
@@ -120,3 +125,29 @@ jobs:
         env:
           PIN2MAP_ROUTING_URL: https://pin2map.github.io/pin2map-new-test/preview/
         run: node tests/car-routing-browser.cjs
+
+      - name: Live Transitous browser sample on HTTPS Preview
+        continue-on-error: true
+        run: |
+          node <<'JS'
+          const { chromium } = require('playwright');
+          (async()=>{
+            const browser=await chromium.launch();
+            try{
+              const page=await browser.newPage();
+              await page.goto('https://pin2map.github.io/pin2map-new-test/preview/',{waitUntil:'domcontentloaded'});
+              await page.waitForFunction(()=>!!window.Pin2MapTransitRoutingProvider);
+              const outcome=await page.evaluate(async()=>{
+                const provider=new window.Pin2MapTransitRoutingProvider({fetchImpl:window.fetch.bind(window)});
+                const signal=AbortSignal.timeout(25000);
+                const journeys=await provider.calculate({
+                  waypoints:[{lat:52.525,lng:13.369},{lat:52.510,lng:13.398}],
+                  query:{time:Date.now(),arriveBy:false,vehicle:'all'},signal
+                });
+                return {count:journeys.length,modes:[...new Set(journeys.flatMap(route=>route.legs.map(leg=>leg.mode)))]};
+              });
+              if(!outcome.count)throw new Error('Transitous returned no usable connection');
+              console.log('PASS Transitous through the published browser adapter',JSON.stringify(outcome));
+            }finally{await browser.close();}
+          })().catch(error=>{console.error(error);process.exitCode=1;});
+          JS

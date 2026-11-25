@@ -74,7 +74,7 @@ test("car, bicycle and pedestrian routing are active through modular providers",
    model=read("domain/active-car-route.js"),map=read("ui/car-route-map-view.js");
  assert.match(app,/routingCore\.register\("car",new window\.Pin2MapCarRouting\.CarRoutingProvider/);
  assert.match(app,/routingCore\.register\("pedestrian",new window\.Pin2MapBicycleRouting\.PedestrianRoutingProvider/);
- assert.doesNotMatch(app,/routingCore\.register\("transit"/);
+ assert.match(app,/routingCore\.register\("transit",transitProvider\)/);
  for(const [file,source] of [["model",model],["session",session],["map",map]]){
   assert.doesNotMatch(source,/\b(?:window\.L|indexedDB|localStorage|document\.getElementById)\b/,file+" crosses an architectural port");
  }

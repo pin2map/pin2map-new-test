@@ -1,6 +1,6 @@
 /* pin2map NEW PWA: offline app shell and on-demand, previously viewed OSM tiles.
    Tile policy: no prefetch, bulk download or offline-area download. */
-const CACHE='pin2map-new-v345';
+const CACHE='pin2map-new-v346';
 const TILE_CACHE='pin2map-viewed-osm-tiles-v1';
 const TILE_META_CACHE='pin2map-viewed-osm-tile-metadata-v1';
 const FALLBACK_TILE_TTL=7*24*60*60*1000; // Provider minimum when response headers are inaccessible.
@@ -137,9 +137,13 @@ const CORE=[
   "./application/routing-service.js",
   "./adapters/routing/car-routing-provider.js",
   "./adapters/routing/bicycle-routing-provider.js",
+  "./domain/transit-journey.js",
+  "./adapters/routing/transit-routing-provider.js",
+  "./application/transit-route-search.js",
   "./application/car-route-session.js",
   "./application/route-guide-session.js",
   "./ui/car-route-map-view.js",
+  "./ui/transit-route-panel.js",
   "./ui/car-route-panel.js",
   "./app.js",
   "./styles.css",

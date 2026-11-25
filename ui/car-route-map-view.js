@@ -50,21 +50,21 @@
     this.coordinates=geometries.flatMap(geometry=>geometry?.coordinates?.map(([lng,lat])=>({lat,lng}))||[]);
    }
    if(!snapshot)return;
-   const draw=(geometry,{color,weight,opacity,ferry,variant},onClick)=>{
+   const draw=(geometry,{color,weight,opacity,ferry,walk,variant},onClick)=>{
     const positions=geometry?.coordinates?.map(([lng,lat])=>({lat,lng}));
     if(!positions||positions.length<2)return;
     const classNames=[ferry&&"p2m-ferry-leg",variant!==undefined&&"p2m-route-variant",
      variant!==undefined&&"p2m-route-variant-"+variant].filter(Boolean).join(" ");
     const line=this.map.createLine(positions,{
      color,weight,opacity,bubblingMouseEvents:false,className:classNames,
-     ...(ferry?{dashArray:"8 8"}:{})
+     ...(ferry?{dashArray:"8 8"}:walk?{dashArray:"1 9",lineCap:"round"}:{})
     });
     this.map.onRouteLine(line,onClick);this.handles.push(line);
    };
    const chosen=snapshot.selectedVariant;
    snapshot.legs.forEach((leg,index)=>{
     draw(leg.geometry,{color:variants.length?VARIANT_COLORS[chosen]:COLORS[index%COLORS.length],
-     weight:variants.length?7:5,opacity:.93,ferry:leg.ferry,variant:variants.length?chosen:undefined},
+     weight:variants.length?7:5,opacity:.93,ferry:leg.ferry,walk:["WALK","FOOT"].includes(leg.mode),variant:variants.length?chosen:undefined},
     ()=>this.onLineClick(index));
    });
    for(const marker of snapshot.timeMarkers||[])this.handles.push(this.map.createRouteTimeMarker(marker));

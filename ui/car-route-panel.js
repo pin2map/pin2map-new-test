@@ -10,15 +10,23 @@
  const variantDistance=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1});
  const fmtTime=s=>{const m=Math.round(s/60),h=Math.floor(m/60);return (h?h+" h ":"")+ (m%60)+" min";};
  class CarRoutePanel {
-  constructor({document:doc,getElement,icons,getPin,onMode,onActiveProfile,onVariantSelect,variantColors,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
+  constructor({document:doc,getElement,icons,getPin,onMode,onActiveProfile,onVariantSelect,variantColors,transitPanel,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice}){
    if(!doc||!getElement||!icons)throw new TypeError("Route panel UI dependencies required");
-   Object.assign(this,{doc,el:getElement,icons,getPin,onMode,onActiveProfile,onVariantSelect,variantColors,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
+   Object.assign(this,{doc,el:getElement,icons,getPin,onMode,onActiveProfile,onVariantSelect,variantColors,transitPanel,onLegSelect,onEnd,confirmEnd,onReverse,onAll,onOrder,onTimeProfile,readTimeFactors,writeTimeFactors,onOptions,onApple,onToggle,onLayoutChange,onShowNotice});
    this.snapshot=null;this.visible=true;
   }
   bind(){
+   this.transitPanel?.bind();
    this.el("routeEnd").addEventListener("click",()=>{if(this.confirmEnd())this.onEnd();});
    for(const button of this.doc.querySelectorAll("[data-route-mode]"))
-    button.addEventListener("click",()=>{this.closeMenus();this.onMode(button.dataset.routeMode);});
+    button.addEventListener("click",()=>{
+     const mode=button.dataset.routeMode,panel=this.el("carRoutePanel");
+     this.closeMenus();
+     if(mode==="transit"&&this.snapshot?.mode==="transit"){
+      panel.classList.toggle("transit-mode-picker");return;
+     }
+     panel.classList.remove("transit-mode-picker");this.onMode(mode);
+    });
    this.el("routeReverse").addEventListener("click",()=>this.onReverse());
    this.el("routeAll").addEventListener("click",()=>this.chooseWaypoints("all"));
    this.el("routeFixed").addEventListener("click",()=>this.chooseWaypoints("fixed"));
@@ -100,7 +108,9 @@
    for(const [id,active]of [["pinRouteStart",pin.id===this.snapshot?.startId],
       ["pinRouteTarget",pin.id===this.snapshot?.targetId],
       ["pinRouteWaypoint",this.snapshot?.waypointIds.includes(pin.id)]]){
-     const b=this.el(id);if(!b)continue;b.classList.toggle("is-active",Boolean(active));
+     const b=this.el(id);if(!b)continue;
+     if(id==="pinRouteWaypoint")b.disabled=this.snapshot?.mode==="transit";
+     b.classList.toggle("is-active",Boolean(active));
      b.setAttribute("aria-pressed",String(Boolean(active)));
      if(id==="pinRouteWaypoint"){
       const icon=active?"minus":"plus";
@@ -112,11 +122,14 @@
   }
   render(snapshot){
    this.snapshot=snapshot;const active=!!snapshot?.ready;
-   this.el("carRoutePanel").classList.toggle("hidden",!active||!this.visible);
+   const panel=this.el("carRoutePanel"),transit=snapshot?.mode==="transit";
+   panel.classList.toggle("hidden",!active||!this.visible);
+   panel.classList.toggle("transit-route-active",transit);
+   if(!transit||!active)panel.classList.remove("transit-mode-picker");
    const toggle=this.el("routePanelToggle");this.el("routeToggleHolder").classList.toggle("hidden",!active);
    toggle.setAttribute("aria-pressed",String(active&&this.visible));
    if(!active){this.closeMenus();return;}
-   const icon={car:"car",bicycle:"bike",pedestrian:"footprints"}[snapshot.mode]||"car";
+   const icon={car:"car",bicycle:"bike",pedestrian:"footprints",transit:"tram-front"}[snapshot.mode]||"car";
    if(this.el("routeModeIcon").dataset.pinIcon!==icon)this.icons.mount(this.el("routeModeIcon"),icon);
    if(this.el("routePanelToggle").dataset.pinIcon!==icon)this.icons.mount(this.el("routePanelToggle"),icon);
    for(const button of this.doc.querySelectorAll("[data-route-mode]")){
@@ -124,6 +137,7 @@
     button.classList.toggle("is-active",active);
     button.setAttribute("aria-pressed",String(active));
    }
+   if(transit){this.transitPanel.render(snapshot);return;}
    for(const id of ["routeTimes","routeApple"])this.el(id).disabled=snapshot.mode!=="car";
    const menu=profileMenus[snapshot.mode],settings=this.el("routeSettings"),tolls=this.el("routeTolls");
    settings.setAttribute("aria-controls",menu);

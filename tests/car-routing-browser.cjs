@@ -210,7 +210,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(controls.toggleTop>controls.basemapBottom&&Math.abs(controls.toggleRight-controls.basemapRight)<2);
    const toggleBg=()=>page.locator("#routePanelToggle").evaluate(el=>getComputedStyle(el).backgroundColor);
    assert.equal(await toggleBg(),"rgb(23, 100, 191)");
-   const sizes=await page.locator("#carRoutePanel .car-route-round").evaluateAll(buttons=>
+   const sizes=await page.locator("#carRoutePanel .car-route-round:not(#transitDb)").evaluateAll(buttons=>
     buttons.map(button=>{const box=button.getBoundingClientRect();return [box.width,box.height];}));
    assert.ok(sizes.every(([w,h])=>w===h&&w===sizes[0][0]),JSON.stringify(sizes));
    await page.locator("#routeWaypoints").click();
@@ -529,6 +529,38 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
      }finally{store.close();}
     },{id,after});
    }
+   const transitCalls=[];
+   await page.route("https://api.transitous.org/api/v6/plan?**",async entry=>{
+    const params=new URL(entry.request().url()).searchParams;
+    const base=Date.parse(params.get("time"));
+    transitCalls.push([...params.entries()]);
+    const at=minute=>new Date(base+minute*60000).toISOString();
+    const travel=(mode,start,end,from,to,tripId,lon)=>({
+     mode,startTime:at(start),endTime:at(end),from:{name:from,stopId:from,track:"2"},to:{name:to},
+     tripId,legGeometry:{points:encode([{lat:48.7,lon},{lat:48.8,lon:lon+.05}]),precision:6}
+    });
+    const a=params.get("arriveBy")==="true"?-60:0;
+    const route=(legs,end)=>({startTime:legs[0].startTime,endTime:at(end),legs});
+    await entry.fulfill({json:{itineraries:[
+     route([travel("LONG_DISTANCE",a,a+25,"A","B","ICE1",9),travel("LONG_DISTANCE",a+30,a+45,"B","C","ICE2",9.05)],a+45),
+     route([travel("BUS",a+5,a+50,"A","C","BUS",9)],a+50)
+    ]},headers:{"Access-Control-Allow-Origin":"*"}});
+   });
+   await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
+   await page.locator("#transitSelected .transit-green").waitFor();
+   assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),false);
+   assert.equal(await page.locator("#transitDate").isVisible(),true);
+   assert.equal(await page.locator("#routeEnd").isVisible(),true);
+   await page.locator("#transitWhen").selectOption("arrive");
+   await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
+   assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
+   await page.locator("#transitSelected").click();
+   await page.locator("#transitAlternatives button").filter({has:page.locator(".transit-red")}).first().click();
+   await page.getByText(/Kritischer Umstieg in B/).waitFor();
+   assert.match(await page.locator("#routeLegs").textContent(),/Gleis 2/);
+   await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
+   assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),true);
+   await page.getByRole("button",{name:"Auto",exact:true}).click();
    // Exercise the actual settings reset in the test-only browser project.
    await page.evaluate(()=>{
     localStorage.setItem("foreign-test-key","keep");

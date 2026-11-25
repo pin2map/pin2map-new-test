@@ -909,6 +909,12 @@
     routingCore.register("car",new window.Pin2MapCarRouting.CarRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     routingCore.register("bicycle",new window.Pin2MapBicycleRouting.BicycleRoutingProvider({fetchImpl:window.fetch.bind(window)}));
     routingCore.register("pedestrian",new window.Pin2MapBicycleRouting.PedestrianRoutingProvider({fetchImpl:window.fetch.bind(window)}));
+    const transitProvider=new window.Pin2MapTransitRoutingProvider({fetchImpl:window.fetch.bind(window)});
+    routingCore.register("transit",transitProvider);
+    const transitSearch=new window.Pin2MapTransitRouteSearch({
+      calculate:request=>routingCore.calculate({mode:"transit",...request}),
+      stopNear:(flag,signal)=>transitProvider.stopNear(flag,signal)
+    });
     const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
     const routePinById=id=>pinOps.findPin(state,id);
     routeGuideSession=new window.Pin2MapRouteGuideSession.RouteGuideSession({
@@ -935,7 +941,14 @@
     const readRouteTimeFactors=()=>{
       try{return JSON.parse(appStorage.readTimeFactors())||{};}catch{return {};}
     };
+    const transitPanel=new window.Pin2MapTransitRoutePanel({
+      document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
+      onQuery:query=>routeSession.setTransitQuery(query),onSelect:index=>routeSession.selectVariant(index),
+      onLegSelect:index=>{routePanel.selectLeg(index);routeMapView.fit(index);},
+      open:url=>window.open(url,"_blank","noopener,noreferrer"),colors:window.Pin2MapCarRouteMapView.COLORS
+    });
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
+      transitPanel,
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onLegSelect:index=>routeMapView.fit(index),
       onMode:mode=>routeSession.setMode(mode),
@@ -974,7 +987,7 @@
       onLayoutChange:()=>routeMapView.scheduleFit(),onShowNotice:showNotice
     });
     routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
-      plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
+      transitSearch,plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
       onGuideWarning:count=>showNotice(count===1?"Eine Richtungsflagge konnte nicht sinnvoll berücksichtigt werden.":
         count+" Richtungsflaggen konnten nicht sinnvoll berücksichtigt werden."),
       calculate:request=>routingCore.calculate(request),
@@ -997,6 +1010,9 @@
       onPin:point=>addPin(point.lat,point.lng,"","map"),
       onArea:point=>void findAreaAt(point),
       onGuide:point=>{
+        if(routeSession.mode==="transit"&&routeGuideSession.list().length>=2){
+          showNotice("Für ÖPNV sind bis zu zwei Richtungsflaggen möglich.");return;
+        }
         routeGuideSession.add({...point,radiusMeters:mapAdapter.metersForPixels(point,40)});
         showNotice("Richtungsflagge gesetzt.");
       }

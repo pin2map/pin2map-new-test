@@ -18,7 +18,7 @@
    throw new RangeError("Routing point requires valid {lat,lng} WGS84 coordinates");
   return {lat:p.lat,lng:p.lng};
  }
- function decodePolyline6(encoded){
+ function decodePolyline6(encoded,precision=6){
   if(typeof encoded!=="string"||!encoded.length)throw new TypeError("Missing Valhalla polyline");
   let lat=0,lng=0,i=0;
   const coords=[];
@@ -36,7 +36,8 @@
     delta.push(val&1?-(Math.floor(val/2)+1):Math.floor(val/2));
    }
    lat+=delta[0];lng+=delta[1];
-   const x=lng/1e6,y=lat/1e6;
+   const scale=10**precision;
+   const x=lng/scale,y=lat/scale;
    if(!Number.isFinite(x)||!Number.isFinite(y)||Math.abs(x)>180||Math.abs(y)>90)
     throw new Error("Invalid Valhalla geometry coordinates");
    coords.push([x,y]);

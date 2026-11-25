@@ -137,7 +137,7 @@
   snapshot(){return {startId:this.startId,targetId:this.targetId,waypointIds:[...this.orderedWaypoints()],
    profile:this.profile,avoidTolls:this.avoidTolls,order:this.order,ready:this.ready(),ids:this.ids()};}
  }
- const api=Object.freeze({ActiveCarRoute,coord,TIME_FACTORS,validTimeFactor,timeMarkers,splitFerryLegs});
+ const api=Object.freeze({ActiveCarRoute,coord,distance,TIME_FACTORS,validTimeFactor,timeMarkers,splitFerryLegs});
  root.Pin2MapActiveCarRoute=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

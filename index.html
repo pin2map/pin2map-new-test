@@ -167,9 +167,13 @@
 <script defer src="./application/routing-service.js"></script>
 <script defer src="./adapters/routing/car-routing-provider.js"></script>
 <script defer src="./adapters/routing/bicycle-routing-provider.js"></script>
+<script defer src="./domain/transit-journey.js"></script>
+<script defer src="./adapters/routing/transit-routing-provider.js"></script>
+<script defer src="./application/transit-route-search.js"></script>
 <script defer src="./application/car-route-session.js"></script>
 <script defer src="./application/route-guide-session.js"></script>
 <script defer src="./ui/car-route-map-view.js"></script>
+<script defer src="./ui/transit-route-panel.js"></script>
 <script defer src="./ui/car-route-panel.js"></script>
 <script defer src="./app.js"></script>
 </head>
@@ -195,11 +199,24 @@
         <button class="car-route-round is-active" type="button" data-pin-icon="car" data-route-mode="car" aria-label="Auto" aria-pressed="true"></button>
         <button class="car-route-round" type="button" data-pin-icon="bike" data-route-mode="bicycle" aria-label="Fahrrad" aria-pressed="false"></button>
         <button class="car-route-round" type="button" data-route-mode="pedestrian" data-pin-icon="footprints" title="Zu Fuß" aria-label="Zu Fuß" aria-pressed="false"></button>
-        <button class="car-route-round" type="button" data-pin-icon="tram-front" title="ÖPNV – später" aria-label="ÖPNV – später" disabled></button>
+        <button class="car-route-round" type="button" data-pin-icon="tram-front" data-route-mode="transit" aria-label="ÖPNV" aria-pressed="false"></button>
       <button id="routeReverse" class="car-route-round" type="button" data-pin-icon="arrow-left-right" title="Fahrtrichtung umkehren" aria-label="Fahrtrichtung umkehren"></button>
       <button id="routeEnd" class="car-route-round car-route-end" type="button" data-pin-icon="route-off" aria-label="Routing beenden"></button>
       </div></fieldset>
+      <div class="transit-time-fields">
+        <input id="transitDate" type="date" aria-label="Reisedatum">
+        <input id="transitClock" type="time" aria-label="Uhrzeit">
+      </div>
     </div>
+    <div class="transit-controls">
+      <select id="transitWhen" aria-label="Zeitvorgabe"><option value="depart">Abfahrt ab</option><option value="arrive">Ankunft bis</option></select>
+      <details id="transitPicker"><summary id="transitSelected">Verbindungen</summary><div id="transitAlternatives"></div></details>
+      <button id="transitDb" class="car-route-round" type="button" aria-label="Bei der Bahn suchen">DB</button>
+    </div>
+    <details class="transit-options"><summary>Optionen</summary><label>Verkehrsmittel <select id="transitVehicle">
+      <option value="all">Alle</option><option value="rail">Bahn</option><option value="bus">Bus</option>
+    </select></label></details>
+    <p id="transitRisk" role="status"></p>
     <div class="car-route-row car-route-secondary-row">
       <fieldset class="car-route-group car-route-waypoints"><legend>Zwischenziele</legend><div class="car-route-modes">
         <button id="routeWaypoints" class="car-route-round p2m-icon-control" type="button" aria-label="Zwischenziele" aria-controls="routeWaypointMenu" aria-expanded="false"><span data-pin-icon="graph-star" aria-hidden="true"></span></button>
