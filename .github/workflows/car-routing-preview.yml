@@ -225,18 +225,22 @@ jobs:
           mkdir -p transitous-comparison
           node <<'JS'
           const fs=require("node:fs/promises");
+          const {chromium}=require("playwright");
           const endpoint="https://api.transitous.org/api/v6/";
           const folder="transitous-comparison";
+          let page;
           async function request(label,path,query){
             const url=new URL(path,endpoint);
             url.search=new URLSearchParams(query);
-            const response=await fetch(url,{signal:AbortSignal.timeout(35000),headers:{Accept:"application/json"}});
-            const body=await response.text();
+            const {status,body}=await page.evaluate(async href=>{
+              const response=await fetch(href,{signal:AbortSignal.timeout(35000),headers:{Accept:"application/json"}});
+              return {status:response.status,body:await response.text()};
+            },url.href);
             let data;
             try{data=JSON.parse(body);}catch{data=body;}
-            await fs.writeFile(folder+"/"+label+".json",JSON.stringify({url:url.href,status:response.status,data},null,2));
-            console.log(label,response.status,url.href);
-            if(!response.ok)throw new Error(label+" HTTP "+response.status);
+            await fs.writeFile(folder+"/"+label+".json",JSON.stringify({url:url.href,status,data},null,2));
+            console.log(label,status,url.href);
+            if(status<200||status>=300)throw new Error(label+" HTTP "+status);
             return data;
           }
           async function main(){
@@ -265,7 +269,14 @@ jobs:
               }catch(error){console.error(label,String(error));process.exitCode=1;}
             }
           }
-          main().catch(error=>{console.error(error);process.exitCode=1;});
+          (async()=>{
+            const browser=await chromium.launch();
+            try{
+              page=await browser.newPage();
+              await page.goto("https://pin2map.github.io/pin2map-new-test/preview/",{waitUntil:"domcontentloaded"});
+              await main();
+            }finally{await browser.close();}
+          })().catch(error=>{console.error(error);process.exitCode=1;});
           JS
       - name: Archive Transitous comparison responses
         if: always()
