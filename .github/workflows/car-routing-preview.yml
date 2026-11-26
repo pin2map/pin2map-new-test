@@ -178,8 +178,9 @@ jobs:
                 const provider=new window.Pin2MapTransitRoutingProvider({fetchImpl:fetch.bind(window)});
                 const pedestrian=new window.Pin2MapBicycleRouting.PedestrianRoutingProvider({fetchImpl:fetch.bind(window)});
                 async function resolve(text,street,house,area){
-                  const candidates=await provider.request("geocode",{text,type:"ADDRESS",numResults:8},signal);
-                  const match=candidates.find(item=>street.test(item.name)&&new RegExp("\\b"+house+"\\b").test(item.name)&&area(item));
+                  const candidates=await provider.request("/api/v1/geocode",{text,type:"ADDRESS",numResults:8},signal)
+                    .catch(()=>[]);
+                  const match=candidates.find(item=>street.test(item.name||"")&&new RegExp("\\b"+house+"\\b").test(item.name)&&area(item));
                   if(match)return {name:match.name,lat:match.lat,lng:match.lon};
                   const params=new URLSearchParams({q:text,format:"jsonv2",addressdetails:"1",limit:"3"});
                   const response=await fetch("https://nominatim.openstreetmap.org/search?"+params,{signal});
