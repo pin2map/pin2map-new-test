@@ -64,6 +64,18 @@
     const index=current<0?selected:Math.max(0,Math.min(buttons.length-1,current+direction));
     buttons[index].focus();
    });
+   const list=this.el("routeLegs");
+   list.addEventListener("keydown",event=>{
+    if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+    const direction={ArrowDown:1,ArrowUp:-1}[event.key];
+    if(!direction)return;
+    const buttons=[...list.querySelectorAll(".transit-leg")];
+    const current=buttons.indexOf(event.target);
+    if(current<0)return;
+    event.preventDefault();
+    const next=buttons[current+direction];
+    if(next){next.focus({preventScroll:true});next.click();}
+   });
    this.el("transitDb").addEventListener("click",()=>{
     const {startId,targetId,transit}=this.snapshot;
     const url=dbUrl(this.getPin(startId),this.getPin(targetId),
@@ -118,6 +130,7 @@
    this.el("transitPicker").classList.toggle("transit-picker-empty",!journeys.length);
    if(!journeys.length)this.el("transitPicker").open=false;
    const list=this.el("routeLegs");
+   const focused=list.contains(this.doc.activeElement)?this.doc.activeElement.dataset.leg:null;
    list.replaceChildren(...snapshot.legs.map((leg,index)=>{
     const button=this.doc.createElement("button");button.type="button";
     button.className="car-route-leg transit-leg";button.dataset.leg=String(index);
@@ -153,9 +166,9 @@
      text("transit-leg-title",title,"strong"),text("transit-leg-duration",duration(leg.durationSeconds)),
      text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(leg.end,selected.start),"strong"),
      destination,text("transit-leg-to",station(leg.to)));
-    button.disabled=!leg.geometry;
-    button.addEventListener("click",()=>this.onLegSelect(index));return button;
+    button.addEventListener("click",()=>{button.focus({preventScroll:true});this.onLegSelect(index);});return button;
    }));
+   if(focused!=null)list.querySelector('.transit-leg[data-leg="'+focused+'"]')?.focus({preventScroll:true});
   }
  }
  root.Pin2MapTransitRoutePanel=TransitRoutePanel;

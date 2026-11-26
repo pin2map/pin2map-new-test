@@ -97,8 +97,8 @@ test("when transfers are tight the search adds buffered itineraries and retains 
  }});
  const result=await search.search({waypoints:[{},{}],guides:[],query:{time:minutes(-90),arriveBy:false},
   signal:new AbortController().signal});
- assert.deepEqual(input,[false,false,true]);
- assert.equal(result.journeys.length,1);
+ assert.deepEqual(input,[false,false,true,false]);
+ assert.equal(result.journeys.length,2);
  assert.equal(result.journeys[result.selected].start,safer.start);
 });
 test("normalizer preserves public service number and removes added transfer time from the walking baseline",async()=>{
@@ -143,7 +143,7 @@ test("an earlier feeder to the same station makes room for the modeled transfer 
  }});
  const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:false},
   signal:new AbortController().signal});
- const [route]=result.journeys;
+ const route=result.journeys[result.selected];
  assert.equal(route.start,minutes(5));
  assert.equal(route.legs[2].start,minutes(52));
  assert.equal(route.legs[3].start,minutes(90));
@@ -181,9 +181,34 @@ test("departure keeps a valid feeder and replaces an impossible onward connectio
  }});
  const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:false},
   signal:new AbortController().signal});
- const [fixed]=result.journeys;
+ const fixed=result.journeys[result.selected];
  assert.equal(fixed.start,minutes(4));
  assert.equal(fixed.legs[2].tripId,"actual later bus");
  assert.equal(fixed.end,minutes(78));
  assert.equal(fixed.critical,undefined);
+});
+
+test("nearby access is tried first, broader access is a fallback and the response has no count cap",async()=>{
+ const access=[];
+ const provider=new Provider({fetchImpl:async url=>{
+  const params=new URL(url).searchParams;
+  assert.equal(params.has("maxItineraries"),false);
+  assert.equal(params.get("maxPreTransitTime"),params.get("maxPostTransitTime"));
+  access.push(params.get("maxPreTransitTime"));
+  const startTime=new Date(instant).toISOString(),endTime=new Date(minutes(20)).toISOString();
+  return {ok:true,json:async()=>({itineraries:access.length===1?[]:
+   Array.from({length:15},()=>({startTime,endTime,legs:[{mode:"BUS",startTime,endTime}]}))})};
+ }});
+ const routes=await provider.calculate({waypoints:[{lat:48,lng:9},{lat:49,lng:10}],query:{time:instant,arriveBy:false}});
+ assert.deepEqual(access,["900","1800"]);
+ assert.equal(routes.length,15);
+});
+
+test("a much longer safe trip remains selectable without displacing a nearby connection",()=>{
+ const search=new Search({});
+ const near={...journey([leg(0,"BUS",5,10)]),quality:"red",guideCount:0};
+ const distant={...journey([leg(0,"BUS",5,100)]),quality:"green",guideCount:0};
+ const result=search.results([near,distant],{time:instant,arriveBy:false});
+ assert.equal(result.journeys.length,2);
+ assert.equal(result.journeys[result.selected],near);
 });

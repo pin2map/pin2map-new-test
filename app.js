@@ -68,7 +68,7 @@
     onCancel:()=>{searchForm.cancel();cancelGeometrySearch();},
     titleOf:result=>result.__plateChoice?result.choiceTitle:
       result.__plateEntry?result.label:result.__featureType?
-      (result.name||result.tags?.name||result.display_name?.split(",")[0]||"Unbenannt"):
+      (placeDomain.title(result)||"Unbenannt"):
       placeDomain.title(result),
     detailOf:result=>result.__plateChoice?result.choiceDetail:
       result.__plateEntry?

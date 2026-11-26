@@ -65,7 +65,9 @@
       }
     }
     if(!parts.length)throw new Error("Flussverlauf – keine Linienabschnitte gefunden");
-    return {name:tags.name||match.tags?.name||"",chains:join(parts),segmentCount:parts.length};
+    const {localizedName}=root.Pin2MapPlaceSearch||
+      (typeof module!=="undefined"?require("./place-search.js"):{});
+    return {name:localizedName({...match.tags,...tags}),chains:join(parts),segmentCount:parts.length};
   }
   const api=Object.freeze({wayCoordinates,join,resolve});
   root.Pin2MapRiverGeometry=api;

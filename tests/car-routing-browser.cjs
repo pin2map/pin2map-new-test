@@ -586,7 +586,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     await page.locator("#transitClockDesktop").press("Enter");
     await page.waitForFunction(()=>document.querySelector("#transitClockLabel").textContent==="09:42");
    }
-   await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length===1);
+   await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=2);
    await page.locator("#transitWhen").selectOption("arrive");
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
@@ -619,6 +619,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.locator(".transit-leg-icon").count(),2);
    assert.equal(await page.locator(".transit-leg-number").first().textContent(),"1");
    assert.match(await page.locator("#routeLegs").textContent(),/Gleis 2/);
+   const legs=page.locator("#routeLegs .transit-leg");
+   await legs.first().click();
+   await page.keyboard.press("ArrowDown");
+   assert.equal(await legs.nth(1).evaluate(node=>node===document.activeElement),true);
+   assert.equal(await legs.nth(1).evaluate(node=>node.classList.contains("car-route-selected-leg")),true);
+   await page.keyboard.press("ArrowUp");
+   assert.equal(await legs.first().evaluate(node=>node===document.activeElement),true);
    await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),true);
    const expandedLayout=await measureTransitControls();

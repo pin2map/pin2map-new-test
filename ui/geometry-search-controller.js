@@ -3,6 +3,7 @@
  * provider construction: each provider and UI operation is supplied as a port.
  * Request ownership, cancellation and hierarchy selection live here. */
 (function(root){
+  const placeNames=root.Pin2MapPlaceSearch||(typeof module!=="undefined"?require("../domain/place-search.js"):{});
   function createGeometrySearchController(ports){
     const $=ports.getElement;
     const state={get allowGeocode(){return ports.getState().allowGeocode;}};
@@ -68,11 +69,11 @@
         const relations=candidates.filter(c=>c.osmType==="relation"&&c.nameScore>=100);
         const choices=relations.length?relations:candidates;
         if(choices.length===1)await chooseGeometryResult({
-          __featureType:"river",candidate:choices[0],name:choices[0].tags?.name||query,
+          __featureType:"river",candidate:choices[0],name:placeNames.localizedName(choices[0].tags)||query,
           query
         });
         else searchView.show(choices.map(c=>({
-          __featureType:"river",candidate:c,name:c.tags?.name||query,query,
+          __featureType:"river",candidate:c,name:placeNames.localizedName(c.tags)||query,query,
           detail:[c.osmType==="relation"?"OSM-Relation":"OSM-Way",
             c.tags?.waterway,c.display].filter(Boolean).join(" · ")
         })));
@@ -123,7 +124,7 @@
     }
   }
   function previewAreaObject(source,kind,nameOverride=null,preserveViewport=false){
-    const name=nameOverride||source.name||source.display_name?.split(",")[0]||"Fläche";
+    const name=placeNames.localizedName(source.namedetails)||nameOverride||placeNames.title(source)||"Fläche";
     return showObjectPreview({kind:"area",featureKind:kind,
       label:name,geojson:source.geojson,preserveViewport,
       anchorPoint:preserveViewport?areaHierarchyPoint:null});

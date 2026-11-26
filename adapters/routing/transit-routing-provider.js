@@ -48,15 +48,19 @@
   }
   async calculate({waypoints,query,via=[],signal}){
    const [from,to]=waypoints;
-   const data=await this.request("plan",{fromPlace:location(from),toPlace:location(to),
+   const plan=accessTime=>this.request("plan",{fromPlace:location(from),toPlace:location(to),
     time:new Date(query.time).toISOString(),arriveBy:String(query.arriveBy),searchWindow:(query.searchMinutes||60)*60,
-    maxPreTransitTime:1800,maxPostTransitTime:1800,
-    numItineraries:5,maxItineraries:12,detailedLegs:true,detailedTransfers:true,directModes:"",
+    maxPreTransitTime:accessTime,maxPostTransitTime:accessTime,
+    detailedLegs:true,detailedTransfers:true,directModes:"",
     transitModes:"RAIL,BUS,COACH,TRAM,FERRY,FUNICULAR,AERIAL_LIFT",
     ...(query.moreTransferTime?{transferTimeFactor:paddedTransfer.factor,additionalTransferTime:paddedTransfer.additional}:{}),
     ...(via.length?{via:via.join(",")}:{})},signal);
-   if(!Array.isArray(data.itineraries))throw new Error("Ungültige Fahrplanauskunft");
-   return data.itineraries.map(item=>normalize(item,query.moreTransferTime)).filter(Boolean);
+   const read=data=>{
+    if(!Array.isArray(data.itineraries))throw new Error("Ungültige Fahrplanauskunft");
+    return data.itineraries.map(item=>normalize(item,query.moreTransferTime)).filter(Boolean);
+   };
+   const nearby=read(await plan(900));
+   return nearby.length?nearby:read(await plan(1800));
   }
   async stopsNear(flag,radius,signal,modes){
    const lat=radius/111195,lng=lat/Math.max(.1,Math.cos(flag.lat*Math.PI/180));

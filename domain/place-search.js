@@ -1,9 +1,13 @@
 "use strict";
 /* Pure search-domain helpers: no HTTP, DOM, storage or map dependencies. */
 (function(root){
+  function localizedName(names={}){
+    return [names["name:de"],names.int_name,names["name:en"],names.name]
+      .find(value=>typeof value==="string"&&value.trim())?.trim()||"";
+  }
   // Preserve the predecessor's place-result display contract, not its DOM.
   function title(result){
-    return String(result?.name||String(result?.display_name||"").split(",")[0]||"").trim();
+    return String(localizedName(result?.namedetails)||result?.name||String(result?.display_name||"").split(",")[0]||"").trim();
   }
   function detail(result){return String(result?.display_name||"").trim();}
   function pinName(result,query){
@@ -12,7 +16,8 @@
     // Nominatim labels named businesses and facilities by category, even
     // when their address includes a house number.
     if(query&&namedPlace&&category&&!["place","boundary","highway","building"].includes(category))
-      return query.trim()||namedPlace;
+      return /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(result.namedetails?.name||namedPlace)&&
+        localizedName(result.namedetails)?title(result):query.trim()||namedPlace;
     const address=result?.address||{};
     const road=String(address.road||address.pedestrian||address.residential||
       address.footway||address.path||address.street||"").trim();
@@ -145,7 +150,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({localizedName,title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

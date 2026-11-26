@@ -795,3 +795,9 @@ Für den ersten und letzten Fußweg werden bei Transitous bis zu 30 Minuten ange
 Das Risiko nutzt den gemessenen Fußweg am Stuttgarter Hauptbahnhof als Referenz, wenn eine passende Etappe mit brauchbarer Geometrie in der Suche vorliegt. Die Testkalibrierung rechnet 20 Minuten je Referenzstrecke und verwendet ohne Messwert 250 m als vorläufige Referenz. Bei knappen Übergängen sucht die App unter anderem einen früheren Zubringer bis zur tatsächlichen Ausstiegshaltestelle des bisherigen Zubringers. Bei Abfahrtssuche prüft die App nach einem passenden Zubringer auch einen späteren planmäßigen Anschluss ab der Einsteigehaltestelle. Eine kombinierte Verbindung wird erneut vollständig bewertet. Spätere Etappen behalten ihre tatsächlichen Fahrplanzeiten.
 
 Bei Abfahrtssuche werden die Zeitfenster 15, 30, 45, 60 und 120 Minuten geprüft. Im ersten erfolgreichen Fenster wird genau eine Verbindung ohne kritische Umstiege ausgewählt. Außerhalb der zwei Stunden erscheinen keine Ergebnisse der Abfahrtssuche. Die Ankunftssuche zeigt weiterhin mehrere Alternativen.
+
+### R-050 – ÖPNV-Verbindungen und Etappennavigation (26.11.2026)
+
+Die Abfahrtssuche hält am Zeitfenster von höchstens zwei Stunden fest und bietet alle darin gefundenen eindeutigen Verbindungen an. Die App fordert bei Transitous keine maximale Trefferzahl mehr an. Kritische Umstiege bleiben farblich gekennzeichnet. Die Vorauswahl berücksichtigt Richtungsflaggen, Reisezeit, Zu- und Abgang und das Umstiegsrisiko, sodass ein deutlich längerer Umweg wegen der Risikofarbe allein nicht vorgezogen wird. Für Zu- und Abgang fragt die App zunächst je 15 Minuten an. Wenn darüber keine Verbindung gefunden wird, stehen weiterhin bis zu 30 Minuten zur Verfügung.
+
+Pfeil auf und ab wechseln nach Fokus oder Klick in der ÖPNV-Etappenliste zur benachbarten Etappe. Die ausgewählte Etappe wird sichtbar gehalten und bei verfügbarer Geometrie in der Karte herangezoomt.

@@ -4,9 +4,11 @@
  * A provider is configured only after user-enabled geocoding consent.
  */
 (function(root){
+  const {localizedName,title}=root.Pin2MapPlaceSearch||
+    (typeof module!=="undefined"?require("../../domain/place-search.js"):{});
   function normalize(value){
     return String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
-      .toLowerCase().replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+      .toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim().replace(/\s+/g," ");
   }
   function variants(query){
     const n=normalize(query),v=[query];
@@ -32,7 +34,7 @@
     return v.filter((x,i)=>x&&v.findIndex(y=>normalize(x)===normalize(y))===i);
   }
   function matches(candidate,terms){
-    const names=[candidate.name];
+    const names=[candidate.name,candidate.namedetails?.int_name];
     if(candidate.namedetails)for(const key of Object.keys(candidate.namedetails)){
       if(/^(name|official_name|short_name|alt_name)(:.*)?$/.test(key))
         names.push(candidate.namedetails[key]);
@@ -76,7 +78,7 @@
     return null;
   }
   function overpassRow(item){
-    const tags=item.tags||{},kind=thematicKind(tags),name=tags["name:de"]||tags.name;
+    const tags=item.tags||{},kind=thematicKind(tags),name=localizedName(tags);
     // Overpass 0.7.57+ returns closed ways unchanged but relation areas use
     // virtual IDs offset by 3,600,000,000. Older area-way offsets are also
     // recognized. Resolve to a real OSM identity before Nominatim lookup.
@@ -124,12 +126,12 @@
       if(elapsed<this.minimumIntervalMs)await this.sleep(this.minimumIntervalMs-elapsed);
       if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
       this.lastRequest=this.now();
-      const response=await this.fetch(url,{headers:{"Accept-Language":"de"},signal});
+      const response=await this.fetch(url,{headers:{"Accept-Language":"de,int,en"},signal});
       if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
       return response.json();
     }
     async hierarchyAt(point,{signal,onPartial=()=>{}}={}){
-      const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",zoom:"18",
+      const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",namedetails:"1",zoom:"18",
         lat:String(point.lat),lon:String(point.lng)});
       const result=await this.request("https://nominatim.openstreetmap.org/reverse?"+params,signal);
       const address=result.address||{},seen=new Set(),rows=[];
@@ -144,7 +146,8 @@
       // not a spatial inventory of the polygons covering the point.
       for(const key of ["country","state","region","state_district","county",
         "municipality","city","town","village","hamlet","locality","island"])
-        if(address[key])add({kind:key,name:address[key],detail:key});
+        if(address[key])add({kind:key,name:key===(result.addresstype||result.type)?
+          localizedName(result.namedetails)||address[key]:address[key],detail:key});
       // A reverse result can itself identify a named area (e.g. an island).
       const reverseTags={boundary:result.class==="boundary"?result.type:"",
         place:result.class==="place"?result.type:"",
@@ -153,7 +156,7 @@
         landuse:result.class==="landuse"?result.type:""};
       const reverseKind=thematicKind(reverseTags);
       if(reverseKind&&result.name&&["way","relation"].includes(result.osm_type))
-        add({kind:reverseKind,name:result.name,detail:reverseKind,
+        add({kind:reverseKind,name:title(result),detail:reverseKind,
           osmType:result.osm_type,osmId:Number(result.osm_id)});
       // Render the established address hierarchy immediately. External
       // spatial enrichment may be delayed by Overpass rate limits.
@@ -218,7 +221,7 @@
         const timer=setTimeout(cancel,timeoutMs);
         try{
           const response=await this.fetch(endpoint+"?"+new URLSearchParams({data:query}),
-            {headers:{"Accept-Language":"de"},signal:controller.signal});
+            {headers:{"Accept-Language":"de,int,en"},signal:controller.signal});
           if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
           const body=await response.json();
           if(!Array.isArray(body?.elements)||body.remark)

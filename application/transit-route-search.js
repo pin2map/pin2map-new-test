@@ -88,7 +88,7 @@
     catch(error){if(signal.aborted)throw error;return fallback;}
    };
    const queriedRepairs=new Set();
-   const previousOptions=[];
+   let previousOptions=[];
    for(const minutes of query.arriveBy?[60]:[15,30,45,60,120]){
     const eligible=route=>query.arriveBy||(route.start>=query.time&&route.start<=query.time+minutes*minute);
     const direct=(await window([],minutes,false)).filter(eligible);
@@ -134,18 +134,27 @@
      }
     }
     scored=score([...scored,...repairs].filter(eligible),query,guides);
-    const quality={green:0,yellow:1,red:2};
-    const preferred=[...scored].sort((a,b)=>quality[a.quality]-quality[b.quality]||
-     b.guideCount-a.guideCount||(query.arriveBy?Math.abs(a.end-query.time)-Math.abs(b.end-query.time):a.start-b.start)||
-     a.end-b.end)[0];
-    if(query.arriveBy){
-     scored.sort((a,b)=>a.start-b.start||a.end-b.end);
-     return {journeys:scored,selected:Math.max(0,scored.indexOf(preferred))};
+    previousOptions=scored;
+    if(query.arriveBy)return this.results(scored,query);
+    if(scored.some(item=>item.quality!=="red")){
+     const all=minutes===120?[]:(await optional(()=>window([],120,false)))
+      .filter(route=>route.start>=query.time&&route.start<=query.time+120*minute);
+     return this.results(score([...scored,...all],query,guides),query);
     }
-    if(preferred&&preferred.quality!=="red")return {journeys:[preferred],selected:0};
-    previousOptions.splice(0,previousOptions.length,...scored.slice(0,24));
    }
-   return {journeys:[],selected:0};
+   return this.results(previousOptions,query);
+  }
+  results(journeys,query){
+   const quality={green:0,yellow:1,red:2};
+   const timeCost=route=>query.arriveBy?Math.abs(route.end-query.time):route.end-query.time;
+   const accessTime=route=>[...new Set([route.legs[0],route.legs.at(-1)])]
+    .filter(leg=>walking(leg.mode)).reduce((sum,leg)=>sum+leg.durationSeconds,0)*1000;
+   // Keep the risk preference, but bound how much extra travel it can justify.
+   const cost=route=>timeCost(route)+quality[route.quality]*15*minute+accessTime(route);
+   const preferred=[...journeys].sort((a,b)=>b.guideCount-a.guideCount||cost(a)-cost(b)||
+    quality[a.quality]-quality[b.quality]||a.durationSeconds-b.durationSeconds)[0];
+   journeys.sort((a,b)=>a.start-b.start||a.end-b.end);
+   return {journeys,selected:Math.max(0,journeys.indexOf(preferred))};
   }
   async recovery(journey,to,query,signal){
    const leg=journey.critical?.leg;

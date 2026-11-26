@@ -84,7 +84,7 @@ test("reverse uses requested city detail, address layer, German and coordinates"
  assert.equal(url.searchParams.get("zoom"),"10");
  assert.equal(url.searchParams.get("layer"),"address");
  assert.equal(url.searchParams.get("addressdetails"),"1");
- assert.equal(url.searchParams.get("accept-language"),"de");
+ assert.equal(url.searchParams.get("accept-language"),"de,int,en");
  assert.equal(signal,abort.signal);
  assert.equal(domain.nearbyLocalityName(result),"Knudsker");
 });
@@ -205,4 +205,16 @@ test("saved address lookup skips stale or disabled requests and requests full de
  current=true;
  await lookup(point,()=>current,apply);
  assert.deepEqual(calls,[[point,{zoom:18}],"Bochum"]);
+});
+
+test("place names prefer German, international, and English tags before the native name",()=>{
+ const place=require("../domain/place-search.js");
+ const namedetails={name:"Αθήνα","name:en":"Athens",int_name:"Athina","name:de":"Athen"};
+ assert.equal(place.title({namedetails}),"Athen");
+ delete namedetails["name:de"];
+ assert.equal(place.title({namedetails}),"Athina");
+ delete namedetails.int_name;
+ assert.equal(place.title({namedetails}),"Athens");
+ delete namedetails["name:en"];
+ assert.equal(place.title({namedetails}),"Αθήνα");
 });

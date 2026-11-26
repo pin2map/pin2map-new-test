@@ -3,6 +3,8 @@
  * Caller must enforce Nominatim usage policy; browser-local throttling
  * alone does not enforce an application-wide quota. */
 (function(root){
+  const {localizedName}=root.Pin2MapPlaceSearch||
+    (typeof module!=="undefined"?require("../../domain/place-search.js"):{});
   class NominatimGeocoder{
     constructor({fetchImpl,language="de",endpoint="https://nominatim.openstreetmap.org/search"}={}){
       if(typeof fetchImpl!=="function")throw new TypeError("fetchImpl required");
@@ -21,11 +23,12 @@
       url.searchParams.set("lon",String(lon));
       url.searchParams.set("format","jsonv2");
       url.searchParams.set("addressdetails","1");
+      url.searchParams.set("namedetails","1");
       if(!Number.isInteger(zoom)||zoom<0||zoom>18)
         throw new RangeError("Invalid reverse geocoding detail level");
       url.searchParams.set("zoom",String(zoom));
       url.searchParams.set("layer","address");
-      url.searchParams.set("accept-language",this.language||"de");
+      url.searchParams.set("accept-language",(this.language||"de")+",int,en");
       const response=await this.fetchImpl(url.toString(),{
         method:"GET",signal,headers:{Accept:"application/json"}
       });
@@ -33,6 +36,9 @@
       const result=await response.json();
       if(!result||typeof result!=="object"||Array.isArray(result))
         throw new Error("Ungültige Ortsantwort");
+      const kind=result.addresstype||result.type;
+      const name=localizedName(result.namedetails);
+      if(name&&result.address?.[kind])result.address[kind]=name;
       return result;
     }
     async search(query,{signal}={}){
@@ -40,7 +46,8 @@
       url.searchParams.set("q",query);
       url.searchParams.set("format","jsonv2");
       url.searchParams.set("addressdetails","1");
-      url.searchParams.set("accept-language",this.language||"de");
+      url.searchParams.set("namedetails","1");
+      url.searchParams.set("accept-language",(this.language||"de")+",int,en");
       url.searchParams.set("limit",String(this.resultLimit));
       const response=await this.fetchImpl(url.toString(),{
         method:"GET",signal,headers:{Accept:"application/json"}
