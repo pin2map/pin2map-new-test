@@ -146,7 +146,8 @@
   }
   results(journeys,query){
    const quality={green:0,yellow:1,red:2};
-   const timeCost=route=>query.arriveBy?Math.abs(route.end-query.time):route.end-query.time;
+   const timeCost=route=>query.arriveBy?
+    Math.abs(route.end-query.time)+route.durationSeconds*1000/2:route.end-query.time;
    const accessTime=route=>[...new Set([route.legs[0],route.legs.at(-1)])]
     .filter(leg=>walking(leg.mode)).reduce((sum,leg)=>sum+leg.durationSeconds,0)*1000;
    // Keep the risk preference, but bound how much extra travel it can justify.

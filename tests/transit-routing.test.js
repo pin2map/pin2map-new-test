@@ -212,3 +212,11 @@ test("a much longer safe trip remains selectable without displacing a nearby con
  assert.equal(result.journeys.length,2);
  assert.equal(result.journeys[result.selected],near);
 });
+
+test("a small gain against the arrival target does not justify a much longer trip",()=>{
+ const search=new Search({});
+ const short={...journey([leg(0,"BUS",-120,-25)]),quality:"green",guideCount:0};
+ const long={...journey([leg(0,"BUS",-300,0)]),quality:"green",guideCount:0};
+ const result=search.results([short,long],{time:instant,arriveBy:true});
+ assert.equal(result.journeys[result.selected],short);
+});
