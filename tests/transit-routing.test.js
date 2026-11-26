@@ -165,3 +165,25 @@ test("fallback includes the actual address walk when setting the station deadlin
  assert.equal(result.journeys[0].end,minutes(-3));
  assert.equal(result.journeys[0].legs.at(-1).distanceMeters,524);
 });
+test("departure keeps a valid feeder and replaces an impossible onward connection with a later real service",async()=>{
+ const transfer={name:"Nenzingen",stopId:"nenzingen",track:"4"};
+ const first=leg(0,"REGIONAL_RAIL",4,16);
+ const walk=leg(1,"WALK",16,21,{distanceMeters:45,to:transfer});
+ const missed=leg(2,"BUS",21,60,{from:transfer});
+ const problem=journey([first,walk,missed]);
+ const later=journey([leg(0,"BUS",42,78,{from:transfer,tripId:"actual later bus"})]);
+ const search=new Search({calculate:async ({waypoints,query})=>{
+  if(waypoints[0].stopId==="nenzingen"){
+   assert.equal(query.time,minutes(34));assert.equal(query.arriveBy,false);
+   return [later];
+  }
+  return [problem];
+ }});
+ const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:false},
+  signal:new AbortController().signal});
+ const [fixed]=result.journeys;
+ assert.equal(fixed.start,minutes(4));
+ assert.equal(fixed.legs[2].tripId,"actual later bus");
+ assert.equal(fixed.end,minutes(78));
+ assert.equal(fixed.critical,undefined);
+});

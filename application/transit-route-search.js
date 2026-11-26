@@ -37,6 +37,23 @@
    return {...route,start:prefix.start,durationSeconds:(route.end-prefix.start)/1000,
     distanceMeters:combined.reduce((sum,leg)=>sum+leg.distanceMeters,0),legs:combined};
   }
+  async laterConnection(route,{waypoints,query,signal}){
+   const transfer=route.critical;
+   const station=transfer?.leg.from;
+   if(!station?.stopId)return null;
+   const prefix=route.legs.slice(0,transfer.leg.index);
+   const ready=Math.max(prefix.at(-1).end,transfer.previous.end+(transfer.walkMinutes+transfer.reserve)*minute);
+   const options=await this.calculate({waypoints:[{stopId:station.stopId},waypoints[1]],signal,
+    query:{...query,arriveBy:false,time:ready,searchMinutes:60,moreTransferTime:true}});
+   const candidates=options.filter(option=>option.start>=ready&&option.legs.length).map(option=>{
+    const legs=[...prefix,...option.legs].map((leg,index)=>({...leg,index}));
+    return {...route,end:option.end,durationSeconds:(option.end-route.start)/1000,legs,
+     distanceMeters:legs.reduce((sum,leg)=>sum+leg.distanceMeters,0)};
+   });
+   return candidates.sort((a,b)=>
+    assess(a,query).transfers.filter(item=>item.critical).length-
+    assess(b,query).transfers.filter(item=>item.critical).length||a.end-b.end)[0]||null;
+  }
   async stationRoutes(waypoints,query,minutes,access,signal){
    const start=access[0],end=access[1];
    if(!start&&!end)return [];
@@ -71,6 +88,7 @@
     catch(error){if(signal.aborted)throw error;return fallback;}
    };
    const queriedRepairs=new Set();
+   const previousOptions=[];
    for(const minutes of query.arriveBy?[60]:[15,30,45,60,120]){
     const eligible=route=>query.arriveBy||(route.start>=query.time&&route.start<=query.time+minutes*minute);
     const direct=(await window([],minutes,false)).filter(eligible);
@@ -79,7 +97,7 @@
      if(!via)via=[...new Set((await optional(()=>Promise.all(guides.map(flag=>this.stopNear(flag,signal))))).filter(Boolean))];
      if(via.length)guided=(await optional(()=>window(via,minutes,false))).filter(eligible);
     }
-    let initial=[...direct,...guided];
+    let initial=[...previousOptions.filter(eligible),...direct,...guided];
     let scored=score(initial,query,guides);
     if(this.railAccess&&!scored.some(item=>item.quality!=="red")){
      if(!access)access=await Promise.all(waypoints.map((pin,index)=>
@@ -94,14 +112,25 @@
     }
     const repairs=[];
     if(!scored.some(item=>item.quality!=="red")){
-     const candidates=scored.filter(item=>item.critical&&item.critical.previous.to?.stopId)
+     const candidates=scored.filter(item=>item.critical&&
+      (item.critical.previous.to?.stopId||!query.arriveBy&&item.critical.leg.from?.stopId))
       .sort((a,b)=>query.arriveBy?Math.abs(a.end-query.time)-Math.abs(b.end-query.time):a.start-b.start);
      for(const candidate of candidates.slice(0,2)){
       const key=identity(candidate);
       if(queriedRepairs.has(key))continue;
       queriedRepairs.add(key);
       const fixed=await optional(()=>this.earlierArrival(candidate,{waypoints,query,signal}),null);
-      if(fixed)repairs.push(fixed);
+      if(fixed&&eligible(fixed))repairs.push(fixed);
+      if(query.arriveBy||(fixed&&eligible(fixed)&&!assess(fixed,query).critical))continue;
+      let option=fixed&&eligible(fixed)?fixed:candidate;
+      for(let attempt=0;attempt<3;attempt++){
+       const current=score([option],query,guides)[0];
+       if(!current.critical)break;
+       const next=await optional(()=>this.laterConnection(current,{waypoints,query,signal}),null);
+       if(!next||identity(option)===identity(next))break;
+       repairs.push(next);
+       option=next;
+      }
      }
     }
     scored=score([...scored,...repairs].filter(eligible),query,guides);
@@ -114,6 +143,7 @@
      return {journeys:scored,selected:Math.max(0,scored.indexOf(preferred))};
     }
     if(preferred&&preferred.quality!=="red")return {journeys:[preferred],selected:0};
+    previousOptions.splice(0,previousOptions.length,...scored.slice(0,24));
    }
    return {journeys:[],selected:0};
   }
