@@ -586,7 +586,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     await page.locator("#transitClockDesktop").press("Enter");
     await page.waitForFunction(()=>document.querySelector("#transitClockLabel").textContent==="09:42");
    }
-   assert.equal(await page.locator("#transitAlternatives button").count(),1);
+   await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length===1);
    await page.locator("#transitWhen").selectOption("arrive");
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
