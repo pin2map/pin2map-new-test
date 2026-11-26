@@ -40,7 +40,7 @@
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
    Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,transitSearch,onGuideWarning});
    this.mode="car";this.generation=0;this.pending=null;this.variants=[];this.selectedVariant=0;this.failed=false;this.loading=false;this.allVisibleActive=false;
-   this.transitQuery={time:Date.now(),arriveBy:false,vehicle:"all"};
+   this.transitQuery={time:Date.now(),arriveBy:false};
    this.transitJourneys=[];this.transitRecovery=null;
    this.activeProfiles={bicycle:"everyday",pedestrian:"normal"};this.routeCache=new Map();
    this.factors={...TIME_FACTORS};this.timeProfile="standard";

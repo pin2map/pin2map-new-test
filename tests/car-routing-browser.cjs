@@ -540,6 +540,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    });
    const carLayout=await measureTransitControls();
    const transitCalls=[];
+   await page.route("https://api.transitous.org/api/v6/map/stops?**",entry=>
+    entry.fulfill({json:[],headers:{"Access-Control-Allow-Origin":"*"}}));
    await page.route("https://api.transitous.org/api/v6/plan?**",async entry=>{
     const params=new URL(entry.request().url()).searchParams;
     const base=Date.parse(params.get("time"));
@@ -553,7 +555,9 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     const route=(legs,end)=>({startTime:legs[0].startTime,endTime:at(end),legs});
     await entry.fulfill({json:{itineraries:[
      route([travel("LONG_DISTANCE",a,a+25,"A","B","ICE1",9),travel("LONG_DISTANCE",a+30,a+45,"B","C","ICE2",9.05)],a+45),
-     route([travel("BUS",a+5,a+50,"A","C","BUS",9)],a+50)
+     params.get("arriveBy")==="true"&&!params.get("transferTimeFactor")
+      ?route([travel("BUS",a+5,a+25,"A","B","BUS1",9),travel("BUS",a+30,a+50,"B","C","BUS2",9.05)],a+50)
+      :route([travel("BUS",a+5,a+50,"A","C","BUS",9)],a+50)
     ]},headers:{"Access-Control-Allow-Origin":"*"}});
    });
    await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
@@ -565,12 +569,31 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.deepEqual(railLayout.box,carLayout.box,"identical dialog position and dimensions");
    assert.ok(railLayout.gaps.every(gap=>gap>=carLayout.gaps[0]-.6),JSON.stringify([railLayout.gaps,carLayout.gaps]));
    assert.ok(railLayout.dates[0][1]===railLayout.dates[1][1]&&railLayout.dates[0][2]<railLayout.dates[1][0]);
+   assert.equal(await page.locator("#transitVehicle").count(),0);
+   const controlGeometry=await page.evaluate(()=>{
+    const [mode,summary,db,date,clock,reverse]=[".transit-select","#transitSelected","#transitDb",
+     ".transit-time-fields .transit-field:first-child",".transit-time-fields .transit-field:nth-child(2)","#routeReverse"]
+     .map(selector=>document.querySelector(selector).getBoundingClientRect());
+    return {heights:[mode,summary,db,date,clock,reverse].map(rect=>rect.height),
+     row:[mode,summary,db].map(rect=>rect.top+rect.height/2),
+     first:[date,clock,reverse].map(rect=>rect.top+rect.height/2)};
+   });
+   assert.equal(new Set(controlGeometry.heights).size,1,JSON.stringify(controlGeometry));
+   assert.equal(new Set(controlGeometry.row).size,1);
+   assert.ok(Math.max(...controlGeometry.first)-Math.min(...controlGeometry.first)<1,JSON.stringify(controlGeometry));
+   if(!mobile){
+    await page.locator("#transitClockDesktop").fill("09:42");
+    await page.locator("#transitClockDesktop").press("Enter");
+    await page.waitForFunction(()=>document.querySelector("#transitClockLabel").textContent==="09:42");
+   }
+   assert.equal(await page.locator("#transitAlternatives button").count(),1);
    await page.locator("#transitWhen").selectOption("arrive");
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
    await page.locator("#transitSelected").click();
    await page.locator("#transitAlternatives button").filter({has:page.locator(".transit-red")}).first().click();
-   await page.getByText(/Kritischer Umstieg in B.*5 min zwischen Ankunft und Abfahrt/).waitFor();
+   await page.getByRole("img",{name:"Kritischer Umstieg"}).waitFor();
+   assert.match(await page.locator(".transit-leg-critical").getAttribute("title"),/5 min verfügbar/);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="transferTimeFactor"&&value==="2")));
    assert.ok((await measureTransitControls()).body>(await measureTransitControls()).view);
    await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
@@ -580,6 +603,8 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.match(await page.locator("#routeLegs").textContent(),/Gleis 2/);
    await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),true);
+   const expandedLayout=await measureTransitControls();
+   assert.deepEqual(expandedLayout.gaps,carLayout.gaps,"expanded vehicle toolbar matches standard button spacing");
    await page.getByRole("button",{name:"Auto",exact:true}).click();
    // Exercise the actual settings reset in the test-only browser project.
    await page.evaluate(()=>{

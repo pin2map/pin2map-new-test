@@ -28,12 +28,24 @@
    Object.assign(this,{doc,el:getElement,icons,getPin,onQuery,onSelect,onLegSelect,open,colors});
   }
   bind(){
-   for(const id of ["transitDate","transitClock","transitWhen","transitVehicle"])
-    this.el(id).addEventListener("change",()=>{
-     const local=this.el("transitDate").value+"T"+this.el("transitClock").value;
-     this.onQuery({time:new Date(local).getTime(),arriveBy:this.el("transitWhen").value==="arrive",
-      vehicle:this.el("transitVehicle").value});
-    });
+   const nativeTime=this.el("transitClock"),desktopTime=this.el("transitClockDesktop");
+   const update=()=>{
+    const local=this.el("transitDate").value+"T"+nativeTime.value;
+    const query={time:new Date(local).getTime(),arriveBy:this.el("transitWhen").value==="arrive"};
+    const current=this.snapshot?.transit?.query;
+    if(Number.isFinite(query.time)&&(query.time!==current?.time||query.arriveBy!==current?.arriveBy))this.onQuery(query);
+   };
+   for(const id of ["transitDate","transitClock","transitWhen"])this.el(id).addEventListener("change",update);
+   desktopTime.addEventListener("blur",()=>{
+    const match=/^([0-9]{1,2}):?([0-9]{2})$/.exec(desktopTime.value.trim());
+    if(match&&Number(match[1])<24&&Number(match[2])<60){
+     nativeTime.value=match[1].padStart(2,"0")+":"+match[2];update();
+    }
+    desktopTime.value=nativeTime.value;
+   });
+   desktopTime.addEventListener("keydown",event=>{
+    if(event.key==="Enter"){event.preventDefault();desktopTime.blur();}
+   });
    this.el("transitDb").addEventListener("click",()=>{
     const {startId,targetId,transit}=this.snapshot;
     const url=dbUrl(this.getPin(startId),this.getPin(targetId),
@@ -64,9 +76,9 @@
    this.el("transitDateLabel").textContent=displayDate.format(query.time);
    this.el("transitClockLabel").textContent=clock.format(query.time);
    this.el("transitWhen").value=query.arriveBy?"arrive":"depart";
-   this.el("transitVehicle").value=query.vehicle;
+   if(this.doc.activeElement!==this.el("transitClockDesktop"))this.el("transitClockDesktop").value=clock.format(query.time);
    const status=snapshot.loading?"Verbindungen werden gesucht …":snapshot.failed?"Fahrplanauskunft nicht erreichbar":
-    selected?this.label(selected):"Keine durchgehende Verbindung gefunden";
+    selected?this.label(selected):query.arriveBy?"Keine durchgehende Verbindung gefunden":"Keine passende Abfahrt innerhalb von 120 Minuten";
    this.el("routeSummary").textContent=status;
    this.el("routeSummary").classList.toggle("car-route-unavailable",snapshot.failed);
    const summary=this.el("transitSelected");
@@ -83,20 +95,6 @@
    }));
    this.el("transitPicker").classList.toggle("transit-picker-empty",!journeys.length);
    if(!journeys.length)this.el("transitPicker").open=false;
-   const note=[];
-   if(selected?.critical){
-    const {leg,available,walkMinutes,reportedWalk,slack,reserve}=selected.critical;
-    const planned=reportedWalk>0?" (Fahrplanauskunft: "+Math.round(reportedWalk)+" min)":"";
-    const remaining=slack<0?Math.ceil(-slack)+" min fehlen bereits für den Umstiegsweg":
-     Math.floor(slack)+" min Reserve übrig, empfohlen sind "+reserve+" min";
-    note.push("Kritischer Umstieg in "+(leg.from?.name||"der Haltestelle")+" – "+
-     Math.floor(available)+" min zwischen Ankunft und Abfahrt, etwa "+walkMinutes+
-     " min für Weg und Einstieg"+planned+". "+remaining+".");
-   }
-   if(selected?.late)note.push(query.arriveBy?"Ankunft außerhalb des Zeitfensters von ±60 Minuten":"Ankunft an einem anderen Tag");
-   if(recovery)note.push(recovery.unknown?"Folgeanschluss nicht ermittelt":
-    "Bei verpasstem Anschluss mögliche Ankunft "+time(recovery.end,query.time)+(recovery.late?" · nach Zielzeit":""));
-   this.el("transitRisk").textContent=note.join(" · ");
    const list=this.el("routeLegs");
    list.replaceChildren(...snapshot.legs.map((leg,index)=>{
     const button=this.doc.createElement("button");button.type="button";
@@ -112,11 +110,24 @@
     };
     const glyph=this.icons.svg(icon,this.doc);glyph.classList.add("transit-leg-icon");
     const destination=this.icons.svg("arrow-right",this.doc);destination.classList.add("transit-leg-arrow");
-    const line=walking(leg.mode)?kind:leg.line?kind+" "+leg.line:
+    const line=walking(leg.mode)?kind:leg.line||
      [kind,leg.operator,"Linie nicht angegeben"].filter(Boolean).join(" · ");
     const title=line+(leg.headsign?" · Ri. "+leg.headsign:"");
-    button.append(text("transit-leg-number",index+1),
-     text("transit-leg-depart",time(leg.start,selected.start),"strong"),glyph,
+    const transfer=selected.transfers.find(item=>item.critical&&
+     (item.leg.index-item.previous.index>1?item.leg.index-1:item.leg.index)===index);
+    const marker=transfer?this.icons.svg("triangle-exclamation-point",this.doc):text("transit-leg-number",index+1);
+    if(transfer){
+     button.classList.add("transit-leg-critical");
+     marker.classList.add("transit-leg-warning");
+     marker.setAttribute("role","img");marker.removeAttribute("aria-hidden");
+     marker.setAttribute("aria-label","Kritischer Umstieg");
+     const {available,walkMinutes,reserve}=transfer;
+     const note=Math.floor(available)+" min verfügbar · "+walkMinutes+" min für Weg und Einstieg · "+reserve+" min Reserve empfohlen";
+     const followUp=transfer===selected.critical&&recovery&&!recovery.unknown?
+      " · Mögliche Ankunft bei verpasstem Anschluss "+time(recovery.end,query.time):"";
+     button.title=note+followUp;
+    }
+    button.append(marker,text("transit-leg-depart",time(leg.start,selected.start),"strong"),glyph,
      text("transit-leg-title",title,"strong"),text("transit-leg-duration",duration(leg.durationSeconds)),
      text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(leg.end,selected.start),"strong"),
      destination,text("transit-leg-to",station(leg.to)));

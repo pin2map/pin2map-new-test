@@ -913,7 +913,9 @@
     routingCore.register("transit",transitProvider);
     const transitSearch=new window.Pin2MapTransitRouteSearch({
       calculate:request=>routingCore.calculate({mode:"transit",...request}),
-      stopNear:(flag,signal)=>transitProvider.stopNear(flag,signal)
+      stopNear:(flag,signal)=>transitProvider.stopNear(flag,signal),
+      railAccess:(pin,arrival,signal)=>transitProvider.railAccess(pin,arrival,
+        request=>routingCore.calculate({mode:"pedestrian",...request}),signal)
     });
     const activePlan=new window.Pin2MapActiveCarRoute.ActiveCarRoute();
     const routePinById=id=>pinOps.findPin(state,id);

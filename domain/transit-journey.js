@@ -9,19 +9,24 @@
  const paddedTransfer={factor:2,additional:5};
  const localRail=mode=>["TRAM","SUBWAY","METRO"].includes(mode);
  const longRail=mode=>["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"].includes(mode);
- function realisticWalk(previous,next,legs){
+ function stuttgartTransfer(previous,next){
+  const origin=previous.to,destination=next.from;
+  return localRail(previous.mode)&&longRail(next.mode)&&(
+   /klett.platz/i.test(origin?.name||"")||
+   (Math.abs(origin?.lat-48.784)<.006&&Math.abs(origin?.lon-9.183)<.010&&
+    Math.abs(destination?.lat-48.784)<.006&&Math.abs(destination?.lon-9.183)<.010));
+ }
+ function realisticWalk(previous,next,legs,referenceWalkMeters){
   const origin=previous.to,destination=next.from;
   const matchingPlace=origin?.stopId&&origin.stopId===destination?.stopId;
   const matchingPlatform=matchingPlace&&origin.track&&origin.track===destination.track;
   const reported=legs.reduce((sum,leg)=>sum+(leg.walkBaselineMinutes??leg.durationSeconds/60),0);
   const distance=legs.reduce((sum,leg)=>sum+leg.distanceMeters,0);
   const samePlatform=matchingPlatform&&reported===0;
-  const stuttgart=localRail(previous.mode)&&longRail(next.mode)&&(
-   /klett.platz/i.test(origin?.name||"")||
-   (Math.abs(origin?.lat-48.784)<.006&&Math.abs(origin?.lon-9.183)<.010&&
-    Math.abs(destination?.lat-48.784)<.006&&Math.abs(destination?.lon-9.183)<.010));
+  const stuttgart=stuttgartTransfer(previous,next);
   const minimum=stuttgart?20:longRail(next.mode)?12:samePlatform?2:5;
-  return {reported,minutes:Math.ceil(Math.max(minimum,reported*paddedTransfer.factor,distance/54))};
+  return {reported,distance,stuttgart,minutes:Math.ceil(Math.max(minimum,reported*paddedTransfer.factor,
+   distance*20/(referenceWalkMeters||250)))};
  }
  function assess(journey,query){
   const transfers=[];
@@ -30,10 +35,11 @@
    if(walking(leg.mode))continue;
    if(previous&&!leg.stayOnBoard&&(!leg.tripId||leg.tripId!==previous.tripId)){
     const available=(leg.start-previous.end)/60000;
-    const walk=realisticWalk(previous,leg,journey.legs.slice(previous.index+1,leg.index).filter(item=>walking(item.mode)));
+    const walk=realisticWalk(previous,leg,journey.legs.slice(previous.index+1,leg.index).filter(item=>walking(item.mode)),query.referenceWalkMeters);
     const slack=available-walk.minutes;
     const safetyReserve=reserve(previous.mode);
-    transfers.push({leg,slack,available,walkMinutes:walk.minutes,reportedWalk:walk.reported,
+    transfers.push({leg,previous,slack,available,walkMinutes:walk.minutes,reportedWalk:walk.reported,
+     walkDistance:walk.distance,stuttgart:walk.stuttgart,
      reserve:safetyReserve,critical:slack<safetyReserve});
    }
    previous=leg;
@@ -45,7 +51,7 @@
   const known=journey.legs.every(leg=>leg.measured);
   const busShare=known&&journey.distanceMeters>0?
    journey.legs.reduce((sum,leg)=>sum+(bus(leg.mode)?leg.distanceMeters:0),0)/journey.distanceMeters:null;
-  return {quality,critical,late,busShare};
+  return {quality,critical,transfers,late,busShare};
  }
  function dbUrl(from,to,local,arriveBy){
   if(!from||!to)return null;

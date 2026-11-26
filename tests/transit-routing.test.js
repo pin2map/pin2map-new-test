@@ -97,10 +97,9 @@ test("when transfers are tight the search adds buffered itineraries and retains 
  }});
  const result=await search.search({waypoints:[{},{}],guides:[],query:{time:minutes(-90),arriveBy:false},
   signal:new AbortController().signal});
- assert.deepEqual(input,[false,true]);
- assert.equal(result.journeys.length,2);
+ assert.deepEqual(input,[false,false,true]);
+ assert.equal(result.journeys.length,1);
  assert.equal(result.journeys[result.selected].start,safer.start);
- assert.ok(result.journeys.some(item=>item.quality==="red"));
 });
 test("normalizer preserves public service number and removes added transfer time from the walking baseline",async()=>{
  const format=time=>new Date(time).toISOString();
@@ -110,7 +109,7 @@ test("normalizer preserves public service number and removes added transfer time
   assert.equal(params.get("additionalTransferTime"),"5");
   const walk={mode:"WALK",startTime:format(instant),endTime:format(minutes(13)),duration:780};
   const train={mode:"LONG_DISTANCE",startTime:format(minutes(15)),endTime:format(minutes(38)),
-   category:{shortName:"ICE"},tripShortName:"9590",routeShortName:"82",headsign:"Paris Est",agencyName:"DB"};
+   category:{shortName:"ICE"},displayName:"ICE 9590",tripShortName:"9590",routeShortName:"82",headsign:"Paris Est",agencyName:"DB"};
   return {ok:true,json:async()=>({itineraries:[{startTime:walk.startTime,endTime:train.endTime,legs:[walk,train]}]})};
  }});
  const [result]=await provider.calculate({waypoints:[{lat:48,lng:9},{lat:49,lng:10}],
@@ -118,4 +117,51 @@ test("normalizer preserves public service number and removes added transfer time
  assert.equal(result.legs[0].walkBaselineMinutes,4);
  assert.equal(result.legs[1].line,"ICE 9590");
  assert.equal(result.legs[1].operator,"DB");
+});
+
+test("departure widens to two hours and never offers departures outside the window",async()=>{
+ const windows=[];
+ const search=new Search({calculate:async ({query})=>{
+  windows.push(query.searchMinutes);return [journey([leg(0,"TRAM",121,130)])];
+ }});
+ const out=await search.search({waypoints:[{},{}],guides:[],query:{arriveBy:false,time:instant},
+  signal:new AbortController().signal});
+ assert.deepEqual(windows,[15,30,45,60,120]);
+ assert.deepEqual(out.journeys,[]);
+});
+test("an earlier feeder to the same station makes room for the modeled transfer without moving later walks",async()=>{
+ const station={name:"Hauptbahnhof (A.-Klett-Platz)",stopId:"klett"};
+ const early=journey([leg(0,"SUBWAY",5,25,{to:station})]);
+ const original=journey([leg(0,"SUBWAY",14,46,{to:station}),leg(1,"WALK",46,50,{distanceMeters:250}),
+  leg(2,"LONG_DISTANCE",52,90),leg(3,"WALK",90,94)]);
+ const search=new Search({calculate:async ({waypoints,query})=>{
+  if(waypoints[1].stopId==="klett"){
+   assert.equal(query.time,minutes(29));assert.equal(query.arriveBy,true);
+   return [early];
+  }
+  return [original];
+ }});
+ const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:false},
+  signal:new AbortController().signal});
+ const [route]=result.journeys;
+ assert.equal(route.start,minutes(5));
+ assert.equal(route.legs[2].start,minutes(52));
+ assert.equal(route.legs[3].start,minutes(90));
+ assert.equal(route.critical,undefined);
+});
+test("fallback includes the actual address walk when setting the station deadline and door-to-door times",async()=>{
+ const station={stopId:"Wahlwies",lat:47.8,lng:9};
+ const providers=[];
+ const route=journey([leg(0,"REGIONAL_RAIL",-60,-11)]);
+ const search=new Search({
+  railAccess:async(pin,arrival)=>arrival?{point:station,leg:{mode:"WALK",distanceMeters:524,durationSeconds:480}}:null,
+  calculate:async ({waypoints,query})=>{
+   providers.push([waypoints[1],query.time]);return waypoints[1]===station?[route]:[];
+  }
+ });
+ const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:true},
+  signal:new AbortController().signal});
+ assert.ok(providers.some(([point,time])=>point===station&&time===minutes(-8)));
+ assert.equal(result.journeys[0].end,minutes(-3));
+ assert.equal(result.journeys[0].legs.at(-1).distanceMeters,524);
 });

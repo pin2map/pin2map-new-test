@@ -7,16 +7,7 @@
  const {walking,paddedTransfer}=root.Pin2MapTransitJourney||
   (typeof module!=="undefined"?require("../../domain/transit-journey.js"):{});
  function serviceName(leg){
-  const line=leg.routeShortName||leg.routeLongName;
-  const trip=leg.tripShortName;
-  const label=leg.displayName;
-  if(label&&(!line||label.includes(line))&&(!trip||label.includes(trip)))return label;
-  if(line&&trip&&!line.includes(trip)){
-   const category=leg.category?.shortName||leg.category?.name;
-   const train=["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"].includes(leg.mode);
-   if(train&&category)return trip.startsWith(category)?trip:category+" "+trip;
-  }
-  return line||label||trip||null;
+  return leg.displayName||leg.tripShortName||leg.routeShortName||leg.routeLongName||null;
  }
  const location=point=>point.stopId||point.lat+","+point.lng;
  const coordinate=place=>[place?.lon,place?.lat];
@@ -58,23 +49,38 @@
   async calculate({waypoints,query,via=[],signal}){
    const [from,to]=waypoints;
    const data=await this.request("plan",{fromPlace:location(from),toPlace:location(to),
-    time:new Date(query.time).toISOString(),arriveBy:String(query.arriveBy),searchWindow:3600,
+    time:new Date(query.time).toISOString(),arriveBy:String(query.arriveBy),searchWindow:(query.searchMinutes||60)*60,
+    maxPreTransitTime:1800,maxPostTransitTime:1800,
     numItineraries:5,maxItineraries:12,detailedLegs:true,detailedTransfers:true,directModes:"",
-    transitModes:({all:"RAIL,BUS,COACH,TRAM,FERRY,FUNICULAR,AERIAL_LIFT",rail:"RAIL",bus:"BUS,COACH"})[query.vehicle||"all"],
+    transitModes:"RAIL,BUS,COACH,TRAM,FERRY,FUNICULAR,AERIAL_LIFT",
     ...(query.moreTransferTime?{transferTimeFactor:paddedTransfer.factor,additionalTransferTime:paddedTransfer.additional}:{}),
     ...(via.length?{via:via.join(",")}:{})},signal);
    if(!Array.isArray(data.itineraries))throw new Error("Ungültige Fahrplanauskunft");
    return data.itineraries.map(item=>normalize(item,query.moreTransferTime)).filter(Boolean);
   }
-  async stopNear(flag,signal){
-   const radius=Math.max(1000,Math.min(25000,flag.radiusMeters||5000));
+  async stopsNear(flag,radius,signal,modes){
    const lat=radius/111195,lng=lat/Math.max(.1,Math.cos(flag.lat*Math.PI/180));
    const stops=await this.request("map/stops",{min:(flag.lat-lat)+","+(flag.lng-lng),
-    max:(flag.lat+lat)+","+(flag.lng+lng),grouped:true},signal);
+    max:(flag.lat+lat)+","+(flag.lng+lng),grouped:true,...(modes?{modes}:{})},signal);
    return stops.filter(stop=>stop.stopId&&coordinate(stop).every(Number.isFinite))
     .map(stop=>({stop,distance:groundDistanceMeters(flag,{lat:stop.lat,lng:stop.lon})}))
     .filter(item=>item.distance<=radius)
-    .sort((a,b)=>a.distance/(.25+(a.stop.importance||0))-b.distance/(.25+(b.stop.importance||0)))[0]?.stop.stopId;
+    .sort((a,b)=>a.distance/(.25+(a.stop.importance||0))-b.distance/(.25+(b.stop.importance||0)))
+    .map(item=>item.stop);
+  }
+  async stopNear(flag,signal){
+   return (await this.stopsNear(flag,Math.max(1000,Math.min(25000,flag.radiusMeters||5000)),signal))[0]?.stopId;
+  }
+  async railAccess(pin,arrival,walk,signal){
+   const [stop]=await this.stopsNear(pin,1300,signal,"RAIL");
+   if(!stop)return null;
+   const point={lat:stop.lat,lng:stop.lon};
+   const origin={name:pin.name||"Adresse",lat:pin.lat,lon:pin.lng};
+   const route=await walk({waypoints:arrival?[point,pin]:[pin,point],signal});
+   if(!route.geometry||route.durationSeconds>1800||route.distanceMeters>2200)return null;
+   return {point:{...point,stopId:stop.stopId},leg:{mode:"WALK",from:arrival?stop:origin,to:arrival?origin:stop,
+    geometry:route.geometry,measured:true,durationSeconds:route.durationSeconds,distanceMeters:route.distanceMeters}};
+
   }
  }
  root.Pin2MapTransitRoutingProvider=TransitRoutingProvider;
