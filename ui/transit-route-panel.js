@@ -46,6 +46,24 @@
    desktopTime.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();desktopTime.blur();}
    });
+   const picker=this.el("transitPicker"), summary=this.el("transitSelected");
+   picker.addEventListener("keydown",event=>{
+    if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+    if(event.key==="Escape"&&picker.open){
+     event.preventDefault();picker.open=false;summary.focus();return;
+    }
+    const direction={ArrowDown:1,ArrowUp:-1}[event.key];
+    if(!direction)return;
+    const buttons=[...this.el("transitAlternatives").querySelectorAll("button")];
+    if(!buttons.length)return;
+    const current=buttons.indexOf(event.target);
+    if(current<0&&event.target!==summary)return;
+    event.preventDefault();
+    picker.open=true;
+    const selected=this.snapshot.selectedVariant;
+    const index=current<0?selected:Math.max(0,Math.min(buttons.length-1,current+direction));
+    buttons[index].focus();
+   });
    this.el("transitDb").addEventListener("click",()=>{
     const {startId,targetId,transit}=this.snapshot;
     const url=dbUrl(this.getPin(startId),this.getPin(targetId),
@@ -84,15 +102,19 @@
    const summary=this.el("transitSelected");
    summary.replaceChildren(selected?this.option(selected):this.doc.createTextNode("Verbindungen"));
    const options=this.el("transitAlternatives");
-   options.replaceChildren(...journeys.map((item,index)=>{
-    const button=this.doc.createElement("button");button.type="button";
-    button.setAttribute("aria-pressed",String(index===snapshot.selectedVariant));
-    button.append(this.option(item));
-    button.addEventListener("click",()=>{
-     this.el("transitPicker").open=false;this.onSelect(index);summary.focus();
-    });
-    return button;
-   }));
+   if(this.renderedJourneys!==journeys){
+    this.renderedJourneys=journeys;
+    options.replaceChildren(...journeys.map((item,index)=>{
+     const button=this.doc.createElement("button");button.type="button";
+     button.append(this.option(item));
+     button.addEventListener("click",()=>{
+      this.el("transitPicker").open=false;this.onSelect(index);summary.focus();
+     });
+     return button;
+    }));
+   }
+   [...options.children].forEach((button,index)=>
+    button.setAttribute("aria-pressed",String(index===snapshot.selectedVariant)));
    this.el("transitPicker").classList.toggle("transit-picker-empty",!journeys.length);
    if(!journeys.length)this.el("transitPicker").open=false;
    const list=this.el("routeLegs");

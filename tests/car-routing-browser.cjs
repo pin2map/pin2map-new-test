@@ -590,8 +590,26 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.locator("#transitWhen").selectOption("arrive");
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
-   await page.locator("#transitSelected").click();
-   await page.locator("#transitAlternatives button").filter({has:page.locator(".transit-red")}).first().click();
+   const transitSummary=page.locator("#transitSelected");
+   await transitSummary.focus();
+   await page.keyboard.press("ArrowDown");
+   const options=page.locator("#transitAlternatives button");
+   const selected=await options.evaluateAll(nodes=>nodes.findIndex(node=>node.getAttribute("aria-pressed")==="true"));
+   const focusIndex=()=>options.evaluateAll(nodes=>nodes.indexOf(document.activeElement));
+   assert.equal(await focusIndex(),selected);
+   await page.keyboard.press("ArrowDown");
+   assert.equal(await focusIndex(),Math.min(selected+1,await options.count()-1));
+   await page.keyboard.press("ArrowUp");
+   assert.equal(await focusIndex(),Math.max(0,Math.min(selected+1,await options.count()-1)-1));
+   assert.equal(await options.nth(selected).getAttribute("aria-pressed"),"true");
+   await page.keyboard.press("Escape");
+   assert.equal(await transitSummary.evaluate(node=>node===document.activeElement),true);
+   await page.keyboard.press("ArrowDown");
+   const red=await options.evaluateAll(nodes=>nodes.findIndex(node=>node.querySelector(".transit-red")));
+   for(let index=selected;index!==red;index+=Math.sign(red-selected))
+    await page.keyboard.press(red<selected?"ArrowUp":"ArrowDown");
+   assert.equal(await focusIndex(),red);
+   await page.keyboard.press("Enter");
    await page.getByRole("img",{name:"Kritischer Umstieg"}).waitFor();
    assert.match(await page.locator(".transit-leg-critical").getAttribute("title"),/5 min verfügbar/);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="transferTimeFactor"&&value==="2")));
