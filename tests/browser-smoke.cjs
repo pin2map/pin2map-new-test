@@ -898,7 +898,7 @@ async function longPress(page,x,y,ms=725){
         };
         values=count===1?row():Array.from({length:count},row);
       }
-      forecastRequests.push({count,url:route.request().url()});
+      if(url.pathname.endsWith("/forecast"))forecastRequests.push({count,url:route.request().url()});
       if(holdTemperature&&url.searchParams.get("current")==="temperature_2m")
         await new Promise(resolve=>temperatureReleases.push(resolve));
       await route.fulfill({status:200,contentType:"application/json",body:JSON.stringify(values)});
