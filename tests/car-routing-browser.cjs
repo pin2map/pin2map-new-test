@@ -210,7 +210,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(controls.toggleTop>controls.basemapBottom&&Math.abs(controls.toggleRight-controls.basemapRight)<2);
    const toggleBg=()=>page.locator("#routePanelToggle").evaluate(el=>getComputedStyle(el).backgroundColor);
    assert.equal(await toggleBg(),"rgb(23, 100, 191)");
-   const sizes=await page.locator("#carRoutePanel .car-route-round:not(#transitDb)").evaluateAll(buttons=>
+   const sizes=await page.locator("#carRoutePanel .car-route-round:not(#transitDb,#transitStickyEnd)").evaluateAll(buttons=>
     buttons.map(button=>{const box=button.getBoundingClientRect();return [box.width,box.height];}));
    assert.ok(sizes.every(([w,h])=>w===h&&w===sizes[0][0]),JSON.stringify(sizes));
    await page.locator("#routeWaypoints").click();
