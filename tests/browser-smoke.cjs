@@ -744,12 +744,12 @@ async function longPress(page,x,y,ms=725){
         project.geoCache={
           ...project.geoCache,
           "nohit":{time,results:[]},
-          "multihit":{time,results:[
+          "hauptbahnhof":{time,results:[
             {lat:"48.7758",lon:"9.1829",name:"Stuttgart",address:{city:"Stuttgart"}},
             {lat:"48.1371",lon:"11.5754",name:"München",address:{city:"München"}}
           ]},
-          "singlehit":{time,results:[
-            {lat:"50.1109",lon:"8.6821",name:"Frankfurt",address:{city:"Frankfurt"}}
+          "steiner haus hamburg":{time,results:[
+            {lat:"53.568",lon:"9.997",name:"Mittelweg 11-12",address:{road:"Mittelweg",house_number:"11-12",city:"Hamburg"}}
           ]}
         };
         await store.saveProject(project);
@@ -764,8 +764,9 @@ async function longPress(page,x,y,ms=725){
     await runCachedSearch("nohit");
     await page.locator("#searchResults .message").waitFor({state:"visible",timeout});
     assert.match(await page.locator("#searchResults .message").textContent(),/Kein Ort gefunden/);
-    await runCachedSearch("multihit");
+    await runCachedSearch("Hauptbahnhof");
     assert.equal(await page.locator("#searchResults button.result").count(),2);
+    assert.match(await page.locator("#searchResults button.result").first().textContent(),/Stuttgart/);
     assert.equal(await page.locator(".pin-marker").count(),0,"Multiple results must not auto-create pins");
     await page.locator("#searchResults button.result").first().click();
     await page.waitForFunction(async()=>{
@@ -777,7 +778,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinPanel").isHidden(),true);
     await page.locator(".pin-icon").first().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
-    assert.equal(await page.locator("#pinName").inputValue(),"Stuttgart");
+    assert.equal(await page.locator("#pinName").inputValue(),"Hauptbahnhof");
     assert.equal(await page.locator(".pin-marker").count(),1);
     await page.waitForTimeout(750);
     await page.reload({waitUntil:"domcontentloaded",timeout});
@@ -788,13 +789,13 @@ async function longPress(page,x,y,ms=725){
       try{return await store.loadProject();}finally{store.close();}
     });
     assert.equal(projectAfterSelection.pins.length,1);
-    assert.equal(projectAfterSelection.pins[0].name,"Stuttgart");
+    assert.equal(projectAfterSelection.pins[0].name,"Hauptbahnhof");
     // The taller inline notes editor triggers the existing opening correction:
     // the map can pan slightly so the selected pin/dialog remains visible.
     // Verify the search position is still close and the adjusted view persists.
     assert.ok(Math.abs(projectAfterSelection.viewport.lat-48.7758)<0.25,
       "Choosing place keeps the selected location near the visible map center");
-    await runCachedSearch("singlehit");
+    await runCachedSearch("steiner haus hamburg");
     await page.waitForFunction(async()=>{
       const store=await window.Pin2MapIndexedDBProjectStore.open();
       try{return (await store.loadProject()).pins.length===2;}finally{store.close();}
@@ -802,7 +803,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#plateAreaConfirm").isHidden(),true);
     await page.locator(".pin-icon").last().click();
     await page.locator("#pinPanel").waitFor({state:"visible",timeout});
-    assert.equal(await page.locator("#pinName").inputValue(),"Frankfurt");
+    assert.equal(await page.locator("#pinName").inputValue(),"steiner haus hamburg");
     assert.equal(await page.locator(".pin-marker").count(),2);
     await page.waitForTimeout(750);
     await page.reload({waitUntil:"domcontentloaded",timeout});
@@ -811,7 +812,7 @@ async function longPress(page,x,y,ms=725){
       const store=await window.Pin2MapIndexedDBProjectStore.open();
       try{return (await store.loadProject()).pins;}finally{store.close();}
     });
-    assert.deepEqual(finalPins.map(pin=>pin.name).sort(),["Frankfurt","Stuttgart"]);
+    assert.deepEqual(finalPins.map(pin=>pin.name).sort(),["Hauptbahnhof","steiner haus hamburg"]);
     assert.deepEqual(errors,[],"Offline cached search transfer raises no page errors");
     console.log("[browser] PASS – offline cached search: nohit, multi choose, single auto-pin and persisted viewport/pins");
     step("startup hydration: repair missing private layer without losing stored pins");
