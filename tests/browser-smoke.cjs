@@ -586,13 +586,13 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinUrlButton").evaluate(el=>el.classList.contains("has-url")),true,"Saved URL adds blue footer indicator");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
-    const weatherUrl=/open-meteo\.com\/v1\/forecast.*forecast_days=7/;
+    const weatherUrl=/open-meteo\.com\/v1\/forecast.*forecast_days=8/;
     await page.route(weatherUrl,route=>route.fulfill({json:{
       current:{temperature_2m:-1,apparent_temperature:-5,weather_code:3,wind_speed_10m:8,wind_direction_10m:270,time:"2026-11-27T17:17"},
-      hourly:{time:["2026-11-27T10:00","2026-11-27T11:00","2026-11-27T12:00"],weather_code:[71,71,61]},
-      daily:{time:Array.from({length:7},(_,i)=>new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10)),
-        temperature_2m_min:[-8],temperature_2m_max:[2],rain_sum:[1,0],showers_sum:[0,0],snowfall_sum:[3,0],
-        wind_speed_10m_max:[20],wind_direction_10m_dominant:[270]}
+      hourly:{time:["2026-11-27T07:00","2026-11-27T13:00","2026-11-27T19:00","2026-11-28T00:00","2026-12-04T00:00"],
+        temperature_2m:[-6,1,-3,-4,3],weather_code:[71,3,61,0,0],is_day:[0,1,0,0,0]},
+      daily:{time:Array.from({length:8},(_,i)=>new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10)),
+        temperature_2m_min:[-8],temperature_2m_max:[2],precipitation_sum:[2.4,0]}
     }}));
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
@@ -600,11 +600,28 @@ async function longPress(page,x,y,ms=725){
     const forecast=page.locator("#pinWeatherBlock");
     await forecast.locator("tbody tr").last().waitFor();
     assert.equal(await forecast.locator("tbody tr").count(),7);
-    assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Temperatur","Wetter","Niederschlag","Wind"]);
-    assert.deepEqual(await forecast.locator("tbody tr").first().locator("td").allTextContents(),
-      ["Heute (Fr) 27.11.","−8 | +2 °C","2 h Schnee, 1 h Regen","1 mm, 3 cm","W 20 km/h"]);
-    assert.equal(await forecast.locator("tbody tr").nth(1).locator("td").nth(3).textContent(),"0,0 mm");
-    assert.equal(await forecast.locator("tbody .pin-weather-range .p2m-wx-darkblue").count(),1);
+    assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Min","7:00","13:00","19:00","0:00","Max","mm"]);
+    const weatherRows=forecast.locator("tbody tr");
+    assert.deepEqual(await weatherRows.first().locator("td").allTextContents(),
+      ["Fr27.11.","−8°","−6°","1°","−3°","−4°","2°","2,4"]);
+    assert.equal(await weatherRows.first().locator('td:nth-child(6) svg[aria-label="Klar"]').count(),1);
+    assert.equal(await weatherRows.last().locator('td:nth-child(6)').textContent(),"3°");
+    assert.equal(await weatherRows.nth(1).locator("td").last().textContent(),"0");
+    const tomorrow=weatherRows.nth(1);
+    const link=tomorrow.locator("a");
+    const storedPosition=await page.evaluate(async()=>{
+      const store=await window.Pin2MapIndexedDBProjectStore.open();
+      try{return (await store.loadProject()).pins[0];}finally{store.close();}
+    });
+    const {lat,lng}=storedPosition;
+    const href="https://www.windy.com/"+lat.toFixed(5)+"/"+lng.toFixed(5)+"?2026-11-28-12,"+lat.toFixed(5)+","+lng.toFixed(5)+",11";
+    assert.equal(await link.getAttribute("href"),href);
+    assert.equal(await link.locator("time").getAttribute("datetime"),"2026-11-28");
+    await context.route("https://www.windy.com/**",route=>route.fulfill({body:"Windy"}));
+    const [windy]=await Promise.all([context.waitForEvent("page"),tomorrow.locator("td").last().click()]);
+    await windy.waitForURL(href);
+    await windy.close();
+    await context.unroute("https://www.windy.com/**");
     await page.unroute(weatherUrl);
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
     await page.locator("#pinWeather").click();

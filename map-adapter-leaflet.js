@@ -758,8 +758,8 @@
           area.kind==="lake"?"lake":"area",area,layerColors[area.layerId]||"#326cc2",document);
         if(area.kind==="lake"){
           const size=document.createElement("small");
-          size.textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0})
-            .format(window.Pin2MapAreaGeometry.areaSquareMeters(area.geometry))+" m²";
+          size.textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:3})
+            .format(window.Pin2MapAreaGeometry.areaSquareMeters(area.geometry)/1e6)+" km²";
           content.querySelector(".p2m-feature-label-name").append(size);
         }
         const marker=window.L.marker(bounds.getCenter(),{

@@ -1,13 +1,14 @@
 "use strict";
 (function(root){
   const weather={
-    "clear-night":["Klar","klar"],
-    sun:["Sonnig","Sonne"],"cloud-sun":["Sonne und Wolken","Sonne und Wolken"],
-    cloud:["Bedeckt","bewölkt"],"cloud-rain":["Regen","Regen"],
-    "cloud-sun-rain":["Sonne und Regenschauer","Schauer"],"cloud-drizzle":["Nieselregen","Nieselregen"],
-    "cloud-snow":["Schnee","Schnee"],"cloud-lightning":["Gewitter","Gewitter"],"cloud-fog":["Nebel","Nebel"]
+    sun:"Sonnig","cloud-sun":"Sonne und Wolken",moon:"Klar",
+    cloud:"Bedeckt","cloud-rain":"Regen","cloud-sun-rain":"Sonne und Regenschauer",
+    "cloud-drizzle":"Nieselregen","cloud-snow":"Schnee","cloud-lightning":"Gewitter","cloud-fog":"Nebel"
   };
-  function condition(code){
+  const hours=["07","13","19","00"];
+  function condition(code,isDay){
+    if(isDay===0&&code===0)return "moon";
+    if(isDay===0&&(code===1||code===2))return "cloud";
     if(code===0)return "sun";
     if(code===1||code===2)return "cloud-sun";
     if(code===3)return "cloud";
@@ -19,28 +20,11 @@
     if(code>=95&&code<=99)return "cloud-lightning";
     return null;
   }
-  function hourlyByDay(hourly){
-    const days=new Map();
-    hourly?.time?.forEach((time,index)=>{
-      const code=hourly.weather_code?.[index];
-      const icon=hourly.is_day?.[index]===0&&code===0?"clear-night":condition(code);
-      if(!icon)return;
-      const date=time.slice(0,10);
-      if(!days.has(date))days.set(date,new Map());
-      const counts=days.get(date);
-      counts.set(icon,(counts.get(icon)||0)+1);
-    });
-    return days;
-  }
-  const oneDecimal=new Intl.NumberFormat("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1});
   const amount=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1});
-  const weekday=new Intl.DateTimeFormat("de-DE",{weekday:"long",timeZone:"UTC"});
   const shortDays=["So","Mo","Di","Mi","Do","Fr","Sa"];
-  function precipitation(rain,showers,snow){
-    const liquid=[rain,showers].filter(Number.isFinite);
-    const mm=liquid.reduce((sum,value)=>sum+value,0);
-    if(snow>0)return [mm>0?amount.format(mm)+" mm":null,amount.format(snow)+" cm"].filter(Boolean).join(", ");
-    return liquid.length?oneDecimal.format(mm)+" mm":"–";
+  function windyLink({lat,lng},date){
+    const coordinates=[lat.toFixed(5),lng.toFixed(5)].join(",");
+    return "https://www.windy.com/"+coordinates.replace(",","/")+"?"+date+"-12,"+coordinates+",11";
   }
   function wind(speed,degrees){
     const points=["N","NO","O","SO","S","SW","W","NW"];
@@ -95,13 +79,13 @@
       this.hide();
       this.key=key;
       const cached=this.cache.get(key);
-      if(cached&&Date.now()-cached.time<900000){this.render(cached.data);return;}
+      if(cached&&Date.now()-cached.time<900000){this.render(cached.data,pin);return;}
       const request=this.request=new AbortController();
       this.status("Wettervorhersage wird geladen …");
       try{
         const data=await this.load({lat,lng},{signal:request.signal});
         if(request.signal.aborted)return;
-        this.render(data);
+        this.render(data,pin);
         if(this.cache.size>=32)this.cache.delete(this.cache.keys().next().value);
         this.cache.set(key,{time:Date.now(),data});
       }catch{
@@ -113,17 +97,17 @@
         status.after(retry);
       }
     }
-    temperature(value,signed=false){
+    temperature(value,suffix=""){
       const rounded=Math.round(value);
-      const text=Number.isFinite(value)?(signed&&rounded>0?"+":"")+String(rounded).replace("-","−"):"–";
+      const text=Number.isFinite(value)?String(rounded).replace("-","−")+suffix:"–";
       return element(this.doc,"span",text,root.Pin2MapPinInfoLabel.temperatureClass(value));
     }
     range(min,max){
       const range=element(this.doc,"span",undefined,"pin-weather-range");
-      range.append(this.temperature(min,true)," | ",this.temperature(max,true)," °C");
+      range.append(this.temperature(min,"°")," / ",this.temperature(max,"°"));
       return range;
     }
-    render({current={},daily,hourly}){
+    render({current={},daily,hourly},pin){
       const doc=this.doc;
       const block=element(doc,"div",undefined,"pin-weather-card");
       const summary=element(doc,"div",undefined,"pin-weather-current");
@@ -131,42 +115,61 @@
       const temp=element(doc,"strong",undefined,"pin-weather-now");
       temp.append(this.temperature(current.temperature_2m)," °C");
       line.append(temp);
-      const icon=current.is_day===0&&current.weather_code===0?"clear-night":condition(current.weather_code);
-      if(icon)line.append(this.icons.svg(icon==="clear-night"?"moon":icon,doc));
+      const icon=condition(current.weather_code,current.is_day);
+      if(icon)line.append(this.icons.svg(icon,doc));
       const feels=element(doc,"span");
       feels.append("Gefühlt: ",this.temperature(current.apparent_temperature)," °C");
       line.append(feels,this.range(daily.temperature_2m_min?.[0],daily.temperature_2m_max?.[0]));
       const detail=element(doc,"div",undefined,"pin-weather-current-line");
-      detail.append(element(doc,"span",[weather[icon]?.[0],"Wind "+wind(current.wind_speed_10m,current.wind_direction_10m)].filter(Boolean).join(" · ")));
+      detail.append(element(doc,"span",[weather[icon],"Wind "+wind(current.wind_speed_10m,current.wind_direction_10m)].filter(Boolean).join(" · ")));
       if(current.time)detail.append(element(doc,"time",current.time.slice(11,16)));
       summary.append(line,detail);
       const table=element(doc,"table");
       const header=table.createTHead().insertRow();
-      for(const name of ["Tag","Temperatur","Wetter","Niederschlag","Wind"]){
+      for(const name of ["Tag","Min","7:00","13:00","19:00","0:00","Max","mm"]){
         const th=element(doc,"th",name);
         th.scope="col";
         header.append(th);
       }
-      const body=table.createTBody(),counts=hourlyByDay(hourly);
+      const body=table.createTBody();
+      const positions=new Map(hourly?.time?.map((time,index)=>[time,index]));
       daily.time.slice(0,7).forEach((day,i)=>{
         const row=body.insertRow(),date=new Date(day+"T12:00:00Z");
-        const name=i===0?"Heute ("+shortDays[date.getUTCDay()]+")":i===1?"Morgen ("+shortDays[date.getUTCDay()]+")":weekday.format(date);
-        const dayCell=row.insertCell();
-        dayCell.append(element(doc,i===0?"strong":"span",name+" "+day.slice(8,10)+"."+day.slice(5,7)+"."));
-        row.insertCell().append(this.range(daily.temperature_2m_min?.[i],daily.temperature_2m_max?.[i]));
-        const conditions=[...(counts.get(day)||[])].sort((a,b)=>b[1]-a[1]);
-        const cell=row.insertCell(),dominant=conditions.find(([symbol])=>symbol!=="clear-night")?.[0]||conditions[0]?.[0];
-        const visual=element(doc,"span",undefined,"pin-weather-condition");
-        if(dominant)visual.append(this.icons.svg(dominant==="clear-night"?"moon":dominant,doc));
-        visual.append(conditions.map(([symbol,hours])=>hours+" h "+weather[symbol][1]).join(", ")||"–");
-        cell.append(visual);
-        row.insertCell().textContent=precipitation(daily.rain_sum?.[i],daily.showers_sum?.[i],daily.snowfall_sum?.[i]);
-        row.insertCell().textContent=wind(daily.wind_speed_10m_max?.[i],daily.wind_direction_10m_dominant?.[i]);
+        const dayLabel=shortDays[date.getUTCDay()];
+        const dateLabel=day.slice(8,10)+"."+day.slice(5,7)+".";
+        const link=element(doc,"a",undefined,"pin-weather-day");
+        link.href=windyLink(pin,day);
+        link.target="_blank";
+        link.rel="noopener noreferrer";
+        link.setAttribute("aria-label","Windy für "+dayLabel+" "+dateLabel+" öffnen");
+        link.append(element(doc,"strong",dayLabel),element(doc,"time",dateLabel));
+        link.lastChild.dateTime=day;
+        row.insertCell().append(link);
+        row.addEventListener("click",event=>{if(!link.contains(event.target))link.click();});
+        row.insertCell().append(this.temperature(daily.temperature_2m_min?.[i],"°"));
+        for(const hour of hours){
+          const sampleDay=hour==="00"?daily.time[i+1]:day;
+          const index=positions.get(sampleDay+"T"+hour+":00");
+          const symbol=condition(hourly?.weather_code?.[index],hourly?.is_day?.[index]);
+          const sample=element(doc,"span",undefined,"pin-weather-sample");
+          if(symbol){
+            const svg=this.icons.svg(symbol,doc);
+            svg.setAttribute("role","img");
+            svg.setAttribute("aria-label",weather[symbol]);
+            svg.removeAttribute("aria-hidden");
+            sample.append(svg);
+          }else sample.append(element(doc,"span","–"));
+          sample.append(this.temperature(hourly?.temperature_2m?.[index],"°"));
+          row.insertCell().append(sample);
+        }
+        row.insertCell().append(this.temperature(daily.temperature_2m_max?.[i],"°"));
+        const rain=daily.precipitation_sum?.[i];
+        row.insertCell().textContent=Number.isFinite(rain)?amount.format(rain):"–";
       });
       block.append(summary,table);
       this.region.replaceChildren(block);
     }
   }
   root.Pin2MapPinWeather={View,renderLegend};
-  if(typeof module!=="undefined"&&module.exports)module.exports={condition,hourlyByDay,precipitation,wind};
+  if(typeof module!=="undefined"&&module.exports)module.exports={condition,windyLink};
 })(typeof window!=="undefined"?window:globalThis);
