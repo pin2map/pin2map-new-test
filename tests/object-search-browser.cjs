@@ -392,15 +392,21 @@ const base=process.env.PIN2MAP_TEST_URL||
       const hidden=page.locator('[data-search-flag="hidden"]');
       await hidden.check();
       await page.locator("#layersButton").click();
+      const editor=page.locator("#layersList .favorite-confirm");
       const cancelled=page.waitForEvent("dialog").then(async dialog=>{
         assert.match(dialog.message(),/neue Ebene „Karlsruhe“/);
         await dialog.dismiss();
       });
       await page.locator("#addLayer").click();
+      const draft=editor.locator("input");
+      assert.equal(await draft.inputValue(),"Karlsruhe");
+      assert.deepEqual(await draft.evaluate(input=>[input.selectionStart,input.selectionEnd]),[0,9]);
+      await editor.getByRole("button",{name:"Erstellen"}).click();
       await cancelled;
       assert.equal(await page.locator("#layersList .favorite-name").getByText("Karlsruhe",{exact:true}).count(),0);
       const accepted=page.waitForEvent("dialog").then(dialog=>dialog.accept());
       await page.locator("#addLayer").click();
+      await editor.getByRole("button",{name:"Erstellen"}).click();
       await accepted;
       const moved=page.locator("#layersList .favorite-row").filter({hasText:"Karlsruhe"});
       await moved.getByText(/1 Pins · 1 Flächen/).waitFor();

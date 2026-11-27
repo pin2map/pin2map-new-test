@@ -130,7 +130,7 @@ test("new nine-color allocation cycles after the ninth slot",()=>{
 test("new layer editor uses the shared date-hour suggestion; merge control stays visible but disabled until two are marked",()=>{
  const html=read("index.html"),layer=read("ui/layer-view.js");
  assert.match(layer,/const creating=mode==="new",name=creating\?this\.getSuggestedName\(\):layer\.name/);
- assert.match(read("app.js"),/getSuggestedName:\(\)=>window\.Pin2MapLayerCreation\.suggestedName\(\)/);
+ assert.match(read("app.js"),/getSuggestedName:\(\)=>[\s\S]{0,180}window\.Pin2MapLayerCreation\.suggestedName\(\)/);
  assert.match(layer,/holdMs:1000/);
  assert.match(layer,/unite\.disabled=!shown\|\|this\.mergeMode/);
  assert.match(html,/id="layersUnite"[^>]*disabled/);

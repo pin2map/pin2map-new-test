@@ -28,6 +28,9 @@
    Object.assign(this,{doc,el:getElement,icons,getPin,onQuery,onSelect,onLegSelect,open,colors});
   }
   bind(){
+   const panel=this.el("carRoutePanel");
+   panel.addEventListener("scroll",()=>this.syncSticky());
+   this.el("transitStickyButton").addEventListener("click",()=>panel.scrollTo({top:0,behavior:"instant"}));
    const nativeTime=this.el("transitClock"),desktopTime=this.el("transitClockDesktop");
    const update=()=>{
     const local=this.el("transitDate").value+"T"+nativeTime.value;
@@ -83,6 +86,11 @@
     if(url)this.open(url);
    });
   }
+  syncSticky(){
+   const panel=this.el("carRoutePanel"),row=panel.querySelector(".car-route-primary");
+   this.el("transitSticky").classList.toggle("hidden",!panel.classList.contains("transit-route-active")||
+    !this.el("transitStickyText").textContent||row.getBoundingClientRect().bottom>panel.getBoundingClientRect().top);
+  }
   label(journey){
    return time(journey.start,journey.start)+"–"+time(journey.end,journey.start)+" • "+duration(journey.durationSeconds);
   }
@@ -101,6 +109,12 @@
    this.snapshot=snapshot;
    const {query,journeys,recovery}=snapshot.transit;
    const selected=journeys[snapshot.selectedVariant];
+   const vehicles=selected?.legs.filter(leg=>!walking(leg.mode))||[];
+   const first=vehicles[0],last=vehicles.at(-1);
+   this.el("transitStickyText").textContent=first&&last?
+    readableLocalName(first.from?.name)+" "+time(first.start,selected.start)+" → "+
+    readableLocalName(last.to?.name)+" "+time(last.end,selected.start):"";
+   this.syncSticky();
    this.el("transitDate").value=date.format(query.time);
    this.el("transitClock").value=clock.format(query.time);
    this.el("transitDateLabel").textContent=displayDate.format(query.time);
@@ -134,7 +148,7 @@
    list.replaceChildren(...snapshot.legs.map((leg,index)=>{
     const button=this.doc.createElement("button");button.type="button";
     button.className="car-route-leg transit-leg";button.dataset.leg=String(index);
-    button.style.setProperty("--leg-color",this.colors[index%this.colors.length]);
+    button.style.setProperty("--leg-color",walking(leg.mode)?root.Pin2MapCarRouteMapView.TRANSIT_WALK_COLOR:this.colors[index%this.colors.length]);
     if(walking(leg.mode))button.classList.add("transit-leg-walk");
     const [icon,kind]=transport[leg.mode]||["route","Verkehrsmittel nicht angegeben"];
     const station=place=>[

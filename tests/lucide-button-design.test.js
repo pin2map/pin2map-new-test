@@ -185,7 +185,7 @@ test("refresh is a separate circular map control at 35% screen height",()=>{
 });
 
 
-test("Layers occupies the upper-right corner while Info stays above the lower-right map picker",()=>{
+test("Layers occupies the upper-right corner while name labels sit above pin information and the lower-right map picker",()=>{
   const html=read("index.html"),css=read("styles.css");
   for(const id of ["layersButton","labelsToggle","basemapButton"]){
     assert.ok(html.includes('id="'+id+'"'));
@@ -198,7 +198,7 @@ test("Layers occupies the upper-right corner while Info stays above the lower-ri
   const info=css.match(/#app #labelsToggle\.labels-toggle\s*\{([^}]+)\}/)?.[1]||"";
   assert.ok(info.includes("left:auto!important"));
   assert.ok(info.includes("right:var(--p2m-top-corner-inset)!important"));
-  assert.ok(info.includes("bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important"));
+  assert.ok(info.includes("bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px))!important"));
   assert.ok(css.includes("#app #basemapButton.basemap-map-button.p2m-icon-control"));
   assert.ok(css.includes("bottom:var(--p2m-bottom-control-baseline)!important"));
   assert.ok(css.includes("body.pin-open #app button:is(#settingsButton,#refreshButton,#layersButton,#labelsToggle,#basemapButton,#pinInfoButton)"),

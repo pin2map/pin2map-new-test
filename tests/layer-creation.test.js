@@ -55,7 +55,7 @@ test("the default name formats local date and hour with zero padding",()=>{
 test("wiring uses the same suggested name in inline layer creation and the native prompt",()=>{
   const app=fs.readFileSync(path.resolve(__dirname,"..","app.js"),"utf8");
   const view=fs.readFileSync(path.resolve(__dirname,"..","ui/layer-view.js"),"utf8");
-  assert.match(app,/getSuggestedName:\(\)=>window\.Pin2MapLayerCreation\.suggestedName\(\)/);
+  assert.match(app,/getSuggestedName:\(\)=>[\s\S]{0,180}window\.Pin2MapLayerCreation\.suggestedName\(\)/);
   assert.match(app,/askName:defaultName=>prompt\("Name der neuen Ebene:",defaultName\)/);
   assert.match(app,/onCreate:\(\)=>layerCreation\.create\(\)/);
   assert.match(view,/const creating=mode==="new",name=creating\?this\.getSuggestedName\(\):layer\.name/);

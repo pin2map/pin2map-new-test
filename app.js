@@ -123,15 +123,21 @@
       save();renderLayers();renderMarkers();renderGeometry();renderPinPanel();
     },
     onCreate:(name,color,index)=>{
+      if(moveSearchMatches(null,{name,color,index}))return;
       const result=layerCreation.createConfigured(name,color,index);
       if(!result)return;
       renderGeometry();layerView.start(null);showNotice("Ebene hinzugefügt");
     },
     onChooseLayer:id=>moveSearchMatches(id),
-    onAddLayer:()=>moveSearchMatches(null),
+    onAddLayer:()=>{
+      if(!objectSearchController.view?.matches.length||objectSearchController.view.query.trim())return false;
+      showNotice("Für eine neue Ebene bitte einen Suchbegriff eingeben");
+      return true;
+    },
     getPalette:()=>palette.colors(state).standard,
     getNextIndex:()=>palette.nextLayerColorIndex(state),
-    getSuggestedName:()=>window.Pin2MapLayerCreation.suggestedName(),
+    getSuggestedName:()=>objectSearchController.view?.matches.length?
+      objectSearchController.view.query.trim():window.Pin2MapLayerCreation.suggestedName(),
     onVisibilityCycle:visibleById=>{
       for(const [id,visible] of Object.entries(visibleById))
         filterOps.setLayerVisible(state,id,visible);
@@ -755,20 +761,22 @@
     hidePlaceResults:()=>searchView.hide(),
     updateClear:()=>searchForm.updateClear()
   });
-  function moveSearchMatches(id){
+  function moveSearchMatches(id,draft=null){
     const view=objectSearchController.view;
     if(!view?.matches.length)return false;
     const existing=id===null?null:layerById(id);
-    const name=existing?.name||view.query.trim();
+    const name=existing?.name||draft?.name;
     if(!name){
       showNotice("Für eine neue Ebene bitte einen Suchbegriff eingeben");
       return true;
     }
     const target=existing?'die Ebene „'+name+'“':'die neue Ebene „'+name+'“';
     if(!window.confirm("Sollen die gefundenen Objekte in "+target+
-      " eingefügt und aus ihren bisherigen Ebenen entfernt werden?"))return true;
-    const index=palette.nextLayerColorIndex(state);
-    const layer=existing||layerCreation.createConfigured(name,palette.colors(state).standard[index],index);
+      " eingefügt und aus ihren bisherigen Ebenen entfernt werden?")){
+      if(draft)layerView.start(null);
+      return true;
+    }
+    const layer=existing||layerCreation.createConfigured(name,draft.color,draft.index);
     if(!layer)return true;
     const moved=layerOps.moveMatches(state,view.matches,layer.id);
     if(moved){
@@ -971,13 +979,13 @@
     const transitPanel=new window.Pin2MapTransitRoutePanel({
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onQuery:query=>routeSession.setTransitQuery(query),onSelect:index=>routeSession.selectVariant(index),
-      onLegSelect:index=>{routePanel.selectLeg(index);routeMapView.fit(index);},
+      onLegSelect:index=>{routePanel.selectLeg(index);routeMapView.fit(index);routeMapView.flash(index);},
       open:url=>window.open(url,"_blank","noopener,noreferrer"),colors:window.Pin2MapCarRouteMapView.COLORS
     });
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
       transitPanel,
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
-      onLegSelect:index=>routeMapView.fit(index),
+      onLegSelect:index=>{routeMapView.fit(index);routeMapView.flash(index);},
       onMode:mode=>routeSession.setMode(mode),
       onActiveProfile:profile=>routeSession.setActiveProfile(profile),
       onVariantSelect:index=>routeSession.selectVariant(index),

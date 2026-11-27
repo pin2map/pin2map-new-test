@@ -1175,7 +1175,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 /* Expanded menu triggers share one strong-blue active state, white Lucide glyph.
    This remains in the owner for map controls, not separate button overrides. */
 #app #basemapButton.basemap-map-button.p2m-icon-control[aria-expanded="true"],
-#app #pinInfoButton.pin-info-button.p2m-icon-control[aria-expanded="true"],
 #app #layersButton.layers-bottom-button.p2m-icon-control[aria-expanded="true"],
 #app #settingsButton.settings-map-button.p2m-icon-control[aria-expanded="true"]{
   --p2m-map-control-bg:#1764bf;
@@ -1314,7 +1313,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   left:auto!important;
   right:var(--p2m-top-corner-inset)!important;
   top:auto!important;
-  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px)!important;
+  bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px))!important;
   transform:none!important;
 }
 
@@ -1323,13 +1322,13 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #pinInfoButton.pin-info-button.p2m-icon-control{
   position:absolute;z-index:1190;
   right:var(--p2m-top-corner-inset);left:auto;top:auto;
-  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + var(--p2m-map-circle-size) + 16px);
+  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px);
   --p2m-button-size:var(--p2m-map-circle-size);
 }
 #app #pinInfoMenu.pin-info-menu{
   position:absolute;z-index:1200;
   right:calc(var(--p2m-top-corner-inset) + var(--p2m-map-circle-size) + 8px);
-  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + var(--p2m-map-circle-size) + 12px);
+  bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 4px);
   width:min(285px,calc(100% - 74px));
   max-height:min(78dvh,420px);overflow-y:auto;
   padding:7px;border:1px solid var(--p2m-button-border);
@@ -1357,6 +1356,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 }
 #app #pinInfoMenu .pin-info-mode-icons{
   display:inline-flex;align-items:center;gap:3px;min-width:0;
+  background:none;border:0;padding:5px;color:inherit;cursor:pointer;
 }
 #app #pinInfoMenu .pin-info-mode-icons .p2m-lucide{
   width:18px;height:18px;flex:none;
@@ -2666,8 +2666,9 @@ body.pin-open #app #transferPanel{display:none}
 #app#app > button:is(#layersButton,#favoritesButton,#settingsButton,#labelsToggle,#pinInfoButton,#basemapButton,#refreshButton){
   z-index:1090!important;
 }
-#app#app > button:is(#layersButton,#favoritesButton,#settingsButton,#pinInfoButton,#basemapButton)[aria-expanded="true"],
-#app#app > button#labelsToggle[aria-pressed="true"]{
+#app#app > button:is(#layersButton,#favoritesButton,#settingsButton,#basemapButton)[aria-expanded="true"],
+#app#app > button#labelsToggle[aria-pressed="true"],
+#app#app > button#pinInfoButton[aria-pressed="true"]{
   --p2m-map-control-bg:#1764bf;
   --p2m-map-control-pressed:#1764bf;
   --p2m-map-control-ink:#fff;
@@ -3352,3 +3353,21 @@ body.pin-open #app #routeToggleHolder{display:none}
 #app .transit-leg-critical,#app .transit-leg-critical .transit-leg-duration,
 #app .transit-leg-critical :is(.transit-leg-icon,.transit-leg-arrow){color:#a82636}
 #app .transit-leg .transit-leg-warning{grid-area:number;width:1.65em;height:1.65em}
+
+
+#map .p2m-route-line-label{
+  display:block;width:max-content;max-width:160px;transform:translate(-50%,-50%);
+  padding:3px 7px;border:2px solid;border-radius:6px;background:#fff;
+  color:#243b54;font:600 12px system-ui;text-align:center;
+}
+#map :is(.p2m-route-line-label,.p2m-river-name-label) small{display:block;font-weight:400}
+#map path.p2m-route-leg-flash{animation:p2m-temporary-pin-blink 1.3s ease-in-out infinite;animation-duration:1.25s;animation-iteration-count:8}
+@media(prefers-reduced-motion:reduce){#map path.p2m-route-leg-flash{animation:none}}
+#app .transit-sticky{position:sticky;top:0;height:0;min-height:0;margin:0;z-index:8}
+#app #carRoutePanel:not(.transit-route-active) .transit-sticky{display:none}
+#app #transitStickyButton{
+  position:absolute;top:0;left:0;width:100%;display:flex;align-items:center;
+  gap:6px;padding:5px 8px;background:white;color:#243b54;
+  border:1px solid #afbfce;border-radius:6px;font:600 12px system-ui;text-align:left;
+}
+#app #transitStickyButton svg{width:16px;height:16px;flex:none}

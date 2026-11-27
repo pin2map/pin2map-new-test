@@ -23,6 +23,7 @@
         el.classList.toggle("is-selected",selected);
         el.setAttribute("aria-pressed",String(selected));
       });
+      this.button.setAttribute("aria-pressed",String(mode!=="off"));
       this.icons.mount(this.button,mode==="off"?"message-circle-exclamation-point-off":"message-circle-exclamation-point");
       this.button.setAttribute("aria-label","Pin-Informationen auswählen");
       this.button.title=this.button.classList.contains("is-loading")?"Pin-Informationen werden geladen":"Pin-Informationen auswählen";

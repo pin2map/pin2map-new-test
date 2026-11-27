@@ -255,6 +255,7 @@
     touch&&(!!pendingFocus||this.doc.activeElement===this.el(this.searchId)));
    if(pendingFocus){
     this.keepEditorVisible();pendingFocus.focus({preventScroll:true});
+    if(this.mode==="new")pendingFocus.select?.();
     this.keepEditorVisible();
     if(this.mode==="delete"||this.mode==="deleteAll"){
      const confirm=list.querySelector(".favorite-confirm");

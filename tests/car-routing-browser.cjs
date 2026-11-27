@@ -620,7 +620,22 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.locator(".transit-leg-number").first().textContent(),"1");
    assert.match(await page.locator("#routeLegs").textContent(),/Gleis 2/);
    const legs=page.locator("#routeLegs .transit-leg");
+   assert.deepEqual(await page.locator(".p2m-route-line-label small").allTextContents(),
+    (await page.locator(".transit-leg").evaluateAll(rows=>rows.map(row=>
+      row.querySelector(".transit-leg-depart").textContent+" – "+row.querySelector(".transit-leg-arrive").textContent))));
+   await page.locator("#routeLegs").evaluate(list=>{
+    const spacer=document.createElement("div");
+    spacer.id="transitTestSpacer";spacer.style.height="300px";list.append(spacer);
+   });
+   await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
+   const sticky=page.locator("#transitStickyButton");
+   await sticky.waitFor({state:"visible"});
+   assert.match(await sticky.textContent(),/A .* → C /);
+   await sticky.click();
+   assert.equal(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop),0);
+   await page.locator("#transitTestSpacer").evaluate(element=>element.remove());
    await legs.first().click();
+   assert.equal(await page.locator("path.p2m-route-leg-flash").count(),1);
    await page.keyboard.press("ArrowDown");
    assert.equal(await legs.nth(1).evaluate(node=>node===document.activeElement),true);
    assert.equal(await legs.nth(1).evaluate(node=>node.classList.contains("car-route-selected-leg")),true);

@@ -4,10 +4,12 @@
  */
 (function(root){
  const COLORS=["#ff3930","#1987f5","#27a855","#fa9b22","#8754bf","#26a0a1"];
+ const routeClock=new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"});
+ const TRANSIT_WALK_COLOR="#e3242b";
  const VARIANT_COLORS=Object.freeze(["#b42c73","#1462c0","#16805c"]);
  const overlaps=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
  const contains=(a,b)=>a.left<=b.left&&a.right>=b.right&&a.top<=b.top&&a.bottom>=b.bottom;
- function freeRouteRect({left,top,right,bottom},obstacles,width,height){
+ function freeRouteRect({left,top,right,bottom},obstacles,width,height,fill=false){
   let candidates=[{left,top,right,bottom}];
   for(const box of obstacles){
    const pieces=candidates.flatMap(rect=>overlaps(rect,box)?[
@@ -27,7 +29,7 @@
   });
   const compare=(a,b)=>score(a)-score(b)||
    Math.abs((b.top+b.bottom-top-bottom)/2)-Math.abs((a.top+a.bottom-top-bottom)/2);
-  return (centered.length?centered:candidates).reduce((best,rect)=>!best||compare(rect,best)>0?rect:best,null);
+  return (centered.length&&!fill?centered:[...centered,...candidates]).reduce((best,rect)=>!best||compare(rect,best)>0?rect:best,null);
  }
  class CarRouteMapView {
   constructor({mapPort,onLineClick,onGuideRemoveRequest=null,confirmRemove=null,getLayout=null,scheduleFrame=null}){
@@ -37,35 +39,50 @@
    this.getLayout=getLayout;this.scheduleFrame=scheduleFrame;this.coordinates=[];this.geometries=[];
    this.map.onViewportResize?.(()=>this.scheduleFit());
   }
-  clear(){for(const handle of this.handles)this.map.removeOverlay(handle);this.handles=[];}
+  clear(){this.lines=[];for(const handle of this.handles)this.map.removeOverlay(handle);this.handles=[];}
   render(snapshot){
    this.clear();
+   this.snapshot=snapshot;
    this.geometries=snapshot?.legs.map(leg=>leg.geometry)||[];
    const variants=snapshot?.variants||[];
-   const geometries=this.geometries;
+   const geometries=snapshot?.legs||[];
    const previous=this.fitGeometries||[];
-   const changed=geometries.length!==previous.length||geometries.some((geometry,i)=>geometry!==previous[i]);
+   const changed=geometries.length!==previous.length||geometries.some((geometry,i)=>geometry.geometry!==previous[i]?.geometry||geometry.geometryGaps!==previous[i]?.geometryGaps);
    if(changed){
     this.fitGeometries=geometries;
-    this.coordinates=geometries.flatMap(geometry=>geometry?.coordinates?.map(([lng,lat])=>({lat,lng}))||[]);
+    this.coordinates=geometries.flatMap(leg=>[...(leg.geometry?.coordinates||[]),...(leg.geometryGaps||[]).flat()]
+     .map(([lng,lat])=>({lat,lng})));
    }
    if(!snapshot)return;
-   const draw=(geometry,{color,weight,opacity,ferry,walk,variant},onClick)=>{
+   const draw=(geometry,{color,weight,opacity,ferry,walk,estimated,variant},onClick)=>{
     const positions=geometry?.coordinates?.map(([lng,lat])=>({lat,lng}));
     if(!positions||positions.length<2)return;
     const classNames=[ferry&&"p2m-ferry-leg",variant!==undefined&&"p2m-route-variant",
      variant!==undefined&&"p2m-route-variant-"+variant].filter(Boolean).join(" ");
     const line=this.map.createLine(positions,{
      color,weight,opacity,bubblingMouseEvents:false,className:classNames,
-     ...(ferry?{dashArray:"8 8"}:walk?{dashArray:"1 9",lineCap:"round"}:{})
+     ...(ferry||estimated?{dashArray:"8 8"}:walk?{dashArray:"1 9",lineCap:"round"}:{})
     });
-    this.map.onRouteLine(line,onClick);this.handles.push(line);
+    this.map.onRouteLine(line,onClick);this.handles.push(line);return line;
    };
    const chosen=snapshot.selectedVariant;
    snapshot.legs.forEach((leg,index)=>{
-    draw(leg.geometry,{color:variants.length?VARIANT_COLORS[chosen]:COLORS[index%COLORS.length],
-     weight:variants.length?7:5,opacity:.93,ferry:leg.ferry,walk:["WALK","FOOT"].includes(leg.mode),variant:variants.length?chosen:undefined},
-    ()=>this.onLineClick(index));
+    const transit=snapshot.mode==="transit",walk=["WALK","FOOT"].includes(leg.mode);
+    const color=transit&&walk?TRANSIT_WALK_COLOR:variants.length?VARIANT_COLORS[chosen]:COLORS[index%COLORS.length];
+    const select=()=>{this.flash(index);this.onLineClick(index);};
+    const style={color,weight:variants.length?7:5,opacity:.93,ferry:leg.ferry,walk,variant:variants.length?chosen:undefined};
+    const line=draw(leg.geometry,style,select);
+    this.lines[index]=line?[line]:[];
+    for(const gap of leg.geometryGaps||[]){
+     const connector=draw({coordinates:gap},{...style,estimated:true},select);
+     if(connector)this.lines[index].push(connector);
+    }
+    const labelPath=leg.geometry?.coordinates||leg.geometryGaps?.[0];
+    if(transit&&!walk&&labelPath&&this.map.createRouteLabel){
+     const name=leg.line||leg.operator||"ÖPNV";
+     this.handles.push(this.map.createRouteLabel(labelPath,name,
+      routeClock.format(leg.start)+" – "+routeClock.format(leg.end),color,select,this.getLayout));
+    }
    });
    for(const marker of snapshot.timeMarkers||[])this.handles.push(this.map.createRouteTimeMarker(marker));
    if(changed)this.scheduleFit();
@@ -75,9 +92,11 @@
    this.fitScheduled=true;
    this.scheduleFrame(()=>{this.fitScheduled=false;this.fit();});
   }
+  flash(index){for(const line of this.lines?.[index]||[])this.map.flashRouteLine?.(line);}
   fit(index=null){
-   const coordinates=index===null?this.coordinates:
-    this.geometries[index]?.coordinates?.map(([lng,lat])=>({lat,lng}))||[];
+   const leg=this.snapshot?.legs[index];
+   const coordinates=index===null?this.coordinates:[...(this.geometries[index]?.coordinates||[]),
+    ...(leg?.geometryGaps||[]).flat()].map(([lng,lat])=>({lat,lng}));
    if(!coordinates.length||!this.getLayout)return false;
    const {map,obstacles}=this.getLayout();
    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
@@ -85,11 +104,12 @@
     const {x,y}=this.map.projectAtZoom(position,0);
     minX=Math.min(x,minX);minY=Math.min(y,minY);maxX=Math.max(x,maxX);maxY=Math.max(y,maxY);
    }
-   const rect=freeRouteRect(map,obstacles,Math.max(maxX-minX,1e-6),Math.max(maxY-minY,1e-6));
+   const walking=this.snapshot?.mode==="transit"&&["WALK","FOOT"].includes(leg?.mode);
+   const rect=freeRouteRect(map,obstacles,Math.max(maxX-minX,1e-6),Math.max(maxY-minY,1e-6),walking);
    if(rect)this.map.fitBounds(coordinates,{
     paddingTopLeft:[rect.left-map.left+16,rect.top-map.top+16],
     paddingBottomRight:[map.right-rect.right+16,map.bottom-rect.bottom+16],
-    maxZoom:16,animate:false
+    maxZoom:walking?19:16,...(walking?{fractionalZoom:true}:{}),animate:false
    });
    return true;
   }
@@ -101,7 +121,7 @@
    });
   }
  }
- const api=Object.freeze({CarRouteMapView,COLORS,VARIANT_COLORS,freeRouteRect});
+ const api=Object.freeze({CarRouteMapView,COLORS,VARIANT_COLORS,TRANSIT_WALK_COLOR,freeRouteRect});
  root.Pin2MapCarRouteMapView=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

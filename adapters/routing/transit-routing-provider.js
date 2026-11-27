@@ -19,6 +19,29 @@
    return {type:"LineString",coordinates};
   }catch{return null;}
  }
+ const validPoint=point=>point?.length===2&&point.every(Number.isFinite);
+ const meters=(a,b)=>groundDistanceMeters(...[a,b].map(([lng,lat])=>({lat,lng})));
+ function displayGeometry(leg,shape){
+  if(walking(leg.mode))return {geometry:shape,geometryGaps:[]};
+  const from=coordinate(leg.from),to=coordinate(leg.to);
+  if(!shape)return {geometry:null,geometryGaps:[from,to].every(validPoint)?[[from,to]]:[]};
+  let coordinates=shape.coordinates;
+  const gaps=[];
+  // Coarse rail shapes can begin with a detached sharp spike followed by a
+  // multi-kilometre chord. Keep the remaining trace and show the gap as such.
+  if(["RAIL","SUBURBAN","REGIONAL_RAIL","REGIONAL_FAST_RAIL","LONG_DISTANCE","HIGHSPEED_RAIL","NIGHT_RAIL","SUBWAY"].includes(leg.mode)&&
+     coordinates.length>=3){
+   const [a,b,c]=coordinates;
+   const first=meters(a,b),next=meters(b,c),direct=meters(a,c);
+   if(first>350&&next>2500&&direct*direct<first*first+next*next){
+    gaps.push([a,c]);coordinates=coordinates.slice(2);
+   }
+  }
+  for(const pair of [[from,shape.coordinates[0]],[shape.coordinates.at(-1),to]]){
+   if(pair.every(validPoint)&&meters(...pair)>150)gaps.push(pair);
+  }
+  return {geometry:coordinates.length>=2?{...shape,coordinates}:null,geometryGaps:gaps};
+ }
  const routedTransferFactor=1.67;
  function normalize(itinerary,transferFactor,additionalTransferTime){
   if(!itinerary?.legs?.length)return null;
@@ -28,7 +51,7 @@
    const points=shape?.coordinates.map(([lng,lat])=>({lat,lng}));
    const distance=points?points.slice(1).reduce((sum,point,i)=>sum+groundDistanceMeters(point,points[i]),0):
     Number.isFinite(leg.distance)&&leg.distance>0?leg.distance:null;
-   return {index,mode:leg.mode,geometry:shape,start,end,durationSeconds:(end-start)/1000,
+   return {index,mode:leg.mode,...displayGeometry(leg,shape),start,end,durationSeconds:(end-start)/1000,
     distanceMeters:distance??0,measured:distance!==null,tripId:leg.tripId,stayOnBoard:leg.interlineWithPreviousLeg,
     walkBaselineMinutes:walking(leg.mode)&&Number.isFinite(leg.duration)?
       Math.max(0,(leg.duration/60-additionalTransferTime)/transferFactor):undefined,

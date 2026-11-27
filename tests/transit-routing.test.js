@@ -228,3 +228,42 @@ test("Latin fallback makes Greek stop labels readable",()=>{
  assert.equal(readableLocalName("Πάτρα / Άγιος Ανδρέας"),"Patras / Agios Andreas");
  assert.equal(readableLocalName("München Hbf"),"München Hbf");
 });
+
+test("a coarse rail spike is replaced by a dashed display gap without changing the timetable",async()=>{
+ const points=[[8.84,47.759],[8.834,47.769],[8.92,47.742],[8.97,47.737]];
+ const encode=points=>{
+  let prior=[0,0];
+  return points.map(([lng,lat])=>[lat,lng].map((value,index)=>{
+   const scaled=Math.round(value*1e6),delta=scaled-prior[index];prior[index]=scaled;
+   let bits=delta<0?~(delta<<1):delta<<1,result="";
+   while(bits>=32){result+=String.fromCharCode((bits&31)+95);bits>>=5;}
+   return result+String.fromCharCode(bits+63);
+  }).join("")).join("");
+ };
+ const startTime=new Date(instant).toISOString(),endTime=new Date(minutes(9)).toISOString();
+ const provider=new Provider({fetchImpl:async()=>({ok:true,json:async()=>({itineraries:[
+  {startTime,endTime,legs:[{mode:"SUBURBAN",displayName:"S6",startTime,endTime,
+   legGeometry:{precision:6,points:encode(points)}}]}
+ ]})})});
+ const [route]=await provider.calculate({waypoints:[{lat:48,lng:9},{lat:49,lng:10}],query:{time:instant}});
+ const [leg]=route.legs;
+ assert.deepEqual(leg.geometry.coordinates,points.slice(2));
+ assert.deepEqual(leg.geometryGaps,[[points[0],points[2]]]);
+ assert.equal(leg.durationSeconds,540);
+});
+
+test("walking transit stages fit the usable screen with fractional zoom and a red dotted line",()=>{
+ const {CarRouteMapView,TRANSIT_WALK_COLOR}=require("../ui/car-route-map-view.js");
+ const calls=[];
+ const view=new CarRouteMapView({mapPort:{
+  createLine:(_points,style)=>{calls.push(style);return {};},
+  onRouteLine:()=>{},projectAtZoom:({lat,lng})=>({x:lng,y:lat}),
+  fitBounds:(_points,options)=>calls.push(options)
+ },onLineClick:()=>{},getLayout:()=>({map:{left:0,top:0,right:900,bottom:600},obstacles:[]})});
+ view.render({mode:"transit",legs:[{mode:"WALK",geometry:{coordinates:[[8,47],[8.001,47.001]]}}]});
+ assert.equal(view.fit(0),true);
+ assert.equal(calls[0].color,TRANSIT_WALK_COLOR);
+ assert.equal(calls[0].dashArray,"1 9");
+ assert.equal(calls[1].maxZoom,19);
+ assert.equal(calls[1].fractionalZoom,true);
+});

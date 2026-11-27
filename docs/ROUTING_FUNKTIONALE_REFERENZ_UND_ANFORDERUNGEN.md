@@ -805,3 +805,7 @@ Pfeil auf und ab wechseln nach Fokus oder Klick in der ÖPNV-Etappenliste zur be
 ### R-051 – Geroutete ÖPNV-Umstiege und lesbare Haltestellennamen (27.11.2026)
 
 Die reguläre Transitous-Abfrage setzt `useRoutedTransfers=true` und `transferTimeFactor=1.67`. Die stärkere ergänzende Abfrage für kritische Umstiege bleibt verfügbar. Geplante Fußwegdauer, tatsächlich im Fahrplan verfügbare Umstiegszeit und Risikoeinstufung bleiben getrennt. Für Haltestellen und Fahrtziele fragt die App englische Bezeichnungen an. Griechisch geschriebene Namen werden für die Anzeige in lateinische Schrift übertragen, wenn sie so vom Anbieter kommen. Öffentliche Linienbezeichnungen bleiben erhalten. Für Bahnverbindungen verwendet die Verbindungsauswahl `train-front`.
+
+### R-052 – Lesbare ÖPNV-Etappen und sichtbare Geometrie (27.11.2026)
+
+ÖPNV-Fußwege erscheinen immer als rot gepunktete Linien. Bei Auswahl eines Fußwegs nutzt der Autozoom die größtmögliche freie Kartenfläche mit stufenlosem Zoom bis zur Obergrenze des Kartenlayers. Klicks auf Etappen lassen die zugehörige Kartenlinie für zehn Sekunden blinken. Fahrzeugabschnitte tragen ein sichtbereichsabhängiges Label mit Linienbezeichnung und Abfahrts- sowie Ankunftszeit. Unplausible Spitzen am Anfang grober Bahnverläufe und erkennbare Lücken zu Haltestellen werden als gestrichelte Näherung eingezeichnet. Der Fahrplan bleibt unverändert. Wenn die Routingzeile aus dem sichtbaren Dialog scrollt, zeigt eine anklickbare Kopfzeile die erste Einstiegs- und letzte Ausstiegshaltestelle mit Uhrzeiten und führt nach oben zurück.

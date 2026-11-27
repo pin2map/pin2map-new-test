@@ -79,9 +79,12 @@
       this.map.setView([center.lat,center.lng],viewport.zoom,options);
     }
     onViewportResize(callback){this.map.on("resize",callback);}
-    fitBounds(bounds,options={}) {
+    fitBounds(bounds,{fractionalZoom=false,...options}={}) {
       const pairs=bounds.map(pair=>[latLng(pair).lat,latLng(pair).lng]);
-      this.map.fitBounds(pairs,options);
+      const snap=this.map.options.zoomSnap;
+      if(fractionalZoom)this.map.options.zoomSnap=0;
+      try{this.map.fitBounds(pairs,options);}
+      finally{this.map.options.zoomSnap=snap;}
     }
     // Provider catalog lives inside the renderer adapter: no Leaflet tile details
     // escape into application, UI, domain or project storage.
@@ -530,6 +533,7 @@
     }
     removeOverlay(overlay) {
       if(!overlay)return;
+      overlay.p2mRouteLabelCleanup?.();
       if(this.pinLabels.delete(overlay))this.schedulePinLabels();
       this.setMarkerInfo(overlay,"");
       this.map.removeLayer(overlay);
@@ -538,6 +542,59 @@
     setMarkerZIndex(marker,value) { marker.setZIndexOffset(value); }
     createLine(positions,options={}) {
       return window.L.polyline(positions.map(p=>{const v=latLng(p);return [v.lat,v.lng];}),options).addTo(this.map);
+    }
+    flashRouteLine(line){
+      const element=line.getElement();
+      if(!element)return;
+      element.classList.remove("p2m-route-leg-flash");
+      void element.getBoundingClientRect();
+      element.classList.add("p2m-route-leg-flash");
+    }
+    createRouteLabel(coordinates,name,period,color,onClick,getLayout){
+      const label=document.createElement("span");
+      label.className="p2m-route-line-label";
+      label.style.borderColor=color;
+      const time=document.createElement("small");
+      time.textContent=period;
+      label.append(name,time);
+      const marker=window.L.marker([0,0],{interactive:true,keyboard:false,zIndexOffset:270,
+        icon:window.L.divIcon({html:label.outerHTML,className:"p2m-river-name-wrap",iconSize:[0,0]})}).addTo(this.map);
+      marker.on("click",event=>{window.L.DomEvent.stop(event.originalEvent);onClick();});
+      const chain=coordinates.map(([lng,lat])=>[lat,lng]);
+      const update=()=>{
+        const {x:width,y:height}=this.getSize();
+        const project=([lat,lng])=>this.project({lat,lng});
+        const anchor=window.Pin2MapRiverLabelAnchor;
+        const layout=getLayout?.();
+        const rects=layout?.obstacles||[];
+        let point=anchor.findVisibleAnchor([chain],project,width,height,55);
+        if(point&&layout){
+          const margin=40,origin=layout.map;
+          const blocker=rects.find(box=>point.x+origin.left>box.left-margin&&
+            point.x+origin.left<box.right+margin&&point.y+origin.top>box.top-20&&point.y+origin.top<box.bottom+20);
+          if(blocker){
+            const edges=[{x:0,y:0,w:width,h:blocker.top-origin.top},
+              {x:0,y:blocker.bottom-origin.top,w:width,h:origin.bottom-blocker.bottom},
+              {x:0,y:0,w:blocker.left-origin.left,h:height},
+              {x:blocker.right-origin.left,y:0,w:origin.right-blocker.right,h:height}];
+            const choices=edges.flatMap(({x,y,w,h})=>{
+              const candidate=anchor.findVisibleAnchor([chain],position=>{
+                const pixel=project(position);return {x:pixel.x-x,y:pixel.y-y};
+              },w,h,45);
+              return candidate?[{x:candidate.x+x,y:candidate.y+y}]:[];
+            });
+            point=choices.sort((a,b)=>Math.hypot(a.x-width/2,a.y-height/2)-Math.hypot(b.x-width/2,b.y-height/2))[0];
+          }
+        }
+        marker.setOpacity(point?1:0);
+        const element=marker.getElement();
+        if(element)element.style.pointerEvents=point?"":"none";
+        if(point)marker.setLatLng(this.map.containerPointToLatLng([point.x,point.y]));
+      };
+      this.map.on("moveend zoomend resize",update);
+      marker.p2mRouteLabelCleanup=()=>this.map.off("moveend zoomend resize",update);
+      update();
+      return marker;
     }
     createRouteTimeMarker({lat,lng,hour}){
       const size=hour?16:5;
@@ -729,6 +786,11 @@
         if((river.chains||[]).some(chain=>chain.length>=2)&&river.name){
           const name=window.Pin2MapFeatureLabel.create(
             "river",river,layerColors[river.layerId]||"#1689e5",document);
+          const length=(river.chains||[]).reduce((sum,chain)=>sum+
+            chain.slice(1).reduce((distance,point,index)=>distance+this.map.distance(chain[index],point),0),0);
+          const distance=document.createElement("small");
+          distance.textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(length/1000)+" km";
+          name.querySelector(".p2m-feature-label-name").append(distance);
           // The initial coordinate is only a placeholder; updateRiverLabels
           // immediately moves it onto the currently visible section.
           const marker=window.L.marker([0,0],{

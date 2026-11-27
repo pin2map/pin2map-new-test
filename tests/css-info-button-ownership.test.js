@@ -14,6 +14,6 @@ test("Info button local styling does not compete with map and bottom-corner cont
   for(const prop of ["left","right","top","bottom","width","height","padding","border","border-radius","background","color","font-size","font-family","box-shadow"]){
     assert.doesNotMatch(rule,new RegExp("(?:^|[;\\s])"+prop+"\\s*:"),"stale Info visual property "+prop);
   }
-  assert.match(css,/#app #labelsToggle\.labels-toggle\{[\s\S]*?bottom:calc\(var\(--p2m-bottom-control-baseline\) \+ var\(--p2m-map-circle-size\) \+ 8px\)!important;/);
+  assert.match(css,/#app #labelsToggle\.labels-toggle\{[\s\S]*?bottom:calc\(var\(--p2m-bottom-control-baseline\) \+ 2 \* \(var\(--p2m-map-circle-size\) \+ 8px\)\)!important;/);
   assert.match(css,/:is\(#app > button, #app #map \.leaflet-control button\)\{[\s\S]*?width:var\(--p2m-map-circle-size\)!important;/);
 });
