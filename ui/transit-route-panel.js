@@ -89,7 +89,7 @@
   syncSticky(){
    const panel=this.el("carRoutePanel"),row=panel.querySelector(".car-route-primary");
    this.el("transitSticky").classList.toggle("hidden",!panel.classList.contains("transit-route-active")||
-    !this.el("transitStickyText").textContent||row.getBoundingClientRect().bottom>panel.getBoundingClientRect().top);
+    !this.el("transitStickyDeparture").textContent||row.getBoundingClientRect().bottom>panel.getBoundingClientRect().top);
   }
   label(journey){
    return time(journey.start,journey.start)+"–"+time(journey.end,journey.start)+" • "+duration(journey.durationSeconds);
@@ -109,11 +109,11 @@
    this.snapshot=snapshot;
    const {query,journeys,recovery}=snapshot.transit;
    const selected=journeys[snapshot.selectedVariant];
-   const vehicles=selected?.legs.filter(leg=>!walking(leg.mode))||[];
-   const first=vehicles[0],last=vehicles.at(-1);
-   this.el("transitStickyText").textContent=first&&last?
-    readableLocalName(first.from?.name)+" "+time(first.start,selected.start)+" → "+
-    readableLocalName(last.to?.name)+" "+time(last.end,selected.start):"";
+   const endpoint=(id,stop)=>{const pin=this.getPin(id);return pin?.address||pin?.name||readableLocalName(stop?.name);};
+   this.el("transitStickyDeparture").textContent=selected?
+    clock.format(selected.start)+" "+endpoint(snapshot.startId,selected.legs[0]?.from):"";
+   this.el("transitStickyArrival").textContent=selected?
+    clock.format(selected.end)+" "+endpoint(snapshot.targetId,selected.legs.at(-1)?.to):"";
    this.syncSticky();
    this.el("transitDate").value=date.format(query.time);
    this.el("transitClock").value=clock.format(query.time);
@@ -162,10 +162,12 @@
     const line=walking(leg.mode)?kind:leg.line||
      [kind,leg.operator,"Linie nicht angegeben"].filter(Boolean).join(" · ");
     const title=line+(leg.headsign?" · Ri. "+readableLocalName(leg.headsign):"");
-    const transfer=selected.transfers.find(item=>item.critical&&
+    const transfer=selected.transfers.find(item=>
      (item.leg.index-item.previous.index>1?item.leg.index-1:item.leg.index)===index);
-    const marker=transfer?this.icons.svg("triangle-exclamation-point",this.doc):text("transit-leg-number",index+1);
-    if(transfer){
+    const transferWindow=transfer&&walking(leg.mode)?transfer:null;
+    const singleWalk=transferWindow&&transferWindow.leg.index-transferWindow.previous.index===2;
+    const marker=transfer?.critical?this.icons.svg("triangle-exclamation-point",this.doc):text("transit-leg-number",index+1);
+    if(transfer?.critical){
      button.classList.add("transit-leg-critical");
      marker.classList.add("transit-leg-warning");
      marker.setAttribute("role","img");marker.removeAttribute("aria-hidden");
@@ -176,9 +178,12 @@
       " · Mögliche Ankunft bei verpasstem Anschluss "+time(recovery.end,query.time):"";
      button.title=note+followUp;
     }
-    button.append(marker,text("transit-leg-depart",time(leg.start,selected.start),"strong"),glyph,
-     text("transit-leg-title",title,"strong"),text("transit-leg-duration",duration(leg.durationSeconds)),
-     text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(leg.end,selected.start),"strong"),
+    if(transferWindow&&!transfer.critical)button.title=Math.floor(transferWindow.available)+" min verfügbar · "+
+     duration(leg.durationSeconds)+" Fußweg laut Fahrplan";
+    button.append(marker,text("transit-leg-depart",time(singleWalk?transferWindow.previous.end:leg.start,selected.start),"strong"),glyph,
+     text("transit-leg-title",transferWindow?"Umstieg · "+title:title,"strong"),
+     text("transit-leg-duration",transferWindow?duration(Math.floor(Math.max(0,transferWindow.available))*60):duration(leg.durationSeconds)),
+     text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(singleWalk?transferWindow.leg.start:leg.end,selected.start),"strong"),
      destination,text("transit-leg-to",station(leg.to)));
     button.addEventListener("click",()=>{button.focus({preventScroll:true});this.onLegSelect(index);});return button;
    }));

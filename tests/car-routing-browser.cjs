@@ -554,7 +554,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     const a=params.get("arriveBy")==="true"?-60:0;
     const route=(legs,end)=>({startTime:legs[0].startTime,endTime:at(end),legs});
     await entry.fulfill({json:{itineraries:[
-     route([travel("LONG_DISTANCE",a,a+25,"A","B","ICE1",9),travel("LONG_DISTANCE",a+30,a+45,"B","C","ICE2",9.05)],a+45),
+     route([travel("LONG_DISTANCE",a,a+25,"A","B","ICE1",9),travel("WALK",a+25,a+28,"B","B","WALK1",9.05),travel("LONG_DISTANCE",a+30,a+45,"B","C","ICE2",9.05)],a+45),
      params.get("arriveBy")==="true"&&!params.get("additionalTransferTime")
       ?route([travel("BUS",a+5,a+25,"A","B","BUS1",9),travel("BUS",a+30,a+50,"B","C","BUS2",9.05)],a+50)
       :route([travel("BUS",a+5,a+50,"A","C","BUS",9)],a+50)
@@ -616,12 +616,15 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok((await measureTransitControls()).body>(await measureTransitControls()).view);
    await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
    assert.ok(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop)>0);
-   assert.equal(await page.locator(".transit-leg-icon").count(),2);
+   assert.equal(await page.locator(".transit-leg-icon").count(),3);
+   assert.equal(await page.locator(".transit-leg-walk .transit-leg-duration").textContent(),"5 min");
+   assert.equal(await page.locator(".transit-leg-walk .transit-leg-arrive").textContent(),
+    await page.locator(".transit-leg").last().locator(".transit-leg-depart").textContent());
    assert.equal(await page.locator(".transit-leg-number").first().textContent(),"1");
    assert.match(await page.locator("#routeLegs").textContent(),/Gleis 2/);
    const legs=page.locator("#routeLegs .transit-leg");
    assert.deepEqual(await page.locator(".p2m-route-line-label small").allTextContents(),
-    (await page.locator(".transit-leg").evaluateAll(rows=>rows.map(row=>
+    (await page.locator(".transit-leg:not(.transit-leg-walk)").evaluateAll(rows=>rows.map(row=>
       row.querySelector(".transit-leg-depart").textContent+" – "+row.querySelector(".transit-leg-arrive").textContent))));
    await page.locator("#routeLegs").evaluate(list=>{
     const spacer=document.createElement("div");
@@ -630,7 +633,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
    const sticky=page.locator("#transitStickyButton");
    await sticky.waitFor({state:"visible"});
-   assert.match(await sticky.textContent(),/A .* → C /);
+   for(const id of ["transitStickyDeparture","transitStickyArrival"])
+    assert.match(await page.locator("#"+id).textContent(),/^\d{2}:\d{2} .+$/);
+   const end=page.locator("#transitStickyEnd");
+   assert.equal(await end.isVisible(),true);
+   page.once("dialog",dialog=>dialog.dismiss());
+   await end.click();
+   assert.equal(await sticky.isVisible(),true);
    await sticky.click();
    assert.equal(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop),0);
    await page.locator("#transitTestSpacer").evaluate(element=>element.remove());

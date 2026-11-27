@@ -8,6 +8,7 @@
  const day=time=>formatter.format(new Date(time));
  const paddedTransfer={factor:2,additional:5};
  const localRail=mode=>["TRAM","SUBWAY","METRO"].includes(mode);
+ const regionalRail=mode=>["SUBURBAN","REGIONAL_RAIL","REGIONAL_FAST_RAIL"].includes(mode);
  const longRail=mode=>["HIGHSPEED_RAIL","LONG_DISTANCE","NIGHT_RAIL"].includes(mode);
  function stuttgartTransfer(previous,next){
   const origin=previous.to,destination=next.from;
@@ -25,8 +26,11 @@
   const samePlatform=matchingPlatform&&reported===0;
   const stuttgart=stuttgartTransfer(previous,next);
   const minimum=stuttgart?20:longRail(next.mode)?12:samePlatform?2:5;
-  return {reported,distance,stuttgart,minutes:Math.ceil(Math.max(minimum,reported*paddedTransfer.factor,
-   distance*20/(referenceWalkMeters||250)))};
+  const regional=regionalRail(previous.mode)&&regionalRail(next.mode);
+  const planned=legs.reduce((sum,leg)=>sum+leg.durationSeconds/60,0);
+  const minutes=regional?Math.max(minimum,planned,distance/60):
+   Math.max(minimum,reported*paddedTransfer.factor,distance*20/(referenceWalkMeters||250));
+  return {reported,distance,stuttgart,regional,minutes:Math.ceil(minutes)};
  }
  function assess(journey,query){
   const transfers=[];
@@ -37,7 +41,7 @@
     const available=(leg.start-previous.end)/60000;
     const walk=realisticWalk(previous,leg,journey.legs.slice(previous.index+1,leg.index).filter(item=>walking(item.mode)),query.referenceWalkMeters);
     const slack=available-walk.minutes;
-    const safetyReserve=reserve(previous.mode);
+    const safetyReserve=walk.regional?5:reserve(previous.mode);
     transfers.push({leg,previous,slack,available,walkMinutes:walk.minutes,reportedWalk:walk.reported,
      walkDistance:walk.distance,stuttgart:walk.stuttgart,
      reserve:safetyReserve,critical:slack<safetyReserve});

@@ -266,3 +266,16 @@ test("a saved house address is searchable without changing the name and is disca
  assert.equal(pin.name,"Bergstraße 123");
  assert.deepEqual(searchExpanded(state,{query:"Bochum",kind:"pins"}),[]);
 });
+
+test("fit to a selected layer uses its pins and falls back to its geometry only when it has no pins",()=>{
+ const {visiblePoints}=require("../application/fit-visible-project.js");
+ const project={
+  layers:[{id:"a",visible:true},{id:"b",visible:true},{id:"c",visible:false}],
+  pins:[{layerId:"a",lat:48,lng:9},{layerId:"b",lat:53,lng:10}],
+  areas:[{layerId:"a",geometry:{type:"Polygon",coordinates:[[[7,47],[8,47]]]}},
+   {layerId:"c",geometry:{type:"Polygon",coordinates:[[[6,46],[7,46]]]}}],
+  rivers:[{layerId:"c",chains:[[[46,6],[46.5,7]]]}]
+ };
+ assert.deepEqual(visiblePoints(project,null,null,"a"),[[48,9]]);
+ assert.deepEqual(visiblePoints(project,null,null,"c"),[[46,6],[46,7],[46.5,7]]);
+});

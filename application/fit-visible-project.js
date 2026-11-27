@@ -2,8 +2,8 @@
 /* Fit ALL currently visible project objects after a layer visibility change.
  * Pure traversal and injected renderer port; no Leaflet, DOM or storage. */
 (function(root){
- function visiblePoints(project,pinFilter,currentFilter){
-  const visible=new Set((project.layers||[]).filter(l=>l.visible).map(l=>l.id));
+ function visiblePoints(project,pinFilter,currentFilter,layerId){
+  const visible=new Set((project.layers||[]).filter(l=>layerId==null?l.visible:l.id===layerId).map(l=>l.id));
   const positions=[],seen=new Set();
   function push(lat,lng){
    const y=Number(lat),x=Number(lng);
@@ -12,8 +12,10 @@
    const key=y+","+x;if(seen.has(key))return;
    seen.add(key);positions.push([y,x]);
   }
-  for(const pin of pinFilter.visiblePins(project.pins||[],project.layers||[],currentFilter))
-   push(pin.lat,pin.lng);
+  const pins=layerId==null?pinFilter.visiblePins(project.pins||[],project.layers||[],currentFilter):
+   (project.pins||[]).filter(pin=>visible.has(pin.layerId));
+  for(const pin of pins)push(pin.lat,pin.lng);
+  if(layerId!=null&&positions.length)return positions;
   function visitGeometry(node){
    if(!Array.isArray(node))return;
    if(node.length>=2&&typeof node[0]==="number"&&typeof node[1]==="number"){
@@ -29,8 +31,8 @@
     for(const point of chain)if(Array.isArray(point))push(point[0],point[1]);
   return positions;
  }
- function fit({project,pinFilter,currentFilter,mapPort,onFit=()=>{}}){
-  const points=visiblePoints(project,pinFilter,currentFilter);
+ function fit({project,pinFilter,currentFilter,mapPort,layerId,onFit=()=>{}}){
+  const points=visiblePoints(project,pinFilter,currentFilter,layerId);
   if(!points.length)return false;
   if(points.length===1)mapPort.setView({center:{lat:points[0][0],lng:points[0][1]},
     zoom:Math.max(mapPort.getViewport().zoom,13)},{animate:false});

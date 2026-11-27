@@ -3197,7 +3197,7 @@ body.object-search-mode #app #searchClear.search-clear span{
 #app .car-route-round.is-active,#app .car-route-round[aria-pressed="true"],
 #app .car-route-round[aria-expanded="true"]{--p2m-button-bg:#1764bf;--p2m-button-ink:#fff;--p2m-button-border:#1764bf}
 #app .car-route-round:disabled,#app .car-route-popover button:disabled{opacity:.46;cursor:not-allowed}
-#app #routeEnd.car-route-end{--p2m-button-ink:#fff;--p2m-button-bg:#f04438;--p2m-button-border:#f04438}
+#app :is(#routeEnd,#transitStickyEnd).car-route-end{--p2m-button-ink:#fff;--p2m-button-bg:#f04438;--p2m-button-border:#f04438}
 #app .car-route-apple .car-route-round{margin:auto}
 #app .car-route-legs{overflow-y:auto;overflow-x:hidden;flex:1 1 auto;min-height:0;
  scrollbar-width:thin;padding:4px 3px;font-size:12px;font-weight:600}
@@ -3365,9 +3365,16 @@ body.pin-open #app #routeToggleHolder{display:none}
 @media(prefers-reduced-motion:reduce){#map path.p2m-route-leg-flash{animation:none}}
 #app .transit-sticky{position:sticky;top:0;height:0;min-height:0;margin:0;z-index:8}
 #app #carRoutePanel:not(.transit-route-active) .transit-sticky{display:none}
-#app #transitStickyButton{
-  position:absolute;top:0;left:0;width:100%;display:flex;align-items:center;
-  gap:6px;padding:5px 8px;background:white;color:#243b54;
-  border:1px solid #afbfce;border-radius:6px;font:600 12px system-ui;text-align:left;
+#app .transit-sticky-surface{
+  position:absolute;top:0;left:0;width:100%;display:flex;align-items:stretch;
+  gap:6px;padding:4px;background:#eef1f4;color:#243b54;box-sizing:border-box;
+  border:1px solid #afbfce;border-radius:8px;box-shadow:0 3px 8px #25364a30;
 }
-#app #transitStickyButton svg{width:16px;height:16px;flex:none}
+#app #transitStickyButton{
+  display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:2px 4px;
+  border:0;background:none;color:inherit;font:600 12px/1.3 system-ui;text-align:left;
+}
+#app #transitStickyButton svg{width:23px;height:23px;flex:none}
+#app .transit-sticky-journey{min-width:0}
+#app .transit-sticky-journey > span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#app #transitStickyEnd{align-self:stretch;height:auto;min-height:var(--route-control-size)}

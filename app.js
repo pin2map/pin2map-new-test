@@ -128,7 +128,10 @@
       if(!result)return;
       renderGeometry();layerView.start(null);showNotice("Ebene hinzugefügt");
     },
-    onChooseLayer:id=>moveSearchMatches(id),
+    onChooseLayer:id=>{
+      if(moveSearchMatches(id))return;
+      fitVisibleProject.fit({project:state,layerId:id,mapPort:mapAdapter,onFit:updatePanelLayout});
+    },
     onAddLayer:()=>{
       if(!objectSearchController.view?.matches.length||objectSearchController.view.query.trim())return false;
       showNotice("Für eine neue Ebene bitte einen Suchbegriff eingeben");

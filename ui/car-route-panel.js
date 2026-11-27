@@ -17,7 +17,8 @@
   }
   bind(){
    this.transitPanel?.bind();
-   this.el("routeEnd").addEventListener("click",()=>{if(this.confirmEnd())this.onEnd();});
+   for(const id of ["routeEnd","transitStickyEnd"])
+    this.el(id).addEventListener("click",()=>{if(this.confirmEnd())this.onEnd();});
    for(const button of this.doc.querySelectorAll("[data-route-mode]"))
     button.addEventListener("click",()=>{
      const mode=button.dataset.routeMode,panel=this.el("carRoutePanel");

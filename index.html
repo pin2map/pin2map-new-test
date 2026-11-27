@@ -194,7 +194,15 @@
       <span class="car-route-heading"><span id="routeModeIcon" data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary" role="status">Route</strong></span>
       <button id="routePanelHide" class="car-route-round" type="button" data-pin-icon="minimize-2" aria-label="Routingdialog ausblenden"></button>
     </div>
-    <div id="transitSticky" class="transit-sticky hidden"><button type="button" id="transitStickyButton"><span data-pin-icon="tram-front" aria-hidden="true"></span><span id="transitStickyText"></span></button></div>
+    <div id="transitSticky" class="transit-sticky hidden">
+      <div class="transit-sticky-surface">
+        <button type="button" id="transitStickyButton" aria-label="Zurück zum Anfang der Verbindung">
+          <span data-pin-icon="tram-front" aria-hidden="true"></span>
+          <span class="transit-sticky-journey"><span id="transitStickyDeparture"></span><span id="transitStickyArrival"></span></span>
+        </button>
+        <button id="transitStickyEnd" class="car-route-round car-route-end" type="button" data-pin-icon="route-off" aria-label="Routing beenden"></button>
+      </div>
+    </div>
     <div class="car-route-row car-route-primary">
       <fieldset class="car-route-group car-route-transport"><legend>Routing</legend><div class="car-route-modes">
         <button class="car-route-round is-active" type="button" data-pin-icon="car" data-route-mode="car" aria-label="Auto" aria-pressed="true"></button>

@@ -267,3 +267,16 @@ test("walking transit stages fit the usable screen with fractional zoom and a re
  assert.equal(calls[1].maxZoom,19);
  assert.equal(calls[1].fractionalZoom,true);
 });
+
+test("a ten-minute regional rail connection can cover the planned walk and reserve",()=>{
+ const start={name:"Radolfzell Bahnhof",stopId:"radolfzell",track:"6"};
+ const end={...start,track:"1"};
+ const first=leg(0,"SUBURBAN",0,10,{to:start});
+ const walk=leg(1,"WALK",10,13,{from:start,to:end,distanceMeters:90});
+ const onward=leg(2,"SUBURBAN",20,30,{from:end});
+ const query={time:instant,arriveBy:false};
+ const result=assess(journey([first,walk,onward]),query);
+ assert.equal(result.quality,"green");
+ assert.deepEqual(result.transfers.map(({available,walkMinutes,reserve})=>[available,walkMinutes,reserve]),[[10,5,5]]);
+ assert.equal(assess(journey([first,walk,{...onward,start:minutes(17)}]),query).quality,"red");
+});

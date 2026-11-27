@@ -789,7 +789,7 @@
           const length=(river.chains||[]).reduce((sum,chain)=>sum+
             chain.slice(1).reduce((distance,point,index)=>distance+this.map.distance(chain[index],point),0),0);
           const distance=document.createElement("small");
-          distance.textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1}).format(length/1000)+" km";
+          distance.textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0}).format(length/1000)+" km";
           name.querySelector(".p2m-feature-label-name").append(distance);
           // The initial coordinate is only a placeholder; updateRiverLabels
           // immediately moves it onto the currently visible section.
