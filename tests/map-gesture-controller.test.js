@@ -154,3 +154,16 @@ test("temporary pin alternates long-press 18/14 without saving, selecting or ope
  h.time.advance(50);h.pinElement.dispatch("pointerup");
  assert.deepEqual(taps,["preview"],"Short tap still opens temporary actions");
 });
+
+test("a click retargeted to a map label after marker zoom is ignored until a new press",()=>{
+  const h=harness();
+  h.setNonSurface(true);
+  h.gestures.attachLongPress();
+  h.gestures.attachMarkerLongPress(h.marker,"pin-a");
+  h.surface.dispatch("pointerdown",{pointerType:"touch"});
+  h.pinElement.dispatch("pointerdown",{pointerType:"touch"});
+  h.pinElement.dispatch("pointerup",{pointerType:"touch"});
+  assert.equal(h.gestures.suppressRetargetedMarkerClick(),true);
+  h.surface.dispatch("pointerdown",{pointerType:"touch"});
+  assert.equal(h.gestures.suppressRetargetedMarkerClick(),false);
+});

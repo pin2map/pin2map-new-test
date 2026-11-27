@@ -1126,8 +1126,8 @@
       formatInfo:info=>window.Pin2MapPinInfoLabel.labelMarkup(info,{
         getIconSvg:name=>window.Pin2MapIcons.svg(name,document).outerHTML
       }),
-      onInfoClick:id=>selectPin(id),
-      onLabelSelect:id=>{if(!uiState.moveMode)selectPin(id);},
+      onInfoClick:id=>{if(!gestures.suppressRetargetedMarkerClick())selectPin(id);},
+      onLabelSelect:id=>{if(!uiState.moveMode&&!gestures.suppressRetargetedMarkerClick())selectPin(id);},
       onSelect:id=>{if(gestures.isSuppressed()||uiState.moveMode)return;handleMarkerTap(id);},
       attachGesture:(marker,id)=>gestures.attachMarkerLongPress(marker,id)
     })

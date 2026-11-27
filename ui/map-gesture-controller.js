@@ -13,6 +13,7 @@
     if(!mapAdapter||typeof isMoveMode!=="function"||typeof addPin!=="function")
       throw new TypeError("Gesture adapter and callbacks required");
     let suppressMapClickUntil=0,lastDismissAt=0,markerPressTimer=null,markerPressStart=null;
+    let lastPressWasOnMarker=false;
     const DateNow=()=>now();
     const suppressFor=ms=>{suppressMapClickUntil=DateNow()+ms;};
   // Matches the predecessor app: a held pin alternates 18/14 at its on-screen pixel.
@@ -46,6 +47,7 @@
         lastX:event.clientX,lastY:event.clientY,dragging:false,
         activated:false,cancelled:false,finished:false,wasDraggable:mapAdapter.isPanEnabled()};
       markerPressStart=gesture;
+      lastPressWasOnMarker=true;
       if(gesture.wasDraggable)mapAdapter.setPanEnabled(false);
       try{element.setPointerCapture(gesture.id);}catch(_){}
       const cleanup=()=>{
@@ -113,6 +115,7 @@
     mapAdapter.disableDoubleClickZoom?.();
     let heldBackground=null;
     container.addEventListener("pointerdown",event=>{
+      lastPressWasOnMarker=false;
       if(event.button!==0||isMoveMode()||isInspectMode()||
         !mapAdapter.isMapSurface(event.target))return;
       heldBackground={id:event.pointerId,x:event.clientX,y:event.clientY,
@@ -149,6 +152,7 @@
         return lastDismissAt>0&&DateNow()-lastDismissAt<1100;
       },
       isSuppressed:()=>DateNow()<suppressMapClickUntil,
+      suppressRetargetedMarkerClick:()=>lastPressWasOnMarker&&DateNow()<suppressMapClickUntil,
       isMarkerPressActive:()=>!!markerPressStart
     });
   }
