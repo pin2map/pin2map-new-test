@@ -1335,16 +1335,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   border-radius:11px;background:#fff;box-shadow:var(--shadow);
 }
 
-/* New unboxed menu: native period choices are distinct daily/sun actions. */
-#app #pinInfoMenu .pin-info-separator{
-  margin:6px 4px;border:0;border-top:1px solid #d9e0e8;
-}
-#app #pinInfoMenu .pin-info-icon-choice{
-  display:flex;align-items:center;gap:9px;
-}
-#app #pinInfoMenu .pin-info-icon-choice .p2m-lucide{
-  width:19px;height:19px;flex:none;
-}
 #app #pinInfoMenu .pin-info-mode-row{
   display:flex;align-items:center;justify-content:space-between;
   gap:7px;margin:3px 0;padding:7px 9px;
@@ -1354,14 +1344,6 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app #pinInfoMenu .pin-info-mode-row.is-selected{
   background:#eaf2f9;border-color:#c9dae9;
 }
-#app #pinInfoMenu .pin-info-mode-icons{
-  display:inline-flex;align-items:center;gap:3px;min-width:0;
-  background:none;border:0;padding:5px;color:inherit;cursor:pointer;
-}
-#app #pinInfoMenu .pin-info-mode-icons .p2m-lucide{
-  width:18px;height:18px;flex:none;
-}
-#app #pinInfoMenu .pin-info-pair-divider{color:#8b9aad;font-size:13px}
 #app #pinInfoMenu .pin-info-mode-row select{
   min-width:0;width:104px;max-width:104px;
   border:1px solid #c9dae9;border-radius:6px;
@@ -1444,75 +1426,25 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   max-height:calc(65dvh - var(--p2m-map-circle-size) / 2 - 18px - env(safe-area-inset-bottom,0px));
   overflow-y:auto;overscroll-behavior:contain;
 }
-#app .basemap-satellite-divider{
-  border:0;border-top:1px solid #d9e0e8;margin:6px 9px 8px;
-}
-#app .basemap-satellite-choice-row{
-  display:flex;align-items:center;gap:5px;
-}
-#app .basemap-satellite-choice-row .basemap-choice{
-  flex:1 1 auto;min-width:0;width:auto;
-}
-#app .basemap-satellite-reset{
-  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;
-  min-width:84px;min-height:32px;padding:5px 8px;margin:0 3px 0 0;
-  border:1px solid #c9dae9;border-radius:7px;
-  background:#fff;color:#235b9a;font-size:12px;font-weight:600;cursor:pointer;
-}
-#app .basemap-satellite-reset .p2m-lucide{width:17px;height:17px}
-#app .basemap-satellite-reset:disabled{
-  background:#f3f5f7;color:#69788a;cursor:not-allowed;
-}
-#app .basemap-satellite-reset:focus-visible{
-  outline:2px solid #235b9a;outline-offset:2px;
-}
+#app #basemapMenu .basemap-choice{display:flex;align-items:center;gap:8px}
+#app #basemapMenu .basemap-choice svg{width:17px;height:17px}
 #app .basemap-satellite-controls{
-  display:grid;grid-template-columns:minmax(0,1fr);
-  gap:5px;padding:7px 12px 11px;
+  display:grid;gap:7px;margin:5px 3px 3px;padding:8px;
+  border:1px solid #c9dae9;border-radius:8px;font-size:12px;color:#253a4b;
 }
-#app .basemap-satellite-slider{
-  display:flex;align-items:center;gap:7px;
-  color:#253a4b;font-size:12px;font-weight:600;
+#app .basemap-satellite-controls.hidden{display:none}
+#app .basemap-satellite-controls button{
+  display:flex;align-items:center;gap:7px;padding:5px 8px;min-height:32px;
+  background:#fff;border:1px solid #c9dae9;border-radius:7px;color:inherit;text-align:left;
 }
-#app .basemap-satellite-slider .basemap-slider-icon{
-  display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;
-}
-#app .basemap-satellite-slider .p2m-lucide{width:17px;height:17px}
-#app .basemap-satellite-slider output{
-  margin-left:auto;font-size:11px;color:#617287;font-variant-numeric:tabular-nums;
-}
-#app .basemap-satellite-controls input[type="range"]{
-  width:100%;min-width:0;height:22px;margin:0 0 4px;
-  accent-color:#235b9a;cursor:pointer;
-}
-#app .basemap-satellite-controls.is-inactive .basemap-satellite-slider,
-#app .basemap-satellite-controls.is-inactive .basemap-satellite-slider output{
-  color:#9ca7b3;
-}
-#app .basemap-satellite-controls.is-inactive .basemap-slider-icon{
-  opacity:.48;
-}
-#app .basemap-satellite-controls input[type="range"]:disabled{
-  opacity:.45;cursor:not-allowed;
-}
-
-/* Basemap menu extension: scoped style; B38 cascade budget unchanged. */
-#app .basemap-relief-toggle{
-  display:flex;align-items:center;gap:8px;padding:10px 12px;
-  cursor:pointer;font:inherit;
-}
-#app .basemap-relief-toggle input{margin:0;accent-color:#235b9a;}
-
-/* Satellite inspection and optional reference controls: isolated ownership. */
-#app .basemap-satellite-roads{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:12px;color:#253a4b}
-#app .basemap-satellite-roads input{margin:0;accent-color:#235b9a}
-#app .basemap-satellite-roads:has(input:disabled){color:#9ca7b3}
-#app .basemap-satellite-info{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 12px;font-size:12px;font-weight:600;color:#253a4b}
-#app #satelliteInspect{display:grid;place-items:center;min-width:35px;min-height:35px;padding:6px;background:#f1f3f6;color:#253a4b;border:1px solid #b7c5d4}
+#app .basemap-satellite-controls :is(button,label) svg{width:17px;height:17px}
+#app .basemap-satellite-controls button:disabled{opacity:.6;cursor:not-allowed}
 #app #satelliteInspect[aria-pressed="true"]{background:#1764bf;color:white}
-#app #satelliteInspect:disabled{opacity:.45;cursor:not-allowed}
-#app .basemap-relief-toggle.is-inactive{color:#9ca7b3;cursor:not-allowed}
-#app .basemap-relief-toggle.is-inactive input{opacity:.45}
+#app .basemap-satellite-brightness{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:6px}
+#app #satelliteBrightness{width:100%;min-width:0;accent-color:#235b9a}
+#app .basemap-satellite-controls label{display:flex;align-items:center;gap:6px}
+#app .basemap-satellite-controls :is(input[type="checkbox"],input[type="radio"]){margin:0;accent-color:#235b9a}
+
 #map .p2m-satellite-selection-icon{background:none;border:0;pointer-events:none;display:grid;place-items:center;color:#303b43}
 #map .p2m-satellite-selection-icon svg{width:24px;height:24px;filter:drop-shadow(0 1px 1px #fff)}
 #app .satellite-info-panel{position:absolute;z-index:1280;top:calc(85px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(380px,calc(100% - 24px));max-height:min(46dvh,340px);overflow-y:auto;background:rgba(255,255,255,.97);border:1px solid #b7c5d4;border-radius:12px;padding:12px;box-shadow:0 6px 20px #172b4940;color:#253a4b;font-size:12px}
@@ -3360,7 +3292,7 @@ body.pin-open #app #routeToggleHolder{display:none}
   padding:3px 7px;border:2px solid;border-radius:6px;background:#fff;
   color:#243b54;font:600 12px system-ui;text-align:center;
 }
-#map :is(.p2m-route-line-label,.p2m-river-name-label) small{display:block;font-weight:400}
+#map :is(.p2m-route-line-label,.p2m-river-name-label,.p2m-area-name-label) small{display:block;font-weight:400}
 #map path.p2m-route-leg-flash{animation:p2m-temporary-pin-blink 1.3s ease-in-out infinite;animation-duration:1.25s;animation-iteration-count:8}
 @media(prefers-reduced-motion:reduce){#map path.p2m-route-leg-flash{animation:none}}
 #app .transit-sticky{position:sticky;top:0;height:0;min-height:0;margin:0;z-index:8}
@@ -3378,3 +3310,17 @@ body.pin-open #app #routeToggleHolder{display:none}
 #app .transit-sticky-journey{min-width:0}
 #app .transit-sticky-journey > span{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #app #transitStickyEnd{align-self:stretch;height:auto;min-height:var(--route-control-size)}
+
+
+#app #nameLabelMenu{
+  position:absolute;z-index:1200;
+  right:calc(var(--p2m-top-corner-inset) + var(--p2m-map-circle-size) + 8px);
+  bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px) - 4px);
+  padding:7px;
+}
+#app #nameLabelMenu label{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:13px;cursor:pointer}
+#app #nameLabelMenu input,#app #pinInfoMenu input{accent-color:#1764bf}
+#app #pinInfoMenu .pin-info-mode-row{padding:3px 5px;gap:4px}
+#app #pinInfoMenu .pin-info-mode-choice{display:flex;align-items:center;gap:5px;min-width:0;flex:1;padding:6px 0;cursor:pointer}
+#app #pinInfoMenu .pin-info-mode-choice svg{width:16px;height:16px}
+#app #pinInfoMenu .pin-info-mode-row select{width:70px}

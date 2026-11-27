@@ -5,7 +5,7 @@
 (function(root){
   const HITBOX_DISPLAY_KEY="pin2map-show-yellow-pin-hitboxes-v1";
   class MapViewControls{
-    constructor({getElement,document:doc,getLabelsVisible,setLabelsVisible,
+    constructor({getElement,document:doc,onLabelCycle=null,getLabelsVisible,setLabelsVisible,
       onSave,onRenderMarkers,onUpdateLabelButton,layerView,overlayCoordinator,
       onToggleSettings,getGeocodeEnabled,setGeocodeEnabled,
       readLocalPreference,writeLocalPreference}){
@@ -15,7 +15,7 @@
       if(!doc||!doc.body||!layerView||!overlayCoordinator||
         callbacks.some(fn=>typeof fn!=="function"))
         throw new TypeError("Map view control ports required");
-      Object.assign(this,{getElement,doc,getLabelsVisible,setLabelsVisible,
+      Object.assign(this,{getElement,doc,getLabelsVisible,setLabelsVisible,onLabelCycle,
         onSave,onRenderMarkers,onUpdateLabelButton,layerView,overlayCoordinator,
         onToggleSettings,getGeocodeEnabled,setGeocodeEnabled,
         readLocalPreference,writeLocalPreference});
@@ -42,6 +42,7 @@
       if(this.mapBound)return;
       this.mapBound=true;
       this.listen("labelsToggle","click",()=>{
+        if(this.onLabelCycle){this.onLabelCycle();return;}
         this.setLabelsVisible(!this.getLabelsVisible());
         this.onSave();this.onRenderMarkers();this.onUpdateLabelButton();
       });

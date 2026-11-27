@@ -314,3 +314,25 @@ test("active-travel cache reuses matching legs and invalidates a moved pin's coo
  assert.equal(requests.length,3);
  assert.deepEqual(requests.at(-1),[[9.5,48],[10,49]]);
 });
+
+test("deleting a waypoint recalculates the remaining route and deleting an endpoint allows a replacement",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","c");plan.addWaypoint("b");
+ const pins=new Map(["a","b","c","d"].map((id,index)=>[id,{id,lat:48+index,lng:9}]));
+ const requested=[];
+ const session=new CarRouteSession({plan,getPin:id=>pins.get(id),onChange:()=>{},onError:assert.fail,
+  calculate:async({waypoints})=>{
+   requested.push(waypoints.map(pin=>pin.id));
+   return {geometry:{type:"LineString",coordinates:waypoints.map(pin=>[pin.lng,pin.lat])},
+    durationSeconds:60,distanceMeters:100};
+  }});
+ await session.recalculate();
+ pins.delete("b");await session.pinsChanged();
+ assert.deepEqual(requested,[["a","b"],["b","c"],["a","c"]]);
+ assert.deepEqual(plan.ids(),["a","c"]);
+ pins.delete("a");await session.pinsChanged();
+ assert.equal(plan.startId,null);
+ assert.equal(plan.targetId,"c");
+ plan.setEndpoint("start","d");await session.recalculate();
+ assert.deepEqual(requested.at(-1),["d","c"]);
+});

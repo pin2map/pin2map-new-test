@@ -308,51 +308,53 @@
   <button id="layersButton" data-pin-icon="layers" class="layers-bottom-button" type="button" title="Ebenen auswählen" aria-label="Ebenen auswählen" aria-expanded="false" aria-pressed="false">☷</button>
   <button id="pinInfoButton" data-pin-icon="message-circle-exclamation-point-off" class="pin-info-button" aria-busy="false" type="button" title="Pin-Informationen auswählen" aria-label="Pin-Informationen auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="pinInfoMenu"></button>
   <section id="pinInfoMenu" class="basemap-menu pin-info-menu hidden" aria-label="Pin-Informationen">
-    <button type="button" class="basemap-choice pin-info-icon-choice" data-pin-info-mode="off" aria-pressed="true"><span data-pin-icon="eye-off"></span><span>Aus</span></button>
-    <hr class="pin-info-separator">
-    <button type="button" class="basemap-choice pin-info-icon-choice" data-pin-info-mode="elevation" aria-pressed="false"><span data-pin-icon="mountain-snow"></span><span>Höhe</span></button>
-    <hr class="pin-info-separator">
-    <button type="button" class="basemap-choice pin-info-icon-choice" data-pin-info-mode="temperature" aria-pressed="false"><span data-pin-icon="thermometer"></span><span>Aktuelle Temperatur</span></button>
+    <div class="pin-info-mode-row" data-pin-info-mode="elevation">
+      <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="elevation"><span data-pin-icon="mountain-snow"></span><span>Höhe</span></label>
+    </div>
+    <div class="pin-info-mode-row" data-pin-info-mode="temperature">
+      <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="temperature"><span data-pin-icon="thermometer"></span><span>Aktuelle Temperatur</span></label>
+    </div>
     <div class="pin-info-mode-row" data-pin-info-mode="daily">
-      <button type="button" class="pin-info-mode-icons" data-pin-info-mode="daily" aria-label="Tagesminimum und Tagesmaximum"><span data-pin-icon="thermometer-sun"></span><span class="pin-info-pair-divider">|</span><span data-pin-icon="thermometer-snowflake"></span></button>
+      <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="daily"><span data-pin-icon="thermometer-sun"></span><span data-pin-icon="thermometer-snowflake"></span><span>Min/Max</span></label>
       <select id="pinInfoDailyPeriod" aria-label="Tagesminimum und Tagesmaximum: Zeitraum"><option value="today">Heute</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mär</option><option value="04">Apr</option><option value="05">Mai</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Okt</option><option value="11">Nov</option><option value="12">Dez</option></select>
     </div>
-    <hr class="pin-info-separator">
     <div class="pin-info-mode-row" data-pin-info-mode="precipitation">
-      <button type="button" class="pin-info-mode-icons" data-pin-info-mode="precipitation" aria-label="Niederschlag"><span data-pin-icon="cloud-rain-wind"></span></button>
+      <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="precipitation"><span data-pin-icon="cloud-rain-wind"></span><span>Niederschlag</span></label>
       <select id="pinInfoPrecipitationPeriod" aria-label="Niederschlag: Heute oder langjähriger Monatsdurchschnitt"><option value="today">Heute</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mär</option><option value="04">Apr</option><option value="05">Mai</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Okt</option><option value="11">Nov</option><option value="12">Dez</option><option value="year">Jahr</option></select>
     </div>
-    <hr class="pin-info-separator">
     <div class="pin-info-mode-row" data-pin-info-mode="sun">
-      <button type="button" class="pin-info-mode-icons" data-pin-info-mode="sun" aria-label="Sonnenaufgang und Sonnenuntergang"><span data-pin-icon="sunrise"></span><span class="pin-info-pair-divider">|</span><span data-pin-icon="sunset"></span></button>
+      <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="sun"><span data-pin-icon="sunrise"></span><span data-pin-icon="sunset"></span><span>Sonne</span></label>
       <select id="pinInfoSunPeriod" aria-label="Sonnenaufgang und Sonnenuntergang: Zeitraum"><option value="today">Heute</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mär</option><option value="04">Apr</option><option value="05">Mai</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Okt</option><option value="11">Nov</option><option value="12">Dez</option></select>
     </div>
-    <hr class="pin-info-separator">
-    <button type="button" class="basemap-choice pin-info-icon-choice" data-pin-info-mode="zone" aria-pressed="false"><span data-pin-icon="rotate-cw-clock"></span><span>Zeitzone</span></button>
+    <div class="pin-info-mode-row" data-pin-info-mode="zone">
+      <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="zone"><span data-pin-icon="rotate-cw-clock"></span><span>Zeitabweichung</span></label>
+    </div>
   </section>
-  <button id="labelsToggle" data-pin-icon="tags" class="labels-toggle" type="button" title="Pin-Beschriftungen ein- oder ausblenden" aria-label="Pin-Beschriftungen ein- oder ausblenden"></button>
+  <button id="labelsToggle" data-pin-icon="tags" class="labels-toggle" type="button" aria-expanded="false" aria-controls="nameLabelMenu" title="Pin-Beschriftungen ein- oder ausblenden" aria-label="Namenslabels anzeigen, auswählen oder ausblenden"></button>
+  <section id="nameLabelMenu" class="basemap-menu name-label-menu hidden" aria-label="Namenslabels">
+    <label><input type="checkbox" data-name-label="pins"> Pins</label>
+    <label><input type="checkbox" data-name-label="areas"> Gebiete</label>
+    <label><input type="checkbox" data-name-label="lakes"> Seen</label>
+    <label><input type="checkbox" data-name-label="rivers"> Flüsse</label>
+  </section>
   <button id="basemapButton" data-pin-icon="map" class="basemap-map-button" type="button" title="Kartendarstellung auswählen" aria-label="Kartendarstellung auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="basemapMenu">▱</button>
   <section id="basemapMenu" class="basemap-menu hidden" aria-label="Darstellung">
-    <button type="button" class="basemap-choice" data-basemap="street" aria-pressed="false">Standard</button>
-    <button type="button" class="basemap-choice" data-basemap="international" aria-pressed="false">International</button>
-    <button type="button" class="basemap-choice" data-basemap="humanitarian" aria-pressed="false">Humanitarian</button>
-    <button type="button" class="basemap-choice" data-basemap="topo" aria-pressed="false">Topografisch</button>
-    <hr class="basemap-satellite-divider" aria-hidden="true">
-    <div class="basemap-satellite-choice-row">
-      <button type="button" class="basemap-choice" data-basemap="satellite" aria-pressed="false">Satellit</button>
-      <button type="button" id="satelliteReset" class="basemap-satellite-reset" title="Helligkeit auf 120 % zurücksetzen" aria-label="Helligkeit auf 120 % zurücksetzen"><span data-pin-icon="refresh-cw"></span><span>Standard</span></button>
-    </div>
-    <div class="basemap-satellite-controls" role="group" aria-label="Satellitenbild anpassen">
-      <label class="basemap-satellite-slider" for="satelliteBrightness">
-        <span class="basemap-slider-icon" data-pin-icon="sun-medium"></span><span>Helligkeit</span>
+    <button type="button" class="basemap-choice" data-basemap="street" aria-pressed="false"><span data-pin-icon="map"></span>Standard</button>
+    <button type="button" class="basemap-choice" data-basemap="international" aria-pressed="false"><span data-pin-icon="lambda"></span>International</button>
+    <button type="button" class="basemap-choice" data-basemap="humanitarian" aria-pressed="false"><span data-pin-icon="factory"></span>Humanitarian</button>
+    <button type="button" class="basemap-choice" data-basemap="topo" aria-pressed="false"><span data-pin-icon="house"></span>Topographisch</button>
+    <button type="button" class="basemap-choice" data-basemap="satellite" aria-pressed="false"><span data-pin-icon="satellite"></span>Satellit</button>
+    <div class="basemap-satellite-controls hidden" role="group" aria-label="Satellitenbild anpassen">
+      <button type="button" id="satelliteReset" class="basemap-satellite-reset"><span data-pin-icon="check"></span><span>Zurücksetzen</span></button>
+      <div class="basemap-satellite-brightness">
+        <label class="basemap-satellite-slider" for="satelliteBrightness"><span data-pin-icon="sun" aria-hidden="true"></span></label>
+        <input id="satelliteBrightness" type="range" min="70" max="180" step="5" value="120" aria-label="Satellitenbild Helligkeit">
         <output id="satelliteBrightnessValue" for="satelliteBrightness">120 %</output>
-      </label>
-      <input id="satelliteBrightness" type="range" min="70" max="180" step="5" value="120" aria-label="Satellitenbild Helligkeit">
+      </div>
+      <label class="basemap-satellite-roads"><input type="radio" id="satelliteRoads" name="satelliteRoads"> Straßen- und Ortsnamen</label>
+      <button id="satelliteInspect" class="basemap-satellite-info" type="button" aria-label="Bildinformationen für Kartenpunkt abfragen" aria-pressed="false"><span data-pin-icon="chevron-down"></span>Bildinformationen</button>
+      <label class="basemap-relief-toggle"><input type="checkbox" id="esriReliefToggle"> Schummerung</label>
     </div>
-    <label class="basemap-satellite-roads" for="satelliteRoads"><input type="checkbox" id="satelliteRoads"> Straßen und Ortsnamen</label>
-    <div class="basemap-satellite-info"><span>Bildinformationen</span><button id="satelliteInspect" type="button" data-pin-icon="switch-camera" aria-label="Bildinformationen für Kartenpunkt abfragen" title="Bildinformationen für Kartenpunkt abfragen" aria-pressed="false"></button></div>
-    <hr class="basemap-satellite-divider" aria-hidden="true">
-    <label class="basemap-relief-toggle" for="esriReliefToggle"><input type="checkbox" id="esriReliefToggle"> Schummerung</label>
   </section>
   <aside id="satelliteInfoPanel" class="satellite-info-panel hidden" aria-label="Bildinformationen" role="region"><div class="satellite-info-head"><strong>Esri-Bildinformationen</strong><button type="button" id="satelliteInfoClose" data-pin-icon="x" aria-label="Bildinformationen schließen"></button></div><div id="satelliteInfoFields" aria-live="polite"></div><small>Für den ausgewählten Kartenpunkt und Maßstab. Bildquellen können je nach Zoom variieren.</small></aside>
   <div id="searchResults" class="search-results hidden" role="status" aria-live="polite"></div>

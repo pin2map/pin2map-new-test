@@ -21,7 +21,7 @@
     isAnyMapMenuOpen(){
       const ids=["pinPanel","geometryEditor","settingsPanel","layersPanel","transferPanel",
         "searchResults","searchTypeMenu","favoritesPanel","basemapMenu",
-        "pinInfoMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm","temporaryLayerPicker"];
+        "pinInfoMenu","nameLabelMenu","mapActionChooser","gpsPinPrompt","plateAreaConfirm","temporaryLayerPicker"];
       return ids.some(id=>{
         const element=this.element(id);
         return !!element&&!element.classList.contains("hidden");
@@ -78,7 +78,8 @@
           settingsButton:()=>!this.element("settingsPanel").classList.contains("hidden"),
           transferButton:()=>!this.element("transferPanel").classList.contains("hidden"),
           basemapButton:()=>!this.element("basemapMenu").classList.contains("hidden"),
-          pinInfoButton:()=>!this.element("pinInfoMenu").classList.contains("hidden")
+          pinInfoButton:()=>!this.element("pinInfoMenu").classList.contains("hidden"),
+          labelsToggle:()=>this.element("nameLabelMenu")?.classList.contains("hidden")===false
         };
         // The already-open launcher must receive its own toggle click.
         if(!(open[id]?.()))this.closeMapMenus();

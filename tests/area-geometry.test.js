@@ -52,3 +52,14 @@ test("multipolygon holes and geometry collections retain geometry types",()=>{
     original.geometries[0].coordinates[0][1]);
   assert.deepEqual(r.geometry.geometries[1],original.geometries[1]);
 });
+
+test("measured lake surface accounts for island holes and multipolygons",()=>{
+ const {areaSquareMeters}=require("../domain/area-geometry.js");
+ const square=[[0,0],[.01,0],[.01,.01],[0,.01],[0,0]];
+ const hole=[[.002,.002],[.004,.002],[.004,.004],[.002,.004],[.002,.002]];
+ const total=areaSquareMeters({type:"Polygon",coordinates:[square]});
+ assert.ok(Math.abs(total-1236435)<100);
+ const withHole=areaSquareMeters({type:"Polygon",coordinates:[square,hole]});
+ assert.ok(withHole<total&&withHole>total*.95);
+ assert.equal(areaSquareMeters({type:"MultiPolygon",coordinates:[[square],[square,hole]]}),total+withHole);
+});

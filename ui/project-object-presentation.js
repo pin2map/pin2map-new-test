@@ -28,7 +28,7 @@
       this.mapPort.renderProjectGeometry({
         areas:(project.areas||[]).filter(a=>isMatch(a.kind==="lake"?"lakes":"areas",a.id,a.layerId)),
         rivers:(project.rivers||[]).filter(r=>isMatch("rivers",r.id,r.layerId)),
-        layerColors,highlightIds:view?.onlyHits?null:view?.ids,
+        layerColors,labelTypes:project.labelsVisible===false?{}:project.labelTypes,highlightIds:view?.onlyHits?null:view?.ids,
         flashIds:this.getFlashIds(),
         onAreaLabel:(area,point)=>{
           const hitType=area.kind==="lake"?"lakes":"areas";
@@ -57,7 +57,7 @@
       this.pinInfoService.setVisiblePins(temporary?[...visible,temporary.point]:visible);
       markerView.render({
         pins:visible,layers:project.layers,
-        selectedPinId:this.getSelectedPinId(),labelsVisible:project.labelsVisible,
+        selectedPinId:this.getSelectedPinId(),labelsVisible:project.labelsVisible!==false&&project.labelTypes?.pins!==false,
         flashIds:new Set([...this.getFlashIds()].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5))),
         highlightIds:onlyHits?null:
           new Set([...(view?.ids||[])].filter(id=>id.startsWith("pins:")).map(id=>id.slice(5)))

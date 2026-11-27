@@ -256,9 +256,10 @@ async function longPress(page,x,y,ms=725){
     assert.deepEqual(await menu.locator("[data-basemap]").evaluateAll(nodes=>nodes.map(n=>n.dataset.basemap)),
       ["street","international","humanitarian","topo","satellite"]);
     assert.equal(await street.textContent(),"Standard");
-    assert.equal(await menu.locator("hr.basemap-satellite-divider").count(),2);
+    assert.equal(await menu.locator("hr.basemap-satellite-divider").count(),0);
     assert.equal(await menu.locator("#satelliteInspect").isDisabled(),true);
     assert.equal(await menu.locator("#satelliteRoads").isDisabled(),true);
+    assert.equal(await menu.locator(".basemap-satellite-controls").isHidden(),true);
     await topo.click();
     assert.equal(await menu.isHidden(),true);
     assert.equal(await picker.getAttribute("aria-expanded"),"false");
@@ -400,9 +401,7 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await brightness.inputValue(),"120");
     const reliefToggle=page.locator("#esriReliefToggle");
-    assert.equal(await reliefToggle.isDisabled(),true,"Relief cannot be enabled on satellite imagery");
-    await menu.locator('[data-basemap="street"]').click();
-    await picker.click();
+    assert.equal(await reliefToggle.isEnabled(),true,"Relief is available inside the satellite controls");
     await reliefToggle.check();
     assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
     await page.waitForFunction(()=>!!document.querySelector(".leaflet-pane[style*='250'] img[src*='World_Hillshade']"),
@@ -848,6 +847,14 @@ async function longPress(page,x,y,ms=725){
       });
     },null,{timeout:2000});
     await labelToggle.click();
+    const names=page.locator("#nameLabelMenu");
+    assert.equal(await names.isVisible(),true);
+    const pinNames=names.getByRole("checkbox",{name:"Pins"});
+    await pinNames.uncheck();
+    assert.equal(await tooltip.count(),0);
+    await pinNames.check();
+    assert.ok(await tooltip.count()>0);
+    await labelToggle.click();
     await page.waitForFunction(()=>document.querySelectorAll(".leaflet-tooltip.address-label").length===0,
       null,{timeout:2000});
     assert.equal(await tooltip.count(),0,"Global toggle hides all names");
@@ -916,20 +923,21 @@ async function longPress(page,x,y,ms=725){
     const infoMenu=page.locator("#pinInfoMenu");
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     assert.equal(await infoButton.getAttribute("aria-busy"),"false","Off starts idle");
-    const inactiveInfoColor=await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor);
+    const showInfoMenu=async()=>{
+      if(await infoMenu.isVisible())return;
+      await infoButton.click();
+      if(await infoMenu.isHidden())await infoButton.click();
+      assert.equal(await infoMenu.isVisible(),true);
+    };
+    const dismissInfoMenu=()=>page.keyboard.press("Escape");
+    const chooseInfoMode=mode=>infoMenu.locator('input[type="radio"][value="'+mode+'"]').check();
     await infoButton.click();
-    assert.equal(await infoMenu.isVisible(),true);
+    assert.equal(await infoButton.getAttribute("aria-pressed"),"true");
+    assert.equal(await infoMenu.isHidden(),true);
+    await showInfoMenu();
     assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
-    assert.equal(await infoButton.getAttribute("aria-pressed"),"false");
-    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor),inactiveInfoColor);
-    assert.equal(await infoMenu.locator(":scope > [data-pin-info-mode]").count(),7);
-    assert.deepEqual(await infoMenu.locator(":scope > [data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
-      ["off","elevation","temperature","daily","precipitation","sun","zone"]);
-    assert.equal(await infoMenu.locator(".basemap-menu-title").count(),0,"Menu has no headline");
-    assert.equal(await infoMenu.locator(".pin-info-separator").count(),5);
-    assert.equal(await infoMenu.locator('button[data-pin-info-mode="zone"] + hr.pin-info-separator').count(),0,
-      "Zone must have no trailing separator");
-    assert.equal(await infoMenu.locator('[data-pin-info-mode="daily"] + hr.pin-info-separator + [data-pin-info-mode="precipitation"]').count(),1,"Divider separates min/max and precipitation");
+    assert.deepEqual(await infoMenu.locator("input[type=radio]").evaluateAll(els=>els.map(el=>el.value)),
+      ["elevation","temperature","daily","precipitation","sun","zone"]);
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today");
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").inputValue(),"today");
@@ -937,13 +945,9 @@ async function longPress(page,x,y,ms=725){
       "No source/explanation block belongs in the pin-info menu");
     assert.equal(await infoMenu.getByText("NASA POWER").count(),0,
       "Data attribution moved to Settings");
-    await infoMenu.locator('button[data-pin-info-mode="zone"]').count().then(n=>
-      assert.equal(n,1,"Zone remains last selectable entry"));
-    for(const icon of ["eye-off","mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset","rotate-cw-clock"])
+    for(const icon of ["mountain-snow","thermometer","thermometer-sun","thermometer-snowflake","cloud-rain-wind","sunrise","sunset","rotate-cw-clock"])
       assert.equal(await infoMenu.locator('[data-pin-icon="'+icon+'"] svg').count(),1,icon);
-    assert.equal(await page.locator(".elevation-label-wrap").count(),0);
-    // Sources live in existing Settings, not in the popup; open only after closing it.
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.locator("#settingsButton").click();
     assert.equal(await page.locator("#settingsPanel").isVisible(),true);
     const credit=page.locator("#settingsPinInfoSources");
@@ -955,8 +959,9 @@ async function longPress(page,x,y,ms=725){
       assert.equal(await credit.locator('a[href="'+url+'"]').count(),1);
     assert.doesNotMatch(await credit.innerText(),/am 21\./,"Obsolete date must not remain");
     await page.locator('#settingsPanel [data-close="settingsPanel"]').click();
-    await infoButton.click();
-    await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
+    await showInfoMenu();
+    await chooseInfoMode("temperature");
+    await dismissInfoMenu();
     assert.equal(await infoButton.getAttribute("aria-pressed"),"true");
     assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
     assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
@@ -1060,13 +1065,9 @@ async function longPress(page,x,y,ms=725){
       })});
     });
     const nextMode=async(mode,match)=>{
-      await infoButton.click();
-      if(mode==="sun"||mode==="daily"){
-        const control=mode==="sun"?"#pinInfoSunPeriod":"#pinInfoDailyPeriod";
-        await infoMenu.locator('button.pin-info-mode-icons[data-pin-info-mode="'+mode+'"]').click();
-        assert.equal(await infoMenu.isHidden(),true);
-        assert.equal(await infoMenu.locator(control).evaluate(el=>document.activeElement===el),false);
-      }else await infoMenu.locator('[data-pin-info-mode="'+mode+'"]').click();
+      await showInfoMenu();
+      await chooseInfoMode(mode);
+      await dismissInfoMenu();
       await page.waitForFunction(value=>Array.from(document.querySelectorAll(".elevation-label"))
         .some(el=>el.textContent.includes(value)),match,{timeout:6000});
       assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point");
@@ -1077,76 +1078,76 @@ async function longPress(page,x,y,ms=725){
     await nextMode("sun","07:30");
     assert.equal(await page.locator(".p2m-label-rise").count(),2);
     // Each row has its own month; switching modes MUST retain the other month.
-    await infoButton.click();
+    await showInfoMenu();
     await infoMenu.locator("#pinInfoSunPeriod").selectOption("01");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-sun-label"))
       .some(el=>el.textContent.includes("15. Jan")&&el.textContent.includes("06:35")),
       null,{timeout:6000});
     assert.equal(sunRequests.length,2);
     assert.ok(sunRequests.every(q=>q.get("date")==="2026-01-15"));
     assert.equal(await page.locator('.p2m-info-month-prefix svg').count(),0);
-    await infoButton.click();
+    await showInfoMenu();
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"01");
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"today");
     await infoMenu.locator("#pinInfoDailyPeriod").selectOption("01");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-daily-label"))
       .some(el=>el.textContent.includes("Ø Jan")&&el.textContent.includes("12 °C")),null,{timeout:6000});
     assert.equal(climateRequests.length,2);
     assert.ok(climateRequests.every(q=>q.get("parameters")==="T2M_MIN_AVG,T2M_MAX_AVG"));
     assert.equal(await page.locator('.p2m-info-month-prefix svg').count(),0);
     assert.equal(await page.locator('.p2m-info-month-prefix').first().innerText(),"Ø Jan");
-    await infoButton.click();
+    await showInfoMenu();
     await infoMenu.locator("#pinInfoDailyPeriod").selectOption("02");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-daily-label"))
       .some(el=>el.textContent.includes("Ø Feb")&&el.textContent.includes("14 °C")),null,{timeout:6000});
     assert.equal(climateRequests.length,2,"Second month reuses 12-month NASA responses");
     await nextMode("sun","15. Jan");
-    await infoButton.click();
+    await showInfoMenu();
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"01","Sun preserves Jan");
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"02","Daily preserves Feb");
     await infoMenu.locator("#pinInfoSunPeriod").selectOption("02");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-sun-label"))
       .some(el=>el.textContent.includes("15. Feb")),null,{timeout:6000});
     assert.ok(sunRequests.every(q=>q.get("date")?.endsWith("-15")));
-    await infoButton.click();
+    await showInfoMenu();
     await infoMenu.locator("#pinInfoSunPeriod").selectOption("today");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-sun-label"))
       .some(el=>el.textContent.includes("07:30")),null,{timeout:6000});
     assert.equal(await page.locator('.p2m-info-month-prefix').count(),0);
     // New independent precipitation selector: Today = local-date forecast mm.
     const rainRequestsBefore=forecastRequests.length;
-    await infoButton.click();
+    await showInfoMenu();
     await infoMenu.locator("#pinInfoPrecipitationPeriod").focus();
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("1,8 mm")),null,{timeout:6000});
     assert.equal(forecastRequests.length,rainRequestsBefore+1);
     assert.match(forecastRequests.at(-1).url,/daily=precipitation_sum/);
     const precipClimateBefore=climateRequests.length;
-    await infoButton.click();
+    await showInfoMenu();
     await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("01");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("Ø Jan")&&el.textContent.includes("62 mm")),null,{timeout:6000});
     assert.equal(climateRequests.length,precipClimateBefore+2,"Only two visible pins need new NASA rain data");
     assert.ok(climateRequests.slice(precipClimateBefore).every(q=>q.get("parameters")==="PRECTOTCORR"));
-    await infoButton.click();
+    await showInfoMenu();
     assert.equal(await infoMenu.locator("#pinInfoDailyPeriod").inputValue(),"02","Daily month retained");
     assert.equal(await infoMenu.locator("#pinInfoSunPeriod").inputValue(),"today","Sun month retained");
     await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("02");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("Ø Feb")&&el.textContent.includes("42 mm")),null,{timeout:6000});
     assert.equal(climateRequests.length,precipClimateBefore+2,"Feb reuses fetched 12-month corrected NASA normal");
-    await infoButton.click();
+    await showInfoMenu();
     assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod option[value=year]").textContent(),"Jahr");
     await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("year");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("Ø Jahr")&&el.textContent.includes("410 mm")),null,{timeout:6000});
     assert.equal(climateRequests.length,precipClimateBefore+2,"Year reuses cached twelve-month NASA data");
@@ -1155,15 +1156,15 @@ async function longPress(page,x,y,ms=725){
       return {left:parseFloat(p.paddingLeft),right:parseFloat(p.paddingRight)};
     });
     assert.ok(spacing.left>=8&&spacing.right>=8,"Rain amount has legible spacing inside blue segment");
-    await infoButton.click();
+    await showInfoMenu();
     await infoMenu.locator("#pinInfoPrecipitationPeriod").selectOption("today");
-    await infoButton.click();
+    await dismissInfoMenu();
     await page.waitForFunction(()=>Array.from(document.querySelectorAll(".elevation-label.p2m-precipitation-label"))
       .some(el=>el.textContent.includes("1,8 mm")),null,{timeout:6000});
     assert.equal(climateRequests.length,precipClimateBefore+2);
-    await infoButton.click();
-    assert.equal(await infoMenu.locator('button[data-pin-info-mode]').last().getAttribute("data-pin-info-mode"),"zone");
-    await infoMenu.locator('button[data-pin-info-mode="zone"]').click();
+    await showInfoMenu();
+    await chooseInfoMode("zone");
+    await dismissInfoMenu();
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label .p2m-zone-information svg").length===2,
       null,{timeout:6000});
     assert.equal(await page.locator(".p2m-zone-information svg").first().locator("path").first().getAttribute("d"),
@@ -1184,30 +1185,30 @@ async function longPress(page,x,y,ms=725){
     assert.match(iconMarkup.negative,/-3/);
     assert.match(iconMarkup.equal,/m16 19 2 2 4-4/);
     assert.doesNotMatch(iconMarkup.equal,/>0</);
+    await showInfoMenu();
     await infoButton.click();
-    await infoMenu.locator('[data-pin-info-mode="off"]').click();
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     assert.equal(await infoButton.locator("svg path").last().getAttribute("d"),"M2 22 22 2");
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label").length===0,
       null,{timeout:6000});
     console.log("[browser] PASS – six information modes, legacy info labels, cache and lazy hidden-layer fetch");
-    // Run the UI-only selector activation after the request-count assertions.
-    // Focusing a native select changes the active mode and may issue requests.
-    await infoButton.click();
-    step("pin info native period selectors: taps must not dismiss the popup");
+    await showInfoMenu();
+    step("pin info native period selectors and remembered radio selection");
     for(const id of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
       const select=infoMenu.locator("#"+id);
       await select.click();
       assert.equal(await infoMenu.isVisible(),true,id+" select activation must not dismiss menu");
       assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
     }
-    await infoMenu.locator('button.pin-info-mode-icons[data-pin-info-mode="precipitation"]').click();
-    assert.equal(await infoMenu.isHidden(),true);
-    assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").evaluate(el=>document.activeElement===el),false);
+    await chooseInfoMode("precipitation");
     await infoButton.click();
-    await infoMenu.locator('button[data-pin-info-mode="off"]').click();
-
-
+    assert.equal(await infoMenu.isHidden(),true);
+    assert.equal(await infoButton.getAttribute("aria-pressed"),"false");
+    await infoButton.click();
+    assert.equal(await infoMenu.isHidden(),true);
+    await showInfoMenu();
+    assert.equal(await infoMenu.locator('input[value="precipitation"]').isChecked(),true);
+    await infoButton.click();
 
     step("satellite inspector: deliberate click, street overlays, single marker and reversible relief");
     await page.route("**/World_Imagery/MapServer/identify?**",async route=>{
@@ -1218,8 +1219,13 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#basemapButton").click();
     await page.locator('#basemapMenu [data-basemap="satellite"]').click();
     await page.locator("#basemapButton").click();
-    assert.equal(await page.locator("#esriReliefToggle").isDisabled(),true);
-    await page.locator("#satelliteRoads").check();
+    assert.equal(await page.locator("#esriReliefToggle").isEnabled(),true);
+    const roads=page.locator("#satelliteRoads");
+    await roads.check();
+    await page.locator("#satelliteReset").click();
+    assert.equal(await roads.isChecked(),false);
+    assert.equal(await page.locator("#satelliteBrightness").inputValue(),"120");
+    await roads.check();
     assert.equal(await page.locator("#satelliteInspect").isEnabled(),true);
     const imageryOverlaySources=await page.locator("#map .leaflet-pane img").evaluateAll(imgs=>imgs.map(img=>img.src));
     assert.ok(imageryOverlaySources.filter(src=>src.includes("World_Transportation")||src.includes("World_Boundaries_and_Places")).every(src=>src.includes("/Reference/")), "Esri references must use Reference/ service paths");

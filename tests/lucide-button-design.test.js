@@ -46,7 +46,7 @@ test("time zone chooser and value labels use exact bundled Lucide geometries",()
     const svg=Icons.svg(iconName,documentStub());
     assert.deepEqual(svg.children.map(item=>item.attributes.d),paths,iconName);
   }
-  assert.match(html,/<button[^>]*data-pin-info-mode="zone"[^>]*><span data-pin-icon="rotate-cw-clock"><\/span><span>Zeitzone<\/span><\/button>/);
+  assert.match(html,/<input type="radio" name="pinInfoMode" value="zone"><span data-pin-icon="rotate-cw-clock"><\/span><span>Zeitabweichung<\/span>/);
   const menu=html.split('<section id="pinInfoMenu"')[1].split("</section>")[0];
   assert.ok(menu.indexOf('data-pin-info-mode="zone"')>menu.indexOf('id="pinInfoSunPeriod"'));
   assert.ok(menu.indexOf('data-pin-info-mode="zone"')>=0,"Zone remains selectable");
@@ -254,10 +254,7 @@ test("settings and Layers flank search above while map picker stays bottom-right
   assert.ok(!menu.includes('class="basemap-menu-title"'));
   assert.deepEqual([...menu.matchAll(/data-basemap="([^"]+)"/g)].map(match=>match[1]),
     ["street","international","humanitarian","topo","satellite"]);
-  assert.ok(menu.indexOf('class="basemap-satellite-divider"')<
-    menu.indexOf('data-basemap="satellite"'));
-  assert.ok(menu.indexOf('data-basemap="topo"')<
-    menu.indexOf('class="basemap-satellite-divider"'));
+  assert.ok(!menu.includes("basemap-satellite-divider"));
   assert.ok(menu.indexOf('data-basemap="satellite"')<menu.indexOf('id="satelliteBrightness"'));
   assert.ok(menu.indexOf('id="satelliteBrightness"')<menu.indexOf('id="esriReliefToggle"'));
   assert.ok(!menu.includes('id="satelliteContrast"'));

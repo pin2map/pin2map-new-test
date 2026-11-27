@@ -172,12 +172,14 @@
   });
   const pinInfoMenu=new window.Pin2MapPinInfoMenu({
     getElement:$,document,icons:window.Pin2MapIcons,
-    onOpening:()=>{basemapMenu.close();uiShell.closePanels();searchView.hide();},
+    onOpening:()=>{basemapMenu.close();nameLabelMenu.close();uiShell.closePanels();searchView.hide();},
+    getRestoredMode:()=>state.pinInfoLastMode||"elevation",
     onPeriodChange:(mode,period)=>{
       const field=mode==="daily"?"pinInfoDailyPeriod":mode==="precipitation"?"pinInfoPrecipitationPeriod":"pinInfoSunPeriod";
       if(state[field]!==period||state.pinInfoMode!==mode){
         state[field]=period;
         state.pinInfoMode=mode;
+        if(mode!=="off")state.pinInfoLastMode=mode;
         pinInfoService.setMode(mode,period);
         pinInfoMenu.render(mode,{daily:state.pinInfoDailyPeriod,precipitation:state.pinInfoPrecipitationPeriod,sun:state.pinInfoSunPeriod});
         save();renderMarkers();
@@ -186,6 +188,7 @@
     onSelect:mode=>{
       if(state.pinInfoMode!==mode){
         state.pinInfoMode=mode;
+        if(mode!=="off")state.pinInfoLastMode=mode;
         const period=mode==="daily"?state.pinInfoDailyPeriod:
           mode==="sun"?state.pinInfoSunPeriod:mode==="precipitation"?state.pinInfoPrecipitationPeriod:"today";
         pinInfoService.setMode(mode,period);
@@ -207,7 +210,7 @@
   });
   const basemapMenu = new window.Pin2MapBasemapMenu({
     getElement:$,document,
-    onOpening:()=>{pinInfoMenu.close();uiShell.closePanels();searchView.hide();},
+    onOpening:()=>{pinInfoMenu.close();nameLabelMenu.close();uiShell.closePanels();searchView.hide();},
     onSelect:value=>{
       if(state.basemap!==value){satelliteInspector.stop();state.basemap=value;setTileLayer();save();}
     },
@@ -221,7 +224,8 @@
     onSatelliteReset:()=>{
       if(state.basemap!=="satellite")return;
       state.satelliteBrightness=120;
-      mapAdapter.setSatelliteAppearance({brightness:120});
+      state.satelliteRoads=false;
+      setTileLayer();
       save();
     },
     onSatelliteAdjust:(key,value,commit)=>{
@@ -319,6 +323,7 @@
       pinOverlapZoom?.close();
       featureOverlapZoom?.close();
       pinInfoMenu.close();
+      nameLabelMenu.close();
       basemapMenu.close();
       pinDetails.closeTransient();
       pinNavigation.close();
@@ -482,6 +487,7 @@
   // The microtask runs after the caller has completed its object update.
   const save = () => {
     persistence.save();
+    routeSession?.pinsChanged();
     if(objectSearchController.view)queueMicrotask(()=>{
       if(objectSearchController.view)refreshObjectSearch();
     });
@@ -840,9 +846,22 @@
     onRegularMapClick:position=>mapClickCoordinator.handle(position),
     attachLongPress:()=>gestures.attachLongPress()
   });
-  const updateLabelButton = () => uiShell.updateLabelButton(state.labelsVisible);
+  const nameLabelMenu=new window.Pin2MapNameLabelMenu({
+    getElement:$,document,getVisible:()=>state.labelsVisible,getTypes:()=>state.labelTypes,
+    onOpening:()=>{basemapMenu.close();pinInfoMenu.close();uiShell.closePanels();searchView.hide();},
+    onChange:(visible,types)=>{
+      state.labelsVisible=visible;
+      state.labelTypes=types;
+      save();renderMarkers();renderGeometry();updateLabelButton();
+    }
+  });
+  const updateLabelButton = () => {
+    uiShell.updateLabelButton(state.labelsVisible);
+    nameLabelMenu.render();
+  };
   const mapViewControls=new window.Pin2MapMapViewControls({
     getElement:$,document,
+    onLabelCycle:()=>nameLabelMenu.cycle(),
     getLabelsVisible:()=>state.labelsVisible,
     setLabelsVisible:visible=>{state.labelsVisible=visible;},
     onSave:()=>save(),
@@ -887,6 +906,7 @@
     appLifecycle.bindRefresh();
     overlayCoordinator.bind();
     basemapMenu.bind();
+    nameLabelMenu.bind();
     satelliteInspector.bind();
     mapViewControls.bindSettingsAndLayerActions();
     const colorSettings=new window.Pin2MapColorSettingsView({

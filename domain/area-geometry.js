@@ -128,7 +128,19 @@
     if(geometry?.type==="MultiPolygon")return geometry.coordinates.some(polygonContains);
     return false;
   }
-  const api=Object.freeze({pointCount,tolerance,simplifyRing,withTolerance,simplify,prepare,containsPoint});
+  function areaSquareMeters(geometry){
+    const radians=Math.PI/180,radius=6371008.8;
+    const polygons=geometry?.type==="Polygon"?[geometry.coordinates]:
+      geometry?.type==="MultiPolygon"?geometry.coordinates:[];
+    const ringArea=ring=>Math.abs(ring.reduce((sum,[lng,lat],index)=>{
+      const [nextLng,nextLat]=ring[(index+1)%ring.length];
+      const longitude=((nextLng-lng+540)%360)-180;
+      return sum+longitude*radians*(Math.sin(lat*radians)+Math.sin(nextLat*radians));
+    },0))*radius*radius/2;
+    return polygons.reduce((sum,[outer,...holes])=>outer?sum+
+      Math.max(0,ringArea(outer)-holes.reduce((area,ring)=>area+ringArea(ring),0)):sum,0);
+  }
+  const api=Object.freeze({pointCount,tolerance,simplifyRing,withTolerance,simplify,prepare,containsPoint,areaSquareMeters});
   root.Pin2MapAreaGeometry=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

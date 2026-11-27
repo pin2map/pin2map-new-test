@@ -133,7 +133,7 @@
           {pane:"p2mSatelliteReferencePane",maxZoom:19,attribution:"Reference &copy; Esri und Datenanbieter"}
         ).addTo(this.map));
       }
-      if(esriRelief&&id!=="satellite"){
+      if(esriRelief){
         const container=this.basemapLayer.getContainer();
         if(container&&id!=="satellite")
           container.style.filter="saturate(0.68) contrast(0.94) brightness(1.04)";
@@ -724,7 +724,7 @@
       if(this.attachedGpxLayer)this.map.removeLayer(this.attachedGpxLayer);
       this.attachedGpxLayer=null;
     }
-    renderProjectGeometry({areas=[],rivers=[],layerColors={},onAreaLabel=()=>{},
+    renderProjectGeometry({areas=[],rivers=[],layerColors={},labelTypes,onAreaLabel=()=>{},
       onRiverLine=()=>{},highlightIds=null,flashIds=null}={}){
       // Keep exactly one viewport listener across redraws; do not recreate
       // geometry layers on map pan/zoom, only reposition lightweight labels.
@@ -753,9 +753,15 @@
           style:{color,weight:2,fillColor:color,fillOpacity:.24,interactive:false}
         }).addTo(group);
         const bounds=geo.getBounds();
-        if(!bounds.isValid()||!area.name)continue;
+        if(!bounds.isValid()||!area.name||(labelTypes&&!labelTypes[area.kind==="lake"?"lakes":"areas"]))continue;
         const content=window.Pin2MapFeatureLabel.create(
           area.kind==="lake"?"lake":"area",area,layerColors[area.layerId]||"#326cc2",document);
+        if(area.kind==="lake"){
+          const size=document.createElement("small");
+          size.textContent=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0})
+            .format(window.Pin2MapAreaGeometry.areaSquareMeters(area.geometry))+" m²";
+          content.querySelector(".p2m-feature-label-name").append(size);
+        }
         const marker=window.L.marker(bounds.getCenter(),{
           keyboard:true,interactive:true,zIndexOffset:highlightIds?.has("areas:"+area.id)||highlightIds?.has("lakes:"+area.id)?1800:350,
           icon:window.L.divIcon({html:content.outerHTML,className:"p2m-area-name-wrap",
@@ -783,7 +789,7 @@
             onRiverLine(river,{lat:e.latlng.lat,lng:e.latlng.lng});
           });
         }
-        if((river.chains||[]).some(chain=>chain.length>=2)&&river.name){
+        if((river.chains||[]).some(chain=>chain.length>=2)&&river.name&&(!labelTypes||labelTypes.rivers)){
           const name=window.Pin2MapFeatureLabel.create(
             "river",river,layerColors[river.layerId]||"#1689e5",document);
           const length=(river.chains||[]).reduce((sum,chain)=>sum+

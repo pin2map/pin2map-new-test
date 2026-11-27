@@ -23,8 +23,8 @@
     render(selected,esriRelief=false,{brightness=120,roads=false}={}){
       const relief=this.getElement("esriReliefToggle");
       if(relief){
-        relief.checked=!!esriRelief;relief.disabled=selected==="satellite";
-        relief.closest(".basemap-relief-toggle")?.classList.toggle("is-inactive",selected==="satellite");
+        relief.checked=!!esriRelief;relief.disabled=false;
+
       }
       const roadsInput=this.getElement("satelliteRoads");
       if(roadsInput){roadsInput.checked=!!roads;roadsInput.disabled=selected!=="satellite";}
@@ -32,9 +32,9 @@
       if(inspect)inspect.disabled=selected!=="satellite";
       const satelliteSelected=selected==="satellite";
       const controls=this.getElement("satelliteBrightness")?.closest?.(".basemap-satellite-controls");
-      controls?.classList.toggle("is-inactive",!satelliteSelected);
+      controls?.classList.toggle("hidden",!satelliteSelected);
       const reset=this.getElement("satelliteReset");
-      if(reset)reset.disabled=!satelliteSelected||Number(brightness)===120;
+      if(reset)reset.disabled=!satelliteSelected||Number(brightness)===120&&!roads;
       const input=this.getElement("satelliteBrightness");
       if(input){input.value=String(brightness);input.disabled=!satelliteSelected;}
       const output=this.getElement("satelliteBrightnessValue");
@@ -90,7 +90,7 @@
           if(output)output.textContent=value+" %";
           this.onSatelliteAdjust("brightness",value,commit);
           const reset=this.getElement("satelliteReset");
-          if(reset)reset.disabled=value===120;
+          if(reset)reset.disabled=value===120&&!roads?.checked;
         };
         this.listen(brightnessInput,"input",()=>emit(false));
         this.listen(brightnessInput,"change",()=>emit(true));

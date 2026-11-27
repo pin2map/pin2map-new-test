@@ -117,6 +117,9 @@
    if(transit)void this.checkTransitRecovery();
    this.publish();
   }
+  pinsChanged(){
+   if(this.plan.removeMissingPins(this.getPin))return this.recalculate();
+  }
   pinMoved(id){
    if(this.plan.ids().includes(id))return this.recalculate();
   }
@@ -130,6 +133,7 @@
   async recalculate(){
    this.cancel();this.variants=[];this.transitJourneys=[];this.transitRecovery=null;this.selectedVariant=0;
    const transit=this.mode==="transit";
+   this.plan.removeMissingPins(this.getPin);
    this.plan.updateOrder(this.getPin);
    const ids=transit&&this.plan.ready()?[this.plan.startId,this.plan.targetId]:this.plan.ids();
    if(!ids.length){this.failed=false;this.publish();return;}

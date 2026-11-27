@@ -124,6 +124,16 @@
    if(profile==="scenic"&&avoidTolls)throw new RangeError("Interessant und Ohne Maut sind noch nicht kombinierbar");
    this.profile=profile;this.avoidTolls=avoidTolls;
   }
+  removeMissingPins(getPin){
+   const previous=[this.startId,this.targetId,...this.waypointIds].filter(Boolean);
+   const missing=new Set(previous.filter(id=>!getPin(id)));
+   if(!missing.size)return false;
+   if(missing.has(this.startId))this.startId=null;
+   if(missing.has(this.targetId))this.targetId=null;
+   this.waypointIds=this.waypointIds.filter(id=>!missing.has(id));
+   this.optimizedIds=this.optimizedIds.filter(id=>!missing.has(id));
+   return true;
+  }
   updateOrder(getPin){
    this.optimizedIds=[];
    if(this.order!=="optimal"||!this.startId||!this.targetId||this.waypointIds.length<2)return;

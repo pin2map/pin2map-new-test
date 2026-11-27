@@ -813,3 +813,7 @@ Die reguläre Transitous-Abfrage setzt `useRoutedTransfers=true` und `transferTi
 ### R-053 – Umstiegsfenster und kompakte ÖPNV-Kopfzeile (27.11.2026)
 
 Die Etappenliste zeigt beim Umstiegsfußweg das verfügbare Fahrplanfenster von der Ankunft bis zur Abfahrt der Folgefahrt. Bei einem einzelnen Fußabschnitt verwendet die Zeile beide Zeitgrenzen. Die Bewertung vergleicht das Fenster mit dem notwendigen Fußweg und der Sicherheitsreserve. Zwischen Regionalbahnen berücksichtigt sie die geplante Fußzeit, die Weglänge und eine Reserve von fünf Minuten. Für Fernverkehr und sonstige Umstiege gilt weiter die jeweilige bisherige Bewertung. Die kompakte Kopfzeile zeigt die gesamte Reise mit Abfahrtszeit und Start, Ankunftszeit und Ziel sowie einem separaten Button zum Beenden.
+
+### R-054 – Routing nach dem Löschen eines Pins (27.11.2026)
+
+Wird ein Zwischenziel gelöscht, entfernt der Routenplan seine Referenz und berechnet die Route mit den verbleibenden Pins neu. Wird Start oder Ziel gelöscht, bleibt der andere Endpunkt erhalten. Der Plan kann mit einem neuen Endpunkt wieder berechnet werden. Laufende Anfragen mit gelöschten Pins werden abgebrochen.
