@@ -916,13 +916,14 @@ async function longPress(page,x,y,ms=725){
     const infoMenu=page.locator("#pinInfoMenu");
     assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
     assert.equal(await infoButton.getAttribute("aria-busy"),"false","Off starts idle");
+    const inactiveInfoColor=await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor);
     await infoButton.click();
     assert.equal(await infoMenu.isVisible(),true);
     assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
-    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
-    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
-    assert.equal(await infoMenu.locator("[data-pin-info-mode]").count(),7);
-    assert.deepEqual(await infoMenu.locator("[data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
+    assert.equal(await infoButton.getAttribute("aria-pressed"),"false");
+    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor),inactiveInfoColor);
+    assert.equal(await infoMenu.locator(":scope > [data-pin-info-mode]").count(),7);
+    assert.deepEqual(await infoMenu.locator(":scope > [data-pin-info-mode]").evaluateAll(els=>els.map(el=>el.dataset.pinInfoMode)),
       ["off","elevation","temperature","daily","precipitation","sun","zone"]);
     assert.equal(await infoMenu.locator(".basemap-menu-title").count(),0,"Menu has no headline");
     assert.equal(await infoMenu.locator(".pin-info-separator").count(),5);
@@ -956,6 +957,9 @@ async function longPress(page,x,y,ms=725){
     await page.locator('#settingsPanel [data-close="settingsPanel"]').click();
     await infoButton.click();
     await infoMenu.locator('[data-pin-info-mode="temperature"]').click();
+    assert.equal(await infoButton.getAttribute("aria-pressed"),"true");
+    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(23, 100, 191)");
+    assert.equal(await infoButton.evaluate(el=>getComputedStyle(el).color),"rgb(255, 255, 255)");
     await page.waitForFunction(()=>document.querySelector("#pinInfoButton")?.classList.contains("is-loading"),
       null,{timeout:6000});
     assert.equal(await infoButton.getAttribute("aria-busy"),"true");
@@ -1059,8 +1063,9 @@ async function longPress(page,x,y,ms=725){
       await infoButton.click();
       if(mode==="sun"||mode==="daily"){
         const control=mode==="sun"?"#pinInfoSunPeriod":"#pinInfoDailyPeriod";
-        await infoMenu.locator(control).focus();
-        await infoButton.click(); // Native selector remains open until menu is explicitly dismissed.
+        await infoMenu.locator('button.pin-info-mode-icons[data-pin-info-mode="'+mode+'"]').click();
+        assert.equal(await infoMenu.isHidden(),true);
+        assert.equal(await infoMenu.locator(control).evaluate(el=>document.activeElement===el),false);
       }else await infoMenu.locator('[data-pin-info-mode="'+mode+'"]').click();
       await page.waitForFunction(value=>Array.from(document.querySelectorAll(".elevation-label"))
         .some(el=>el.textContent.includes(value)),match,{timeout:6000});
