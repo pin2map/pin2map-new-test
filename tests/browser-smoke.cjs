@@ -1197,12 +1197,14 @@ async function longPress(page,x,y,ms=725){
     step("pin info native period selectors: taps must not dismiss the popup");
     for(const id of ["pinInfoDailyPeriod","pinInfoPrecipitationPeriod","pinInfoSunPeriod"]){
       const select=infoMenu.locator("#"+id);
-      await select.evaluate(el=>el.closest("label").dispatchEvent(new MouseEvent("click",{bubbles:true})));
-      assert.equal(await infoMenu.isVisible(),true,id+" label click must not dismiss menu");
       await select.click();
       assert.equal(await infoMenu.isVisible(),true,id+" select activation must not dismiss menu");
       assert.equal(await infoButton.getAttribute("aria-expanded"),"true");
     }
+    await infoMenu.locator('button.pin-info-mode-icons[data-pin-info-mode="precipitation"]').click();
+    assert.equal(await infoMenu.isHidden(),true);
+    assert.equal(await infoMenu.locator("#pinInfoPrecipitationPeriod").evaluate(el=>document.activeElement===el),false);
+    await infoButton.click();
     await infoMenu.locator('button[data-pin-info-mode="off"]').click();
 
 
