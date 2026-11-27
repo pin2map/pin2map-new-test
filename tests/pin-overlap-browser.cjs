@@ -57,6 +57,18 @@ async function zoom(page){
       const page=await context.newPage();
       const errors=[];
       page.on("pageerror",e=>errors.push(e.message));
+      await page.addInitScript(()=>{
+        const trace=[];
+        Object.defineProperty(window,"pinOverlapTestTrace",{value:trace});
+        for(const type of ["pointerdown","pointerup","pointercancel","click"]){
+          document.addEventListener(type,event=>{
+            const target=event.target.closest?.(".pin-icon,.leaflet-tooltip,.leaflet-container");
+            trace.push({type,target:target?.className,pointer:event.pointerType,
+              x:event.clientX,y:event.clientY,scale:document.querySelector(".leaflet-control-scale-line")?.textContent});
+            if(trace.length>12)trace.shift();
+          },{capture:true,passive:true});
+        }
+      });
       try{
         await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
         await page.waitForFunction(()=>!!window.L&&!!document.querySelector(".leaflet-container"),
@@ -717,6 +729,15 @@ async function zoom(page){
           "map content retained, save/replace/delete, Undo/Redo, restart persistence");
         console.log("[overlap] PASS",viewport.name,
           "tap zoom, second tap selection, exact-coordinates chooser, isolated pin");
+      }catch(error){
+        const trace=await page.evaluate(()=>({
+          events:window.pinOverlapTestTrace,
+          scale:document.querySelector(".leaflet-control-scale-line")?.textContent,
+          selection:document.querySelector("#pinPanel:not(.hidden) #pinName")?.value,
+          icons:[...document.querySelectorAll(".pin-icon")].map(icon=>icon.getBoundingClientRect().toJSON())
+        })).catch(()=>null);
+        console.error("[overlap] diagnostic",viewport.name,JSON.stringify(trace));
+        throw error;
       }finally{await context.close();}
     }
   }finally{await browser.close();}
