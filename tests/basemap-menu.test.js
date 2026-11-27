@@ -127,11 +127,11 @@ test("satellite menu markup has requested order, Lucide icons and neutral fallba
   assert.doesNotMatch(section,/basemap-satellite-divider/);
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteBrightness"'));
   assert.ok(section.indexOf('id="satelliteBrightness"')<section.indexOf('id="esriReliefToggle"'));
-  assert.match(section,/data-pin-icon="sun"/);
+  assert.match(section,/for="satelliteBrightness">Helligkeit/);
   assert.doesNotMatch(section,/satelliteContrast|Kontrast/);
   assert.ok(section.indexOf('data-basemap="satellite"')<section.indexOf('id="satelliteReset"'));
-  assert.ok(section.indexOf('id="satelliteReset"')<section.indexOf('id="satelliteBrightness"'));
-  assert.match(section,/id="satelliteReset"[^>]*><span data-pin-icon="check"><\/span><span>Zurücksetzen<\/span><\/button>/);
+  assert.ok(section.indexOf('id="satelliteInspect"')<section.indexOf('id="satelliteReset"'));
+  assert.match(section,/id="satelliteReset"[^>]*>Zurücksetzen<\/button>/);
   assert.equal(model.defaultProject().satelliteBrightness,120);
   assert.equal(Object.hasOwn(model.defaultProject(),"satelliteContrast"),false);
   const icons=fs.readFileSync(path.join(__dirname,"../ui/lucide-icons.js"),"utf8");

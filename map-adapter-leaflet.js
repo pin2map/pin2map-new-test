@@ -133,7 +133,7 @@
           {pane:"p2mSatelliteReferencePane",maxZoom:19,attribution:"Reference &copy; Esri und Datenanbieter"}
         ).addTo(this.map));
       }
-      if(esriRelief){
+      if(esriRelief&&id!=="satellite"){
         const container=this.basemapLayer.getContainer();
         if(container&&id!=="satellite")
           container.style.filter="saturate(0.68) contrast(0.94) brightness(1.04)";

@@ -143,7 +143,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         const reset=mapMenu.locator("#satelliteReset");
         assert.equal(await sun.isEnabled(),true);
         assert.equal(await mapMenu.locator("#satelliteContrast").count(),0);
-        assert.equal(await mapMenu.locator('.basemap-satellite-brightness [data-pin-icon="sun"] svg').count(),1);
+        assert.equal(await mapMenu.locator('label[for="satelliteBrightness"]').innerText(),"Helligkeit");
         await sun.evaluate(el=>{
           el.value="165";el.dispatchEvent(new Event("input",{bubbles:true}));
           el.dispatchEvent(new Event("change",{bubbles:true}));

@@ -57,7 +57,7 @@ test("insertion at captured caret and replacement of a selection never appends b
 test("optional GPX row and weather view are isolated from persistence",()=>{
  const html=read("index.html"),details=read("ui/pin-details.js"),css=read("styles.css");
  assert.match(html,/id="pinGpxActions" class="pin-gpx-actions hidden"/);
- assert.match(html,/id="pinWeatherBlock" class="pin-weather-placeholder hidden"/);
+ assert.match(html,/id="pinWeatherBlock" class="pin-weather-content hidden"/);
  assert.match(html,/id="pinMobileNoteEditor" class="pin-note-editor hidden"/);
  assert.match(html,/id="pinNoteInsertDate"/);
  assert.match(html,/id="pinNoteInsertTime"/);

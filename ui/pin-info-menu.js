@@ -23,7 +23,9 @@
       });
       this.mode=mode;
       this.button.setAttribute("aria-pressed",String(mode!=="off"));
-      this.icons.mount(this.button,mode==="off"?"message-circle-exclamation-point-off":"message-circle-exclamation-point");
+      const icons={elevation:"mountain-snow",temperature:"thermometer",daily:"thermometer-sun",
+        precipitation:"cloud-rain-wind",sun:"sunrise",zone:"rotate-cw-clock"};
+      this.icons.mount(this.button,icons[mode]||"message-square-exclamation-point-off");
       this.button.setAttribute("aria-label","Obere Labels anzeigen, auswählen oder ausblenden");
       this.updateTitle();
     }

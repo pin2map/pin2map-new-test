@@ -60,7 +60,7 @@ test("historical Esri hillshade compositing, draw order, and clean off/on transi
   x.adapter.setBasemap("satellite",{esriRelief:true});
   assert.ok(x.removed.includes(base));
   assert.ok(x.removed.includes(relief));
-  assert.notEqual(x.adapter.reliefOverlay,relief);
+  assert.equal(x.adapter.reliefOverlay,null);
   x.adapter.setBasemap("topo",{esriRelief:false});
   assert.equal(x.adapter.reliefOverlay,null);
   assert.equal(x.adapter.basemapLayer.style.filter,undefined);

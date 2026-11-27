@@ -641,12 +641,6 @@ body.pin-relocation-picking #map .leaflet-interactive{
   border:2px solid #fff;background:#2875c7;box-shadow:0 0 0 1px #a7b4c1;
 }
 #pinPanel #pinUrlButton.is-active.has-url::after{background:#fff;border-color:#1764bf}
-#pinPanel .pin-detail-region .pin-weather-placeholder{
-  box-sizing:border-box;min-height:0;height:220px;display:flex;flex-direction:column;
-  justify-content:center;align-items:center;gap:8px;color:#61738a;text-align:center;
-  font-size:13px;
-}
-#pinPanel .pin-weather-placeholder [data-pin-icon] svg{width:29px;height:29px}
 /* Routing placeholders occupy only the existing notes fieldset. Navigation
    and the six footer buttons keep their positions and click targets. */
 #pinPanel .pin-detail-region.pin-routing-start{border-color:#ee4545}
@@ -667,7 +661,6 @@ body.pin-relocation-picking #map .leaflet-interactive{
 }
 #pinPanel .pin-gpx-actions button:disabled{opacity:.85}
 @media(max-width:700px){
-  #pinPanel .pin-detail-region .pin-weather-placeholder{min-height:0}
 }
 /* Weather replaces the entire navigation-and-notes middle region without
    shifting the header/footer or changing the dialog's outer height. */
@@ -676,9 +669,6 @@ body.pin-relocation-picking #map .leaflet-interactive{
    suppresses the upper border to the right of the legend in WebKit/Chromium. */
 #pinPanel.pin-weather-mode .pin-detail-region{
   height:var(--pin-weather-middle-height);display:block;
-}
-#pinPanel.pin-weather-mode .pin-detail-region .pin-weather-placeholder{
-  min-height:0;height:100%;
 }
 .pin-note-editor.is-tablet-keyboard{padding-bottom:16px}
 /* A keyboard-visible editor may not reserve the iPhone home-indicator area. */
@@ -1325,7 +1315,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 8px);
   --p2m-button-size:var(--p2m-map-circle-size);
 }
-#app #pinInfoMenu.pin-info-menu{
+#app :is(#pinInfoMenu,#nameLabelMenu).basemap-menu{
   position:absolute;z-index:1200;
   right:calc(var(--p2m-top-corner-inset) + var(--p2m-map-circle-size) + 8px);
   bottom:calc(var(--p2m-bottom-control-baseline) + var(--p2m-map-circle-size) + 4px);
@@ -1409,15 +1399,15 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
   display:inline-flex;align-items:center;padding:3px 9px;white-space:nowrap;
 }
 #map .elevation-label.p2m-temperature-label{background:#fff0ee;border-color:#cb7770}
-#map .p2m-temperature-label .p2m-wx-black{color:#171717}
-#map .p2m-temperature-label .p2m-wx-darkblue{color:#254dd8}
-#map .p2m-temperature-label .p2m-wx-cold{color:#27a8f2}
-#map .p2m-temperature-label .p2m-wx-darkgreen{color:#087c58}
-#map .p2m-temperature-label .p2m-wx-lightgreen{color:#55b832}
-#map .p2m-temperature-label .p2m-wx-mild{color:#168447}
-#map .p2m-temperature-label .p2m-wx-warm{color:#d69b22}
-#map .p2m-temperature-label .p2m-wx-hot{color:#f04438}
-#map .p2m-temperature-label .p2m-wx-veryhot{color:#a344d2}
+.p2m-wx-black{color:#171717}
+.p2m-wx-darkblue{color:#254dd8}
+.p2m-wx-cold{color:#27a8f2}
+.p2m-wx-darkgreen{color:#087c58}
+.p2m-wx-lightgreen{color:#55b832}
+.p2m-wx-mild{color:#168447}
+.p2m-wx-warm{color:#d69b22}
+.p2m-wx-hot{color:#f04438}
+.p2m-wx-veryhot{color:#a344d2}
 
 /* Satellite sliders: basemap menu owns presentation; map adapter owns tile filters.
    No CSS override and no changes to the global map or marker panes. */
@@ -1440,7 +1430,7 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
 #app .basemap-satellite-controls :is(button,label) svg{width:17px;height:17px}
 #app .basemap-satellite-controls button:disabled{opacity:.6;cursor:not-allowed}
 #app #satelliteInspect[aria-pressed="true"]{background:#1764bf;color:white}
-#app .basemap-satellite-brightness{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:6px}
+#app .basemap-satellite-brightness{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px}
 #app #satelliteBrightness{width:100%;min-width:0;accent-color:#235b9a}
 #app .basemap-satellite-controls label{display:flex;align-items:center;gap:6px}
 #app .basemap-satellite-controls :is(input[type="checkbox"],input[type="radio"]){margin:0;accent-color:#235b9a}
@@ -3312,7 +3302,7 @@ body.pin-open #app #routeToggleHolder{display:none}
 #app #transitStickyEnd{align-self:stretch;height:auto;min-height:var(--route-control-size)}
 
 
-#app #nameLabelMenu{
+#app #nameLabelMenu.basemap-menu{
   position:absolute;z-index:1200;
   right:calc(var(--p2m-top-corner-inset) + var(--p2m-map-circle-size) + 8px);
   bottom:calc(var(--p2m-bottom-control-baseline) + 2 * (var(--p2m-map-circle-size) + 8px) - 4px);
@@ -3324,3 +3314,48 @@ body.pin-open #app #routeToggleHolder{display:none}
 #app #pinInfoMenu .pin-info-mode-choice{display:flex;align-items:center;gap:5px;min-width:0;flex:1;padding:6px 0;cursor:pointer}
 #app #pinInfoMenu .pin-info-mode-choice svg{width:16px;height:16px}
 #app #pinInfoMenu .pin-info-mode-row select{width:70px}
+
+
+#app#app > button#labelsToggle[aria-expanded="true"]{
+  --p2m-map-control-bg:#c2c9d2;
+  --p2m-map-control-pressed:#c2c9d2;
+  --p2m-map-control-ink:#23384b;
+  --p2m-map-control-border:#a6b0bd;
+}
+#app #nameLabelMenu label{
+  border:1px solid transparent;border-radius:7px;margin:3px 0;
+}
+#app #nameLabelMenu label:has(input:checked){
+  background:#e9f2fa;border-color:#cadced;
+}
+#pinPanel .pin-weather-content{
+  height:100%;overflow:auto;overscroll-behavior:contain;
+}
+.pin-weather-card{
+  background:#eef5fb;border:1px solid #cbd9e6;border-radius:10px;padding:7px;
+  min-width:0;color:#161d24;
+}
+.pin-weather-current{padding:5px 5px 8px}
+.pin-weather-current-line{display:flex;gap:5px 8px;align-items:center;flex-wrap:wrap}
+.pin-weather-current-line > :last-child{margin-inline-start:auto}
+.pin-weather-now{font-size:1.55em;font-weight:750}
+.pin-weather-current svg,.pin-weather-condition svg{width:1.3em;height:1.3em;flex:none}
+.pin-weather-card table{width:100%;table-layout:fixed;border-spacing:0 3px;font-size:clamp(10px,2.8vw,13px)}
+.pin-weather-card th{font-weight:600;text-align:left;color:#40546b;overflow-wrap:anywhere}
+.pin-weather-card :is(th,td){padding:4px;vertical-align:middle}
+.pin-weather-card th:nth-child(1){width:22%}
+.pin-weather-card th:nth-child(2){width:17%}
+.pin-weather-card th:nth-child(3){width:27%}
+.pin-weather-card th:nth-child(4){width:18%}
+.pin-weather-card td{background:white}
+.pin-weather-card td:first-child{border-radius:7px 0 0 7px}
+.pin-weather-card td:last-child{border-radius:0 7px 7px 0}
+.pin-weather-condition{display:flex;align-items:center;gap:4px;overflow-wrap:anywhere}
+.pin-weather-range{font-weight:700}
+.pin-weather-status{padding:10px}
+.weather-legend{background:#fff;border:1px solid #ccd2dc;border-radius:10px;padding:5px 10px}
+.weather-legend > div{display:flex;gap:8px;justify-content:space-between;padding:7px 0}
+.weather-legend > div + div{border-top:1px solid #dce1e9}
+.weather-legend dt{display:flex;align-items:center;gap:8px;font-weight:700}
+.weather-legend dt span{width:16px;height:13px;background:currentColor;border-radius:3px;flex:none}
+.weather-legend dd{margin:0}

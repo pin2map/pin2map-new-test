@@ -23,7 +23,7 @@
     render(selected,esriRelief=false,{brightness=120,roads=false}={}){
       const relief=this.getElement("esriReliefToggle");
       if(relief){
-        relief.checked=!!esriRelief;relief.disabled=false;
+        relief.checked=!!esriRelief;relief.disabled=selected==="satellite";
 
       }
       const roadsInput=this.getElement("satelliteRoads");
@@ -33,6 +33,7 @@
       const satelliteSelected=selected==="satellite";
       const controls=this.getElement("satelliteBrightness")?.closest?.(".basemap-satellite-controls");
       controls?.classList.toggle("hidden",!satelliteSelected);
+      this.getElement("basemapReliefControls")?.classList.toggle("hidden",satelliteSelected);
       const reset=this.getElement("satelliteReset");
       if(reset)reset.disabled=!satelliteSelected||Number(brightness)===120&&!roads;
       const input=this.getElement("satelliteBrightness");

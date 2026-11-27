@@ -239,7 +239,13 @@
   const bulkDeleteDialog = new window.Pin2MapBulkDeleteDialog({
     getElement:$,onConfirm:id=>confirmBulkDeletion(id)
   });
+  const weatherView=new window.Pin2MapPinWeather.View({
+    region:$("pinWeatherBlock"),load:window.Pin2MapOpenMeteoForecast.load,
+    icons:window.Pin2MapIcons
+  });
+  window.Pin2MapPinWeather.renderLegend($("settingsWeatherLegend"));
   const pinDetails=new window.Pin2MapPinDetails({
+    weatherView,
     getElement:$,document,
     onNote:value=>{
       const p=selectedPin();if(!p)return;

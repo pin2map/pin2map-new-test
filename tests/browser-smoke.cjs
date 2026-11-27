@@ -106,6 +106,13 @@ async function longPress(page,x,y,ms=725){
     await page.waitForFunction(before=>
       document.querySelector("#map .leaflet-control-scale-line")?.textContent.trim()===before,
       labelBefore,{timeout:6000});
+    await page.locator("#settingsButton").click();
+    await page.locator("#settingsWeatherTab").click();
+    const legend=page.locator("#settingsWeatherLegend");
+    assert.equal(await legend.isVisible(),true);
+    assert.equal(await legend.locator("dt").count(),8);
+    assert.equal(await legend.locator(".p2m-wx-darkblue").evaluate(node=>getComputedStyle(node).backgroundColor),"rgb(37, 77, 216)");
+    await page.locator("#settingsButton").click();
     console.log("[browser] PASS – predecessor scale visible, centered, metric and zoom-responsive");
     step("search form: disabled geocoder message without network");
     assert.equal(await page.locator("#allowGeocode").isChecked(),false);
@@ -259,7 +266,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await menu.locator("hr.basemap-satellite-divider").count(),0);
     assert.equal(await menu.locator("#satelliteInspect").isDisabled(),true);
     assert.equal(await menu.locator("#satelliteRoads").isDisabled(),true);
-    assert.equal(await menu.locator(".basemap-satellite-controls").isHidden(),true);
+    assert.equal(await menu.locator(".basemap-satellite-controls").filter({has:menu.locator("#satelliteBrightness")}).isHidden(),true);
     await topo.click();
     assert.equal(await menu.isHidden(),true);
     assert.equal(await picker.getAttribute("aria-expanded"),"false");
@@ -343,7 +350,7 @@ async function longPress(page,x,y,ms=725){
     const brightness=menu.locator("#satelliteBrightness"),reset=menu.locator("#satelliteReset");
     assert.equal(await brightness.isEnabled(),true);
     assert.equal(await menu.locator("#satelliteContrast").count(),0);
-    assert.equal(await menu.locator('.basemap-satellite-brightness [data-pin-icon="sun"] svg').count(),1);
+    assert.equal(await menu.locator('label[for="satelliteBrightness"]').innerText(),"Helligkeit");
 
     assert.equal((await reset.innerText()).trim(),"Zurücksetzen");
     await brightness.evaluate(el=>{
@@ -377,7 +384,7 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await brightness.isDisabled(),true);
     assert.equal(await reset.isDisabled(),true);
-    assert.equal(await menu.locator(".basemap-satellite-controls").isHidden(),true);
+    assert.equal(await menu.locator(".basemap-satellite-controls").filter({has:menu.locator("#satelliteBrightness")}).isHidden(),true);
     await menu.locator('[data-basemap="satellite"]').click();
     await picker.click();
     assert.equal(await brightness.inputValue(),"165");
@@ -396,7 +403,11 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await brightness.inputValue(),"120");
     const reliefToggle=page.locator("#esriReliefToggle");
-    assert.equal(await reliefToggle.isEnabled(),true,"Relief is available inside the satellite controls");
+    assert.equal(await reliefToggle.isHidden(),true);
+    await menu.locator('[data-basemap="street"]').click();
+    await picker.click();
+    assert.equal(await reliefToggle.isVisible(),true);
+    assert.equal(await brightness.isHidden(),true);
     await reliefToggle.check();
     assert.equal(await menu.isVisible(),true,"Relief toggle must not close map selector");
     await page.waitForFunction(()=>!!document.querySelector(".leaflet-pane[style*='250'] img[src*='World_Hillshade']"),
@@ -411,7 +422,7 @@ async function longPress(page,x,y,ms=725){
     await reliefToggle.uncheck();
     await page.waitForFunction(()=>!document.querySelector(".leaflet-pane[style*='250'] img[src*='World_Hillshade']"),
       null,{timeout:5000});
-    await menu.locator('[data-basemap="street"]').click();
+    await picker.click();
     assert.deepEqual(errors,[],"No JavaScript errors in basemap menu workflow");
     console.log("[browser] PASS – basemap toggle, street/topo, ARIA, focus, Escape, outside click, panels, persistence");
     const box=await page.locator("#map").boundingBox();
@@ -575,9 +586,26 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinUrlButton").evaluate(el=>el.classList.contains("has-url")),true,"Saved URL adds blue footer indicator");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
+    const weatherUrl=/open-meteo\.com\/v1\/forecast.*forecast_days=7/;
+    await page.route(weatherUrl,route=>route.fulfill({json:{
+      current:{temperature_2m:-1,apparent_temperature:-5,weather_code:3,wind_speed_10m:8,wind_direction_10m:270,time:"2026-11-27T17:17"},
+      hourly:{time:["2026-11-27T10:00","2026-11-27T11:00","2026-11-27T12:00"],weather_code:[71,71,61]},
+      daily:{time:Array.from({length:7},(_,i)=>new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10)),
+        temperature_2m_min:[-8],temperature_2m_max:[2],rain_sum:[1,0],showers_sum:[0,0],snowfall_sum:[3,0],
+        wind_speed_10m_max:[20],wind_direction_10m_dominant:[270]}
+    }}));
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinWeatherBlock").isVisible(),true);
+    const forecast=page.locator("#pinWeatherBlock");
+    await forecast.locator("tbody tr").last().waitFor();
+    assert.equal(await forecast.locator("tbody tr").count(),7);
+    assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Temperatur","Wetter","Niederschlag","Wind"]);
+    assert.deepEqual(await forecast.locator("tbody tr").first().locator("td").allTextContents(),
+      ["Heute (Fr) 27.11.","−8 | +2 °C","2 h Schnee, 1 h Regen","1 mm, 3 cm","W 20 km/h"]);
+    assert.equal(await forecast.locator("tbody tr").nth(1).locator("td").nth(3).textContent(),"0,0 mm");
+    assert.equal(await forecast.locator("tbody .pin-weather-range .p2m-wx-darkblue").count(),1);
+    await page.unroute(weatherUrl);
     assert.equal(await page.locator("#pinNotesBlock").isHidden(),true);
     await page.locator("#pinWeather").click();
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
@@ -844,6 +872,9 @@ async function longPress(page,x,y,ms=725){
     await labelToggle.click();
     const names=page.locator("#nameLabelMenu");
     assert.equal(await names.isVisible(),true);
+    assert.equal(await names.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(255, 255, 255)");
+    assert.equal(await labelToggle.evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(194, 201, 210)");
+    assert.equal(await labelToggle.getAttribute("data-pin-icon"),"tags");
     const pinNames=names.getByRole("checkbox",{name:"Pins"});
     await pinNames.uncheck();
     await page.waitForFunction(()=>document.querySelectorAll(".leaflet-tooltip.address-label").length===0,
@@ -917,7 +948,7 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator(".pin-marker").count(),1);
     const infoButton=page.locator("#pinInfoButton");
     const infoMenu=page.locator("#pinInfoMenu");
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-square-exclamation-point-off");
     assert.equal(await infoButton.getAttribute("aria-busy"),"false","Off starts idle");
     const showInfoMenu=async()=>{
       if(await infoMenu.isVisible())return;
@@ -972,7 +1003,7 @@ async function longPress(page,x,y,ms=725){
     assert.match(spinner.name,/p2m-pin-info-spin/);
     assert.notEqual(spinner.content,"none");
     assert.equal(spinner.size,"14px");
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point",
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"thermometer",
       "Loading must not replace Lucide mode icon");
     await releaseNextTemperature();
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label.p2m-temperature-label").length===1
@@ -980,7 +1011,7 @@ async function longPress(page,x,y,ms=725){
       null,{timeout:6000});
     assert.equal(forecastRequests.length,1,"Only the visible pin must be queried");
     assert.equal(forecastRequests[0].count,1);
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"thermometer");
     assert.match(await page.locator(".elevation-label").first().textContent(),/19 °C/);
     await page.locator("#layersButton").click();
     await page.locator("#layersList .list-dialog-row").filter({hasText:"Wettertest"})
@@ -1066,7 +1097,7 @@ async function longPress(page,x,y,ms=725){
       await dismissInfoMenu();
       await page.waitForFunction(value=>Array.from(document.querySelectorAll(".elevation-label"))
         .some(el=>el.textContent.includes(value)),match,{timeout:6000});
-      assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point");
+      assert.equal(await infoButton.getAttribute("data-pin-icon"),({elevation:"mountain-snow",daily:"thermometer-sun",sun:"sunrise",precipitation:"cloud-rain-wind",zone:"rotate-cw-clock"})[mode]);
     };
     await nextMode("elevation","250 m");
     await nextMode("daily","16 °C");
@@ -1183,7 +1214,7 @@ async function longPress(page,x,y,ms=725){
     assert.doesNotMatch(iconMarkup.equal,/>0</);
     await showInfoMenu();
     await infoButton.click();
-    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-circle-exclamation-point-off");
+    assert.equal(await infoButton.getAttribute("data-pin-icon"),"message-square-exclamation-point-off");
     assert.equal(await infoButton.locator("svg path").last().getAttribute("d"),"M2 22 22 2");
     await page.waitForFunction(()=>document.querySelectorAll(".elevation-label").length===0,
       null,{timeout:6000});
@@ -1215,7 +1246,7 @@ async function longPress(page,x,y,ms=725){
     await page.locator("#basemapButton").click();
     await page.locator('#basemapMenu [data-basemap="satellite"]').click();
     await page.locator("#basemapButton").click();
-    assert.equal(await page.locator("#esriReliefToggle").isEnabled(),true);
+    assert.equal(await page.locator("#esriReliefToggle").isHidden(),true);
     const roads=page.locator("#satelliteRoads");
     await roads.check();
     await page.locator("#satelliteReset").click();
@@ -1229,7 +1260,7 @@ async function longPress(page,x,y,ms=725){
     assert.ok(imageryOverlaySources.some(src=>src.includes("World_Boundaries_and_Places")));
     await page.locator("#satelliteInspect").click();
     assert.equal(await page.locator("#basemapMenu").isHidden(),true);
-    assert.equal(await page.locator("#satelliteInspect").getAttribute("aria-pressed"),"true");
+    assert.equal(await page.locator("#satelliteInspect").isChecked(),true);
     assert.equal(await page.locator("#map").evaluate(el=>getComputedStyle(el).cursor),"crosshair");
     await page.locator("#map").click({position:{x:38,y:305}});
     await page.waitForFunction(()=>document.querySelector("#satelliteInfoFields")?.textContent?.includes("20240115"),null,{timeout:6000});

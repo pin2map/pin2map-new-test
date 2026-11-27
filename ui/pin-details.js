@@ -3,11 +3,11 @@
  * project mutation, persistence and navigation are injected by app.js. */
 (function(root){
  class PinDetails{
-  constructor({getElement,document:doc,onNote,onUrl,onWikipedia,onLayout,onRouteAction=null,onWaypointAction=null}){
+  constructor({getElement,document:doc,onNote,onUrl,onWikipedia,onLayout,weatherView,onRouteAction=null,onWaypointAction=null}){
    if([getElement,onNote,onUrl,onWikipedia,onLayout].some(v=>typeof v!=="function")||!doc)
     throw new TypeError("Pin detail ports required");
    this.el=getElement;this.document=doc;this.onNote=onNote;this.onUrl=onUrl;
-   this.onWikipedia=onWikipedia;this.onLayout=onLayout;this.onRouteAction=onRouteAction;this.onWaypointAction=onWaypointAction;
+   this.weatherView=weatherView;this.onWikipedia=onWikipedia;this.onLayout=onLayout;this.onRouteAction=onRouteAction;this.onWaypointAction=onWaypointAction;
    this.pinId=null;this.mode="notes";this.urlSnapshot="";this.weatherMode=false;
    this.routingMode=null;
    // The URL overlay is viewport-positioned. Keep it out of the pin
@@ -31,7 +31,8 @@
   positionPopup(){this.urlController.position();}
   show(mode){this.urlController.show(mode==="url");}
   render(pin){
-   if(!pin){this.pinId=null;this.show("notes");this.el("pinGpxActions")?.classList.add("hidden");return;}
+   this.pin=pin;
+   if(!pin){this.weatherView?.hide();this.pinId=null;this.show("notes");this.el("pinGpxActions")?.classList.add("hidden");return;}
    if(this.pinId!==pin.id){
     this.pinId=pin.id;this.urlSnapshot=String(pin.url||"");
     this.el("pinNotes").value=String(pin.note||"");
@@ -46,6 +47,7 @@
      this.urlSnapshot=String(pin.url||"");url.value=this.urlSnapshot;
     }
    }
+   if(this.weatherMode)this.weatherView?.show(pin);
    this.refreshUrlOpen();
    this.el("pinUrlButton").classList.toggle("has-url",Boolean(String(pin.url||"").trim()));
    // GPX UI is future-only until a concrete persisted track association exists.
@@ -83,6 +85,8 @@
    }
    if(next&&this.routingMode)this.setRouting(null);
    this.weatherMode=next;
+   if(next&&this.pin)this.weatherView?.show(this.pin);
+   else this.weatherView?.hide();
    panel.classList.toggle("pin-weather-mode",this.weatherMode);
    this.el("pinNotesBlock").classList.toggle("hidden",this.weatherMode||Boolean(this.routingMode));
    this.el("pinWeatherBlock").classList.toggle("hidden",!this.weatherMode);

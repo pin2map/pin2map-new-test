@@ -92,6 +92,7 @@
 <script defer src="./application/license-plate-search.js"></script>
 <script defer src="./application/search-pin-transfer.js"></script>
 <script defer src="./adapters/weather/open-meteo-pin-info.js"></script>
+<script defer src="./adapters/weather/open-meteo-forecast.js"></script>
 <script defer src="./adapters/weather/nasa-power-climatology.js"></script>
 <script defer src="./adapters/weather/nasa-power-precipitation.js"></script>
 <script defer src="./adapters/weather/monthly-sun-times.js"></script>
@@ -99,6 +100,7 @@
 <script defer src="./application/pin-info-service.js"></script>
 <script defer src="./ui/pin-info-label.js"></script>
 <script defer src="./ui/pin-info-menu.js"></script>
+<script defer src="./ui/pin-weather.js"></script>
 <script defer src="./ui/list-dialog-core.js"></script>
 <script defer src="./ui/layer-view.js"></script>
 <script defer src="./ui/bulk-delete-dialog.js"></script>
@@ -306,7 +308,7 @@
   </aside>
   <button id="refreshButton" data-pin-icon="refresh-cw" class="refresh-map-button" type="button" title="Neueste Version laden" aria-label="Neueste Version laden">⟳</button>
   <button id="layersButton" data-pin-icon="layers" class="layers-bottom-button" type="button" title="Ebenen auswählen" aria-label="Ebenen auswählen" aria-expanded="false" aria-pressed="false">☷</button>
-  <button id="pinInfoButton" data-pin-icon="message-circle-exclamation-point-off" class="pin-info-button" aria-busy="false" type="button" title="Pin-Informationen auswählen" aria-label="Pin-Informationen auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="pinInfoMenu"></button>
+  <button id="pinInfoButton" data-pin-icon="message-square-exclamation-point-off" class="pin-info-button" aria-busy="false" type="button" title="Pin-Informationen auswählen" aria-label="Pin-Informationen auswählen" aria-haspopup="true" aria-expanded="false" aria-controls="pinInfoMenu"></button>
   <section id="pinInfoMenu" class="basemap-menu pin-info-menu hidden" aria-label="Pin-Informationen">
     <div class="pin-info-mode-row" data-pin-info-mode="elevation">
       <label class="pin-info-mode-choice"><input type="radio" name="pinInfoMode" value="elevation"><span data-pin-icon="mountain-snow"></span><span>Höhe</span></label>
@@ -345,14 +347,16 @@
     <button type="button" class="basemap-choice" data-basemap="topo" aria-pressed="false"><span data-pin-icon="house"></span>Topographisch</button>
     <button type="button" class="basemap-choice" data-basemap="satellite" aria-pressed="false"><span data-pin-icon="satellite"></span>Satellit</button>
     <div class="basemap-satellite-controls hidden" role="group" aria-label="Satellitenbild anpassen">
-      <button type="button" id="satelliteReset" class="basemap-satellite-reset"><span data-pin-icon="check"></span><span>Zurücksetzen</span></button>
       <div class="basemap-satellite-brightness">
-        <label class="basemap-satellite-slider" for="satelliteBrightness"><span data-pin-icon="sun" aria-hidden="true"></span></label>
+        <label class="basemap-satellite-slider" for="satelliteBrightness">Helligkeit</label>
         <input id="satelliteBrightness" type="range" min="70" max="180" step="5" value="120" aria-label="Satellitenbild Helligkeit">
         <output id="satelliteBrightnessValue" for="satelliteBrightness">120 %</output>
       </div>
-      <label class="basemap-satellite-roads"><input type="radio" id="satelliteRoads" name="satelliteRoads"> Straßen- und Ortsnamen</label>
-      <button id="satelliteInspect" class="basemap-satellite-info" type="button" aria-label="Bildinformationen für Kartenpunkt abfragen" aria-pressed="false"><span data-pin-icon="chevron-down"></span>Bildinformationen</button>
+      <label class="basemap-satellite-roads"><input type="checkbox" id="satelliteRoads"> Straßen- und Ortsnamen</label>
+      <label><input id="satelliteInspect" type="checkbox"> Bildinfos ermitteln</label>
+      <button type="button" id="satelliteReset" class="basemap-satellite-reset">Zurücksetzen</button>
+    </div>
+    <div id="basemapReliefControls" class="basemap-satellite-controls" role="group" aria-label="Geländedarstellung">
       <label class="basemap-relief-toggle"><input type="checkbox" id="esriReliefToggle"> Schummerung</label>
     </div>
   </section>
@@ -370,7 +374,7 @@
   </aside>
   <aside id="settingsPanel" class="panel settings-panel hidden" aria-label="Einstellungen">
 <div class="panel-head"><h2>Eigenschaften</h2><button class="close" data-pin-icon="x" data-close="settingsPanel" aria-label="Schließen">×</button></div>
-<div class="settings-tabs" role="tablist" aria-label="Eigenschaften"><button type="button" id="settingsGeneralTab" role="tab" aria-selected="true" aria-controls="settingsGeneralContent">Allgemein</button><button type="button" id="settingsInterfaceTab" role="tab" aria-selected="false" aria-controls="settingsInterfaceContent">Oberfläche</button><button type="button" id="settingsServicesTab" role="tab" aria-selected="false" aria-controls="settingsServicesContent">Services</button><button type="button" id="settingsColorsTab" role="tab" aria-selected="false" aria-controls="settingsColorsContent">Farben</button><button type="button" id="settingsRoutingTab" role="tab" aria-selected="false" aria-controls="settingsRoutingContent">Routing</button></div>
+<div class="settings-tabs" role="tablist" aria-label="Eigenschaften"><button type="button" id="settingsGeneralTab" role="tab" aria-selected="true" aria-controls="settingsGeneralContent">Allgemein</button><button type="button" id="settingsInterfaceTab" role="tab" aria-selected="false" aria-controls="settingsInterfaceContent">Oberfläche</button><button type="button" id="settingsServicesTab" role="tab" aria-selected="false" aria-controls="settingsServicesContent">Services</button><button type="button" id="settingsColorsTab" role="tab" aria-selected="false" aria-controls="settingsColorsContent">Farben</button><button type="button" id="settingsRoutingTab" role="tab" aria-selected="false" aria-controls="settingsRoutingContent">Routing</button><button type="button" id="settingsWeatherTab" role="tab" aria-selected="false" aria-controls="settingsWeatherContent">Wetter</button></div>
 <div id="settingsGeneralContent" role="tabpanel">
 <p class="settings-product-name"><strong>pin2map NEW</strong> <span id="settingsProductVersion">Version wird ermittelt …</span></p>
 <section class="settings-storage"><h3>Speicherbedarf</h3>
@@ -382,6 +386,7 @@
 </section>
 <hr><p class="muted small">Daten werden lokal in diesem Browser gespeichert. Fotos und Server-Synchronisation sind nicht Bestandteil dieses Teststands.</p></div>
 <div id="settingsInterfaceContent" role="tabpanel" class="hidden"><label class="checkbox-line" for="showPinHitboxes"><input id="showPinHitboxes" type="checkbox" checked> Gelbe Trefferflächen um Pins anzeigen</label><p class="muted small">Nur die gelbe Test-Markierung wird ein- oder ausgeblendet. Die tatsächliche Tippfläche und der Autozoom bleiben unverändert. Diese Anzeige-Einstellung gilt nur auf diesem Gerät.</p></div>
+<div id="settingsWeatherContent" role="tabpanel" class="hidden"><h3>Temperatur-Farbskala</h3><dl id="settingsWeatherLegend" class="weather-legend"></dl></div>
 <div id="settingsServicesContent" role="tabpanel" class="hidden"><label class="checkbox-line"><input id="allowGeocode" type="checkbox"> Externe Orts- und Flächensuche (Nominatim / Overpass) für meinen kontrollierten Test aktivieren</label><p class="muted small">Nur für wenige bekannte Tester. Bei Kartentip-Flächensuche werden die angeklickten Koordinaten zusätzlich an einen Overpass-Dienst gesendet (bei verfügbaren Regionen vorzugsweise dresel.systems für Europa/Nordamerika, sonst globale Anbieter wie maps.mail.ru), um einschließende Schutz-, Insel- und Sondergebiete zu finden. Beide externen APIs sind keine uneingeschränkten Produktionsdienste. Keine automatischen Suchen; die Anfragen werden in diesem Browser gedrosselt. Eine anwendungsweite Drosselung ist ohne zentrale Infrastruktur nicht gewährleistet. Die Nutzung darf erst nach Prüfung der <a target="_blank" rel="noopener" href="https://operations.osmfoundation.org/policies/nominatim/">Nutzungsrichtlinie</a> erfolgen.</p><p class="small attribution">Suchdaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap-Mitwirkende</a> · <a href="https://nominatim.org/" target="_blank" rel="noopener">Nominatim</a> · <a href="https://ovp.dresel.systems/" target="_blank" rel="noopener">Overpass (dresel.systems)</a> / <a href="https://overpass.private.coffee/" target="_blank" rel="noopener">Private.coffee</a> / <a href="https://maps.mail.ru/osm/tools/overpass/" target="_blank" rel="noopener">VK Maps Overpass</a></p><p class="small attribution" id="settingsPinInfoSources"><strong>Pin-Informationen:</strong> <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> liefert aktuelle Wetterprognosen und Höhe. <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER</a> liefert langjährige Monatsmittel von Temperaturen und Niederschlag (durchschnittlicher Monats- und Jahresniederschlag in mm). <a href="https://sunrise-sunset.org/" target="_blank" rel="noopener">Sunrise-Sunset.org</a> liefert Sonnenaufgang und -untergang jeweils am <strong>15. des ausgewählten Monats</strong>. Bei „Heute“ werden aktuelle Tageswerte verwendet. Daten werden nur für Pins sichtbarer Ebenen im gewählten Modus abgerufen.</p></div>
 <div id="settingsColorsContent" role="tabpanel" class="hidden"><section class="color-settings-section"><h3>Standard-Farben</h3><p>Diese Farben werden für Ebenen verwendet und stehen zum Einfärben von Flächen, Seen und Flüssen zur Verfügung.</p><div id="standardColorGrid" class="settings-color-grid"></div></section><section class="color-settings-section"><h3>Signal-Farben</h3><div id="signalColorGrid" class="settings-color-grid settings-signal-grid"></div></section></div>
 <div id="settingsRoutingContent" role="tabpanel" class="hidden">
@@ -423,10 +428,7 @@
     <fieldset class="pin-detail-region">
       <legend id="pinDetailTitle">Pin Notizen</legend>
       <div id="pinNotesBlock"><textarea id="pinNotes" rows="7" placeholder="Notiz eingeben …" aria-label="Notizen zum Pin"></textarea><button id="pinNotesExpand" type="button" data-pin-icon="square-chevron-right" title="Notizeditor vergrößern" aria-label="Notizeditor vergrößern"></button></div>
-      <div id="pinWeatherBlock" class="pin-weather-placeholder hidden" role="region" aria-label="Wetteransicht">
-        <span data-pin-icon="thermometer-snowflake" aria-hidden="true"></span>
-        <strong>Wetter</strong><span>Wetterinformationen werden später ergänzt.</span>
-      </div>
+      <div id="pinWeatherBlock" class="pin-weather-content hidden" role="region" aria-label="Wetteransicht"></div>
       <div id="pinRoutingStartBlock" class="pin-routing-placeholder hidden" role="region" aria-label="Routing Start">
         <span data-pin-icon="arrow-up-right" aria-hidden="true"></span>
         <strong>Routing Start</strong><span>Routing-Einstellungen werden später ergänzt.</span>

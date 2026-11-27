@@ -12,7 +12,7 @@
     isActive(){return this.active;}
     start(){
       if(this.active){this.stop();return;}
-      this.active=true;this.button.setAttribute("aria-pressed","true");
+      this.active=true;this.button.checked=true;
       this.mapPort.setInspectionCursor?.(true);
       this.onNotice("Bildposition auf der Karte antippen");
     }
@@ -23,7 +23,7 @@
       this.mapPort.setInspectionCursor?.(false);
       this.panel.classList.add("hidden");
       this.getElement("satelliteInfoFields").replaceChildren();
-      this.button.setAttribute("aria-pressed","false");
+      this.button.checked=false;
     }
     async pick(position){
       if(!this.active)return false;
@@ -63,8 +63,9 @@
       row.append(title,link);parent.append(row);
     }
     bind(){
-      this.button.addEventListener("click",()=>{
+      this.button.addEventListener("change",()=>{
         if(this.button.disabled)return;
+        if(!this.button.checked){this.stop();return;}
         this.start();
         this.getElement("basemapMenu").classList.add("hidden");
         this.getElement("basemapButton").setAttribute("aria-expanded","false");

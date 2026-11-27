@@ -19,7 +19,7 @@
     if(type==="temperature")content='<span class="'+temperatureClass(data.value)+'">'+content+'</span>';
     if((type==="daily"||type==="sun")&&Array.isArray(data.parts)){
       const classes=type==="daily"?["p2m-label-min","p2m-label-max"]:["p2m-label-rise","p2m-label-set"];
-      content=data.parts.map((value,i)=>'<span class="p2m-label-half '+classes[i]+'">'+escapeHtml(value)+'</span>').join("");
+      content=data.parts.map((value,i)=>'<span class="p2m-label-half '+classes[i]+'">'+(type==="daily"&&Number.isFinite(data.temperatures?.[i])?'<span class="'+temperatureClass(data.temperatures[i])+'">'+escapeHtml(value)+'</span>':escapeHtml(value))+'</span>').join("");
     }
     if(type==="precipitation"&&data.period&&data.period!=="today"){
       const month=data.period==="year"?"Jahr":MONTH_NAMES[Number(data.period)-1]||"";

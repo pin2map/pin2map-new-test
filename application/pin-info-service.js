@@ -79,7 +79,7 @@
       if(mode==="off")return null;
       if(mode==="elevation")return {mode,text:data?Math.round(data.value)+" m":""};
       if(mode==="temperature")return {mode,text:data?Math.round(data.value)+" °C":"– °C",value:data?.value};
-      if(mode==="daily")return {mode,period:this.period,climatology:this.period!=="today",parts:data?[Math.round(data.min)+"°",Math.round(data.max)+" °C"]:["–°","– °C"]};
+      if(mode==="daily")return {mode,period:this.period,climatology:this.period!=="today",temperatures:data?[data.min,data.max]:[],parts:data?[Math.round(data.min)+"°",Math.round(data.max)+" °C"]:["–°","– °C"]};
       if(mode==="sun")return {mode,period:this.period,month:this.period!=="today"?this.period:null,parts:data?[data.rise,data.set]:["–:–","–:–"]};
       if(mode==="precipitation")return {mode,period:this.period,normal:this.period!=="today",
         text:data?(this.period==="today"?Number(data.value.toFixed(1)).toLocaleString("de-DE"):
