@@ -561,6 +561,11 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     ]},headers:{"Access-Control-Allow-Origin":"*"}});
    });
    await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
+   // Request a daytime departure so the simulated same-day trip cannot cross midnight.
+   await page.locator("#transitClock").evaluate(input=>{
+    input.value="12:00";
+    input.dispatchEvent(new Event("change",{bubbles:true}));
+   });
    await page.locator("#transitSelected .transit-green").waitFor();
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),false);
    assert.equal(await page.locator("#transitDate").isVisible(),true);
