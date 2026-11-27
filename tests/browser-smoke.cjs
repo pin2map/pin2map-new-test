@@ -846,9 +846,10 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await names.isVisible(),true);
     const pinNames=names.getByRole("checkbox",{name:"Pins"});
     await pinNames.uncheck();
-    assert.equal(await tooltip.count(),0);
+    await page.waitForFunction(()=>document.querySelectorAll(".leaflet-tooltip.address-label").length===0,
+      null,{timeout:2000});
     await pinNames.check();
-    assert.ok(await tooltip.count()>0);
+    await tooltip.first().waitFor({state:"attached",timeout:2000});
     await labelToggle.click();
     await page.waitForFunction(()=>document.querySelectorAll(".leaflet-tooltip.address-label").length===0,
       null,{timeout:2000});
