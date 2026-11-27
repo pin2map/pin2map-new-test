@@ -108,7 +108,7 @@
       range.append(this.temperature(min,"°")," / ",this.temperature(max,"°"));
       return range;
     }
-    render({current={},daily,hourly,elevation},pin){
+    render({current={},daily,hourly},pin){
       const doc=this.doc;
       const block=element(doc,"div",undefined,"pin-weather-card");
       const summary=element(doc,"div",undefined,"pin-weather-card pin-weather-current");
@@ -124,9 +124,7 @@
       const detail=element(doc,"div",undefined,"pin-weather-current-line");
       detail.append(element(doc,"span",[weather[icon],"Wind "+wind(current.wind_speed_10m,current.wind_direction_10m)].filter(Boolean).join(" · ")));
       if(current.time)detail.append(element(doc,"time",current.time.slice(11,16)));
-      const height=Number.isFinite(elevation)?" ("+wholeNumber.format(elevation)+" m ü. NN)":"";
-      const station=element(doc,"div","Station: Open-Meteo-Modellpunkt"+height,"pin-weather-station");
-      summary.append(line,detail,station);
+      summary.append(line,detail);
       const table=element(doc,"table");
       const header=table.createTHead().insertRow();
       for(const name of ["Tag","Min/Max","0:00","7:00","13:00","19:00","mm","km/h"]){

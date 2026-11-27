@@ -3338,7 +3338,6 @@ body.pin-open #app #routeToggleHolder{display:none}
 .pin-weather-current{
   margin-bottom:7px;padding:7px 9px;font-size:clamp(10px,2.8vw,13px);
 }
-.pin-weather-station{margin-top:4px;color:#40546b}
 .pin-weather-current-line{display:flex;gap:2px 5px;align-items:center;flex-wrap:wrap}
 .pin-weather-current-line > :last-child{margin-inline-start:auto}
 .pin-weather-now{font-size:1.25em;font-weight:750;white-space:nowrap}

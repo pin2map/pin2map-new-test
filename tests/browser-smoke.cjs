@@ -603,7 +603,7 @@ async function longPress(page,x,y,ms=725){
     await forecast.locator("tbody tr").last().waitFor();
     assert.equal(await forecast.locator("tbody tr").count(),7);
     assert.equal(await forecast.locator(":scope > .pin-weather-card").count(),2);
-    assert.equal(await forecast.locator(".pin-weather-station").textContent(),"Station: Open-Meteo-Modellpunkt (1.721 m ü. NN)");
+    assert.doesNotMatch(await forecast.locator(".pin-weather-current").textContent(),/Station|1.721/);
     assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Min/Max","0:00","7:00","13:00","19:00","mm","km/h"]);
     const weatherRows=forecast.locator("tbody tr");
     assert.deepEqual(await weatherRows.first().locator("td").allTextContents(),
