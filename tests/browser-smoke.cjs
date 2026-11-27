@@ -343,9 +343,9 @@ async function longPress(page,x,y,ms=725){
     const brightness=menu.locator("#satelliteBrightness"),reset=menu.locator("#satelliteReset");
     assert.equal(await brightness.isEnabled(),true);
     assert.equal(await menu.locator("#satelliteContrast").count(),0);
-    assert.equal(await menu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
-    assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 120 % zurücksetzen");
-    assert.equal((await reset.innerText()).trim(),"Standard");
+    assert.equal(await menu.locator('.basemap-satellite-brightness [data-pin-icon="sun"] svg').count(),1);
+
+    assert.equal((await reset.innerText()).trim(),"Zurücksetzen");
     await brightness.evaluate(el=>{
       el.value="165";el.dispatchEvent(new Event("input",{bubbles:true}));
       el.dispatchEvent(new Event("change",{bubbles:true}));
@@ -377,12 +377,7 @@ async function longPress(page,x,y,ms=725){
     await picker.click();
     assert.equal(await brightness.isDisabled(),true);
     assert.equal(await reset.isDisabled(),true);
-    const inactiveStyle=await menu.locator(".basemap-satellite-slider").first().evaluate(el=>({
-      color:getComputedStyle(el).color,
-      iconOpacity:getComputedStyle(el.querySelector(".basemap-slider-icon")).opacity
-    }));
-    assert.equal(inactiveStyle.color,"rgb(156, 167, 179)");
-    assert.equal(inactiveStyle.iconOpacity,"0.48");
+    assert.equal(await menu.locator(".basemap-satellite-controls").isHidden(),true);
     await menu.locator('[data-basemap="satellite"]').click();
     await picker.click();
     assert.equal(await brightness.inputValue(),"165");

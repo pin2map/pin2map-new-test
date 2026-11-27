@@ -127,7 +127,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         assert.deepEqual(ordered,["street","international","humanitarian","topo","satellite"]);
         assert.equal(await mapMenu.locator(".basemap-menu-title").count(),0);
         assert.equal(await mapMenu.locator('[data-basemap="street"]').textContent(),"Standard");
-        assert.equal(await mapMenu.locator("hr.basemap-satellite-divider").count(),2);
+        assert.equal(await mapMenu.locator("hr.basemap-satellite-divider").count(),0);
         // Dialogs intentionally sit ABOVE map buttons: dismiss the search
         // chooser before touching a map button it geometrically overlaps.
         await search.focus();
@@ -143,7 +143,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         const reset=mapMenu.locator("#satelliteReset");
         assert.equal(await sun.isEnabled(),true);
         assert.equal(await mapMenu.locator("#satelliteContrast").count(),0);
-        assert.equal(await mapMenu.locator('.basemap-slider-icon[data-pin-icon="sun-medium"] svg').count(),1);
+        assert.equal(await mapMenu.locator('.basemap-satellite-brightness [data-pin-icon="sun"] svg').count(),1);
         await sun.evaluate(el=>{
           el.value="165";el.dispatchEvent(new Event("input",{bubbles:true}));
           el.dispatchEvent(new Event("change",{bubbles:true}));
@@ -165,17 +165,12 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await chooser.click();
         assert.equal(await sun.isDisabled(),true);
         assert.equal(await reset.isDisabled(),true);
-        const disabledLabel=await mapMenu.locator(".basemap-satellite-slider").first().evaluate(el=>({
-          color:getComputedStyle(el).color,
-          iconOpacity:getComputedStyle(el.querySelector(".basemap-slider-icon")).opacity
-        }));
-        assert.equal(disabledLabel.color,"rgb(156, 167, 179)");
-        assert.equal(disabledLabel.iconOpacity,"0.48");
+        assert.equal(await mapMenu.locator(".basemap-satellite-controls").isHidden(),true);
         await mapMenu.locator('[data-basemap="satellite"]').click();
         await chooser.click();
         assert.equal(await reset.isEnabled(),true);
-        assert.equal(await reset.getAttribute("aria-label"),"Helligkeit auf 120 % zurücksetzen");
-    assert.equal((await reset.innerText()).trim(),"Standard");
+
+    assert.equal((await reset.innerText()).trim(),"Zurücksetzen");
         await reset.click();
         assert.equal(await mapMenu.isVisible(),true);
         assert.equal(await reset.isDisabled(),true);
