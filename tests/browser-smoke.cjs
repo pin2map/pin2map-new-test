@@ -586,13 +586,15 @@ async function longPress(page,x,y,ms=725){
     assert.equal(await page.locator("#pinUrlButton").evaluate(el=>el.classList.contains("has-url")),true,"Saved URL adds blue footer indicator");
     assert.equal(await page.locator("#pinNotesBlock").isVisible(),true);
     assert.equal(await page.locator("#pinNotes").inputValue(),"Erste Zeile\nZweite Zeile");
-    const weatherUrl=/open-meteo\.com\/v1\/forecast.*forecast_days=8/;
+    const weatherUrl=/open-meteo\.com\/v1\/forecast.*forecast_days=7/;
     await page.route(weatherUrl,route=>route.fulfill({json:{
       current:{temperature_2m:-1,apparent_temperature:-5,weather_code:3,wind_speed_10m:8,wind_direction_10m:270,time:"2026-11-27T17:17"},
-      hourly:{time:["2026-11-27T07:00","2026-11-27T13:00","2026-11-27T19:00","2026-11-28T00:00","2026-12-04T00:00"],
-        temperature_2m:[-6,1,-3,-4,3],weather_code:[71,3,61,0,0],is_day:[0,1,0,0,0]},
-      daily:{time:Array.from({length:8},(_,i)=>new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10)),
-        temperature_2m_min:[-8],temperature_2m_max:[2],precipitation_sum:[2.4,0]}
+      elevation:1721,
+      hourly:{time:["2026-11-27T00:00","2026-11-27T07:00","2026-11-27T13:00","2026-11-27T19:00","2026-11-28T00:00","2026-12-03T00:00"],
+        temperature_2m:[-7,-6,1,-3,-4,3],weather_code:[0,71,3,61,0,0],is_day:[0,0,1,0,0,0],
+        wind_speed_10m:[8,null,10,12,20,5]},
+      daily:{time:Array.from({length:7},(_,i)=>new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10)),
+        temperature_2m_min:[-8],temperature_2m_max:[2],precipitation_sum:[2.4,0],wind_gusts_10m_max:[31,40]}
     }}));
     assert.equal(await page.locator("#pinWeather").isEnabled(),true);
     await page.locator("#pinWeather").click();
@@ -600,13 +602,16 @@ async function longPress(page,x,y,ms=725){
     const forecast=page.locator("#pinWeatherBlock");
     await forecast.locator("tbody tr").last().waitFor();
     assert.equal(await forecast.locator("tbody tr").count(),7);
-    assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Min","7:00","13:00","19:00","0:00","Max","mm"]);
+    assert.equal(await forecast.locator(":scope > .pin-weather-card").count(),2);
+    assert.equal(await forecast.locator(".pin-weather-station").textContent(),"Station: Open-Meteo-Modellpunkt (1.721 m ü. NN)");
+    assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Min/Max","0:00","7:00","13:00","19:00","mm","km/h"]);
     const weatherRows=forecast.locator("tbody tr");
     assert.deepEqual(await weatherRows.first().locator("td").allTextContents(),
-      ["Fr27.11.","−8°","−6°","1°","−3°","−4°","2°","2,4"]);
-    assert.equal(await weatherRows.first().locator('td:nth-child(6) svg[aria-label="Klar"]').count(),1);
-    assert.equal(await weatherRows.last().locator('td:nth-child(6)').textContent(),"3°");
-    assert.equal(await weatherRows.nth(1).locator("td").last().textContent(),"0");
+      ["Fr27.11.","2°−8°","−7°","−6°","1°","−3°","2,4","3110"]);
+    assert.deepEqual(await weatherRows.first().locator('td:last-child .pin-weather-pair > *').allTextContents(),["31","10"]);
+    assert.equal(await weatherRows.first().locator('td:nth-child(3) svg[aria-label="Klar"]').count(),1);
+    assert.equal(await weatherRows.last().locator('td:nth-child(3)').textContent(),"3°");
+    assert.equal(await weatherRows.nth(1).locator('td:nth-child(7)').textContent(),"0");
     const tomorrow=weatherRows.nth(1);
     const link=tomorrow.locator("a");
     const storedPosition=await page.evaluate(async()=>{

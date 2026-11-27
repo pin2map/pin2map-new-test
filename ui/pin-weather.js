@@ -5,7 +5,7 @@
     cloud:"Bedeckt","cloud-rain":"Regen","cloud-sun-rain":"Sonne und Regenschauer",
     "cloud-drizzle":"Nieselregen","cloud-snow":"Schnee","cloud-lightning":"Gewitter","cloud-fog":"Nebel"
   };
-  const hours=["07","13","19","00"];
+  const hours=["00","07","13","19"];
   function condition(code,isDay){
     if(isDay===0&&code===0)return "moon";
     if(isDay===0&&(code===1||code===2))return "cloud";
@@ -21,6 +21,7 @@
     return null;
   }
   const amount=new Intl.NumberFormat("de-DE",{maximumFractionDigits:1});
+  const wholeNumber=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0});
   const shortDays=["So","Mo","Di","Mi","Do","Fr","Sa"];
   function windyLink({lat,lng},date){
     const coordinates=[lat.toFixed(5),lng.toFixed(5)].join(",");
@@ -107,10 +108,10 @@
       range.append(this.temperature(min,"°")," / ",this.temperature(max,"°"));
       return range;
     }
-    render({current={},daily,hourly},pin){
+    render({current={},daily,hourly,elevation},pin){
       const doc=this.doc;
       const block=element(doc,"div",undefined,"pin-weather-card");
-      const summary=element(doc,"div",undefined,"pin-weather-current");
+      const summary=element(doc,"div",undefined,"pin-weather-card pin-weather-current");
       const line=element(doc,"div",undefined,"pin-weather-current-line");
       const temp=element(doc,"strong",undefined,"pin-weather-now");
       temp.append(this.temperature(current.temperature_2m)," °C");
@@ -123,16 +124,30 @@
       const detail=element(doc,"div",undefined,"pin-weather-current-line");
       detail.append(element(doc,"span",[weather[icon],"Wind "+wind(current.wind_speed_10m,current.wind_direction_10m)].filter(Boolean).join(" · ")));
       if(current.time)detail.append(element(doc,"time",current.time.slice(11,16)));
-      summary.append(line,detail);
+      const height=Number.isFinite(elevation)?" ("+wholeNumber.format(elevation)+" m ü. NN)":"";
+      const station=element(doc,"div","Station: Open-Meteo-Modellpunkt"+height,"pin-weather-station");
+      summary.append(line,detail,station);
       const table=element(doc,"table");
       const header=table.createTHead().insertRow();
-      for(const name of ["Tag","Min","7:00","13:00","19:00","0:00","Max","mm"]){
+      for(const name of ["Tag","Min/Max","0:00","7:00","13:00","19:00","mm","km/h"]){
         const th=element(doc,"th",name);
         th.scope="col";
+        if(name==="Min/Max")th.title="Tageshöchstwert / Tagestiefstwert";
+        if(name==="km/h")th.title="Maximale Böe / mittlere Windgeschwindigkeit";
         header.append(th);
       }
       const body=table.createTBody();
-      const positions=new Map(hourly?.time?.map((time,index)=>[time,index]));
+      const positions=new Map(),dailyWind=new Map();
+      hourly?.time?.forEach((time,index)=>{
+        positions.set(time,index);
+        const speed=hourly.wind_speed_10m?.[index];
+        if(!Number.isFinite(speed))return;
+        const day=time.slice(0,10);
+        const stats=dailyWind.get(day)||{sum:0,count:0};
+        stats.sum+=speed;
+        stats.count++;
+        dailyWind.set(day,stats);
+      });
       daily.time.slice(0,7).forEach((day,i)=>{
         const row=body.insertRow(),date=new Date(day+"T12:00:00Z");
         const dayLabel=shortDays[date.getUTCDay()];
@@ -146,10 +161,11 @@
         link.lastChild.dateTime=day;
         row.insertCell().append(link);
         row.addEventListener("click",event=>{if(!link.contains(event.target))link.click();});
-        row.insertCell().append(this.temperature(daily.temperature_2m_min?.[i],"°"));
+        const extremes=element(doc,"span",undefined,"pin-weather-pair");
+        extremes.append(this.temperature(daily.temperature_2m_max?.[i],"°"),this.temperature(daily.temperature_2m_min?.[i],"°"));
+        row.insertCell().append(extremes);
         for(const hour of hours){
-          const sampleDay=hour==="00"?daily.time[i+1]:day;
-          const index=positions.get(sampleDay+"T"+hour+":00");
+          const index=positions.get(day+"T"+hour+":00");
           const symbol=condition(hourly?.weather_code?.[index],hourly?.is_day?.[index]);
           const sample=element(doc,"span",undefined,"pin-weather-sample");
           if(symbol){
@@ -162,12 +178,16 @@
           sample.append(this.temperature(hourly?.temperature_2m?.[index],"°"));
           row.insertCell().append(sample);
         }
-        row.insertCell().append(this.temperature(daily.temperature_2m_max?.[i],"°"));
         const rain=daily.precipitation_sum?.[i];
         row.insertCell().textContent=Number.isFinite(rain)?amount.format(rain):"–";
+        const wind=element(doc,"span",undefined,"pin-weather-pair");
+        const gust=daily.wind_gusts_10m_max?.[i],stats=dailyWind.get(day);
+        wind.append(element(doc,"strong",Number.isFinite(gust)?wholeNumber.format(gust):"–"),
+          element(doc,"span",stats?wholeNumber.format(stats.sum/stats.count):"–"));
+        row.insertCell().append(wind);
       });
-      block.append(summary,table);
-      this.region.replaceChildren(block);
+      block.append(table);
+      this.region.replaceChildren(summary,block);
     }
   }
   root.Pin2MapPinWeather={View,renderLegend};

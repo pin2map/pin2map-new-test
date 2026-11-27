@@ -3335,21 +3335,28 @@ body.pin-open #app #routeToggleHolder{display:none}
   background:#eef5fb;border:1px solid #cbd9e6;border-radius:10px;padding:7px;
   min-width:0;color:#161d24;
 }
-.pin-weather-current{padding:5px 5px 8px}
-.pin-weather-current-line{display:flex;gap:5px 8px;align-items:center;flex-wrap:wrap}
+.pin-weather-current{
+  margin-bottom:7px;padding:7px 9px;font-size:clamp(10px,2.8vw,13px);
+}
+.pin-weather-station{margin-top:4px;color:#40546b}
+.pin-weather-current-line{display:flex;gap:2px 5px;align-items:center;flex-wrap:wrap}
 .pin-weather-current-line > :last-child{margin-inline-start:auto}
-.pin-weather-now{font-size:1.55em;font-weight:750}
+.pin-weather-now{font-size:1.25em;font-weight:750;white-space:nowrap}
 .pin-weather-current svg,.pin-weather-sample svg{width:1.35em;height:1.35em;flex:none}
 .pin-weather-card table{width:100%;table-layout:fixed;border-spacing:0 3px;font-size:clamp(9px,2.8vw,13px)}
 .pin-weather-card th{font-weight:500;color:#40546b;white-space:nowrap}
 .pin-weather-card :is(th,td){padding:4px 0;text-align:center;vertical-align:middle}
 .pin-weather-card th:first-child{width:13%}
-.pin-weather-card th:is(:nth-child(2),:nth-child(7),:last-child){width:10%}
+.pin-weather-card th:nth-child(2){width:16%;font-size:.9em}
+.pin-weather-card th:is(:nth-child(7),:last-child){width:11%}
 .pin-weather-card tbody tr{cursor:pointer}
 .pin-weather-card td{background:#fff;font-weight:700}
 .pin-weather-card tr:hover td,.pin-weather-card tr:focus-within td{background:#f2f8ff}
 .pin-weather-card td:first-child{border-radius:7px 0 0 7px}
-.pin-weather-card td:last-child{border-radius:0 7px 7px 0;background:#e5f2ff;color:#065fae}
+.pin-weather-card td:nth-child(7){background:#e5f2ff;color:#065fae}
+.pin-weather-card td:last-child{border-radius:0 7px 7px 0}
+.pin-weather-pair{display:grid;gap:2px}
+.pin-weather-pair > span:last-child{font-weight:500}
 .pin-weather-day{display:grid;color:inherit;text-decoration:none}
 .pin-weather-day time{font-weight:500}
 .pin-weather-sample{display:grid;justify-items:center;align-content:center;gap:2px}
