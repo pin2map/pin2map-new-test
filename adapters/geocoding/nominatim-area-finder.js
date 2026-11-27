@@ -4,7 +4,7 @@
  * A provider is configured only after user-enabled geocoding consent.
  */
 (function(root){
-  const {localizedName,title}=root.Pin2MapPlaceSearch||
+  const {localizedName,title,featureType}=root.Pin2MapPlaceSearch||
     (typeof module!=="undefined"?require("../../domain/place-search.js"):{});
   function normalize(value){
     return String(value||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
@@ -47,9 +47,7 @@
     });
   }
   function lakeCandidate(x){
-    const cls=String(x.class||x.category||"").toLowerCase(),
-      type=String(x.type||"").toLowerCase();
-    return /^(water|natural|place|landuse)$/.test(cls)||/lake|reservoir|water/.test(type);
+    return featureType(x)==="lake";
   }
   function mountainQuery(s){return /\b(alpen|anden|rocky mountains|rockies|sierra nevada|himalaya|ural|gebirge|mountain range)\b/i.test(s);}
   function mountainCandidate(x){
@@ -70,6 +68,7 @@
     if(tags.landuse==="military"||tags.military||
        ["military","restricted_area"].includes(boundary))return "restricted_area";
     if(["administrative","political"].includes(boundary))return "administrative";
+    if(["river","stream","canal","drain","ditch","waterway"].includes(tags.water)||tags.waterway==="riverbank")return null;
     if(tags.natural==="water"||["lake","reservoir","pond"].includes(tags.water)||
        tags.landuse==="reservoir")return "lake";
     if(tags.natural==="wetland")return "natural_area";
@@ -131,7 +130,7 @@
       return response.json();
     }
     async hierarchyAt(point,{signal,onPartial=()=>{}}={}){
-      const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",namedetails:"1",zoom:"18",
+      const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",namedetails:"1",extratags:"1",zoom:"18",
         lat:String(point.lat),lon:String(point.lng)});
       const result=await this.request("https://nominatim.openstreetmap.org/reverse?"+params,signal);
       const address=result.address||{},seen=new Set(),rows=[];
@@ -149,12 +148,13 @@
         if(address[key])add({kind:key,name:key===(result.addresstype||result.type)?
           localizedName(result.namedetails)||address[key]:address[key],detail:key});
       // A reverse result can itself identify a named area (e.g. an island).
-      const reverseTags={boundary:result.class==="boundary"?result.type:"",
-        place:result.class==="place"?result.type:"",
-        natural:result.class==="natural"?result.type:"",
-        leisure:result.class==="leisure"?result.type:"",
-        landuse:result.class==="landuse"?result.type:""};
-      const reverseKind=thematicKind(reverseTags);
+      const category=result.class||result.category;
+      const reverseTags={boundary:category==="boundary"?result.type:"",
+        place:category==="place"?result.type:"",
+        natural:category==="natural"?result.type:"",
+        leisure:category==="leisure"?result.type:"",
+        landuse:category==="landuse"?result.type:""};
+      const reverseKind=featureType(result)==="lake"?"lake":thematicKind({...reverseTags,water:result.extratags?.water});
       if(reverseKind&&result.name&&["way","relation"].includes(result.osm_type))
         add({kind:reverseKind,name:title(result),detail:reverseKind,
           osmType:result.osm_type,osmId:Number(result.osm_id)});
@@ -250,34 +250,28 @@
       extraUnavailable=succeeded===0;
       return {rows,countryCode:address.country_code||"",extraUnavailable};
     }
+    async lookupPolygon(osmType,osmId,{signal}={}){
+      if(!["way","relation"].includes(osmType)||!Number.isSafeInteger(Number(osmId))||Number(osmId)<=0)return null;
+      const params=new URLSearchParams({format:"jsonv2",polygon_geojson:"1",addressdetails:"1",
+        namedetails:"1",extratags:"1",osm_ids:(osmType==="relation"?"R":"W")+osmId});
+      const result=await this.request("https://nominatim.openstreetmap.org/lookup?"+params,signal);
+      return (Array.isArray(result)?result:[]).find(x=>
+        x.osm_type===osmType&&String(x.osm_id)===String(osmId)&&
+        ["Polygon","MultiPolygon"].includes(x.geojson?.type))||null;
+    }
     async findContaining(entry,point,{countryCode="",signal}={}){
-      // Do not restrict a state/country polygon to a six-degree bounding box:
-      // for New South Wales, for example, the polygon extends well beyond
-      // such a box, especially when a user clicks near its eastern boundary.
-      // That bounded search silently removed the correct candidate.
-      // A spatial Overpass candidate already has an exact OSM identity.
-      // Nominatim lookup avoids text-search ranking, duplicate place names
-      // and result-limit omissions, while keeping polygon output identical
-      // to the ordinary search box.
-      if(entry.osmId&&["way","relation"].includes(entry.osmType)){
-        const params=new URLSearchParams({format:"jsonv2",polygon_geojson:"1",
-          addressdetails:"1",namedetails:"1",osm_ids:
-            (entry.osmType==="relation"?"R":"W")+entry.osmId});
+      // Try the exact OSM identity before a name-based containing-area search.
+      if(entry.osmId){
         try{
-          const lookedUp=await this.request(
-            "https://nominatim.openstreetmap.org/lookup?"+params,signal);
-          const exact=(Array.isArray(lookedUp)?lookedUp:[]).find(x=>
-            x.osm_type===entry.osmType&&String(x.osm_id)===String(entry.osmId)&&
-            ["Polygon","MultiPolygon"].includes(x.geojson?.type));
+          const exact=await this.lookupPolygon(entry.osmType,entry.osmId,{signal});
           if(exact)return exact;
         }catch(error){
           if(signal?.aborted||error?.name==="AbortError")throw error;
-          // Fall through to the ordinary polygon text search.
         }
       }
       const params=new URLSearchParams({
         format:"jsonv2",polygon_geojson:"1",addressdetails:"1",
-        namedetails:"1",limit:"50",dedupe:"0",q:entry.name
+        namedetails:"1",extratags:"1",limit:"50",dedupe:"0",q:entry.name
       });
       if(countryCode)params.set("countrycodes",countryCode.toLowerCase());
       const results=await this.request(
@@ -300,7 +294,7 @@
             normalize(x.address?.[entry.kind])===normalize(entry.name);
         return addressType===entry.kind;
       };
-      const scored=candidates.map(candidate=>({
+      const scored=candidates.filter(x=>entry.kind!=="lake"||featureType(x)==="lake").map(candidate=>({
         candidate,
         contains:geometry.containsPoint(candidate.geojson,point.lng,point.lat),
         exact:entry.osmId&&String(candidate.osm_id)===String(entry.osmId)&&
@@ -344,7 +338,7 @@
         if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
         onProgress({phase:"name",step:i+1,total:terms.length});
         const params=new URLSearchParams({
-          format:"jsonv2",polygon_geojson:"1",addressdetails:"1",namedetails:"1",
+          format:"jsonv2",polygon_geojson:"1",addressdetails:"1",namedetails:"1",extratags:"1",
           dedupe:"0",limit:"25",q:terms[i]
         });
         let result;

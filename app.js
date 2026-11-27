@@ -91,7 +91,7 @@
       (result.kind==="point"?"pin":"area"):
       result.__plateEntry?"plate":result.__featureType==="river"?"river":
       result.__featureType==="lake"?"lake":
-      result.__featureType?"area":null,
+      result.__featureType?"area":placeDomain.featureType(result),
     icons:window.Pin2MapIcons,
     duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry||r.__plateChoice)?[]:
       placeDomain.duplicateCoordinates(results)
@@ -383,7 +383,13 @@
     },
     onLayout:()=>requestAnimationFrame(keepSelectedAbovePanel),
     isPrivateLayerVisible:()=>layerById(PRIVATE_ID).visible,
-    onRenderMarkers:()=>renderMarkers()
+    onRenderMarkers:()=>renderMarkers(),
+    chooseFeature:result=>{
+      const kind=placeDomain.featureType(result);
+      if(!kind)return false;
+      void chooseGeometryResult({...result,__featureType:kind});
+      return true;
+    },
   });
   const projectTransfer=window.Pin2MapProjectTransfer;
   const transferSession=new window.Pin2MapProjectTransferSession({

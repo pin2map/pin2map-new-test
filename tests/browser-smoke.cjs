@@ -606,6 +606,7 @@ async function longPress(page,x,y,ms=725){
     assert.doesNotMatch(await forecast.locator(".pin-weather-current").textContent(),/Station|1.721/);
     assert.deepEqual(await forecast.locator("thead th").allTextContents(),["Tag","Min/Max","0:00","7:00","13:00","19:00","mm","km/h"]);
     const weatherRows=forecast.locator("tbody tr");
+    assert.equal(await weatherRows.first().locator("td:nth-child(2)").evaluate(el=>getComputedStyle(el).backgroundColor),"rgb(240, 241, 243)");
     assert.deepEqual(await weatherRows.first().locator("td").allTextContents(),
       ["Fr27.11.","2°−8°","−7°","−6°","1°","−3°","2,4","3110"]);
     assert.deepEqual(await weatherRows.first().locator('td:last-child .pin-weather-pair > *').allTextContents(),["31","10"]);

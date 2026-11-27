@@ -135,7 +135,7 @@ test("v303 shared icons have one registry and no independent result copies",()=>
  const results=fs.readFileSync(path.join(__dirname,"../ui/search-results.js"),"utf8");
  const core=fs.readFileSync(path.join(__dirname,"../ui/object-dialog-core.js"),"utf8");
  const app=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
- assert.match(results,/this\.objectIcons\.element\("area"/);
+ assert.match(results,/this\.objectIcons\.element\(result\.kind==="lake"\?"lake":"area"/);
  assert.match(results,/this\.objectIcons\.element\(featureIcon/);
  assert.match(core,/objectIcons\.element\(choice\.id/);
  assert.doesNotMatch(app,/featureIconOf:[\s\S]*?"vector-polygon"/);

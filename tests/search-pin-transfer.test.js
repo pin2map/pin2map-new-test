@@ -4,7 +4,7 @@ const assert=require("node:assert/strict");
 const fs=require("node:fs");
 const path=require("node:path");
 const Transfer=require("../application/search-pin-transfer.js");
-function fixture({zoom=9,privateVisible=true,addResult={id:"pin-1"},nameOf=r=>r.name}={}){
+function fixture({zoom=9,privateVisible=true,addResult={id:"pin-1"},nameOf=r=>r.name,chooseFeature}={}){
   const events=[];const view={center:{lat:40,lng:5},zoom};
   const searchView={
     message:text=>events.push(["message",text]),
@@ -16,7 +16,7 @@ function fixture({zoom=9,privateVisible=true,addResult={id:"pin-1"},nameOf=r=>r.
     setView:(target,options)=>events.push(["view",target,options])
   };
   const transfer=new Transfer({
-    searchView,titleOf:nameOf,
+    searchView,titleOf:nameOf,chooseFeature,
     addPin:(lat,lng,name)=>{events.push(["add",lat,lng,name]);return addResult;},
     mapPort,onLayout:()=>events.push("layout"),
     isPrivateLayerVisible:()=>privateVisible,
@@ -94,5 +94,19 @@ test("the submitted place name survives both automatic and manual search transfe
     if(multiple)x.transfer.choose(x.events[0][1][0]);
     assert.deepEqual(x.events.find(event=>event[0]==="add"),["add",48.77,9.18,query]);
     assert.equal(hit.searchQuery,undefined);
+  }
+});
+
+test("single and selected mixed-search geometry results bypass pin creation",()=>{
+  const {featureType}=require("../domain/place-search.js");
+  for(const [category,type,expected] of [["natural","water","lake"],["waterway","river","river"],["boundary","administrative","area"]]){
+    const result={lat:48,lon:9,osm_type:"relation",category,type};
+    const chosen=[];
+    const x=fixture({chooseFeature:hit=>{chosen.push(featureType(hit));return Boolean(featureType(hit));}});
+    x.transfer.present([result]);
+    x.transfer.present([result,{name:"Ort"}]);
+    x.transfer.choose(x.events[0][1][0]);
+    assert.deepEqual(chosen,[expected,expected]);
+    assert.deepEqual(x.events,[["show",[result,{name:"Ort"}]]]);
   }
 });

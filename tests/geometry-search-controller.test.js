@@ -88,3 +88,36 @@ test("plate lookup uses local catalog without network and requires permission fo
  assert.equal(resolved,0);
  assert.ok(f.calls.some(x=>Array.isArray(x)&&x[0]==="message"&&x[1].includes("Nominatim")));
 });
+
+test("lake results keep their type in area search, map hierarchy and polygon lookup",async()=>{
+ const point={lat:50,lng:8};
+ const row={kind:"lake",name:"Testsee",osmType:"way",osmId:42};
+ const lake={category:"natural",type:"water",osm_type:"way",osm_id:42,name:"Testsee",
+   geojson:{type:"Polygon",coordinates:[[[7,49],[9,49],[9,51],[7,49]]]}};
+ const f=fixture({areaFinder:{
+   find:async()=>[lake],
+   hierarchyAt:async()=>({rows:[row],countryCode:"DE"}),
+   findContaining:async()=>lake,
+   lookupPolygon:async(type,id)=>{assert.deepEqual([type,id],["way",42]);return lake;}
+ }});
+ await f.controller.findGeometry("area","Testsee");
+ const offered=f.calls.find(c=>c[0]==="show")[1][0];
+ assert.equal(offered.__featureType,"lake");
+ await f.controller.chooseGeometryResult(offered);
+ await f.controller.findAreaAt(point);
+ await f.controller.chooseGeometryResult({...row,__featureType:"areaHierarchy"});
+ await f.controller.chooseGeometryResult({...lake,geojson:undefined,__featureType:"lake"});
+ const previews=f.calls.filter(c=>c[0]==="preview").map(c=>c[1]);
+ assert.deepEqual(previews.map(x=>x.featureKind),["lake","lake","lake"]);
+ assert.equal(previews[1].preserveViewport,true);
+ assert.equal(previews[1].anchorPoint,point);
+});
+
+test("river selected from place search resolves the selected OSM identity",async()=>{
+ const f=fixture({riverFinder:{resolve:async(candidate)=>{
+   assert.deepEqual(candidate,{id:42,osmType:"relation",tags:{name:"Main",waterway:"river"}});
+   return {data:{},match:candidate};
+ }}});
+ await f.controller.chooseGeometryResult({__featureType:"river",osm_type:"relation",osm_id:42,name:"Main",type:"river"});
+ assert.equal(f.calls.find(c=>c[0]==="preview")[1].kind,"river");
+});

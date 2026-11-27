@@ -150,7 +150,7 @@
         const hierarchy=result.__featureType==="areaHierarchy";
         if(hierarchy){
           item.classList.add("result-area-hierarchy");
-          const symbol=this.objectIcons.element("area",this.document,this.icons);
+          const symbol=this.objectIcons.element(result.kind==="lake"?"lake":"area",this.document,this.icons);
           symbol.classList.add("result-area-symbol");
           heading.append(symbol);
         }

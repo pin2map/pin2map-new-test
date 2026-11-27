@@ -100,7 +100,26 @@
     if(!place||place!==city||!district||place.toLocaleLowerCase()===district.toLocaleLowerCase())return place;
     return (district.toLocaleLowerCase().startsWith(place.toLocaleLowerCase()+" ")?district:place+" "+district).slice(0,120);
   }
+  function featureType(result){
+    if(!["way","relation"].includes(result?.osm_type))return null;
+    const category=String(result.class||result.category||"").toLowerCase();
+    const type=String(result.type||"").toLowerCase();
+    const addressType=String(result.addresstype||"").toLowerCase();
+    const water=String(result.extratags?.water||"").toLowerCase();
+    const flowing=["river","stream","canal","drain","ditch","waterway"];
+    if(flowing.includes(type||addressType)&&(category==="waterway"||type==="waterway"||!category))
+      return "river";
+    if(flowing.includes(water)||type==="riverbank")return null;
+    if(["lake","reservoir","pond"].some(value=>[water,type,addressType].includes(value))||
+       category==="natural"&&type==="water")return "lake";
+    const polygon=["Polygon","MultiPolygon"].includes(result.geojson?.type);
+    if(category==="boundary"||category==="landuse"||["island","islet","archipelago","mountain_range","forest","wood","wetland","nature_reserve","national_park","park"].includes(type)||
+       polygon&&!["building","highway","amenity","shop","railway","tourism"].includes(category))return "area";
+    return null;
+  }
   function kind(result){
+    const feature=featureType(result);
+    if(feature==="lake"||feature==="river")return {label:feature==="lake"?"See":"Fluss",symbol:"▱"};
     const type=String(result?.addresstype||result?.type||"").toLowerCase();
     const category=String(result?.class||result?.category||"").toLowerCase();
     const names={city:"Stadt",town:"Stadt",village:"Dorf",hamlet:"Weiler",
@@ -144,7 +163,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({localizedName,title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({featureType,localizedName,title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

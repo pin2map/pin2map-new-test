@@ -3352,6 +3352,7 @@ body.pin-open #app #routeToggleHolder{display:none}
 .pin-weather-card td{background:#fff;font-weight:700}
 .pin-weather-card tr:hover td,.pin-weather-card tr:focus-within td{background:#f2f8ff}
 .pin-weather-card td:first-child{border-radius:7px 0 0 7px}
+.pin-weather-card td:nth-child(2){background:#f0f1f3}
 .pin-weather-card td:nth-child(7){background:#e5f2ff;color:#065fae}
 .pin-weather-card td:last-child{border-radius:0 7px 7px 0}
 .pin-weather-pair{display:grid;gap:2px}
