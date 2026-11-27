@@ -173,7 +173,8 @@
   const pinInfoMenu=new window.Pin2MapPinInfoMenu({
     getElement:$,document,icons:window.Pin2MapIcons,
     onOpening:()=>{basemapMenu.close();nameLabelMenu.close();uiShell.closePanels();searchView.hide();},
-    getRestoredMode:()=>state.pinInfoLastMode||"elevation",
+    getRestoredMode:()=>state.pinInfoLastMode!=="off"&&window.Pin2MapPinInfoService.MODES.includes(state.pinInfoLastMode)?
+      state.pinInfoLastMode:"elevation",
     onPeriodChange:(mode,period)=>{
       const field=mode==="daily"?"pinInfoDailyPeriod":mode==="precipitation"?"pinInfoPrecipitationPeriod":"pinInfoSunPeriod";
       if(state[field]!==period||state.pinInfoMode!==mode){
@@ -187,8 +188,8 @@
     },
     onSelect:mode=>{
       if(state.pinInfoMode!==mode){
+        state.pinInfoLastMode=mode==="off"?state.pinInfoMode:mode;
         state.pinInfoMode=mode;
-        if(mode!=="off")state.pinInfoLastMode=mode;
         const period=mode==="daily"?state.pinInfoDailyPeriod:
           mode==="sun"?state.pinInfoSunPeriod:mode==="precipitation"?state.pinInfoPrecipitationPeriod:"today";
         pinInfoService.setMode(mode,period);
