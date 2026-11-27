@@ -142,6 +142,7 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         const sun=mapMenu.locator("#satelliteBrightness");
         const reset=mapMenu.locator("#satelliteReset");
         assert.equal(await sun.isEnabled(),true);
+        assert.equal(await mapMenu.locator("#esriReliefToggle").isHidden(),true);
         assert.equal(await mapMenu.locator("#satelliteContrast").count(),0);
         assert.equal(await mapMenu.locator('label[for="satelliteBrightness"]').innerText(),"Helligkeit");
         await sun.evaluate(el=>{
@@ -165,7 +166,8 @@ if(!/^https:\/\//.test(base))throw Error("Set PIN2MAP_LIVE_PREVIEW");
         await chooser.click();
         assert.equal(await sun.isDisabled(),true);
         assert.equal(await reset.isDisabled(),true);
-        assert.equal(await mapMenu.locator(".basemap-satellite-controls").isHidden(),true);
+        assert.equal(await mapMenu.locator('[aria-label="Satellitenbild anpassen"]').isHidden(),true);
+        assert.equal(await mapMenu.locator("#esriReliefToggle").isVisible(),true);
         await mapMenu.locator('[data-basemap="satellite"]').click();
         await chooser.click();
         assert.equal(await reset.isEnabled(),true);
