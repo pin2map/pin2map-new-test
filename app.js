@@ -127,6 +127,8 @@
       if(!result)return;
       renderGeometry();layerView.start(null);showNotice("Ebene hinzugefügt");
     },
+    onChooseLayer:id=>moveSearchMatches(id),
+    onAddLayer:()=>moveSearchMatches(null),
     getPalette:()=>palette.colors(state).standard,
     getNextIndex:()=>palette.nextLayerColorIndex(state),
     getSuggestedName:()=>window.Pin2MapLayerCreation.suggestedName(),
@@ -654,18 +656,19 @@
   const lookupPinAddress=window.Pin2MapManualPinLocality.savedAddressLookup({geocoder,allowed:()=>state.allowGeocode});
   const addressRequests=new WeakMap();
   function enrichPinAddress(pin,entry=null){
-    if(!pin||pin.address||!state.allowGeocode)return;
+    if(!pin||(pin.address&&!entry?.autoNamed)||!state.allowGeocode)return;
     const project=state,point={lat:pin.lat,lng:pin.lng},request={};
     addressRequests.set(pin,request);
     const current=()=>state===project&&pinOps.findPin(project,pin.id)===pin&&
       pin.lat===point.lat&&pin.lng===point.lng&&addressRequests.get(pin)===request;
+    const needsLocality=()=>!!entry?.autoNamed&&pin.name==="Neuer Pin";
     void lookupPinAddress(point,current,result=>{
-      const address=placeDomain.fullAddress(result);
+      const address=!pin.address&&placeDomain.fullAddress(result);
       if(address)pin.address=address;
-      const name=entry?.autoNamed&&pin.name==="Neuer Pin"&&placeDomain.pinLocalityName(result,{mapZoom:entry.mapZoom,point});
+      const name=needsLocality()&&placeDomain.pinLocalityName(result,{mapZoom:entry.mapZoom,point});
       if(name)pinOps.renamePin(project,pin.id,name,{cleanText});
-      if(address||name){save();renderMarkers();}
-    });
+      if(address||name){save();renderMarkers();renderPinPanel();}
+    },{needsLocality,localityZoom:Math.max(13,placeDomain.reversePlaceZoom(entry?.mapZoom))});
   }
   // Reuse the same preview/guide as the saved-pin workflow; only the
   // transient target state belongs to this dedicated controller.
@@ -752,6 +755,28 @@
     hidePlaceResults:()=>searchView.hide(),
     updateClear:()=>searchForm.updateClear()
   });
+  function moveSearchMatches(id){
+    const view=objectSearchController.view;
+    if(!view?.matches.length)return false;
+    const existing=id===null?null:layerById(id);
+    const name=existing?.name||view.query.trim();
+    if(!name){
+      showNotice("Für eine neue Ebene bitte einen Suchbegriff eingeben");
+      return true;
+    }
+    const target=existing?'die Ebene „'+name+'“':'die neue Ebene „'+name+'“';
+    if(!window.confirm("Sollen die gefundenen Objekte in "+target+
+      " eingefügt und aus ihren bisherigen Ebenen entfernt werden?"))return true;
+    const index=palette.nextLayerColorIndex(state);
+    const layer=existing||layerCreation.createConfigured(name,palette.colors(state).standard[index],index);
+    if(!layer)return true;
+    const moved=layerOps.moveMatches(state,view.matches,layer.id);
+    if(moved){
+      save();renderLayers();renderPinPanel();
+      showNotice(moved+" Objekte verschoben");
+    }
+    return true;
+  }
   const resetObjectSearch=()=>objectSearchController.reset();
   const refreshObjectSearch=()=>objectSearchController.refresh();
   const fitObjectSearchMatches=matches=>objectSearchController.fit(matches);

@@ -53,6 +53,20 @@
    journey.legs.reduce((sum,leg)=>sum+(bus(leg.mode)?leg.distanceMeters:0),0)/journey.distanceMeters:null;
   return {quality,critical,transfers,late,busShare};
  }
+ const greekLetters={α:"a",β:"v",γ:"g",δ:"d",ε:"e",ζ:"z",η:"i",θ:"th",ι:"i",κ:"k",
+  λ:"l",μ:"m",ν:"n",ξ:"x",ο:"o",π:"p",ρ:"r",σ:"s",ς:"s",τ:"t",υ:"y",φ:"f",χ:"ch",ψ:"ps",ω:"o"};
+ const greekPairs={αι:"ai",ει:"ei",οι:"oi",ου:"ou",μπ:"mp",ντ:"nt",γκ:"gk",γγ:"ng"};
+ function readableLocalName(value){
+  return String(value||"").replace(/\p{Script=Greek}[\p{Script=Greek}\p{Mark}]*/gu,word=>{
+   const plain=word.normalize("NFD").replace(/\p{Mark}/gu,"");
+   if(plain.toLowerCase()==="πατρα")return "Patras";
+   return plain.replace(/αι|ει|οι|ου|μπ|ντ|γκ|γγ|[α-ω]/giu,part=>{
+    const lower=part.toLowerCase(), latin=greekPairs[lower]||greekLetters[lower]||part;
+    if(part===lower)return latin;
+    return plain===plain.toUpperCase()&&plain.length>1?latin.toUpperCase():latin[0].toUpperCase()+latin.slice(1);
+   });
+  });
+ }
  function dbUrl(from,to,local,arriveBy){
   if(!from||!to)return null;
   const place=pin=>"A=2@X="+Math.round(pin.lng*1e6)+"@Y="+Math.round(pin.lat*1e6)+"@U=91@";
@@ -60,7 +74,7 @@
    soid:place(from),zoid:place(to),sot:"ADR",zot:"ADR",hd:local+":00",hza:arriveBy?"A":"D",ar:"false",s:"true",d:"false"});
   return "https://www.bahn.de/buchung/fahrplan/suche#"+params;
  }
- const api={assess,walking,dbUrl,paddedTransfer};
+ const api={assess,walking,dbUrl,paddedTransfer,readableLocalName};
  root.Pin2MapTransitJourney=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

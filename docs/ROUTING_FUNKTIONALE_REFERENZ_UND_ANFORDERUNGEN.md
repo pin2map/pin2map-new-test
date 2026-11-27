@@ -801,3 +801,7 @@ Bei Abfahrtssuche werden die Zeitfenster 15, 30, 45, 60 und 120 Minuten geprüft
 Die Abfahrtssuche hält am Zeitfenster von höchstens zwei Stunden fest und bietet alle darin gefundenen eindeutigen Verbindungen an. Die App fordert bei Transitous keine maximale Trefferzahl mehr an. Kritische Umstiege bleiben farblich gekennzeichnet. Die Vorauswahl berücksichtigt Richtungsflaggen, Reisezeit, Zu- und Abgang und das Umstiegsrisiko, sodass ein deutlich längerer Umweg wegen der Risikofarbe allein nicht vorgezogen wird. Für Zu- und Abgang fragt die App zunächst je 15 Minuten an. Wenn darüber keine Verbindung gefunden wird, stehen weiterhin bis zu 30 Minuten zur Verfügung.
 
 Pfeil auf und ab wechseln nach Fokus oder Klick in der ÖPNV-Etappenliste zur benachbarten Etappe. Die ausgewählte Etappe wird sichtbar gehalten und bei verfügbarer Geometrie in der Karte herangezoomt.
+
+### R-051 – Geroutete ÖPNV-Umstiege und lesbare Haltestellennamen (27.11.2026)
+
+Die reguläre Transitous-Abfrage setzt `useRoutedTransfers=true` und `transferTimeFactor=1.67`. Die stärkere ergänzende Abfrage für kritische Umstiege bleibt verfügbar. Geplante Fußwegdauer, tatsächlich im Fahrplan verfügbare Umstiegszeit und Risikoeinstufung bleiben getrennt. Für Haltestellen und Fahrtziele fragt die App englische Bezeichnungen an. Griechisch geschriebene Namen werden für die Anzeige in lateinische Schrift übertragen, wenn sie so vom Anbieter kommen. Öffentliche Linienbezeichnungen bleiben erhalten. Für Bahnverbindungen verwendet die Verbindungsauswahl `train-front`.

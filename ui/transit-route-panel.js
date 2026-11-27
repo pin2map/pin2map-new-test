@@ -1,6 +1,6 @@
 "use strict";
 (function(root){
- const {dbUrl,walking}=root.Pin2MapTransitJourney;
+ const {dbUrl,walking,readableLocalName}=root.Pin2MapTransitJourney;
  const clock=new Intl.DateTimeFormat("de-DE",{hour:"2-digit",minute:"2-digit"});
  const date=new Intl.DateTimeFormat("sv-SE",{year:"numeric",month:"2-digit",day:"2-digit"});
  const days=(from,to)=>Math.round((Date.parse(date.format(to))-Date.parse(date.format(from)))/86400000);
@@ -89,7 +89,7 @@
   option(journey){
    const content=this.doc.createElement("span");
    content.className="transit-choice";
-   const icon=journey.busShare===null?"route":journey.busShare>.3?"bus":"train-high-speed";
+   const icon=journey.busShare===null?"route":journey.busShare>.3?"bus":"train-front";
    const glyph=this.icons.svg(icon,this.doc);
    glyph.classList.add("transit-"+journey.quality);
    content.setAttribute("aria-label",quality[journey.quality]+", "+this.label(journey));
@@ -138,7 +138,7 @@
     if(walking(leg.mode))button.classList.add("transit-leg-walk");
     const [icon,kind]=transport[leg.mode]||["route","Verkehrsmittel nicht angegeben"];
     const station=place=>[
-     ({START:"Start",END:"Ziel"})[place?.name]||place?.name||"Haltestelle nicht angegeben",
+     ({START:"Start",END:"Ziel"})[place?.name]||readableLocalName(place?.name)||"Haltestelle nicht angegeben",
      place?.track?"Gleis "+place.track:""].filter(Boolean).join(" · ");
     const text=(slot,value,tag="span")=>{
      const item=this.doc.createElement(tag);item.className=slot;item.textContent=value;return item;
@@ -147,7 +147,7 @@
     const destination=this.icons.svg("arrow-right",this.doc);destination.classList.add("transit-leg-arrow");
     const line=walking(leg.mode)?kind:leg.line||
      [kind,leg.operator,"Linie nicht angegeben"].filter(Boolean).join(" · ");
-    const title=line+(leg.headsign?" · Ri. "+leg.headsign:"");
+    const title=line+(leg.headsign?" · Ri. "+readableLocalName(leg.headsign):"");
     const transfer=selected.transfers.find(item=>item.critical&&
      (item.leg.index-item.previous.index>1?item.leg.index-1:item.leg.index)===index);
     const marker=transfer?this.icons.svg("triangle-exclamation-point",this.doc):text("transit-leg-number",index+1);

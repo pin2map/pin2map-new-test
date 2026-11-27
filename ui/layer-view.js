@@ -6,7 +6,7 @@
   (typeof require==="function"?require("./list-dialog-core.js"):null);
  class LayerView extends Core{
   constructor({getElement,document,onVisibility,onDelete,onRename=()=>{},
-   onCreate=()=>{},onDeleteContents=null,onDeleteLayer=null,onMergeRequest=()=>{},
+   onCreate=()=>{},onChooseLayer=()=>{},onAddLayer=()=>false,onDeleteContents=null,onDeleteLayer=null,onMergeRequest=()=>{},
    onVisibilityCycle=()=>{},onReorder=()=>{},
    getPalette=()=>[],getSuggestedName=()=>"Ebene 1",getNextIndex=()=>0,
    onClose=()=>{},onOpen=()=>{}}){
@@ -16,6 +16,7 @@
      clearId:"layersSearchClear"});
    this.onVisibility=onVisibility;this.onDelete=onDelete;
    this.onRename=onRename;this.onCreate=onCreate;
+   this.onChooseLayer=onChooseLayer;this.onAddLayer=onAddLayer;
    this.onDeleteContents=onDeleteContents||onDelete;
    this.onDeleteLayer=onDeleteLayer||onDelete;
    this.onMergeRequest=onMergeRequest;this.onVisibilityCycle=onVisibilityCycle;
@@ -95,7 +96,8 @@
   }
   footerAction(){
    if(this.mergeMode)return this.confirmMerge();
-   this.start("new");return true;
+   if(!this.onAddLayer())this.start("new");
+   return true;
   }
   footerCancel(){
    if(this.mergeMode){this.cancelMerge();return;}
@@ -264,7 +266,7 @@
       "Alle Objekte in Privat löschen":"Ebene oder ihre Objekte löschen",
      ()=>this.start("delete",index),"favorite-icon favorite-remove");
     const row=this.row({name:layer.name,detail,iconLeft:leading,edit,remove,
-     onChoose:()=>{if(this.mergeMode)this.chooseMergeTarget(id);},
+     onChoose:()=>{if(this.mergeMode)this.chooseMergeTarget(id);else this.onChooseLayer(id);},
      selectedMode:this.mode,selectedIndex:index,itemId:id});
     row.classList.toggle("layer-is-hidden",!layer.visible);
     list.append(row);

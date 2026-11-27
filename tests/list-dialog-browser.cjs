@@ -278,6 +278,24 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.equal(persistedLayers.includes("Ebene 1"),false,JSON.stringify(persistedLayers));
     assert.equal(persistedLayers.includes("Contract Test Layer"),true);
     assert.equal(persistedLayers.includes("Privat"),true);
+    if(viewport.width===390){
+      await page.locator("#addLayer").click();
+      const actions=page.locator("#layersList .favorite-confirm-actions");
+      const simulatedKeyboardBottom=280;
+      await page.evaluate(height=>{
+        Object.defineProperty(visualViewport,"height",{configurable:true,value:height});
+        visualViewport.dispatchEvent(new Event("resize"));
+      },simulatedKeyboardBottom);
+      const box=await actions.boundingBox();
+      const listBox=await page.locator("#layersList").boundingBox();
+      assert.ok(box.y>=listBox.y&&box.y+box.height<=Math.min(listBox.y+listBox.height,simulatedKeyboardBottom),
+        JSON.stringify({box,listBox,simulatedKeyboardBottom}));
+      await actions.getByRole("button",{name:"Abbrechen"}).click();
+      await page.evaluate(()=>{
+        delete visualViewport.height;
+        visualViewport.dispatchEvent(new Event("resize"));
+      });
+    }
     // Holding a layer for 1000ms activates small rows and a centered gap marker.
     if(viewport.width>500){
       await page.locator("#addLayer").click();

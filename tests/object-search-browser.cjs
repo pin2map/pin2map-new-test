@@ -386,6 +386,33 @@ const base=process.env.PIN2MAP_TEST_URL||
     assert.equal(await page.locator(".pin-marker").count(),1,
       "leaving search restores original layer visibility and the context pin");
 
+    if(width===390){
+      await page.locator("#searchInput").fill("Karlsruhe");
+      await page.locator('.search-type-choice[data-search-type="objects"]').click();
+      const hidden=page.locator('[data-search-flag="hidden"]');
+      await hidden.check();
+      await page.locator("#layersButton").click();
+      const cancelled=page.waitForEvent("dialog").then(async dialog=>{
+        assert.match(dialog.message(),/neue Ebene „Karlsruhe“/);
+        await dialog.dismiss();
+      });
+      await page.locator("#addLayer").click();
+      await cancelled;
+      assert.equal(await page.locator("#layersList .favorite-name").getByText("Karlsruhe",{exact:true}).count(),0);
+      const accepted=page.waitForEvent("dialog").then(dialog=>dialog.accept());
+      await page.locator("#addLayer").click();
+      await accepted;
+      const moved=page.locator("#layersList .favorite-row").filter({hasText:"Karlsruhe"});
+      await moved.getByText(/1 Pins · 1 Flächen/).waitFor();
+      assert.equal(await page.locator("#layersList .favorite-name").getByText("Privat",{exact:true}).count(),1);
+      const existing=page.waitForEvent("dialog").then(async dialog=>{
+        assert.match(dialog.message(),/die Ebene „Privat“/);
+        await dialog.accept();
+      });
+      await page.locator("#layersList .favorite-name").getByText("Privat",{exact:true}).click();
+      await existing;
+      await moved.getByText(/0 Pins · 0 Flächen/).waitFor();
+    }
     assert.deepEqual(errors,[],width+" browser errors");
     console.log("PASS v295 search scope, AND filters, contextual markers, dialogs:",width);
    }finally{await context.close();}

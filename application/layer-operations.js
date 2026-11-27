@@ -89,6 +89,18 @@
     }
     return {targetId,sourceIds:[...sources],moved};
   }
+  function moveMatches(project,matches,targetId){
+    if(!find(project,targetId))return 0;
+    const objects=new Set(matches.map(match=>match.object));
+    let moved=0;
+    for(const key of ["pins","areas","rivers"]){
+      for(const item of project[key]||[]){
+        if(!objects.has(item)||item.layerId===targetId)continue;
+        item.layerId=targetId;moved++;
+      }
+    }
+    return moved;
+  }
   function reorder(project,fromId,toId){
     const layers=project.layers;
     if(fromId==="private"||toId==="private"||fromId===toId)return false;
@@ -100,7 +112,7 @@
     return true;
   }
   const api=Object.freeze({find,nextName,create,deletionInfo,deleteLayerOrPins,
-    renameAndColor,deleteContents,removeEntireLayer,merge,reorder});
+    renameAndColor,deleteContents,removeEntireLayer,merge,moveMatches,reorder});
   root.Pin2MapLayerOperations=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

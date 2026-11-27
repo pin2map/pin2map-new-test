@@ -193,6 +193,8 @@ test("nearby access is tried first, broader access is a fallback and the respons
  const provider=new Provider({fetchImpl:async url=>{
   const params=new URL(url).searchParams;
   assert.equal(params.has("maxItineraries"),false);
+  assert.equal(params.get("useRoutedTransfers"),"true");
+  assert.equal(params.get("transferTimeFactor"),"1.67");
   assert.equal(params.get("maxPreTransitTime"),params.get("maxPostTransitTime"));
   access.push(params.get("maxPreTransitTime"));
   const startTime=new Date(instant).toISOString(),endTime=new Date(minutes(20)).toISOString();
@@ -219,4 +221,10 @@ test("a small gain against the arrival target does not justify a much longer tri
  const long={...journey([leg(0,"BUS",-300,0)]),quality:"green",guideCount:0};
  const result=search.results([short,long],{time:instant,arriveBy:true});
  assert.equal(result.journeys[result.selected],short);
+});
+
+test("Latin fallback makes Greek stop labels readable",()=>{
+ const {readableLocalName}=require("../domain/transit-journey.js");
+ assert.equal(readableLocalName("Πάτρα / Άγιος Ανδρέας"),"Patras / Agios Andreas");
+ assert.equal(readableLocalName("München Hbf"),"München Hbf");
 });

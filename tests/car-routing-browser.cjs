@@ -555,7 +555,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     const route=(legs,end)=>({startTime:legs[0].startTime,endTime:at(end),legs});
     await entry.fulfill({json:{itineraries:[
      route([travel("LONG_DISTANCE",a,a+25,"A","B","ICE1",9),travel("LONG_DISTANCE",a+30,a+45,"B","C","ICE2",9.05)],a+45),
-     params.get("arriveBy")==="true"&&!params.get("transferTimeFactor")
+     params.get("arriveBy")==="true"&&!params.get("additionalTransferTime")
       ?route([travel("BUS",a+5,a+25,"A","B","BUS1",9),travel("BUS",a+30,a+50,"B","C","BUS2",9.05)],a+50)
       :route([travel("BUS",a+5,a+50,"A","C","BUS",9)],a+50)
     ]},headers:{"Access-Control-Allow-Origin":"*"}});

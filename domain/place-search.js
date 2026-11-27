@@ -11,13 +11,7 @@
   }
   function detail(result){return String(result?.display_name||"").trim();}
   function pinName(result,query){
-    const category=result?.category||result?.class;
-    const namedPlace=String(result?.name||"").trim();
-    // Nominatim labels named businesses and facilities by category, even
-    // when their address includes a house number.
-    if(query&&namedPlace&&category&&!["place","boundary","highway","building"].includes(category))
-      return /[^\p{Script=Latin}\p{Script=Common}\p{Script=Inherited}]/u.test(result.namedetails?.name||namedPlace)&&
-        localizedName(result.namedetails)?title(result):query.trim()||namedPlace;
+    if(typeof query==="string"&&query.trim())return query.trim();
     const address=result?.address||{};
     const road=String(address.road||address.pedestrian||address.residential||
       address.footway||address.path||address.street||"").trim();
@@ -83,9 +77,9 @@
     if(reversePlaceZoom(mapZoom)===10&&municipality)return municipality;
     if(village)return village;
     if(municipality)return municipality;
-    if(["city","town","village","hamlet"].includes(kind)&&
+    if(["city","town","village","hamlet","suburb","city_district","borough","quarter","neighbourhood","municipality","locality"].includes(kind)&&
       direct&&direct.length<=120)return direct;
-    return "";
+    return read("suburb")||read("city_district")||read("borough")||read("quarter")||read("neighbourhood");
   }
   function fullAddress(result){
     const raw=detail(result);

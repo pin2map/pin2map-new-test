@@ -32,7 +32,7 @@ test("map zoom selects city, village or settlement detail",()=>{
  for(const level of [5,10,11])assert.equal(domain.reversePlaceZoom(level),10);
  for(const level of [12,13,14])assert.equal(domain.reversePlaceZoom(level),13);
  for(const level of [15,16,17,19])assert.equal(domain.reversePlaceZoom(level),15);
- assert.equal(domain.nearbyLocalityName({address:{suburb:"Overhagen"}}),"");
+ assert.equal(domain.nearbyLocalityName({address:{suburb:"Overhagen"}}),"Overhagen");
  assert.equal(domain.nearbyLocalityName({address:{town:"Lippstadt",suburb:"Overhagen"}}),"Lippstadt");
 });
 test("Klein-Krotzenburg place=village wins over Hainburg when clicked near its label",()=>{
@@ -217,4 +217,20 @@ test("place names prefer German, international, and English tags before the nati
  assert.equal(place.title({namedetails}),"Athens");
  delete namedetails["name:en"];
  assert.equal(place.title({namedetails}),"Αθήνα");
+});
+
+test("saved map pin falls back from missing street details to Stuttgart Botnang",async()=>{
+ const zooms=[];
+ let name="";
+ const point={lat:48.78,lng:9.13};
+ const lookup=ManualPinLocality.savedAddressLookup({allowed:()=>true,delay:async()=>{},
+  geocoder:{reverse:async(_point,{zoom})=>{
+   zooms.push(zoom);
+   if(zoom===18)return {error:"No detail"};
+   return {address:{city:"Stuttgart",city_district:"Botnang"}};
+  }}});
+ await lookup(point,()=>true,result=>{name=domain.pinLocalityName(result,{mapZoom:16,point});},
+  {needsLocality:()=>!name,localityZoom:15});
+ assert.deepEqual(zooms,[18,15]);
+ assert.equal(name,"Stuttgart Botnang");
 });

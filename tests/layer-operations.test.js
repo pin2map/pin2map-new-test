@@ -66,3 +66,15 @@ test("Layer reordering preserves Private in first position",()=>{
  assert.equal(layers.reorder(state,"b","layer-1"),true);
  assert.deepEqual(state.layers.map(l=>l.id),["private","b","layer-1","a"]);
 });
+
+test("bulk search move touches only matching object identities across layer collections",()=>{
+ const ops=require("../application/layer-operations.js");
+ const pin={id:"1",layerId:"private"},lake={id:"1",layerId:"source"};
+ const river={id:"2",layerId:"source"},unmatched={id:"1",layerId:"source"};
+ const project={layers:[{id:"private"},{id:"source"},{id:"target"}],
+  pins:[pin,unmatched],areas:[lake],rivers:[river]};
+ const matches=[{object:pin},{object:lake},{object:river}];
+ assert.equal(ops.moveMatches(project,matches,"target"),3);
+ assert.deepEqual([pin.layerId,lake.layerId,river.layerId,unmatched.layerId],["target","target","target","source"]);
+ assert.equal(project.layers.length,3);
+});

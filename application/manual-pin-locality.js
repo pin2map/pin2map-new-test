@@ -66,14 +66,22 @@
   ManualPinLocality.savedAddressLookup=({geocoder,allowed,now=()=>Date.now(),
     delay=ms=>new Promise(done=>setTimeout(done,ms))})=>{
     let queue=Promise.resolve(),last=-Infinity;
-    return (point,current,apply)=>{
+    return (point,current,apply,{needsLocality=()=>false,localityZoom=15}={})=>{
       queue=queue.then(async()=>{
-        const remaining=1300-(now()-last);
-        if(remaining>0)await delay(remaining);
-        if(!allowed()||!current())return;
-        last=now();
-        const response=await geocoder.reverse(point,{zoom:18});
-        if(allowed()&&current())apply(response);
+        for(const zoom of new Set([18,localityZoom,10])){
+          const remaining=1300-(now()-last);
+          if(remaining>0)await delay(remaining);
+          if(!allowed()||!current())return;
+          last=now();
+          try{
+            const response=await geocoder.reverse(point,{zoom});
+            if(!allowed()||!current())return;
+            apply(response);
+          }catch(error){
+            if(zoom===10||!needsLocality())throw error;
+          }
+          if(!needsLocality())return;
+        }
       }).catch(()=>{});
       return queue;
     };

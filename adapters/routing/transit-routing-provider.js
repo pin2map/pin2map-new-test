@@ -19,7 +19,8 @@
    return {type:"LineString",coordinates};
   }catch{return null;}
  }
- function normalize(itinerary,padded){
+ const routedTransferFactor=1.67;
+ function normalize(itinerary,transferFactor,additionalTransferTime){
   if(!itinerary?.legs?.length)return null;
   const legs=itinerary.legs.map((leg,index)=>{
    const start=Date.parse(leg.startTime),end=Date.parse(leg.endTime);
@@ -29,8 +30,8 @@
     Number.isFinite(leg.distance)&&leg.distance>0?leg.distance:null;
    return {index,mode:leg.mode,geometry:shape,start,end,durationSeconds:(end-start)/1000,
     distanceMeters:distance??0,measured:distance!==null,tripId:leg.tripId,stayOnBoard:leg.interlineWithPreviousLeg,
-    walkBaselineMinutes:walking(leg.mode)&&padded&&Number.isFinite(leg.duration)?
-      Math.max(0,(leg.duration/60-paddedTransfer.additional)/paddedTransfer.factor):undefined,
+    walkBaselineMinutes:walking(leg.mode)&&Number.isFinite(leg.duration)?
+      Math.max(0,(leg.duration/60-additionalTransferTime)/transferFactor):undefined,
     cancelled:leg.cancelled,from:leg.from,to:leg.to,ferry:leg.mode==="FERRY",
     line:serviceName(leg),headsign:leg.headsign||leg.tripTo?.name,operator:leg.agencyName};
   });
@@ -48,16 +49,19 @@
   }
   async calculate({waypoints,query,via=[],signal}){
    const [from,to]=waypoints;
+   const transferFactor=query.moreTransferTime?paddedTransfer.factor:routedTransferFactor;
+   const additionalTransferTime=query.moreTransferTime?paddedTransfer.additional:0;
    const plan=accessTime=>this.request("plan",{fromPlace:location(from),toPlace:location(to),
     time:new Date(query.time).toISOString(),arriveBy:String(query.arriveBy),searchWindow:(query.searchMinutes||60)*60,
     maxPreTransitTime:accessTime,maxPostTransitTime:accessTime,
     detailedLegs:true,detailedTransfers:true,directModes:"",
     transitModes:"RAIL,BUS,COACH,TRAM,FERRY,FUNICULAR,AERIAL_LIFT",
-    ...(query.moreTransferTime?{transferTimeFactor:paddedTransfer.factor,additionalTransferTime:paddedTransfer.additional}:{}),
+    language:"en",useRoutedTransfers:true,transferTimeFactor:transferFactor,
+    ...(additionalTransferTime?{additionalTransferTime}:{}),
     ...(via.length?{via:via.join(",")}:{})},signal);
    const read=data=>{
     if(!Array.isArray(data.itineraries))throw new Error("Ungültige Fahrplanauskunft");
-    return data.itineraries.map(item=>normalize(item,query.moreTransferTime)).filter(Boolean);
+    return data.itineraries.map(item=>normalize(item,transferFactor,additionalTransferTime)).filter(Boolean);
    };
    const nearby=read(await plan(900));
    return nearby.length?nearby:read(await plan(1800));

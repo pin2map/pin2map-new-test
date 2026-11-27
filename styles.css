@@ -1294,15 +1294,21 @@ body.pin-open #app .pin-zoom-buttons{display:none!important}
     transform:none!important;
   }
 }
-/* Layers panel opens immediately below its top-right trigger. */
+/* Layers panel anchors to the launcher until its editor needs the visual viewport. */
 #app #layersPanel{
   left:auto!important;
   right:var(--p2m-top-corner-inset)!important;
-  top:calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px))!important;
+  top:var(--p2m-layer-panel-top,calc(var(--p2m-top-corner-offset) + var(--p2m-map-circle-size) + 8px + env(safe-area-inset-top,0px)))!important;
   bottom:auto!important;
   transform:none!important;
-  max-height:min(65dvh,calc(100dvh - 85px - env(safe-area-inset-top,0px)))!important;
+  max-height:var(--p2m-layer-panel-height,min(65dvh,calc(100dvh - 85px - env(safe-area-inset-top,0px))))!important;
 }
+#app #layersPanel.layers-panel.is-editing{
+  position:fixed;
+  --p2m-layer-panel-top:var(--p2m-favorites-keyboard-top,8px);
+  --p2m-layer-panel-height:var(--p2m-favorites-keyboard-height,calc(100dvh - 16px));
+}
+#app #layersPanel.is-editing:has(.layer-inline-editor) .layer-helpers{display:none}
 /* Info remains stacked above the bottom-right map selector. */
 #app #labelsToggle.labels-toggle{
   left:auto!important;
