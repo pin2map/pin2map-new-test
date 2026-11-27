@@ -11,6 +11,11 @@ const viewports=[
   {name:"desktop",width:1100,height:780,hasTouch:false,isMobile:false}
 ];
 async function setPins(page,pins,zoom=12){
+  // Navigate away before writing. On visibilitychange the application flushes
+  // its live project, which could otherwise overwrite the freshly seeded pins.
+  await page.goto(new URL("styles.css",base).href,{waitUntil:"domcontentloaded"});
+  for(const source of ["domain/project-model.js","adapters/storage/indexeddb-project-store.js"])
+    await page.addScriptTag({url:new URL(source,base).href});
   await page.evaluate(async ({pins,zoom})=>{
     const store=await window.Pin2MapIndexedDBProjectStore.open();
     try{
@@ -26,9 +31,11 @@ async function setPins(page,pins,zoom=12){
       await store.saveViewHistory(null);
     }finally{store.close();}
   },{pins,zoom});
-  await page.reload({waitUntil:"domcontentloaded",timeout:30000});
-  await page.waitForFunction(()=>document.querySelectorAll("#map .pin-icon").length>0,{timeout:20000});
-  await page.waitForTimeout(120);
+  await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
+  await page.waitForFunction(names=>{
+    const actual=[...document.querySelectorAll("#map .address-label")].map(label=>label.textContent).sort();
+    return JSON.stringify(actual)===JSON.stringify(names);
+  },pins.map(pin=>pin.name).sort(),{timeout:20000});
 }
 async function zoom(page){
   return page.locator("#map .leaflet-container").count()
