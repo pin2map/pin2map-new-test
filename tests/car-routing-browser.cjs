@@ -536,7 +536,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     const buttons=list.map(rect).sort((a,b)=>a.left-b.left);
     const fields=[...panel.querySelectorAll(".transit-time-fields .transit-field")].map(rect);
     return {box:[bounds.x,bounds.y,bounds.width,bounds.height],gaps:buttons.slice(1).map((b,i)=>b.left-buttons[i].right),
-     dates:fields.map(b=>[b.x,b.y,b.right,b.height]),body:panel.scrollHeight,view:panel.clientHeight};
+     dates:fields.map(b=>[b.x,b.y,b.right,b.height]),body:panel.querySelector("#routeScroll").scrollHeight,view:panel.querySelector("#routeScroll").clientHeight};
    });
    const carLayout=await measureTransitControls();
    const transitCalls=[];
@@ -556,6 +556,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     });
     const a=params.get("arriveBy")==="true"?-60:0;
     const route=(legs,end)=>({startTime:legs[0].startTime,endTime:at(end),legs});
+    assert.equal(params.get("numItineraries"),"3");
+    assert.equal(params.get("maxItineraries"),"3");
+    if(params.get("arriveBy")==="true"&&params.get("toPlace")==="B"){
+     await entry.fulfill({json:{itineraries:[route([travel("BUS",-25,0,"A","B","earlier",9)],0)]},
+      headers:{"Access-Control-Allow-Origin":"*"}});
+     return;
+    }
     if(params.get("fromPlace")==="B"&&params.get("searchWindow")==="7200"){
      await entry.fulfill({json:{itineraries:[route([{
       ...travel("BUS",0,45,"B","C","replacement",9.05),displayName:"Bus 123"
@@ -580,7 +587,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     input.value="12:00";
     input.dispatchEvent(new Event("change",{bubbles:true}));
    });
-   await page.locator("#transitSelected .transit-green").waitFor();
+   await page.getByRole("button",{name:"Route 1",exact:true}).waitFor();
    assert.equal(await progress.isHidden(),true);
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),false);
    assert.equal(await page.locator("#transitDate").isVisible(),true);
@@ -591,10 +598,10 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(railLayout.dates[0][1]===railLayout.dates[1][1]&&railLayout.dates[0][2]<railLayout.dates[1][0]);
    assert.equal(await page.locator("#transitVehicle").count(),0);
    const controlGeometry=await page.evaluate(()=>{
-    const [mode,summary,db,date,clock,reverse,now]=[".transit-select","#transitSelected","#transitDb",
+    const [mode,summary,db,date,clock,reverse,now]=[".transit-select","#transitAlternatives","#transitDb",
      ".transit-time-fields .transit-field:first-child",".transit-time-fields .transit-field:nth-child(2)","#routeReverse","#transitNow"]
      .map(selector=>document.querySelector(selector).getBoundingClientRect());
-    return {heights:[mode,summary,db,date,clock,reverse,now].map(rect=>rect.height),
+    return {heights:[mode,db,date,clock,reverse,now].map(rect=>rect.height),
      row:[mode,summary,db].map(rect=>rect.top+rect.height/2),
      first:[date,clock,reverse,now].map(rect=>rect.top+rect.height/2)};
    });
@@ -615,34 +622,25 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await page.locator("#transitWhen").inputValue(),"depart");
    await page.locator("#transitClock").evaluate(input=>{input.value="12:00";input.dispatchEvent(new Event("change",{bubbles:true}));});
    await page.locator("#transitWhen").selectOption("arrive");
-   await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
-   assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
-   const transitSummary=page.locator("#transitSelected");
-   await transitSummary.focus();
-   await page.keyboard.press("ArrowDown");
    const options=page.locator("#transitAlternatives button");
-   const selected=await options.evaluateAll(nodes=>nodes.findIndex(node=>node.getAttribute("aria-pressed")==="true"));
-   const focusIndex=()=>options.evaluateAll(nodes=>nodes.indexOf(document.activeElement));
-   assert.equal(await focusIndex(),selected);
-   await page.keyboard.press("ArrowDown");
-   assert.equal(await focusIndex(),Math.min(selected+1,await options.count()-1));
-   await page.keyboard.press("ArrowUp");
-   assert.equal(await focusIndex(),Math.max(0,Math.min(selected+1,await options.count()-1)-1));
-   assert.equal(await options.nth(selected).getAttribute("aria-pressed"),"true");
-   await page.keyboard.press("Escape");
-   assert.equal(await transitSummary.evaluate(node=>node===document.activeElement),true);
-   await page.keyboard.press("ArrowDown");
-   const red=await options.evaluateAll(nodes=>nodes.findIndex(node=>node.querySelector(".transit-red")));
-   for(let index=selected;index!==red;index+=Math.sign(red-selected))
-    await page.keyboard.press(red<selected?"ArrowUp":"ArrowDown");
-   assert.equal(await focusIndex(),red);
-   await page.keyboard.press("Enter");
-   await page.getByRole("img",{name:"Kritischer Umstieg"}).waitFor();
-   assert.match(await page.locator(".transit-leg-critical").getAttribute("title"),/5 min verfügbar/);
-   assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="transferTimeFactor"&&value==="2")));
+   await options.first().waitFor();
+   assert.deepEqual(await options.allTextContents(),["Route 1","Route 2"]);
+   assert.equal(await options.first().getAttribute("aria-pressed"),"true");
+   await options.nth(1).click();
+   assert.match(await page.locator("#routeSummary").textContent(),/Route 2$/);
+   await options.first().click();
+   assert.match(await page.locator("#routeSummary").textContent(),/– \[45 min\] – .* • Route 1$/);
+   const backwardChevron=page.locator('summary[aria-label="Zubringer früher planen"]').last();
+   await backwardChevron.click();
+   await page.locator(".transit-transfer-menu[open]").getByRole("button",{name:"+20 min",exact:true}).click();
+   await page.locator(".transit-comparison").waitFor();
+   assert.match(await page.locator("#routeSummary").textContent(),/10:45 .* – 11:45 • Route 1$/);
+   assert.ok(transitCalls.some(row=>Object.fromEntries(row).toPlace==="B"&&Object.fromEntries(row).arriveBy==="true"));
+   await page.locator("#transitWhen").selectOption("depart");
+   await options.first().waitFor();
    assert.ok((await measureTransitControls()).body>(await measureTransitControls()).view);
-   await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
-   assert.ok(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop)>0);
+   await page.locator("#routeScroll").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
+   assert.ok(await page.locator("#routeScroll").evaluate(panel=>panel.scrollTop)>0);
    assert.equal(await page.locator(".transit-leg-icon").count(),3);
    assert.equal(await page.locator(".transit-leg-walk .transit-leg-duration").textContent(),"5 min");
    assert.match(await page.locator(".transit-leg-walk .transit-leg-title").textContent(),/Umstieg · Fußweg · [\d.]+ m/);
@@ -658,9 +656,12 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     const spacer=document.createElement("div");
     spacer.id="transitTestSpacer";spacer.style.height="300px";list.append(spacer);
    });
-   await page.locator("#carRoutePanel").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
+   await page.locator("#routeScroll").evaluate(panel=>{panel.scrollTop=panel.scrollHeight;});
    const sticky=page.locator("#transitStickyButton");
    await sticky.waitFor({state:"visible"});
+   const separation=await page.evaluate(()=>document.querySelector("#routeScroll").getBoundingClientRect().top-
+     document.querySelector("#transitSticky").getBoundingClientRect().bottom);
+   assert.ok(separation>=0,"The list viewport must begin below the sticky bar");
    for(const id of ["transitStickyDeparture","transitStickyArrival"])
     assert.match(await page.locator("#"+id).textContent(),/^\d{2}:\d{2} .+$/);
    const end=page.locator("#transitStickyEnd");
@@ -669,7 +670,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await end.click();
    assert.equal(await sticky.isVisible(),true);
    await sticky.click();
-   assert.equal(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop),0);
+   assert.equal(await page.locator("#routeScroll").evaluate(panel=>panel.scrollTop),0);
    await page.locator("#transitTestSpacer").evaluate(element=>element.remove());
    await legs.first().click();
    assert.equal(await page.locator("path.p2m-route-leg-flash").count(),1);
@@ -690,6 +691,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    await transferDelays.filter({hasText:"+20 min"}).click();
    await page.locator("#routeLegs .transit-leg-title").filter({hasText:"Bus 123"}).waitFor();
    assert.equal(await comparison.count(),1);
+   assert.match(await page.locator("#routeLegs .transit-leg-walk .transit-leg-title").textContent(),/Umstieg · Fußweg/);
    assert.equal(await page.locator("#routeLegs .transit-leg-title").first().textContent(),originalLabel);
    await comparison.getByRole("button",{name:/^Original/}).click();
    assert.equal(await page.locator("#routeLegs .transit-leg-title").filter({hasText:"Bus 123"}).count(),0);

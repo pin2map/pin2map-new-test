@@ -36,6 +36,17 @@
    Math.max(minimum,reported*paddedTransfer.factor,distance*20/(referenceWalkMeters||250));
   return {reported,distance,stuttgart,regional,minutes:Math.ceil(minutes)};
  }
+ function transitTransfers(journey){
+  const transfers=[];
+  let previous;
+  for(const leg of journey.legs){
+   if(walking(leg.mode))continue;
+   if(previous&&!leg.stayOnBoard&&(!leg.tripId||leg.tripId!==previous.tripId))
+    transfers.push({leg,previous,available:(leg.start-previous.end)/60000});
+   previous=leg;
+  }
+  return transfers;
+ }
  function assess(journey,query){
   const transfers=[];
   let previous;
@@ -82,7 +93,7 @@
    soid:place(from),zoid:place(to),sot:"ADR",zot:"ADR",hd:local+":00",hza:arriveBy?"A":"D",ar:"false",s:"true",d:"false"});
   return "https://www.bahn.de/buchung/fahrplan/suche#"+params;
  }
- const api={assess,walking,dbUrl,paddedTransfer,readableLocalName};
+ const api={assess,transitTransfers,walking,dbUrl,paddedTransfer,readableLocalName};
  root.Pin2MapTransitJourney=api;
  if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

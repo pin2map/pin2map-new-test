@@ -192,10 +192,6 @@
   <main id="map" aria-label="Interaktive Karte"></main>
   <div id="mapActionChooser" class="map-action-chooser hidden" role="dialog" aria-label="Kartenaktion auswählen"></div>
   <section id="carRoutePanel" class="car-route-panel hidden" aria-label="Routenplanung" role="region">
-    <div class="car-route-head">
-      <span class="car-route-heading"><span id="routeModeIcon" data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary" role="status">Route</strong></span>
-      <button id="routePanelHide" class="car-route-round" type="button" data-pin-icon="minimize-2" aria-label="Routingdialog ausblenden"></button>
-    </div>
     <div id="transitSticky" class="transit-sticky hidden">
       <div class="transit-sticky-surface">
         <button type="button" id="transitStickyButton" aria-label="Zurück zum Anfang der Verbindung">
@@ -204,6 +200,10 @@
         </button>
         <button id="transitStickyEnd" class="car-route-round car-route-end" type="button" data-pin-icon="route-off" aria-label="Routing beenden"></button>
       </div>
+    </div>
+    <div id="routeScroll">    <div class="car-route-head">
+      <span class="car-route-heading"><span id="routeModeIcon" data-pin-icon="car" aria-hidden="true"></span><strong id="routeSummary" role="status">Route</strong></span>
+      <button id="routePanelHide" class="car-route-round" type="button" data-pin-icon="minimize-2" aria-label="Routingdialog ausblenden"></button>
     </div>
     <div class="car-route-row car-route-primary">
       <fieldset class="car-route-group car-route-transport"><legend>Routing</legend><div class="car-route-modes">
@@ -222,7 +222,7 @@
     </div>
     <div class="transit-controls">
       <label class="transit-field transit-select"><select id="transitWhen" aria-label="Zeitvorgabe"><option value="depart">Abfahrt ab</option><option value="arrive">Ankunft bis</option></select><span data-pin-icon="chevrons-up-down" aria-hidden="true"></span></label>
-      <details id="transitPicker"><summary id="transitSelected">Verbindungen</summary><div id="transitAlternatives"></div></details>
+      <div id="transitAlternatives" role="group" aria-label="ÖPNV-Routen"></div>
       <button id="transitDb" class="car-route-round" type="button" aria-label="Bei der Bahn suchen">DB</button>
     </div>
     <div id="transitSearchActivity" class="hidden">
@@ -272,6 +272,7 @@
       <fieldset class="car-route-group car-route-apple"><legend>Apple</legend><button id="routeApple" class="car-route-round" data-pin-icon="apple-brand" type="button" title="In Apple Karten öffnen" aria-label="In Apple Karten öffnen"></button></fieldset>
     </div>
     <div id="routeLegs" class="car-route-legs" aria-live="polite"></div>
+    </div>
   </section>
   <div id="routeToggleHolder" class="hidden"><button id="routePanelToggle" class="car-route-panel-toggle" type="button" data-pin-icon="car" aria-label="Routingdialog einblenden" aria-pressed="false"></button></div>
 

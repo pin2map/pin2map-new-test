@@ -72,7 +72,7 @@
   }
   async calculate({waypoints,query,via=[],signal}){
    const [from,to]=waypoints;
-   const transferFactor=query.moreTransferTime?paddedTransfer.factor:routedTransferFactor;
+   const transferFactor=query.itineraryLimit?1:query.moreTransferTime?paddedTransfer.factor:routedTransferFactor;
    const additionalTransferTime=query.moreTransferTime?paddedTransfer.additional:0;
    const plan=accessTime=>this.request("plan",{fromPlace:location(from),toPlace:location(to),
     time:new Date(query.time).toISOString(),arriveBy:String(query.arriveBy),searchWindow:(query.searchMinutes||60)*60,
@@ -81,6 +81,7 @@
     transitModes:"RAIL,BUS,COACH,TRAM,FERRY,FUNICULAR,AERIAL_LIFT",
     language:"en",useRoutedTransfers:true,transferTimeFactor:transferFactor,
     ...(additionalTransferTime?{additionalTransferTime}:{}),
+    ...(query.itineraryLimit?{timetableView:true,numItineraries:query.itineraryLimit,maxItineraries:query.itineraryLimit}:{}),
     ...(via.length?{via:via.join(",")}:{})},signal);
    const read=data=>{
     if(!Array.isArray(data.itineraries))throw new Error("Ungültige Fahrplanauskunft");

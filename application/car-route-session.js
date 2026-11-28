@@ -41,7 +41,7 @@
    Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,transitSearch,onGuideWarning});
    this.mode="car";this.generation=0;this.pending=null;this.variants=[];this.selectedVariant=0;this.failed=false;this.loading=false;this.allVisibleActive=false;
    this.transitQuery={time:Date.now(),arriveBy:false};
-   this.transitJourneys=[];this.transitRecovery=null;this.transitComparison=null;
+   this.transitJourneys=[];this.transitComparison=null;
    this.activeProfiles={bicycle:"everyday",pedestrian:"normal"};this.routeCache=new Map();
    this.factors={...TIME_FACTORS};this.timeProfile="standard";
    for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(timeFactors[key]))this.factors[key]=timeFactors[key];
@@ -59,7 +59,7 @@
     ({ascentMeters,distanceMeters,durationSeconds})):[];
    const route=this.plan.snapshot();
    return {...route,waypointIds:transit?[]:route.waypointIds,mode:this.mode,
-    transit:transit?{query:this.transitQuery,journeys:this.transitJourneys,recovery:this.transitRecovery,progress:this.transitProgress,
+    transit:transit?{query:this.transitQuery,journeys:this.transitJourneys,progress:this.transitProgress,
      active:selected,comparison:this.transitComparison,
      continuing:Boolean(this.continueRequest),continuationMessage:this.continuationMessage,continuationIndex:this.continuationIndex}:null,activeProfile:this.activeProfiles[this.mode],
     ascentMeters:selected?.ascentMeters??null,variants,selectedVariant:this.selectedVariant,failed:this.failed,allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
@@ -79,20 +79,6 @@
   setTransitQuery(query){
    if(this.mode!=="transit"||!Number.isFinite(query.time))return;
    this.transitQuery={...query};void this.recalculate();
-  }
-  async checkTransitRecovery(){
-   this.recoveryRequest?.abort();
-   this.transitRecovery=null;
-   const journey=this.activeTransitJourney();
-   if(!journey?.critical||!this.transitQuery.arriveBy)return;
-   const controller=new AbortController();
-   this.recoveryRequest=controller;
-   try{
-    const to=this.getPin(this.plan.targetId);
-    const result=await this.transitSearch.recovery(journey,to,this.transitQuery,controller.signal);
-    if(!controller.signal.aborted)this.transitRecovery=result;
-   }catch{if(!controller.signal.aborted)this.transitRecovery={unknown:true};}
-   if(!controller.signal.aborted)this.publish();
   }
   setActiveProfile(profile){
    if(!ACTIVE_PROFILES[this.mode]?.includes(profile)||profile===this.activeProfiles[this.mode])return;
@@ -122,7 +108,6 @@
    this.selectedVariant=index;
    if(transit){
     this.cancelTransitContinuation();
-    void this.checkTransitRecovery();
    }
    this.publish();
   }
@@ -137,10 +122,10 @@
    this.plan.order=order;void this.recalculate();
   }
   publish(){this.onChange(this.snapshot());}
-  cancel(){this.cancelTransitContinuation();this.generation++;this.pending?.abort();this.recoveryRequest?.abort();this.pending=null;this.loading=false;this.transitProgress=null;}
-  clear(){this.cancel();this.plan.reset();this.variants=[];this.transitJourneys=[];this.transitRecovery=null;this.failed=false;this.selectedVariant=0;this.allVisibleActive=false;this.publish();}
+  cancel(){this.cancelTransitContinuation();this.generation++;this.pending?.abort();this.pending=null;this.loading=false;this.transitProgress=null;}
+  clear(){this.cancel();this.plan.reset();this.variants=[];this.transitJourneys=[];this.failed=false;this.selectedVariant=0;this.allVisibleActive=false;this.publish();}
   async recalculate(){
-   this.cancel();this.variants=[];this.transitJourneys=[];this.transitRecovery=null;this.selectedVariant=0;
+   this.cancel();this.variants=[];this.transitJourneys=[];this.selectedVariant=0;
    const transit=this.mode==="transit";
    this.plan.removeMissingPins(this.getPin);
    this.plan.updateOrder(this.getPin);
@@ -164,7 +149,6 @@
      const selected=this.transitJourneys[this.selectedVariant];
      this.failed=false;
      if(selected&&guides.length>selected.guideCount)this.onGuideWarning(guides.length-selected.guideCount);
-     void this.checkTransitRecovery();
      return;
     }
     for(let i=0;i<points.length-1;i++){
@@ -216,7 +200,7 @@
    if(!comparison||!["original","alternative"].includes(mode)||comparison.active===mode)return;
    this.continueRequest?.abort();this.continueRequest=null;this.continuationMessage="";
    comparison.active=mode;
-   void this.checkTransitRecovery();this.publish();
+   this.publish();
   }
   async continueTransit(index,{delay}={}){
    const journey=this.activeTransitJourney(),target=this.getPin(this.plan.targetId);
@@ -226,14 +210,13 @@
    this.continueRequest=controller;this.continuationIndex=index;this.continuationMessage="Neue Restverbindung wird gesucht …";this.publish();
    try{
     const result=await this.withTransitDeadline(signal,()=>this.transitSearch.continueJourney(journey,{
-     index,delay,target,query:this.transitQuery,signal
+     index,delay,target,origin:this.getPin(this.plan.startId),query:this.transitQuery,signal
     }));
     if(signal.aborted||this.continueRequest!==controller)return;
     if(result){
      this.transitComparison={branch:result.branch,original:journey,alternative:result.journey,active:"alternative"};
      this.continuationMessage="";
-     void this.checkTransitRecovery();
-    }else this.continuationMessage="Ab diesem Zeitpunkt wurde keine Restverbindung zum Ziel gefunden.";
+    }else this.continuationMessage="Für diesen Zeitpunkt wurde keine passende Teilverbindung gefunden.";
    }catch(error){
     if(!signal.aborted){this.continuationMessage=error.message;controller.abort();}
    }finally{

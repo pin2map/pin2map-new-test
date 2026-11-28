@@ -32,36 +32,6 @@ test("bus distance and unknown shapes are distinct from estimated risks",()=>{
  assert.equal(assess(route,query).busShare,null);
  assert.equal(assess({...route,end:minutes(1440)},query).quality,"red");
 });
-test("arrival combines both windows, retains red routes and probes up to two ordered via stops",async()=>{
- const calls=[],progress=[];
- const direct=journey([leg(0,"TRAM",-50,-20,{geometry:{coordinates:[[8,48],[9,48]]}})]);
- const later=journey([leg(0,"TRAM",0,13)]);
- const flags=[{lat:49,lng:8.25,radiusMeters:4000},{lat:49,lng:8.75,radiusMeters:4000}];
- const guided=journey([leg(0,"TRAM",-75,-15,{geometry:{coordinates:[[8,48],[8.25,49],[8.75,49],[9,48]]}})]);
- const search=new Search({stopNear:async flag=>String(flag.lng),calculate:async request=>{
-  calls.push(request);return request.via.length?[guided]:[request.query.time===instant?direct:later,direct];
- }});
- const result=await search.search({waypoints:[{},{}],guides:flags,query:{time:instant,arriveBy:true},
-  signal:new AbortController().signal,onProgress:value=>progress.push(value)});
- assert.deepEqual(progress[0],{phase:"request",requests:1,pending:1,received:0});
- assert.deepEqual(progress[1],{phase:"review",requests:1,pending:0,received:2});
- assert.ok(progress.some(value=>value.phase==="stops"&&value.received===4));
- assert.deepEqual(progress.at(-1),{phase:"review",requests:4,pending:0,received:6});
- assert.equal(result.journeys.length,3);
- assert.equal(result.journeys[result.selected].guideCount,2);
- assert.ok(result.journeys.some(item=>item.quality==="yellow"));
- assert.deepEqual(calls.at(-1).via,["8.25","8.75"]);
-});
-test("missed-connection recovery asks for a new through journey after the missed departure",async()=>{
- const output=journey([leg(0,"LONG_DISTANCE",9,100)]);
- const connection=leg(1,"LONG_DISTANCE",-5,0,{from:{stopId:"test:station"}});
- const search=new Search({calculate:async ({waypoints,query})=>{
-  assert.equal(waypoints[0].stopId,"test:station");assert.equal(query.time,minutes(-4));assert.equal(query.arriveBy,false);
-  return [output];
- }});
- assert.deepEqual(await search.recovery({critical:{leg:connection}},{lat:49,lng:9},{time:instant,arriveBy:true}),
-  {end:minutes(100),late:true});
-});
 test("MOTIS adapter normalizes ferry and detailed leg data and preserves DB local time",async()=>{
  const format=time=>new Date(time).toISOString();
  const provider=new Provider({fetchImpl:async url=>{
@@ -92,19 +62,6 @@ test("Stuttgart station is calibrated to 20 minutes and a two-minute platform ch
   leg(1,"TRAM",-18,0,{from:{...platform,track:"4"}})]);
  assert.equal(assess(tram,query).quality,"red");
 });
-test("when transfers are tight the search adds buffered itineraries and retains the original",async()=>{
- const route=journey([leg(0,"LONG_DISTANCE",-60,-42),leg(1,"LONG_DISTANCE",-40,0)]);
- const safer=journey([leg(0,"LONG_DISTANCE",-80,-70),leg(1,"LONG_DISTANCE",-40,0)]);
- const input=[];
- const search=new Search({calculate:async request=>{
-  input.push(request.query.moreTransferTime);return [request.query.moreTransferTime?safer:route];
- }});
- const result=await search.search({waypoints:[{},{}],guides:[],query:{time:minutes(-90),arriveBy:false},
-  signal:new AbortController().signal});
- assert.deepEqual(input,[false,false,true,false]);
- assert.equal(result.journeys.length,2);
- assert.equal(result.journeys[result.selected].start,safer.start);
-});
 test("normalizer preserves public service number and removes added transfer time from the walking baseline",async()=>{
  const format=time=>new Date(time).toISOString();
  const provider=new Provider({fetchImpl:async url=>{
@@ -123,75 +80,6 @@ test("normalizer preserves public service number and removes added transfer time
  assert.equal(result.legs[1].operator,"DB");
 });
 
-test("departure widens to two hours and never offers departures outside the window",async()=>{
- const windows=[];
- const search=new Search({calculate:async ({query})=>{
-  windows.push(query.searchMinutes);return [journey([leg(0,"TRAM",121,130)])];
- }});
- const out=await search.search({waypoints:[{},{}],guides:[],query:{arriveBy:false,time:instant},
-  signal:new AbortController().signal});
- assert.deepEqual(windows,[15,30,45,60,120]);
- assert.deepEqual(out.journeys,[]);
-});
-test("an earlier feeder to the same station makes room for the modeled transfer without moving later walks",async()=>{
- const station={name:"Hauptbahnhof (A.-Klett-Platz)",stopId:"klett"};
- const early=journey([leg(0,"SUBWAY",5,25,{to:station})]);
- const original=journey([leg(0,"SUBWAY",14,46,{to:station}),leg(1,"WALK",46,50,{distanceMeters:250}),
-  leg(2,"LONG_DISTANCE",52,90),leg(3,"WALK",90,94)]);
- const search=new Search({calculate:async ({waypoints,query})=>{
-  if(waypoints[1].stopId==="klett"){
-   assert.equal(query.time,minutes(29));assert.equal(query.arriveBy,true);
-   return [early];
-  }
-  return [original];
- }});
- const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:false},
-  signal:new AbortController().signal});
- const route=result.journeys[result.selected];
- assert.equal(route.start,minutes(5));
- assert.equal(route.legs[2].start,minutes(52));
- assert.equal(route.legs[3].start,minutes(90));
- assert.equal(route.critical,undefined);
-});
-test("fallback includes the actual address walk when setting the station deadline and door-to-door times",async()=>{
- const station={stopId:"Wahlwies",lat:47.8,lng:9};
- const providers=[];
- const route=journey([leg(0,"REGIONAL_RAIL",-60,-11)]);
- const search=new Search({
-  railAccess:async(pin,arrival)=>arrival?{point:station,leg:{mode:"WALK",distanceMeters:524,durationSeconds:480}}:null,
-  calculate:async ({waypoints,query})=>{
-   providers.push([waypoints[1],query.time]);return waypoints[1]===station?[route]:[];
-  }
- });
- const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:true},
-  signal:new AbortController().signal});
- assert.ok(providers.some(([point,time])=>point===station&&time===minutes(-8)));
- assert.equal(result.journeys[0].end,minutes(-3));
- assert.equal(result.journeys[0].legs.at(-1).distanceMeters,524);
-});
-test("departure keeps a valid feeder and replaces an impossible onward connection with a later real service",async()=>{
- const transfer={name:"Nenzingen",stopId:"nenzingen",track:"4"};
- const first=leg(0,"REGIONAL_RAIL",4,16);
- const walk=leg(1,"WALK",16,21,{distanceMeters:45,to:transfer});
- const missed=leg(2,"BUS",21,60,{from:transfer});
- const problem=journey([first,walk,missed]);
- const later=journey([leg(0,"BUS",42,78,{from:transfer,tripId:"actual later bus"})]);
- const search=new Search({calculate:async ({waypoints,query})=>{
-  if(waypoints[0].stopId==="nenzingen"){
-   assert.equal(query.time,minutes(34));assert.equal(query.arriveBy,false);
-   return [later];
-  }
-  return [problem];
- }});
- const result=await search.search({waypoints:[{},{}],guides:[],query:{time:instant,arriveBy:false},
-  signal:new AbortController().signal});
- const fixed=result.journeys[result.selected];
- assert.equal(fixed.start,minutes(4));
- assert.equal(fixed.legs[2].tripId,"actual later bus");
- assert.equal(fixed.end,minutes(78));
- assert.equal(fixed.critical,undefined);
-});
-
 test("nearby access is tried first, broader access is a fallback and the response has no count cap",async()=>{
  const access=[];
  const provider=new Provider({fetchImpl:async url=>{
@@ -208,23 +96,6 @@ test("nearby access is tried first, broader access is a fallback and the respons
  const routes=await provider.calculate({waypoints:[{lat:48,lng:9},{lat:49,lng:10}],query:{time:instant,arriveBy:false}});
  assert.deepEqual(access,["900","1800"]);
  assert.equal(routes.length,15);
-});
-
-test("a disproportionately long trip is removed even when safe",()=>{
- const search=new Search({});
- const near={...journey([leg(0,"BUS",5,10)]),quality:"red",guideCount:0};
- const distant={...journey([leg(0,"BUS",5,100)]),quality:"green",guideCount:0};
- const result=search.results([near,distant],{time:instant,arriveBy:false});
- assert.deepEqual(result.journeys,[near]);
- assert.equal(result.journeys[result.selected],near);
-});
-
-test("a small gain against the arrival target does not justify a much longer trip",()=>{
- const search=new Search({});
- const short={...journey([leg(0,"BUS",-120,-25)]),quality:"green",guideCount:0};
- const long={...journey([leg(0,"BUS",-300,0)]),quality:"green",guideCount:0};
- const result=search.results([short,long],{time:instant,arriveBy:true});
- assert.equal(result.journeys[result.selected],short);
 });
 
 test("Latin fallback makes Greek stop labels readable",()=>{
@@ -285,43 +156,6 @@ test("a ten-minute regional rail connection can cover the planned walk and reser
  assert.equal(assess(journey([first,walk,{...onward,start:minutes(17)}]),query).quality,"red");
 });
 
-test("continuation retains the inbound leg and chooses a free route from the transfer stop",async()=>{
- const original=journey([
-  leg(0,"LONG_DISTANCE",0,26,{to:{stopId:"singen",track:"1"}}),
-  leg(1,"WALK",26,27),leg(2,"SUBURBAN",28,35,{from:{stopId:"platform-s62"},routeId:"s62"})
- ]);
- const query={time:instant,arriveBy:false};
- Object.assign(original,assess(original,query));
- const requests=[],target={lat:47.83,lng:9.02};
- const search=new Search({calculate:async request=>{
-  requests.push(request);
-  const first=(request.query.time-instant)/60000;
-  return [journey([leg(0,"BUS",first+2,first+35,{tripId:"bus"})])];
- }});
- for(const [options,earliest] of [[{delay:20},48],[{delay:45},73]]){
-  const result=await search.continueJourney(original,{index:2,...options,target,query});
-  assert.deepEqual(requests.at(-1).waypoints,[{stopId:"singen"},target]);
-  assert.deepEqual(requests.at(-1).query,{time:minutes(earliest),arriveBy:false,searchMinutes:120});
-  assert.equal(result.branch,1);
-  assert.deepEqual(result.journey.legs[0],original.legs[0]);
-  assert.equal(result.journey.legs[1].tripId,"bus");
-  assert.equal(result.journey.legs[1].index,1);
-  assert.equal(original.legs.length,3);
- }
-});
-
-test("multi-day alternatives are rejected beside a four-hour route, including when faster routes are critical",()=>{
- const search=new Search({});
- for(const arriveBy of [false,true]){
-  const query={time:instant,arriveBy};
-  const fast={...journey([leg(0,"BUS",0,223)]),quality:"red",guideCount:0};
-  const normal={...journey([leg(0,"BUS",4,254)]),quality:"green",guideCount:0};
-  const long={...journey([leg(0,"BUS",4,3075)]),quality:"green",guideCount:0};
-  assert.deepEqual(search.results([long,fast,normal],query).journeys,[fast,normal]);
-  assert.deepEqual(search.results([long],query).journeys,[long]);
- }
-});
-
 test("measured short walks cover local departures without marking good transfers critical",()=>{
  const query={time:instant,arriveBy:false};
  const from={stopId:"track3",track:"3"},to={stopId:"track2",track:"2"};
@@ -335,4 +169,45 @@ test("measured short walks cover local departures without marking good transfers
   assert.equal(tight.critical.available,2);
   assert.equal(assess(journey([previous,{...foot,measured:false},onward]),query).quality,"red");
  }
+});
+
+test("regular search asks for three provider proposals and keeps their order and times",async()=>{
+ const proposals=[240,3075,223,241].map(end=>journey([leg(0,"BUS",0,end)]));
+ const calls=[];
+ const search=new Search({calculate:async request=>{calls.push(request);return proposals;}});
+ const signal=new AbortController().signal;
+ for(const arriveBy of [false,true]){
+  const result=await search.search({waypoints:[{},{}],query:{time:instant,arriveBy},signal});
+  assert.equal(result.selected,0);
+  assert.deepEqual(result.journeys.map(route=>route.end),proposals.slice(0,3).map(route=>route.end));
+  assert.deepEqual(calls.at(-1).query,{time:instant,arriveBy,searchMinutes:120,itineraryLimit:3});
+ }
+ assert.equal(calls.length,2);
+});
+
+test("partial plans preserve the existing side and represent the boundary walk",async()=>{
+ const a={stopId:"a",track:"1"},b={stopId:"b",track:"2"};
+ const original=journey([
+  leg(0,"BUS",0,26,{to:a}),leg(1,"WALK",26,28,{from:a,to:b}),
+  leg(2,"TRAM",30,45,{from:b})]);
+ original.transfers=require("../domain/transit-journey.js").transitTransfers(original);
+ const origin={lat:48,lng:9},target={lat:49,lng:9};
+ const search=new Search({calculate:async ({waypoints,query})=>{
+  assert.equal(query.itineraryLimit,3);
+  if(query.arriveBy){
+   assert.deepEqual(waypoints,[origin,{stopId:"b"}]);
+   assert.equal(query.time,minutes(10));
+   return [journey([leg(0,"BUS",-30,9,{to:{stopId:"other"}})])];
+  }
+  assert.deepEqual(waypoints,[{stopId:"a"},target]);
+  assert.equal(query.time,minutes(50));
+  return [journey([leg(0,"BUS",50,65,{from:b})])];
+ }});
+ const forward=await search.continueJourney(original,{index:2,delay:20,origin,target,query:{arriveBy:false}});
+ assert.deepEqual(forward.journey.legs[0],original.legs[0]);
+ assert.deepEqual(forward.journey.legs[1],original.legs[1]);
+ const backward=await search.continueJourney(original,{index:2,delay:20,origin,target,query:{arriveBy:true}});
+ assert.deepEqual(backward.journey.legs.at(-1),original.legs[2]);
+ assert.equal(backward.journey.legs[1].unknownTransfer,true);
+ assert.equal(backward.journey.end,original.end);
 });

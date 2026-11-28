@@ -22,15 +22,14 @@
   REGIONAL_RAIL:["train-front","Regionalzug"],REGIONAL_FAST_RAIL:["train-front","Regionalzug"],
   RAIL:["train-front","Zug"],FUNICULAR:["train-front","Standseilbahn"],AERIAL_LIFT:["cable-car","Seilbahn"]
  };
- const quality={green:"Günstig",yellow:"Verspätete Ankunft",red:"Kritisch oder außerhalb des Zeitfensters"};
  class TransitRoutePanel{
   constructor({document:doc,getElement,icons,getPin,onQuery,onSelect,onLegSelect,onContinue,onCompare,open,colors}){
    Object.assign(this,{doc,el:getElement,icons,getPin,onQuery,onSelect,onLegSelect,onContinue,onCompare,open,colors});
   }
   bind(){
-   const panel=this.el("carRoutePanel");
-   panel.addEventListener("scroll",()=>this.syncSticky());
-   this.el("transitStickyButton").addEventListener("click",()=>panel.scrollTo({top:0,behavior:"instant"}));
+   const scroller=this.el("routeScroll");
+   scroller.addEventListener("scroll",()=>this.syncSticky());
+   this.el("transitStickyButton").addEventListener("click",()=>scroller.scrollTo({top:0,behavior:"instant"}));
    const nativeTime=this.el("transitClock"),desktopTime=this.el("transitClockDesktop");
    const update=()=>{
     const local=this.el("transitDate").value+"T"+nativeTime.value;
@@ -50,24 +49,6 @@
     if(event.key==="Enter"){event.preventDefault();desktopTime.blur();}
    });
    this.el("transitNow").addEventListener("click",()=>this.onQuery({time:Date.now(),arriveBy:false}));
-   const picker=this.el("transitPicker"), summary=this.el("transitSelected");
-   picker.addEventListener("keydown",event=>{
-    if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
-    if(event.key==="Escape"&&picker.open){
-     event.preventDefault();picker.open=false;summary.focus();return;
-    }
-    const direction={ArrowDown:1,ArrowUp:-1}[event.key];
-    if(!direction)return;
-    const buttons=[...this.el("transitAlternatives").querySelectorAll("button")];
-    if(!buttons.length)return;
-    const current=buttons.indexOf(event.target);
-    if(current<0&&event.target!==summary)return;
-    event.preventDefault();
-    picker.open=true;
-    const selected=this.snapshot.selectedVariant;
-    const index=current<0?selected:Math.max(0,Math.min(buttons.length-1,current+direction));
-    buttons[index].focus();
-   });
    const list=this.el("routeLegs");
    list.addEventListener("keydown",event=>{
     if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
@@ -88,23 +69,9 @@
    });
   }
   syncSticky(){
-   const panel=this.el("carRoutePanel"),row=panel.querySelector(".car-route-primary");
+   const panel=this.el("carRoutePanel"),scroller=this.el("routeScroll"),row=panel.querySelector(".car-route-primary");
    this.el("transitSticky").classList.toggle("hidden",!panel.classList.contains("transit-route-active")||
-    !this.el("transitStickyDeparture").textContent||row.getBoundingClientRect().bottom>panel.getBoundingClientRect().top);
-  }
-  label(journey){
-   return time(journey.start,journey.start)+"–"+time(journey.end,journey.start)+" • "+duration(journey.durationSeconds);
-  }
-  option(journey){
-   const content=this.doc.createElement("span");
-   content.className="transit-choice";
-   const icon=journey.busShare===null?"route":journey.busShare>.3?"bus":"train-front";
-   const glyph=this.icons.svg(icon,this.doc);
-   glyph.classList.add("transit-"+journey.quality);
-   content.setAttribute("aria-label",quality[journey.quality]+", "+this.label(journey));
-   content.append(glyph,this.label(journey));
-   if(journey.busShare===null)content.title="Busanteil unbekannt";
-   return content;
+    !this.el("transitStickyDeparture").textContent||row.getBoundingClientRect().bottom>scroller.getBoundingClientRect().top);
   }
   comparisonControl(comparison){
    const block=this.doc.createElement("div");
@@ -121,7 +88,7 @@
   }
   render(snapshot){
    this.snapshot=snapshot;
-   const {query,journeys,recovery,progress,comparison,continuing,continuationMessage,continuationIndex}=snapshot.transit;
+   const {query,journeys,progress,comparison,continuing,continuationMessage,continuationIndex}=snapshot.transit;
    const selected=snapshot.transit.active||journeys[snapshot.selectedVariant];
    const endpoint=(id,stop)=>{const pin=this.getPin(id);return pin?.address||pin?.name||readableLocalName(stop?.name);};
    this.el("transitStickyDeparture").textContent=selected?
@@ -136,7 +103,8 @@
    this.el("transitWhen").value=query.arriveBy?"arrive":"depart";
    if(this.doc.activeElement!==this.el("transitClockDesktop"))this.el("transitClockDesktop").value=clock.format(query.time);
    const status=snapshot.loading?"Verbindungen werden gesucht …":snapshot.failed?"Fahrplanauskunft nicht erreichbar":
-    selected?this.label(selected):query.arriveBy?"Keine durchgehende Verbindung gefunden":"Keine passende Abfahrt innerhalb von 120 Minuten";
+    selected?time(selected.start,selected.start)+" – ["+duration(selected.durationSeconds)+"] – "+
+    time(selected.end,selected.start)+" • Route "+(snapshot.selectedVariant+1):query.arriveBy?"Keine durchgehende Verbindung gefunden":"Keine passende Abfahrt innerhalb von 120 Minuten";
    this.el("routeSummary").textContent=status;
    const received=progress?.received||0;
    const phase=progress?.phase;
@@ -152,24 +120,18 @@
    count.textContent=received&&phase!=="review"?(received===1?"1 Ergebnis empfangen":received+" Ergebnisse empfangen"):"";
    count.classList.toggle("hidden",!count.textContent);
    this.el("routeSummary").classList.toggle("car-route-unavailable",snapshot.failed&&!snapshot.loading);
-   const summary=this.el("transitSelected");
-   summary.replaceChildren(selected?this.option(selected):this.doc.createTextNode("Verbindungen"));
    const options=this.el("transitAlternatives");
    if(this.renderedJourneys!==journeys){
     this.renderedJourneys=journeys;
-    options.replaceChildren(...journeys.map((item,index)=>{
+    options.replaceChildren(...journeys.map((_,index)=>{
      const button=this.doc.createElement("button");button.type="button";
-     button.append(this.option(item));
-     button.addEventListener("click",()=>{
-      this.el("transitPicker").open=false;this.onSelect(index);summary.focus();
-     });
+     button.textContent="Route "+(index+1);
+     button.addEventListener("click",()=>this.onSelect(index));
      return button;
     }));
    }
    [...options.children].forEach((button,index)=>
     button.setAttribute("aria-pressed",String(index===snapshot.selectedVariant)));
-   this.el("transitPicker").classList.toggle("transit-picker-empty",!journeys.length);
-   if(!journeys.length)this.el("transitPicker").open=false;
    const list=this.el("routeLegs");
    const focused=list.contains(this.doc.activeElement)?this.doc.activeElement.dataset.leg:null;
    const rows=snapshot.legs.flatMap((leg,index)=>{
@@ -196,33 +158,24 @@
      (item.leg.index-item.previous.index>1?item.leg.index-1:item.leg.index)===index);
     const transferWindow=transfer&&walking(leg.mode)?transfer:null;
     const singleWalk=transferWindow&&transferWindow.leg.index-transferWindow.previous.index===2;
-    const marker=transfer?.critical?this.icons.svg("triangle-exclamation-point",this.doc):text("transit-leg-number",index+1);
-    if(transfer?.critical){
-     button.classList.add("transit-leg-critical");
-     marker.classList.add("transit-leg-warning");
-     marker.setAttribute("role","img");marker.removeAttribute("aria-hidden");
-     marker.setAttribute("aria-label","Kritischer Umstieg");
-     const {available,walkMinutes,reserve}=transfer;
-     const note=Math.floor(available)+" min verfügbar · "+walkMinutes+" min für Weg und Einstieg · "+reserve+" min Reserve empfohlen";
-     const followUp=transfer===selected.critical&&recovery&&!recovery.unknown?
-      " · Mögliche Ankunft bei verpasstem Anschluss "+time(recovery.end,query.time):"";
-     button.title=note+followUp;
-    }
-    if(transferWindow&&!transfer.critical)button.title=Math.floor(transferWindow.available)+" min verfügbar · "+
+    const marker=text("transit-leg-number",index+1);
+    if(leg.unknownTransfer)button.title="Für diesen Übergang liegen keine Fußwegdaten vor.";
+    if(transferWindow&&!leg.unknownTransfer)button.title=Math.floor(transferWindow.available)+" min verfügbar · "+
      duration(leg.durationSeconds)+" Fußweg laut Fahrplan";
     button.append(marker,text("transit-leg-depart",time(singleWalk?transferWindow.previous.end:leg.start,selected.start),"strong"),glyph,
-     text("transit-leg-title",transferWindow?"Umstieg · "+title:title,"strong"),
+     text("transit-leg-title",leg.unknownTransfer?"Umstieg · Fußweg unbekannt":transferWindow?"Umstieg · "+title:title,"strong"),
      text("transit-leg-duration",transferWindow?duration(Math.floor(Math.max(0,transferWindow.available))*60):duration(leg.durationSeconds)),
      text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(singleWalk?transferWindow.leg.start:leg.end,selected.start),"strong"),
      destination,text("transit-leg-to",station(leg.to)));
     button.addEventListener("click",()=>{button.focus({preventScroll:true});this.onLegSelect(index);});
     row.append(button);
     const onward=selected.transfers.find(item=>item.leg.index===index);
-    if(onward?.previous.to?.stopId){
+    if(query.arriveBy?!walking(leg.mode)&&leg.from?.stopId:onward?.previous.to?.stopId){
      const menu=this.doc.createElement("details");menu.className="transit-transfer-menu";
      const trigger=text("transit-transfer-trigger","","summary");
-     trigger.setAttribute("aria-label","Anschluss verpasst");trigger.title="Anschluss verpasst";
-     trigger.append(this.icons.svg("chevrons-right",this.doc));menu.append(trigger);
+     const actionLabel=query.arriveBy?"Zubringer früher planen":"Anschluss verpasst";
+     trigger.setAttribute("aria-label",actionLabel);trigger.title=actionLabel;
+     trigger.append(this.icons.svg(query.arriveBy?"chevrons-left":"chevrons-right",this.doc));menu.append(trigger);
      const choices=this.doc.createElement("div");choices.className="transit-transfer-choices";
      for(const delay of [5,10,15,20,30,45,60,90]){
       const action=text("transit-transfer-delay","+"+delay+" min","button");
