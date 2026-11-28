@@ -817,3 +817,9 @@ Die Etappenliste zeigt beim Umstiegsfußweg das verfügbare Fahrplanfenster von 
 ### R-054 – Routing nach dem Löschen eines Pins (27.11.2026)
 
 Wird ein Zwischenziel gelöscht, entfernt der Routenplan seine Referenz und berechnet die Route mit den verbleibenden Pins neu. Wird Start oder Ziel gelöscht, bleibt der andere Endpunkt erhalten. Der Plan kann mit einem neuen Endpunkt wieder berechnet werden. Laufende Anfragen mit gelöschten Pins werden abgebrochen.
+
+### R-055 – Plausible ÖPNV-Auswahl und Anschluss bei der Abfahrt ersetzen (28.11.2026)
+
+Die ÖPNV-Auswahl verwirft Verbindungen mit einer Reisezeit über der schnellsten gefundenen Reisezeit zuzüglich des größeren Werts aus einer Stunde und 50 Prozent. Die Grenze wird in den Suchschritten und in der abschließenden Auswahl angewandt. Für die gezielte Neuplanung gilt derselbe Zuschlag auf die bisherige Restdauer. Gemessene Umstiegswege bis einschließlich 75 m zu Bus, Stadtbahn, U-Bahn oder Regional- und S-Bahn werden mit 50 m pro Minute, auf volle Minuten gerundet, zuzüglich einer Minute für den Einstieg und drei Minuten Verspätungsreserve bewertet. Die besonderen Regeln für den Einstieg in den Fernverkehr bleiben maßgeblich.
+
+Das Menü „Anschluss verpasst“ sitzt an der Etappe des Folgeverkehrsmittels. Die Weiterfahrt wird frei ab dem Umstiegsort gesucht. Die separate Anzeige der Folgeabfahrt und die Abfragen der Abfahrtstafel entfallen.
