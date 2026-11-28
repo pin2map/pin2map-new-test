@@ -96,6 +96,10 @@
   }
   footerAction(){
    if(this.mergeMode)return this.confirmMerge();
+   if(this.mode==="new"){
+    this.el("layersList").querySelector("[data-layer-create-confirm]")?.click();
+    return true;
+   }
    if(!this.onAddLayer())this.start("new");
    return true;
   }
@@ -160,6 +164,7 @@
       else this.onRename(layer.id,privateColor?"Privat":value,this.draftColor,this.draftIndex);
      },
      renderExtra:ports=>{
+      if(creating)ports.confirm.dataset.layerCreateConfirm="";
       this.paletteEditor(ports);
       if(privateColor){ports.input.readOnly=true;ports.input.setAttribute("aria-readonly","true");}
      }

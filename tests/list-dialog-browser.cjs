@@ -159,7 +159,8 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     assert.ok(Math.abs((await editor.evaluate(el=>el.getBoundingClientRect().height))-editorHeight)<1,
       "Returning from palette must preserve editor height");
     await editor.locator(".favorite-name-input").fill("Contract Test Layer");
-    await editor.getByRole("button",{name:"Erstellen"}).click();
+    if(viewport.width>500)await page.locator("#addLayer").click();
+    else await editor.getByRole("button",{name:"Erstellen"}).click();
     const layer=page.locator("#layersList .list-dialog-row").filter({hasText:"Contract Test Layer"});
     await layer.waitFor({state:"visible"});
     assert.deepEqual(await page.locator("#layersList .list-dialog-row").evaluateAll(
