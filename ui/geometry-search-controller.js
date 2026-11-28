@@ -105,24 +105,7 @@
       }finally{if(run===featureRun)featureController=null;}
       return;
     }
-    if(kind==="area"||kind==="lake"){
-      if(["Polygon","MultiPolygon"].includes(result.geojson?.type)){previewAreaObject(result,kind);return;}
-      if(!state.allowGeocode){
-        searchView.message("Bitte zuerst in den Einstellungen die Nominatim-Suche aktivieren.");
-        return;
-      }
-      featureController?.abort();
-      const run=++featureRun,controller=new AbortController();featureController=controller;
-      try{
-        const source=await areaFinder.lookupPolygon(result.osm_type,result.osm_id,{signal:controller.signal});
-        if(run!==featureRun)return;
-        if(!source){searchView.message("Keine kartierte Grenze für diesen Treffer gefunden.");return;}
-        previewAreaObject(source,placeNames.featureType(source)==="lake"?"lake":kind);
-      }catch(error){
-        if(run===featureRun)searchView.message("Gebietssuche fehlgeschlagen: "+error.message);
-      }finally{if(run===featureRun)featureController=null;}
-      return;
-    }
+    if(kind==="area"||kind==="lake"){previewAreaObject(result,kind);return;}
     if(kind==="river"){
       if(!state.allowGeocode){
         searchView.message("Bitte zuerst in den Einstellungen die Nominatim-Suche aktivieren.");
@@ -132,9 +115,7 @@
       const run=++featureRun,controller=new AbortController();featureController=controller;
       setGeometryBusy("Flussverlauf wird geladen …");
       try{
-        const candidate=result.candidate||{id:result.osm_id,osmType:result.osm_type,
-          tags:{name:placeNames.title(result),waterway:result.type,...result.namedetails}};
-        const source=await riverFinder.resolve(candidate,{
+        const source=await riverFinder.resolve(result.candidate,{
           query:result.query||placeNames.title(result),signal:controller.signal,
           onProgress:p=>{if(run===featureRun)setGeometryBusy(
             p.phase==="parent"?"Übergeordnete Flussrelation wird geprüft …":"Flussverlauf wird geladen …");}
@@ -163,6 +144,7 @@
       return;
     }
     const run=featureRun,controller=new AbortController();featureController=controller;
+    searchView.message("Gebiete für diesen Kartenpunkt werden gesucht …");
     try{
       const showHierarchy=(rows,loading=false)=>searchView.show(rows.map(row=>({
         ...row,__featureType:"areaHierarchy"

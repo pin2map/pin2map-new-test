@@ -48,7 +48,6 @@
       url.searchParams.set("addressdetails","1");
       url.searchParams.set("namedetails","1");
       url.searchParams.set("accept-language",(this.language||"de")+",int,en");
-      url.searchParams.set("extratags","1");
       url.searchParams.set("limit",String(this.resultLimit));
       const response=await this.fetchImpl(url.toString(),{
         method:"GET",signal,headers:{Accept:"application/json"}

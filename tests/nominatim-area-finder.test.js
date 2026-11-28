@@ -164,13 +164,14 @@ test("recognized unique villages and small places resolve despite simplified pol
 });
 
 test("slow Overpass never delays the initial administrative Kartentip choices",async()=>{
-  let release,asked=false,partial=null;
+  let release,markAsked,partial=null;
+  const requested=new Promise(resolve=>{markAsked=resolve;});
   const stalled=new Promise(resolve=>{release=resolve;});
   const finder=new NominatimAreaFinder({minimumIntervalMs:0,fetchImpl:async url=>{
     if(url.includes("/reverse"))return {ok:true,json:async()=>({
       address:{country:"Deutschland",state:"Mecklenburg-Vorpommern",country_code:"de"}
     })};
-    asked=true;
+    markAsked();
     await stalled;
     return {ok:true,json:async()=>({elements:[{type:"relation",id:7,
       tags:{name:"Nationalpark Jasmund",boundary:"national_park"}}]})};
@@ -178,8 +179,7 @@ test("slow Overpass never delays the initial administrative Kartentip choices",a
   const operation=finder.hierarchyAt({lat:54.5,lng:13.6},{
     onPartial:early=>{if(!partial)partial=early;}
   });
-  for(let i=0;i<6&&!asked;i++)await Promise.resolve();
-  assert.equal(asked,true);
+  await requested;
   assert.deepEqual(partial.rows.map(row=>row.name),
     ["Deutschland","Mecklenburg-Vorpommern"],
     "The old administrative list must be usable while Overpass is pending");
@@ -393,4 +393,18 @@ test("aborting an in-flight parallel search prevents any late additional choices
   controller.abort();
   await assert.rejects(operation,/Aborted/);
   assert.deepEqual(snapshots,[["Deutschland"]]);
+});
+
+test("a stalled source releases the hierarchy and aborts each provider at the time limit",async()=>{
+  const signals=[];
+  const finder=new NominatimAreaFinder({minimumIntervalMs:0,requestTimeoutMs:10,fetchImpl:async(url,{signal})=>{
+    if(url.includes("/reverse?"))return {ok:true,json:async()=>({address:{city:"Teststadt"}})};
+    signals.push(signal);
+    return new Promise(()=>{});
+  }});
+  const answer=await finder.hierarchyAt({lat:30,lng:110});
+  assert.equal(answer.extraUnavailable,true);
+  assert.deepEqual(answer.rows.map(row=>row.name),["Teststadt"]);
+  assert.equal(signals.length,3);
+  assert.ok(signals.every(signal=>signal.aborted));
 });

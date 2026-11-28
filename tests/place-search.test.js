@@ -185,3 +185,14 @@ test("named place pins preserve the submitted wording and keep the provider addr
  assert.match(domain.fullAddress(result),/Stuttgart/);
  assert.equal(domain.pinName({...result,category:"place",name:"23"},"Stuttgart Hauptstraße 23"),"Stuttgart Hauptstraße 23");
 });
+
+test("coordinate input parses decimal degrees and compass-prefixed degrees minutes seconds",()=>{
+  const {parseCoordinates}=require("../domain/place-search.js");
+  assert.deepEqual(parseCoordinates("65.834279, 153.413086"),{lat:65.834279,lng:153.413086});
+  assert.deepEqual(parseCoordinates("n4 28 30 e9 10 28"),
+    {lat:4+28/60+30/3600,lng:9+10/60+28/3600});
+  assert.deepEqual(parseCoordinates("S4 28 30.7 W9 10 28.2"),
+    {lat:-(4+28/60+30.7/3600),lng:-(9+10/60+28.2/3600)});
+  for(const query of ["n90 0 1 e9 0 0","n4 60 0 e9 0 0","n4 1 60 e9 0 0","91, 10","Stuttgart"])
+    assert.equal(parseCoordinates(query),null);
+});

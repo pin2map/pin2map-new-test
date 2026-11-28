@@ -4,16 +4,15 @@
  * Provider/network, UI rendering and project persistence remain elsewhere. */
 (function(root){
   class SearchPinTransfer{
-    constructor({searchView,titleOf,addPin,chooseFeature=()=>false,addressOf=null,mapPort,onLayout,isPrivateLayerVisible,onRenderMarkers}){
+    constructor({searchView,titleOf,addPin,addressOf=null,mapPort,onLayout,isPrivateLayerVisible,onRenderMarkers}){
       if(!searchView||[titleOf,addPin,onLayout,isPrivateLayerVisible,onRenderMarkers].some(fn=>typeof fn!=="function")||
         !mapPort||typeof mapPort.getViewport!=="function"||typeof mapPort.setView!=="function")
         throw new TypeError("Search pin transfer ports required");
-      this.chooseFeature=chooseFeature;this.addressOf=addressOf;this.searchView=searchView;this.titleOf=titleOf;this.addPin=addPin;this.mapPort=mapPort;
+      this.addressOf=addressOf;this.searchView=searchView;this.titleOf=titleOf;this.addPin=addPin;this.mapPort=mapPort;
       this.onLayout=onLayout;this.isPrivateLayerVisible=isPrivateLayerVisible;
       this.onRenderMarkers=onRenderMarkers;
     }
     choose(result,query=result?.searchQuery){
-      if(this.chooseFeature(result))return null;
       const lat=Number(result?.lat),lng=Number(result?.lon);
       if(!Number.isFinite(lat)||!Number.isFinite(lng)){
         this.searchView.message("Ort konnte nicht übernommen werden");

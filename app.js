@@ -91,7 +91,7 @@
       (result.kind==="point"?"pin":"area"):
       result.__plateEntry?"plate":result.__featureType==="river"?"river":
       result.__featureType==="lake"?"lake":
-      result.__featureType?"area":placeDomain.featureType(result),
+      result.__featureType?"area":null,
     icons:window.Pin2MapIcons,
     duplicateCoordinates:results=>results.some(r=>r.__featureType||r.__plateEntry||r.__plateChoice)?[]:
       placeDomain.duplicateCoordinates(results)
@@ -384,12 +384,6 @@
     onLayout:()=>requestAnimationFrame(keepSelectedAbovePanel),
     isPrivateLayerVisible:()=>layerById(PRIVATE_ID).visible,
     onRenderMarkers:()=>renderMarkers(),
-    chooseFeature:result=>{
-      const kind=placeDomain.featureType(result);
-      if(!kind)return false;
-      void chooseGeometryResult({...result,__featureType:kind});
-      return true;
-    },
   });
   const projectTransfer=window.Pin2MapProjectTransfer;
   const transferSession=new window.Pin2MapProjectTransferSession({
@@ -445,6 +439,7 @@
     onOrdinaryClick:position=>{
       if(gestures.consumeDismissedTap())return;
       if(anyMapMenuOpen()){closeAllMapMenus();return;}
+      cancelGeometrySearch();
       const rect=mapAdapter.getContainer().getBoundingClientRect();
       const xy=mapAdapter.project(position);
       mapActionChooser.open(position,{x:rect.left+xy.x,y:rect.top+xy.y});
@@ -827,10 +822,15 @@
 
   const searchForm = new window.Pin2MapSearchFormController({
     getElement:$,
-    search:(query,hooks)=>{clearObjectPreview();cancelGeometrySearch();return placeSearch.search(query,{
-      state,allowed:state.allowGeocode,
-      ...hooks,onCacheWrite:save
-    });},
+    search:(query,hooks)=>{
+      clearObjectPreview();cancelGeometrySearch();
+      const position=placeDomain.parseCoordinates(query);
+      if(position){
+        placeSearch.cancel();
+        return {kind:"results",results:[{lat:position.lat,lon:position.lng,name:query}]};
+      }
+      return placeSearch.search(query,{state,allowed:state.allowGeocode,...hooks,onCacheWrite:save});
+    },
     onResults:renderResults,
     onMessage:searchMessage,
     onInputChange:()=>{

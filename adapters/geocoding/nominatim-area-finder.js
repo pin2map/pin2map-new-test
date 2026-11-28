@@ -114,20 +114,39 @@
       "https://overpass-api.de/api/interpreter"];
   }
   class NominatimAreaFinder{
-    constructor({fetchImpl,now=()=>Date.now(),sleep=ms=>new Promise(r=>setTimeout(r,ms)),minimumIntervalMs=1100}={}){
+    constructor({fetchImpl,now=()=>Date.now(),sleep=ms=>new Promise(r=>setTimeout(r,ms)),minimumIntervalMs=1100,requestTimeoutMs=12000}={}){
       if(typeof fetchImpl!=="function")throw new TypeError("Fetch transport required");
       this.fetch=fetchImpl;this.now=now;this.sleep=sleep;
-      this.minimumIntervalMs=minimumIntervalMs;
+      this.minimumIntervalMs=minimumIntervalMs;this.requestTimeoutMs=requestTimeoutMs;
       this.lastRequest=-Infinity;
+    }
+    async requestJson(url,signal){
+      if(signal?.aborted)throw Object.assign(new Error("Abgebrochen"),{name:"AbortError"});
+      const controller=new AbortController();
+      let interrupt;
+      const interrupted=new Promise((_,reject)=>{interrupt=reject;});
+      const cancel=()=>interrupt(Object.assign(new Error("Abgebrochen"),{name:"AbortError"}));
+      signal?.addEventListener("abort",cancel,{once:true});
+      const timer=setTimeout(()=>interrupt(new Error("Zeitlimit der Gebietssuche erreicht")),this.requestTimeoutMs);
+      try{
+        const response=(async()=>{
+          const result=await this.fetch(url,{headers:{"Accept-Language":"de,int,en"},signal:controller.signal});
+          if(!result.ok)throw Error("Flächensuche – HTTP "+result.status);
+          return result.json();
+        })();
+        return await Promise.race([response,interrupted]);
+      }finally{
+        clearTimeout(timer);
+        signal?.removeEventListener("abort",cancel);
+        controller.abort();
+      }
     }
     async request(url,signal){
       const elapsed=this.now()-this.lastRequest;
       if(elapsed<this.minimumIntervalMs)await this.sleep(this.minimumIntervalMs-elapsed);
       if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
       this.lastRequest=this.now();
-      const response=await this.fetch(url,{headers:{"Accept-Language":"de,int,en"},signal});
-      if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
-      return response.json();
+      return this.requestJson(url,signal);
     }
     async hierarchyAt(point,{signal,onPartial=()=>{}}={}){
       const params=new URLSearchParams({format:"jsonv2",addressdetails:"1",namedetails:"1",extratags:"1",zoom:"18",
@@ -214,16 +233,8 @@
         const query=queryPrefix+(regional
           ?")->.found;(way(pivot.found);rel(pivot.found););out tags;"
           :")->.found;.found out tags;");
-        const controller=new AbortController();
-        const cancel=()=>controller.abort();
-        signal?.addEventListener("abort",cancel,{once:true});
-        const timeoutMs=regional?12000:endpoint.includes("maps.mail.ru")?32000:24000;
-        const timer=setTimeout(cancel,timeoutMs);
         try{
-          const response=await this.fetch(endpoint+"?"+new URLSearchParams({data:query}),
-            {headers:{"Accept-Language":"de,int,en"},signal:controller.signal});
-          if(!response.ok)throw Error("Flächensuche – HTTP "+response.status);
-          const body=await response.json();
+          const body=await this.requestJson(endpoint+"?"+new URLSearchParams({data:query}),signal);
           if(!Array.isArray(body?.elements)||body.remark)
             throw Error("Ungültige oder unvollständige Gebietsantwort");
           if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
@@ -233,8 +244,6 @@
         }catch(error){
           if(signal?.aborted)throw Object.assign(new Error("Aborted"),{name:"AbortError"});
           return false;
-        }finally{
-          clearTimeout(timer);signal?.removeEventListener("abort",cancel);
         }
       };
       // Start two independent public providers together. Only if they

@@ -37,6 +37,7 @@
       this.onResetPinSelection();
     }
     preparePinSelection(){
+      this.onCancelGeometrySearch();
       this.searchView.hide();
       // Keep the existing panel behavior (selection only hides them).
       this.element("layersPanel").classList.add("hidden");
@@ -102,8 +103,10 @@
         })
       );
       listen(this.document,"pointerdown",event=>{
-        if(this.searchView.isVisible()&&!event.target.closest("#searchResults, #searchForm"))
+        if(this.searchView.isVisible()&&!event.target.closest("#searchResults, #searchForm")){
           this.searchView.hide();
+          this.onCancelGeometrySearch();
+        }
       });
     }
     dispose(){

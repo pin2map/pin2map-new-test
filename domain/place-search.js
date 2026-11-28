@@ -118,8 +118,6 @@
     return null;
   }
   function kind(result){
-    const feature=featureType(result);
-    if(feature==="lake"||feature==="river")return {label:feature==="lake"?"See":"Fluss",symbol:"▱"};
     const type=String(result?.addresstype||result?.type||"").toLowerCase();
     const category=String(result?.class||result?.category||"").toLowerCase();
     const names={city:"Stadt",town:"Stadt",village:"Dorf",hamlet:"Weiler",
@@ -156,6 +154,25 @@
         ? "Position: "+lat.toFixed(5)+", "+lon.toFixed(5):"";
     });
   }
+  function parseCoordinates(query){
+    const input=String(query||"").trim();
+    const decimal=/^([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)$/.exec(input);
+    if(decimal){
+      const lat=Number(decimal[1]),lng=Number(decimal[2]);
+      return Math.abs(lat)<=90&&Math.abs(lng)<=180?{lat,lng}:null;
+    }
+    const dms=/^([NS])\s*(\d{1,2})\s+(\d{1,2})\s+(\d{1,2}(?:\.\d+)?)\s*([EWO])\s*(\d{1,3})\s+(\d{1,2})\s+(\d{1,2}(?:\.\d+)?)$/i.exec(input);
+    if(!dms)return null;
+    const [,ns,a,b,c,ew,d,e,f]=dms;
+    const value=(degrees,minutes,seconds,limit)=>{
+      const dd=Number(degrees),mm=Number(minutes),ss=Number(seconds);
+      const total=dd+mm/60+ss/3600;
+      return mm<60&&ss<60&&total<=limit?total:NaN;
+    };
+    const lat=value(a,b,c,90)*(/^s$/i.test(ns)?-1:1);
+    const lng=value(d,e,f,180)*(/^w$/i.test(ew)?-1:1);
+    return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null;
+  }
   function cacheKey(query){return String(query).trim().replace(/\s+/g," ").toLocaleLowerCase("de");}
   function cleanCache(cache,now,ttlMs=24*3600000,limit=100){
     return Object.fromEntries(Object.entries(cache||{}).filter(([,v])=>
@@ -163,7 +180,7 @@
       now-v.time>=0&&now-v.time<ttlMs&&Array.isArray(v.results)
     ).slice(-limit));
   }
-  const api=Object.freeze({featureType,localizedName,title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
+  const api=Object.freeze({featureType,parseCoordinates,localizedName,title,detail,pinName,fullAddress,pinLocalityName,reversePlaceZoom,nearbyLocalityName,kind,duplicateCoordinates,cacheKey,cleanCache});
   root.Pin2MapPlaceSearch=api;
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

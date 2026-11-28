@@ -124,6 +124,7 @@
    const status=snapshot.loading?"Verbindungen werden gesucht …":snapshot.failed?"Fahrplanauskunft nicht erreichbar":
     selected?this.label(selected):query.arriveBy?"Keine durchgehende Verbindung gefunden":"Keine passende Abfahrt innerhalb von 120 Minuten";
    this.el("routeSummary").textContent=status;
+   this.el("transitProgress").classList.toggle("hidden",!snapshot.loading);
    this.el("routeSummary").classList.toggle("car-route-unavailable",snapshot.failed);
    const summary=this.el("transitSelected");
    summary.replaceChildren(selected?this.option(selected):this.doc.createTextNode("Verbindungen"));
