@@ -20,13 +20,13 @@
  }
  class TransitRouteSearch{
   constructor({calculate,stopNear,railAccess}){Object.assign(this,{calculate,stopNear,railAccess});}
-  async earlierArrival(route,{waypoints,query,signal}){
+  async earlierArrival(route,{waypoints,query,signal,calculate=this.calculate}){
    const transfer=route.critical;
    const station=transfer?.previous.to;
    if(!station?.stopId)return null;
    const deadline=transfer.leg.start-(transfer.walkMinutes+transfer.reserve)*minute;
    const legs=route.legs.slice(transfer.previous.index+1);
-   const prefixes=await this.calculate({waypoints:[waypoints[0],{stopId:station.stopId}],signal,
+   const prefixes=await calculate({waypoints:[waypoints[0],{stopId:station.stopId}],signal,
     query:{...query,arriveBy:true,time:deadline,searchMinutes:30,moreTransferTime:false}});
    const prefix=prefixes.filter(option=>option.end<=deadline&&option.legs.at(-1)?.to?.stopId===station.stopId)
     .sort((a,b)=>b.start-a.start)[0];
@@ -37,13 +37,13 @@
    return {...route,start:prefix.start,durationSeconds:(route.end-prefix.start)/1000,
     distanceMeters:combined.reduce((sum,leg)=>sum+leg.distanceMeters,0),legs:combined};
   }
-  async laterConnection(route,{waypoints,query,signal}){
+  async laterConnection(route,{waypoints,query,signal,calculate=this.calculate}){
    const transfer=route.critical;
    const station=transfer?.leg.from;
    if(!station?.stopId)return null;
    const prefix=route.legs.slice(0,transfer.leg.index);
    const ready=Math.max(prefix.at(-1).end,transfer.previous.end+(transfer.walkMinutes+transfer.reserve)*minute);
-   const options=await this.calculate({waypoints:[{stopId:station.stopId},waypoints[1]],signal,
+   const options=await calculate({waypoints:[{stopId:station.stopId},waypoints[1]],signal,
     query:{...query,arriveBy:false,time:ready,searchMinutes:60,moreTransferTime:true}});
    const candidates=options.filter(option=>option.start>=ready&&option.legs.length).map(option=>{
     const legs=[...prefix,...option.legs].map((leg,index)=>({...leg,index}));
@@ -54,12 +54,12 @@
     assess(a,query).transfers.filter(item=>item.critical).length-
     assess(b,query).transfers.filter(item=>item.critical).length||a.end-b.end)[0]||null;
   }
-  async stationRoutes(waypoints,query,minutes,access,signal){
+  async stationRoutes(waypoints,query,minutes,access,signal,calculate=this.calculate){
    const start=access[0],end=access[1];
    if(!start&&!end)return [];
    const delta=(query.arriveBy?-(end?.leg.durationSeconds||0):start?.leg.durationSeconds||0)*1000;
    const offsets=query.arriveBy?[0,60*minute]:[0];
-   const results=await Promise.all(offsets.map(offset=>this.calculate({
+   const results=await Promise.all(offsets.map(offset=>calculate({
     waypoints:[start?.point||waypoints[0],end?.point||waypoints[1]],signal,
     query:{...query,time:query.time+delta+offset,searchMinutes:minutes}
    })));
@@ -73,9 +73,23 @@
      distanceMeters:legs.reduce((sum,leg)=>sum+leg.distanceMeters,0)};
    });
   }
-  async search({waypoints,guides,query,signal}){
+  async search({waypoints,guides,query,signal,onProgress=()=>{}}){
+   let requests=0,received=0,pending=0;
+   const calculate=async request=>{
+    signal.throwIfAborted();
+    requests++;pending++;
+    onProgress({phase:"request",requests,pending,received});
+    try{
+     const routes=await this.calculate(request);
+     received+=routes.length;
+     return routes;
+    }finally{
+     pending--;
+     if(!signal.aborted)onProgress({phase:pending?"request":"review",requests,pending,received});
+    }
+   };
    const search=(time,via,searchMinutes,moreTransferTime=false)=>
-    this.calculate({waypoints,query:{...query,time,searchMinutes,moreTransferTime},via,signal});
+    calculate({waypoints,query:{...query,time,searchMinutes,moreTransferTime},via,signal});
    const window=async(via,minutes,padded)=>{
     const primary=await search(query.time,via,minutes,padded);
     if(!query.arriveBy)return primary;
@@ -94,15 +108,21 @@
     const direct=(await window([],minutes,false)).filter(eligible);
     let guided=[];
     if(guides.length&&!direct.some(item=>guideCount(item,guides)===guides.length)){
-     if(!via)via=[...new Set((await optional(()=>Promise.all(guides.map(flag=>this.stopNear(flag,signal))))).filter(Boolean))];
+     if(!via){
+      onProgress({phase:"stops",requests,received});
+      via=[...new Set((await optional(()=>Promise.all(guides.map(flag=>this.stopNear(flag,signal))))).filter(Boolean))];
+     }
      if(via.length)guided=(await optional(()=>window(via,minutes,false))).filter(eligible);
     }
     let initial=[...previousOptions.filter(eligible),...direct,...guided];
     let scored=score(initial,query,guides);
     if(this.railAccess&&!scored.some(item=>item.quality!=="red")){
-     if(!access)access=await Promise.all(waypoints.map((pin,index)=>
-      optional(()=>this.railAccess(pin,index===1,signal),null)));
-     const station=(await optional(()=>this.stationRoutes(waypoints,query,minutes,access,signal))).filter(eligible);
+     if(!access){
+      onProgress({phase:"access",requests,received});
+      access=await Promise.all(waypoints.map((pin,index)=>
+       optional(()=>this.railAccess(pin,index===1,signal),null)));
+     }
+     const station=(await optional(()=>this.stationRoutes(waypoints,query,minutes,access,signal,calculate))).filter(eligible);
      initial=[...initial,...station];
      scored=score(initial,query,guides);
     }
@@ -119,14 +139,14 @@
       const key=identity(candidate);
       if(queriedRepairs.has(key))continue;
       queriedRepairs.add(key);
-      const fixed=await optional(()=>this.earlierArrival(candidate,{waypoints,query,signal}),null);
+      const fixed=await optional(()=>this.earlierArrival(candidate,{waypoints,query,signal,calculate}),null);
       if(fixed&&eligible(fixed))repairs.push(fixed);
       if(query.arriveBy||(fixed&&eligible(fixed)&&!assess(fixed,query).critical))continue;
       let option=fixed&&eligible(fixed)?fixed:candidate;
       for(let attempt=0;attempt<3;attempt++){
        const current=score([option],query,guides)[0];
        if(!current.critical)break;
-       const next=await optional(()=>this.laterConnection(current,{waypoints,query,signal}),null);
+       const next=await optional(()=>this.laterConnection(current,{waypoints,query,signal,calculate}),null);
        if(!next||identity(option)===identity(next))break;
        repairs.push(next);
        option=next;

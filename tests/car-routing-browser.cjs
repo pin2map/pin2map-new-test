@@ -210,7 +210,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(controls.toggleTop>controls.basemapBottom&&Math.abs(controls.toggleRight-controls.basemapRight)<2);
    const toggleBg=()=>page.locator("#routePanelToggle").evaluate(el=>getComputedStyle(el).backgroundColor);
    assert.equal(await toggleBg(),"rgb(23, 100, 191)");
-   const sizes=await page.locator("#carRoutePanel .car-route-round:not(#transitDb,#transitStickyEnd)").evaluateAll(buttons=>
+   const sizes=await page.locator("#carRoutePanel .car-route-round:not(#transitDb,#transitStickyEnd,#transitNow)").evaluateAll(buttons=>
     buttons.map(button=>{const box=button.getBoundingClientRect();return [box.width,box.height];}));
    assert.ok(sizes.every(([w,h])=>w===h&&w===sizes[0][0]),JSON.stringify(sizes));
    await page.locator("#routeWaypoints").click();
@@ -567,6 +567,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    const progress=page.getByRole("progressbar",{name:"Verbindungen werden gesucht"});
    await progress.waitFor({state:"visible"});
    assert.equal(await progress.getAttribute("value"),null,"Pending search has no known percentage");
+   assert.match(await page.locator("#transitSearchPhase").textContent(),/Fahrplanauskunft wird angefragt/);
    resumeTransit();
    // Request a daytime departure so the simulated same-day trip cannot cross midnight.
    await page.locator("#transitClock").evaluate(input=>{
@@ -584,12 +585,12 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(railLayout.dates[0][1]===railLayout.dates[1][1]&&railLayout.dates[0][2]<railLayout.dates[1][0]);
    assert.equal(await page.locator("#transitVehicle").count(),0);
    const controlGeometry=await page.evaluate(()=>{
-    const [mode,summary,db,date,clock,reverse]=[".transit-select","#transitSelected","#transitDb",
-     ".transit-time-fields .transit-field:first-child",".transit-time-fields .transit-field:nth-child(2)","#routeReverse"]
+    const [mode,summary,db,date,clock,reverse,now]=[".transit-select","#transitSelected","#transitDb",
+     ".transit-time-fields .transit-field:first-child",".transit-time-fields .transit-field:nth-child(2)","#routeReverse","#transitNow"]
      .map(selector=>document.querySelector(selector).getBoundingClientRect());
-    return {heights:[mode,summary,db,date,clock,reverse].map(rect=>rect.height),
+    return {heights:[mode,summary,db,date,clock,reverse,now].map(rect=>rect.height),
      row:[mode,summary,db].map(rect=>rect.top+rect.height/2),
-     first:[date,clock,reverse].map(rect=>rect.top+rect.height/2)};
+     first:[date,clock,reverse,now].map(rect=>rect.top+rect.height/2)};
    });
    assert.equal(new Set(controlGeometry.heights).size,1,JSON.stringify(controlGeometry));
    assert.equal(new Set(controlGeometry.row).size,1);
@@ -600,6 +601,13 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     await page.waitForFunction(()=>document.querySelector("#transitClockLabel").textContent==="09:42");
    }
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=2);
+   const nowButton=page.getByRole("button",{name:"Jetzt",exact:true});
+   assert.equal(await nowButton.getAttribute("data-pin-icon"),"calendar-clock");
+   const expectedNow=await page.evaluate(()=>new Intl.DateTimeFormat("sv-SE",{year:"numeric",month:"2-digit",day:"2-digit"}).format(Date.now()));
+   await nowButton.click();
+   assert.equal(await page.locator("#transitDate").inputValue(),expectedNow);
+   assert.equal(await page.locator("#transitWhen").inputValue(),"depart");
+   await page.locator("#transitClock").evaluate(input=>{input.value="12:00";input.dispatchEvent(new Event("change",{bubbles:true}));});
    await page.locator("#transitWhen").selectOption("arrive");
    await page.waitForFunction(()=>document.querySelectorAll("#transitAlternatives button").length>=3);
    assert.ok(transitCalls.some(row=>row.some(([key,value])=>key==="arriveBy"&&value==="true")));
@@ -631,6 +639,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.ok(await page.locator("#carRoutePanel").evaluate(panel=>panel.scrollTop)>0);
    assert.equal(await page.locator(".transit-leg-icon").count(),3);
    assert.equal(await page.locator(".transit-leg-walk .transit-leg-duration").textContent(),"5 min");
+   assert.match(await page.locator(".transit-leg-walk .transit-leg-title").textContent(),/Umstieg · Fußweg · [\d.]+ m/);
    assert.equal(await page.locator(".transit-leg-walk .transit-leg-arrive").textContent(),
     await page.locator(".transit-leg").last().locator(".transit-leg-depart").textContent());
    assert.equal(await page.locator(".transit-leg-number").first().textContent(),"1");

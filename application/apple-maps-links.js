@@ -9,9 +9,8 @@
  };
  function url(mode,pin){
   const coords=encodeURIComponent(pair(pin));
-  if(mode==="driving")return "https://maps.apple.com/?daddr="+coords+"&dirflg=d";
-  if(mode==="satellite")return "https://maps.apple.com/?ll="+coords+"&t=k";
-  throw new RangeError("Unknown Apple Maps action");
+  if(mode!=="driving"&&mode!=="satellite")throw new RangeError("Unknown Apple Maps action");
+  return "https://maps.apple.com/?ll="+coords+"&q="+coords+"&z=21&t="+(mode==="satellite"?"k":"m");
  }
  function routeUrl(from,to){return "https://maps.apple.com/?saddr="+encodeURIComponent(pair(from))+"&daddr="+encodeURIComponent(pair(to))+"&dirflg=d";}
  const api=Object.freeze({pair,url,routeUrl});

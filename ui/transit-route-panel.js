@@ -49,6 +49,7 @@
    desktopTime.addEventListener("keydown",event=>{
     if(event.key==="Enter"){event.preventDefault();desktopTime.blur();}
    });
+   this.el("transitNow").addEventListener("click",()=>this.onQuery({time:Date.now(),arriveBy:false}));
    const picker=this.el("transitPicker"), summary=this.el("transitSelected");
    picker.addEventListener("keydown",event=>{
     if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
@@ -107,7 +108,7 @@
   }
   render(snapshot){
    this.snapshot=snapshot;
-   const {query,journeys,recovery}=snapshot.transit;
+   const {query,journeys,recovery,progress}=snapshot.transit;
    const selected=journeys[snapshot.selectedVariant];
    const endpoint=(id,stop)=>{const pin=this.getPin(id);return pin?.address||pin?.name||readableLocalName(stop?.name);};
    this.el("transitStickyDeparture").textContent=selected?
@@ -124,8 +125,20 @@
    const status=snapshot.loading?"Verbindungen werden gesucht …":snapshot.failed?"Fahrplanauskunft nicht erreichbar":
     selected?this.label(selected):query.arriveBy?"Keine durchgehende Verbindung gefunden":"Keine passende Abfahrt innerhalb von 120 Minuten";
    this.el("routeSummary").textContent=status;
-   this.el("transitProgress").classList.toggle("hidden",!snapshot.loading);
-   this.el("routeSummary").classList.toggle("car-route-unavailable",snapshot.failed);
+   const received=progress?.received||0;
+   const phase=progress?.phase;
+   const activity=phase==="stops"?"Haltestellen entlang der Richtungsflaggen werden gesucht …":
+    phase==="access"?"Fußwege zu Bahnhöfen werden geprüft …":
+    phase==="review"?(received===1?"Ein Ergebnis wird geprüft …":received?received+" Ergebnisse werden geprüft …":"Fahrplanauskunft hat geantwortet …"):
+    (progress?.requests>1?"Weitere Verbindungen werden angefragt …":"Fahrplanauskunft wird angefragt …");
+   const progressBlock=this.el("transitSearchActivity");
+   progressBlock.classList.toggle("hidden",!snapshot.loading);
+   const progressText=this.el("transitSearchPhase");
+   if(progressText.textContent!==activity)progressText.textContent=activity;
+   const count=this.el("transitSearchCount");
+   count.textContent=received&&phase!=="review"?(received===1?"1 Ergebnis empfangen":received+" Ergebnisse empfangen"):"";
+   count.classList.toggle("hidden",!count.textContent);
+   this.el("routeSummary").classList.toggle("car-route-unavailable",snapshot.failed&&!snapshot.loading);
    const summary=this.el("transitSelected");
    summary.replaceChildren(selected?this.option(selected):this.doc.createTextNode("Verbindungen"));
    const options=this.el("transitAlternatives");
@@ -162,7 +175,9 @@
     const destination=this.icons.svg("arrow-right",this.doc);destination.classList.add("transit-leg-arrow");
     const line=walking(leg.mode)?kind:leg.line||
      [kind,leg.operator,"Linie nicht angegeben"].filter(Boolean).join(" · ");
-    const title=line+(leg.headsign?" · Ri. "+readableLocalName(leg.headsign):"");
+    const meters=walking(leg.mode)&&leg.measured&&Number.isFinite(leg.distanceMeters)?
+     " · "+Math.round(leg.distanceMeters).toLocaleString("de-DE")+" m":"";
+    const title=line+(leg.headsign?" · Ri. "+readableLocalName(leg.headsign):"")+meters;
     const transfer=selected.transfers.find(item=>
      (item.leg.index-item.previous.index>1?item.leg.index-1:item.leg.index)===index);
     const transferWindow=transfer&&walking(leg.mode)?transfer:null;

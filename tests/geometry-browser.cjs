@@ -178,11 +178,10 @@ const viewports=[
    // v306: copy WGS84 coordinates, show the success glyph for precisely one
    // second, and open Apple Maps from an anchored two-choice menu.
    await page.evaluate(()=>{
-     window.__copiedPinCoords=null;window.__openedAppleLinks=[];
+     window.__copiedPinCoords=null;
      Object.defineProperty(navigator,"clipboard",{configurable:true,value:{
        writeText:async text=>{window.__copiedPinCoords=text;}
      }});
-     window.open=url=>{window.__openedAppleLinks.push(url);return null;};
    });
    assert.equal(await page.locator("#pinNavCopy").getAttribute("data-pin-icon"),"map-pin-check");
    const initialCopyStyle=await page.locator("#pinNavCopy").evaluate(el=>({
@@ -229,15 +228,21 @@ const viewports=[
    assert.ok(applePosition.top>=applePosition.bottom||
      applePosition.bottom+applePosition.height+7>applePosition.viewport-10,
      "Apple menu must appear directly below the button whenever it fits");
-   await page.locator('#pinAppleMenu [data-apple-mode="driving"]').click();
-   const driving=await page.evaluate(()=>window.__openedAppleLinks.at(-1));
-   assert.equal(new URL(driving).searchParams.get("daddr"),"47.650100,9.180200");
-   assert.equal(new URL(driving).searchParams.get("dirflg"),"d");
-   await page.locator("#pinNavApple").click();
-   await page.locator('#pinAppleMenu [data-apple-mode="satellite"]').click();
-   const satellite=await page.evaluate(()=>window.__openedAppleLinks.at(-1));
-   assert.equal(new URL(satellite).searchParams.get("ll"),"47.650100,9.180200");
-   assert.equal(new URL(satellite).searchParams.get("t"),"k");
+   await context.route("https://maps.apple.com/**",route=>route.fulfill({status:204}));
+   for(const [mode,mapType] of [["driving","m"],["satellite","k"]]){
+    if(mode==="satellite")await page.locator("#pinNavApple").click();
+    const [request]=await Promise.all([
+     page.waitForRequest(request=>request.isNavigationRequest()&&request.url().startsWith("https://maps.apple.com/")),
+     page.locator('#pinAppleMenu [data-apple-mode="'+mode+'"]').click()
+    ]);
+    const params=new URL(request.url()).searchParams;
+    assert.equal(request.frame(),page.mainFrame());
+    assert.equal(context.pages().length,1);
+    assert.equal(params.get("ll"),"47.650100,9.180200");
+    assert.equal(params.get("q"),"47.650100,9.180200");
+    assert.equal(params.get("t"),mapType);
+    assert.equal(params.get("z"),"21");
+   }
 
    await page.locator("#closePin").click();
    await page.locator(".pin-icon").last().click();

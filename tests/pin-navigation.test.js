@@ -10,16 +10,19 @@ function stub(){
   setAttribute(k,v){this.attributes[k]=v;},append(child){this.children.push(child);}
  })};
 }
-test("Apple Maps uses WGS84 pin coordinates for directions and satellite view",()=>{
+test("Apple Maps uses WGS84 pin coordinates for the focused standard and satellite views",()=>{
  const p={lat:48.7758461,lng:9.1829324};
  const d=new URL(maps.url("driving",p));
  assert.equal(d.hostname,"maps.apple.com");
- assert.equal(d.searchParams.get("daddr"),"48.775846,9.182932");
- assert.equal(d.searchParams.get("dirflg"),"d");
- assert.equal(d.searchParams.has("saddr"),false);
+ assert.equal(d.searchParams.get("ll"),"48.775846,9.182932");
+ assert.equal(d.searchParams.get("q"),"48.775846,9.182932");
+ assert.equal(d.searchParams.get("z"),"21");
+ assert.equal(d.searchParams.get("t"),"m");
+ assert.equal(new URL(maps.routeUrl(p,p)).searchParams.get("dirflg"),"d");
  const sat=new URL(maps.url("satellite",p));
  assert.equal(sat.searchParams.get("ll"),"48.775846,9.182932");
  assert.equal(sat.searchParams.get("t"),"k");
+ assert.equal(sat.searchParams.get("z"),"21");
  assert.equal(sat.searchParams.has("daddr"),false);
  assert.throws(()=>maps.url("walking",p),RangeError);
  assert.throws(()=>maps.url("satellite",{lat:91,lng:0}),RangeError);

@@ -217,6 +217,7 @@
       <div class="transit-time-fields">
         <label class="transit-field"><span id="transitDateLabel" aria-hidden="true"></span><input id="transitDate" type="date" aria-label="Reisedatum"></label>
         <label class="transit-field"><span id="transitClockLabel" aria-hidden="true"></span><input id="transitClock" type="time" aria-label="Uhrzeit"><input id="transitClockDesktop" type="text" maxlength="5" aria-label="Uhrzeit (Stunden und Minuten)" inputmode="numeric" autocomplete="off" spellcheck="false"></label>
+        <button id="transitNow" class="car-route-round" type="button" data-pin-icon="calendar-clock" title="Jetzt" aria-label="Jetzt"></button>
       </div>
     </div>
     <div class="transit-controls">
@@ -224,7 +225,11 @@
       <details id="transitPicker"><summary id="transitSelected">Verbindungen</summary><div id="transitAlternatives"></div></details>
       <button id="transitDb" class="car-route-round" type="button" aria-label="Bei der Bahn suchen">DB</button>
     </div>
-    <progress id="transitProgress" class="hidden" aria-label="Verbindungen werden gesucht"></progress>
+    <div id="transitSearchActivity" class="hidden">
+      <div id="transitSearchPhase" role="status"></div>
+      <small id="transitSearchCount" class="hidden"></small>
+      <progress id="transitProgress" aria-label="Verbindungen werden gesucht"></progress>
+    </div>
     <div class="car-route-row car-route-secondary-row">
       <fieldset class="car-route-group car-route-waypoints"><legend>Zwischenziele</legend><div class="car-route-modes">
         <button id="routeWaypoints" class="car-route-round p2m-icon-control" type="button" aria-label="Zwischenziele" aria-controls="routeWaypointMenu" aria-expanded="false"><span data-pin-icon="graph-star" aria-hidden="true"></span></button>

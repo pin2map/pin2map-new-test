@@ -33,7 +33,7 @@ test("bus distance and unknown shapes are distinct from estimated risks",()=>{
  assert.equal(assess({...route,end:minutes(1440)},query).quality,"red");
 });
 test("arrival combines both windows, retains red routes and probes up to two ordered via stops",async()=>{
- const calls=[];
+ const calls=[],progress=[];
  const direct=journey([leg(0,"TRAM",-50,-20,{geometry:{coordinates:[[8,48],[9,48]]}})]);
  const later=journey([leg(0,"TRAM",0,13)]);
  const flags=[{lat:49,lng:8.25,radiusMeters:4000},{lat:49,lng:8.75,radiusMeters:4000}];
@@ -42,7 +42,11 @@ test("arrival combines both windows, retains red routes and probes up to two ord
   calls.push(request);return request.via.length?[guided]:[request.query.time===instant?direct:later,direct];
  }});
  const result=await search.search({waypoints:[{},{}],guides:flags,query:{time:instant,arriveBy:true},
-  signal:new AbortController().signal});
+  signal:new AbortController().signal,onProgress:value=>progress.push(value)});
+ assert.deepEqual(progress[0],{phase:"request",requests:1,pending:1,received:0});
+ assert.deepEqual(progress[1],{phase:"review",requests:1,pending:0,received:2});
+ assert.ok(progress.some(value=>value.phase==="stops"&&value.received===4));
+ assert.deepEqual(progress.at(-1),{phase:"review",requests:4,pending:0,received:6});
  assert.equal(result.journeys.length,3);
  assert.equal(result.journeys[result.selected].guideCount,2);
  assert.ok(result.journeys.some(item=>item.quality==="yellow"));

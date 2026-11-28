@@ -281,7 +281,7 @@
   const pinNavigation=new window.Pin2MapPinNavigation({
     document,getElement:$,icons:window.Pin2MapIcons,getPin:selectedPin,
     writeText:value=>navigator.clipboard.writeText(value),
-    openExternal:url=>window.open(url,"_blank","noopener,noreferrer"),
+    openExternal:url=>window.location.assign(url),
     onNotice:message=>showNotice(message),
     makeUrl:(mode,pin)=>window.Pin2MapAppleMapsLinks.url(mode,pin)
   });
