@@ -3379,10 +3379,6 @@ body.pin-open #app #routeToggleHolder{display:none}
 
 #app .transit-leg-row{position:relative;display:flex;align-items:flex-start}
 #app .transit-leg-row>.transit-leg{flex:1;min-width:0}
-#app .transit-next-departure{
- flex:none;margin:5px 0 0 4px;padding:3px 5px;color:#1764bf;background:#e8f2ff;
- border:1px solid #b9cfe7;border-radius:5px;font:inherit;font-weight:650
-}
 #app .transit-transfer-menu{flex:none;margin:4px 0 0 4px}
 #app .transit-transfer-trigger{
  display:grid;place-items:center;width:25px;height:25px;box-sizing:border-box;

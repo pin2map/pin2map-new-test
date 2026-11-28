@@ -27,6 +27,10 @@
   const stuttgart=stuttgartTransfer(previous,next);
   const minimum=stuttgart?20:longRail(next.mode)?12:samePlatform?2:5;
   const regional=regionalRail(previous.mode)&&regionalRail(next.mode);
+  const shortLocal=Boolean(!stuttgart&&origin&&destination&&distance>0&&distance<=75&&
+   legs.every(leg=>leg.measured)&&
+   (regionalRail(next.mode)||localRail(next.mode)||next.mode==="BUS"));
+  if(shortLocal)return {reported,distance,stuttgart,regional,shortLocal,minutes:Math.ceil(distance/50)+1};
   const planned=legs.reduce((sum,leg)=>sum+leg.durationSeconds/60,0);
   const minutes=regional?Math.max(minimum,planned,distance/60):
    Math.max(minimum,reported*paddedTransfer.factor,distance*20/(referenceWalkMeters||250));
@@ -41,7 +45,7 @@
     const available=(leg.start-previous.end)/60000;
     const walk=realisticWalk(previous,leg,journey.legs.slice(previous.index+1,leg.index).filter(item=>walking(item.mode)),query.referenceWalkMeters);
     const slack=available-walk.minutes;
-    const safetyReserve=walk.regional?5:reserve(previous.mode);
+    const safetyReserve=walk.shortLocal?3:walk.regional?5:reserve(previous.mode);
     transfers.push({leg,previous,slack,available,walkMinutes:walk.minutes,reportedWalk:walk.reported,
      walkDistance:walk.distance,stuttgart:walk.stuttgart,
      reserve:safetyReserve,critical:slack<safetyReserve});

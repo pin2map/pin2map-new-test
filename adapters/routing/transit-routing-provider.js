@@ -56,7 +56,6 @@
     walkBaselineMinutes:walking(leg.mode)&&Number.isFinite(leg.duration)?
       Math.max(0,(leg.duration/60-additionalTransferTime)/transferFactor):undefined,
     cancelled:leg.cancelled,from:leg.from,to:leg.to,ferry:leg.mode==="FERRY",
-    routeId:leg.routeId,directionId:leg.directionId,
     line:serviceName(leg),headsign:leg.headsign||leg.tripTo?.name,operator:leg.agencyName};
   });
   if(legs.some(leg=>!Number.isFinite(leg.start)||!Number.isFinite(leg.end)||leg.end<leg.start||leg.cancelled))return null;
@@ -89,19 +88,6 @@
    };
    const nearby=read(await plan(900));
    return nearby.length?nearby:read(await plan(1800));
-  }
-  async nextDeparture(leg,signal){
-   if(!leg.from?.stopId||!leg.routeId||leg.directionId==null)return null;
-   const after=Date.parse(leg.from.scheduledDeparture);
-   const start=Number.isFinite(after)?after:leg.start;
-   const data=await this.request("stoptimes",{stopId:leg.from.stopId,time:new Date(start).toISOString(),
-    n:1,window:7200,mode:leg.mode,realtimeMode:"OFF",withAlerts:false},signal);
-   const candidates=(data.stopTimes||[]).filter(event=>event.routeId===leg.routeId&&
-    event.directionId===leg.directionId&&event.tripId&&event.tripId!==leg.tripId&&!event.cancelled&&!event.tripCancelled)
-    .map(event=>({time:Date.parse(event.place?.scheduledDeparture||event.place?.departure),tripId:event.tripId}))
-    .filter(event=>event.time>start&&event.time<=start+7200000)
-    .sort((a,b)=>a.time-b.time);
-   return candidates[0]||null;
   }
   async stopsNear(flag,radius,signal,modes){
    const lat=radius/111195,lng=lat/Math.max(.1,Math.cos(flag.lat*Math.PI/180));

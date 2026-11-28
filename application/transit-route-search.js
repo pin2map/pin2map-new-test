@@ -10,8 +10,15 @@
  function guideCount(journey,guides){
   return assignGuides(journey.legs,guides).flat().filter(guide=>guide.meters<=guide.radius).length;
  }
+ // Allow a meaningful detour without offering disproportionate travel times.
+ const elapsed=route=>route.end-route.start;
+ const durationLimit=fastest=>fastest+Math.max(60*minute,fastest/2);
+ function plausibleJourneys(routes){
+  const fastest=routes.reduce((best,route)=>Math.min(best,elapsed(route)),Infinity);
+  return routes.filter(route=>elapsed(route)<=durationLimit(fastest));
+ }
  function score(routes,query,guides){
-  const unique=new Map(routes.map(route=>[identity(route),route]));
+  const unique=new Map(plausibleJourneys(routes).map(route=>[identity(route),route]));
   const distances=[...unique.values()].flatMap(route=>assess(route,query).transfers)
    .filter(item=>item.stuttgart&&item.walkDistance>=50).map(item=>item.walkDistance).sort((a,b)=>a-b);
   const referenceWalkMeters=distances[Math.floor(distances.length/2)];
@@ -165,6 +172,7 @@
    return this.results(previousOptions,query);
   }
   results(journeys,query){
+   journeys=plausibleJourneys(journeys);
    const quality={green:0,yellow:1,red:2};
    const timeCost=route=>query.arriveBy?
     Math.abs(route.end-query.time)+route.durationSeconds*1000/2:route.end-query.time;
@@ -177,7 +185,7 @@
    journeys.sort((a,b)=>a.start-b.start||a.end-b.end);
    return {journeys,selected:Math.max(0,journeys.indexOf(preferred))};
   }
-  async continueJourney(journey,{index,delay,next,target,query,signal}){
+  async continueJourney(journey,{index,delay,target,query,signal}){
    const transfer=journey.transfers.find(item=>item.leg.index===index);
    const leg=journey.legs[index];
    if(!leg||walking(leg.mode))return null;
@@ -187,10 +195,11 @@
    const prefix=journey.legs.slice(0,branch);
    const ready=prefix.at(-1)?.end??journey.start;
    const scheduled=Date.parse(leg.from?.scheduledDeparture);
-   const departure=Math.max(ready,next?.time??(Number.isFinite(scheduled)?scheduled:leg.start)+delay*minute);
+   const departure=Math.max(ready,(Number.isFinite(scheduled)?scheduled:leg.start)+delay*minute);
    const routes=await this.calculate({waypoints:[{stopId:from.stopId},target],signal,
     query:{time:departure,arriveBy:false,searchMinutes:120}});
-   const options=routes.filter(route=>route.legs.length&&route.start>=departure);
+   const limit=durationLimit(journey.end-ready);
+   const options=routes.filter(route=>route.legs.length&&route.start>=departure&&route.end-departure<=limit);
    const picked=options.sort((a,b)=>a.end-b.end||b.start-a.start)[0];
    if(!picked)return null;
    const legs=[...prefix,...picked.legs].map((item,i)=>({...item,index:i}));

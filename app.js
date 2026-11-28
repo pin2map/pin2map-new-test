@@ -1060,7 +1060,7 @@
       onLayoutChange:()=>routeMapView.scheduleFit(),onShowNotice:showNotice
     });
     routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
-      transitSearch,nextDeparture:(leg,signal)=>transitProvider.nextDeparture(leg,signal),plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
+      transitSearch,plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
       onGuideWarning:count=>showNotice(count===1?"Eine Richtungsflagge konnte nicht sinnvoll berücksichtigt werden.":
         count+" Richtungsflaggen konnten nicht sinnvoll berücksichtigt werden."),
       calculate:request=>routingCore.calculate(request),

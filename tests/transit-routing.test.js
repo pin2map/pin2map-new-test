@@ -210,12 +210,12 @@ test("nearby access is tried first, broader access is a fallback and the respons
  assert.equal(routes.length,15);
 });
 
-test("a much longer safe trip remains selectable without displacing a nearby connection",()=>{
+test("a disproportionately long trip is removed even when safe",()=>{
  const search=new Search({});
  const near={...journey([leg(0,"BUS",5,10)]),quality:"red",guideCount:0};
  const distant={...journey([leg(0,"BUS",5,100)]),quality:"green",guideCount:0};
  const result=search.results([near,distant],{time:instant,arriveBy:false});
- assert.equal(result.journeys.length,2);
+ assert.deepEqual(result.journeys,[near]);
  assert.equal(result.journeys[result.selected],near);
 });
 
@@ -285,26 +285,6 @@ test("a ten-minute regional rail connection can cover the planned walk and reser
  assert.equal(assess(journey([first,walk,{...onward,start:minutes(17)}]),query).quality,"red");
 });
 
-test("next departure is scheduled, distinct and belongs to the same line and direction",async()=>{
- const base=leg(0,"SUBURBAN",28,35,{routeId:"s62",directionId:"1",
-  from:{stopId:"singen",scheduledDeparture:new Date(minutes(28)).toISOString()}});
- const event=(id,routeId,directionId,t,extra={})=>({
-  tripId:id,routeId,directionId,place:{scheduledDeparture:new Date(minutes(t)).toISOString()},...extra
- });
- const provider=new Provider({fetchImpl:async url=>{
-  const request=new URL(url);
-  assert.equal(request.pathname,"/api/v6/stoptimes");
-  assert.equal(request.searchParams.get("stopId"),"singen");
-  assert.equal(request.searchParams.get("realtimeMode"),"OFF");
-  return {ok:true,json:async()=>({stopTimes:[
-   event("trip0","s62","1",30),event("wrong-line","s61","1",31),
-   event("wrong-direction","s62","0",32),event("cancelled","s62","1",35,{cancelled:true}),
-   event("later","s62","1",58),event("next","s62","1",42)
-  ]})};
- }});
- assert.deepEqual(await provider.nextDeparture(base,new AbortController().signal),{time:minutes(42),tripId:"next"});
-});
-
 test("continuation retains the inbound leg and chooses a free route from the transfer stop",async()=>{
  const original=journey([
   leg(0,"LONG_DISTANCE",0,26,{to:{stopId:"singen",track:"1"}}),
@@ -316,9 +296,9 @@ test("continuation retains the inbound leg and chooses a free route from the tra
  const search=new Search({calculate:async request=>{
   requests.push(request);
   const first=(request.query.time-instant)/60000;
-  return [journey([leg(0,"BUS",first+2,first+60,{tripId:"bus"})])];
+  return [journey([leg(0,"BUS",first+2,first+35,{tripId:"bus"})])];
  }});
- for(const [options,earliest] of [[{delay:20},48],[{next:{time:minutes(42),tripId:"next-s62"}},42]]){
+ for(const [options,earliest] of [[{delay:20},48],[{delay:45},73]]){
   const result=await search.continueJourney(original,{index:2,...options,target,query});
   assert.deepEqual(requests.at(-1).waypoints,[{stopId:"singen"},target]);
   assert.deepEqual(requests.at(-1).query,{time:minutes(earliest),arriveBy:false,searchMinutes:120});
@@ -327,5 +307,32 @@ test("continuation retains the inbound leg and chooses a free route from the tra
   assert.equal(result.journey.legs[1].tripId,"bus");
   assert.equal(result.journey.legs[1].index,1);
   assert.equal(original.legs.length,3);
+ }
+});
+
+test("multi-day alternatives are rejected beside a four-hour route, including when faster routes are critical",()=>{
+ const search=new Search({});
+ for(const arriveBy of [false,true]){
+  const query={time:instant,arriveBy};
+  const fast={...journey([leg(0,"BUS",0,223)]),quality:"red",guideCount:0};
+  const normal={...journey([leg(0,"BUS",4,254)]),quality:"green",guideCount:0};
+  const long={...journey([leg(0,"BUS",4,3075)]),quality:"green",guideCount:0};
+  assert.deepEqual(search.results([long,fast,normal],query).journeys,[fast,normal]);
+  assert.deepEqual(search.results([long],query).journeys,[long]);
+ }
+});
+
+test("measured short walks cover local departures without marking good transfers critical",()=>{
+ const query={time:instant,arriveBy:false};
+ const from={stopId:"track3",track:"3"},to={stopId:"track2",track:"2"};
+ for(const [distance,available,walk] of [[52,7,3],[14,9,2]]){
+  const previous=leg(0,"LONG_DISTANCE",0,30,{to:from});
+  const foot=leg(1,"WALK",30,33,{distanceMeters:distance});
+  const onward=leg(2,"SUBURBAN",30+available,45,{from:to});
+  const route=assess(journey([previous,foot,onward]),query);
+  assert.deepEqual(route.transfers.map(item=>[item.walkMinutes,item.reserve,item.critical]),[[walk,3,false]]);
+  const tight=assess(journey([previous,foot,{...onward,start:minutes(32)}]),query);
+  assert.equal(tight.critical.available,2);
+  assert.equal(assess(journey([previous,{...foot,measured:false},onward]),query).quality,"red");
  }
 });

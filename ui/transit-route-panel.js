@@ -121,7 +121,7 @@
   }
   render(snapshot){
    this.snapshot=snapshot;
-   const {query,journeys,recovery,progress,comparison,next={},continuing,continuationMessage,continuationIndex}=snapshot.transit;
+   const {query,journeys,recovery,progress,comparison,continuing,continuationMessage,continuationIndex}=snapshot.transit;
    const selected=snapshot.transit.active||journeys[snapshot.selectedVariant];
    const endpoint=(id,stop)=>{const pin=this.getPin(id);return pin?.address||pin?.name||readableLocalName(stop?.name);};
    this.el("transitStickyDeparture").textContent=selected?
@@ -217,16 +217,8 @@
      destination,text("transit-leg-to",station(leg.to)));
     button.addEventListener("click",()=>{button.focus({preventScroll:true});this.onLegSelect(index);});
     row.append(button);
-    const departure=next[index];
-    if(departure){
-     const nextButton=text("transit-next-departure","(/"+time(departure.time,selected.start)+")","button");
-     nextButton.type="button";nextButton.disabled=continuing;
-     nextButton.title="Restverbindung ab der nächsten planmäßigen Abfahrt suchen";
-     nextButton.setAttribute("aria-label","Restverbindung ab "+time(departure.time,selected.start)+" suchen");
-     nextButton.addEventListener("click",()=>this.onContinue(index,{followDeparture:true}));
-     row.append(nextButton);
-    }
-    if(transfer&&transfer.previous.to?.stopId){
+    const onward=selected.transfers.find(item=>item.leg.index===index);
+    if(onward?.previous.to?.stopId){
      const menu=this.doc.createElement("details");menu.className="transit-transfer-menu";
      const trigger=text("transit-transfer-trigger","","summary");
      trigger.setAttribute("aria-label","Anschluss verpasst");trigger.title="Anschluss verpasst";
@@ -235,7 +227,7 @@
      for(const delay of [5,10,15,20,30,45,60,90]){
       const action=text("transit-transfer-delay","+"+delay+" min","button");
       action.type="button";action.disabled=continuing;
-      action.addEventListener("click",()=>this.onContinue(transfer.leg.index,{delay}));
+      action.addEventListener("click",()=>this.onContinue(index,{delay}));
       choices.append(action);
      }
      menu.append(choices);row.append(menu);

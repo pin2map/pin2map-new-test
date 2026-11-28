@@ -544,13 +544,6 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    const transitGate=new Promise(resolve=>{resumeTransit=resolve;});
    await page.route("https://api.transitous.org/api/v6/map/stops?**",entry=>
     entry.fulfill({json:[],headers:{"Access-Control-Allow-Origin":"*"}}));
-   await page.route("https://api.transitous.org/api/v6/stoptimes?**",entry=>{
-    const params=new URL(entry.request().url()).searchParams;
-    const time=new Date(Date.parse(params.get("time"))+14*60000).toISOString();
-    return entry.fulfill({json:{stopTimes:params.get("stopId")==="B"?[
-      {routeId:"route-ICE2",directionId:"1",tripId:"ICE-later",place:{scheduledDeparture:time}}
-    ]:[]},headers:{"Access-Control-Allow-Origin":"*"}});
-   });
    await page.route("https://api.transitous.org/api/v6/plan?**",async entry=>{
     await transitGate;
     const params=new URL(entry.request().url()).searchParams;
@@ -559,7 +552,7 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
     const at=minute=>new Date(base+minute*60000).toISOString();
     const travel=(mode,start,end,from,to,tripId,lon)=>({
      mode,startTime:at(start),endTime:at(end),from:{name:from,stopId:from,track:"2"},to:{name:to,stopId:to},
-     tripId,routeId:"route-"+tripId,directionId:"1",legGeometry:{points:encode([{lat:48.7,lon},{lat:48.8,lon:lon+.05}]),precision:6}
+     tripId,legGeometry:{points:encode([{lat:48.7,lon},{lat:48.8,lon:lon+.05}]),precision:6}
     });
     const a=params.get("arriveBy")==="true"?-60:0;
     const route=(legs,end)=>({startTime:legs[0].startTime,endTime:at(end),legs});
@@ -685,22 +678,23 @@ for(const [engineName,engine] of [["Chromium",chromium],["WebKit",webkit]]){
    assert.equal(await legs.nth(1).evaluate(node=>node.classList.contains("car-route-selected-leg")),true);
    await page.keyboard.press("ArrowUp");
    assert.equal(await legs.first().evaluate(node=>node===document.activeElement),true);
-   const nextDeparture=page.locator(".transit-next-departure").first();
-   await nextDeparture.waitFor();
+   assert.equal(await page.locator(".transit-next-departure").count(),0);
    const originalLabel=await page.locator("#routeLegs .transit-leg-title").first().textContent();
-   await nextDeparture.click();
    const comparison=page.locator(".transit-comparison");
-   await comparison.getByRole("button",{name:/^Alternative/}).waitFor();
-   assert.equal(await page.locator("#routeLegs .transit-leg-title").first().textContent(),originalLabel);
-   assert.match(await page.locator("#routeLegs .transit-leg-title").last().textContent(),/Bus 123/);
-   await comparison.getByRole("button",{name:/^Original/}).click();
-   await page.locator('summary[aria-label="Anschluss verpasst"]').first().click();
+   const chevron=page.locator('summary[aria-label="Anschluss verpasst"]').first();
+   assert.equal(await chevron.locator("xpath=../..").locator(".transit-leg-walk").count(),0);
+   assert.match(await chevron.locator("xpath=../..").locator(".transit-leg").getAttribute("data-leg"),/^2$/);
+   await chevron.click();
    const transferDelays=page.locator(".transit-transfer-menu[open] .transit-transfer-delay");
    assert.deepEqual(await transferDelays.allTextContents(),["+5 min","+10 min","+15 min","+20 min","+30 min","+45 min","+60 min","+90 min"]);
    await transferDelays.filter({hasText:"+20 min"}).click();
    await page.locator("#routeLegs .transit-leg-title").filter({hasText:"Bus 123"}).waitFor();
    assert.equal(await comparison.count(),1);
-   assert.equal(transitCalls.filter(row=>Object.fromEntries(row).fromPlace==="B"&&Object.fromEntries(row).searchWindow==="7200").length,2);
+   assert.equal(await page.locator("#routeLegs .transit-leg-title").first().textContent(),originalLabel);
+   await comparison.getByRole("button",{name:/^Original/}).click();
+   assert.equal(await page.locator("#routeLegs .transit-leg-title").filter({hasText:"Bus 123"}).count(),0);
+   await comparison.getByRole("button",{name:/^Alternative/}).click();
+   assert.equal(transitCalls.filter(row=>Object.fromEntries(row).fromPlace==="B"&&Object.fromEntries(row).searchWindow==="7200").length,1);
    await page.getByRole("button",{name:"ÖPNV",exact:true}).click();
    assert.equal(await page.getByRole("button",{name:"Auto",exact:true}).isVisible(),true);
    const expandedLayout=await measureTransitControls();
