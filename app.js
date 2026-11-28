@@ -1016,6 +1016,8 @@
       document,getElement:$,icons:window.Pin2MapIcons,getPin:routePinById,
       onQuery:query=>routeSession.setTransitQuery(query),onSelect:index=>routeSession.selectVariant(index),
       onLegSelect:index=>{routePanel.selectLeg(index);routeMapView.fit(index);routeMapView.flash(index);},
+      onContinue:(index,options)=>routeSession.continueTransit(index,options),
+      onCompare:mode=>routeSession.compareTransit(mode),
       open:url=>window.open(url,"_blank","noopener,noreferrer"),colors:window.Pin2MapCarRouteMapView.COLORS
     });
     routePanel=new window.Pin2MapCarRoutePanel.CarRoutePanel({
@@ -1058,7 +1060,7 @@
       onLayoutChange:()=>routeMapView.scheduleFit(),onShowNotice:showNotice
     });
     routeSession=new window.Pin2MapCarRouteSession.CarRouteSession({
-      transitSearch,plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
+      transitSearch,nextDeparture:(leg,signal)=>transitProvider.nextDeparture(leg,signal),plan:activePlan,getPin:routePinById,getGuides:()=>routeGuideSession.list(),
       onGuideWarning:count=>showNotice(count===1?"Eine Richtungsflagge konnte nicht sinnvoll berücksichtigt werden.":
         count+" Richtungsflaggen konnten nicht sinnvoll berücksichtigt werden."),
       calculate:request=>routingCore.calculate(request),

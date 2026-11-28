@@ -336,3 +336,29 @@ test("deleting a waypoint recalculates the remaining route and deleting an endpo
  plan.setEndpoint("start","d");await session.recalculate();
  assert.deepEqual(requested.at(-1),["d","c"]);
 });
+
+test("successive transit continuations keep only the current before/after comparison",async()=>{
+ const plan=new ActiveCarRoute();
+ plan.setEndpoint("start","a");plan.setEndpoint("target","b");
+ const journeys=["base","first","second"].map((name,i)=>({
+  name,start:0,end:(i+1)*60000,legs:[{index:0,durationSeconds:i+1,distanceMeters:100}]
+ }));
+ const session=new CarRouteSession({plan,getPin:id=>({id,lat:50,lng:10}),calculate:async()=>{},
+  onChange:()=>{},onError:assert.fail,transitSearch:{
+   continueJourney:async original=>({branch:0,journey:journeys[journeys.indexOf(original)+1]})
+  }});
+ session.mode="transit";
+ session.transitJourneys=[journeys[0]];
+ await session.continueTransit(0,{delay:20});
+ assert.equal(session.snapshot().transit.active,journeys[1]);
+ session.compareTransit("original");
+ assert.equal(session.snapshot().transit.active,journeys[0]);
+ session.compareTransit("alternative");
+ await session.continueTransit(0,{delay:30});
+ assert.deepEqual(session.snapshot().transit.comparison,
+  {branch:0,original:journeys[1],alternative:journeys[2],active:"alternative"});
+ session.compareTransit("original");
+ assert.equal(session.snapshot().transit.active,journeys[1]);
+ session.clear();
+ assert.equal(session.snapshot().transit.comparison,null);
+});

@@ -231,16 +231,16 @@
     panel.classList.remove(this.mobileClass);
     panel.style.removeProperty(prefix+"-top");
     panel.style.removeProperty(prefix+"-height");
-    return;
+   }else{
+    panel.classList.add(this.mobileClass);
+    const vv=this.viewport;
+    if(vv){
+     panel.style.setProperty(prefix+"-top",Math.max(5,Math.round(vv.offsetTop+6))+"px");
+     panel.style.setProperty(prefix+"-height",Math.max(120,Math.round(vv.height-12))+"px");
+    }
    }
-   panel.classList.add(this.mobileClass);
-   const vv=this.viewport;
-   if(vv){
-    panel.style.setProperty(prefix+"-top",Math.max(5,Math.round(vv.offsetTop+6))+"px");
-    panel.style.setProperty(prefix+"-height",Math.max(120,Math.round(vv.height-12))+"px");
-   }
+   if(!editorActive)return;
    const list=this.el(this.listId);
-   if(searchFocused&&!editorActive)return;
    const editor=list.querySelector(".favorite-confirm");
    if(!editor)return;
    const a=list.getBoundingClientRect(),b=editor.getBoundingClientRect();

@@ -3375,3 +3375,30 @@ body.pin-open #app #routeToggleHolder{display:none}
 .weather-legend dt{display:flex;align-items:center;gap:8px;font-weight:700}
 .weather-legend dt span{width:16px;height:13px;background:currentColor;border-radius:3px;flex:none}
 .weather-legend dd{margin:0}
+
+
+#app .transit-leg-row{position:relative;display:flex;align-items:flex-start}
+#app .transit-leg-row>.transit-leg{flex:1;min-width:0}
+#app .transit-next-departure{
+ flex:none;margin:5px 0 0 4px;padding:3px 5px;color:#1764bf;background:#e8f2ff;
+ border:1px solid #b9cfe7;border-radius:5px;font:inherit;font-weight:650
+}
+#app .transit-transfer-menu{flex:none;margin:4px 0 0 4px}
+#app .transit-transfer-trigger{
+ display:grid;place-items:center;width:25px;height:25px;box-sizing:border-box;
+ border:1px solid #b9cfe7;border-radius:50%;background:#fff;color:#1764bf;cursor:pointer;list-style:none
+}
+#app .transit-transfer-trigger::-webkit-details-marker{display:none}
+#app .transit-transfer-trigger svg{width:16px;height:16px}
+#app .transit-transfer-choices{
+ position:absolute;z-index:6;right:0;top:32px;display:grid;grid-template-columns:1fr 1fr;gap:4px;
+ padding:5px;border:1px solid #b9cfe7;border-radius:7px;background:#fff;box-shadow:var(--shadow)
+}
+#app .transit-transfer-menu:not([open]) .transit-transfer-choices{display:none}
+#app .transit-transfer-delay,#app .transit-comparison button{
+ white-space:nowrap;padding:5px 7px;border:1px solid #c6d4e4;border-radius:5px;
+ color:#204567;background:#f0f6ff;font:inherit
+}
+#app .transit-comparison{display:flex;gap:5px;flex-wrap:wrap;padding:5px 0}
+#app .transit-comparison button[aria-pressed="true"]{background:#1764bf;color:#fff;border-color:#1764bf}
+#app .transit-continuation-feedback{padding:4px 0;color:#40546b}

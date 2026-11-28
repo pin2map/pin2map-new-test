@@ -177,6 +177,28 @@
    journeys.sort((a,b)=>a.start-b.start||a.end-b.end);
    return {journeys,selected:Math.max(0,journeys.indexOf(preferred))};
   }
+  async continueJourney(journey,{index,delay,next,target,query,signal}){
+   const transfer=journey.transfers.find(item=>item.leg.index===index);
+   const leg=journey.legs[index];
+   if(!leg||walking(leg.mode))return null;
+   const from=transfer?.previous.to||leg.from;
+   if(!from?.stopId)return null;
+   const branch=transfer?transfer.previous.index+1:index;
+   const prefix=journey.legs.slice(0,branch);
+   const ready=prefix.at(-1)?.end??journey.start;
+   const scheduled=Date.parse(leg.from?.scheduledDeparture);
+   const departure=Math.max(ready,next?.time??(Number.isFinite(scheduled)?scheduled:leg.start)+delay*minute);
+   const routes=await this.calculate({waypoints:[{stopId:from.stopId},target],signal,
+    query:{time:departure,arriveBy:false,searchMinutes:120}});
+   const options=routes.filter(route=>route.legs.length&&route.start>=departure);
+   const picked=options.sort((a,b)=>a.end-b.end||b.start-a.start)[0];
+   if(!picked)return null;
+   const legs=[...prefix,...picked.legs].map((item,i)=>({...item,index:i}));
+   const start=prefix.length?journey.start:picked.start;
+   const revised={start,end:picked.end,durationSeconds:(picked.end-start)/1000,legs,
+    distanceMeters:legs.reduce((sum,item)=>sum+item.distanceMeters,0)};
+   return {branch,journey:{...revised,...assess(revised,query)}};
+  }
   async recovery(journey,to,query,signal){
    const leg=journey.critical?.leg;
    if(!query.arriveBy||!leg?.from?.stopId)return null;

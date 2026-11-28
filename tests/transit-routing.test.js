@@ -284,3 +284,48 @@ test("a ten-minute regional rail connection can cover the planned walk and reser
  assert.deepEqual(result.transfers.map(({available,walkMinutes,reserve})=>[available,walkMinutes,reserve]),[[10,5,5]]);
  assert.equal(assess(journey([first,walk,{...onward,start:minutes(17)}]),query).quality,"red");
 });
+
+test("next departure is scheduled, distinct and belongs to the same line and direction",async()=>{
+ const base=leg(0,"SUBURBAN",28,35,{routeId:"s62",directionId:"1",
+  from:{stopId:"singen",scheduledDeparture:new Date(minutes(28)).toISOString()}});
+ const event=(id,routeId,directionId,t,extra={})=>({
+  tripId:id,routeId,directionId,place:{scheduledDeparture:new Date(minutes(t)).toISOString()},...extra
+ });
+ const provider=new Provider({fetchImpl:async url=>{
+  const request=new URL(url);
+  assert.equal(request.pathname,"/api/v6/stoptimes");
+  assert.equal(request.searchParams.get("stopId"),"singen");
+  assert.equal(request.searchParams.get("realtimeMode"),"OFF");
+  return {ok:true,json:async()=>({stopTimes:[
+   event("trip0","s62","1",30),event("wrong-line","s61","1",31),
+   event("wrong-direction","s62","0",32),event("cancelled","s62","1",35,{cancelled:true}),
+   event("later","s62","1",58),event("next","s62","1",42)
+  ]})};
+ }});
+ assert.deepEqual(await provider.nextDeparture(base,new AbortController().signal),{time:minutes(42),tripId:"next"});
+});
+
+test("continuation retains the inbound leg and chooses a free route from the transfer stop",async()=>{
+ const original=journey([
+  leg(0,"LONG_DISTANCE",0,26,{to:{stopId:"singen",track:"1"}}),
+  leg(1,"WALK",26,27),leg(2,"SUBURBAN",28,35,{from:{stopId:"platform-s62"},routeId:"s62"})
+ ]);
+ const query={time:instant,arriveBy:false};
+ Object.assign(original,assess(original,query));
+ const requests=[],target={lat:47.83,lng:9.02};
+ const search=new Search({calculate:async request=>{
+  requests.push(request);
+  const first=(request.query.time-instant)/60000;
+  return [journey([leg(0,"BUS",first+2,first+60,{tripId:"bus"})])];
+ }});
+ for(const [options,earliest] of [[{delay:20},48],[{next:{time:minutes(42),tripId:"next-s62"}},42]]){
+  const result=await search.continueJourney(original,{index:2,...options,target,query});
+  assert.deepEqual(requests.at(-1).waypoints,[{stopId:"singen"},target]);
+  assert.deepEqual(requests.at(-1).query,{time:minutes(earliest),arriveBy:false,searchMinutes:120});
+  assert.equal(result.branch,1);
+  assert.deepEqual(result.journey.legs[0],original.legs[0]);
+  assert.equal(result.journey.legs[1].tripId,"bus");
+  assert.equal(result.journey.legs[1].index,1);
+  assert.equal(original.legs.length,3);
+ }
+});

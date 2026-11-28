@@ -36,26 +36,32 @@
   });
  }
  class CarRouteSession {
-  constructor({plan,calculate,getPin,onChange,onError,getGuides=()=>[],transitSearch=null,onGuideWarning=()=>{},timeFactors={}}){
+  constructor({plan,calculate,getPin,onChange,onError,getGuides=()=>[],transitSearch=null,nextDeparture=null,onGuideWarning=()=>{},timeFactors={}}){
    if(!plan||[calculate,getPin,onChange,onError].some(x=>typeof x!=="function"))throw new TypeError("Route session ports required");
-   Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,transitSearch,onGuideWarning});
+   Object.assign(this,{plan,calculate,getPin,onChange,onError,getGuides,transitSearch,nextDeparture,onGuideWarning});
    this.mode="car";this.generation=0;this.pending=null;this.variants=[];this.selectedVariant=0;this.failed=false;this.loading=false;this.allVisibleActive=false;
    this.transitQuery={time:Date.now(),arriveBy:false};
-   this.transitJourneys=[];this.transitRecovery=null;
+   this.transitJourneys=[];this.transitRecovery=null;this.transitComparison=null;this.transitNext={};this.departureCache=new WeakMap();
    this.activeProfiles={bicycle:"everyday",pedestrian:"normal"};this.routeCache=new Map();
    this.factors={...TIME_FACTORS};this.timeProfile="standard";
    for(const key of Object.keys(TIME_FACTORS))if(validTimeFactor(timeFactors[key]))this.factors[key]=timeFactors[key];
   }
+  activeTransitJourney(){
+   const comparison=this.transitComparison;
+   return comparison?comparison[comparison.active]:this.transitJourneys[this.selectedVariant];
+  }
   snapshot(){
    const factor=this.mode==="car"?this.factors[this.timeProfile]:1;
    const transit=this.mode==="transit";
-   const selected=(transit?this.transitJourneys:this.variants)[this.selectedVariant];
+   const selected=transit?this.activeTransitJourney():this.variants[this.selectedVariant];
    const legs=(selected?.legs||[]).map(leg=>({...leg,durationSeconds:leg.durationSeconds*(leg.ferry?1:factor)}));
    const variants=this.variants.length>1?this.variants.map(({ascentMeters,distanceMeters,durationSeconds})=>
     ({ascentMeters,distanceMeters,durationSeconds})):[];
    const route=this.plan.snapshot();
    return {...route,waypointIds:transit?[]:route.waypointIds,mode:this.mode,
-    transit:transit?{query:this.transitQuery,journeys:this.transitJourneys,recovery:this.transitRecovery,progress:this.transitProgress}:null,activeProfile:this.activeProfiles[this.mode],
+    transit:transit?{query:this.transitQuery,journeys:this.transitJourneys,recovery:this.transitRecovery,progress:this.transitProgress,
+     active:selected,next:this.transitNext,comparison:this.transitComparison,
+     continuing:Boolean(this.continueRequest),continuationMessage:this.continuationMessage,continuationIndex:this.continuationIndex}:null,activeProfile:this.activeProfiles[this.mode],
     ascentMeters:selected?.ascentMeters??null,variants,selectedVariant:this.selectedVariant,failed:this.failed,allVisibleActive:this.allVisibleActive,legs,loading:this.loading,
     timeProfile:this.timeProfile,timeMarkers:transit?[]:timeMarkers(legs),
     distanceMeters:legs.reduce((s,l)=>s+l.distanceMeters,0),
@@ -77,7 +83,7 @@
   async checkTransitRecovery(){
    this.recoveryRequest?.abort();
    this.transitRecovery=null;
-   const journey=this.transitJourneys[this.selectedVariant];
+   const journey=this.activeTransitJourney();
    if(!journey?.critical||!this.transitQuery.arriveBy)return;
    const controller=new AbortController();
    this.recoveryRequest=controller;
@@ -114,7 +120,10 @@
    const transit=this.mode==="transit";
    if(!Number.isInteger(index)||!(transit?this.transitJourneys:this.variants)[index]||index===this.selectedVariant)return;
    this.selectedVariant=index;
-   if(transit)void this.checkTransitRecovery();
+   if(transit){
+    this.cancelTransitContinuation();
+    void this.checkTransitRecovery();void this.loadTransitDepartures();
+   }
    this.publish();
   }
   pinsChanged(){
@@ -128,7 +137,7 @@
    this.plan.order=order;void this.recalculate();
   }
   publish(){this.onChange(this.snapshot());}
-  cancel(){this.generation++;this.pending?.abort();this.recoveryRequest?.abort();this.pending=null;this.loading=false;this.transitProgress=null;}
+  cancel(){this.cancelTransitContinuation();this.departureCache=new WeakMap();this.generation++;this.pending?.abort();this.recoveryRequest?.abort();this.pending=null;this.loading=false;this.transitProgress=null;}
   clear(){this.cancel();this.plan.reset();this.variants=[];this.transitJourneys=[];this.transitRecovery=null;this.failed=false;this.selectedVariant=0;this.allVisibleActive=false;this.publish();}
   async recalculate(){
    this.cancel();this.variants=[];this.transitJourneys=[];this.transitRecovery=null;this.selectedVariant=0;
@@ -193,28 +202,94 @@
     if(generation!==this.generation)return;
     if(!controller.signal.aborted){if(transit)controller.abort();this.failed=true;this.onError(({car:"Autoroute",bicycle:"Fahrradroute",pedestrian:"Fußroute",transit:"ÖPNV-Verbindung"}[this.mode])+" konnte nicht berechnet werden: "+String(error?.message||error));}
    }finally{
-    if(generation===this.generation){this.loading=false;this.pending=null;this.publish();}
+    if(generation===this.generation){
+     this.loading=false;this.pending=null;this.publish();
+     if(transit)void this.loadTransitDepartures();
+    }
    }
   }
-  async searchTransit(waypoints,guides,generation,signal){
+  cancelTransitContinuation(){
+   this.departureRequest?.abort();this.departureRequest=null;
+   this.continueRequest?.abort();
+   this.continueRequest=null;this.transitComparison=null;this.transitNext={};this.continuationMessage="";
+  }
+  async loadTransitDepartures(){
+   this.departureRequest?.abort();
+   const journey=this.activeTransitJourney();
+   this.transitNext={};
+   if(!journey||!this.nextDeparture)return;
+   const cached=this.departureCache.get(journey);
+   if(cached){this.transitNext=cached;return;}
+   const legs=journey.legs.filter(leg=>leg.routeId&&leg.from?.stopId&&leg.directionId!=null);
+   if(!legs.length)return;
+   const controller=new AbortController(),signal=controller.signal;
+   this.departureRequest=controller;
+   const timer=setTimeout(()=>controller.abort(),20000);
+   const next={};
+   const worker=async()=>{
+    while(legs.length&&!signal.aborted){
+     const leg=legs.shift();
+     try{
+      const choice=await this.nextDeparture(leg,signal);
+      if(choice)next[leg.index]=choice;
+     }catch{/* A missing timetable result leaves the inline time absent. */}
+    }
+   };
+   try{await Promise.all([worker(),worker(),worker()]);}
+   finally{clearTimeout(timer);}
+   if(this.departureRequest===controller&&this.activeTransitJourney()===journey){
+    if(!signal.aborted)this.departureCache.set(journey,next);
+    this.transitNext=next;this.publish();
+   }
+  }
+  compareTransit(mode){
+   const comparison=this.transitComparison;
+   if(!comparison||!["original","alternative"].includes(mode)||comparison.active===mode)return;
+   this.continueRequest?.abort();this.continueRequest=null;this.continuationMessage="";
+   comparison.active=mode;
+   void this.checkTransitRecovery();void this.loadTransitDepartures();this.publish();
+  }
+  async continueTransit(index,{delay,followDeparture}={}){
+   const journey=this.activeTransitJourney(),target=this.getPin(this.plan.targetId);
+   const next=followDeparture?this.transitNext[index]:null;
+   if(this.mode!=="transit"||!journey||!target||(followDeparture?!next:![5,10,15,20,30,45,60,90].includes(delay)))return;
+   this.continueRequest?.abort();
+   const controller=new AbortController(),signal=controller.signal;
+   this.continueRequest=controller;this.continuationIndex=index;this.continuationMessage="Neue Restverbindung wird gesucht …";this.publish();
+   try{
+    const result=await this.withTransitDeadline(signal,()=>this.transitSearch.continueJourney(journey,{
+     index,delay,next,target,query:this.transitQuery,signal
+    }));
+    if(signal.aborted||this.continueRequest!==controller)return;
+    if(result){
+     this.transitComparison={branch:result.branch,original:journey,alternative:result.journey,active:"alternative"};
+     this.continuationMessage="";
+     void this.checkTransitRecovery();void this.loadTransitDepartures();
+    }else this.continuationMessage="Ab diesem Zeitpunkt wurde keine Restverbindung zum Ziel gefunden.";
+   }catch(error){
+    if(!signal.aborted){this.continuationMessage=error.message;controller.abort();}
+   }finally{
+    if(this.continueRequest===controller){this.continueRequest=null;this.publish();}
+   }
+  }
+  async withTransitDeadline(signal,task){
    let timer,cancel;
    const interrupted=new Promise((_,reject)=>{
     cancel=()=>reject(new Error("Suche abgebrochen"));
     signal.addEventListener("abort",cancel,{once:true});
     timer=setTimeout(()=>reject(new Error("Zeitlimit der Fahrplanauskunft erreicht")),120000);
    });
-   try{
-    return await Promise.race([interrupted,this.transitSearch.search({
-     waypoints,guides,query:this.transitQuery,signal,
-     onProgress:progress=>{
-      if(generation!==this.generation||signal.aborted)return;
-      this.transitProgress=progress;this.publish();
-     }
-    })]);
-   }finally{
-    clearTimeout(timer);
-    signal.removeEventListener("abort",cancel);
-   }
+   try{return await Promise.race([interrupted,task()]);}
+   finally{clearTimeout(timer);signal.removeEventListener("abort",cancel);}
+  }
+  searchTransit(waypoints,guides,generation,signal){
+   return this.withTransitDeadline(signal,()=>this.transitSearch.search({
+    waypoints,guides,query:this.transitQuery,signal,
+    onProgress:progress=>{
+     if(generation!==this.generation||signal.aborted)return;
+     this.transitProgress=progress;this.publish();
+    }
+   }));
   }
   endpoint(kind,id){this.plan.toggleEndpoint(kind,id);this.allVisibleActive=false;void this.recalculate();}
   waypoint(id){if(this.mode==="transit")return;if(this.plan.removeWaypoint(id)||this.plan.addWaypoint(id)){this.allVisibleActive=false;void this.recalculate();}else this.publish();}

@@ -24,8 +24,8 @@
  };
  const quality={green:"Günstig",yellow:"Verspätete Ankunft",red:"Kritisch oder außerhalb des Zeitfensters"};
  class TransitRoutePanel{
-  constructor({document:doc,getElement,icons,getPin,onQuery,onSelect,onLegSelect,open,colors}){
-   Object.assign(this,{doc,el:getElement,icons,getPin,onQuery,onSelect,onLegSelect,open,colors});
+  constructor({document:doc,getElement,icons,getPin,onQuery,onSelect,onLegSelect,onContinue,onCompare,open,colors}){
+   Object.assign(this,{doc,el:getElement,icons,getPin,onQuery,onSelect,onLegSelect,onContinue,onCompare,open,colors});
   }
   bind(){
    const panel=this.el("carRoutePanel");
@@ -106,10 +106,23 @@
    if(journey.busShare===null)content.title="Busanteil unbekannt";
    return content;
   }
+  comparisonControl(comparison){
+   const block=this.doc.createElement("div");
+   block.className="transit-comparison";
+   for(const [mode,name] of [["original","Original"],["alternative","Alternative"]]){
+    const button=this.doc.createElement("button");button.type="button";
+    const journey=comparison[mode];
+    button.textContent=name+" · Ankunft "+time(journey.end,journey.start);
+    button.setAttribute("aria-pressed",String(comparison.active===mode));
+    button.addEventListener("click",()=>this.onCompare(mode));
+    block.append(button);
+   }
+   return block;
+  }
   render(snapshot){
    this.snapshot=snapshot;
-   const {query,journeys,recovery,progress}=snapshot.transit;
-   const selected=journeys[snapshot.selectedVariant];
+   const {query,journeys,recovery,progress,comparison,next={},continuing,continuationMessage,continuationIndex}=snapshot.transit;
+   const selected=snapshot.transit.active||journeys[snapshot.selectedVariant];
    const endpoint=(id,stop)=>{const pin=this.getPin(id);return pin?.address||pin?.name||readableLocalName(stop?.name);};
    this.el("transitStickyDeparture").textContent=selected?
     clock.format(selected.start)+" "+endpoint(snapshot.startId,selected.legs[0]?.from):"";
@@ -159,7 +172,8 @@
    if(!journeys.length)this.el("transitPicker").open=false;
    const list=this.el("routeLegs");
    const focused=list.contains(this.doc.activeElement)?this.doc.activeElement.dataset.leg:null;
-   list.replaceChildren(...snapshot.legs.map((leg,index)=>{
+   const rows=snapshot.legs.flatMap((leg,index)=>{
+    const row=this.doc.createElement("div");row.className="transit-leg-row";
     const button=this.doc.createElement("button");button.type="button";
     button.className="car-route-leg transit-leg";button.dataset.leg=String(index);
     button.style.setProperty("--leg-color",walking(leg.mode)?root.Pin2MapCarRouteMapView.TRANSIT_WALK_COLOR:this.colors[index%this.colors.length]);
@@ -201,8 +215,39 @@
      text("transit-leg-duration",transferWindow?duration(Math.floor(Math.max(0,transferWindow.available))*60):duration(leg.durationSeconds)),
      text("transit-leg-from",station(leg.from)),text("transit-leg-arrive",time(singleWalk?transferWindow.leg.start:leg.end,selected.start),"strong"),
      destination,text("transit-leg-to",station(leg.to)));
-    button.addEventListener("click",()=>{button.focus({preventScroll:true});this.onLegSelect(index);});return button;
-   }));
+    button.addEventListener("click",()=>{button.focus({preventScroll:true});this.onLegSelect(index);});
+    row.append(button);
+    const departure=next[index];
+    if(departure){
+     const nextButton=text("transit-next-departure","(/"+time(departure.time,selected.start)+")","button");
+     nextButton.type="button";nextButton.disabled=continuing;
+     nextButton.title="Restverbindung ab der nächsten planmäßigen Abfahrt suchen";
+     nextButton.setAttribute("aria-label","Restverbindung ab "+time(departure.time,selected.start)+" suchen");
+     nextButton.addEventListener("click",()=>this.onContinue(index,{followDeparture:true}));
+     row.append(nextButton);
+    }
+    if(transfer&&transfer.previous.to?.stopId){
+     const menu=this.doc.createElement("details");menu.className="transit-transfer-menu";
+     const trigger=text("transit-transfer-trigger","","summary");
+     trigger.setAttribute("aria-label","Anschluss verpasst");trigger.title="Anschluss verpasst";
+     trigger.append(this.icons.svg("chevrons-right",this.doc));menu.append(trigger);
+     const choices=this.doc.createElement("div");choices.className="transit-transfer-choices";
+     for(const delay of [5,10,15,20,30,45,60,90]){
+      const action=text("transit-transfer-delay","+"+delay+" min","button");
+      action.type="button";action.disabled=continuing;
+      action.addEventListener("click",()=>this.onContinue(transfer.leg.index,{delay}));
+      choices.append(action);
+     }
+     menu.append(choices);row.append(menu);
+    }
+    const items=comparison?.branch===index?[this.comparisonControl(comparison),row]:[row];
+    if(continuationMessage&&continuationIndex===index){
+     const feedback=text("transit-continuation-feedback",continuationMessage,"div");
+     feedback.setAttribute("role","status");items.push(feedback);
+    }
+    return items;
+   });
+   list.replaceChildren(...rows);
    if(focused!=null)list.querySelector('.transit-leg[data-leg="'+focused+'"]')?.focus({preventScroll:true});
   }
  }

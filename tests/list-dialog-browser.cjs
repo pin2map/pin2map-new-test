@@ -127,10 +127,15 @@ const base=process.env.PIN2MAP_TEST_URL||"http://127.0.0.1:8765/";
     const restored=await page.locator("#layersList .layer-eye").evaluateAll(
       buttons=>buttons.map(b=>b.classList.contains("is-visible")));
     assert.deepEqual(restored,visibleBefore);
+    if(viewport.width>500)await page.locator("#layersList").evaluate(list=>{list.style.maxHeight="185px";});
     await page.locator("#addLayer").click();
     const editor=page.locator("#layersList .favorite-confirm");
     await editor.waitFor({state:"visible"});
     assert.equal(await editor.locator(".layer-editor-title").textContent(),"Neue Ebene erstellen:");
+    const editorFrame=await editor.boundingBox(),scrollFrame=await page.locator("#layersList").boundingBox();
+    assert.ok(editorFrame.y>=scrollFrame.y-1&&editorFrame.y+editorFrame.height<=scrollFrame.y+scrollFrame.height+1,
+      JSON.stringify({editorFrame,scrollFrame}));
+    if(viewport.width>500)await page.locator("#layersList").evaluate(list=>list.style.removeProperty("max-height"));
     assert.equal(await editor.locator(".layer-name-caption").textContent(),"Farbe und Name der Ebene:");
     const defaultName=await editor.locator(".favorite-name-input").inputValue();
     assert.match(defaultName,/^\d{2}\.\d{2}\.\d{4}-\d{2}$/,

@@ -12,6 +12,7 @@
   const NS="http://www.w3.org/2000/svg";
   // Node tuples follow Lucide's SVG icon-node representation.
   const SHAPES=Object.freeze({
+    "chevrons-right": [["path",{"d":"m6 17 5-5-5-5"}],["path",{"d":"m13 17 5-5-5-5"}]],
     "calendar-clock": [["path",{"d":"M16 2v3"}],["path",{"d":"M17 15.5v1.7l1 .625"}],["path",{"d":"M21 8.936V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h3.935"}],["path",{"d":"M3 9h9.873"}],["path",{"d":"M8 2v3"}],["circle",{"cx":"17","cy":"17","r":"5"}]],
     "moon": [["path",{"d":"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"}]],
     "message-square-exclamation-point": [["path",{"d":"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"}],["path",{"d":"M12 15h.01"}],["path",{"d":"M12 7v4"}]],
